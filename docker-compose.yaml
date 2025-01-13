@@ -41,3 +41,41 @@ services:
             - .env
         depends_on:
             - postgres
+
+    redis:
+      image: redis:alpine
+      restart: always
+      container_name: redis
+      ports:
+        - "6378:6379"
+
+
+    celery:
+      build:
+        context: ./config
+      container_name: celery_worker
+      restart: always
+      command: celery --app=root.celery worker --loglevel=info  # Use the correct app path
+      env_file:
+        - .env
+      environment:
+        REDIS_HOST: redis
+        REDIS_PORT: 6379
+      depends_on:
+        - redis
+      volumes: *shared_volumes
+
+    celery_beat:
+      build:
+        context: ./config
+      container_name: celery_beat
+      restart: always
+      command: celery --app=root.celery beat --loglevel=info  # Use the correct app path
+      env_file:
+        - .env
+      depends_on:
+        - redis
+        - celery
+      volumes: *shared_volumes
+
+

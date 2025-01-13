@@ -17,7 +17,7 @@ class ArchivedListAPIView(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
 
     search_fields = ('user','reason')
-    filter_fields = ('user','reason')
+    filterset_fields = ('user','reason')
     ordering_fields = ('user','reason')
 
 class ArchivedDetailAPIView(RetrieveUpdateDestroyAPIView):

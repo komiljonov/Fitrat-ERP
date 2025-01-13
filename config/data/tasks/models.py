@@ -21,10 +21,11 @@ class Task(TimeStampModel):
     date_of_expired = models.DateTimeField()
 
     status = models.CharField(
-        choices=[("COMPLATED","COMPLATED"),
-                ("WAITING",'WAITING'),
-                ("ONGOING",'ONGOING'),
-                 ("CANCELLED","CANCELLED")
+        choices=[
+            ("COMPLATED","COMPLATED"),
+            ("EXPIRED",'EXPIRED'),
+            ("ONGOING",'ONGOING'),
+            ("CANCELLED","CANCELLED")
                  ],
         default="WAITING",
         max_length=50
