@@ -1,0 +1,43 @@
+services:
+
+    postgres:
+        image: postgres:latest
+        container_name: "postgres_f"
+        environment:
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - TZ=Asia/Tashkent
+        volumes:
+            - "../app_data:/var/lib/postgresql/data"
+        ports:
+            - "5433:5432"
+        command: postgres -c max_connections=1500
+
+    fast:
+      container_name: fast_api
+      build:
+        context: ./config
+      command: python /usr/src/app/root/fast_run.py
+      volumes:
+        - ./config:/usr/src/app
+      ports:
+        - "5000:5000"
+      depends_on:
+        - postgres
+
+
+    django:
+        container_name: django_f
+        build:
+            context: ./config
+        command: python manage.py runserver 0.0.0.0:8000
+
+        volumes: &shared_volumes
+            - ./config:/usr/src/app
+        ports:
+            - 8001:8000
+        env_file:
+            - .env
+        depends_on:
+            - postgres

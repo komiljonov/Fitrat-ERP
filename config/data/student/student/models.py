@@ -1,0 +1,49 @@
+from datetime import datetime
+
+from django.contrib.auth import get_user_model
+from django.db import models
+
+from ...command.models import TimeStampModel
+from ...department.filial.models import Filial
+from ...department.marketing_channel.models import MarketingChannel
+from ...stages.models import NewStudentStages,StudentStages
+
+User = get_user_model()
+
+class Student(TimeStampModel):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=100)
+    date_of_birth = models.DateField(default=datetime.today())
+
+    language_choise = (("ENG","ENG"),
+                       ("RU","RU"),
+                       ("UZB","UZB"))
+
+    education_lang = models.CharField(choices=language_choise,default="UZB",max_length=100)
+    student_type = models.CharField(max_length=100, default="student")
+    edu_class = models.CharField(max_length=100, help_text="Education level at school if student studies at school")
+    subject = models.CharField(max_length=100,null=True, help_text="Subject that student won at competition")
+    ball = models.IntegerField(default=0, null=True, blank=True, help_text="Earned ball at competition")
+
+    filial : "Filial" = models.ForeignKey("filial.Filial", on_delete=models.CASCADE, null=True, blank=True, help_text="Filial for this student")
+    marketing_channel : "MarketingChannel" = models.ForeignKey("marketing_channel.MarketingChannel", on_delete=models.CASCADE,null=True,blank=True, help_text="Marketing channel for this student")
+
+    student_stage_type = models.CharField(
+        choices=(
+            ('NEW_STUDENT','NEW_STUDENT'),
+            ('ACTIVE_STUDENT','ACTIVE_STUDENT'),
+        ),
+        default="NEW_STUDENT",
+        max_length=100,
+        help_text="Student stage type",
+    )
+
+    new_student_stages : "NewStudentStages" = models.ForeignKey("stages.NewStudentStages", on_delete=models.CASCADE,null=True, blank=True, help_text="NewStudentStages for this student")
+    active_student_stages : "StudentStages" = models.ForeignKey('stages.StudentStages', on_delete=models.CASCADE, null=True, blank=True,help_text="StudentStages for this student")
+
+    is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
+
+    moderator : User = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, help_text="Moderator for this student")
+    def __str__(self):
+        return f"{self.first_name} {self.subject} {self.ball} in {self.new_student_stages} stage"
