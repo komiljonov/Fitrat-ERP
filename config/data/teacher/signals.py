@@ -1,0 +1,3 @@
+from ..teacher.models import Teacher
+
+

@@ -17,7 +17,8 @@ class TaskListCreateView(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
     search_fields = ("creator", "performer","task","comment","date_of_expired","status")
     ordering_fields = ("date_of_expired",)
-    filter_fields = ("status",)
+    filterset_fields = ("status",)
+
 
 
 

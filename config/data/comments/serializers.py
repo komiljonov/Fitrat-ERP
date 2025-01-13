@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from django.utils.module_loading import import_string
 from .models import Comment
 from ..account.serializers import UserSerializer
 

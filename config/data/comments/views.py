@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.http import Http404
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
@@ -21,20 +22,26 @@ class CommentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
 class CommentLidRetrieveListAPIView(ListAPIView):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self,**kwargs):
-        lid = Lid.objects.get(id=kwargs.get('pk'))
-        if lid:
-            return Comment.objects.filter(lid__id=lid).first()
+    def get_queryset(self):
+        lid_id = self.kwargs.get('pk')
+        try:
+            lid = Lid.objects.get(id=lid_id)
+        except Lid.DoesNotExist:
+            raise Http404("Lid not found.")
+        return Comment.objects.filter(lid=lid)
+
 
 class CommentStudentRetrieveListAPIView(ListAPIView):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticated,)
-    def get_queryset(self,**kwargs):
-        student = Student.objects.get(id=kwargs.get('pk'))
-        if student:
-            return Comment.objects.filter(student__id=student).first()
+
+    def get_queryset(self):
+        student_id = self.kwargs.get('pk')
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            raise Http404("Student not found.")
+        return Comment.objects.filter(student=student)

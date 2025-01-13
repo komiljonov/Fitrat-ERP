@@ -1,4 +1,3 @@
-from django.contrib.auth.backends import BaseBackend
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
@@ -13,6 +12,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ('phone','password','role')
+
 
 # class ConfirmationCodeSerializer(serializers.Serializer):
 #     phone = serializers.EmailField()

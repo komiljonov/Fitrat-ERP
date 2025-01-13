@@ -1,3 +1,4 @@
+import uuid
 from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import AbstractUser
@@ -7,6 +8,7 @@ from ..account.managers import UserManager
 
 
 class CustomUser(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
     full_name = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=255, unique=True, blank=True, null=True)
@@ -30,6 +32,9 @@ class CustomUser(AbstractUser):
     # REQUIRED_FIELDS = ['phone']
 
     objects = UserManager()
+
+    class Meta:
+        ordering = ('-created_at',)
 
     def __str__(self):
         return self.full_name or self.phone

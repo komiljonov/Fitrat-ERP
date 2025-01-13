@@ -12,23 +12,20 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('new_lid', '0001_initial'),
-        ('student', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Comment',
+            name='Notification',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('comment', models.TextField()),
-                ('creator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('lid', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='new_lid.lid')),
-                ('student', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='student.student')),
+                ('comment', models.TextField(blank=True, null=True)),
+                ('come_from', models.TextField(blank=True, null=True)),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['-created_at'],
