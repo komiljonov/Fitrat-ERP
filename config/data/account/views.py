@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.views.decorators.csrf import csrf_exempt
 
 from .serializers import UserCreateSerializer, UserUpdateSerializer
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
@@ -58,6 +59,7 @@ class UserList(ListAPIView):
 class CustomAuthToken(TokenObtainPairView):
     serializer_class = UserLoginSerializer
 
+    @csrf_exempt
     def post(self, request, *args, **kwargs):
         # Validate serializer data
         serializer = self.serializer_class(data=request.data, context={'request': request})

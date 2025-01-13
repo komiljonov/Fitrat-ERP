@@ -27,7 +27,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
 #     new_password = serializers.CharField()
 
 
-
 class UserLoginSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=30, required=True)
     password = serializers.CharField(max_length=128, required=True, write_only=True)
@@ -67,7 +66,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['phone','full_name', 'password','role']
+        fields = ['phone','full_name', 'password','role',"photo",]
 
     def validate(self, attrs):
         user = self.instance  # Get the user instance
@@ -79,9 +78,9 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class UserListSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','phone',"full_name",'role',]
+        fields = ['id','phone',"full_name",'role',"photo",]
 
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ("id","full_name",'phone',"role")
+        fields = ("id","full_name",'phone',"role","photo",)

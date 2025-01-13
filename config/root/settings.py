@@ -32,16 +32,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,[::1]").split(",")
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000"
+]
 #
-# CSRF_TRUSTED_ORIGINS = [
-#     'https://templify.uz',
-#     'https://root.templify.uz',
-#     'https://www.root.templify.uz',
-#     "https://api.logic.sector-soft.ru",
-#     'https://logistics-dashboard-peach.vercel.app',
-#     "https://megastroy.sector-soft.ru",
-#     "https://api.megastroy.sector-soft.ru"
-# ]
 
 # Application definition
 
@@ -81,9 +75,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

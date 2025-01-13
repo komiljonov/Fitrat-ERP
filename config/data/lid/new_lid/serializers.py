@@ -1,7 +1,8 @@
-from django.template.context_processors import request
+
 from rest_framework import serializers
 from django.utils.module_loading import import_string
 from .models import Lid
+from ..archived.models import Archived
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
@@ -75,7 +76,7 @@ class LidSerializer(serializers.ModelSerializer):
         Custom update logic to assign `call_operator` if it is `None`
         and the user is a `CALL_OPERATOR`.
         """
-        request = self.context['request']  # Get the current request
+        request = self.context['request']
 
         # Assign `call_operator` if it's None and the current user is a CALL_OPERATOR
         if instance.call_operator is None and request.user.role == 'CALL_OPERATOR':

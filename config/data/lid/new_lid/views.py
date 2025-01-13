@@ -1,18 +1,18 @@
-from django.shortcuts import render
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import request
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, \
-    ListCreateAPIView, CreateAPIView
+    ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from .models import Lid
 from ..new_lid.serializers import LidSerializer
 
+
 class LidListCreateView(ListCreateAPIView):
     serializer_class = LidSerializer
+    # queryset = Lid.objects.all()
     # permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
 
@@ -54,14 +54,21 @@ class LidListCreateView(ListCreateAPIView):
         "ordered_stages",
         "is_dubl"
     )
+
     def get_queryset(self):
         """
-        Return Lids that are not archived and belong to the requested user (call_operator).
+        Return Lids that are not archived and belong to the requested user (call_operator)
+        or have no assigned call_operator (None).
         """
-        user = self.request.user  # Get the current user from the request
+        user = self.request.user
+        # If the user is anonymous, return an empty queryset
         if user.is_anonymous:
             return Lid.objects.none()
-        return Lid.objects.filter(is_archived=False, call_operator=user)
+
+        # Filter Lids that are not archived and have call_operator as the user or None
+        return Lid.objects.filter(
+            Q(is_archived=False) & (Q(call_operator=user) | Q(call_operator__isnull=True))
+        )
 
 
 class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):

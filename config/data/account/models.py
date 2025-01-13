@@ -11,6 +11,8 @@ class CustomUser(AbstractUser):
     full_name = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=255, unique=True, blank=True, null=True)
 
+    photo = models.ImageField(upload_to="images/", blank=True, null=True)
+
     ROLE_CHOICES = (
         ("ADMINISTRATOR", "Administrator"),
         ("MODERATOR", "Moderator"),
