@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'data.lid.new_lid',
 
     'data.student.student',
+    'data.student.groups',
     'data.comments',
 
     'data.department.filial',

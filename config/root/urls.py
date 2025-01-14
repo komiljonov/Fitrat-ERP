@@ -51,6 +51,9 @@ urlpatterns = [
     path('lid/', include("data.lid.new_lid.urls")),
     path('archived/', include('data.lid.archived.urls')),
 
+    path('groups/', include('data.student.groups.urls')),
+    path('student/',include('data.student.student.urls')),
+
     path('stages/',include("data.stages.urls")),
 
 

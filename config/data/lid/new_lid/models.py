@@ -51,5 +51,9 @@ class Lid(TimeStampModel):
 
     is_student = models.BooleanField(default=False,help_text="Is this student or not")
 
+    lid_stages : models.QuerySet['NewLidStages']
+    ordered_stages : models.QuerySet['NewOredersStages']
+
+
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"

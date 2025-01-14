@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.contrib.auth import get_user_model
+from typing import TYPE_CHECKING
 from django.db import models
 
 from ...command.models import TimeStampModel
@@ -8,7 +8,7 @@ from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...stages.models import NewStudentStages,StudentStages
 
-User = get_user_model()
+from ...account.models import CustomUser
 
 class Student(TimeStampModel):
     first_name = models.CharField(max_length=100)
@@ -44,6 +44,9 @@ class Student(TimeStampModel):
 
     is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
 
-    moderator : User = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, help_text="Moderator for this student")
+    moderator : "CustomUser" = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, help_text="Moderator for this student")
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.new_student_stages} stage"
+
+
+
