@@ -1,18 +1,19 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from rest_framework import request
-
+from typing import TYPE_CHECKING
 from ..command.models import TimeStampModel
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
 
-User = get_user_model()
+if TYPE_CHECKING:
+    from ..lid.new_lid.models import Lid
+    from ..student.student.models import Student
+    from ..account.models import CustomUser
 
 class Task(TimeStampModel):
-    creator : User = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_performer')
+    creator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name='task_performer')
 
-    lid: Lid = models.ForeignKey(Lid, on_delete=models.CASCADE, null=True, blank=True)
-    student: Student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
+    lid: "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.CASCADE, null=True, blank=True)
+    student: "Student" = models.ForeignKey("student.Student", on_delete=models.CASCADE, null=True, blank=True)
 
     task = models.TextField()
 

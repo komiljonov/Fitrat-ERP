@@ -1,7 +1,7 @@
-from datetime import datetime
 
 from typing import TYPE_CHECKING
 from django.db import models
+from django.utils import timezone
 
 from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
@@ -14,13 +14,13 @@ class Student(TimeStampModel):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=100)
-    date_of_birth = models.DateField(default=datetime.today())
+    date_of_birth = models.DateField(default=timezone.now())
 
-    language_choise = (("ENG","ENG"),
+    language_choice = (("ENG","ENG"),
                        ("RU","RU"),
                        ("UZB","UZB"))
 
-    education_lang = models.CharField(choices=language_choise,default="UZB",max_length=100)
+    education_lang = models.CharField(choices=language_choice,default="UZB",max_length=100)
     student_type = models.CharField(max_length=100, default="student")
     edu_class = models.CharField(max_length=100, help_text="Education level at school if student studies at school")
     subject = models.CharField(max_length=100,null=True, help_text="Subject that student won at competition")

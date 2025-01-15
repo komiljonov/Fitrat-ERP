@@ -54,7 +54,6 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             student.call_operator = instance.call_operator
             student.save()
 
-        # Archive the Lid after processing
         post_save.disconnect(on_details_create, sender=Lid)
         instance.is_archived = True
         instance.save()

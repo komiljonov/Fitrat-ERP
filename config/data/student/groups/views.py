@@ -5,8 +5,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Group, StudentGroup
-from .serializers import GroupSerializer, StudentGroupSerializer
+from .models import Group
+from .serializers import GroupSerializer
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -14,9 +14,9 @@ class StudentGroupsView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
     filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
-    search_fields = ('name','scheduled_day_type')
-    ordering_fields = ('name','scheduled_day_type','start_date','end_date','price_type')
-    filterset_fields = ('name','scheduled_day_type','price_type')
+    search_fields = ('name','teacher','scheduled_day_type')
+    ordering_fields = ('name','teacher','scheduled_day_type','start_date','end_date','price_type')
+    filterset_fields = ('name','teacher','scheduled_day_type','price_type')
 
 
 class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -32,34 +32,6 @@ class StudentListAPIView(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
-class GroupStudentsListView(ListAPIView):
-    serializer_class = StudentGroupSerializer
-    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self,**kwargs):
-        queryset = StudentGroup.objects.filter(group__id=self.kwargs['pk'])
-        return queryset
-
-
-class StudentGroupListView(ListCreateAPIView):
-    queryset = StudentGroup.objects.all()
-    serializer_class = StudentGroupSerializer
-    permission_classes = [IsAuthenticated]
-
-    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
-    search_fields = ('student','group',)
-    ordering_fields = ('student','group',)
-    filterset_fields = ('student','group',)
-
-
-class StudentGroupDetailView(RetrieveUpdateDestroyAPIView):
-    queryset = StudentGroup.objects.all()
-    serializer_class = StudentGroupSerializer
-    permission_classes = [IsAuthenticated]
-
-class StudentGroupListNoPG(ListAPIView):
-    queryset = StudentGroup.objects.all()
-    serializer_class = StudentGroupSerializer
-    permission_classes = [IsAuthenticated]
 
 

@@ -1,6 +1,8 @@
 
 from rest_framework import serializers
 from django.utils.module_loading import import_string
+from rest_framework.generics import CreateAPIView
+
 from .models import Lid
 from ..archived.models import Archived
 from ...account.serializers import UserSerializer
@@ -11,6 +13,8 @@ from ...department.marketing_channel.serializers import MarketingChannelSerializ
 from ...stages.models import NewLidStages
 from ...stages.serializers import NewLidStageSerializer, NewOrderedLidStagesSerializer
 from ...comments.models import Comment, User
+from ...student.groups.models import Group
+from ...student.lesson.models import Lesson
 from ...tasks.models import Task
 
 
@@ -85,3 +89,5 @@ class LidSerializer(serializers.ModelSerializer):
         # Update the instance using the superclass method
         instance = super().update(instance, validated_data)
         return instance
+
+

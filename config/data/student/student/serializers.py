@@ -2,8 +2,6 @@ from django.utils.module_loading import import_string
 from rest_framework import serializers
 
 from .models import Student
-from ..groups.models import StudentGroup
-from ..groups.serializers import GroupSerializer
 
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
@@ -40,15 +38,15 @@ class StudentSerializer(serializers.ModelSerializer):
             "new_student_stages",
             "active_student_stages",
 
-            "group",
+            # "group",
 
             "is_archived",
         ]
 
-    def get_group(self, obj):
-        group = StudentGroup.objects.filter(group=obj)
-        StudentsGroupSerializer = import_string("data.student.serializers.StudentGroupSerializer")
-        return StudentsGroupSerializer(group, many=True).data
+    # def get_group(self, obj):
+    #     group = StudentGroup.objects.filter(group=obj)
+    #     StudentsGroupSerializer = import_string("data.student.serializers.StudentGroupSerializer")
+    #     return StudentsGroupSerializer(group, many=True).data
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

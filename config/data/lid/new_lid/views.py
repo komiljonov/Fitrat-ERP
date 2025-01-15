@@ -2,7 +2,7 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, \
-    ListCreateAPIView
+    ListCreateAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -83,5 +83,12 @@ class LidListNoPG(ListAPIView):
     permission_classes = [IsAuthenticated]
     def get_paginated_response(self, data):
         return Response(data)
+
+
+
+class FirstLessonCreate(CreateAPIView):
+    serializer_class = LidSerializer
+    queryset = Lid.objects.all()
+    permission_classes = [IsAuthenticated]
 
 
