@@ -112,9 +112,9 @@ class UserInfo(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
 
-    def get(self, request, id=None):
+    def get(self, request, pk=None):
         try:
-            user = User.objects.get(id=id)
+            user = User.objects.get(id=pk)
         except User.DoesNotExist:
             raise NotFound(detail="User not found.")
 

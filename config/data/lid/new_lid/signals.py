@@ -35,6 +35,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 "marketing_channel": instance.marketing_channel,
                 "new_student_stages": new_student_stage_instance,  # Assign instance here
                 "call_operator": instance.call_operator,
+                "moderator": instance.moderator,
             }
         )
 
@@ -52,6 +53,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             student.marketing_channel = instance.marketing_channel
             student.new_student_stages = new_student_stage_instance  # Assign instance here
             student.call_operator = instance.call_operator
+            student.moderator = instance.moderator
             student.save()
 
         post_save.disconnect(on_details_create, sender=Lid)

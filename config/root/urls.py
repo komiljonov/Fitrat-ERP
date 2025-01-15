@@ -57,6 +57,8 @@ urlpatterns = [
     path('attendance/', include('data.student.attendance.urls')),
     path('stages/',include("data.stages.urls")),
 
+    path('moderator/', include('data.moderator.urls')),
+
 
     path("docs<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"),
     path(
