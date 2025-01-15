@@ -2,6 +2,7 @@ from django.utils.module_loading import import_string
 from rest_framework import serializers
 
 from .models import Student
+from ..lesson.models import Lesson
 
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
@@ -9,7 +10,6 @@ from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...stages.models import NewLidStages, StudentStages, NewStudentStages
 from ...stages.serializers import StudentStagesSerializer, NewOrderedLidStagesSerializer, NewStudentStagesSerializer
-
 
 class StudentSerializer(serializers.ModelSerializer):
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(),allow_null=True)
@@ -38,15 +38,15 @@ class StudentSerializer(serializers.ModelSerializer):
             "new_student_stages",
             "active_student_stages",
 
-            # "group",
+            "group",
 
             "is_archived",
         ]
 
-    # def get_group(self, obj):
-    #     group = StudentGroup.objects.filter(group=obj)
-    #     StudentsGroupSerializer = import_string("data.student.serializers.StudentGroupSerializer")
-    #     return StudentsGroupSerializer(group, many=True).data
+    def get_group(self, obj):
+        group = Lesson.objects.filter(student=obj)
+        LessonSerializer = import_string("data.student.lesson.serializers.LessonSerializer")
+        return LessonSerializer(group, many=True).data
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

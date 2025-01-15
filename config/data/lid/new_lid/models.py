@@ -43,11 +43,6 @@ class Lid(TimeStampModel):
     lid_stages : "NewLidStages" = models.ForeignKey("stages.NewLidStages", on_delete=models.CASCADE,null=True, blank=True, help_text="NewStudentStages for this student")
     ordered_stages : "NewOredersStages" = models.ForeignKey("stages.NewOredersStages", on_delete=models.CASCADE,null=True, blank=True, help_text="NewStudentStages for this student")
 
-    first_lesson : "Lesson" = models.ForeignKey("lesson.Lesson", on_delete=models.CASCADE,
-                                                related_name="students_first_lesson",
-                                                null=True, blank=True,
-                                                help_text="Lesson for this lesson")
-
     is_archived = models.BooleanField(default=False,help_text="Is this student archived or not")
 
     is_dubl = models.BooleanField(default=False,help_text="Is this student duble or not")

@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     'data.tasks',
     'data.finans',
     'data.dubl',
-    'data.action_manager',
     'data.notifications',
 
     'data.lid.archived',
@@ -62,6 +61,7 @@ INSTALLED_APPS = [
     'data.student.student',
     'data.student.groups',
     'data.student.lesson',
+    'data.student.attendance',
     'data.comments',
 
     'data.department.filial',

@@ -1,15 +1,15 @@
 from django.db import models
 
-from config.data.lid.new_lid.models import Lid
-from config.data.student.lesson.models import Lesson
-from config.data.student.student.models import Student
+from ...command.models import TimeStampModel
+from ...lid.new_lid.models import Lid
+from ...student.lesson.models import Lesson
+from ...student.student.models import Student
 
 
-class Attendance(models.Model):
+class Attendance(TimeStampModel):
     lesson : Lesson = models.ForeignKey('lesson.Lesson', on_delete=models.CASCADE)
-    if lesson.lesson_status == "FIRST_LESSON" or lesson.lesson_status == "SECOND_LESSON":
-        lid : Lid = models.ForeignKey('lid.Lid', on_delete=models.CASCADE)
-    student : Student = models.ForeignKey('student.Student', on_delete=models.CASCADE)
+    lid : Lid = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True)
+    student : Student = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True)
 
     REASON_CHOICES = [
         ('IS_PRESENT', 'Is Present'),
@@ -25,4 +25,4 @@ class Attendance(models.Model):
     remarks : str = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.lesson} for {self.lid if self.lid else self.student} is marked as {self.reason}"
+        return f"{self.lesson} for {self.lid if self.lid.first_name else self.student.first_name} is marked as {self.reason}"

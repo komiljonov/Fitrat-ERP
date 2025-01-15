@@ -13,6 +13,7 @@ from ...department.marketing_channel.serializers import MarketingChannelSerializ
 from ...stages.models import NewLidStages
 from ...stages.serializers import NewLidStageSerializer, NewOrderedLidStagesSerializer
 from ...comments.models import Comment, User
+from ...student.attendance.models import Attendance
 from ...student.groups.models import Group
 from ...student.lesson.models import Lesson
 from ...tasks.models import Task

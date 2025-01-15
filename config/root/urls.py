@@ -53,8 +53,8 @@ urlpatterns = [
 
     path('groups/', include('data.student.groups.urls')),
     path('student/',include('data.student.student.urls')),
-    # path('lesson/',include('data.student.lesson.urls')),
-
+    path('lesson/',include('data.student.lesson.urls')),
+    path('attendance/', include('data.student.attendance.urls')),
     path('stages/',include("data.stages.urls")),
 
 

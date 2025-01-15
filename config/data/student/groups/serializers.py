@@ -1,10 +1,11 @@
 from rest_framework import serializers
-from typing import TYPE_CHECKING
 from .models import Group
-
+from ...account.models import CustomUser
+from ...account.serializers import UserSerializer
 
 
 class GroupSerializer(serializers.ModelSerializer):
+    teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     class Meta:
         model = Group
         fields = [
@@ -17,4 +18,7 @@ class GroupSerializer(serializers.ModelSerializer):
             'started_at',
             'ended_at',
         ]
-
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['teacher'] = UserSerializer(instance.teacher).data
+        return rep

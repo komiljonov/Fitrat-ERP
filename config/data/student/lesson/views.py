@@ -14,9 +14,9 @@ class LessonList(ListCreateAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
-    search_fields = ('name','subject','lid','group','comment')
-    ordering_fields = ('name','subject','lid','group','comment')
-    filterset_fields = ('name','subject','lid','group','comment')
+    search_fields = ('name','group','comment','lesson_status',)
+    ordering_fields = ('name','group','comment','lesson_status',)
+    filterset_fields = ('name','group','comment','lesson_status',)
 
 
 class LessonDetail(RetrieveUpdateDestroyAPIView):

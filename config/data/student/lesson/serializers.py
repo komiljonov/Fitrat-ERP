@@ -32,7 +32,6 @@ class LessonSerializer(serializers.ModelSerializer):
         AttendanceSerializer = import_string('data.student.attendance.serializers.AttendanceSerializer')
         return AttendanceSerializer(attendance, many=True).data
 
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['group'] = GroupSerializer(instance.group).data

@@ -1,10 +1,5 @@
 from django.db import models
 from ...command.models import TimeStampModel
-from typing import TYPE_CHECKING
-
-
-if TYPE_CHECKING:
-    from ...lid.new_lid.models import Lid
 from ..groups.models import Group
 
 
