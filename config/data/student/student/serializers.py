@@ -12,11 +12,11 @@ from ...stages.models import NewLidStages, StudentStages, NewStudentStages
 from ...stages.serializers import StudentStagesSerializer, NewOrderedLidStagesSerializer, NewStudentStagesSerializer
 
 class StudentSerializer(serializers.ModelSerializer):
-    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(),allow_null=True)
-    marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(),allow_null=True)
-    new_student_stages = serializers.PrimaryKeyRelatedField(queryset=NewLidStages.objects.all(),allow_null=True)
-    active_student_stages = serializers.PrimaryKeyRelatedField(queryset=StudentStages.objects.all(),allow_null=True)
-    group = serializers.SerializerMethodField()
+    # filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(),allow_null=True)
+    # marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(),allow_null=True)
+    # new_student_stages = serializers.PrimaryKeyRelatedField(queryset=NewLidStages.objects.all(),allow_null=True)
+    # active_student_stages = serializers.PrimaryKeyRelatedField(queryset=StudentStages.objects.all(),allow_null=True)
+    # group = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
@@ -38,22 +38,22 @@ class StudentSerializer(serializers.ModelSerializer):
             "new_student_stages",
             "active_student_stages",
 
-            "group",
+            # "group",
 
             "is_archived",
         ]
-
-    def get_group(self, obj):
-        group = Lesson.objects.filter(student=obj)
-        LessonSerializer = import_string("data.student.lesson.serializers.LessonSerializer")
-        return LessonSerializer(group, many=True).data
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['filial'] = FilialSerializer(instance.filial).data
-        representation['marketing_channel'] = MarketingChannelSerializer(instance.marketing_channel).data
-        representation['new_student_stages'] = NewStudentStagesSerializer(instance.new_student_stages).data
-        representation['active_student_stages'] = StudentStagesSerializer(instance.active_student_stages).data
-        return representation
+    # #
+    # # def get_group(self, obj):
+    # #     group = Lesson.objects.filter(student=obj)
+    # #     LessonSerializer = import_string("data.student.lesson.serializers.LessonSerializer")
+    # #     return LessonSerializer(group, many=True).data
+    #
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation['filial'] = FilialSerializer(instance.filial).data
+    #     representation['marketing_channel'] = MarketingChannelSerializer(instance.marketing_channel).data
+    #     representation['new_student_stages'] = NewStudentStagesSerializer(instance.new_student_stages).data
+    #     representation['active_student_stages'] = StudentStagesSerializer(instance.active_student_stages).data
+    #     return representation
 
 
