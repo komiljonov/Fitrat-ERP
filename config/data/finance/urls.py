@@ -11,5 +11,4 @@ urlpatterns = [
     path('student/<uuid:pk>/',StudentFinanceListAPIView.as_view(), name='finans_student'),
     path('stuff/<uuid:pk>/',StuffFinanceListAPIView.as_view(), name='finans_stuff'),
 
-
 ]

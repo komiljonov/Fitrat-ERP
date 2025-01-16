@@ -46,3 +46,22 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
             comment=f"Lead {instance.lid.first_name}  {instance.lid.phone_number} - {attendances_count} darsga to'lov qilmasdan qatnashgan !",
             come_from=instance.lid
         )
+
+@receiver(post_save, sender=Attendance)
+def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
+    if created:
+        if instance.reason == "IS_PRESENT" or instance.reason == "UNREASONED" and instance.lesson.group.price_type == "DAILY":
+            instance.student.balance -= instance.lesson.group.price
+            instance.student.save()
+    if not created:
+        if instance.reason == "REASONED":
+            Notification.objects.create(
+                user=instance.student.moderator and instance.student.call_operator,
+                comment=f"{instance.student.first_name} {instance.student.phone_number}"
+                        f" ning {instance.created_at} sanasidagi dars davomati sababli dars "
+                        f"qoldirilganga o'zgartirildi, E'tiborli bo'ling bu dars uchun to'langan to'lov qaytarilishiga sabab bo'ldi ",
+                come_from=instance.student,
+            )
+
+
+

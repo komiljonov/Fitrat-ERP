@@ -43,7 +43,6 @@ urlpatterns = [
 
     path("tasks/", include("data.tasks.urls")),
     path("comments/", include("data.comments.urls")),
-    path("dubl/", include("data.dubl.urls")),
 
     path("filial/", include("data.department.filial.urls")),
     path('marketing/', include("data.department.marketing_channel.urls")),

@@ -3,6 +3,8 @@ import django
 import random
 from faker import Faker
 
+
+
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")  # Replace 'config.settings' with your actual settings path
 django.setup()
@@ -13,13 +15,21 @@ from data.lid.new_lid.models import Lid
 from data.student.student.models import Student
 from data.student.groups.models import Group
 from data.account.models import CustomUser
+from data.department.filial.models import Filial
 
 # Initialize Faker
 fake = Faker()
 
 # Generate Fake Data
 def generate_fake_data():
-    # Create Stages
+
+
+    for _ in range(5):
+        Filial.objects.create(
+            name=fake.city(),
+            price=fake.random_number(digits=5, fix_len=True),
+        )
+
     for _ in range(10):
         NewLidStages.objects.create(name=fake.word())
         NewOredersStages.objects.create(name=fake.word())
@@ -64,9 +74,9 @@ def generate_fake_data():
             edu_class=fake.random_int(min=1, max=12),
             subject=fake.word(),
             ball=fake.random_int(min=50, max=100),
+            filial=Filial.objects.order_by('?').first(),
             lid_stages=NewLidStages.objects.order_by('?').first(),
             ordered_stages=NewOredersStages.objects.order_by('?').first(),
-            is_archived=fake.boolean(),
         )
 
     # Create Groups

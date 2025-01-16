@@ -6,8 +6,23 @@ from .models import Finance
 
 @receiver(post_save, sender=Finance)
 def on_create(sender, instance: Finance, created, **kwargs):
+    if created :
+        if instance.student:
+            if instance.action == "INCOME":
+                instance.student.balance += instance.amount
+                instance.student.save()
+            else:
+                instance.student.balance -= instance.amount
+                instance.student.save()
 
-    if instance and instance.student:
-        if instance.action == "INCOME":
-            pass
+        if instance.stuff:
+            if instance.action == "EXPENSE" and (instance.kind == "SALARY" or instance.kind == "BONUS"):
+                instance.stuff.balance += instance.amount
+                instance.stuff.save()
+
+
+
+
+
+
 
