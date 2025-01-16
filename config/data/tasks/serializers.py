@@ -1,13 +1,14 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from ..account.models import CustomUser
 from ..tasks.models import Task
 from ..account.serializers import UserListSerializer
 
-User = get_user_model()
+
 
 class TaskSerializer(serializers.ModelSerializer):
-    creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
 
     class Meta:
         model = Task
@@ -21,6 +22,13 @@ class TaskSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+    def to_internal_value(self, data):
+
+        data['creator'] = self.context['request'].user.id
+
+        return super(TaskSerializer, self).to_internal_value(data)
 
     def create(self, validated_data):
         request = self.context['request']

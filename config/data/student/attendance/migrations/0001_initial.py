@@ -3,7 +3,6 @@
 import django.db.models.deletion
 import django.utils.timezone
 import uuid
-from django.conf import settings
 from django.db import migrations, models
 
 
@@ -12,21 +11,24 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('lesson', '0001_initial'),
+        ('new_lid', '0001_initial'),
+        ('student', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Notification',
+            name='Attendance',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('comment', models.TextField(blank=True, null=True)),
-                ('come_from', models.TextField(blank=True, null=True)),
-                ('is_read', models.BooleanField(default=False)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('reason', models.CharField(choices=[('IS_PRESENT', 'Is Present'), ('REASONED', 'Sababli'), ('UNREASONED', 'Sababsiz')], default='UNREASONED', help_text='Attendance reason (Sababli/Sababsiz)', max_length=20)),
+                ('remarks', models.TextField(blank=True, null=True)),
+                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='lesson.lesson')),
+                ('lid', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='new_lid.lid')),
+                ('student', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='student.student')),
             ],
             options={
                 'ordering': ['-created_at'],

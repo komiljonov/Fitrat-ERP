@@ -1,4 +1,5 @@
 from django.db import models
+
 from ...command.models import TimeStampModel
 from ..groups.models import Group
 
@@ -20,6 +21,7 @@ class Lesson(TimeStampModel):
         max_length=20,
     )
     lessons_count = models.IntegerField(default=0)
+
 
     def __str__(self):
         return f"Lesson {self.name} | {self.group}"

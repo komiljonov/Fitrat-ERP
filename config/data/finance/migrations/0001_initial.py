@@ -12,21 +12,23 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('student', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Notification',
+            name='Finance',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('comment', models.TextField(blank=True, null=True)),
-                ('come_from', models.TextField(blank=True, null=True)),
-                ('is_read', models.BooleanField(default=False)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('action', models.CharField(choices=[('INCOME', 'INCOME'), ('EXPENSE', 'EXPENSE')], default='INCOME', max_length=20)),
+                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
+                ('kind', models.CharField(choices=[('COURSE_PAYMENT', 'COURSE_PAYMENT'), ('SALARY', 'SALARY'), ('BONUS', 'BONUS'), ('MONEY_BACK', 'MONEY_BACK'), ('OTHER', 'OTHER')], default='COURSE_PAYMENT', max_length=20)),
+                ('student', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='student.student')),
+                ('stuff', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['-created_at'],

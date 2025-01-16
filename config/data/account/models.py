@@ -25,6 +25,8 @@ class CustomUser(AbstractUser):
     )
     role = models.CharField(choices=ROLE_CHOICES, max_length=20, default="ADMINISTRATOR")
 
+    balance = models.FloatField(default=0)
+
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateField(auto_now=True, null=True, blank=True)
 

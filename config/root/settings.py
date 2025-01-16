@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'data.account',
     'data.stages',
     'data.tasks',
-    'data.finans',
+    'data.finance',
     'data.dubl',
     'data.notifications',
 

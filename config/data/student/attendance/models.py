@@ -25,4 +25,4 @@ class Attendance(TimeStampModel):
     remarks : str = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.lesson} for {self.lid if self.lid.first_name else self.student.first_name} is marked as {self.reason}"
+        return f"{self.lesson} for {self.lid if self.lid else self.student} is marked as {self.reason}"

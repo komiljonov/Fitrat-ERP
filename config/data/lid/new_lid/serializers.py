@@ -1,9 +1,10 @@
-
+from redis.commands.search.reducers import count
 from rest_framework import serializers
 from django.utils.module_loading import import_string
 from rest_framework.generics import CreateAPIView
 
 from .models import Lid
+from icecream import ic
 from ..archived.models import Archived
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
@@ -19,6 +20,7 @@ from ...student.lesson.models import Lesson
 from ...tasks.models import Task
 
 
+
 class LidSerializer(serializers.ModelSerializer):
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
@@ -28,7 +30,8 @@ class LidSerializer(serializers.ModelSerializer):
 
     comments = serializers.SerializerMethodField()
     tasks = serializers.SerializerMethodField()
-
+    group = serializers.SerializerMethodField()
+    lessons_count = serializers.SerializerMethodField()
     class Meta:
         model = Lid
         fields = [
@@ -53,6 +56,8 @@ class LidSerializer(serializers.ModelSerializer):
             "comments",
             "tasks",
             "call_operator",
+            "group",
+            "lessons_count",
         ]
 
     def get_comments(self, obj):
@@ -64,6 +69,19 @@ class LidSerializer(serializers.ModelSerializer):
         tasks = Task.objects.filter(lid=obj)
         TaskSerializer = import_string("data.tasks.serializers.TaskSerializer")
         return TaskSerializer(tasks, many=True).data
+
+    def get_group(self, obj):
+        attendance = Attendance.objects.filter(lid=obj)
+        if attendance.exists():
+            groups = [att.lesson.group for att in attendance]
+            GroupSerializer = import_string("data.student.groups.serializers.GroupSerializer")
+            return GroupSerializer(groups, many=True).data
+        return None
+
+    def get_lessons_count(self, obj):
+        attendance_count = Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
+        return attendance_count
+
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

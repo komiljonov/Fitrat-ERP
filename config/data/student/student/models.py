@@ -44,7 +44,15 @@ class Student(TimeStampModel):
 
     is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
 
-    moderator : "CustomUser" = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, help_text="Moderator for this student")
+    call_operator : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,
+                                                     null=True, blank=True, help_text="Call operator",
+                                                     related_name="student_call_operator")
+
+    balance = models.FloatField(default=0)
+
+    moderator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,
+                                                 blank=True, help_text="Moderator for this student",
+                                                 related_name="student_moderator")
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.new_student_stages} stage"
 

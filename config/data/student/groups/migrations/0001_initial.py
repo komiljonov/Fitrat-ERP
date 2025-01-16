@@ -17,16 +17,19 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Notification',
+            name='Group',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('comment', models.TextField(blank=True, null=True)),
-                ('come_from', models.TextField(blank=True, null=True)),
-                ('is_read', models.BooleanField(default=False)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('name', models.CharField(max_length=100)),
+                ('price_type', models.CharField(choices=[('DAILY', 'Daily payment'), ('MONTHLY', 'Monthly payment')], default='DAILY', max_length=100)),
+                ('price', models.FloatField(blank=True, default=0, null=True)),
+                ('scheduled_day_type', models.CharField(choices=[('EVERYDAY', 'Every day'), ('ODD', 'Toq kunlar'), ('EVEN', 'Juft kunlar')], default='EVERYDAY', max_length=100)),
+                ('started_at', models.DateTimeField(default=django.utils.timezone.now)),
+                ('ended_at', models.DateTimeField(default=django.utils.timezone.now)),
+                ('teacher', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['-created_at'],

@@ -21,5 +21,6 @@ class StudentStagesSerializer(ModelSerializer):
 
 
 class NewStudentStagesSerializer(ModelSerializer):
-    model = NewStudentStages
-    fields = '__all__'
+    class Meta:
+        model = NewStudentStages
+        fields = '__all__'
