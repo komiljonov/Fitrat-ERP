@@ -86,17 +86,15 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class UserListSerializer(ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
-    last_login = serializers.DateTimeField(read_only=True)
     class Meta:
         model = CustomUser
-        fields = ['id','phone',"full_name",'role',"photo","last_login",]
+        fields = ['id','phone',"full_name",'role',"photo",]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['photo'] = FileUploadSerializer(instance.photo).data
         return rep
-    def get_last_login(self, instance):
-        return instance.last_login
+
 
 
 class UserSerializer(ModelSerializer):
