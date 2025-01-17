@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'data.student.attendance',
     'data.comments',
     'data.moderator',
+    'data.upload',
 
     'data.department.filial',
     'data.department.marketing_channel',

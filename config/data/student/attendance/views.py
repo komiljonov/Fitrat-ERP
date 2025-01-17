@@ -1,10 +1,14 @@
-from django.shortcuts import render
-from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView,ListAPIView
+from rest_framework.exceptions import NotFound
+from rest_framework.generics import (ListCreateAPIView,
+                                     RetrieveUpdateDestroyAPIView,
+                                     ListAPIView)
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Attendance
 from .serializers import AttendanceSerializer
+from ..lesson.models import Lesson
 from ..student.models import Student
+from ...account.permission import RoleBasedPermission
 from ...lid.new_lid.models import Lid
 
 
@@ -20,22 +24,32 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class StudentAttendanceList(ListAPIView):
+class AttendanceListView(ListAPIView):
     serializer_class = AttendanceSerializer
 
-    def get_queryset(self,*args,**kwargs):
-        id = self.kwargs['pk']
-        student = Student.objects.get(id=id)
+    def get_queryset(self, *args, **kwargs):
+        id = self.kwargs.get('pk')
+
+        lid = Lid.objects.filter(id=id).first()
+        if lid:
+            return Attendance.objects.filter(lid=lid)
+
+        student = Student.objects.filter(id=id).first()
         if student:
             return Attendance.objects.filter(student=student)
-        return Attendance.objects.none()
 
-class LidAttendanceList(ListAPIView):
+        raise NotFound("No attendance records found for the given ID.")
+
+class LessonAttendanceList(ListAPIView):
     serializer_class = AttendanceSerializer
+    queryset = Attendance.objects.all()
+    permission_classes = [RoleBasedPermission]
 
-    def get_queryset(self,*args,**kwargs):
-        id = self.kwargs['pk']
-        lead = Lid.objects.get(id=id)
-        if lead:
-            return Attendance.objects.filter(lid=lead)
+    def get_queryset(self, *args, **kwargs):
+        id = self.kwargs.get('pk')
+
+        lesson = Lesson.objects.filter(id=id).first()
+        if lesson:
+            return Attendance.objects.filter(lesson=lesson)
+
         return Attendance.objects.none()

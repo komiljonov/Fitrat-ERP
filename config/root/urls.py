@@ -62,6 +62,8 @@ urlpatterns = [
 
     path('finance/', include('data.finance.urls')),
 
+    path('notifications/', include('data.notifications.urls')),
+
 
 
     path("docs<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"),

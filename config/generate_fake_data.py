@@ -16,6 +16,8 @@ from data.student.student.models import Student
 from data.student.groups.models import Group
 from data.account.models import CustomUser
 from data.department.filial.models import Filial
+from data.student.attendance.models import Attendance
+from data.student.lesson.models import Lesson
 
 # Initialize Faker
 fake = Faker()
@@ -42,7 +44,7 @@ def generate_fake_data():
             full_name=fake.name(),
             phone=fake.phone_number(),
             role=random.choice([role[0] for role in CustomUser.ROLE_CHOICES]),
-            balance=round(random.uniform(1000, 5000), 2),
+            balance=round(random.uniform(1000, 5000000), 2000),
         )
 
     # Create Students
@@ -89,6 +91,26 @@ def generate_fake_data():
             scheduled_day_type=random.choice(['EVERYDAY', 'ODD', 'EVEN']),
             started_at=fake.date_this_year(before_today=True, after_today=False),
             ended_at=fake.date_this_year(before_today=False, after_today=True),
+        )
+
+    for _ in range(10):
+        Lesson.objects.create(
+            name=f"Lesson {fake.word()}",
+            subject=fake.word(),
+            group=Group.objects.order_by('?').first(),
+            comment=fake.text(),
+            lesson_status=random.choice([
+                "ACTIVE","FINISHED"
+            ]),
+            lessons_count=fake.random_int(min=1, max=12),
+        )
+
+    for _ in range(50):
+        Attendance.objects.create(
+            lesson=Lesson.objects.order_by('?').first(),
+            lid=Lid.objects.order_by('?').first(),
+            reason=random.choice(["IS_PRESENT","REASONED","UNREASONED"]),
+            remarks=fake.boolean(chance_of_getting_true=True)
         )
 
     print("Fake data generation completed!")

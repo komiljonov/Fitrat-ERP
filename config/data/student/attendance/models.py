@@ -15,6 +15,7 @@ class Attendance(TimeStampModel):
         ('IS_PRESENT', 'Is Present'),
         ('REASONED', 'Sababli'),
         ('UNREASONED', 'Sababsiz'),
+        ('HOLIDAY','Dam olish kuni'),
     ]
     reason = models.CharField(
         max_length=20,

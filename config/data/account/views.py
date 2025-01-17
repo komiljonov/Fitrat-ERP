@@ -1,6 +1,6 @@
 # Create your views here.
 
-from django.contrib.auth import get_user_model
+from django.views.decorators.csrf import csrf_exempt
 from passlib.context import CryptContext
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotFound
@@ -11,38 +11,32 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from django.views.decorators.csrf import csrf_exempt
 
+from .models import CustomUser
 from .serializers import UserCreateSerializer, UserUpdateSerializer
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
 
-User = get_user_model()
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
 
 
 class RegisterAPIView(CreateAPIView):
     serializer_class = UserCreateSerializer
+    permission_classes = [IsAuthenticated]  # Only authenticated users can create new users
 
     def create(self, request, *args, **kwargs):
-        # Validate incoming data using the serializer
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Extract validated data
-        phone = serializer.validated_data['phone']
-        password = serializer.validated_data['password']
-
         # Check if the phone number already exists
-        if User.objects.filter(phone=phone).exists():
+        phone = serializer.validated_data['phone']
+        if CustomUser.objects.filter(phone=phone).exists():
             return Response({'success': False, 'message': 'This phone number is already registered.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # Hash the password before creating the user
-        user = User.objects.create(
-            phone=phone,
-        )
-        user.set_password(password)  # Hash the password
-        user.save()
+        # Save the user (this calls the `create` method of the serializer)
+        user = serializer.save()
 
         return Response({'success': True, 'message': 'User created successfully.'}, status=status.HTTP_201_CREATED)
 
@@ -50,7 +44,7 @@ class RegisterAPIView(CreateAPIView):
 class UserList(ListAPIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
-    queryset = User.objects.all().order_by('id')
+    queryset = CustomUser.objects.all().order_by('id')
 
     serializer_class = UserListSerializer
 
@@ -114,8 +108,8 @@ class UserInfo(APIView):
 
     def get(self, request, pk=None):
         try:
-            user = User.objects.get(id=pk)
-        except User.DoesNotExist:
+            user = CustomUser.objects.get(id=pk)
+        except CustomUser.DoesNotExist:
             raise NotFound(detail="User not found.")
 
         # Serialize the user data

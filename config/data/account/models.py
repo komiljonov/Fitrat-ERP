@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from ..account.managers import UserManager
-
+from ..upload.models import File
 
 
 class CustomUser(AbstractUser):
@@ -13,7 +13,7 @@ class CustomUser(AbstractUser):
     full_name = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=255, unique=True, blank=True, null=True)
 
-    photo = models.ImageField(upload_to="images/", blank=True, null=True)
+    photo : File = models.ForeignKey('upload.File', on_delete=models.SET_NULL, blank=True, null=True)
 
     ROLE_CHOICES = (
         ("ADMINISTRATOR", "Administrator"),

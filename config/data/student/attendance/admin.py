@@ -1,3 +1,11 @@
 from django.contrib import admin
 
+from .models import Attendance
+
+
 # Register your models here.
+@admin.register(Attendance)
+class AttendanceAdmin(admin.ModelAdmin):
+    list_display = ('lesson', 'lid','student','reason')
+    list_filter = ('lesson','reason')
+    search_fields = ('lesson','reason')

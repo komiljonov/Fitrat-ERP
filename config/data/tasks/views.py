@@ -12,14 +12,16 @@ from ..tasks.serializers import TaskSerializer
 class TaskListCreateView(ListCreateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]  # Role Director or Administrator
+    permission_classes = [IsAuthenticated]
 
     filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
     search_fields = ("creator", "performer","task","comment","date_of_expired","status")
     ordering_fields = ("date_of_expired",)
     filterset_fields = ("status",)
 
-
+    def get_queryset(self):
+        queryset = Task.objects.filter(creator=self.request.user).order_by("-date_of_expired")
+        return queryset
 
 
 class TaskRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
