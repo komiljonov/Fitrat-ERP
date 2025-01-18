@@ -6,6 +6,7 @@ from rest_framework.generics import CreateAPIView
 from .models import Lid
 from icecream import ic
 from ..archived.models import Archived
+from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
@@ -13,7 +14,7 @@ from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...stages.models import NewLidStages
 from ...stages.serializers import NewLidStageSerializer, NewOrderedLidStagesSerializer
-from ...comments.models import Comment, User
+from ...comments.models import Comment
 from ...student.attendance.models import Attendance
 from ...student.groups.models import Group
 from ...student.lesson.models import Lesson
@@ -26,7 +27,7 @@ class LidSerializer(serializers.ModelSerializer):
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
     lid_stages = serializers.PrimaryKeyRelatedField(queryset=NewLidStages.objects.all(), allow_null=True)
     ordered_stages = serializers.PrimaryKeyRelatedField(queryset=NewLidStages.objects.all(), allow_null=True)
-    call_operator  = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role='CALL_OPERATOR'), allow_null=True)
+    call_operator  = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.filter(role='CALL_OPERATOR'), allow_null=True)
 
     comments = serializers.SerializerMethodField()
     tasks = serializers.SerializerMethodField()
