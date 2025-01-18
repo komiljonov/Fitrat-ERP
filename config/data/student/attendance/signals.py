@@ -63,5 +63,6 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                             f"qoldirilganga o'zgartirildi. E'tiborli bo'ling, bu dars uchun to'langan to'lov qaytarilishiga sabab bo'ldi.",
                     come_from=instance.student,
                 )
+
             else:
                 print("Attendance does not have a related student.")
