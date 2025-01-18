@@ -50,9 +50,20 @@ class Student(TimeStampModel):
 
     balance = models.FloatField(default=0)
 
+    balance_status = models.CharField(
+        choices=[
+            ('ACTIVE','ACTIVE'),
+            ('INACTIVE','INACTIVE'),
+        ],
+        default='INACTIVE',
+        max_length=100,
+        help_text="Balance status",
+    )
+
     moderator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,
                                                  blank=True, help_text="Moderator for this student",
                                                  related_name="student_moderator")
+
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.new_student_stages} stage"
 

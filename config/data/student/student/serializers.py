@@ -42,6 +42,8 @@ class StudentSerializer(serializers.ModelSerializer):
 
             "group",
 
+            'balance_status',
+
             "is_archived",
         ]
 

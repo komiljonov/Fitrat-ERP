@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.template.context_processors import request
 
 from ..new_lid.models import Lid
+from ...student.attendance.models import Attendance
 from ...student.student.models import Student
 from ...stages.models import NewStudentStages
 
@@ -57,10 +58,22 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.moderator = instance.moderator
                 student.save()
 
+
+
+            Attendance.objects.filter(lid=instance).update(student=student)
+            Attendance.objects.filter(lid=instance).update(lid=None)
+            # Save each Attendance object to persist changes
+            for attendance in Attendance.objects.filter(lid=instance):
+                attendance.save()
+
             post_save.disconnect(on_details_create, sender=Lid)
             instance.is_archived = True
             instance.save()
+
+
+
             post_save.connect(on_details_create, sender=Lid)
+
 
         else:
             if instance.filial is None:
