@@ -48,7 +48,7 @@ urlpatterns = [
     path('marketing/', include("data.department.marketing_channel.urls")),
 
     path('lid/', include("data.lid.new_lid.urls")),
-    path('archived/', include('data.lid.archived.urls')),
+    # path('archived/', include('data.lid.archived.urls')),
 
     path('groups/', include('data.student.groups.urls')),
     path('student/',include('data.student.student.urls')),
@@ -58,7 +58,7 @@ urlpatterns = [
 
     path('moderator/', include('data.moderator.urls')),
 
-    path('teacher/', include('data.teacher.urls')),
+    path('teacher/', include('data.teachers.teacher.urls')),
 
     path('finance/', include('data.finance.urls')),
 

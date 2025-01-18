@@ -2,11 +2,11 @@ from django.db import models
 
 from ...command.models import TimeStampModel
 from ..groups.models import Group
-
+from ..subject.models import Subject
 
 class Lesson(TimeStampModel):
     name = models.CharField(max_length=100,)
-    subject = models.CharField(max_length=100)
+    subject : 'Subject' = models.ForeignKey('subject.Subject', on_delete=models.SET_NULL,null=True,blank=True)
 
     group : "Group" = models.ForeignKey("groups.Group", on_delete=models.CASCADE,
                                       related_name="group")

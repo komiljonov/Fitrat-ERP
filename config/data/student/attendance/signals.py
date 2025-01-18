@@ -66,3 +66,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
             else:
                 print("Attendance does not have a related student.")
+
+        # if instance.reason == "HOLIDAY" and instance.lesson.group.price_type == "DAILY":
+        #     instance.student.balance += instance.lesson.group.price
+        #     instance.student.save()

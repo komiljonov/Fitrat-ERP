@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from .serializers import TeacherSerializer
 
-from ..account.models import CustomUser
+from ...account.models import CustomUser
 
 class TeacherList(ListCreateAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
