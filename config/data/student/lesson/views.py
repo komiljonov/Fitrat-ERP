@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
 from rest_framework.filters import SearchFilter,OrderingFilter
 
 from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
@@ -24,6 +25,8 @@ class LessonDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated]
 
+
+
 class LessonNoPG(ListAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
@@ -31,3 +34,14 @@ class LessonNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+class LessonSchedule(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    def post(self, request):
+        serializer = LessonSerializer(data=request.data)
+        if serializer.is_valid():
+            lesson = serializer.save()
+            return Response({"message": "Lesson created successfully.", "lesson_id": lesson.id})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

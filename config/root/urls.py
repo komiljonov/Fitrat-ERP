@@ -54,6 +54,7 @@ urlpatterns = [
     path('student/',include('data.student.student.urls')),
     path('lesson/',include('data.student.lesson.urls')),
     path('attendance/', include('data.student.attendance.urls')),
+    path('subjects/', include('data.student.subject.urls')),
     path('stages/',include("data.stages.urls")),
 
     path('moderator/', include('data.moderator.urls')),

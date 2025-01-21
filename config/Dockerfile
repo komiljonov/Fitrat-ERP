@@ -11,5 +11,6 @@ COPY r.txt .
 
 RUN pip install -r r.txt
 
+RUN pip install celery
 
 COPY . /usr/src/app/
