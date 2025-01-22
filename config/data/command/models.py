@@ -4,12 +4,13 @@ from django.db import models
 from django.utils import timezone
 from django.contrib import admin
 
-
-
+# from data.department.filial.models import Filial
 
 
 class TimeStampModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+
+    # filial : "Filial" = models.ForeignKey('filial.Filial', on_delete=models.SET_NULL)
 
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)

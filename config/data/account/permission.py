@@ -105,4 +105,16 @@ class RoleBasedPermission(BasePermission):
         return True
 
 
+from rest_framework.exceptions import PermissionDenied
 
+class FilialRestrictedQuerySetMixin:
+    def get_queryset(self):
+        # Get the queryset of the current view
+        queryset = super().get_queryset()
+
+        # Ensure the user is associated with a filial
+        if not hasattr(self.request.user, 'filial') or not self.request.user.filial:
+            raise PermissionDenied("You are not associated with any filial.")
+
+        # Filter queryset by the user's filial
+        return queryset.filter(filial=self.request.user.filial)
