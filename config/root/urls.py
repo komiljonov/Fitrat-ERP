@@ -51,6 +51,8 @@ urlpatterns = [
     # path('archived/', include('data.lid.archived.urls')),
 
     path('groups/', include('data.student.groups.urls')),
+    path('add-group/', include('data.student.studentgroup.urls')),
+
     path('students/',include('data.student.student.urls')),
     path('lessons/',include('data.student.lesson.urls')),
     path('attendances/', include('data.student.attendance.urls')),

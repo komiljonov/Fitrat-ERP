@@ -16,7 +16,6 @@ class DaySerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all())
     level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all())
     scheduled_day_type = DaySerializer(many=True)
     class Meta:
@@ -24,7 +23,6 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
-            'subject',
             'level',
             'teacher',
             'status',
@@ -43,7 +41,6 @@ class GroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['teacher'] = UserSerializer(instance.teacher).data
-        rep['subject'] = SubjectSerializer(instance.subject).data
         rep['level'] = LevelSerializer(instance.level).data
         return rep
 

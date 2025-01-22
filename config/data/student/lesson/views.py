@@ -46,3 +46,11 @@ class LessonSchedule(ListAPIView):
             lesson = serializer.save()
             return Response({"message": "Lesson created successfully.", "lesson_id": lesson.id})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class AllLessonsView(ListAPIView):
+    queryset = Lesson.objects.all().order_by("day", "start_time")
+    serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticated]
+

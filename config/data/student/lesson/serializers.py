@@ -12,6 +12,9 @@ from ...lid.new_lid.serializers import LidSerializer
 class LessonSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
     attendance = serializers.SerializerMethodField()
+
+    teacher = serializers.StringRelatedField(source="group.teacher")
+    room = serializers.StringRelatedField(source="group.room_number")
     class Meta:
         model = Lesson
         fields = [
@@ -20,6 +23,8 @@ class LessonSerializer(serializers.ModelSerializer):
             "subject",
             'group',
             'comment',
+            'teacher',
+            'room',
             'lesson_status',
             'lessons_count',
             'attendance',
@@ -36,6 +41,9 @@ class LessonSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['group'] = GroupSerializer(instance.group).data
         return rep
+
+
+
 
 
 class LessonScheduleSerializer(serializers.ModelSerializer):

@@ -3,7 +3,7 @@ import django
 import random
 from faker import Faker
 
-from data.department.marketing_channel.models import MarketingChannel
+
 
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")  # Replace 'config.settings' with your actual settings path
@@ -19,7 +19,7 @@ from data.department.filial.models import Filial
 from data.student.attendance.models import Attendance
 from data.student.lesson.models import Lesson
 from data.student.subject.models import Subject
-
+from data.department.marketing_channel.models import MarketingChannel
 # Initialize Faker
 fake = Faker()
 

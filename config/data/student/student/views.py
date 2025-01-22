@@ -7,6 +7,10 @@ from rest_framework.response import Response
 
 from .models import Student
 from .serializers import StudentSerializer
+from ..groups.models import Group
+from ..lesson.models import Lesson
+from ..lesson.serializers import LessonSerializer
+from ..studentgroup.models import StudentGroup
 
 
 class StudentListView(ListCreateAPIView):
@@ -35,5 +39,13 @@ class StudentListNoPG(ListAPIView):
 
 
 
+class StudentScheduleView(ListAPIView):
+    serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        # Fetch all groups for the student with the given primary key (pk)
+        student_groups = StudentGroup.objects.filter(student_id=self.kwargs['pk']).values_list('group_id', flat=True)
+        # Return all lessons for the student's groups, ordered by day and start time
+        return Lesson.objects.filter(group_id__in=student_groups).order_by("day", "start_time")
 

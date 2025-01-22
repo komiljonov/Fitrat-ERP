@@ -61,6 +61,7 @@ INSTALLED_APPS = [
 
     'data.student.student',
     'data.student.groups',
+    'data.student.studentgroup',
     'data.student.lesson',
     'data.student.subject',
     'data.student.attendance',

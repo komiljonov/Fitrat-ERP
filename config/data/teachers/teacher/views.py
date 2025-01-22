@@ -7,6 +7,9 @@ from rest_framework.response import Response
 from .serializers import TeacherSerializer
 
 from ...account.models import CustomUser
+from ...student.lesson.models import Lesson
+from ...student.lesson.serializers import LessonSerializer
+
 
 class TeacherList(ListCreateAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
@@ -25,3 +28,13 @@ class TeachersNoPGList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class TeacherScheduleView(ListAPIView):
+    serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Filter lessons for the logged-in teacher
+        return Lesson.objects.filter(group__teacher=self.request.user).order_by("day", "start_time")
+

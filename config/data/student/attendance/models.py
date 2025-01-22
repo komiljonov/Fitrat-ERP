@@ -27,3 +27,6 @@ class Attendance(TimeStampModel):
 
     def __str__(self):
         return f"{self.lesson} for {self.lid if self.lid else self.student} is marked as {self.reason}"
+
+
+

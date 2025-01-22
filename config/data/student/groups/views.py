@@ -21,6 +21,7 @@ class StudentGroupsView(ListCreateAPIView):
     filterset_fields = ('name','teacher','scheduled_day_type','price_type')
 
 
+
 class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     permission_classes = [IsAuthenticated]
