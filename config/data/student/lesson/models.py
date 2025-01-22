@@ -11,7 +11,7 @@ class Lesson(TimeStampModel):
     group: "Group" = models.ForeignKey(
         "groups.Group", on_delete=models.CASCADE, related_name="lessons"
     )
-    room_number = models.CharField(max_length=50, null=True, blank=True, help_text="lesson's room")  # Add room_number field
+
     comment = models.TextField(null=True, blank=True)
     lesson_status = models.CharField(
         choices=[
@@ -28,4 +28,4 @@ class Lesson(TimeStampModel):
     day = models.DateField(null=True, blank=True)  # Specific day of the lesson
 
     def __str__(self):
-        return f"Lesson {self.name} | {self.group} | Room {self.room_number}"
+        return f"Lesson {self.name} | {self.group} | Room {self.group.room_number}"

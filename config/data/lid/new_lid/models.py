@@ -7,7 +7,6 @@ from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...stages.models import NewLidStages, NewOredersStages
 from ...account.models import CustomUser
-from ...student.lesson.models import Lesson
 
 
 class Lid(TimeStampModel):

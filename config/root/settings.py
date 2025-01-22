@@ -33,13 +33,15 @@ DEBUG = True
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,[::1]").split(",")
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:8000"
+    "http://127.0.0.1:8000",
+    'http://localhost:3000',
 ]
 #
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -62,6 +64,7 @@ INSTALLED_APPS = [
     'data.student.lesson',
     'data.student.subject',
     'data.student.attendance',
+    'data.student.course',
     'data.comments',
     'data.moderator',
     'data.upload',
@@ -202,10 +205,6 @@ AUTH_USER_MODEL = 'account.CustomUser'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Frontend domeni
     "http://127.0.0.1:3000",
-    "http://16.171.242.109",
-    'https://logistics-dashboard-peach.vercel.app',
-    "https://megastroy.sector-soft.ru",
-    "https://api.megastroy.sector-soft.ru",
 ]
 
 CORS_ALLOW_METHODS = (

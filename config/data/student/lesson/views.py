@@ -8,7 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Lesson
-from .serializers import LessonSerializer
+from .serializers import LessonSerializer, LessonScheduleSerializer
+
 
 class LessonList(ListCreateAPIView):
     queryset = Lesson.objects.all()
@@ -38,9 +39,9 @@ class LessonNoPG(ListAPIView):
 class LessonSchedule(ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
+    serializer_class = LessonScheduleSerializer
     def post(self, request):
-        serializer = LessonSerializer(data=request.data)
+        serializer = LessonScheduleSerializer(data=request.data)
         if serializer.is_valid():
             lesson = serializer.save()
             return Response({"message": "Lesson created successfully.", "lesson_id": lesson.id})

@@ -43,4 +43,4 @@ class Theme(TimeStampModel):
     default='HOMEWORK',
     max_length=100,)
     def __str__(self):
-        return self.title
+        return f"{self.subject} - {self.title}  {self.type}"

@@ -3,7 +3,7 @@ import django
 import random
 from faker import Faker
 
-
+from data.department.marketing_channel.models import MarketingChannel
 
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")  # Replace 'config.settings' with your actual settings path
@@ -13,11 +13,12 @@ django.setup()
 from data.stages.models import NewLidStages, NewOredersStages, NewStudentStages, StudentStages
 from data.lid.new_lid.models import Lid
 from data.student.student.models import Student
-from data.student.groups.models import Group
+from data.student.groups.models import Group, Day
 from data.account.models import CustomUser
 from data.department.filial.models import Filial
 from data.student.attendance.models import Attendance
 from data.student.lesson.models import Lesson
+from data.student.subject.models import Subject
 
 # Initialize Faker
 fake = Faker()
@@ -32,11 +33,39 @@ def generate_fake_data():
             price=fake.random_number(digits=5, fix_len=True),
         )
 
-    for _ in range(10):
-        NewLidStages.objects.create(name=fake.word())
-        NewOredersStages.objects.create(name=fake.word())
-        NewStudentStages.objects.create(name=fake.word())
-        StudentStages.objects.create(name=fake.word())
+    # Create NewLidStages objects
+    NewLidStages.objects.create(name="NEW_LEAD")
+    NewLidStages.objects.create(name="JARAYONDA")
+    NewLidStages.objects.create(name="RAD ETDI")
+
+    # Create NewOredersStages objects
+    NewOredersStages.objects.create(name="FILIAL_BIRIKTIRILDI")
+    NewOredersStages.objects.create(name="BIRINCHI SINOV DARSIGA YOZILDI")
+    NewOredersStages.objects.create(name="SINOV DARSIGA KELMADI")
+    NewOredersStages.objects.create(name="RAD ETDI")
+
+    # Create NewStudentStages objects
+    NewStudentStages.objects.create(name="TO'LOV KUTILMOQDA")
+    NewStudentStages.objects.create(name="RAD ETDI")
+
+    # Create StudentStages objects
+    StudentStages.objects.create(name="ACTIVE TALABA")
+    StudentStages.objects.create(name="QARIZDOR TALABA")
+    StudentStages.objects.create(name="DARSNI TUXTATGAN")
+    StudentStages.objects.create(name="KURSNI TUGATGAN")
+
+    marketing  = ["Instagram","Telegram","Facebook ADD","Telegram bot","Fliyer"]
+    for i in marketing:
+        MarketingChannel.objects.create(
+            name = i,
+            type = f"{i} {fake.words()}",
+        )
+
+    day = ['Dushanba','Seshanba','Chorshanba',"Payshanba","Juma","Shanba","Yakshanba"]
+    for i in day:
+        Day.objects.create(
+            name=i,
+        )
 
     # Create Staff
     for _ in range(10):
@@ -44,7 +73,7 @@ def generate_fake_data():
             full_name=fake.name(),
             phone=fake.phone_number(),
             role=random.choice([role[0] for role in CustomUser.ROLE_CHOICES]),
-            balance=round(random.uniform(1000, 5000000), 2000),
+            balance=round(random.uniform(100000, 5000000), 100000),
         )
 
     # Create Students
@@ -59,6 +88,7 @@ def generate_fake_data():
             subject=fake.word(),
             ball=fake.random_int(min=50, max=100),
             balance=round(random.uniform(100, 1000), 2),
+            marketing_channel = MarketingChannel.objects.order_by("?").first(),
         )
         student.new_student_stages = NewStudentStages.objects.order_by('?').first()
         student.active_student_stages = StudentStages.objects.order_by('?').first()
@@ -77,26 +107,32 @@ def generate_fake_data():
             subject=fake.word(),
             ball=fake.random_int(min=50, max=100),
             filial=Filial.objects.order_by('?').first(),
+            call_operator=CustomUser.objects.filter(role="CALL_OPERATOR").order_by('?').first(),
             lid_stages=NewLidStages.objects.order_by('?').first(),
             ordered_stages=NewOredersStages.objects.order_by('?').first(),
+            marketing_channel=MarketingChannel.objects.order_by("?").first(),
         )
 
-    # Create Groups
-    for _ in range(5):
-        Group.objects.create(
-            name=f"Group {fake.word()}",
-            teacher=CustomUser.objects.filter(role="TEACHER").order_by('?').first(),
-            price_type=random.choice(['DAILY', 'MONTHLY']),
-            price=round(random.uniform(100, 500), 2),
-            scheduled_day_type=random.choice(['EVERYDAY', 'ODD', 'EVEN']),
-            started_at=fake.date_this_year(before_today=True, after_today=False),
-            ended_at=fake.date_this_year(before_today=False, after_today=True),
-        )
+    # # Create Groups
+    # for _ in range(5):
+    #     # Create a Group instance
+    #     group = Group.objects.create(
+    #         name=f"Group {random.randint(1, 100)}",
+    #         teacher=CustomUser.objects.filter(role="TEACHER").order_by('?').first(),
+    #         price_type=random.choice(['DAILY', 'MONTHLY']),
+    #         price=round(random.uniform(100, 500), 2),
+    #         started_at=fake.date_time_this_year(before_now=True, after_now=False),  # Ensures a datetime object
+    #         ended_at=fake.date_time_this_year(before_now=False, after_now=True),  # Ensures a datetime object
+    #     )
+    #
+    #     # Assign random days to the scheduled_day_type field
+    #     random_days = Day.objects.order_by('?')[:3]  # Select 3 random days
+    #     group.scheduled_day_type.set(random_days)
 
     for _ in range(10):
         Lesson.objects.create(
             name=f"Lesson {fake.word()}",
-            subject=fake.word(),
+            subject=Subject.objects.order_by('?').first(),
             group=Group.objects.order_by('?').first(),
             comment=fake.text(),
             lesson_status=random.choice([

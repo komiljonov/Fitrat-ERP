@@ -39,20 +39,21 @@ class LessonSerializer(serializers.ModelSerializer):
 
 
 class LessonScheduleSerializer(serializers.ModelSerializer):
-    group_id = serializers.IntegerField(write_only=True)
-    subject_id = serializers.IntegerField(write_only=True)
+    group_id = serializers.UUIDField(write_only=True)
+    subject_id = serializers.UUIDField(write_only=True)
 
     class Meta:
         model = Lesson
         fields = [
-            'id', 'name', 'group_id', 'subject_id', 'room_number',
+            'id', 'name', 'group_id', 'subject_id',
             'day', 'start_time', 'end_time', 'comment', 'lesson_status', 'lessons_count'
         ]
         read_only_fields = ['id', 'lesson_status', 'lessons_count']
 
     def validate(self, data):
         group_id = data.get('group_id')
-        room_number = data.get('room_number')
+        group = Group.objects.get(id=group_id)
+        room_number = group.room_number
         day = data.get('day')
         start_time = data.get('start_time')
         end_time = data.get('end_time')

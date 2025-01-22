@@ -1,17 +1,24 @@
 from rest_framework import serializers
 
 from .lesson_date_calculator import calculate_lessons
-from .models import Group, Subject, Level
+from .models import Group, Subject, Level, Day
 from ..subject.serializers import SubjectSerializer, LevelSerializer
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
+
+
+class DaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Day
+        fields = ["id","name",]
+
 
 
 class GroupSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all())
     level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all())
-
+    scheduled_day_type = DaySerializer(many=True)
     class Meta:
         model = Group
         fields = [
