@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'data.student.subject',
     'data.student.attendance',
     'data.student.course',
+    'data.student.quiz',
     'data.comments',
     'data.moderator',
     'data.upload',
