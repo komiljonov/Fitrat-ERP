@@ -9,9 +9,10 @@ from rest_framework.response import Response
 from .serializers import StudentGroupSerializer
 
 from .models import StudentGroup
+from ...account.permission import FilialRestrictedQuerySetMixin
 
 
-class StudentGroupList(ListCreateAPIView):
+class StudentGroupList(FilialRestrictedQuerySetMixin,ListCreateAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentGroupSerializer
     permission_classes = [IsAuthenticated]
@@ -28,7 +29,7 @@ class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class StudentGroupNopg(ListAPIView):
+class StudentGroupNopg(FilialRestrictedQuerySetMixin,ListAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentGroupSerializer
     permission_classes = [IsAuthenticated]

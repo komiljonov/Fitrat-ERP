@@ -5,8 +5,6 @@ from .models import Lesson
 from ..attendance.models import Attendance
 from ..groups.models import Group
 from ..groups.serializers import GroupSerializer
-from ...lid.new_lid.models import Lid
-from ...lid.new_lid.serializers import LidSerializer
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -15,6 +13,7 @@ class LessonSerializer(serializers.ModelSerializer):
 
     teacher = serializers.StringRelatedField(source="group.teacher")
     room = serializers.StringRelatedField(source="group.room_number")
+
     class Meta:
         model = Lesson
         fields = [
@@ -41,9 +40,6 @@ class LessonSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['group'] = GroupSerializer(instance.group).data
         return rep
-
-
-
 
 
 class LessonScheduleSerializer(serializers.ModelSerializer):
@@ -75,10 +71,10 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
 
         # Check for scheduling conflicts
         if Lesson.objects.filter(
-            room_number=room_number,
-            day=day,
-            start_time__lt=end_time,  # Overlap: Starts before another lesson ends
-            end_time__gt=start_time   # Overlap: Ends after another lesson starts
+                room_number=room_number,
+                day=day,
+                start_time__lt=end_time,  # Overlap: Starts before another lesson ends
+                end_time__gt=start_time  # Overlap: Ends after another lesson starts
         ).exists():
             raise serializers.ValidationError({"schedule": "Conflict detected with an existing lesson."})
 

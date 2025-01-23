@@ -6,8 +6,8 @@ from rest_framework.response import Response
 
 from .models import Finance
 from .serializers import FinanceSerializer
-from ..account.models import CustomUser
-from ..student.student.models import Student
+from data.account.models import CustomUser
+from data.student.student.models import Student
 
 
 class FinanceListAPIView(ListCreateAPIView):

@@ -1,8 +1,16 @@
 from django.db import models
-from ...command.models import TimeStampModel
-class Filial(TimeStampModel):
+
+
+class Filial(models.Model):
     name = models.CharField(max_length=100)
-    price = models.FloatField(null=True, blank=True)
+
+    latitude = models.FloatField(default=0.0)
+    longitude = models.FloatField(default=0.0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
     def __str__(self):
         return self.name
+

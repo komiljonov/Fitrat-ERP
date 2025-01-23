@@ -3,9 +3,9 @@ from django.db.models import Sum
 from rest_framework import serializers
 
 from .models import Finance
-from ..account.models import CustomUser
-from ..account.serializers import UserListSerializer
-from ..student.student.models import Student
+from data.account.models import CustomUser
+from data.account.serializers import UserListSerializer
+from data.student.student.models import Student
 
 
 class FinanceSerializer(serializers.ModelSerializer):

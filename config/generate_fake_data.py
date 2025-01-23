@@ -30,7 +30,6 @@ def generate_fake_data():
     for _ in range(5):
         Filial.objects.create(
             name=fake.city(),
-            price=fake.random_number(digits=5, fix_len=True),
         )
 
     # Create NewLidStages objects

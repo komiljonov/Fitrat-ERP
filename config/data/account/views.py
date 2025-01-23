@@ -13,6 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import CustomUser
+from .permission import FilialRestrictedQuerySetMixin
 from .serializers import UserCreateSerializer, UserUpdateSerializer
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
 
@@ -41,7 +42,7 @@ class RegisterAPIView(CreateAPIView):
         return Response({'success': True, 'message': 'User created successfully.'}, status=status.HTTP_201_CREATED)
 
 
-class UserList(ListAPIView):
+class UserList(FilialRestrictedQuerySetMixin,ListAPIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
     queryset = CustomUser.objects.all().order_by('id')

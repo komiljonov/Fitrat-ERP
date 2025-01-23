@@ -35,6 +35,7 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,[::1]").spl
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     'http://localhost:3000',
+    'https://api.fitrat.sector-soft.ru',
 ]
 #
 
@@ -53,7 +54,8 @@ INSTALLED_APPS = [
     'data.account',
     'data.stages',
     'data.tasks',
-    'data.finance',
+    'data.finances.finance',
+    'data.finances.compensation',
     'data.notifications',
 
     'data.lid.archived',
@@ -206,6 +208,7 @@ AUTH_USER_MODEL = 'account.CustomUser'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Frontend domeni
     "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
 ]
 
 CORS_ALLOW_METHODS = (

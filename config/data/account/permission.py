@@ -1,21 +1,10 @@
 from django.contrib.auth.backends import BaseBackend
-from rest_framework.permissions import BasePermission, DjangoModelPermissions
-
-from ..account.models import CustomUser
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
-from .models import CustomUser
-from ..student.student.models import Student
-from ..lid.new_lid.models import Lid
 
-# from .models import UserRole
-#
-# class IsAdminPermission(BasePermission):
-#     def has_permission(self, request, view):
-#         try:
-#             admin_role = UserRole.objects.get(user=request.user).role.name
-#         except UserRole.DoesNotExist:
-#             return False
-#         return admin_role.lower() == "admin"
+from .models import CustomUser
+from ..lid.new_lid.models import Lid
+from ..student.student.models import Student
 
 
 class PhoneAuthBackend(BaseBackend):
@@ -39,8 +28,11 @@ class PhoneAuthBackend(BaseBackend):
             return None
 
 
-
 class RoleBasedPermission(BasePermission):
+    """
+    Custom permission class to handle role-based access control.
+    """
+
     def has_permission(self, request, view):
         user = request.user
 
@@ -48,24 +40,26 @@ class RoleBasedPermission(BasePermission):
         if not user.is_authenticated:
             return False
 
-        # Handle views without the `action` attribute
+        # Determine the action being performed
         view_action = getattr(view, "action", None)
 
         # Administrator Permissions
         if user.role == "ADMINISTRATOR":
             if view_action in ["create", "destroy"]:
-                if "role" in request.data and request.data["role"] in ["ADMINISTRATOR", "DIRECTOR"]:
+                # Restrict creating or deleting ADMINISTRATOR/DIRECTOR roles
+                restricted_roles = ["ADMINISTRATOR", "DIRECTOR"]
+                if "role" in request.data and request.data["role"] in restricted_roles:
                     return False
-            return True
+            return True  # Full access for administrators
 
         # Director Permissions
         if user.role == "DIRECTOR":
-            return True
+            return True  # Directors have full access
 
         # Moderator Permissions
         if user.role == "MODERATOR":
             if view_action in ["retrieve", "update", "partial_update"]:
-                # Check if the moderator is assigned to the student
+                # Moderators can only access students they are assigned to
                 student_id = view.kwargs.get("pk")
                 if student_id:
                     return Student.objects.filter(pk=student_id, moderator=user).exists()
@@ -74,7 +68,7 @@ class RoleBasedPermission(BasePermission):
         # Call Operator Permissions
         if user.role == "CALL_OPERATOR":
             if view_action in ["retrieve", "update", "partial_update"]:
-                # Check if the lead is assigned to the call operator
+                # Call operators can only access leads they are assigned to
                 lead_id = view.kwargs.get("pk")
                 if lead_id:
                     return Lid.objects.filter(pk=lead_id, call_operator=user).exists()
@@ -83,38 +77,75 @@ class RoleBasedPermission(BasePermission):
         # Accounting Permissions
         if user.role == "ACCOUNTING":
             if view_action == "create" and "role" in request.data:
-                return False  # Cannot create users
+                # Accountants cannot create users
+                return False
             return True
 
         # Teacher Permissions
         if user.role == "TEACHER":
+            # Teachers can only retrieve or update their own data
             return view_action in ["retrieve", "update", "partial_update"]
 
+        # Default to denying access for unknown roles
         return False
 
     def has_object_permission(self, request, view, obj):
         """
-        Check object-level permissions for filial-level restrictions.
+        Check object-level permissions for filial-level restrictions and specific role-based rules.
         """
         user = request.user
 
-        # All roles can only access data related to their filial(s)
+        # Ensure object belongs to the user's filial
         if hasattr(obj, "filial") and obj.filial != user.filial:
             return False
 
-        return True
+        # Additional object-level permissions for specific roles
+        if user.role == "MODERATOR" and isinstance(obj, Student):
+            # Moderators can only access students they are assigned to
+            return obj.moderator == user
 
+        if user.role == "CALL_OPERATOR" and isinstance(obj, Lid):
+            # Call operators can only access leads they are assigned to
+            return obj.call_operator == user
 
-from rest_framework.exceptions import PermissionDenied
+        return True  # Allow access if no restrictions are violated
 
 class FilialRestrictedQuerySetMixin:
+    """
+    Mixin to filter querysets by the user's filial and enforce data restrictions.
+    """
+
+
     def get_queryset(self):
-        # Get the queryset of the current view
+        # Get the base queryset from the view
         queryset = super().get_queryset()
 
-        # Ensure the user is associated with a filial
-        if not hasattr(self.request.user, 'filial') or not self.request.user.filial:
-            raise PermissionDenied("You are not associated with any filial.")
+        # Get the user's filial
+        user = self.request.user
+        user_filial = getattr(user, "filial", None)
 
-        # Filter queryset by the user's filial
-        return queryset.filter(filial=self.request.user.filial)
+        if user.role == "DIRECTOR":
+            return queryset
+
+        # Ensure only data for the user's filial is accessible
+        if not user_filial:
+            return queryset.none()  # No data if the user has no filial assigned
+
+        # Filter the queryset by filial
+        queryset = queryset.filter(filial=user_filial)
+
+        return queryset
+
+    def perform_create(self, serializer):
+        """
+        Automatically assign the user's filial during object creation.
+        """
+        user = self.request.user
+        user_filial = getattr(user, "filial", None)
+
+        if not user_filial:
+            raise PermissionDenied("You do not have a valid filial assigned.")
+
+        # Automatically set the filial for the object
+        serializer.save(filial=user_filial)
+

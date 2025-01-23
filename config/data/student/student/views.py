@@ -11,9 +11,10 @@ from ..groups.models import Group
 from ..lesson.models import Lesson
 from ..lesson.serializers import LessonSerializer
 from ..studentgroup.models import StudentGroup
+from ...account.permission import FilialRestrictedQuerySetMixin
 
 
-class StudentListView(ListCreateAPIView):
+class StudentListView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
@@ -29,7 +30,7 @@ class StudentDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
 
-class StudentListNoPG(ListAPIView):
+class StudentListNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
@@ -39,13 +40,11 @@ class StudentListNoPG(ListAPIView):
 
 
 
-class StudentScheduleView(ListAPIView):
+class StudentScheduleView(FilialRestrictedQuerySetMixin,ListAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Fetch all groups for the student with the given primary key (pk)
         student_groups = StudentGroup.objects.filter(student_id=self.kwargs['pk']).values_list('group_id', flat=True)
-        # Return all lessons for the student's groups, ordered by day and start time
         return Lesson.objects.filter(group_id__in=student_groups).order_by("day", "start_time")
 

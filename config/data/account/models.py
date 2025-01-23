@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+from data.department.filial.models import Filial
 from ..account.managers import UserManager
 from ..upload.models import File
 
@@ -17,12 +19,18 @@ class CustomUser(AbstractUser):
     photo : File = models.ForeignKey('upload.File', on_delete=models.SET_NULL, blank=True, null=True)
 
     ROLE_CHOICES = (
-        ("ADMINISTRATOR", "Administrator"),
-        ("MODERATOR", "Moderator"),
-        ("DIRECTOR", "Director"),
         ("CALL_OPERATOR", "Call Center"),
+        ("ADMINISTRATOR", "Sotuv Menejeri"),
+        ("SERVICE_MANAGER", "Service Manager"),
         ("ACCOUNTING", "Accounting"),
+        ("ATTENDANCE_MANAGER", "Attendance Manager"),
+        ("FILIAL_Manager", "Filial Manager"),
+        ("HEAD_TEACHER", "Head Teacher"),
+        ("MONITORING_MANAGER", "Monitoring Manager"),
+        ("TESTOLOG", "Testolog"),
+        ("MODERATOR", "YORDAMCHI USTOZ"),
         ("TEACHER", "Teacher"),
+        ("DIRECTOR", "Director"),
     )
     role = models.CharField(choices=ROLE_CHOICES, max_length=20, default="ADMINISTRATOR")
 
@@ -35,6 +43,9 @@ class CustomUser(AbstractUser):
 
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateField(auto_now=True, null=True, blank=True)
+
+    filial : 'Filial' = models.ForeignKey('filial.Filial', on_delete=models.SET_NULL, blank=True, null=True)
+
 
     USERNAME_FIELD = 'phone'
     # REQUIRED_FIELDS = ['phone']

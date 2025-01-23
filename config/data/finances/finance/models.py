@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from ..account.models import CustomUser
-from ..command.models import TimeStampModel
-from ..student.student.models import Student
+from data.account.models import CustomUser
+from data.command.models import TimeStampModel
+from data.student.student.models import Student
 
 User = get_user_model()
 
@@ -39,6 +39,8 @@ class Finance(TimeStampModel):
 
     def __str__(self):
         return f'{self.amount} {self.kind} {self.action}'
+
+
 
 
 

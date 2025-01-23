@@ -1,11 +1,10 @@
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.template.context_processors import request
 
 from ..new_lid.models import Lid
+from ...stages.models import NewStudentStages, NewOredersStages
 from ...student.attendance.models import Attendance
 from ...student.student.models import Student
-from ...stages.models import NewStudentStages
 
 @receiver(post_save, sender=Lid)
 def on_details_create(sender, instance: Lid, created, **kwargs):
@@ -15,11 +14,11 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
     """
     if not created:
         if instance.is_student and instance.filial:
-            # Get the default `NewStudentStages` instance
-            new_student_stage_instance = NewStudentStages.objects.first()
-            print(new_student_stage_instance)
-            if not new_student_stage_instance:
-                raise ValueError("No NewStudentStages instances found in the database.")
+            try:
+                # Get the single `NewStudentStages` instance
+                new_student_stage_instance = NewStudentStages.objects.get(name="TO'LOV KUTILMOQDA")
+            except NewStudentStages.DoesNotExist:
+                raise ValueError("No NewStudentStages instance found with the name 'TO'LOV KUTILMOQDA'.")
 
             # Check if a Student with the same phone number exists
             student, student_created = Student.objects.get_or_create(
@@ -38,7 +37,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                     "new_student_stages": new_student_stage_instance,  # Assign instance here
                     "call_operator": instance.call_operator,
                     "moderator": instance.moderator,
-                }
+                },
             )
 
             # If the Student already exists, update their information
@@ -58,22 +57,14 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.moderator = instance.moderator
                 student.save()
 
+            # Update attendance records
+            Attendance.objects.filter(lid=instance).update(student=student, lid=None)
 
-
-            Attendance.objects.filter(lid=instance).update(student=student)
-            Attendance.objects.filter(lid=instance).update(lid=None)
-            # Save each Attendance object to persist changes
-            for attendance in Attendance.objects.filter(lid=instance):
-                attendance.save()
-
+            # Archive the Lid
             post_save.disconnect(on_details_create, sender=Lid)
             instance.is_archived = True
             instance.save()
-
-
-
             post_save.connect(on_details_create, sender=Lid)
-
 
         else:
             if instance.filial is None:
@@ -84,3 +75,24 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             post_save.connect(on_details_create, sender=Lid)
 
 
+
+@receiver(post_save, sender=Lid)
+def on_details_update(sender, instance: Lid, created, **kwargs):
+    """
+    This signal updates the `ordered_stages` field of the `Lid` instance
+    without causing infinite recursion.
+    """
+    if hasattr(instance, "_disable_signals") and instance._disable_signals:
+        return
+
+    if not created:
+        if instance.filial and instance.lid_stage_type == "ORDERED_LID":
+            try:
+                ordered_stage = NewOredersStages.objects.get(name="FILIAL_BIRIKTIRILDI")
+                # Temporarily disable signals to avoid recursion
+                instance._disable_signals = True
+                instance.ordered_stages = ordered_stage
+                instance.save()
+                instance._disable_signals = False
+            except NewOredersStages.DoesNotExist:
+                pass

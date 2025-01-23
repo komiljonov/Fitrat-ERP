@@ -65,7 +65,7 @@ urlpatterns = [
 
     path('teacher/', include('data.teachers.teacher.urls')),
 
-    path('finance/', include('data.finance.urls')),
+    path('finance/', include('data.finances.finance.urls')),
 
     path('notifications/', include('data.notifications.urls')),
 

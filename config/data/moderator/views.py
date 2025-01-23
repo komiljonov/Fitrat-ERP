@@ -7,11 +7,12 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import ModeratorSerializer, ModeratorStudentSerializer
 
 from ..account.models import CustomUser
+from ..account.permission import FilialRestrictedQuerySetMixin
 from ..lid.new_lid.models import Lid
 from ..student.student.models import Student
 
 
-class ModeratorListAPIView(ListCreateAPIView):
+class ModeratorListAPIView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
     queryset = CustomUser.objects.filter(role='MODERATOR')
     serializer_class = ModeratorSerializer
     permission_classes = [IsAuthenticated]
@@ -27,12 +28,12 @@ class ModeratorDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ModeratorSerializer
     permission_classes = [IsAuthenticated]
 
-class ModeratorListNoPGView(ListAPIView):
+class ModeratorListNoPGView(FilialRestrictedQuerySetMixin,ListAPIView):
     queryset = CustomUser.objects.filter(role='MODERATOR')
     serializer_class = ModeratorSerializer
     permission_classes = [IsAuthenticated]
 
-class ModeratorStudentsListAPIView(RetrieveAPIView):
+class ModeratorStudentsListAPIView(FilialRestrictedQuerySetMixin,RetrieveAPIView):
     """
     Retrieves a moderator along with their associated students and lids.
     """

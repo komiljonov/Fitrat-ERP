@@ -11,70 +11,84 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, \
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from translate import Translator
 from .models import Lid
 from ..new_lid.serializers import LidSerializer
+from ...account.permission import FilialRestrictedQuerySetMixin
 
 
-class LidListCreateView(ListCreateAPIView):
+
+class LidListCreateView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     serializer_class = LidSerializer
-    # queryset = Lid.objects.all()
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     search_fields = (
-        'first_name',
-        'last_name',
+        "first_name",
+        "last_name",
         "phone_number",
         "student_type",
         "education_lang",
-        "comment", "filial",
+        "comment",
+        "filial",
         "marketing_channel",
         "lid_stages",
         "ordered_stages",
         "is_archived",
-        "is_dubl"
+        "is_dubl",
     )
     ordering_fields = (
-        'first_name',
-        'last_name',
+        "first_name",
+        "last_name",
         "phone_number",
         "student_type",
         "education_lang",
-        "comment", "filial",
+        "comment",
+        "filial",
         "marketing_channel",
         "lid_stages",
         "ordered_stages",
-        "is_dubl"
+        "is_dubl",
     )
-
     filterset_fields = (
-        'first_name',
-        'last_name',
+        "first_name",
+        "last_name",
         "phone_number",
         "student_type",
         "education_lang",
-        "comment", "filial",
+        "comment",
+        "filial",
         "marketing_channel",
         "lid_stages",
         "ordered_stages",
-        "is_dubl"
+        "is_dubl",
     )
 
     def get_queryset(self):
         """
-        Return Lids that are not archived and belong to the requested user (call_operator)
-        or have no assigned call_operator (None).
+        Return queryset based on the user's role and filial.
         """
         user = self.request.user
-        # If the user is anonymous, return an empty queryset
-        if user.is_anonymous:
+        user_filial = getattr(user, "filial", None)
+
+        if not user_filial or user.is_anonymous:
             return Lid.objects.none()
 
-        # Filter Lids that are not archived and have call_operator as the user or None
-        return Lid.objects.filter(
-            Q(is_archived=False) & (Q(call_operator=user) | Q(call_operator__isnull=True))
-        )
+        # Queryset base: non-archived lids
+        queryset = Lid.objects.filter(is_archived=False)
+
+        # Logic for Call Operator
+        if user.role == "CALL_OPERATOR":
+            return queryset.filter(
+                Q(call_operator=user) |  # Lids assigned to the current user
+                (Q(call_operator=None) & Q(filial=None))  # Unassigned Lids
+            )
+
+        # Logic for Filial Administrators
+        if user.role == "ADMINISTRATOR":
+            return queryset.filter(filial=user_filial)
+
+        return Lid.objects.none()
 
 
 class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
@@ -83,10 +97,9 @@ class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class LidListNoPG(ListAPIView):
+class LidListNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
     queryset = Lid.objects.all()
     serializer_class = LidSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_paginated_response(self, data):
         return Response(data)
@@ -107,6 +120,7 @@ class ExportLidToExcelAPIView(APIView):
             openapi.Parameter("end_date", openapi.IN_QUERY, description="Filter by end date (YYYY-MM-DD)", type=openapi.TYPE_STRING),
             openapi.Parameter("is_student", openapi.IN_QUERY, description="Filter by whether the lead is a student (true/false)", type=openapi.TYPE_STRING),
             openapi.Parameter("filial_id", openapi.IN_QUERY, description="Filter by filial ID", type=openapi.TYPE_INTEGER),
+            openapi.Parameter("lid_stage_type",openapi.IN_QUERY, description="Filter by lid stage type", type=openapi.TYPE_STRING),
         ],
         responses={200: "Excel file generated"}
     )
@@ -116,6 +130,7 @@ class ExportLidToExcelAPIView(APIView):
         end_date = request.query_params.get("end_date")
         is_student = request.query_params.get("is_student")
         filial_id = request.query_params.get("filial_id")
+        lid_stage_type = request.query_params.get("lid_stage_type")
 
         # Filter queryset
         queryset = Lid.objects.all()
@@ -126,6 +141,8 @@ class ExportLidToExcelAPIView(APIView):
             queryset = queryset.filter(is_student=is_student.lower() == "true")
         if filial_id:
             queryset = queryset.filter(filial_id=filial_id)
+        if lid_stage_type:
+            queryset = queryset.filter(lid_stage_type=lid_stage_type)
 
         # Create Excel workbook
         workbook = Workbook()
