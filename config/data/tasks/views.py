@@ -12,14 +12,19 @@ from ..tasks.serializers import TaskSerializer
 class TaskListCreateView(ListCreateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
-    search_fields = ("creator", "performer","task","comment","date_of_expired","status")
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+
+    # Updated search_fields
+    search_fields = ("creator__first_name", "creator__last_name", "task", "comment", "date_of_expired", "status")
+
+    # Ordering and filtering fields
     ordering_fields = ("date_of_expired",)
     filterset_fields = ("status",)
 
     def get_queryset(self):
+        # Filter tasks by the current user as the creator
         queryset = Task.objects.filter(creator=self.request.user).order_by("-date_of_expired")
         return queryset
 
@@ -33,6 +38,11 @@ class TaskListNoPGView(ListAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Filter tasks by the current user as the creator
+        queryset = Task.objects.filter(creator=self.request.user).order_by("-date_of_expired")
+        return queryset
 
     def get_paginated_response(self, data):
         return Response(data)
