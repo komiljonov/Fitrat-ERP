@@ -29,8 +29,14 @@ class Lid(TimeStampModel):
     subject = models.CharField(max_length=100,null=True, help_text="Subject that student won at competition")
     ball = models.IntegerField(default=0, null=True, blank=True, help_text="Earned ball at competition")
 
-    filial : Filial = models.ForeignKey(Filial, on_delete=models.CASCADE, null=True, blank=True, help_text="Filial for this student")
-    marketing_channel : MarketingChannel = models.ForeignKey(MarketingChannel, on_delete=models.CASCADE,null=True, blank=True, help_text="Marketing channel for this student")
+    filial : Filial = models.ForeignKey(Filial, on_delete=models.SET_NULL,
+                                        null=True, blank=True,
+                                        help_text="Filial for this student")
+
+    marketing_channel : MarketingChannel = models.ForeignKey(MarketingChannel,
+                                         on_delete=models.SET_NULL,
+                                         null=True, blank=True,
+                                         help_text="Marketing channel for this student")
 
     lid_stage_type = models.CharField(
         choices=(
@@ -62,11 +68,16 @@ class Lid(TimeStampModel):
 
     is_dubl = models.BooleanField(default=False,help_text="Is this student duble or not")
 
-    call_operator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, null=True, blank=True,help_text="CallOperator for this lid", related_name="call_operator")
+    call_operator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL,
+                                                     null=True, blank=True,
+                                                     help_text="CallOperator for this lid",
+                                                     related_name="call_operator")
 
     is_student = models.BooleanField(default=False,help_text="Is this student or not")
 
-    moderator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, null=True, blank=True,)
+    moderator : "CustomUser" = models.ForeignKey("account.CustomUser",
+                                                 on_delete=models.SET_NULL,
+                                                 null=True, blank=True,)
 
     lid_stages : models.QuerySet['NewLidStages']
     ordered_stages : models.QuerySet['NewOredersStages']
