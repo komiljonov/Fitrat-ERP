@@ -52,7 +52,7 @@ class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
                 Q(call_operator=user) |
                 Q(call_operator=None, filial=None)
             )
-        elif user.role == "ADMINISTRATOR":
+        if user.role == "ADMINISTRATOR":
             queryset = queryset.filter(filial=user.filial)
 
         # Debugging search_term

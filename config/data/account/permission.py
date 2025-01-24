@@ -149,6 +149,5 @@ class FilialRestrictedQuerySetMixin:
         if user.role == "CALL_OPERATOR":
             return serializer.save()
 
-        # Automatically set the filial for the object
         serializer.save(filial=user_filial)
 

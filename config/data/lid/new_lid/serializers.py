@@ -143,10 +143,8 @@ class LidSerializer(serializers.ModelSerializer):
         """
         request = self.context['request']
 
-        # Assign `call_operator` if it's None and the current user is a CALL_OPERATOR
         if instance.call_operator is None and request.user.role == 'CALL_OPERATOR':
             validated_data['call_operator'] = request.user
 
-        # Update the instance using the superclass method
         instance = super().update(instance, validated_data)
         return instance
