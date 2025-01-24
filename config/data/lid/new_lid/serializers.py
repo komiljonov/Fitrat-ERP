@@ -1,21 +1,15 @@
 from django.db.models import Q
-from redis.commands.search.reducers import count
-from rest_framework import serializers
 from django.utils.module_loading import import_string
-from rest_framework.generics import CreateAPIView
+from rest_framework import serializers
 
 from .models import Lid
-from icecream import ic
-from ..archived.models import Archived
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
+from ...comments.models import Comment
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
-from ...stages.models import NewLidStages, NewOredersStages
-from ...stages.serializers import NewLidStageSerializer, NewOrderedLidStagesSerializer
-from ...comments.models import Comment
 from ...student.attendance.models import Attendance
 from ...tasks.models import Task
 

@@ -44,9 +44,9 @@ class Lid(TimeStampModel):
         ("KUTULMOQDA","KUTULMOQDA"),
         ("O'TIB KETGAN","O'TIB KETGAN"),
     ],
-        default="YANGI_LEAD",
         max_length=100,
-        help_text="LID's YANGI_LEAD stage type"
+        help_text="LID's YANGI_LEAD stage type",
+        null=True,blank=True
     )
     ordered_stages = models.CharField(
         choices=[
@@ -54,9 +54,9 @@ class Lid(TimeStampModel):
             ("KUTULMOQDA","KUTULMOQDA"),
             ("YANGI_BUYURTMA","YANGI_BUYURTMA"),
         ],
-        default="YANGI_LEAD",
         max_length=100,
-        help_text="LID's YANGI_LEAD stage type"
+        help_text="LID's YANGI_LEAD stage type",
+        null=True,blank=True
     )
     is_archived = models.BooleanField(default=False,help_text="Is this student archived or not")
 
