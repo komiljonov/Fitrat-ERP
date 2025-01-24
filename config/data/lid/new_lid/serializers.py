@@ -57,6 +57,7 @@ class LidSerializer(serializers.ModelSerializer):
             "call_operator",
             "group",
             "lessons_count",
+            "created_at",
         ]
 
     def get_comments(self, obj):
