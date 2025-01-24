@@ -24,10 +24,12 @@ class StudentSerializer(serializers.ModelSerializer):
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(),allow_null=True)
     new_student_stages = serializers.PrimaryKeyRelatedField(queryset=NewStudentStages.objects.all(),allow_null=True)
     active_student_stages = serializers.PrimaryKeyRelatedField(queryset=StudentStages.objects.all(),allow_null=True)
-    comments = serializers.PrimaryKeyRelatedField(queryset=Comment.objects.all(),allow_null=True)
+    comments = serializers.SerializerMethodField()
 
     tasks = serializers.SerializerMethodField()
+
     group = serializers.SerializerMethodField()
+
 
     password  = serializers.CharField(write_only=True)
 
@@ -61,6 +63,10 @@ class StudentSerializer(serializers.ModelSerializer):
             'balance_status',
             'balance',
 
+            'moderator',
+
+            'call_operator',
+
             "is_archived",
 
             "attendance_count",
@@ -71,6 +77,8 @@ class StudentSerializer(serializers.ModelSerializer):
         comments = Comment.objects.filter(student=obj)
         CommentSerializer = import_string("data.comments.serializers.CommentSerializer")
         return CommentSerializer(comments, many=True).data
+
+
 
     def get_tasks(self, obj):
         tasks = Task.objects.filter(student=obj)
