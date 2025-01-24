@@ -1,3 +1,4 @@
+from django.db.models import Q
 from redis.commands.search.reducers import count
 from rest_framework import serializers
 from django.utils.module_loading import import_string
@@ -19,18 +20,22 @@ from ...student.attendance.models import Attendance
 from ...tasks.models import Task
 
 
-
 class LidSerializer(serializers.ModelSerializer):
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
-    lid_stages = serializers.PrimaryKeyRelatedField(queryset=NewLidStages.objects.all(), allow_null=True)
-    ordered_stages = serializers.PrimaryKeyRelatedField(queryset=NewOredersStages.objects.all(), allow_null=True)
-    call_operator  = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.filter(role='CALL_OPERATOR'), allow_null=True)
+    call_operator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.filter(role='CALL_OPERATOR'), allow_null=True)
 
     comments = serializers.SerializerMethodField()
     tasks = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
+
+    # Statistical fields
+    leads_count = serializers.SerializerMethodField()
+    new_leads = serializers.SerializerMethodField()
+    order_creating = serializers.SerializerMethodField()
+    archived_new_leads = serializers.SerializerMethodField()
+
     class Meta:
         model = Lid
         fields = [
@@ -57,6 +62,10 @@ class LidSerializer(serializers.ModelSerializer):
             "call_operator",
             "group",
             "lessons_count",
+            "leads_count",
+            "new_leads",
+            "order_creating",
+            "archived_new_leads",
             "created_at",
         ]
 
@@ -82,14 +91,48 @@ class LidSerializer(serializers.ModelSerializer):
         attendance_count = Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
         return attendance_count
 
+    # Total leads count for this user
+    def get_leads_count(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            user = request.user
+
+            return Lid.objects.filter(Q(call_operator=user) |Q( call_operator=None) , filial=None).count()
+        return 0
+
+    # New leads not assigned to a filial
+    def get_new_leads(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            user = request.user
+            return Lid.objects.filter(call_operator=user, filial=None, lid_stage_type="NEW_LID").count()
+        return 0
+
+    # Leads in the "order creating" stage for this user
+    def get_order_creating(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            user = request.user
+            return Lid.objects.filter(
+                call_operator=user,
+                filial=None,
+                lid_stage_type="NEW_LID"
+            ).count()
+        return 0
+
+    # Archived leads with the "new_lid" stage for this user
+    def get_archived_new_leads(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            user = request.user
+            return Lid.objects.filter(call_operator=user, is_archived=True, lid_stage_type="NEW_LID").count()
+        return 0
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(instance.marketing_channel).data if instance.marketing_channel else None
-        representation['lid_stages'] = NewLidStageSerializer(instance.lid_stages).data if instance.lid_stages else None
-        representation['ordered_stages'] = NewOrderedLidStagesSerializer(instance.ordered_stages).data if instance.ordered_stages else None
         representation['call_operator'] = UserSerializer(instance.call_operator).data if instance.call_operator else None
 
         return representation
@@ -108,5 +151,3 @@ class LidSerializer(serializers.ModelSerializer):
         # Update the instance using the superclass method
         instance = super().update(instance, validated_data)
         return instance
-
-

@@ -39,9 +39,25 @@ class Lid(TimeStampModel):
         ),
         max_length=100,default="NEW_LID"
     )
-    lid_stages : "NewLidStages" = models.ForeignKey("stages.NewLidStages", on_delete=models.CASCADE,null=True, blank=True, help_text="NewStudentStages for this student")
-    ordered_stages : "NewOredersStages" = models.ForeignKey("stages.NewOredersStages", on_delete=models.CASCADE,null=True, blank=True, help_text="NewStudentStages for this student")
-
+    lid_stages = models.CharField(choices=[
+        ("YANGI_LEAD","YANGI_LEAD"),
+        ("KUTULMOQDA","KUTULMOQDA"),
+        ("O'TIB KETGAN","O'TIB KETGAN"),
+    ],
+        default="YANGI_LEAD",
+        max_length=100,
+        help_text="LID's YANGI_LEAD stage type"
+    )
+    ordered_stages = models.CharField(
+        choices=[
+            ("O'TIB KETGAN","O'TIB KETGAN"),
+            ("KUTULMOQDA","KUTULMOQDA"),
+            ("YANGI_BUYURTMA","YANGI_BUYURTMA"),
+        ],
+        default="YANGI_LEAD",
+        max_length=100,
+        help_text="LID's YANGI_LEAD stage type"
+    )
     is_archived = models.BooleanField(default=False,help_text="Is this student archived or not")
 
     is_dubl = models.BooleanField(default=False,help_text="Is this student duble or not")

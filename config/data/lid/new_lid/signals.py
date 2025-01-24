@@ -85,14 +85,14 @@ def on_details_update(sender, instance: Lid, created, **kwargs):
     if hasattr(instance, "_disable_signals") and instance._disable_signals:
         return
 
-    if not created:
+    if not created:  # Update logic only for existing records
         if instance.filial and instance.lid_stage_type == "ORDERED_LID":
+            # Temporarily disable signals to avoid recursion
+            instance._disable_signals = True
             try:
-                ordered_stage = NewOredersStages.objects.get(name="FILIAL_BIRIKTIRILDI")
-                # Temporarily disable signals to avoid recursion
-                instance._disable_signals = True
-                instance.ordered_stages = ordered_stage
+                # Update `ordered_stages` directly with the choice value
+                instance.ordered_stages = "YANGI_BUYURTMA"
                 instance.save()
+            finally:
+                # Re-enable signals
                 instance._disable_signals = False
-            except NewOredersStages.DoesNotExist:
-                pass
