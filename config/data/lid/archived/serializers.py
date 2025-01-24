@@ -1,15 +1,27 @@
 from rest_framework import serializers
 
 from .models import Archived
+from ..new_lid.models import Lid
+from ..new_lid.serializers import LidSerializer
+from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
+from ...student.student.models import Student
+from ...student.student.serializers import StudentSerializer
 
 
 class ArchivedSerializer(serializers.ModelSerializer):
+    creater = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
     class Meta:
         model = Archived
         fields = [
             'id',
             'creator',
+
+            'lid',
+            'student',
+
             "reason"
         ]
 
@@ -22,6 +34,9 @@ class ArchivedSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['creator'] = UserSerializer(instance.creator).data
+        representation['lid'] = LidSerializer(instance.lid).data
+        representation['student'] = StudentSerializer(instance.student).data
+
         return representation
 
 
