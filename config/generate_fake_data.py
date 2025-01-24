@@ -85,12 +85,12 @@ def generate_fake_data():
             education_lang=random.choice(['ENG', 'RU', 'UZB']),
             edu_class=fake.random_int(min=1, max=12),
             subject=fake.word(),
-            new_student_stages = "",
-            active_student_stages= "",
             ball=fake.random_int(min=50, max=100),
             balance=round(random.uniform(100, 1000), 2),
-            marketing_channel = MarketingChannel.objects.order_by("?").first()
+            marketing_channel = MarketingChannel.objects.order_by("?").first(),
         )
+        student.new_student_stages = NewStudentStages.objects.order_by('?').first()
+        student.active_student_stages = StudentStages.objects.order_by('?').first()
         student.save()
 
     # Create Lids
@@ -108,15 +108,15 @@ def generate_fake_data():
             filial=Filial.objects.order_by('?').first(),
             call_operator=CustomUser.objects.filter(role="CALL_OPERATOR").order_by('?').first(),
             lid_stages=random.choice([
-        ("YANGI_LEAD","YANGI_LEAD"),
-        ("KUTULMOQDA","KUTULMOQDA"),
-        ("O'TIB KETGAN","O'TIB KETGAN"),
-    ]),
+                ("YANGI_LEAD", "YANGI_LEAD"),
+                ("KUTULMOQDA", "KUTULMOQDA"),
+                ("O'TIB KETGAN", "O'TIB KETGAN"),
+            ]),
             ordered_stages=random.choice([
-        ("YANGI_LEAD","YANGI_LEAD"),
-        ("KUTULMOQDA","KUTULMOQDA"),
-        ("O'TIB KETGAN","O'TIB KETGAN"),
-    ]),
+                ("YANGI_LEAD", "YANGI_LEAD"),
+                ("KUTULMOQDA", "KUTULMOQDA"),
+                ("O'TIB KETGAN", "O'TIB KETGAN"),
+            ]),
             marketing_channel=MarketingChannel.objects.order_by("?").first(),
         )
 
