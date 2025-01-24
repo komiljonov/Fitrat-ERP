@@ -12,7 +12,7 @@ from ..student.student.models import Student
 User = get_user_model()
 
 class CommentListCreateAPIView(ListCreateAPIView):
-    queryset = Comment.objects.filter().order_by('-created_at')
+    queryset = Comment.objects.filter()
     serializer_class = CommentSerializer
     # permission_classes = (IsAuthenticated,)
 

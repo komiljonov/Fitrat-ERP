@@ -18,3 +18,6 @@ class Comment(TimeStampModel):
 
     def __str__(self):
         return self.comment
+
+    class Meta:
+        ordering = []
