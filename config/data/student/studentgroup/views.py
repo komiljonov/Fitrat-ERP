@@ -36,3 +36,20 @@ class StudentGroupNopg(FilialRestrictedQuerySetMixin,ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class GroupStudentList(ListAPIView):
+    queryset = StudentGroup.objects.all()
+    serializer_class = StudentsGroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        """
+        Fetch the moderator by ID from the URL path parameter.
+        """
+        id = self.kwargs.get('pk')
+        try:
+            return StudentGroup.objects.filter(group__id=id)
+        except StudentGroup.DoesNotExist:
+            from rest_framework.exceptions import NotFound
+            raise NotFound({"detail": "Group not found."})
