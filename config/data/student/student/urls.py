@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import StudentListView, StudentDetailView, StudentListNoPG, StudentScheduleView
+from .views import StudentListView, StudentDetailView, StudentListNoPG, StudentScheduleView, StudentLoginAPIView
 
 urlpatterns = [
     path('', StudentListView.as_view(), name='student-list'),
@@ -8,4 +8,6 @@ urlpatterns = [
     path('no-pg/', StudentListNoPG.as_view(), name='student-no-pg'),
 
     path('schedule/<uuid:pk>/', StudentScheduleView.as_view(), name='student-schedule'),
+
+    path('auth/',StudentLoginAPIView.as_view(), name='student-login'),
 ]

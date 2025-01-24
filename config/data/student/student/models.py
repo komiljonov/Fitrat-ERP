@@ -16,6 +16,9 @@ class Student(TimeStampModel):
     phone = models.CharField(max_length=100)
     date_of_birth = models.DateField(default=timezone.now())
 
+
+    password = models.CharField(max_length=100)
+
     language_choice = (("ENG","ENG"),
                        ("RU","RU"),
                        ("UZB","UZB"))

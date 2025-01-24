@@ -5,11 +5,13 @@ from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIVi
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Answer
 from .models import Quiz, Question
 from .serializers import QuizSerializer, QuestionSerializer, UserAnswerSerializer
+from ..mastering.models import Mastering
 
 
 class QuizListCreateView(ListCreateAPIView):
@@ -57,6 +59,7 @@ class QuestionCheckAnswerView(GenericAPIView):
 
 
 class QuizBulkCheckView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, quiz_pk):
         try:
             # Ensure the quiz exists
@@ -108,6 +111,14 @@ class QuizBulkCheckView(GenericAPIView):
             # Calculate the score
             total_questions = len(user_answers_data)
             score = (correct_count / total_questions) * 100 if total_questions > 0 else 0
+
+            create_ball = Mastering.objects.create(
+                student = request.user,
+                test = quiz_pk,
+                ball = score,
+            )
+            if create_ball:
+                return Response({'created': create_ball.created}, status=status.HTTP_201_CREATED)
 
             # Build the response
             response_data = {
