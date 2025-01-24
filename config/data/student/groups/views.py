@@ -13,12 +13,12 @@ from .serializers import GroupSerializer, GroupLessonSerializer
 
 class StudentGroupsView(ListCreateAPIView):
     queryset = Group.objects.all()
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
     filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
-    search_fields = ('name','teacher','scheduled_day_type')
-    ordering_fields = ('name','teacher','scheduled_day_type','start_date','end_date','price_type')
-    filterset_fields = ('name','teacher','scheduled_day_type','price_type')
+    search_fields = ('name','scheduled_day_type')
+    ordering_fields = ('name','scheduled_day_type','start_date','end_date','price_type')
+    filterset_fields = ('name','scheduled_day_type','price_type')
 
 
 

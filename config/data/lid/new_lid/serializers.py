@@ -12,7 +12,7 @@ from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
-from ...stages.models import NewLidStages
+from ...stages.models import NewLidStages, NewOredersStages
 from ...stages.serializers import NewLidStageSerializer, NewOrderedLidStagesSerializer
 from ...comments.models import Comment
 from ...student.attendance.models import Attendance
@@ -24,7 +24,7 @@ class LidSerializer(serializers.ModelSerializer):
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
     lid_stages = serializers.PrimaryKeyRelatedField(queryset=NewLidStages.objects.all(), allow_null=True)
-    ordered_stages = serializers.PrimaryKeyRelatedField(queryset=NewLidStages.objects.all(), allow_null=True)
+    ordered_stages = serializers.PrimaryKeyRelatedField(queryset=NewOredersStages.objects.all(), allow_null=True)
     call_operator  = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.filter(role='CALL_OPERATOR'), allow_null=True)
 
     comments = serializers.SerializerMethodField()

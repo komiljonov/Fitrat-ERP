@@ -14,15 +14,39 @@ from ..studentgroup.models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
 
 
-class StudentListView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
+class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
-    search_fields = ('first_name','last_name','phone_number','filial','marketing_channel','student_stage_type','is_archived','moderator')
-    ordering_fields = ('student_stage_type','is_archived','moderator','marketing_channel','filial')
-    filterset_fields = ('student_stage_type','is_archived','moderator','marketing_channel','filial')
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+
+    search_fields = ('first_name', 'last_name', 'phone_number')
+
+    ordering_fields = ('student_stage_type', 'is_archived', 'moderator',
+                                                            'marketing_channel', 'filial')
+
+    filterset_fields = ('student_stage_type', 'is_archived',
+                        'moderator', 'marketing_channel', 'filial')
+
+    def get_queryset(self):
+        """
+        Customize queryset filtering based on user roles and other criteria.
+        """
+        user = self.request.user
+        if user.is_anonymous:
+            return Student.objects.none()  # Anonymous users get no data
+
+        queryset = super().get_queryset()
+
+        # Additional role-based filtering
+        if hasattr(user, "role"):
+            if user.role == "CALL_OPERATOR":
+                queryset = queryset.filter(moderator=user)
+            elif user.role == "ADMINISTRATOR":
+                queryset = queryset.filter(filial=user.filial)
+
+        return queryset
 
 
 class StudentDetailView(RetrieveUpdateDestroyAPIView):

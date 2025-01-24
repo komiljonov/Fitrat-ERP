@@ -14,13 +14,14 @@ from .serializers import CourseSerializer
 class CourseList(ListCreateAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
-    search_fields = ('name','subject')
-    ordering_fields = ('status')
-    filterset_fields = ('name','subject')
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
+    # Use valid fields that exist in the Course model
+    search_fields = ('name', 'subject__name')  # Ensure these are text-based fields (e.g., CharField)
+    ordering_fields = ('status',)  # Ensure 'status' exists in the model and supports ordering
+    filterset_fields = ('name', 'subject__name')
 
 class CourseDetail(RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()

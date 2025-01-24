@@ -1,3 +1,4 @@
+from django.core.exceptions import FieldError
 from django.db.models import Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -18,80 +19,55 @@ from ...account.permission import FilialRestrictedQuerySetMixin
 
 
 
-class LidListCreateView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
+
+class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
     serializer_class = LidSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
-    search_fields = (
-        "first_name",
-        "last_name",
-        "phone_number",
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+
+    search_fields = ["first_name", "last_name", "phone_number", ]
+    filterset_fields = [
         "student_type",
         "education_lang",
-        "comment",
         "filial",
         "marketing_channel",
-        'lid_stage_type',
-        "lid_stages",
-        "ordered_stages",
-        "is_archived",
-        "is_dubl",
-    )
-    ordering_fields = (
-        "first_name",
-        "last_name",
-        "phone_number",
-        "student_type",
-        "education_lang",
-        'lid_stage_type',
-        "comment",
-        "filial",
-        "marketing_channel",
+        "lid_stage_type",
         "lid_stages",
         "ordered_stages",
         "is_dubl",
-    )
-    filterset_fields = (
-        "first_name",
-        "last_name",
-        "phone_number",
-        "student_type",
-        "education_lang",
-        'lid_stage_type',
-        "comment",
-        "filial",
-        "marketing_channel",
-        "lid_stages",
-        "ordered_stages",
-        "is_dubl",
-    )
+    ]
 
     def get_queryset(self):
-        """
-        Return queryset based on the user's role and filial.
-        """
         user = self.request.user
-        user_filial = getattr(user, "filial", None)
-
-        if not user_filial or user.is_anonymous:
+        if user.is_anonymous:
             return Lid.objects.none()
 
-        # Queryset base: non-archived lids
         queryset = Lid.objects.filter(is_archived=False)
-
-        # Logic for Call Operator
         if user.role == "CALL_OPERATOR":
-            return queryset.filter(
-                Q(call_operator=user) |  # Lids assigned to the current user
-                (Q(call_operator=None) & Q(filial=None))  # Unassigned Lids
+            queryset = queryset.filter(
+                Q(call_operator=user) |
+                Q(call_operator=None, filial=None)
             )
+        elif user.role == "ADMINISTRATOR":
+            queryset = queryset.filter(filial=user.filial)
 
-        # Logic for Filial Administrators
-        if user.role == "ADMINISTRATOR":
-            return queryset.filter(filial=user_filial)
+        # Debugging search_term
+        search_term = self.request.query_params.get("search", "")
+        print("Search term:", search_term)
 
-        return Lid.objects.none()
+        # Apply search logic only if search_term exists
+        if search_term:
+            try:
+                queryset = queryset.filter(
+                    Q(first_name__icontains=search_term) |
+                    Q(last_name__icontains=search_term) |
+                    Q(phone_number__icontains=search_term)
+                )
+            except FieldError as e:
+                print(f"FieldError: {e}")
+
+        return queryset
 
 
 class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
