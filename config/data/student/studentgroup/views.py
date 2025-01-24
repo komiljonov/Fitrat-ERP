@@ -12,15 +12,16 @@ from .models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
 
 
-class StudentsGroupList(FilialRestrictedQuerySetMixin,ListCreateAPIView):
+class StudentsGroupList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentsGroupSerializer
     # permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
-    search_fields = ('group__name','student__first_name','lead__first_name','student__last_name','lead__last_name')
-    filter_fields = ('group__name','student__first_name','lead__first_name','student__last_name','lead__last_name')
-    filterset_fields = ('group__name','student__first_name','lead__first_name','student__last_name','lead__last_name')
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    search_fields = ('group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name')
+    filter_fields = ('group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name')
+    filterset_fields = ('group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name')
+
 
 
 class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
