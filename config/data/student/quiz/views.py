@@ -55,6 +55,7 @@ class QuestionCheckAnswerView(GenericAPIView):
         except KeyError:
             return Response({'error': 'answer_id is required in the request body'}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class QuizBulkCheckView(GenericAPIView):
     def post(self, request, quiz_pk):
         try:

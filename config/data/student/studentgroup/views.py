@@ -6,32 +6,32 @@ from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIVi
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import StudentGroupSerializer
+from .serializers import StudentsGroupSerializer
 
 from .models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
 
 
-class StudentGroupList(FilialRestrictedQuerySetMixin,ListCreateAPIView):
+class StudentsGroupList(FilialRestrictedQuerySetMixin,ListCreateAPIView):
     queryset = StudentGroup.objects.all()
-    serializer_class = StudentGroupSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = StudentsGroupSerializer
+    # permission_classes = [IsAuthenticated]
 
     filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
-    search_fields = ('group','student','lead')
-    filter_fields = ('group','student','lead')
-    filterset_fields = ('group','student','lead')
+    search_fields = ('group__name','student__first_name','lead__first_name','student__last_name','lead__last_name')
+    filter_fields = ('group__name','student__first_name','lead__first_name','student__last_name','lead__last_name')
+    filterset_fields = ('group__name','student__first_name','lead__first_name','student__last_name','lead__last_name')
 
 
 class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
     queryset = StudentGroup.objects.all()
-    serializer_class = StudentGroupSerializer
+    serializer_class = StudentsGroupSerializer
     permission_classes = [IsAuthenticated]
 
 
 class StudentGroupNopg(FilialRestrictedQuerySetMixin,ListAPIView):
     queryset = StudentGroup.objects.all()
-    serializer_class = StudentGroupSerializer
+    serializer_class = StudentsGroupSerializer
     permission_classes = [IsAuthenticated]
 
     def get_paginated_response(self, data):

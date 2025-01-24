@@ -18,7 +18,6 @@ class StudentSerializer(serializers.ModelSerializer):
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(),allow_null=True)
     new_student_stages = serializers.PrimaryKeyRelatedField(queryset=NewStudentStages.objects.all(),allow_null=True)
     active_student_stages = serializers.PrimaryKeyRelatedField(queryset=StudentStages.objects.all(),allow_null=True)
-    group = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
@@ -26,7 +25,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'id',
             "first_name",
             "last_name",
-            "phone_number",
+            "phone",
             "date_of_birth",
             "education_lang",
             "student_type",
@@ -40,20 +39,10 @@ class StudentSerializer(serializers.ModelSerializer):
             "new_student_stages",
             "active_student_stages",
 
-            "group",
-
             'balance_status',
 
             "is_archived",
         ]
-
-    def get_group(self, obj):
-        attendance = Attendance.objects.filter(student=obj)
-        if attendance.exists():
-            groups = [att.lesson.group for att in attendance]
-            GroupSerializer = import_string("data.student.groups.serializers.GroupSerializer")
-            return GroupSerializer(groups, many=True).data
-        return None
 
 
     def to_representation(self, instance):

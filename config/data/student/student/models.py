@@ -13,7 +13,7 @@ from ...account.models import CustomUser
 class Student(TimeStampModel):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=100)
+    phone = models.CharField(max_length=100)
     date_of_birth = models.DateField(default=timezone.now())
 
     language_choice = (("ENG","ENG"),

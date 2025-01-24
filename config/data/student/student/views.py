@@ -19,7 +19,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
 
-    search_fields = ('first_name', 'last_name', 'phone_number')
+    search_fields = ('first_name', 'last_name', 'phone')
 
     ordering_fields = ('student_stage_type', 'is_archived', 'moderator',
                                                             'marketing_channel', 'filial')

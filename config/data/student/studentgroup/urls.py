@@ -1,8 +1,9 @@
-from .views import StudentGroupList,StudentGroupDetail,StudentGroupNopg
 from django.urls import path
 
+from .views import StudentGroupDetail, StudentGroupNopg, StudentsGroupList
+
 urlpatterns = [
-    path('', StudentGroupList.as_view()),
+    path('', StudentsGroupList.as_view()),
     path('<uuid:pk>/', StudentGroupDetail.as_view()),
     path('no-pg/', StudentGroupNopg.as_view()),
 

@@ -54,3 +54,16 @@ class GroupLessonScheduleView(APIView):
                 {"error": "Group not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class TeachersGroupsView(ListAPIView):
+    queryset = Group.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = GroupSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs.get('pk')  # Get the teacher ID from the URL
+        if teacher_id:
+            teacher_groups = Group.objects.filter(teacher__id=teacher_id)
+            return teacher_groups
+        return Group.objects.none()

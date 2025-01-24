@@ -75,6 +75,7 @@ class CustomAuthToken(TokenObtainPairView):
             'refresh_token': refresh_token,
             'user_id': user.pk,
             'phone': user.phone,
+            'role': user.role,
         }, status=status.HTTP_200_OK)
 
 

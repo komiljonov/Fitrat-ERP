@@ -7,14 +7,15 @@ from rest_framework.response import Response
 from .serializers import TeacherSerializer
 
 from ...account.models import CustomUser
+from ...account.permission import FilialRestrictedQuerySetMixin
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 
 
-class TeacherList(ListCreateAPIView):
+class TeacherList(FilialRestrictedQuerySetMixin,ListCreateAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
     serializer_class = TeacherSerializer
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
 class TeacherDetail(RetrieveUpdateDestroyAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
