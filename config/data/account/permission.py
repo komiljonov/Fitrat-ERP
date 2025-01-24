@@ -146,6 +146,9 @@ class FilialRestrictedQuerySetMixin:
         if not user_filial:
             raise PermissionDenied("You do not have a valid filial assigned.")
 
+        if user.role == "CALL_OPERATOR":
+            return serializer.save()
+
         # Automatically set the filial for the object
         serializer.save(filial=user_filial)
 
