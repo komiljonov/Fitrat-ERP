@@ -10,7 +10,7 @@ from ...student.student.serializers import StudentSerializer
 
 
 class ArchivedSerializer(serializers.ModelSerializer):
-    creater = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
     class Meta:
@@ -18,10 +18,8 @@ class ArchivedSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'creator',
-
             'lid',
             'student',
-
             "reason"
         ]
 
