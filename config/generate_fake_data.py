@@ -80,7 +80,7 @@ def generate_fake_data():
         student = Student.objects.create(
             first_name=fake.first_name(),
             last_name=fake.last_name(),
-            phone_number=fake.phone_number(),
+            phone=fake.phone_number(),
             date_of_birth=fake.date_of_birth(minimum_age=10, maximum_age=18),
             education_lang=random.choice(['ENG', 'RU', 'UZB']),
             edu_class=fake.random_int(min=1, max=12),
