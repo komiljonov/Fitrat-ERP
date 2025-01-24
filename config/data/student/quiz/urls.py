@@ -5,7 +5,7 @@ from .views import (
     QuestionListCreateView,
     QuestionRetrieveUpdateDestroyView,
     QuestionCheckAnswerView,
-    QuizBulkCheckView
+    QuizBulkCheckView, QuizImportView
 )
 
 urlpatterns = [
@@ -14,5 +14,7 @@ urlpatterns = [
     path('<uuid:quiz_pk>/questions/', QuestionListCreateView.as_view(), name='question-list'),
     path('<uuid:quiz_pk>/questions/<uuid:pk>/', QuestionRetrieveUpdateDestroyView.as_view(), name='question-detail'),
     path('<uuid:quiz_pk>/questions/<uuid:pk>/check/', QuestionCheckAnswerView.as_view(), name='question-check'),
-    path('<uuid:quiz_pk>/check-bulk/', QuizBulkCheckView.as_view(), name='quiz-check-bulk')
+    path('<uuid:quiz_pk>/check-bulk/', QuizBulkCheckView.as_view(), name='quiz-check-bulk'),
+
+    path('import-quiz/', QuizImportView.as_view(), name='import-quiz'),
 ]

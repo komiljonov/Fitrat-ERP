@@ -83,7 +83,6 @@ class LidSerializer(serializers.ModelSerializer):
         # Apply role-based filtering
         if user.role == 'CALL_OPERATOR':
             queryset = queryset.filter(Q(call_operator=user) | Q(call_operator=None), filial=None)
-
         return queryset
 
     def get_comments(self, obj):
