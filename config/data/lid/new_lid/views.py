@@ -43,7 +43,10 @@ class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
         if user.is_anonymous:
             return Lid.objects.none()
 
+        # Base queryset
         queryset = Lid.objects.filter(is_archived=False)
+
+        # Role-based filtering
         if user.role == "CALL_OPERATOR":
             queryset = queryset.filter(
                 Q(call_operator=user) |
@@ -66,6 +69,15 @@ class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
                 )
             except FieldError as e:
                 print(f"FieldError: {e}")
+
+        # Apply start_date and end_date filters
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+
+        if start_date:
+            queryset = queryset.filter(created_at__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(created_at__lte=end_date)
 
         return queryset
 

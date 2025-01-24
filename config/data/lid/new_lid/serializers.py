@@ -63,6 +63,29 @@ class LidSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+    # Filtering queryset based on request user's role and date filters
+    def get_filtered_queryset(self):
+        request = self.context.get('request')
+        if not request:
+            return Lid.objects.none()
+
+        user = request.user
+        queryset = Lid.objects.all()
+
+        # Apply start_date and end_date filters
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        if start_date:
+            queryset = queryset.filter(created_at__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(created_at__lte=end_date)
+
+        # Apply role-based filtering
+        if user.role == 'CALL_OPERATOR':
+            queryset = queryset.filter(Q(call_operator=user) | Q(call_operator=None), filial=None)
+
+        return queryset
+
     def get_comments(self, obj):
         comments = Comment.objects.filter(lid=obj)
         CommentSerializer = import_string("data.comments.serializers.CommentSerializer")
@@ -87,40 +110,23 @@ class LidSerializer(serializers.ModelSerializer):
 
     # Total leads count for this user
     def get_leads_count(self, obj):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            user = request.user
-
-            return Lid.objects.filter(Q(call_operator=user) |Q( call_operator=None) , filial=None).count()
-        return 0
+        queryset = self.get_filtered_queryset()
+        return queryset.count()
 
     # New leads not assigned to a filial
     def get_new_leads(self, obj):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            user = request.user
-            return Lid.objects.filter(call_operator=user, filial=None, lid_stage_type="NEW_LID").count()
-        return 0
+        queryset = self.get_filtered_queryset()
+        return queryset.filter(lid_stage_type="NEW_LID").count()
 
     # Leads in the "order creating" stage for this user
     def get_order_creating(self, obj):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            user = request.user
-            return Lid.objects.filter(
-                call_operator=user,
-                filial=None,
-                lid_stage_type="NEW_LID"
-            ).count()
-        return 0
+        queryset = self.get_filtered_queryset()
+        return queryset.filter(lid_stage_type="NEW_LID").exclude(filial=None).count()
 
     # Archived leads with the "new_lid" stage for this user
     def get_archived_new_leads(self, obj):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            user = request.user
-            return Lid.objects.filter(call_operator=user, is_archived=True, lid_stage_type="NEW_LID").count()
-        return 0
+        queryset = self.get_filtered_queryset()
+        return queryset.filter(is_archived=True, lid_stage_type="NEW_LID").count()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
