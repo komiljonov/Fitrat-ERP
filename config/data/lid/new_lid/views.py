@@ -12,9 +12,7 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, \
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from translate import Translator
 from .models import Lid
-from .tests import CustomPagination
 from ..new_lid.serializers import LidSerializer
 from ...account.permission import FilialRestrictedQuerySetMixin
 
@@ -24,7 +22,6 @@ from ...account.permission import FilialRestrictedQuerySetMixin
 class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
     serializer_class = LidSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = CustomPagination
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 

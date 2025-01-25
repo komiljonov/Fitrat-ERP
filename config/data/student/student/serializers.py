@@ -110,6 +110,7 @@ class StudentSerializer(serializers.ModelSerializer):
         representation['marketing_channel'] = MarketingChannelSerializer(
             instance.marketing_channel).data if instance.marketing_channel else None
 
+        representation['sales_manager'] = UserSerializer(instance.sales_manager).data if instance.sales_manager else None
 
         representation['moderator'] = UserSerializer(instance.moderator).data if instance.moderator else None
         # Safely handle new_student_stages
