@@ -5,8 +5,6 @@ import random
 import django
 from faker import Faker
 
-
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
 

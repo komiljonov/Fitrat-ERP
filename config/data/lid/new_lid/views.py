@@ -122,7 +122,7 @@ class ExportLidToExcelAPIView(APIView):
         lid_stage_type = request.query_params.get("lid_stage_type")
 
         # Filter queryset
-        queryset = Lid.objects.all()
+        queryset = Lid.objects.filter(lid_stage_type="ORDERED_LID")
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__range=[start_date, end_date])
@@ -157,7 +157,7 @@ class ExportLidToExcelAPIView(APIView):
                 lid.date_of_birth.strftime('%d-%m-%Y') if lid.date_of_birth else "",
                 lid.education_lang,
                 lid.edu_class,
-                lid.subject,
+                lid.subject.name if lid.subject else "",
                 lid.ball,
                 lid.filial.name if lid.filial else "",
                 lid.marketing_channel.name if lid.marketing_channel else "",
