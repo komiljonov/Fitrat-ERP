@@ -11,6 +11,7 @@ class SubjectSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
+            'label',
         ]
 
 class LevelSerializer(serializers.ModelSerializer):

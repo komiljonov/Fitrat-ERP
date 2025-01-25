@@ -1,9 +1,11 @@
 # Create your views here.
 
 from django.views.decorators.csrf import csrf_exempt
+from django_filters.rest_framework import DjangoFilterBackend
 from passlib.context import CryptContext
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotFound
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -106,7 +108,6 @@ class LogoutAPIView(APIView):
 
 class UserInfo(APIView):
     permission_classes = (IsAuthenticated,)
-    authentication_classes = (JWTAuthentication,)
 
     def get(self, request):
         try:
@@ -118,3 +119,15 @@ class UserInfo(APIView):
         # Serialize the user data
         user_serializer = UserSerializer(user)
         return Response(user_serializer.data)
+
+
+
+class StuffRolesView(ListAPIView):
+    # permission_classes = (IsAuthenticated,)
+    queryset = CustomUser.objects.all()
+    serializer_class = UserListSerializer
+
+    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
+    search_fields = ('role','first_name','last_name')
+    ordering_fields = ('role','first_name','last_name')
+    filterset_fields = ('role','first_name','last_name')
