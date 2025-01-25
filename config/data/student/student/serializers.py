@@ -68,6 +68,8 @@ class StudentSerializer(serializers.ModelSerializer):
 
             'call_operator',
 
+            'sales_manager',
+
             "is_archived",
 
             "attendance_count",

@@ -53,6 +53,7 @@ class LidSerializer(serializers.ModelSerializer):
             "is_archived",
             "comments",
             "tasks",
+            'moderator',
             "call_operator",
             "group",
             "lessons_count",

@@ -67,6 +67,8 @@ class Student(TimeStampModel):
                                                  blank=True, help_text="Moderator for this student",
                                                  related_name="student_moderator")
 
+    sales_manager : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,)
+
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.new_student_stages} stage"
 
