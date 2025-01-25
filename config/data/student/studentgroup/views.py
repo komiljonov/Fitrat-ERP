@@ -1,12 +1,13 @@
+from django.db.models import Q
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView,ListAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import StudentsGroupSerializer
+from .serializers import StudentsGroupSerializer, StudentGroupMixSerializer
 
 from .models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
@@ -50,3 +51,14 @@ class GroupStudentList(ListAPIView):
         group_id = self.kwargs.get('pk')  # Get the 'pk' from the URL
         queryset = StudentGroup.objects.filter(group__id=group_id)  # Filter by the group id
         return queryset
+
+
+class GroupStudentDetail(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = StudentGroupMixSerializer
+
+    def get_queryset(self):
+        id = self.kwargs.get('pk')
+        print(id)
+
+        return StudentGroup.objects.filter(Q(student=id) | Q(lid=id))

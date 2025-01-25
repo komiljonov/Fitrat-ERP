@@ -1,7 +1,6 @@
 
 
 from django.db import models
-from django.db.models import QuerySet
 
 from data.command.models import TimeStampModel
 from data.student.groups.models import Group

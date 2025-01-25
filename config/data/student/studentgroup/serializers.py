@@ -43,4 +43,24 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
 
 
 
+class StudentGroupMixSerializer(serializers.ModelSerializer):
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
+
+    class Meta:
+        model = StudentGroup
+        fields = [
+            'id',
+            'group',
+            'student',
+            'lid',
+        ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['group'] = GroupSerializer(instance.group).data
+
+        return rep
+
+
+
 

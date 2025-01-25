@@ -1,22 +1,19 @@
-from django.contrib.auth import authenticate
 from django.utils.module_loading import import_string
-from kombu.asynchronous.http import Response
+from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Student
 from ..attendance.models import Attendance
-from ..lesson.models import Lesson
 from ...account.permission import PhoneAuthBackend
 from ...account.serializers import UserSerializer
 from ...comments.models import Comment
-
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
-from ...stages.models import NewLidStages, StudentStages, NewStudentStages
-from ...stages.serializers import StudentStagesSerializer, NewOrderedLidStagesSerializer, NewStudentStagesSerializer
+from ...stages.models import StudentStages, NewStudentStages
+from ...stages.serializers import StudentStagesSerializer, NewStudentStagesSerializer
 from ...tasks.models import Task
 
 
@@ -29,7 +26,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
     tasks = serializers.SerializerMethodField()
 
-    group = serializers.SerializerMethodField()
+    # group = serializers.SerializerMethodField()
 
 
     password  = serializers.CharField(write_only=True)
@@ -53,7 +50,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "marketing_channel",
 
             "comments",
-            "group",
+            # "group",
 
             "tasks",
 
@@ -88,13 +85,13 @@ class StudentSerializer(serializers.ModelSerializer):
         TaskSerializer = import_string("data.tasks.serializers.TaskSerializer")
         return TaskSerializer(tasks, many=True).data
 
-    def get_group(self, obj):
-        attendance = Attendance.objects.filter(student=obj)
-        if attendance.exists():
-            groups = [att.lesson.group for att in attendance]
-            GroupSerializer = import_string("data.student.groups.serializers.GroupSerializer")
-            return GroupSerializer(groups, many=True).data
-        return None
+    # def get_group(self, obj):
+    #     attendance = Attendance.objects.filter(student=obj)
+    #     if attendance.exists():
+    #         groups = [att.lesson.group for att in attendance]
+    #         GroupSerializer = import_string("data.student.groups.serializers.GroupSerializer")
+    #         return GroupSerializer(groups, many=True).data
+    #     return None
 
     def get_attendance_count(self, obj):
         attendance = Attendance.objects.filter(student=obj)

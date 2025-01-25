@@ -11,6 +11,7 @@ from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...student.attendance.models import Attendance
+from ...student.studentgroup.models import StudentGroup
 from ...tasks.models import Task
 
 
@@ -21,7 +22,7 @@ class LidSerializer(serializers.ModelSerializer):
 
     comments = serializers.SerializerMethodField()
     tasks = serializers.SerializerMethodField()
-    group = serializers.SerializerMethodField()
+    # group = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
 
     # Statistical fields
@@ -55,7 +56,7 @@ class LidSerializer(serializers.ModelSerializer):
             "tasks",
             'moderator',
             "call_operator",
-            "group",
+            # "group",
             "lessons_count",
             "leads_count",
             "new_leads",
@@ -95,14 +96,14 @@ class LidSerializer(serializers.ModelSerializer):
         tasks = Task.objects.filter(lid=obj)
         TaskSerializer = import_string("data.tasks.serializers.TaskSerializer")
         return TaskSerializer(tasks, many=True).data
-
-    def get_group(self, obj):
-        attendance = Attendance.objects.filter(lid=obj)
-        if attendance.exists():
-            groups = [att.lesson.group for att in attendance]
-            GroupSerializer = import_string("data.student.groups.serializers.GroupSerializer")
-            return GroupSerializer(groups, many=True).data
-        return None
+    #
+    # def get_group(self, obj):
+    #     groups = StudentGroup.objects.filter(lid=obj)
+    #     if groups.exists():
+    #         groups = [att.group for att in groups]  # Accessing the related 'group' field
+    #         StudentsGroupSerializer = import_string("data.student.studentgroup.serializers.StudentsGroupSerializer")
+    #         return StudentsGroupSerializer(groups, many=True).data
+    #     return None
 
     def get_lessons_count(self, obj):
         attendance_count = Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
