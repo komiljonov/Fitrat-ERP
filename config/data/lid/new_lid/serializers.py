@@ -41,6 +41,7 @@ class LidSerializer(serializers.ModelSerializer):
             "education_lang",
             "student_type",
             "edu_class",
+            'edu_level',
             "subject",
             "ball",
             "filial",

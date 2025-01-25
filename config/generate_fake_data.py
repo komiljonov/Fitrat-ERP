@@ -5,6 +5,8 @@ import random
 import django
 from faker import Faker
 
+
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
 
@@ -15,7 +17,7 @@ from data.student.groups.models import Day
 from data.account.models import CustomUser
 from data.department.filial.models import Filial
 from data.department.marketing_channel.models import MarketingChannel
-
+from data.student.subject.models import Subject
 fake = Faker()
 
 def generate_fake_data():
@@ -68,8 +70,9 @@ def generate_fake_data():
             phone=fake.phone_number(),
             date_of_birth=fake.date_of_birth(minimum_age=10, maximum_age=18),
             education_lang=random.choice(['ENG', 'RU', 'UZB']),
-            edu_class=str(fake.random_int(min=1, max=12)),
-            subject=fake.word(),
+            edu_class=random.choice(["SCHOOL", "UNIVERSITY","NONE"]),
+            edu_level=random.choice(["1", "10", "5", "7", "3", "2"]),
+            subject=Subject.objects.order_by('?').first(),
             filial=Filial.objects.order_by('?').first(),
             ball=fake.random_int(min=50, max=100),
             balance=round(random.uniform(100, 1000), 2),
@@ -87,8 +90,9 @@ def generate_fake_data():
             date_of_birth=fake.date_of_birth(minimum_age=20, maximum_age=40),
             education_lang=random.choice(['ENG', 'RU', 'UZB']),
             student_type="student",
-            edu_class=str(fake.random_int(min=1, max=12)),
-            subject=fake.word(),
+            edu_class=random.choice(["SCHOOL", "UNIVERSITY", "NONE"]),
+            edu_level=random.choice(["1", "10", "5", "7", "3", "2"]),
+            subject=Subject.objects.order_by('?').first(),
             ball=fake.random_int(min=50, max=100),
             filial=Filial.objects.order_by('?').first(),
             call_operator=CustomUser.objects.filter(role="CALL_OPERATOR").order_by('?').first(),

@@ -17,7 +17,7 @@ def on_create(sender, instance: Student, created, **kwargs):
                 come_from=instance,
             )
 
-        if instance.balance > 0 :
+        if instance.balance < 50000 :
             if instance.balance_status == "ACTIVE":
                 instance.balance_status = "INACTIVE"
                 instance.save()

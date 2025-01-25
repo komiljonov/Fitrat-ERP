@@ -25,8 +25,16 @@ class Lid(TimeStampModel):
 
     education_lang = models.CharField(choices=language_choise,default="UZB",max_length=100)
     student_type = models.CharField(max_length=100, default="student")
-    edu_class = models.CharField(max_length=100, help_text="Education level at school if student studies at school")
-    subject = models.CharField(max_length=100,null=True, help_text="Subject that student won at competition")
+    edu_class = models.CharField(choices=[
+        ("SCHOOL","School"),
+        ("UNIVERSITY","University"),
+        ("NONE","None"),
+    ],default="NONE",
+        max_length=100,
+        help_text="Education level at school if student studies at school")
+    edu_level = models.CharField(null=True,blank=True,max_length=100)
+    subject = models.ForeignKey("subject.Subject",on_delete=models.SET_NULL,null=True,blank=True,
+                                help_text="Subject that student won at competition")
     ball = models.IntegerField(default=0, null=True, blank=True, help_text="Earned ball at competition")
 
     filial : Filial = models.ForeignKey(Filial, on_delete=models.SET_NULL,

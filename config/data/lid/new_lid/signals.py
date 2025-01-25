@@ -22,7 +22,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
 
             # Check if a Student with the same phone number exists
             student, student_created = Student.objects.get_or_create(
-                phone_number=instance.phone_number,
+                phone=instance.phone_number,
                 defaults={
                     "first_name": instance.first_name,
                     "last_name": instance.last_name,
@@ -30,6 +30,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                     "education_lang": instance.education_lang,
                     "student_type": instance.student_type,
                     "edu_class": instance.edu_class,
+                    "edu_level": instance.edu_level,
                     "subject": instance.subject,
                     "ball": instance.ball,
                     "filial": instance.filial,
@@ -48,6 +49,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.education_lang = instance.education_lang
                 student.student_type = instance.student_type
                 student.edu_class = instance.edu_class
+                student.edu_level = instance.edu_level
                 student.subject = instance.subject
                 student.ball = instance.ball
                 student.filial = instance.filial
