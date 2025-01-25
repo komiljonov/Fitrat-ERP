@@ -1,7 +1,6 @@
 from django.db.models import Q
 from django.utils.module_loading import import_string
 from rest_framework import serializers
-
 from .models import Lid
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
@@ -11,7 +10,6 @@ from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...student.attendance.models import Attendance
-from ...student.studentgroup.models import StudentGroup
 from ...tasks.models import Task
 
 
@@ -22,7 +20,6 @@ class LidSerializer(serializers.ModelSerializer):
 
     comments = serializers.SerializerMethodField()
     tasks = serializers.SerializerMethodField()
-    # group = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
 
     # Statistical fields
@@ -56,7 +53,6 @@ class LidSerializer(serializers.ModelSerializer):
             "tasks",
             'moderator',
             "call_operator",
-            # "group",
             "lessons_count",
             "leads_count",
             "new_leads",
@@ -65,7 +61,6 @@ class LidSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    # Filtering queryset based on request user's role and date filters
     def get_filtered_queryset(self):
         request = self.context.get('request')
         if not request:
@@ -96,35 +91,23 @@ class LidSerializer(serializers.ModelSerializer):
         tasks = Task.objects.filter(lid=obj)
         TaskSerializer = import_string("data.tasks.serializers.TaskSerializer")
         return TaskSerializer(tasks, many=True).data
-    #
-    # def get_group(self, obj):
-    #     groups = StudentGroup.objects.filter(lid=obj)
-    #     if groups.exists():
-    #         groups = [att.group for att in groups]  # Accessing the related 'group' field
-    #         StudentsGroupSerializer = import_string("data.student.studentgroup.serializers.StudentsGroupSerializer")
-    #         return StudentsGroupSerializer(groups, many=True).data
-    #     return None
 
     def get_lessons_count(self, obj):
         attendance_count = Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
         return attendance_count
 
-    # Total leads count for this user
     def get_leads_count(self, obj):
         queryset = self.get_filtered_queryset()
         return queryset.count()
 
-    # New leads not assigned to a filial
     def get_new_leads(self, obj):
         queryset = self.get_filtered_queryset()
         return queryset.filter(lid_stage_type="NEW_LID").count()
 
-    # Leads in the "order creating" stage for this user
     def get_order_creating(self, obj):
         queryset = self.get_filtered_queryset()
         return queryset.filter(lid_stage_type="NEW_LID").exclude(filial=None).count()
 
-    # Archived leads with the "new_lid" stage for this user
     def get_archived_new_leads(self, obj):
         queryset = self.get_filtered_queryset()
         return queryset.filter(is_archived=True, lid_stage_type="NEW_LID").count()
@@ -134,10 +117,8 @@ class LidSerializer(serializers.ModelSerializer):
 
         # Serialize related fields
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
-        representation['marketing_channel'] = MarketingChannelSerializer(
-            instance.marketing_channel).data if instance.marketing_channel else None
-        representation['call_operator'] = UserSerializer(
-            instance.call_operator).data if instance.call_operator else None
+        representation['marketing_channel'] = MarketingChannelSerializer(instance.marketing_channel).data if instance.marketing_channel else None
+        representation['call_operator'] = UserSerializer(instance.call_operator).data if instance.call_operator else None
 
         # Add calculated fields
         representation['lessons_count'] = self.get_lessons_count(instance)

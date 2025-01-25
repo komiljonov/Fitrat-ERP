@@ -22,7 +22,6 @@ from ...account.permission import FilialRestrictedQuerySetMixin
 class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
     serializer_class = LidSerializer
     permission_classes = [IsAuthenticated]
-
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 
     search_fields = ["first_name", "last_name", "phone_number", ]
@@ -190,3 +189,22 @@ class ExportLidToExcelAPIView(APIView):
 
 
 
+class LidStatisticsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Calculate statistics
+        leads_count = Lid.objects.count()
+        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID").count()
+        order_creating = Lid.objects.filter(lid_stage_type="NEW_LID").exclude(filial=None).count()
+        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID").count()
+
+        # Prepare statistics response
+        statistics = {
+            "leads_count": leads_count,
+            "new_leads": new_leads,
+            "order_creating": order_creating,
+            "archived_new_leads": archived_new_leads,
+        }
+
+        return Response(statistics)
