@@ -132,9 +132,19 @@ class LidSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
+        # Serialize related fields
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
-        representation['marketing_channel'] = MarketingChannelSerializer(instance.marketing_channel).data if instance.marketing_channel else None
-        representation['call_operator'] = UserSerializer(instance.call_operator).data if instance.call_operator else None
+        representation['marketing_channel'] = MarketingChannelSerializer(
+            instance.marketing_channel).data if instance.marketing_channel else None
+        representation['call_operator'] = UserSerializer(
+            instance.call_operator).data if instance.call_operator else None
+
+        # Add calculated fields
+        representation['lessons_count'] = self.get_lessons_count(instance)
+        representation['leads_count'] = self.get_leads_count(instance)
+        representation['new_leads'] = self.get_new_leads(instance)
+        representation['order_creating'] = self.get_order_creating(instance)
+        representation['archived_new_leads'] = self.get_archived_new_leads(instance)
 
         return representation
 

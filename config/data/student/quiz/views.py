@@ -59,7 +59,7 @@ class QuestionCheckAnswerView(GenericAPIView):
 
 
 class QuizBulkCheckView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def post(self, request, quiz_pk):
         try:
             # Ensure the quiz exists
