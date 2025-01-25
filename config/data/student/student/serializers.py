@@ -8,6 +8,7 @@ from .models import Student
 from ..attendance.models import Attendance
 from ..lesson.models import Lesson
 from ...account.permission import PhoneAuthBackend
+from ...account.serializers import UserSerializer
 from ...comments.models import Comment
 
 from ...department.filial.models import Filial
@@ -110,6 +111,8 @@ class StudentSerializer(serializers.ModelSerializer):
         representation['marketing_channel'] = MarketingChannelSerializer(
             instance.marketing_channel).data if instance.marketing_channel else None
 
+
+        representation['moderator'] = UserSerializer(instance.moderator).data if instance.moderator else None
         # Safely handle new_student_stages
         if isinstance(instance.new_student_stages, NewStudentStages):
             representation['new_student_stages'] = NewStudentStagesSerializer(instance.new_student_stages).data

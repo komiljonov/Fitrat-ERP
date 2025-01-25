@@ -14,6 +14,5 @@ class StudentGroup(TimeStampModel):
     student : "Student" = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True)
     lid : "Lid" = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True)
 
-
     def __str__(self):
         return self.group.name

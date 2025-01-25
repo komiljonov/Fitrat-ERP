@@ -21,7 +21,7 @@ urlpatterns = [
     path('',UserList.as_view(), name='user_list'),
     path('<uuid:pk>/', UserUpdateAPIView.as_view(), name='user_update'),
     path('logout', LogoutAPIView.as_view(), name='logout'),
-    path('me/<uuid:pk>/',UserInfo.as_view(), name='user-info')
+    path('me/',UserInfo.as_view(), name='user-info')
 ]
 
 # urlpatterns += [
