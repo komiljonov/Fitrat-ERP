@@ -198,6 +198,8 @@ class LidStatisticsView(APIView):
         new_leads = Lid.objects.filter(lid_stage_type="NEW_LID").count()
         order_creating = Lid.objects.filter(lid_stage_type="NEW_LID").exclude(filial=None).count()
         archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID").count()
+        re_colled = Lid.objects.filter(is_archived=False, lid_stage_type="NEW_LID",lid_stages="QAYTA_ALOQA").count()
+
 
         # Ordered statistics
         ordered_leads_count = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID").count()
@@ -210,6 +212,7 @@ class LidStatisticsView(APIView):
         statistics = {
             "leads_count": leads_count,
             "new_leads": new_leads,
+            "re_called": re_colled,
             "order_creating": order_creating,
             "archived_new_leads": archived_new_leads,
         }
