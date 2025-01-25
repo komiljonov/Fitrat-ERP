@@ -214,6 +214,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
     "https://fitrat-erp.vercel.app",
+    "https://api.fitrat.sector-soft.ru"
 ]
 
 CORS_ALLOW_METHODS = (
