@@ -131,3 +131,6 @@ class StuffRolesView(ListAPIView):
     search_fields = ('role','first_name','last_name')
     ordering_fields = ('role','first_name','last_name')
     filterset_fields = ('role','first_name','last_name')
+
+    def get_paginated_response(self, data):
+        return Response(data)
