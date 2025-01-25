@@ -12,11 +12,11 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, \
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from .models import Lid
-from ..new_lid.serializers import LidSerializer
+from .serializers import LidSerializer
 from ...account.permission import FilialRestrictedQuerySetMixin
-
-
+from ...student.attendance.models import Attendance
 
 
 class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
@@ -199,7 +199,14 @@ class LidStatisticsView(APIView):
         order_creating = Lid.objects.filter(lid_stage_type="NEW_LID").exclude(filial=None).count()
         archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID").count()
 
-        # Prepare statistics response
+        # Ordered statistics
+        ordered_leads_count = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID").count()
+        ordered_new_leads = Lid.objects.filter(is_archived=False, lid_stage_type="NEW_LID").count()
+        archived_ordered_leads = Lid.objects.filter(is_archived=True, lid_stage_type="ARCHIVED").count()
+        first_lesson_not = Attendance.objects.filter(lid=kwargs.get("lid"), reason__in=["UNREASONED", "REASONED"]).count()
+        first_lesson = Attendance.objects.filter(lid=kwargs.get("lid"), reason="IS_PRESENT").count()
+
+
         statistics = {
             "leads_count": leads_count,
             "new_leads": new_leads,
@@ -207,4 +214,20 @@ class LidStatisticsView(APIView):
             "archived_new_leads": archived_new_leads,
         }
 
-        return Response(statistics)
+
+        # Additional ordered statistics (could be pagination or other stats)
+        ordered_statistics = {
+            "ordered_leads_count": ordered_leads_count,
+            "ordered_waiting_leads": ordered_new_leads,  # Serialized data
+            "ordered_first_lesson_not_come": first_lesson_not,
+            "ordered_first_lesson": first_lesson,
+            "ordered_archived": archived_ordered_leads,
+        }
+
+        # Including both statistics and ordered data in the response
+        response_data = {
+            "statistics": statistics,
+            "ordered_statistics": ordered_statistics,
+        }
+
+        return Response(response_data)
