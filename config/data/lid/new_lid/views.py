@@ -217,10 +217,10 @@ class LidStatisticsView(APIView):
     def get(self, request, *args, **kwargs):
         # Calculate statistics
         leads_count = Lid.objects.filter(call_operator__in=[None,request.user],filial=None).count()
-        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID",filial=None).count()
-        order_creating = Lid.objects.filter(filial=None,lid_stage_type="NEW_LID").exclude(filial=None).count()
-        archived_new_leads = Lid.objects.filter(is_archived=True,filial=None, lid_stage_type="NEW_LID").count()
-        re_colled = Lid.objects.filter(is_archived=False,filial=None, lid_stage_type="NEW_LID",lid_stages="QAYTA_ALOQA").count()
+        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID",filial=None,call_operator=None).count()
+        order_creating = Lid.objects.filter(filial=None,lid_stage_type="NEW_LID",call_operator=request.user).count()
+        archived_new_leads = Lid.objects.filter(is_archived=True,filial=None, lid_stage_type="NEW_LID",call_operator=request.user).count()
+        re_colled = Lid.objects.filter(is_archived=False,filial=None, lid_stage_type="NEW_LID",lid_stages="QAYTA_ALOQA",call_operator=request.user).count()
 
 
         # Ordered statistics
