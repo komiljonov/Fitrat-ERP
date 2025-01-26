@@ -14,11 +14,11 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
     """
     if not created:
         if instance.is_student and instance.filial:
-            try:
-                # Get the single `NewStudentStages` instance
-                new_student_stage_instance = NewStudentStages.objects.get(name="TO'LOV KUTILMOQDA")
-            except NewStudentStages.DoesNotExist:
-                raise ValueError("No NewStudentStages instance found with the name 'TO'LOV KUTILMOQDA'.")
+            # try:
+            #     # Get the single `NewStudentStages` instance
+            #     new_student_stage_instance = NewStudentStages.objects.get(name="TO'LOV KUTILMOQDA")
+            # except NewStudentStages.DoesNotExist:
+            #     raise ValueError("No NewStudentStages instance found with the name 'TO'LOV KUTILMOQDA'.")
 
             # Check if a Student with the same phone number exists
             student, student_created = Student.objects.get_or_create(
@@ -35,7 +35,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                     "ball": instance.ball,
                     "filial": instance.filial,
                     "marketing_channel": instance.marketing_channel,
-                    "new_student_stages": new_student_stage_instance,  # Assign instance here
+                    # "new_student_stages": new_student_stage_instance,  # Assign instance here
                     "call_operator": instance.call_operator,
                     "moderator": instance.moderator,
                 },
@@ -54,7 +54,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.ball = instance.ball
                 student.filial = instance.filial
                 student.marketing_channel = instance.marketing_channel
-                student.new_student_stages = new_student_stage_instance  # Assign instance here
+                # student.new_student_stages = new_student_stage_instance  # Assign instance here
                 student.call_operator = instance.call_operator
                 student.moderator = instance.moderator
                 student.save()

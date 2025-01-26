@@ -20,8 +20,8 @@ from ...tasks.models import Task
 class StudentSerializer(serializers.ModelSerializer):
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(),allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(),allow_null=True)
-    new_student_stages = serializers.PrimaryKeyRelatedField(queryset=NewStudentStages.objects.all(),allow_null=True)
-    active_student_stages = serializers.PrimaryKeyRelatedField(queryset=StudentStages.objects.all(),allow_null=True)
+    # new_student_stages = serializers.PrimaryKeyRelatedField(queryset=NewStudentStages.objects.all(),allow_null=True)
+    # active_student_stages = serializers.PrimaryKeyRelatedField(queryset=StudentStages.objects.all(),allow_null=True)
     comments = serializers.SerializerMethodField()
 
     tasks = serializers.SerializerMethodField()
@@ -55,8 +55,8 @@ class StudentSerializer(serializers.ModelSerializer):
             "tasks",
 
             "student_stage_type",
-            "new_student_stages",
-            "active_student_stages",
+            # "new_student_stages",
+            # "active_student_stages",
 
             'balance_status',
             'balance',
@@ -114,16 +114,16 @@ class StudentSerializer(serializers.ModelSerializer):
 
         representation['moderator'] = UserSerializer(instance.moderator).data if instance.moderator else None
         # Safely handle new_student_stages
-        if isinstance(instance.new_student_stages, NewStudentStages):
-            representation['new_student_stages'] = NewStudentStagesSerializer(instance.new_student_stages).data
-        else:
-            representation['new_student_stages'] = None
-
-        # # Safely handle active_student_stages
-        if isinstance(instance.active_student_stages, StudentStages):
-            representation['active_student_stages'] = StudentStagesSerializer(instance.active_student_stages).data
-        else:
-            representation['active_student_stages'] = None
+        # if isinstance(instance.new_student_stages, NewStudentStages):
+        #     representation['new_student_stages'] = NewStudentStagesSerializer(instance.new_student_stages).data
+        # else:
+        #     representation['new_student_stages'] = None
+        #
+        # # # Safely handle active_student_stages
+        # if isinstance(instance.active_student_stages, StudentStages):
+        #     representation['active_student_stages'] = StudentStagesSerializer(instance.active_student_stages).data
+        # else:
+        #     representation['active_student_stages'] = None
 
         return representation
 

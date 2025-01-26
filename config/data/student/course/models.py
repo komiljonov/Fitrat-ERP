@@ -1,4 +1,6 @@
 from django.db import models
+
+from data.student.subject.models import Theme
 from ...command.models import TimeStampModel
 from ...student.subject.models import Subject
 
@@ -9,6 +11,9 @@ class Course(TimeStampModel):
 
     subject : Subject = models.ForeignKey('subject.Subject', on_delete=models.CASCADE)
 
+    lessons_number = models.CharField(max_length=100,null=True, blank=True,help_text="Number of lessons")
+
+    theme : 'Theme' = models.ManyToManyField('subject.Theme', related_name='courses')
 
     status = models.CharField(
         choices=[

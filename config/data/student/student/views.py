@@ -136,7 +136,7 @@ class ExportLidToExcelAPIView(APIView):
         # Loop through students and append data
         for student in queryset:
             # Retrieve the learning subjects if the group is active
-            subjects = self.get_student_subjects(student)
+            # subjects = self.get_student_subjects(student)
 
             sheet.append([
                 student.first_name,
@@ -145,7 +145,7 @@ class ExportLidToExcelAPIView(APIView):
                 student.date_of_birth.strftime('%d-%m-%Y') if student.date_of_birth else "",
                 student.education_lang,
                 student.edu_class,
-                subjects,
+                student.subject.name if student.subject else "",
                 student.ball,
                 student.filial.name if student.filial else "",
                 student.marketing_channel.name if student.marketing_channel else "",
@@ -174,10 +174,10 @@ class ExportLidToExcelAPIView(APIView):
 
         return response
 
-    def get_student_subjects(self, student):
-        # Check if the student has an active group
-        active_group = StudentGroup.objects.filter(student=student, group__status="ACTIVE").first()
-        if active_group:
-            # Return the subjects associated with the active group
-            return ', '.join([subject.name for subject in active_group.subjects.all()])
-        return "No active group"
+    # def get_student_subjects(self, student):
+    #     # Check if the student has an active group
+    #     active_group = StudentGroup.objects.filter(student=student, group__status="ACTIVE").first()
+    #     if active_group:
+    #         # Return the subjects associated with the active group
+    #         return ', '.join([subject.name for subject in active_group.subjects.all()])
+    #     return "No active group"

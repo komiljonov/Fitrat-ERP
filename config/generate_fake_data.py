@@ -23,22 +23,22 @@ def generate_fake_data():
     for _ in range(5):
         Filial.objects.create(name=fake.city())
 
-    # Stages
-    stages = {
-        'lid': ['NEW_LEAD', 'JARAYONDA', 'RAD ETDI'],
-        'order': ['FILIAL_BIRIKTIRILDI', 'BIRINCHI SINOV DARSIGA YOZILDI', 'SINOV DARSIGA KELMADI', 'RAD ETDI'],
-        'student': ['TO\'LOV KUTILMOQDA', 'RAD ETDI'],
-        'active_student': ['ACTIVE TALABA', 'QARIZDOR TALABA', 'DARSNI TUXTATGAN', 'KURSNI TUGATGAN'],
-    }
-
-    for name in stages['lid']:
-        NewLidStages.objects.create(name=name)
-    for name in stages['order']:
-        NewOredersStages.objects.create(name=name)
-    for name in stages['student']:
-        NewStudentStages.objects.create(name=name)
-    for name in stages['active_student']:
-        StudentStages.objects.create(name=name)
+    # # Stages
+    # stages = {
+    #     'lid': ['NEW_LEAD', 'JARAYONDA', 'RAD ETDI'],
+    #     'order': ['FILIAL_BIRIKTIRILDI', 'BIRINCHI SINOV DARSIGA YOZILDI', 'SINOV DARSIGA KELMADI', 'RAD ETDI'],
+    #     'student': ['TO\'LOV KUTILMOQDA', 'RAD ETDI'],
+    #     'active_student': ['ACTIVE TALABA', 'QARIZDOR TALABA', 'DARSNI TUXTATGAN', 'KURSNI TUGATGAN'],
+    # }
+    #
+    # for name in stages['lid']:
+    #     NewLidStages.objects.create(name=name)
+    # for name in stages['order']:
+    #     NewOredersStages.objects.create(name=name)
+    # for name in stages['student']:
+    #     NewStudentStages.objects.create(name=name)
+    # for name in stages['active_student']:
+    #     StudentStages.objects.create(name=name)
 
     # Marketing Channels
     marketing_channels = ['Instagram', 'Telegram', 'Facebook ADD', 'Telegram bot', 'Flyer']
@@ -62,7 +62,7 @@ def generate_fake_data():
 
     # Students
     for _ in range(20):
-        student = Student.objects.create(
+        Student.objects.create(
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             phone=fake.phone_number(),
@@ -73,10 +73,10 @@ def generate_fake_data():
             subject=Subject.objects.order_by('?').first(),
             filial=Filial.objects.order_by('?').first(),
             ball=fake.random_int(min=50, max=100),
-            balance=round(random.uniform(100, 1000), 2),
+            balance=round(random.uniform(100000, 1000000),5),
             marketing_channel=MarketingChannel.objects.order_by("?").first(),
-            new_student_stages=NewStudentStages.objects.order_by('?').first(),
-            active_student_stages=StudentStages.objects.order_by('?').first(),
+            student_stage_type=random.choice(['NEW_STUDENT','ACTIVE_STUDENT']),
+            new_student_stages=random.choice(['BIRINCHI_DARS',"GURUH_O'ZGARTIRGAN","QARIZDOR"])
         )
 
     # Lids

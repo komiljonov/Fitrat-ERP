@@ -33,7 +33,7 @@ class Student(TimeStampModel):
         max_length=100,
         help_text="Education level at school if student studies at school")
     edu_level = models.CharField(null=True, blank=True, max_length=100)
-    subject = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
+    subject  = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
                                 help_text="Subject that student won at competition")
     ball = models.IntegerField(default=0, null=True, blank=True, help_text="Earned ball at competition")
 
@@ -50,15 +50,18 @@ class Student(TimeStampModel):
         help_text="Student stage type",
     )
 
-    new_student_stages : "NewStudentStages" = models.ForeignKey("stages.NewStudentStages", on_delete=models.CASCADE,null=True, blank=True, help_text="NewStudentStages for this student")
-    active_student_stages : "StudentStages" = models.ForeignKey('stages.StudentStages', on_delete=models.CASCADE, null=True, blank=True,help_text="StudentStages for this student")
-
-    is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
-
-    call_operator : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,
-                                                     null=True, blank=True, help_text="Call operator",
-                                                     related_name="student_call_operator")
-
+    new_student_stages = models.CharField(
+        choices=[
+            ('BIRINCHI_DARS','BIRNCHI_DARS'),
+            ("GURUH_O'ZGARTIRGAN","GURUH_O'ZGARTIRGAN"),
+            ("QARIZDOR","QARIZDOR"),
+        ],
+        default="BIRNCHI_DARS",
+        null=True,
+        blank=True,
+        max_length=100,
+        help_text="Student stage type",
+    )
     balance = models.FloatField(default=0)
 
     balance_status = models.CharField(
@@ -76,9 +79,14 @@ class Student(TimeStampModel):
                                                  related_name="student_moderator")
 
     sales_manager : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,)
+    is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
+
+    call_operator : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,
+                                                     null=True, blank=True, help_text="Call operator",
+                                                     related_name="student_call_operator")
 
     def __str__(self):
-        return f"{self.first_name} {self.subject} {self.ball} in {self.new_student_stages} stage"
+        return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
 
 
 

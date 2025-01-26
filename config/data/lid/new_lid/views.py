@@ -44,11 +44,13 @@ class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
         # Base queryset
         queryset = Lid.objects.filter(is_archived=False)
 
-        # Role-based filtering
+        # Role-based filtering      Call_operatorga uzini leadlarini filial ga
+        # biriktirilganlarini ham kurish accessi ochilgan
+
         if user.role == "CALL_OPERATOR":
             queryset = queryset.filter(
                 Q(call_operator=user) |
-                Q(call_operator=None, filial=None)
+                Q(call_operator=None, filial=user.filial)
             )
         if user.role == "ADMINISTRATOR":
             queryset = queryset.filter(filial=user.filial)

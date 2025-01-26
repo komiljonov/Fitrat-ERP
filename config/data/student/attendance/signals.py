@@ -8,36 +8,51 @@ from ...stages.models import NewOredersStages
 
 @receiver(post_save, sender=Attendance)
 def on_attendance_create(sender, instance: Attendance, created, **kwargs):
-    if not instance.lid:
-        return
 
-    if instance.lid.is_student:
-        return
+    if instance.lid:
 
-    attendances_count = Attendance.objects.filter(lid=instance.lid).count()
+        attendances_count = Attendance.objects.filter(lid=instance.lid).count()
 
-    if attendances_count == 1:
-        if instance.reason == "IS_PRESENT":
-            stage_name = f"{attendances_count} darsga qatnashgan"
-        else:
-            stage_name = f"{attendances_count} darsga qatnashmagan"
+        if attendances_count == 1:
+            if instance.reason == "IS_PRESENT":
+                instance.lid.is_student = True
+                instance.lid.save()
+            else:
+                stage_name = f"{attendances_count} darsga qatnashmagan"
+                Notification.objects.create(
+                    user=instance.lid.call_operator,
+                    comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {stage_name} !",
+                    come_from=instance.lid,
+                )
+                instance.lid.ordered_stages = "BIRINCHI_DARSGA_KELMAGAN"
+                instance.lid.save()
 
-        stage, created = NewOredersStages.objects.get_or_create(name=stage_name)
-        instance.lid.ordered_stages = stage
-        instance.lid.save()
+        elif attendances_count > 1 and instance.reason == "UNREASONED":
 
-    elif attendances_count > 1 and instance.reason == "IS_PRESENT":
-        stage, created = NewOredersStages.objects.get_or_create(
-            name=f"{attendances_count} darsga qatnashgan"
-        )
-        instance.lid.ordered_stages = stage
-        instance.lid.save()
+            Notification.objects.create(
+                user=instance.lid.moderator,
+                comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan!",
+                come_from=instance.lid,
+            )
+    if instance.student:
+        attendances_count = Attendance.objects.filter(student=instance.student).count()
+        if attendances_count > 1 and instance.reason == "IS_PRESENT":
+            if instance.student.balance_status =="INACTIVE":
+                Notification.objects.create(
+                    user=instance.student.sales_manager,
+                    comment=f"Talaba {instance.student.first_name} {instance.student.phone} - "
+                            f"{attendances_count} darsga qatnashdi va balansi statusi inactive, To'lov haqida ogohlantiring!",
+                    come_from=instance.lid,
+                )
+        if attendances_count > 1 and instance.reason == "UNREASONED":
 
-        Notification.objects.create(
-            user=instance.lid.moderator,
-            comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga to'lov qilmasdan qatnashgan!",
-            come_from=instance.lid,
-        )
+            Notification.objects.create(
+                user=instance.student.sales_manager,
+                comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashmagan!",
+                come_from=instance.student,
+            )
+
+
 
 
 @receiver(post_save, sender=Attendance)
@@ -58,7 +73,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             if instance.student:  # Ensure student is not None
                 Notification.objects.create(
                     user=instance.student.moderator or instance.student.call_operator,
-                    comment=f"{instance.student.first_name} {instance.student.phone_number} "
+                    comment=f"{instance.student.first_name} {instance.student.phone} "
                             f"ning {instance.created_at} sanasidagi dars davomati sababli dars "
                             f"qoldirilganga o'zgartirildi. E'tiborli bo'ling, bu dars uchun to'langan to'lov qaytarilishiga sabab bo'ldi.",
                     come_from=instance.student,

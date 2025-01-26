@@ -49,7 +49,6 @@ class Theme(TimeStampModel):
                                        related_name='photos')
 
 
-
     type = models.CharField(choices=[
         ('HOMEWORK', 'HOMEWORK'),
         ('COURSE_WORK', 'COURSE_WORK'),

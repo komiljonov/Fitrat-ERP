@@ -1,4 +1,6 @@
 from django.db import models
+
+from data.student.subject.models import Theme
 from ...command.models import TimeStampModel
 from ..groups.models import Group
 from ..subject.models import Subject
@@ -12,6 +14,7 @@ class Lesson(TimeStampModel):
         "groups.Group", on_delete=models.CASCADE, related_name="lessons"
     )
 
+    theme : 'Theme' = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL, null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
     lesson_status = models.CharField(
         choices=[
@@ -21,6 +24,7 @@ class Lesson(TimeStampModel):
         default="ACTIVE",
         max_length=20,
     )
+
     lessons_count = models.IntegerField(default=0)
 
     start_time = models.TimeField(null=True, blank=True)  # Start time for the lesson

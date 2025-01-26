@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from .models import Lesson
 from ..attendance.models import Attendance
+from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group
 from ..groups.serializers import GroupSerializer
 
@@ -14,6 +15,8 @@ class LessonSerializer(serializers.ModelSerializer):
     teacher = serializers.StringRelatedField(source="group.teacher")
     room = serializers.StringRelatedField(source="group.room_number")
 
+    # current_theme = serializers.SerializerMethodField()
+
     class Meta:
         model = Lesson
         fields = [
@@ -24,12 +27,31 @@ class LessonSerializer(serializers.ModelSerializer):
             'comment',
             'teacher',
             'room',
+            'theme',
+            # 'current_theme',
             'lesson_status',
             'lessons_count',
             'attendance',
             'created_at',
             'updated_at',
         ]
+
+    # def get_current_theme(self, obj):
+    #     """
+    #     Calculate lesson dates based on the group data.
+    #     """
+    #     # Retrieve required data from the Group instance
+    #     start_date = obj.start_date.strftime("%Y-%m-%d") if obj.start_date else None
+    #     end_date = obj.finish_date.strftime("%Y-%m-%d") if obj.finish_date else None
+    #     lesson_type = obj.scheduled_day_type  # Assume this corresponds to 'ODD', 'EVEN', or 'EVERYDAY'
+    #     holidays = ['']  # Replace with actual logic to fetch holidays, e.g., from another model
+    #     days_off = ["Sunday"]  # Replace or fetch from settings/config
+    #
+    #     if start_date and end_date:
+    #         # Use the calculate_lessons function to get lesson dates
+    #         lesson_dates = calculate_lessons(start_date, end_date, lesson_type, holidays, days_off)
+    #         return lesson_dates
+    #     return []
 
     def get_attendance(self, obj):
         attendance = Attendance.objects.filter(lesson=obj)
