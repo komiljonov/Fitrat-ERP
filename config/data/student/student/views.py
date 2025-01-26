@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -87,6 +88,54 @@ class StudentScheduleView(FilialRestrictedQuerySetMixin,ListAPIView):
     def get_queryset(self):
         student_groups = StudentGroup.objects.filter(student_id=self.kwargs['pk']).values_list('group_id', flat=True)
         return Lesson.objects.filter(group_id__in=student_groups).order_by("day", "start_time")
+
+
+
+
+class StudentStatistics(FilialRestrictedQuerySetMixin,ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Calculate statistics
+        new_students_count = Student.objects.filter(is_archived=False,filial=request.user.filial,student_stage_type="NEW_STUDENT").count()
+        total_debt = Student.objects.filter(is_archived=False,filial=request.user.filial,student_stage_type="NEW_STUDENT",balance__lt=0).aggregate(total_debt=Sum('balance'))['total_debt'] or 0
+        archived_new_students = Student.objects.filter(is_archived=True,filial=request.user.filial,student_stage_type="NEW_STUDENT").count()
+
+        # Ordered statistics
+        student_count = Student.objects.filter(is_archived=False, filial=request.user.filial,student_stage_type="ACTIVE_STUDENT").count()
+        total_income = Student.objects.filter(is_archived=False,filial=request.user.filial, student_stage_type="ACTIVE_STUDENT",
+                                              balance__gt=0).aggregate(total_income=Sum('balance'))['total_income'] or 0
+        student_total_debt = \
+        Student.objects.filter(is_archived=False,filial=request.user.filial, student_stage_type="ACTIVE_STUDENT", balance__lt=0).aggregate(
+            total_debt=Sum('balance'))['total_debt'] or 0
+
+        archived_student = Student.objects.filter(is_archived=True,filial=request.user.filial, student_stage_type="ACTIVE_STUDENT").count()
+
+
+        statistics = {
+            "new_students_count": new_students_count,
+            "new_students_total_debt": total_debt,
+            "archived_new_students": archived_new_students,
+        }
+
+
+        # Additional ordered statistics (could be pagination or other stats)
+        ordered_statistics = {
+            "student_count": student_count,
+            "total_income": total_income,  # Serialized data
+            "student_total_debt": student_total_debt,
+            "archived_student": archived_student,
+        }
+
+        # Including both statistics and ordered data in the response
+        response_data = {
+            "statistics": statistics,
+            "ordered_statistics": ordered_statistics,
+        }
+
+        return Response(response_data)
+
+
 
 
 

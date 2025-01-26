@@ -56,6 +56,7 @@ class Lid(TimeStampModel):
     lid_stages = models.CharField(choices=[
         ("YANGI_LEAD","YANGI_LEAD"),
         ("QAYTA_ALOQA","QAYTA_ALOQA"),
+        ("O'TIB_KETGAN","O'TIB_KETGAN"),
         ("KUTULMOQDA","KUTULMOQDA"),
         ("O'TIB KETGAN","O'TIB KETGAN"),
     ],
@@ -67,6 +68,7 @@ class Lid(TimeStampModel):
         choices=[
             ("KUTULMOQDA","KUTULMOQDA"),
             ("BIRINCHI_DARSGA_KELMAGAN","BIRINCHI_DARSGA_KELMAGAN"),
+            ("O'TIB KETGAN","O'TIB KETGAN"),
             ("YANGI_BUYURTMA","YANGI_BUYURTMA"),
         ],
         max_length=100,

@@ -14,15 +14,6 @@ class TimeStampModel(models.Model):
 
     filial : "Filial" = models.ForeignKey('filial.Filial', on_delete=models.SET_NULL, null=True,blank=True)
 
-    language = models.CharField(
-        choices=[
-            ('uz','uz'),
-            ('ru','ru'),
-        ],
-        max_length=10,
-        default='uz'
-    )
-
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)

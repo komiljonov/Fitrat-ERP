@@ -60,7 +60,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.save()
 
             # Update attendance records
-            Attendance.objects.filter(lid=instance).update(student=student, lid=None)
+            Attendance.objects.filter(lid=instance).update(student=student)
 
             # Archive the Lid
             post_save.disconnect(on_details_create, sender=Lid)
@@ -98,3 +98,4 @@ def on_details_update(sender, instance: Lid, created, **kwargs):
             finally:
                 # Re-enable signals
                 instance._disable_signals = False
+

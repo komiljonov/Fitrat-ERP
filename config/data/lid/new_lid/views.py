@@ -217,18 +217,18 @@ class LidStatisticsView(APIView):
     def get(self, request, *args, **kwargs):
         # Calculate statistics
         leads_count = Lid.objects.count()
-        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID").count()
-        order_creating = Lid.objects.filter(lid_stage_type="NEW_LID").exclude(filial=None).count()
-        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID").count()
-        re_colled = Lid.objects.filter(is_archived=False, lid_stage_type="NEW_LID",lid_stages="QAYTA_ALOQA").count()
+        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID",filial=request.user.filial).count()
+        order_creating = Lid.objects.filter(filial=request.user.filial,lid_stage_type="NEW_LID").exclude(filial=None).count()
+        archived_new_leads = Lid.objects.filter(is_archived=True,filial=request.user.filial, lid_stage_type="NEW_LID").count()
+        re_colled = Lid.objects.filter(is_archived=False,filial=request.user.filial, lid_stage_type="NEW_LID",lid_stages="QAYTA_ALOQA").count()
 
 
         # Ordered statistics
-        ordered_leads_count = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID").count()
-        ordered_new_leads = Lid.objects.filter(is_archived=False, lid_stage_type="NEW_LID").count()
-        archived_ordered_leads = Lid.objects.filter(is_archived=True, lid_stage_type="ARCHIVED").count()
-        first_lesson_not = Attendance.objects.filter(lid=kwargs.get("lid"), reason__in=["UNREASONED", "REASONED"]).count()
-        first_lesson = Attendance.objects.filter(lid=kwargs.get("lid"), reason="IS_PRESENT").count()
+        ordered_leads_count = Lid.objects.filter(is_archived=False,filial=request.user.filial, lid_stage_type="ORDERED_LID").count()
+        ordered_new_leads = Lid.objects.filter(is_archived=False,filial=request.user.filial, lid_stage_type="NEW_LID").count()
+        archived_ordered_leads = Lid.objects.filter(is_archived=True,filial=request.user.filial, lid_stage_type="ARCHIVED").count()
+        first_lesson_not = Attendance.objects.filter(lid=kwargs.get("lid"),filial=request.user.filial, reason__in=["UNREASONED", "REASONED"]).count()
+        first_lesson = Attendance.objects.filter(lid=kwargs.get("lid"),filial=request.user.filial, reason="IS_PRESENT").count()
 
 
         statistics = {

@@ -19,6 +19,11 @@ app.conf.beat_schedule = {
         'task': 'data.tasks.tasks.check_daily_tasks',
         'schedule': crontab(minute='*/1'),
     },
+    'check-daily-leads': {
+            'task': 'data.lid.new_lid.tasks.check_daily_leads',
+            'schedule': crontab(minute='*/1'),
+        },
+
 }
 
 app.conf.timezone = "Asia/Tashkent"

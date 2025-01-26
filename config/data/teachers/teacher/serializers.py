@@ -2,9 +2,13 @@
 from rest_framework import serializers
 
 from ...account.models import CustomUser
+from ...student.studentgroup.models import StudentGroup
+from ...student.studentgroup.serializers import StudentGroupMixSerializer
 
 
 class TeacherSerializer(serializers.ModelSerializer):
+
+    groups = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
@@ -14,10 +18,14 @@ class TeacherSerializer(serializers.ModelSerializer):
             'phone',
             'photo',
             'role',
+            'groups',
             'balance',
             'created_at',
             'updated_at',
         ]
+    def get_groups(self, obj):
+        groups = StudentGroup.objects.filter(group__teacher=obj)
+        return StudentGroupMixSerializer(groups, many=True).data
 
 
 
