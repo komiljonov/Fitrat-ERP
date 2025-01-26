@@ -79,6 +79,10 @@ class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
         if end_date:
             queryset = queryset.filter(created_at__lte=end_date)
 
+        # If both start_date and end_date are provided, apply the range filter
+        if start_date and end_date:
+            queryset = queryset.filter(created_at__range=[start_date, end_date])
+
         return queryset
 
 
