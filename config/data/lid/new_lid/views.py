@@ -215,7 +215,7 @@ class LidStatisticsView(APIView):
 
     def get(self, request, *args, **kwargs):
         # Calculate statistics
-        leads_count = Lid.objects.filter(is_archived=False,call_operator__in=[None, request.user], filial=None).count()
+        leads_count = Lid.objects.filter(is_archived=False,lid_stage_type="NEW_LID",call_operator__in=[None, request.user], filial=None).count()
         new_leads = Lid.objects.filter(is_archived=False,lid_stage_type="NEW_LID", filial=None, call_operator=None).count()
         order_creating = Lid.objects.filter(is_archived=False,filial=None, lid_stage_type="NEW_LID", call_operator=request.user).count()
         archived_new_leads = Lid.objects.filter(is_archived=True, filial=None, lid_stage_type="NEW_LID", call_operator=request.user).count()
@@ -255,7 +255,7 @@ class LidStatisticsView(APIView):
         archived_ordered_leads = Lid.objects.filter(
             is_archived=True,
             filial=request.user.filial,
-            lid_stage_type="ARCHIVED"
+            lid_stage_type="ORDERED_LID",
         ).count()
 
         # Statistics data
