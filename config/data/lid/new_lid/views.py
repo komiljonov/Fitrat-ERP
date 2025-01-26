@@ -20,7 +20,7 @@ from ...account.permission import FilialRestrictedQuerySetMixin
 from ...student.attendance.models import Attendance
 
 
-class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
+class LidListCreateView(ListCreateAPIView):
     serializer_class = LidSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -50,8 +50,7 @@ class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
 
         if user.role == "CALL_OPERATOR":
             queryset = queryset.filter(
-                Q(call_operator=user,filial=None) |
-                Q(call_operator=None,filial=None)
+                Q(call_operator__in=[user,None],filial=None)
             )
         if user.role == "ADMINISTRATOR":
             queryset = queryset.filter(filial=user.filial)
