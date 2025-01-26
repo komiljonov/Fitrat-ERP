@@ -1,6 +1,7 @@
 from django.core.exceptions import FieldError
 from django.db.models import Q
 from django.http import HttpResponse
+from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -74,14 +75,29 @@ class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
 
-        if start_date:
-            queryset = queryset.filter(created_at__gte=start_date)
-        if end_date:
-            queryset = queryset.filter(created_at__lte=end_date)
+        if start_date and end_date:
+            if start_date:
+                queryset = queryset.filter(created_at__gte=start_date)
+            if end_date:
+                queryset = queryset.filter(created_at__lte=end_date)
+
+        elif start_date:
+            # Parse the start_date string to ensure we are comparing only the date part
+            try:
+                start_date = parse_datetime(start_date).date()
+                queryset = queryset.filter(created_at__date=start_date)
+            except ValueError:
+                pass  # Handle invalid date format, if necessary
+
+        # Handle filtering by exact end_date
+        elif end_date:
+            try:
+                end_date = parse_datetime(end_date).date()
+                queryset = queryset.filter(created_at__date=end_date)
+            except ValueError:
+                pass  # Handle invalid date format, if necessary
 
         # If both start_date and end_date are provided, apply the range filter
-        if start_date and end_date:
-            queryset = queryset.filter(created_at__range=[start_date, end_date])
 
         return queryset
 
