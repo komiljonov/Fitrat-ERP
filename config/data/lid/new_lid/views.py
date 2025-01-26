@@ -50,8 +50,8 @@ class LidListCreateView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
 
         if user.role == "CALL_OPERATOR":
             queryset = queryset.filter(
-                Q(call_operator=user) |
-                Q(call_operator=None, filial=user.filial)
+                Q(call_operator=user,filial=None) |
+                Q(call_operator=None,filial=None)
             )
         if user.role == "ADMINISTRATOR":
             queryset = queryset.filter(filial=user.filial)

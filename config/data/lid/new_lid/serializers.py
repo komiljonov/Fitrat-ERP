@@ -22,11 +22,7 @@ class LidSerializer(serializers.ModelSerializer):
     tasks = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
 
-    # Statistical fields
-    leads_count = serializers.SerializerMethodField()
-    new_leads = serializers.SerializerMethodField()
-    order_creating = serializers.SerializerMethodField()
-    archived_new_leads = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Lid
@@ -55,10 +51,6 @@ class LidSerializer(serializers.ModelSerializer):
             'moderator',
             "call_operator",
             "lessons_count",
-            "leads_count",
-            "new_leads",
-            "order_creating",
-            "archived_new_leads",
             "created_at",
         ]
 
@@ -97,21 +89,6 @@ class LidSerializer(serializers.ModelSerializer):
         attendance_count = Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
         return attendance_count
 
-    def get_leads_count(self, obj):
-        queryset = self.get_filtered_queryset()
-        return queryset.count()
-
-    def get_new_leads(self, obj):
-        queryset = self.get_filtered_queryset()
-        return queryset.filter(lid_stage_type="NEW_LID").count()
-
-    def get_order_creating(self, obj):
-        queryset = self.get_filtered_queryset()
-        return queryset.filter(lid_stage_type="NEW_LID").exclude(filial=None).count()
-
-    def get_archived_new_leads(self, obj):
-        queryset = self.get_filtered_queryset()
-        return queryset.filter(is_archived=True, lid_stage_type="NEW_LID").count()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -123,10 +100,6 @@ class LidSerializer(serializers.ModelSerializer):
 
         # Add calculated fields
         representation['lessons_count'] = self.get_lessons_count(instance)
-        representation['leads_count'] = self.get_leads_count(instance)
-        representation['new_leads'] = self.get_new_leads(instance)
-        representation['order_creating'] = self.get_order_creating(instance)
-        representation['archived_new_leads'] = self.get_archived_new_leads(instance)
 
         return representation
 
