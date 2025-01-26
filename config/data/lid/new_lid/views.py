@@ -216,40 +216,67 @@ class LidStatisticsView(APIView):
 
     def get(self, request, *args, **kwargs):
         # Calculate statistics
-        leads_count = Lid.objects.filter(call_operator__in=[None,request.user],filial=None).count()
-        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID",filial=None,call_operator=None).count()
-        order_creating = Lid.objects.filter(filial=None,lid_stage_type="NEW_LID",call_operator=request.user).count()
-        archived_new_leads = Lid.objects.filter(is_archived=True,filial=None, lid_stage_type="NEW_LID",call_operator=request.user).count()
-        re_colled = Lid.objects.filter(is_archived=False,filial=None, lid_stage_type="NEW_LID",lid_stages="QAYTA_ALOQA",call_operator=request.user).count()
+        leads_count = Lid.objects.filter(is_archived=False,call_operator__in=[None, request.user], filial=None).count()
+        new_leads = Lid.objects.filter(is_archived=False,lid_stage_type="NEW_LID", filial=None, call_operator=None).count()
+        order_creating = Lid.objects.filter(is_archived=False,filial=None, lid_stage_type="NEW_LID", call_operator=request.user).count()
+        archived_new_leads = Lid.objects.filter(is_archived=True, filial=None, lid_stage_type="NEW_LID", call_operator=request.user).count()
+        re_called = Lid.objects.filter(is_archived=False, filial=None, lid_stage_type="NEW_LID", lid_stages="QAYTA_ALOQA", call_operator=request.user).count()
 
+        # Handle `kwargs.get("lid")` safely
+        lid_id = kwargs.get("lid")
+        if lid_id:
+            first_lesson_not = Attendance.objects.filter(
+                lid=lid_id,
+                filial=request.user.filial,
+                reason__in=["UNREASONED", "REASONED"]
+            ).count()
+
+            first_lesson = Attendance.objects.filter(
+                lid=lid_id,
+                filial=request.user.filial,
+                reason="IS_PRESENT"
+            ).count()
+        else:
+            first_lesson_not = 0
+            first_lesson = 0
 
         # Ordered statistics
-        ordered_leads_count = Lid.objects.filter(is_archived=False,filial=request.user.filial, lid_stage_type="ORDERED_LID").count()
-        ordered_new_leads = Lid.objects.filter(is_archived=False,filial=request.user.filial, lid_stage_type="ORDERED_LID").count()
-        archived_ordered_leads = Lid.objects.filter(is_archived=True,filial=request.user.filial, lid_stage_type="ARCHIVED").count()
-        first_lesson_not = Attendance.objects.filter(lid=kwargs.get("lid"),filial=request.user.filial, reason__in=["UNREASONED", "REASONED"]).count()
-        first_lesson = Attendance.objects.filter(lid=kwargs.get("lid"),filial=request.user.filial, reason="IS_PRESENT").count()
+        ordered_leads_count = Lid.objects.filter(
+            is_archived=False,
+            filial=request.user.filial,
+            lid_stage_type="ORDERED_LID"
+        ).count()
 
+        ordered_new_leads = Lid.objects.filter(
+            is_archived=False,
+            filial=request.user.filial,
+            lid_stage_type="ORDERED_LID"
+        ).count()
 
+        archived_ordered_leads = Lid.objects.filter(
+            is_archived=True,
+            filial=request.user.filial,
+            lid_stage_type="ARCHIVED"
+        ).count()
+
+        # Statistics data
         statistics = {
             "leads_count": leads_count,
             "new_leads": new_leads,
-            "re_called": re_colled,
+            "re_called": re_called,
             "order_creating": order_creating,
             "archived_new_leads": archived_new_leads,
         }
 
-
-        # Additional ordered statistics (could be pagination or other stats)
         ordered_statistics = {
             "ordered_leads_count": ordered_leads_count,
-            "ordered_waiting_leads": ordered_new_leads,  # Serialized data
+            "ordered_waiting_leads": ordered_new_leads,
             "ordered_first_lesson_not_come": first_lesson_not,
             "ordered_first_lesson": first_lesson,
             "ordered_archived": archived_ordered_leads,
         }
 
-        # Including both statistics and ordered data in the response
+        # Combine statistics into response
         response_data = {
             "statistics": statistics,
             "ordered_statistics": ordered_statistics,
