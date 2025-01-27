@@ -213,6 +213,7 @@ class LidStatisticsView(APIView):
 
     def get(self, request, *args, **kwargs):
         # Calculate statistics
+        # if
         if request.user.role == "CALL_OPERATOR":
             from django.db.models import Q
 

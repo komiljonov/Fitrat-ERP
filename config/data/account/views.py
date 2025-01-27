@@ -78,6 +78,7 @@ class CustomAuthToken(TokenObtainPairView):
             'user_id': user.pk,
             'phone': user.phone,
             'role': user.role,
+            'filial': user.filial,
         }, status=status.HTTP_200_OK)
 
 
