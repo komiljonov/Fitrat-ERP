@@ -8,7 +8,7 @@ from .models import Attendance
 from .serializers import AttendanceSerializer
 from ..lesson.models import Lesson
 from ..student.models import Student
-from ...account.permission import RoleBasedPermission
+# from ...account.permission import RoleBasedPermission
 from ...lid.new_lid.models import Lid
 
 
@@ -43,7 +43,7 @@ class AttendanceListView(ListAPIView):
 class LessonAttendanceList(ListAPIView):
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all()
-    permission_classes = [RoleBasedPermission]
+    # permission_classes = [RoleBasedPermission]
 
     def get_queryset(self, *args, **kwargs):
         id = self.kwargs.get('pk')

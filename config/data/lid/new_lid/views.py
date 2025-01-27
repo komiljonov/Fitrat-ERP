@@ -35,6 +35,7 @@ class LidListCreateView(ListCreateAPIView):
         "lid_stages",
         "ordered_stages",
         "is_dubl",
+        "is_archived",
     ]
 
     def get_queryset(self):
