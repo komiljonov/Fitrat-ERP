@@ -25,7 +25,7 @@ pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 class RegisterAPIView(CreateAPIView):
     serializer_class = UserCreateSerializer
-    permission_classes = [IsAuthenticated]  # Only authenticated users can create new users
+    # permission_classes = [IsAuthenticated]  # Only authenticated users can create new users
 
     def create(self, request, *args, **kwargs):
 

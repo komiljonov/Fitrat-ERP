@@ -212,11 +212,11 @@ class LidStatisticsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Calculate statistics
-        # if
+        # If the user is a CALL_OPERATOR
         if request.user.role == "CALL_OPERATOR":
             from django.db.models import Q
 
+            # For CALL_OPERATOR, filter leads with call_operator=None or the request.user
             leads_count = Lid.objects.filter(
                 is_archived=False,
                 lid_stage_type="NEW_LID",
@@ -224,18 +224,68 @@ class LidStatisticsView(APIView):
             ).filter(
                 Q(call_operator=None) | Q(call_operator=request.user)
             ).count()
-            new_leads = Lid.objects.filter(is_archived=False,lid_stage_type="NEW_LID", filial=None, call_operator=None).count()
-            order_creating = Lid.objects.filter(is_archived=False,filial=None, lid_stage_type="NEW_LID", call_operator=request.user).count()
-            archived_new_leads = Lid.objects.filter(is_archived=True, filial=None, lid_stage_type="NEW_LID", call_operator=request.user).count()
-            re_called = Lid.objects.filter(is_archived=False, filial=None, lid_stage_type="NEW_LID", lid_stages="QAYTA_ALOQA", call_operator=request.user).count()
+
+            new_leads = Lid.objects.filter(
+                is_archived=False,
+                lid_stage_type="NEW_LID",
+                filial=None,
+                call_operator=None
+            ).count()
+
+            order_creating = Lid.objects.filter(
+                is_archived=False,
+                filial=None,
+                lid_stage_type="NEW_LID",
+                call_operator=request.user
+            ).count()
+
+            archived_new_leads = Lid.objects.filter(
+                is_archived=True,
+                filial=None,
+                lid_stage_type="NEW_LID",
+                call_operator=request.user
+            ).count()
+
+            re_called = Lid.objects.filter(
+                is_archived=False,
+                filial=None,
+                lid_stage_type="NEW_LID",
+                lid_stages="QAYTA_ALOQA",
+                call_operator=request.user
+            ).count()
+
         else:
-            leads_count = Lid.objects.filter(is_archived=False, lid_stage_type="NEW_LID",
-                                              filial=None).count()
-            new_leads = Lid.objects.filter(is_archived=False, lid_stage_type="NEW_LID", filial=None).count()
-            order_creating = Lid.objects.filter(is_archived=False, filial=None, lid_stage_type="NEW_LID").count()
-            archived_new_leads = Lid.objects.filter(is_archived=True, filial=None, lid_stage_type="NEW_LID").count()
-            re_called = Lid.objects.filter(is_archived=False, filial=None, lid_stage_type="NEW_LID",
-                                           lid_stages="QAYTA_ALOQA").count()
+            # For other roles (e.g., ADMINISTRATOR), filter leads without call_operator
+            leads_count = Lid.objects.filter(
+                is_archived=False,
+                lid_stage_type="NEW_LID",
+                filial=None
+            ).count()
+
+            new_leads = Lid.objects.filter(
+                is_archived=False,
+                lid_stage_type="NEW_LID",
+                filial=None
+            ).count()
+
+            order_creating = Lid.objects.filter(
+                is_archived=False,
+                filial=None,
+                lid_stage_type="NEW_LID"
+            ).count()
+
+            archived_new_leads = Lid.objects.filter(
+                is_archived=True,
+                filial=None,
+                lid_stage_type="NEW_LID"
+            ).count()
+
+            re_called = Lid.objects.filter(
+                is_archived=False,
+                filial=None,
+                lid_stage_type="NEW_LID",
+                lid_stages="QAYTA_ALOQA"
+            ).count()
 
         lid_id = kwargs.get("lid")
         if lid_id:
@@ -254,7 +304,7 @@ class LidStatisticsView(APIView):
             first_lesson_not = 0
             first_lesson = 0
 
-        # Ordered statistics
+        # Ordered statistics for all roles
         ordered_leads_count = Lid.objects.filter(
             is_archived=False,
             filial=request.user.filial,
