@@ -50,7 +50,7 @@ class LidListCreateView(ListCreateAPIView):
 
         # Dynamically filter by `is_archived` if provided
         is_archived = self.request.query_params.get("is_archived")
-        if is_archived is not None:
+        if is_archived == "True":
             queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
 
         # Role-based filtering
