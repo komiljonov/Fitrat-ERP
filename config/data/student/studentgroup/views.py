@@ -13,7 +13,7 @@ from .models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
 
 
-class StudentsGroupList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
+class StudentsGroupList(ListCreateAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentsGroupSerializer
     # permission_classes = [IsAuthenticated]
@@ -31,7 +31,7 @@ class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class StudentGroupNopg(FilialRestrictedQuerySetMixin,ListAPIView):
+class StudentGroupNopg(ListAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentsGroupSerializer
     permission_classes = [IsAuthenticated]
