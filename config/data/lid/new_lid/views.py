@@ -213,7 +213,15 @@ class LidStatisticsView(APIView):
     def get(self, request, *args, **kwargs):
         # Calculate statistics
         if request.user.role == "CALL_OPERATOR":
-            leads_count = Lid.objects.filter(is_archived=False,lid_stage_type="NEW_LID",call_operator__in=[None, request.user], filial=None).count()
+            from django.db.models import Q
+
+            leads_count = Lid.objects.filter(
+                is_archived=False,
+                lid_stage_type="NEW_LID",
+                filial=None
+            ).filter(
+                Q(call_operator=None) | Q(call_operator=request.user)
+            ).count()
             new_leads = Lid.objects.filter(is_archived=False,lid_stage_type="NEW_LID", filial=None, call_operator=None).count()
             order_creating = Lid.objects.filter(is_archived=False,filial=None, lid_stage_type="NEW_LID", call_operator=request.user).count()
             archived_new_leads = Lid.objects.filter(is_archived=True, filial=None, lid_stage_type="NEW_LID", call_operator=request.user).count()
