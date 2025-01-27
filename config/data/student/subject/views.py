@@ -11,7 +11,7 @@ from rest_framework.generics import ListCreateAPIView,ListAPIView,RetrieveUpdate
 from ...account.permission import FilialRestrictedQuerySetMixin
 
 
-class SubjectList(FilialRestrictedQuerySetMixin,ListCreateAPIView):
+class SubjectList(ListCreateAPIView):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     permission_classes = [IsAuthenticated]
@@ -22,7 +22,7 @@ class SubjectDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class SubjectNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
+class SubjectNoPG(ListAPIView):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     permission_classes = [IsAuthenticated]
@@ -32,7 +32,7 @@ class SubjectNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
 
 
 
-class LevelList(FilialRestrictedQuerySetMixin,ListCreateAPIView):
+class LevelList(ListCreateAPIView):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
     permission_classes = [IsAuthenticated]
@@ -43,7 +43,7 @@ class LevelDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = LevelSerializer
     permission_classes = [IsAuthenticated]
 
-class LevelNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
+class LevelNoPG(ListAPIView):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
     permission_classes = [IsAuthenticated]
@@ -53,7 +53,7 @@ class LevelNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
 
 
 
-class ThemeList(FilialRestrictedQuerySetMixin,ListCreateAPIView):
+class ThemeList(ListCreateAPIView):
     queryset = Theme.objects.all()
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
@@ -63,7 +63,7 @@ class ThemeDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
 
-class ThemeNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
+class ThemeNoPG(ListAPIView):
     queryset = Theme.objects.all()
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
