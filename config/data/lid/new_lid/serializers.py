@@ -32,6 +32,7 @@ class LidSerializer(serializers.ModelSerializer):
             "message_text",
             "first_name",
             "last_name",
+            'middle_name',
             "phone_number",
             "date_of_birth",
             "education_lang",

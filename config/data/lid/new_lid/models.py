@@ -15,7 +15,8 @@ class Lid(TimeStampModel):
     message_text = models.CharField(max_length=120,null=True,blank=True)
 
     first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100,null=True,blank=True)
+    middle_name = models.CharField(max_length=100,null=True,blank=True)
     phone_number = models.CharField(max_length=100,unique=True)
     date_of_birth = models.DateField(default=timezone.now())
 
