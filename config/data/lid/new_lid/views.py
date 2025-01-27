@@ -40,18 +40,23 @@ class LidListCreateView(ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+
+        # Handle anonymous users
         if user.is_anonymous:
             return Lid.objects.none()
 
-        # Base queryset
-        queryset = Lid.objects.filter(is_archived=False)
+        # Start with a base queryset
+        queryset = Lid.objects.all()
 
-        # Role-based filtering      Call_operatorga uzini leadlarini filial ga
-        # biriktirilganlarini ham kurish accessi ochilgan
+        # Dynamically filter by `is_archived` if provided
+        is_archived = self.request.query_params.get("is_archived")
+        if is_archived is not None:
+            queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
 
+        # Role-based filtering
         if user.role == "CALL_OPERATOR":
             queryset = queryset.filter(
-                Q(call_operator__in=[user,None],filial=None)
+                Q(call_operator__in=[user, None], filial=None)
             )
         if user.role == "ADMINISTRATOR":
             queryset = queryset.filter(filial=user.filial)
@@ -76,28 +81,19 @@ class LidListCreateView(ListCreateAPIView):
         end_date = self.request.query_params.get("end_date")
 
         if start_date and end_date:
-            if start_date:
-                queryset = queryset.filter(created_at__gte=start_date)
-            if end_date:
-                queryset = queryset.filter(created_at__lte=end_date)
-
+            queryset = queryset.filter(created_at__range=[start_date, end_date])
         elif start_date:
-            # Parse the start_date string to ensure we are comparing only the date part
             try:
                 start_date = parse_datetime(start_date).date()
                 queryset = queryset.filter(created_at__date=start_date)
             except ValueError:
                 pass  # Handle invalid date format, if necessary
-
-        # Handle filtering by exact end_date
         elif end_date:
             try:
                 end_date = parse_datetime(end_date).date()
                 queryset = queryset.filter(created_at__date=end_date)
             except ValueError:
                 pass  # Handle invalid date format, if necessary
-
-        # If both start_date and end_date are provided, apply the range filter
 
         return queryset
 
