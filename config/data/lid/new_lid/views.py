@@ -290,12 +290,14 @@ class LidStatisticsView(APIView):
         lid_id = kwargs.get("lid")
         if lid_id:
             first_lesson_not = Attendance.objects.filter(
+                is_archived=False,
                 lid=lid_id,
                 filial=request.user.filial,
                 reason__in=["UNREASONED", "REASONED"]
             ).count()
 
             first_lesson = Attendance.objects.filter(
+                is_archived=False,
                 lid=lid_id,
                 filial=request.user.filial,
                 reason="IS_PRESENT"

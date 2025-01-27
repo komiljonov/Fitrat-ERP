@@ -54,8 +54,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
 
 
-
-
 class StudentLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = StudentTokenObtainPairSerializer(data=request.data)
@@ -70,6 +68,8 @@ class StudentDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
+
+
 
 class StudentListNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
     queryset = Student.objects.all()
@@ -88,7 +88,6 @@ class StudentScheduleView(FilialRestrictedQuerySetMixin,ListAPIView):
     def get_queryset(self):
         student_groups = StudentGroup.objects.filter(student_id=self.kwargs['pk']).values_list('group_id', flat=True)
         return Lesson.objects.filter(group_id__in=student_groups).order_by("day", "start_time")
-
 
 
 
@@ -134,8 +133,6 @@ class StudentStatistics(FilialRestrictedQuerySetMixin,ListAPIView):
         }
 
         return Response(response_data)
-
-
 
 
 

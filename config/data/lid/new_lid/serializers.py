@@ -10,6 +10,7 @@ from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...student.attendance.models import Attendance
+from ...student.studentgroup.models import StudentGroup
 from ...tasks.models import Task
 
 
@@ -22,7 +23,7 @@ class LidSerializer(serializers.ModelSerializer):
     tasks = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
 
-
+    student_group = serializers.SerializerMethodField()
 
     class Meta:
         model = Lid
@@ -49,6 +50,7 @@ class LidSerializer(serializers.ModelSerializer):
             "is_archived",
             "comments",
             "tasks",
+            "student_group",
             'moderator',
             "call_operator",
             "lessons_count",
@@ -90,6 +92,11 @@ class LidSerializer(serializers.ModelSerializer):
         attendance_count = Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
         return attendance_count
 
+
+    def get_student_group(self,obj):
+        group = StudentGroup.objects.filter(lid=obj)
+        StudentGroupMixSerializer = import_string("data.student.studentgroup.serializers.StudentGroupMixSerializer")
+        return StudentGroupMixSerializer(group, many=True).data
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
