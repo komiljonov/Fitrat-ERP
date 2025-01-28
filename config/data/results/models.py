@@ -1,11 +1,12 @@
 from django.db import models
 
 from data.account.models import CustomUser
+from data.command.models import TimeStampModel
 from data.student.student.models import Student
 from data.upload.models import File
 # Create your models here.
 
-class Results(models.Model):
+class Results(TimeStampModel):
     results = models.CharField(choices=[
         ("University" , "entering to the university" ),
         ("Certificate", "Geting certificate")
