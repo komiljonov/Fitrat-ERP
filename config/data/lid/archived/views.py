@@ -25,6 +25,7 @@ class ArchivedDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ArchivedSerializer
     permission_classes = (IsAuthenticated,)
 
+
 class ListArchivedListNOPgAPIView(ListAPIView):
     queryset = Archived.objects.all()
     serializer_class = ArchivedSerializer
@@ -32,3 +33,21 @@ class ListArchivedListNOPgAPIView(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class StudentArchivedListAPIView(ListAPIView):
+    queryset = Archived.objects.all()
+    serializer_class = ArchivedSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self,**kwargs):
+        lid_id = kwargs.get('pk')  # Assuming you pass 'lid_id' in the URL
+        student_id = kwargs.get('pk')  # Assuming you pass 'student_id' in the URL
+
+        print(kwargs.items())
+        if lid_id:  # If lid_id is provided, filter by lid
+            return Archived.objects.filter(lid__id=lid_id)
+        elif student_id:  # If student_id is provided, filter by student
+            return Archived.objects.filter(student__id=student_id)
+
+        return Archived.objects.none()  # Return empty queryset if neither is provided
