@@ -66,7 +66,10 @@ class LidListCreateView(ListCreateAPIView):
         search_term = self.request.query_params.get("search", "")
         print("Search term:", search_term)
 
-        # Apply search logic only if search_term exists
+        call_operator_id = self.request.query_params.get('call_operator')
+        if call_operator_id:
+            queryset = queryset.filter(call_operator__id=call_operator_id)
+
         if search_term:
             try:
                 queryset = queryset.filter(
