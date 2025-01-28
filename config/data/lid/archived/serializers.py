@@ -20,7 +20,9 @@ class ArchivedSerializer(serializers.ModelSerializer):
             'creator',
             'lid',
             'student',
-            "reason"
+            "reason",
+            'created_at',
+            'updated_at',
         ]
 
     def create(self, validated_data):
