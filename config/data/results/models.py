@@ -16,7 +16,7 @@ class Results(TimeStampModel):
     )
     teacher : "CustomUser" = models.ForeignKey("account.CustomUser",
                                                on_delete=models.CASCADE,related_name="teacher_results")
-    student : "Student" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE,related_name="student_results")
+    student : "Student" = models.ForeignKey("student.Student", on_delete=models.CASCADE,related_name="student_results")
 
 
     university_type = models.CharField(choices=[
