@@ -28,3 +28,14 @@ class MasteringNoPG(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+class MasteringQuizFilter(ListAPIView):
+    queryset = Mastering.objects.all()
+    serializer_class = MasteringSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        quiz_id = self.kwargs.get('quiz_id')
+        quiz = Mastering.objects.filter(test__id=quiz_id)
+        if quiz:
+            return quiz
+        return Mastering.objects.none()

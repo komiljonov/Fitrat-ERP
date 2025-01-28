@@ -5,6 +5,9 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Student
 from ..attendance.models import Attendance
+from ..mastering.models import Mastering
+from ..quiz.models import Quiz
+from ..studentgroup.models import StudentGroup
 from ...account.permission import PhoneAuthBackend
 from ...account.serializers import UserSerializer
 from ...comments.models import Comment
@@ -12,6 +15,7 @@ from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
+from ...finances.finance.models import Finance
 from ...stages.models import StudentStages, NewStudentStages
 from ...stages.serializers import StudentStagesSerializer, NewStudentStagesSerializer
 from ...tasks.models import Task
@@ -26,8 +30,11 @@ class StudentSerializer(serializers.ModelSerializer):
 
     tasks = serializers.SerializerMethodField()
 
-    # group = serializers.SerializerMethodField()
+    student_group = serializers.SerializerMethodField()
 
+    test = serializers.SerializerMethodField()
+
+    payment = serializers.SerializerMethodField()
 
     password  = serializers.CharField(write_only=True)
 
@@ -61,7 +68,10 @@ class StudentSerializer(serializers.ModelSerializer):
             'balance_status',
             'balance',
 
+            "student_group",
+            "test",
             'moderator',
+            'payment',
 
             'call_operator',
 
@@ -78,6 +88,10 @@ class StudentSerializer(serializers.ModelSerializer):
         CommentSerializer = import_string("data.comments.serializers.CommentSerializer")
         return CommentSerializer(comments, many=True).data
 
+    def get_payment(self, obj):
+        finance = Finance.objects.filter(student=obj)
+        FinanceSerializer = import_string("data.finances.finance.serializers.FinanceSerializer")
+        return FinanceSerializer(finance, many=True).data
 
 
     def get_tasks(self, obj):
@@ -85,13 +99,17 @@ class StudentSerializer(serializers.ModelSerializer):
         TaskSerializer = import_string("data.tasks.serializers.TaskSerializer")
         return TaskSerializer(tasks, many=True).data
 
-    # def get_group(self, obj):
-    #     attendance = Attendance.objects.filter(student=obj)
-    #     if attendance.exists():
-    #         groups = [att.lesson.group for att in attendance]
-    #         GroupSerializer = import_string("data.student.groups.serializers.GroupSerializer")
-    #         return GroupSerializer(groups, many=True).data
-    #     return None
+
+    def get_test(self, obj):
+        test = Mastering.objects.filter(student=obj)
+        MasteringSerializer = import_string("data.student.mastering.serializers.MasteringSerializer")
+        return MasteringSerializer(test, many=True).data
+
+
+    def get_student_group(self, obj):
+        group = StudentGroup.objects.filter(student=obj)
+        StudentGroupMixSerializer = import_string("data.student.studentgroup.serializers.StudentGroupMixSerializer")
+        return StudentGroupMixSerializer(group, many=True).data
 
     def get_attendance_count(self, obj):
         attendance = Attendance.objects.filter(student=obj)

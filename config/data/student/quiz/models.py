@@ -1,6 +1,7 @@
 from django.db import models
 
 from data.command.models import TimeStampModel
+from data.student.student.models import Student
 
 
 class Quiz(TimeStampModel):

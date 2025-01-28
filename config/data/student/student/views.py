@@ -25,15 +25,17 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
-
-    search_fields = ('first_name', 'last_name', 'phone')
-
-    ordering_fields = ('student_stage_type', 'is_archived', 'moderator',
-                                                            'marketing_channel', 'filial')
-
-    filterset_fields = ('student_stage_type', 'is_archived',
-                        'moderator', 'marketing_channel', 'filial')
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    search_fields = ["first_name", "last_name", "phone", ]
+    filterset_fields = [
+        "student_type",
+        "education_lang",
+        "filial",
+        "marketing_channel",
+        "student_stage_type",
+        "balance_status",
+        "is_archived",
+    ]
 
     def get_queryset(self):
         """

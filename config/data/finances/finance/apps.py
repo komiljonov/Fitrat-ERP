@@ -6,4 +6,4 @@ class FinansConfig(AppConfig):
     name = 'data.finances.finance'
 
     def ready(self):
-        pass
+        import data.finances.finance.signals

@@ -4,8 +4,7 @@ from django.db import models
 from data.account.models import CustomUser
 from data.command.models import TimeStampModel
 from data.student.student.models import Student
-
-User = get_user_model()
+from data.lid.new_lid.models import Lid
 
 class Finance(TimeStampModel):
     action = models.CharField(
@@ -32,6 +31,8 @@ class Finance(TimeStampModel):
     )
 
     student : 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True)
+
+    lid : 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True)
 
     stuff : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,null=True,blank=True,related_name='finance_stuff')
 
