@@ -1,27 +1,27 @@
-from django.shortcuts import render
-from rest_framework.permissions import IsAuthenticated
-
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import TeacherSerializer
-
 from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
+from ...notifications.models import Complaint
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
-from ...student.mastering.models import Mastering
+from ...student.studentgroup.models import StudentGroup
 
 
-class TeacherList(FilialRestrictedQuerySetMixin,ListCreateAPIView):
+class TeacherList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
     serializer_class = TeacherSerializer
     # permission_classes = (IsAuthenticated,)
+
 
 class TeacherDetail(RetrieveUpdateDestroyAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
     serializer_class = TeacherSerializer
     permission_classes = (IsAuthenticated,)
+
 
 class TeachersNoPGList(ListAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
@@ -38,38 +38,43 @@ class TeacherScheduleView(ListAPIView):
 
     def get_queryset(self):
         # Filter lessons for the logged-in teacher
-        return Lesson.objects.filter(group__teacher=self.request.user).order_by("day", "start_time")
+        return Lesson.objects.filter(group__teacher=self.request.user
+                                     ).order_by("day", "start_time")
+
+
+class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Calculate statistics
+        Average_assimilation = ""
+        new_students = StudentGroup.objects.filter(
+            teacher=self.request.user,
+            student__student_stage_type="NEW_STUDENT"
+                                                ).count()
+
+        stopped_students = StudentGroup.objects.filter(
+            teacher=self.request.user,
+            student__is_archived=True,
+        ).count()
+
+        active_students = StudentGroup.objects.filter(
+            teacher=self.request.user,
+            student__student_stage_type="ACTIVE_STUDENT"
+        ).count()
+        low_assimilation = ""
+
+        complaints = Complaint.objects.filter(user=self.request.user).count()
 
 
 
+        statistics = {
+            "Average_assimilation": Average_assimilation,
+            "new_students": new_students,
+            "education_stopped_students": stopped_students,
+            "active_students": active_students,
+            "low_assimilation": low_assimilation,
+            "complaints": complaints,
 
-# class TeacherStatistics(FilialRestrictedQuerySetMixin,ListAPIView):
-#     permission_classes = [IsAuthenticated]
-#
-#     def get(self, request, *args, **kwargs):
-#         # Calculate statistics
-#         Average_assimilation =
-#
-#         statistics = {
-#             "new_students_count": new_students_count,
-#             "new_students_total_debt": total_debt,
-#             "archived_new_students": archived_new_students,
-#         }
-#
-#
-#         # Additional ordered statistics (could be pagination or other stats)
-#         ordered_statistics = {
-#             "student_count": student_count,
-#             "total_income": total_income,  # Serialized data
-#             "student_total_debt": student_total_debt,
-#             "archived_student": archived_student,
-#         }
-#
-#         # Including both statistics and ordered data in the response
-#         response_data = {
-#             "statistics": statistics,
-#             "ordered_statistics": ordered_statistics,
-#         }
-#
-#         return Response(response_data)
-
+        }
+        return Response(statistics)

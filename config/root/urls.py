@@ -60,7 +60,7 @@ urlpatterns = [
     path('courses/', include('data.student.course.urls')),
     path('quizzes/', include('data.student.quiz.urls')),
     path('mastering/', include('data.student.mastering.urls')),
-    
+    path('results/', include('data.results.urls')),
 
     path('stages/',include("data.stages.urls")),
 
