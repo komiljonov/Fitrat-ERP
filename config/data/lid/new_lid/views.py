@@ -258,7 +258,7 @@ class LidStatisticsView(APIView):
         # Statistics for "ORDERED_LID" (filial-based for all roles)
         ordered_filter = Q(is_archived=False, filial=user.filial, lid_stage_type="ORDERED_LID")
         ordered_leads_count = Lid.objects.filter(ordered_filter).count()
-        ordered_new_leads = Lid.objects.filter(ordered_filter).count()
+        ordered_new_leads = Lid.objects.filter(ordered_filter,lid_stages='KUTULMOQDA').count()
         archived_ordered_leads = Lid.objects.filter(ordered_filter & Q(is_archived=True)).count()
 
         # Statistics data
