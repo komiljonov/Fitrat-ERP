@@ -19,6 +19,7 @@ from ..lesson.serializers import LessonSerializer
 from ..studentgroup.models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
 
+from django.db.models import Q
 
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     queryset = Student.objects.all()
@@ -26,7 +27,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ["first_name", "last_name", "phone", ]
+    search_fields = ["first_name", "last_name", "phone"]
     filterset_fields = [
         "student_type",
         "education_lang",
@@ -35,6 +36,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         "student_stage_type",
         "balance_status",
         "is_archived",
+        "sales_manager",  # Added sales_manager filter
+        "call_operator",  # Added call_operator filter
+        # "courses",  # Added courses filter
     ]
 
     def get_queryset(self):
@@ -52,7 +56,20 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             elif user.role == "ADMINISTRATOR":
                 queryset = queryset.filter(filial=user.filial)
 
+        # Add filters based on query parameters (for sales manager and operators)
+        sales_manager_id = self.request.query_params.get('sales_manager')
+        call_operator_id = self.request.query_params.get('call_operator')
+        # courses = self.request.query_params.get('courses')
+
+        if sales_manager_id:
+            queryset = queryset.filter(sales_manager__id=sales_manager_id)
+        if call_operator_id:
+            queryset = queryset.filter(call_operator__id=call_operator_id)
+        # if courses:
+        #     queryset = queryset.filter(courses__in=courses.split(','))  # Assuming courses are passed as a comma-separated list
+
         return queryset
+
 
 
 class StudentLoginAPIView(APIView):
