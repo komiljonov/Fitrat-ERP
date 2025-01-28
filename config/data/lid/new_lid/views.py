@@ -18,6 +18,7 @@ from .models import Lid
 from .serializers import LidSerializer
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...student.attendance.models import Attendance
+from ...student.studentgroup.models import StudentGroup
 
 
 class LidListCreateView(ListCreateAPIView):
@@ -64,11 +65,15 @@ class LidListCreateView(ListCreateAPIView):
 
         # Debugging search_term
         search_term = self.request.query_params.get("search", "")
-        print("Search term:", search_term)
-
+        course_id = self.request.query_params.get('course')
         call_operator_id = self.request.query_params.get('call_operator')
+
         if call_operator_id:
             queryset = queryset.filter(call_operator__id=call_operator_id)
+
+        if course_id:
+            queryset = queryset.filter(lids_group__group__course__id=course_id)
+
 
         if search_term:
             try:

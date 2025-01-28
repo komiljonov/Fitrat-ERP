@@ -38,7 +38,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         "is_archived",
         "sales_manager",  # Added sales_manager filter
         "call_operator",  # Added call_operator filter
-        # "courses",  # Added courses filter
+        # "course",  # Added courses filter
     ]
 
     def get_queryset(self):
@@ -59,17 +59,23 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         # Add filters based on query parameters (for sales manager and operators)
         sales_manager_id = self.request.query_params.get('sales_manager')
         call_operator_id = self.request.query_params.get('call_operator')
-        # courses = self.request.query_params.get('courses')
-
+        course_id = self.request.query_params.get('course')
+        moderator_id = self.request.query_params.get('moderator')
+        group_id = self.request.query_params.get("group")
         if sales_manager_id:
             queryset = queryset.filter(sales_manager__id=sales_manager_id)
         if call_operator_id:
             queryset = queryset.filter(call_operator__id=call_operator_id)
-        # if courses:
-        #     queryset = queryset.filter(courses__in=courses.split(','))  # Assuming courses are passed as a comma-separated list
+
+        if course_id:
+            queryset = queryset.filter(students_group__group__course__id=course_id)  # Assuming Many-to-Many relation in groups
+        if moderator_id:
+            queryset = queryset.filter(moderator__id=moderator_id)
+
+        if group_id:
+            queryset = queryset.filter(students_group__group__id=group_id)
 
         return queryset
-
 
 
 class StudentLoginAPIView(APIView):

@@ -92,7 +92,6 @@ class LidSerializer(serializers.ModelSerializer):
         attendance_count = Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
         return attendance_count
 
-
     def get_student_group(self,obj):
         group = StudentGroup.objects.filter(lid=obj)
         StudentGroupMixSerializer = import_string("data.student.studentgroup.serializers.StudentGroupMixSerializer")
