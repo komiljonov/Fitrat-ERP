@@ -55,7 +55,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         return queryset
 
 
-
 class StudentLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = StudentTokenObtainPairSerializer(data=request.data)
@@ -65,15 +64,13 @@ class StudentLoginAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class StudentDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
 
 
-
-class StudentListNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
+class StudentListNoPG(FilialRestrictedQuerySetMixin, ListAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
@@ -82,8 +79,7 @@ class StudentListNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
         return Response(data)
 
 
-
-class StudentScheduleView(FilialRestrictedQuerySetMixin,ListAPIView):
+class StudentScheduleView(FilialRestrictedQuerySetMixin, ListAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated]
 
@@ -92,33 +88,38 @@ class StudentScheduleView(FilialRestrictedQuerySetMixin,ListAPIView):
         return Lesson.objects.filter(group_id__in=student_groups).order_by("day", "start_time")
 
 
-
-class StudentStatistics(FilialRestrictedQuerySetMixin,ListAPIView):
+class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         # Calculate statistics
-        new_students_count = Student.objects.filter(is_archived=False,filial=request.user.filial,student_stage_type="NEW_STUDENT").count()
-        total_debt = Student.objects.filter(is_archived=False,filial=request.user.filial,student_stage_type="NEW_STUDENT",balance__lt=0).aggregate(total_debt=Sum('balance'))['total_debt'] or 0
-        archived_new_students = Student.objects.filter(is_archived=True,filial=request.user.filial,student_stage_type="NEW_STUDENT").count()
+        new_students_count = Student.objects.filter(is_archived=False, filial=request.user.filial,
+                                                    student_stage_type="NEW_STUDENT").count()
+        total_debt = \
+        Student.objects.filter(is_archived=False, filial=request.user.filial, student_stage_type="NEW_STUDENT",
+                               balance__lt=0).aggregate(total_debt=Sum('balance'))['total_debt'] or 0
+        archived_new_students = Student.objects.filter(is_archived=True, filial=request.user.filial,
+                                                       student_stage_type="NEW_STUDENT").count()
 
         # Ordered statistics
-        student_count = Student.objects.filter(is_archived=False, filial=request.user.filial,student_stage_type="ACTIVE_STUDENT").count()
-        total_income = Student.objects.filter(is_archived=False,filial=request.user.filial, student_stage_type="ACTIVE_STUDENT",
-                                              balance__gt=0).aggregate(total_income=Sum('balance'))['total_income'] or 0
+        student_count = Student.objects.filter(is_archived=False, filial=request.user.filial,
+                                               student_stage_type="ACTIVE_STUDENT").count()
+        total_income = \
+        Student.objects.filter(is_archived=False, filial=request.user.filial, student_stage_type="ACTIVE_STUDENT",
+                               balance__gt=0).aggregate(total_income=Sum('balance'))['total_income'] or 0
         student_total_debt = \
-        Student.objects.filter(is_archived=False,filial=request.user.filial, student_stage_type="ACTIVE_STUDENT", balance__lt=0).aggregate(
-            total_debt=Sum('balance'))['total_debt'] or 0
+            Student.objects.filter(is_archived=False, filial=request.user.filial, student_stage_type="ACTIVE_STUDENT",
+                                   balance__lt=0).aggregate(
+                total_debt=Sum('balance'))['total_debt'] or 0
 
-        archived_student = Student.objects.filter(is_archived=True,filial=request.user.filial, student_stage_type="ACTIVE_STUDENT").count()
-
+        archived_student = Student.objects.filter(is_archived=True, filial=request.user.filial,
+                                                  student_stage_type="ACTIVE_STUDENT").count()
 
         statistics = {
             "new_students_count": new_students_count,
             "new_students_total_debt": total_debt,
             "archived_new_students": archived_new_students,
         }
-
 
         # Additional ordered statistics (could be pagination or other stats)
         ordered_statistics = {
@@ -137,15 +138,20 @@ class StudentStatistics(FilialRestrictedQuerySetMixin,ListAPIView):
         return Response(response_data)
 
 
-
 class ExportLidToExcelAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter("start_date", openapi.IN_QUERY, description="Filter by start date (YYYY-MM-DD)", type=openapi.TYPE_STRING),
-            openapi.Parameter("end_date", openapi.IN_QUERY, description="Filter by end date (YYYY-MM-DD)", type=openapi.TYPE_STRING),
-            openapi.Parameter("is_student", openapi.IN_QUERY, description="Filter by whether the lead is a student (true/false)", type=openapi.TYPE_STRING),
-            openapi.Parameter("filial_id", openapi.IN_QUERY, description="Filter by filial ID", type=openapi.TYPE_INTEGER),
-            openapi.Parameter("student_stage_type", openapi.IN_QUERY, description="Filter by student stage type", type=openapi.TYPE_STRING),
+            openapi.Parameter("start_date", openapi.IN_QUERY, description="Filter by start date (YYYY-MM-DD)",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter("end_date", openapi.IN_QUERY, description="Filter by end date (YYYY-MM-DD)",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter("is_student", openapi.IN_QUERY,
+                              description="Filter by whether the lead is a student (true/false)",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter("filial_id", openapi.IN_QUERY, description="Filter by filial ID",
+                              type=openapi.TYPE_INTEGER),
+            openapi.Parameter("student_stage_type", openapi.IN_QUERY, description="Filter by student stage type",
+                              type=openapi.TYPE_STRING),
         ],
         responses={200: "Excel file generated"}
     )
@@ -176,7 +182,7 @@ class ExportLidToExcelAPIView(APIView):
             "Ism", "Familiya", "Telefon raqami",
             "Tug'ulgan sanasi", "O'quv tili", "O'quv sinfi",
             "Fan", "Ball", "Filial", "Marketing kanali", "O'quvchi varonkasi",
-            "Balansi","Balans statusi", "Arxivlangan",
+            "Balansi", "Balans statusi", "Arxivlangan",
             "Call Operator", "Moderator", "Yaratilgan vaqti"
         ]
         sheet.append(headers)
