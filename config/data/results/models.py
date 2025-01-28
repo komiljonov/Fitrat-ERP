@@ -13,8 +13,9 @@ class Results(models.Model):
     default="University",
     max_length=100,
     )
-    teacher : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE,)
-    student : "Student" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE,)
+    teacher : "CustomUser" = models.ForeignKey("account.CustomUser",
+                                               on_delete=models.CASCADE,related_name="teacher_results")
+    student : "Student" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE,related_name="student_results")
 
 
     university_type = models.CharField(choices=[
