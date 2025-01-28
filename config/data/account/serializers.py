@@ -101,7 +101,7 @@ class UserSerializer(ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
     class Meta:
         model = CustomUser
-        fields = ("id","full_name",'phone',"role","photo","filial")
+        fields = ("id","full_name",'phone',"role","photo","filial","balance","ball",)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
