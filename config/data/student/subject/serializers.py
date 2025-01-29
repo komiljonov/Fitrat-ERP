@@ -9,17 +9,23 @@ from ...upload.serializers import FileUploadSerializer
 
 class SubjectSerializer(serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
+    all_themes = serializers.SerializerMethodField()
     class Meta:
         model = Subject
         fields = [
             'id',
             'name',
             'course',
+            'all_themes',
             'label',
         ]
 
     def get_course(self, obj):
         return Course.objects.filter(subject=obj).count()
+
+    def get_all_themes(self, obj):
+        themes = Theme.objects.filter(subject=obj).count()
+        return themes
 
 
 class LevelSerializer(serializers.ModelSerializer):
