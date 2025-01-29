@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import TeacherList,TeachersNoPGList,TeacherDetail,TeacherScheduleView
+from .views import TeacherList, TeachersNoPGList, TeacherDetail, TeacherScheduleView, TeacherStatistics
 
 urlpatterns = [
     path('', TeacherList.as_view()),
@@ -10,4 +10,5 @@ urlpatterns = [
 
 
     path('schedule/',TeacherScheduleView.as_view()),
+    path('statistics/',TeacherStatistics.as_view()),
 ]

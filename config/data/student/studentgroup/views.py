@@ -23,6 +23,10 @@ class StudentsGroupList(ListCreateAPIView):
     filter_fields = ('group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name','group__status','group__teacher__id')
     filterset_fields = ('group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name','group__status','group__teacher__id')
 
+    def get_queryset(self):
+        queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
+        return queryset
+
 
 
 class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
