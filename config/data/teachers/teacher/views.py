@@ -11,6 +11,8 @@ from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...notifications.models import Complaint
 from ...results.models import Results
+from ...student.groups.models import Group
+from ...student.groups.serializers import GroupSerializer
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.studentgroup.models import StudentGroup
@@ -98,3 +100,16 @@ class Teacher_StudentsView(ListAPIView):
         if group:
             return group
         return StudentGroup.objects.none()
+
+
+class TeachersGroupsView(ListAPIView):
+    queryset = Group.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = GroupSerializer
+
+    def get_queryset(self):
+        teacher_id = self.request.user.pk  # Get the teacher ID from the URL
+        if teacher_id:
+            teacher_groups = Group.objects.filter(teacher__id=teacher_id)
+            return teacher_groups
+        return Group.objects.none()

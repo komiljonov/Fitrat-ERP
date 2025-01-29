@@ -20,6 +20,17 @@ class CommentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+    # def __init__(self, *args, **kwargs):
+    #     # Call the parent constructor
+    #
+    #     # Fields you want to remove (for example, based on some condition)
+    #     fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+    #     super(CommentSerializer, self).__init__(*args, **kwargs)
+    #
+    #     if fields_to_remove:
+    #         # Remove the fields from the serializer
+    #         for field in fields_to_remove:
+    #             self.fields.pop(field, None)
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

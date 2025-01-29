@@ -1,12 +1,10 @@
 from django.utils.module_loading import import_string
-from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Student
 from ..attendance.models import Attendance
 from ..mastering.models import Mastering
-from ..quiz.models import Quiz
 from ..studentgroup.models import StudentGroup
 from ...account.permission import PhoneAuthBackend
 from ...account.serializers import UserSerializer
@@ -16,8 +14,6 @@ from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...finances.finance.models import Finance
-from ...stages.models import StudentStages, NewStudentStages
-from ...stages.serializers import StudentStagesSerializer, NewStudentStagesSerializer
 from ...tasks.models import Task
 
 
@@ -26,18 +22,17 @@ class StudentSerializer(serializers.ModelSerializer):
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(),allow_null=True)
     # new_student_stages = serializers.PrimaryKeyRelatedField(queryset=NewStudentStages.objects.all(),allow_null=True)
     # active_student_stages = serializers.PrimaryKeyRelatedField(queryset=StudentStages.objects.all(),allow_null=True)
-    comments = serializers.SerializerMethodField()
-
-    tasks = serializers.SerializerMethodField()
-
-    student_group = serializers.SerializerMethodField()
-
-    test = serializers.SerializerMethodField()
-
-    payment = serializers.SerializerMethodField()
+    # comments = serializers.SerializerMethodField()
+    #
+    # tasks = serializers.SerializerMethodField()
+    #
+    # student_group = serializers.SerializerMethodField()
+    #
+    # test = serializers.SerializerMethodField()
+    #
+    # payment = serializers.SerializerMethodField()
 
     password  = serializers.CharField(write_only=True)
-
     attendance_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -57,10 +52,10 @@ class StudentSerializer(serializers.ModelSerializer):
             "filial",
             "marketing_channel",
 
-            "comments",
-            # "group",
-
-            "tasks",
+            # "comments",
+            # # "group",
+            #
+            # "tasks",
 
             "student_stage_type",
             # "new_student_stages",
@@ -69,10 +64,10 @@ class StudentSerializer(serializers.ModelSerializer):
             'balance_status',
             'balance',
 
-            "student_group",
-            "test",
+            # "student_group",
+            # "test",
             'moderator',
-            'payment',
+            # 'payment',
 
             'call_operator',
 
@@ -96,33 +91,33 @@ class StudentSerializer(serializers.ModelSerializer):
             # Remove the fields from the serializer
             for field in fields_to_remove:
                 self.fields.pop(field, None)
-    def get_comments(self, obj):
-        comments = Comment.objects.filter(student=obj)
-        CommentSerializer = import_string("data.comments.serializers.CommentSerializer")
-        return CommentSerializer(comments, many=True).data
 
-    def get_payment(self, obj):
-        finance = Finance.objects.filter(student=obj)
-        FinanceSerializer = import_string("data.finances.finance.serializers.FinanceSerializer")
-        return FinanceSerializer(finance, many=True).data
-
-
-    def get_tasks(self, obj):
-        tasks = Task.objects.filter(student=obj)
-        TaskSerializer = import_string("data.tasks.serializers.TaskSerializer")
-        return TaskSerializer(tasks, many=True).data
-
-
-    def get_test(self, obj):
-        test = Mastering.objects.filter(student=obj)
-        MasteringSerializer = import_string("data.student.mastering.serializers.MasteringSerializer")
-        return MasteringSerializer(test, many=True).data
-
-
-    def get_student_group(self, obj):
-        group = StudentGroup.objects.filter(student=obj)
-        StudentGroupMixSerializer = import_string("data.student.studentgroup.serializers.StudentGroupMixSerializer")
-        return StudentGroupMixSerializer(group, many=True).data
+    # def get_comments(self, obj):
+    #     comments = Comment.objects.filter(student=obj)
+    #     CommentSerializer = import_string("data.comments.serializers.CommentSerializer")
+    #     return CommentSerializer(comments, many=True).data
+    #
+    # def get_payment(self, obj):
+    #     finance = Finance.objects.filter(student=obj)
+    #     FinanceSerializer = import_string("data.finances.finance.serializers.FinanceSerializer")
+    #     return FinanceSerializer(finance, many=True).data
+    #
+    #
+    # def get_tasks(self, obj):
+    #     tasks = Task.objects.filter(student=obj)
+    #     TaskSerializer = import_string("data.tasks.serializers.TaskSerializer")
+    #     return TaskSerializer(tasks, many=True).data
+    #
+    #
+    # def get_test(self, obj):
+    #     test = Mastering.objects.filter(student=obj)
+    #     MasteringSerializer = import_string("data.student.mastering.serializers.MasteringSerializer")
+    #     return MasteringSerializer(test, many=True).data
+    #
+    # def get_student_group(self, obj):
+    #     group = StudentGroup.objects.filter(student=obj)
+    #     StudentGroupMixSerializer = import_string("data.student.studentgroup.serializers.StudentGroupMixSerializer")
+    #     return StudentGroupMixSerializer(group, many=True).data
 
     def get_attendance_count(self, obj):
         attendance = Attendance.objects.filter(student=obj)

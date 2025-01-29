@@ -23,7 +23,7 @@ from ...account.permission import FilialRestrictedQuerySetMixin
 from django.db.models import Q
 
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
-    queryset = Student.objects.all()
+    queryset = Student.objects.all().select_related('filial', 'marketing_channel', 'sales_manager', 'moderator')
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
 

@@ -12,4 +12,5 @@ urlpatterns = [
 
     path('student/<uuid:pk>/', GroupStudentDetail.as_view()),
     path('students/',Teacher_StudentsView.as_view()),
+
 ]

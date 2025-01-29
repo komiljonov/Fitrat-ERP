@@ -27,21 +27,10 @@ class CommentLidRetrieveListAPIView(ListAPIView):
 
     def get_queryset(self):
         lid_id = self.kwargs.get('pk')
-        try:
-            lid = Lid.objects.get(id=lid_id)
-        except Lid.DoesNotExist:
-            raise Http404("Lid not found.")
-        return Comment.objects.filter(lid=lid)
-
-
-class CommentStudentRetrieveListAPIView(ListAPIView):
-    serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def get_queryset(self):
         student_id = self.kwargs.get('pk')
-        try:
-            student = Student.objects.get(id=student_id)
-        except Student.DoesNotExist:
-            raise Http404("Student not found.")
-        return Comment.objects.filter(student=student)
+        if lid_id:
+            return Comment.objects.filter(lid__id=lid_id)
+        if student_id:
+            return Comment.objects.filter(student__id=student_id)
+        return Comment.objects.none()
+
