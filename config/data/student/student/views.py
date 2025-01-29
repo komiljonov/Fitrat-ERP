@@ -96,8 +96,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         return queryset
 
-        return queryset
-
 
 class StudentLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):

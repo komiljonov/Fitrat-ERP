@@ -32,9 +32,10 @@ class Group(TimeStampModel):
     status = models.CharField(
         choices=[
             ('ACTIVE', 'Active'),
+            ("PENDING", "Pending"),
             ('INACTIVE', 'Inactive'),
         ],
-        default='INACTIVE',
+        default='PENDING',
         max_length=100,
     )
 
