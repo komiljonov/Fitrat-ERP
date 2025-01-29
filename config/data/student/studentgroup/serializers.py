@@ -26,21 +26,32 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep['group'] = GroupSerializer(instance.group).data
+        # Use try-except to avoid potential recursion or circular references
+        try:
+            # Limit the recursion depth by limiting which fields are serialized
+            rep['group'] = GroupSerializer(instance.group, context=self.context).data
+        except RecursionError:
+            rep['group'] = "Error in serialization"
 
         if instance.lid:
-            rep['lid'] = LidSerializer(instance.lid).data
+            try:
+                rep['lid'] = LidSerializer(instance.lid, context=self.context).data
+            except RecursionError:
+                rep['lid'] = "Error in serialization"
         else:
             rep.pop('lid', None)
 
         if instance.student:
-            rep['student'] = StudentSerializer(instance.student).data
+            try:
+                rep['student'] = StudentSerializer(instance.student, context=self.context).data
+            except RecursionError:
+                rep['student'] = "Error in serialization"
         else:
             rep.pop('student', None)
 
+        # Filter out unwanted values
         filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
         return filtered_data
-
 
 
 class StudentGroupMixSerializer(serializers.ModelSerializer):

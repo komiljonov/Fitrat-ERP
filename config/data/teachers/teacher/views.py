@@ -90,4 +90,6 @@ class Teacher_StudentsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         group = StudentGroup.objects.filter(group__teacher=self.request.user)
-        return group
+        if group:
+            return group
+        return StudentGroup.objects.none()
