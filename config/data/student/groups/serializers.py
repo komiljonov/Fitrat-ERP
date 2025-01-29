@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .lesson_date_calculator import calculate_lessons
 from .models import Group, Subject, Level, Day
+from ..studentgroup.models import StudentGroup
 from ..subject.serializers import SubjectSerializer, LevelSerializer
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
@@ -18,6 +19,7 @@ class GroupSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all())
     scheduled_day_type = DaySerializer(many=True)
+    student_count = serializers.SerializerMethodField()
     class Meta:
         model = Group
         fields = [
@@ -27,6 +29,7 @@ class GroupSerializer(serializers.ModelSerializer):
             'teacher',
             'status',
             'course',
+            'student_count',
             'room_number',
             'price_type',
             'price',
@@ -38,6 +41,10 @@ class GroupSerializer(serializers.ModelSerializer):
             'start_date',
             'finish_date',
         ]
+
+    def get_student_count(self,obj):
+        student_count = StudentGroup.objects.filter(group=obj).count()
+        return student_count
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
