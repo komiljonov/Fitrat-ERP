@@ -82,3 +82,4 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
         rep['student'] = StudentSerializer(instance.student).data
         rep['lid'] = LidSerializer(instance.lid).data
         return rep
+

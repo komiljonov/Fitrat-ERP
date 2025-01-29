@@ -1,5 +1,7 @@
 from tokenize import group
 
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -88,6 +90,9 @@ class Teacher_StudentsView(ListAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentsGroupSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
+    search_fields = ("lid__first_name", "lid__last_name","student__first_name", "student__last_name")
+
     def get_queryset(self):
         group = StudentGroup.objects.filter(group__teacher=self.request.user)
         if group:
