@@ -13,10 +13,16 @@ class UniversityResultsViewSet(ListCreateAPIView):
     serializer_class = UniversityResultsSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Results.objects.filter(teacher=self.request.user)
+
 class CertificationResultsViewSet(ListCreateAPIView):
     queryset = Results.objects.all()
     serializer_class = CertificationResultsSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Results.objects.filter(teacher=self.request.user)
 
 class UniversityResultsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Results.objects.all()
@@ -34,6 +40,9 @@ class UniversityResultsNoPg(ListAPIView):
     serializer_class = UniversityResultsSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Results.objects.filter(teacher=self.request.user)
+
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -41,6 +50,10 @@ class CertificationResultsNoPg(ListAPIView):
     queryset = Results.objects.all()
     serializer_class = CertificationResultsSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Results.objects.filter(teacher=self.request.user)
+
     def get_paginated_response(self, data):
         return Response(data)
 

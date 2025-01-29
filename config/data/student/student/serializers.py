@@ -81,6 +81,8 @@ class StudentSerializer(serializers.ModelSerializer):
             "is_archived",
 
             "attendance_count",
+            "created_at",
+            "updated_at",
         ]
 
 

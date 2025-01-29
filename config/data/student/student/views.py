@@ -1,5 +1,6 @@
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -74,6 +75,26 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         if group_id:
             queryset = queryset.filter(students_group__group__id=group_id)
+
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+
+        if start_date and end_date:
+            queryset = queryset.filter(created_at__range=[start_date, end_date])
+        elif start_date:
+            try:
+                start_date = parse_datetime(start_date).date()
+                queryset = queryset.filter(created_at__date=start_date)
+            except ValueError:
+                pass  # Handle invalid date format, if necessary
+        elif end_date:
+            try:
+                end_date = parse_datetime(end_date).date()
+                queryset = queryset.filter(created_at__date=end_date)
+            except ValueError:
+                pass  # Handle invalid date format, if necessary
+
+        return queryset
 
         return queryset
 

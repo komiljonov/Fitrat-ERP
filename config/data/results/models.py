@@ -53,6 +53,15 @@ class Results(TimeStampModel):
 
     upload_file : "File" = models.ForeignKey("upload.File",
                                              on_delete=models.CASCADE)
+    is_accepted = models.CharField(
+        choices=[
+            ("Accepted", "Accepted"),
+            ("Rejected", "Rejected"),
+            ("In_progress", "in_progress"),
+        ],
+        default="In_progress",
+        max_length=100,
+    )
 
     def __str__(self):
         return self.certificate_type
