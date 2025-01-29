@@ -12,7 +12,7 @@ from ...results.models import Results
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.studentgroup.models import StudentGroup
-from ...student.studentgroup.serializers import StudentsGroupSerializer, StudentGroupMixSerializer
+from ...student.studentgroup.serializers import StudentsGroupSerializer
 
 
 class TeacherList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
@@ -86,7 +86,7 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
 
 class Teacher_StudentsView(ListAPIView):
     queryset = StudentGroup.objects.all()
-    serializer_class = StudentGroupMixSerializer
+    serializer_class = StudentsGroupSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         group = StudentGroup.objects.filter(group__teacher=self.request.user)

@@ -7,7 +7,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import StudentsGroupSerializer, StudentGroupMixSerializer
+from .serializers import StudentsGroupSerializer
 
 from .models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
@@ -65,7 +65,7 @@ class GroupStudentList(ListAPIView):
 
 class GroupStudentDetail(ListAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = StudentGroupMixSerializer
+    serializer_class = StudentsGroupSerializer
 
     def get_queryset(self):
         id = self.kwargs.get('pk')

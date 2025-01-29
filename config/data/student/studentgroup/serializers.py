@@ -23,6 +23,18 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'student',
         ]
 
+    def __init__(self, *args, **kwargs):
+        # Call the parent constructor
+
+        # Fields you want to remove (for example, based on some condition)
+        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        super(StudentsGroupSerializer, self).__init__(*args, **kwargs)
+
+        if fields_to_remove:
+            # Remove the fields from the serializer
+            for field in fields_to_remove:
+                self.fields.pop(field, None)
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
@@ -34,18 +46,14 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             rep['group'] = "Error in serialization"
 
         if instance.lid:
-            try:
-                rep['lid'] = LidSerializer(instance.lid, context=self.context).data
-            except RecursionError:
-                rep['lid'] = "Error in serialization"
+            rep['lid'] = LidSerializer(instance.lid, context=self.context, remove_fields=["student_group"]).data
+
         else:
             rep.pop('lid', None)
 
         if instance.student:
-            try:
-                rep['student'] = StudentSerializer(instance.student, context=self.context).data
-            except RecursionError:
-                rep['student'] = "Error in serialization"
+            rep['student'] = StudentSerializer(instance.student, context=self.context,remove_fields=["student_group"]).data
+
         else:
             rep.pop('student', None)
 
@@ -58,6 +66,7 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
     # group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
+
     class Meta:
         model = StudentGroup
         fields = [
@@ -73,7 +82,3 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
         rep['student'] = StudentSerializer(instance.student).data
         rep['lid'] = LidSerializer(instance.lid).data
         return rep
-
-
-
-
