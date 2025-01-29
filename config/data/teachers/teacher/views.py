@@ -108,6 +108,13 @@ class TeachersGroupsView(ListAPIView):
     serializer_class = GroupSerializer
 
     def get_queryset(self):
+
+        status = self.request.query_params.get('status')
+        print(status)
+        if status:
+            return Group.objects.filter(status=status)
+
+
         teacher_id = self.request.user.pk  # Get the teacher ID from the URL
         if teacher_id:
             teacher_groups = Group.objects.filter(teacher__id=teacher_id)

@@ -61,12 +61,7 @@ class TeachersGroupsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
 
-
     def get_queryset(self):
-        status = self.request.query_params.get('status')
-        print(status)
-        if status:
-            return Group.objects.filter(status=status)
 
         teacher_id = self.kwargs.get('pk')
         if teacher_id:
