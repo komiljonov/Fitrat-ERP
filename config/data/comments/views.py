@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
@@ -26,11 +27,8 @@ class CommentLidRetrieveListAPIView(ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        lid_id = self.kwargs.get('pk')
-        student_id = self.kwargs.get('pk')
-        if lid_id:
-            return Comment.objects.filter(lid__id=lid_id)
-        if student_id:
-            return Comment.objects.filter(student__id=student_id)
+        id = self.kwargs.get('pk')
+        if id:
+            return Comment.objects.filter(Q(lid__id=id) | Q(student__id=id))
         return Comment.objects.none()
 
