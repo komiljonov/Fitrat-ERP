@@ -61,6 +61,11 @@ class TeachersGroupsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
 
+    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
+    search_fields = ('status',)
+    ordering_fields = ('status',)
+    filterset_fields = ('status',)
+
     def get_queryset(self):
         teacher_id = self.kwargs.get('pk')  # Get the teacher ID from the URL
         if teacher_id:
