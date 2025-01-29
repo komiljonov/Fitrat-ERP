@@ -1,18 +1,26 @@
+from django.utils.module_loading import import_string
 from rest_framework import serializers
 
 from .models import Subject,Level,Theme
+from ..course.models import Course
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
 
 class SubjectSerializer(serializers.ModelSerializer):
+    course = serializers.SerializerMethodField()
     class Meta:
         model = Subject
         fields = [
             'id',
             'name',
+            'course',
             'label',
         ]
+
+    def get_course(self, obj):
+        return Course.objects.filter(subject=obj).count()
+
 
 class LevelSerializer(serializers.ModelSerializer):
     class Meta:

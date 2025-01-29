@@ -16,6 +16,7 @@ class SubjectList(ListCreateAPIView):
     serializer_class = SubjectSerializer
     permission_classes = [IsAuthenticated]
 
+
 class SubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
