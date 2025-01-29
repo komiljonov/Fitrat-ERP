@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import StudentGroupDetail, StudentGroupNopg, StudentsGroupList, GroupStudentList, GroupStudentDetail
+from ...teachers.teacher.views import Teacher_StudentsView
 
 urlpatterns = [
     path('', StudentsGroupList.as_view()),
@@ -10,4 +11,5 @@ urlpatterns = [
     path('group/<uuid:pk>/', GroupStudentList.as_view()),
 
     path('student/<uuid:pk>/', GroupStudentDetail.as_view()),
+    path('students/',Teacher_StudentsView.as_view()),
 ]

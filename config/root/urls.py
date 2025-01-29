@@ -72,6 +72,8 @@ urlpatterns = [
 
     path('notifications/', include('data.notifications.urls')),
 
+    path('upload/', include('data.upload.urls')),
+
 
 
     path("docs<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"),

@@ -1,3 +1,5 @@
+from tokenize import group
+
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -6,9 +8,11 @@ from .serializers import TeacherSerializer
 from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...notifications.models import Complaint
+from ...results.models import Results
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.studentgroup.models import StudentGroup
+from ...student.studentgroup.serializers import  StudentsGroupSerializer
 
 
 class TeacherList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
@@ -47,7 +51,7 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
 
     def get(self, request, *args, **kwargs):
         # Calculate statistics
-        Average_assimilation = ""
+        Average_assimilation = None
         new_students = StudentGroup.objects.filter(
             group__teacher=self.request.user,
             student__student_stage_type="NEW_STUDENT"
@@ -62,11 +66,11 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             group__teacher=self.request.user,
             student__student_stage_type="ACTIVE_STUDENT"
         ).count()
-        low_assimilation = ""
+        low_assimilation = None
 
         complaints = Complaint.objects.filter(user=self.request.user).count()
 
-
+        results = Results.objects.filter(teacher=self.request.user,is_accepted="Accepted").count()
 
         statistics = {
             "Average_assimilation": Average_assimilation,
@@ -75,6 +79,15 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             "active_students": active_students,
             "low_assimilation": low_assimilation,
             "complaints": complaints,
-
+            "results": results,
         }
         return Response(statistics)
+
+
+class Teacher_StudentsView(ListAPIView):
+    queryset = StudentGroup.objects.all()
+    serializer_class = StudentsGroupSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        group = StudentGroup.objects.filter(group__teacher=self.request.user)
+        return group

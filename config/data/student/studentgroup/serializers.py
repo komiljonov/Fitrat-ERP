@@ -58,7 +58,8 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['group'] = GroupSerializer(instance.group).data
-
+        rep['student'] = StudentSerializer(instance.student).data
+        rep['lid'] = LidSerializer(instance.lid).data
         return rep
 
 
