@@ -49,17 +49,17 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         # Calculate statistics
         Average_assimilation = ""
         new_students = StudentGroup.objects.filter(
-            teacher=self.request.user,
+            group__teacher=self.request.user,
             student__student_stage_type="NEW_STUDENT"
                                                 ).count()
 
         stopped_students = StudentGroup.objects.filter(
-            teacher=self.request.user,
+            group__teacher=self.request.user,
             student__is_archived=True,
         ).count()
 
         active_students = StudentGroup.objects.filter(
-            teacher=self.request.user,
+            group__teacher=self.request.user,
             student__student_stage_type="ACTIVE_STUDENT"
         ).count()
         low_assimilation = ""
