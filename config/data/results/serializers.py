@@ -91,7 +91,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
             'university_entering_type',
             'university_entering_ball',
             'upload_file',
-            'is_accepted',
+            'status',
             'created_at',
             'updated_at',
         ]
