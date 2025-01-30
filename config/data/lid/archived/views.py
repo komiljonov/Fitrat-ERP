@@ -37,13 +37,11 @@ class ListArchivedListNOPgAPIView(ListAPIView):
 
 
 class StudentArchivedListAPIView(ListAPIView):
-    queryset = Archived.objects.all()
     serializer_class = ArchivedSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self,**kwargs):
-        id = kwargs.get('id')
-
-        if id:
-            return Archived.objects.filter(Q(student__id=id) | Q(lid__id=id))
-        return Archived.objects.none()  # Return empty queryset if neither is provided
+    def get_queryset(self):
+        id = self.kwargs.get('pk')
+        print(id)
+        # return Archived.objects.filter(Q(student__id=id) | Q(lid__id=id))
+        return Archived.objects.all()

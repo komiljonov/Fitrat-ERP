@@ -11,8 +11,9 @@ from ...student.student.serializers import StudentSerializer
 
 class ArchivedSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+
     class Meta:
         model = Archived
         fields = [
@@ -30,13 +31,21 @@ class ArchivedSerializer(serializers.ModelSerializer):
         validated_data['creator'] = request.user
         return super().create(validated_data)
 
-
     def to_representation(self, instance):
+        # Get the default representation
         representation = super().to_representation(instance)
-        representation['creator'] = UserSerializer(instance.creator).data
-        representation['lid'] = LidSerializer(instance.lid).data
-        representation['student'] = StudentSerializer(instance.student).data
 
-        return representation
+        # Add detailed serialization for related fields
+        if instance.creator:
+            representation['creator'] = UserSerializer(instance.creator).data
+        if instance.lid:
+            representation['lid'] = LidSerializer(instance.lid).data
+        if instance.student:
+            representation['student'] = StudentSerializer(instance.student).data
+
+        # Clean the response by removing falsy values
+        filtered_data = {key: value for key, value in representation.items() if value not in [{}, [], None, "", False]}
+        return filtered_data
+
 
 
