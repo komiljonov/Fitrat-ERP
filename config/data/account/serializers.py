@@ -89,7 +89,7 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name","fist_name","last_name",'role', "photo", "filial", ]
+        fields = ['id', 'phone', "full_name","first_name","last_name",'role', "photo", "filial", ]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -103,7 +103,7 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name","fist_name","last_name", 'phone', "role", "photo", "filial", "balance", "ball",
+            "id", "full_name","first_name","last_name", 'phone', "role", "photo", "filial", "balance", "ball",
             "enter", 'leave','date_of_birth', 'created_at',
             'updated_at')
 
