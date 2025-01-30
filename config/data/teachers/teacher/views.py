@@ -1,5 +1,3 @@
-from tokenize import group
-
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
@@ -59,7 +57,7 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         new_students = StudentGroup.objects.filter(
             group__teacher=self.request.user,
             student__student_stage_type="NEW_STUDENT"
-                                                ).count()
+        ).count()
 
         stopped_students = StudentGroup.objects.filter(
             group__teacher=self.request.user,
@@ -74,7 +72,7 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
 
         complaints = Complaint.objects.filter(user=self.request.user).count()
 
-        results = Results.objects.filter(teacher=self.request.user,is_accepted="Accepted").count()
+        results = Results.objects.filter(teacher=self.request.user, is_accepted="Accepted").count()
 
         statistics = {
             "Average_assimilation": Average_assimilation,
@@ -92,8 +90,8 @@ class Teacher_StudentsView(ListAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentsGroupSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
-    search_fields = ("lid__first_name", "lid__last_name","student__first_name", "student__last_name")
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    search_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name")
 
     def get_queryset(self):
         group = StudentGroup.objects.filter(group__teacher=self.request.user)
@@ -106,17 +104,22 @@ class TeachersGroupsView(ListAPIView):
     queryset = Group.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    search_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
+    ordering_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
+    filterser_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
 
     def get_queryset(self):
+        status = self.request.query_params.get("status")
+        teacher_id = self.request.user.pk  # Get the teacher ID
 
-        status = self.request.query_params.get('status')
-        print(status)
+        queryset = Group.objects.filter(teacher__id=teacher_id)  # First filter by teacher
+
         if status:
-            return Group.objects.filter(status=status)
+            queryset = queryset.filter(status=status)  # Apply status filter if present
 
+        ordering = self.request.query_params.get("ordering")
+        if ordering:
+            queryset = queryset.order_by(ordering)  # Explicitly apply ordering
 
-        teacher_id = self.request.user.pk  # Get the teacher ID from the URL
-        if teacher_id:
-            teacher_groups = Group.objects.filter(teacher__id=teacher_id)
-            return teacher_groups
-        return Group.objects.none()
+        return queryset
