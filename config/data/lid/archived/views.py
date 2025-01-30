@@ -11,6 +11,7 @@ from .serializers import ArchivedSerializer
 from rest_framework.generics import ListCreateAPIView,ListAPIView,RetrieveUpdateDestroyAPIView
 
 from ...student.student.models import Student
+from ...student.student.serializers import StudentSerializer
 
 
 class ArchivedListAPIView(ListCreateAPIView):
@@ -44,25 +45,16 @@ class StudentArchivedListAPIView(ListAPIView):
     serializer_class = ArchivedSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, *args, **kwargs):
-        # Get query parameters
-        student_id = request.query_params.get('student_id')
-        lid_id = request.query_params.get('lid_id')
+    def get_queryset(self):
+        queryset = Student.objects.all()
+        serializer_class = ArchivedSerializer
+        permission_classes = (IsAuthenticated,)
 
-        # Initialize the filter condition
-        filter_condition = Q()
+        def get_queryset(self):
+            queryset = Archived.objects.all()
 
-        # If student_id is provided, filter by student
-        if student_id:
-            filter_condition &= Q(student__id=student_id)
+            id = self.request.query_params.get('id', None)
+            if id:
+                queryset = queryset.filter(Q(student__id=id) | Q(lid__id=id))
+            return queryset
 
-        # If lid_id is provided, filter by lid
-        if lid_id:
-            filter_condition &= Q(lid__id=lid_id)
-
-        # Get the filtered queryset
-        archived_items = Archived.objects.filter(filter_condition)
-
-        # Serialize the data
-        serializer = ArchivedSerializer(archived_items, many=True)
-        return Response(serializer.data)
