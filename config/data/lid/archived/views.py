@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from flask import Response
@@ -41,13 +42,8 @@ class StudentArchivedListAPIView(ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self,**kwargs):
-        lid_id = kwargs.get('pk')  # Assuming you pass 'lid_id' in the URL
-        student_id = kwargs.get('pk')  # Assuming you pass 'student_id' in the URL
+        id = kwargs.get('id')
 
-        print(kwargs.items())
-        if lid_id:  # If lid_id is provided, filter by lid
-            return Archived.objects.filter(lid__id=lid_id)
-        elif student_id:  # If student_id is provided, filter by student
-            return Archived.objects.filter(student__id=student_id)
-
+        if id:
+            return Archived.objects.filter(Q(student__id=id) | Q(lid__id=id))
         return Archived.objects.none()  # Return empty queryset if neither is provided
