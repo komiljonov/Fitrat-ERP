@@ -95,7 +95,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['upload_file'] = FileUploadSerializer(instance.file).data
+        rep['upload_file'] = FileUploadSerializer(instance.upload_file).data
         rep["teacher"] = UserListSerializer(instance.teacher).data
         rep["student"] = StudentSerializer(instance.student).data
         return rep
