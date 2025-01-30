@@ -88,12 +88,14 @@ class Lid(TimeStampModel):
 
     moderator : "CustomUser" = models.ForeignKey("account.CustomUser",
                                                  on_delete=models.SET_NULL,
-                                                 null=True, blank=True,)
+                                                 null=True, blank=True,
+                                                 related_name='moderator')
 
     lid_stages : models.QuerySet['NewLidStages']
     ordered_stages : models.QuerySet['NewOredersStages']
 
-    sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True, )
+    sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser',
+                                                    on_delete=models.CASCADE, null=True, related_name="sales_manager")
 
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"
