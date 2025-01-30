@@ -72,7 +72,7 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
 
         complaints = Complaint.objects.filter(user=self.request.user).count()
 
-        results = Results.objects.filter(teacher=self.request.user, is_accepted="Accepted").count()
+        results = Results.objects.filter(teacher=self.request.user, status="Accepted").count()
 
         statistics = {
             "Average_assimilation": Average_assimilation,
