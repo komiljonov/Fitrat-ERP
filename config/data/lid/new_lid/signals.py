@@ -80,8 +80,30 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
 
 
 
+# @receiver(post_save, sender=Lid)
+# def on_details_update(sender, instance: Lid, created, **kwargs):
+#     """
+#     This signal updates the `ordered_stages` field of the `Lid` instance
+#     without causing infinite recursion.
+#     """
+#     if hasattr(instance, "_disable_signals") and instance._disable_signals:
+#         return
+#
+#     if not created:  # Update logic only for existing records
+#         if instance.filial and instance.lid_stage_type == "ORDERED_LID":
+#             # Temporarily disable signals to avoid recursion
+#             instance._disable_signals = True
+#             try:
+#                 # Update `ordered_stages` directly with the choice value
+#                 instance.ordered_stages = "YANGI_BUYURTMA"
+#                 instance.save()
+#             finally:
+#                 # Re-enable signals
+#                 instance._disable_signals = False
+
+
 @receiver(post_save, sender=Lid)
-def on_details_update(sender, instance: Lid, created, **kwargs):
+def on_ordered_update(sender, instance: Lid, created, **kwargs):
     """
     This signal updates the `ordered_stages` field of the `Lid` instance
     without causing infinite recursion.
@@ -90,12 +112,12 @@ def on_details_update(sender, instance: Lid, created, **kwargs):
         return
 
     if not created:  # Update logic only for existing records
-        if instance.filial and instance.lid_stage_type == "ORDERED_LID":
+        if instance.filial and instance.lid_stage_type == "NEW_LID":
             # Temporarily disable signals to avoid recursion
             instance._disable_signals = True
             try:
                 # Update `ordered_stages` directly with the choice value
-                instance.ordered_stages = "YANGI_BUYURTMA"
+                instance.lid_stage_type = "ORDERED_LID"
                 instance.save()
             finally:
                 # Re-enable signals
