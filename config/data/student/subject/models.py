@@ -8,19 +8,7 @@ from ...upload.models import File
 
 class Subject(TimeStampModel):
     name = models.CharField(max_length=100)
-    label = models.CharField(choices=[
-        ("RED", 'RED'),
-        ("GREEN", 'GREEN'),
-        ("BLUE", 'BLUE'),
-        ("YELLOW", 'YELLOW'),
-        ("PURPLE", 'PURPLE'),
-        ("CYAN", 'CYAN'),
-        ("MAGENTA", 'MAGENTA'),
-        ("GRAY", 'GRAY'),
-        ("BLACK", 'BLACK'),
-        ("WHITE", 'WHITE'),
-    ], max_length=100
-    )
+    label = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.name

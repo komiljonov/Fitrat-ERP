@@ -59,7 +59,6 @@ class Lid(TimeStampModel):
         ("QAYTA_ALOQA","QAYTA_ALOQA"),
         ("O'TIB_KETGAN","O'TIB_KETGAN"),
         ("KUTULMOQDA","KUTULMOQDA"),
-        ("O'TIB KETGAN","O'TIB KETGAN"),
     ],
         max_length=100,
         help_text="LID's YANGI_LEAD stage type",
