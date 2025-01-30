@@ -25,8 +25,6 @@ class Group(TimeStampModel):
 
     course : 'Course' = models.ForeignKey('course.Course', on_delete=models.CASCADE)
 
-    level : 'Level' = models.ForeignKey('subject.Level', on_delete=models.CASCADE)
-
     teacher : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.PROTECT)
 
     status = models.CharField(
