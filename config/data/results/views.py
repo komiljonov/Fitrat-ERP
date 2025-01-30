@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 # Create your views here.
-from .serializers import UniversityResultsSerializer, CertificationResultsSerializer
+from .serializers import UniversityResultsSerializer, CertificationResultsSerializer, StudentResultsSerializer
 
 from .models import Results
 
@@ -58,3 +58,10 @@ class CertificationResultsNoPg(ListAPIView):
         return Response(data)
 
 
+class ResultsViewSet(ListAPIView):
+    queryset = Results.objects.all()
+    serializer_class = StudentResultsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Results.objects.filter(teacher=self.request.user)

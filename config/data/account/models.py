@@ -18,6 +18,8 @@ class CustomUser(AbstractUser):
 
     photo : File = models.ForeignKey('upload.File', on_delete=models.SET_NULL, blank=True, null=True)
 
+    date_of_birth = models.DateField(blank=True, null=True)
+
     ROLE_CHOICES = (
         ("CALL_OPERATOR", "Call Center"),
         ("ADMINISTRATOR", "Sotuv Menejeri"),

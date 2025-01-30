@@ -65,3 +65,37 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
         rep["teacher"] = UserListSerializer(instance.teacher).data
         rep["student"] = StudentSerializer(instance.student).data
         return rep
+
+class StudentResultsSerializer(serializers.ModelSerializer):
+    teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+    upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
+
+    class Meta:
+        model = Results
+        fields = [
+            'id',
+            'results',
+            'teacher',
+            'student',
+            'certificate_type',
+            'band_score',
+            'reading_score',
+            'lessoning_score',
+            'speaking_score',
+            'writing_score',
+            'university_type',
+            'university_name',
+            'university_entering_type',
+            'university_entering_ball',
+            'upload_file',
+            'created_at',
+            'updated_at',
+        ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['upload_file'] = FileUploadSerializer(instance.file).data
+        rep["teacher"] = UserListSerializer(instance.teacher).data
+        rep["student"] = StudentSerializer(instance.student).data
+        return rep

@@ -24,6 +24,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
 # class ConfirmationCodeSerializer(serializers.Serializer):
 #     phone = serializers.EmailField()
 #     confirmation_code = serializers.IntegerField()
@@ -67,14 +68,13 @@ class UserLoginSerializer(serializers.Serializer):
         return attrs
 
 
-
 class UserUpdateSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ['phone','full_name', 'password','role',"photo",]
+        fields = ['phone', 'full_name', 'password', 'role', "photo", "date_of_birth", ]
 
     def validate(self, attrs):
         user = self.instance  # Get the user instance
@@ -86,9 +86,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class UserListSerializer(ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
+
     class Meta:
         model = CustomUser
-        fields = ['id','phone',"full_name",'role',"photo","filial",]
+        fields = ['id', 'phone', "full_name", 'role', "photo", "filial", ]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -96,12 +97,15 @@ class UserListSerializer(ModelSerializer):
         return rep
 
 
-
 class UserSerializer(ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
+
     class Meta:
         model = CustomUser
-        fields = ("id","full_name",'phone',"role","photo","filial","balance","ball",)
+        fields = (
+            "id", "full_name", 'phone', "role", "photo", "filial", "balance", "ball",
+            "enter", 'leave','date_of_birth', 'created_at',
+            'updated_at')
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)

@@ -51,7 +51,13 @@ class Group(TimeStampModel):
 
     scheduled_day_type : 'Day' = models.ManyToManyField('groups.Day')  # Correct Many-to-ManyField definition
 
-    group_type = models.CharField(max_length=100,null=True, blank=True)
+    group_type = models.CharField(choices=[
+        ('PRIMARY', 'Primary'),
+        ('SECONDARY', 'Secondary'),
+    ],
+        default='PRIMARY',
+        max_length=100,
+    )
 
     started_at = models.TimeField(default=now)  # Use timezone-aware default
     ended_at = models.TimeField(default=now)

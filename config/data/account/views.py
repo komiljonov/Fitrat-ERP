@@ -87,11 +87,8 @@ class UserUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    def get_object(self):
-        return self.request.user  # Get the current user
-
     def put(self, request, *args, **kwargs):
-        user = self.get_object()
+        user = request.user
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)  # Allow partial updates
         if serializer.is_valid():
             serializer.save()
