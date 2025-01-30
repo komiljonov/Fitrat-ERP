@@ -53,7 +53,7 @@ class Results(TimeStampModel):
 
     upload_file : "File" = models.ForeignKey("upload.File",
                                              on_delete=models.CASCADE)
-    is_accepted = models.CharField(
+    status = models.CharField(
         choices=[
             ("Accepted", "Accepted"),
             ("Rejected", "Rejected"),

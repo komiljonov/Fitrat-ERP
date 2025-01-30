@@ -26,6 +26,7 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
             'university_entering_type',
             'university_entering_ball',
             'upload_file',
+            'status',
             'created_at',
             'updated_at',
         ]
@@ -55,6 +56,7 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
             'speaking_score',
             'writing_score',
             'upload_file',
+            'status',
             'created_at',
             'updated_at',
         ]
@@ -89,6 +91,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
             'university_entering_type',
             'university_entering_ball',
             'upload_file',
+            'is_accepted',
             'created_at',
             'updated_at',
         ]
