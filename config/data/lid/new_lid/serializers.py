@@ -132,6 +132,9 @@ class LidSerializer(serializers.ModelSerializer):
         if instance.call_operator is None and request.user.role == 'CALL_OPERATOR':
             validated_data['call_operator'] = request.user
 
+        if instance.sales_manager is None and request.user.role == 'ADMINISTRATOR':
+            validated_data['sales_manager'] = request.user
+
         instance = super().update(instance, validated_data)
         return instance
 
