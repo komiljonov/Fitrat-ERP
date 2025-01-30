@@ -4,9 +4,9 @@ from .models import StudentGroup
 from ..groups.models import Group
 from ..groups.serializers import GroupSerializer
 from ..student.models import Student
-from ..student.serializers import StudentSerializer
+from ..student.serializers import StudentSerializer, StudentAppSerializer
 from ...lid.new_lid.models import Lid
-from ...lid.new_lid.serializers import LidSerializer
+from ...lid.new_lid.serializers import LidSerializer, LidAppSerializer
 
 
 class StudentsGroupSerializer(serializers.ModelSerializer):
@@ -83,3 +83,23 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
         rep['lid'] = LidSerializer(instance.lid).data
         return rep
 
+
+class StudentGroupSerializer(serializers.ModelSerializer):
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
+
+
+    class Meta:
+        model = StudentGroup
+        fields = [
+            'id',
+            'group',
+            'student',
+            'lid'
+        ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['student'] = StudentAppSerializer(instance.student).data
+        rep['lid'] = LidAppSerializer(instance.lid).data
+        return rep

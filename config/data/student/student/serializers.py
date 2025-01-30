@@ -185,3 +185,18 @@ class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         attrs['user'] = user
         return attrs
+
+
+
+class StudentAppSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = [
+            'id',
+            'first_name',
+            'last_name',
+        ]
+    def get_attendance(self, obj):
+        attendance = Attendance.objects.filter(lesson=obj)
+        AttendanceSerializer = import_string('data.student.attendance.serializers.AttendanceSerializer')
+        return AttendanceSerializer(attendance, many=True).data

@@ -134,3 +134,13 @@ class LidSerializer(serializers.ModelSerializer):
 
         instance = super().update(instance, validated_data)
         return instance
+
+
+class LidAppSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lid
+        fields = [
+            'id',
+            'first_name',
+            'last_name',
+        ]

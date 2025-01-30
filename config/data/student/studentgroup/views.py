@@ -73,3 +73,5 @@ class GroupStudentDetail(ListAPIView):
 
         return StudentGroup.objects.filter(Q(student=id) | Q(lid=id))
 
+
+
