@@ -73,7 +73,6 @@ class LidListCreateView(ListCreateAPIView):
         if course_id:
             queryset = queryset.filter(lids_group__group__course__id=course_id)
 
-
         if search_term:
             try:
                 queryset = queryset.filter(
@@ -112,7 +111,7 @@ class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class LidListNoPG(FilialRestrictedQuerySetMixin,ListAPIView):
+class LidListNoPG(FilialRestrictedQuerySetMixin, ListAPIView):
     queryset = Lid.objects.all()
     serializer_class = LidSerializer
 
@@ -126,16 +125,20 @@ class FirstLessonCreate(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-
-
 class ExportLidToExcelAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter("start_date", openapi.IN_QUERY, description="Filter by start date (YYYY-MM-DD)", type=openapi.TYPE_STRING),
-            openapi.Parameter("end_date", openapi.IN_QUERY, description="Filter by end date (YYYY-MM-DD)", type=openapi.TYPE_STRING),
-            openapi.Parameter("is_student", openapi.IN_QUERY, description="Filter by whether the lead is a student (true/false)", type=openapi.TYPE_STRING),
-            openapi.Parameter("filial_id", openapi.IN_QUERY, description="Filter by filial ID", type=openapi.TYPE_INTEGER),
-            openapi.Parameter("lid_stage_type",openapi.IN_QUERY, description="Filter by lid stage type", type=openapi.TYPE_STRING),
+            openapi.Parameter("start_date", openapi.IN_QUERY, description="Filter by start date (YYYY-MM-DD)",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter("end_date", openapi.IN_QUERY, description="Filter by end date (YYYY-MM-DD)",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter("is_student", openapi.IN_QUERY,
+                              description="Filter by whether the lead is a student (true/false)",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter("filial_id", openapi.IN_QUERY, description="Filter by filial ID",
+                              type=openapi.TYPE_INTEGER),
+            openapi.Parameter("lid_stage_type", openapi.IN_QUERY, description="Filter by lid stage type",
+                              type=openapi.TYPE_STRING),
         ],
         responses={200: "Excel file generated"}
     )
@@ -167,7 +170,7 @@ class ExportLidToExcelAPIView(APIView):
         # Define headers
         headers = [
             "Ism", "Familiya", "Telefon raqami",
-            "Tug'ulgan sanasi", "O'quv tili","O'quv sinfi",
+            "Tug'ulgan sanasi", "O'quv tili", "O'quv sinfi",
             "Fan", "Ball", "Filial", "Marketing kanali", "Lead varonkasi",
             "Lead etapi", "Buyurtma etapi", "Arxivlangan",
             "Call Operator", "O'quvchi bo'lgan", "Moderator", "Yaratilgan vaqti"
@@ -260,7 +263,12 @@ class LidStatisticsView(APIView):
         ordered_new_leads = Lid.objects.filter(ordered_filter & Q(ordered_stages='KUTULMOQDA')).count()
         archived_ordered_leads = Lid.objects.filter(ordered_filter & Q(is_archived=True)).count()
 
-        # Statistics data
+        all = Lid.objects.filter(is_archived=True).count()
+        archived_lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_student=False
+                                          , is_archived=True).count()
+        archived_order = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_student=False,
+                                            is_archived=True).count()
+
         statistics = {
             "leads_count": leads_count,
             "new_leads": new_leads,
@@ -277,10 +285,17 @@ class LidStatisticsView(APIView):
             "ordered_archived": archived_ordered_leads,
         }
 
+        lid_archived = {
+            "all": all,
+            'lid': archived_lid,
+            "order" : archived_order
+        }
+
         # Combine statistics into response
         response_data = {
             "statistics": statistics,
             "ordered_statistics": ordered_statistics,
+            "lid_archived": lid_archived,
         }
 
         return Response(response_data)
