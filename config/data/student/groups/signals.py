@@ -6,8 +6,9 @@ from .models import Group
 from ...notifications.models import Notification
 
 
-# @receiver(post_save, sender=Group)
-# def on_create(sender, instance: Group, created, **kwargs):
-#     if created:
-#
+@receiver(post_save, sender=Group)
+def on_create(sender, instance: Group, created, **kwargs):
+    if created:
+        pass
+
 
