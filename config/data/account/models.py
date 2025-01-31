@@ -34,6 +34,7 @@ class CustomUser(AbstractUser):
         ("TESTOLOG", "Testolog"),
         ("MODERATOR", "YORDAMCHI USTOZ"),
         ("TEACHER", "Teacher"),
+        ("ASSISTANT", "Assistant teacher"),
         ("DIRECTOR", "Director"),
     )
     role = models.CharField(choices=ROLE_CHOICES, max_length=20, default="ADMINISTRATOR")

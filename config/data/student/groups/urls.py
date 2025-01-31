@@ -15,4 +15,4 @@ urlpatterns = [
     path('room',RoomListAPIView.as_view(), name='room-list'),
     path('room/<uuid:pk>/', RoomRetrieveUpdateDestroyAPIView.as_view(), name='room-detail'),
     path('room/no-pg/',RoomNoPG.as_view(), name='room-no-pg-list'),
-]
+]  

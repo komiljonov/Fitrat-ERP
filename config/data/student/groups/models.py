@@ -49,13 +49,7 @@ class Group(TimeStampModel):
 
     scheduled_day_type : 'Day' = models.ManyToManyField('groups.Day')  # Correct Many-to-ManyField definition
 
-    group_type = models.CharField(choices=[
-        ('PRIMARY', 'Primary'),
-        ('SECONDARY', 'Secondary'),
-    ],
-        default='PRIMARY',
-        max_length=100,
-    )
+
 
     started_at = models.TimeField(default=now)  # Use timezone-aware default
     ended_at = models.TimeField(default=now)
@@ -72,3 +66,29 @@ class Group(TimeStampModel):
 
 
 
+class SecondaryGroup(TimeStampModel):
+    name = models.CharField(max_length=100, unique=True)
+    group : "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE)
+
+    scheduled_day_type: 'Day' = models.ManyToManyField('groups.Day',related_name='secondary_scheduled_day_type')
+
+    status = models.CharField(
+        choices=[
+            ('ACTIVE', 'Active'),
+            ("PENDING", "Pending"),
+            ('INACTIVE', 'Inactive'),
+        ],
+        default='PENDING',
+        max_length=100,
+    )
+
+    started_at = models.TimeField(default=now)  # Use timezone-aware default
+    ended_at = models.TimeField(default=now)
+
+    start_date = models.DateField(default=today())
+    finish_date = models.DateField(default=today())
+
+    comment = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
