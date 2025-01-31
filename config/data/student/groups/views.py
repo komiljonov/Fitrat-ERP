@@ -147,3 +147,7 @@ class DaysNoPG(ListAPIView):
     serializer_class = DaySerializer
     permission_classes = [IsAuthenticated]
 
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
