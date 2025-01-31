@@ -26,6 +26,7 @@ class GroupSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'teacher',
+            'secondary_teacher'
             'status',
             'course',
             'student_count',
@@ -47,6 +48,7 @@ class GroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['teacher'] = UserSerializer(instance.teacher).data
+        # rep['secondary_teacher'] = DaySerializer(instance.secondary_teacher).data
         return rep
 
     def create(self, validated_data):
