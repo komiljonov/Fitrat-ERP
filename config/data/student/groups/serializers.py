@@ -26,7 +26,7 @@ class GroupSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'teacher',
-            'secondary_teacher'
+            'secondary_teacher',
             'status',
             'course',
             'student_count',
