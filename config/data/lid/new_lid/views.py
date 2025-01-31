@@ -256,8 +256,8 @@ class LidStatisticsView(APIView):
 
         # Filter for "ORDERED_LID"
         ordered_filter = Q(is_archived=False, filial=user.filial, lid_stage_type="ORDERED_LID")
-        ordered_leads_count = Lid.objects.filter(ordered_filter & Q(lid_stages='YANGI_BUYURTMA')).count()
-        ordered_new_leads = Lid.objects.filter(ordered_filter & Q(lid_stages='KUTULMOQDA')).count()
+        ordered_leads_count = Lid.objects.filter(ordered_filter & Q(ordered_stages='YANGI_BUYURTMA')).count()
+        ordered_new_leads = Lid.objects.filter(ordered_filter & Q(ordered_stages='KUTULMOQDA')).count()
         archived_ordered_leads = Lid.objects.filter(ordered_filter & Q(is_archived=True)).count()
 
         # Statistics data
