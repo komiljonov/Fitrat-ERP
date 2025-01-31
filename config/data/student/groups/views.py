@@ -2,13 +2,14 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Group, Room, SecondaryGroup
-from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer
+from .models import Group, Room, SecondaryGroup, Day
+from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer, \
+    DaySerializer
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -133,3 +134,16 @@ class SecondaryNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+
+class DaysAPIView(ListAPIView):
+    queryset = Day.objects.all()
+    serializer_class = DaySerializer
+    permission_classes = [IsAuthenticated]
+
+class DaysNoPG(ListAPIView):
+    queryset = Day.objects.all()
+    serializer_class = DaySerializer
+    permission_classes = [IsAuthenticated]
+
