@@ -234,7 +234,7 @@ class LidStatisticsView(APIView):
         # Statistics for "NEW_LID"
         leads_count = Lid.objects.filter(combined_filter).count()
         new_leads = Lid.objects.filter(combined_filter & Q(call_operator=None),lid_stages="YANGI_LEAD").count()
-        order_creating = Lid.objects.filter(combined_filter & Q(call_operator=user if is_call_operator else None)).count()
+        order_creating = Lid.objects.filter(combined_filter & Q(call_operator=user)).count()
         archived_new_leads = Lid.objects.filter(combined_filter & Q(is_archived=True)).count()
         re_called = Lid.objects.filter(
             combined_filter & Q(lid_stages="QAYTA_ALOQA", call_operator=user if is_call_operator else None)
