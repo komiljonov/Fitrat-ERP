@@ -18,7 +18,8 @@ class DaySerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    scheduled_day_type = DaySerializer(many=True)
+    scheduled_day_type = serializers.PrimaryKeyRelatedField(queryset=Day.objects.all(),
+                                                            many=True)
     student_count = serializers.SerializerMethodField()
     class Meta:
         model = Group
@@ -50,6 +51,16 @@ class GroupSerializer(serializers.ModelSerializer):
 
         return rep
 
+    def create(self, validated_data):
+        scheduled_day_data = validated_data.pop('scheduled_day_type', [])
+        group = Group.objects.create(**validated_data)  # Create the Group object
+
+        # Associate the days (scheduled_day_type) to the group
+        for day_id in scheduled_day_data:
+            day = Day.objects.get(id=day_id)  # Get the Day object using its ID
+            group.scheduled_day_type.add(day)  # Add the day to the group
+
+        return group
 
 class GroupLessonSerializer(serializers.ModelSerializer):
     group_lesson_dates = serializers.SerializerMethodField()  # Add this field
