@@ -117,8 +117,8 @@ class SecondaryGroupsView(ListCreateAPIView):
 
     filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
     search_fields = ('name','scheduled_day_type__name')
-    ordering_fields = ('name','scheduled_day_type','start_date','end_date','price_type')
-    filterset_fields = ('name','scheduled_day_type','price_type')
+    ordering_fields = ('name','scheduled_day_type','start_date','end_date',)
+    filterset_fields = ('name','scheduled_day_type',)
 
 
 class SecondaryGroupRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):

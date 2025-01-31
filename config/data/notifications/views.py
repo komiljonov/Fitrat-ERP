@@ -17,10 +17,9 @@ class NotificationListAPIView(ListCreateAPIView):
 
 class NotificationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = NotificationSerializer
+    queryset = Notification.objects.all()
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user)
 
 class NotificationListNoPG(ListAPIView):
     serializer_class = NotificationSerializer
