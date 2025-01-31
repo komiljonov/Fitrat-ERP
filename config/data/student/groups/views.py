@@ -137,7 +137,7 @@ class SecondaryNoPG(ListAPIView):
 
 
 
-class DaysAPIView(ListAPIView):
+class DaysAPIView(ListCreateAPIView):
     queryset = Day.objects.all()
     serializer_class = DaySerializer
     permission_classes = [IsAuthenticated]
