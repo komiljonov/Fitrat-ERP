@@ -223,17 +223,17 @@ class LidStatisticsView(APIView):
         user = request.user
         is_call_operator = user.role == "CALL_OPERATOR"
 
-        # Base filters
+        # Base filters for "NEW_LID"
         base_filter = Q(is_archived=False, lid_stage_type="NEW_LID")
         filial_filter = Q(filial=user.filial) if not is_call_operator else Q(filial=None)
         call_operator_filter = Q(call_operator=None) | Q(call_operator=user) if is_call_operator else Q()
 
-        # Combine filters
+        # Combine filters for "NEW_LID"
         combined_filter = base_filter & filial_filter & call_operator_filter
 
-        # Statistics for "NEW_LID"
+        # Get statistics for "NEW_LID"
         leads_count = Lid.objects.filter(combined_filter).count()
-        new_leads = Lid.objects.filter(combined_filter & Q(call_operator=None),lid_stages="YANGI_LEAD").count()
+        new_leads = Lid.objects.filter(combined_filter & Q(call_operator=None), lid_stages="YANGI_LEAD").count()
         order_creating = Lid.objects.filter(combined_filter & Q(call_operator=user)).count()
         archived_new_leads = Lid.objects.filter(combined_filter & Q(is_archived=True)).count()
         re_called = Lid.objects.filter(
@@ -254,10 +254,10 @@ class LidStatisticsView(APIView):
             first_lesson_not = 0
             first_lesson = 0
 
-        # Statistics for "ORDERED_LID" (filial-based for all roles)
+        # Filter for "ORDERED_LID"
         ordered_filter = Q(is_archived=False, filial=user.filial, lid_stage_type="ORDERED_LID")
-        ordered_leads_count = Lid.objects.filter(ordered_filter,lid_stages='YANGI_BUYURTMA').count()
-        ordered_new_leads = Lid.objects.filter(ordered_filter,lid_stages='KUTULMOQDA').count()
+        ordered_leads_count = Lid.objects.filter(ordered_filter & Q(lid_stages='YANGI_BUYURTMA')).count()
+        ordered_new_leads = Lid.objects.filter(ordered_filter & Q(lid_stages='KUTULMOQDA')).count()
         archived_ordered_leads = Lid.objects.filter(ordered_filter & Q(is_archived=True)).count()
 
         # Statistics data
