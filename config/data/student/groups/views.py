@@ -7,8 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Group, Room
-from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer
+from .models import Group, Room, SecondaryGroup
+from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -104,6 +104,32 @@ class RoomNoPG(ListAPIView):
     search_fields = ('room_number','room_filling')
     ordering_fields = ('room_number','room_filling')
     filterset_fields = ('room_number','room_filling')
+
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
+
+class SecondaryGroupsView(ListCreateAPIView):
+    queryset = SecondaryGroup.objects.all()
+    serializer_class = SecondaryGroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
+    search_fields = ('name','scheduled_day_type__name')
+    ordering_fields = ('name','scheduled_day_type','start_date','end_date','price_type')
+    filterset_fields = ('name','scheduled_day_type','price_type')
+
+
+class SecondaryGroupRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = SecondaryGroup.objects.all()
+    serializer_class = SecondaryGroupSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class SecondaryNoPG(ListAPIView):
+    queryset = SecondaryGroup.objects.all()
+    serializer_class = SecondaryGroupSerializer
 
     def get_paginated_response(self, data):
         return Response(data)

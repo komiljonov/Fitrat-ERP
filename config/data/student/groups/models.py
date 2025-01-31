@@ -1,6 +1,7 @@
 from django.db import models
 
 from dateutil.utils import today
+from django.utils import timezone
 from django.utils.timezone import now
 
 from ..course.models import Course
@@ -15,17 +16,25 @@ class Room(TimeStampModel):
     def __str__(self):
         return self.room_number
 
+
 class Day(TimeStampModel):
     name = models.CharField(max_length=100, unique=True)
+
     def __str__(self):
         return self.name
+
 
 class Group(TimeStampModel):
     name = models.CharField(max_length=100)
 
-    course : 'Course' = models.ForeignKey('course.Course', on_delete=models.CASCADE)
+    course: 'Course' = models.ForeignKey('course.Course', on_delete=models.CASCADE)
 
-    teacher : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.PROTECT)
+    teacher: 'CustomUser' = models.ForeignKey('account.CustomUser',
+                                              on_delete=models.SET_NULL, null=True, blank=True,
+                                              related_name='teacher')
+    secondary_teacher: 'CustomUser' = models.ForeignKey('account.CustomUser',
+                                                        on_delete=models.SET_NULL, null=True, blank=True,
+                                                        related_name='secondary_teacher')
 
     status = models.CharField(
         choices=[
@@ -37,7 +46,7 @@ class Group(TimeStampModel):
         max_length=100,
     )
 
-    room_number : 'Room' = models.ForeignKey('groups.Room', on_delete=models.CASCADE)
+    room_number: 'Room' = models.ForeignKey('groups.Room', on_delete=models.CASCADE)
 
     price_type = models.CharField(choices=[
         ('DAILY', 'Daily payment'),
@@ -47,30 +56,29 @@ class Group(TimeStampModel):
         max_length=100)
     price = models.FloatField(default=0, null=True, blank=True)
 
-    scheduled_day_type : 'Day' = models.ManyToManyField('groups.Day')  # Correct Many-to-ManyField definition
+    scheduled_day_type: 'Day' = models.ManyToManyField('groups.Day')  # Correct Many-to-ManyField definition
 
-    # is_secondary
+    is_secondary = models.BooleanField(default=False, help_text='Is there secondary group?')
 
     started_at = models.TimeField(default=now)  # Use timezone-aware default
     ended_at = models.TimeField(default=now)
 
-    start_date = models.DateField(default=today())
-    finish_date = models.DateField(default=today())
+    start_date = models.DateTimeField(default=timezone.now)
+    finish_date = models.DateTimeField(default=timezone.now)
 
     comment = models.TextField(null=True, blank=True)
 
     def __str__(self):
-
         return f"{self.name} - {self.price_type}"
 
 
-
-
 class SecondaryGroup(TimeStampModel):
-    name = models.CharField(max_length=100, unique=True)
-    group : "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    group: "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE)
 
-    scheduled_day_type: 'Day' = models.ManyToManyField('groups.Day',related_name='secondary_scheduled_day_type')
+    teacher: 'CustomUser' = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL, null=True, blank=True,)
+
+    scheduled_day_type: 'Day' = models.ManyToManyField('groups.Day', related_name='secondary_scheduled_day_type')
 
     status = models.CharField(
         choices=[
@@ -85,8 +93,8 @@ class SecondaryGroup(TimeStampModel):
     started_at = models.TimeField(default=now)  # Use timezone-aware default
     ended_at = models.TimeField(default=now)
 
-    start_date = models.DateField(default=today())
-    finish_date = models.DateField(default=today())
+    start_date = models.DateTimeField(default=timezone.now)
+    finish_date = models.DateTimeField(default=timezone.now)
 
     comment = models.TextField(null=True, blank=True)
 

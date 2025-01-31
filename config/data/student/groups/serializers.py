@@ -1,7 +1,8 @@
 from rest_framework import serializers
+from rest_framework.generics import ListCreateAPIView
 
 from .lesson_date_calculator import calculate_lessons
-from .models import Group, Subject, Level, Day, Room
+from .models import Group, Subject, Level, Day, Room, SecondaryGroup
 from ..studentgroup.models import StudentGroup
 from ..subject.serializers import SubjectSerializer, LevelSerializer
 from ...account.models import CustomUser
@@ -103,3 +104,34 @@ class RoomsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+
+
+
+class SecondaryGroupSerializer(serializers.ModelSerializer):
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
+    teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    class Meta:
+        model = SecondaryGroup
+        fields = [
+            'id',
+            'name',
+            'group',
+            'teacher',
+            'scheduled_day_type',
+            'status',
+
+            'started_at',
+            'ended_at',
+
+            'start_date',
+            'finish_date',
+
+            'created_at',
+            'updated_at',
+        ]
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['teacher'] = UserSerializer(instance.teacher).data
+        rep['group'] = GroupSerializer(instance.group).data
+        return rep

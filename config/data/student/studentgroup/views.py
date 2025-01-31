@@ -7,9 +7,9 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import StudentsGroupSerializer
+from .serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializer
 
-from .models import StudentGroup
+from .models import StudentGroup, SecondaryStudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
 
 
@@ -30,8 +30,12 @@ class StudentsGroupList(ListCreateAPIView):
     'group__teacher__id')
 
     def get_queryset(self):
-        queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
-        return queryset
+        if self.request.user.role == 'TEACHER':
+            queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
+            return queryset
+        else:
+            queryset = StudentGroup.objects.filter(group__filial=self.request.user.filial)
+            return queryset
 
 
 
@@ -48,6 +52,13 @@ class StudentGroupNopg(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+    def get_queryset(self):
+        if self.request.user.role == 'TEACHER':
+            queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
+            return queryset
+        else:
+            queryset = StudentGroup.objects.filter(group__filial=self.request.user.filial)
+            return queryset
 
 
 class GroupStudentList(ListAPIView):
@@ -72,6 +83,22 @@ class GroupStudentDetail(ListAPIView):
         print(id)
 
         return StudentGroup.objects.filter(Q(student=id) | Q(lid=id))
+
+
+
+class SecondaryStudentList(ListCreateAPIView):
+    serializer_class = SecondaryStudentsGroupSerializer
+    queryset = SecondaryStudentGroup.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+    def get_queryset(self):
+        if self.request.user.role == 'ASSISTANT':
+            queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
+            return queryset
+        else:
+            queryset = StudentGroup.objects.filter(group__filial=self.request.user.filial)
+            return queryset
 
 
 
