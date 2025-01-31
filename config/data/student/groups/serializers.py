@@ -15,12 +15,11 @@ class DaySerializer(serializers.ModelSerializer):
         fields = ["id","name",]
 
 
-
 class GroupSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    scheduled_day_type = serializers.PrimaryKeyRelatedField(queryset=Day.objects.all(),
-                                                            many=True)
+    scheduled_day_type = serializers.PrimaryKeyRelatedField(queryset=Day.objects.all(), many=True)
     student_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Group
         fields = [
@@ -41,24 +40,21 @@ class GroupSerializer(serializers.ModelSerializer):
             'finish_date',
         ]
 
-    def get_student_count(self,obj):
+    def get_student_count(self, obj):
         student_count = StudentGroup.objects.filter(group=obj).count()
         return student_count
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['teacher'] = UserSerializer(instance.teacher).data
-
         return rep
 
     def create(self, validated_data):
-        scheduled_day_data = validated_data.pop('scheduled_day_type', [])
-        group = Group.objects.create(**validated_data)  # Create the Group object
+        scheduled_day_type_data = validated_data.pop('scheduled_day_type', [])
+        group = Group.objects.create(**validated_data)
 
-        # Associate the days (scheduled_day_type) to the group
-        for day_id in scheduled_day_data:
-            day = Day.objects.get(id=day_id)  # Get the Day object using its ID
-            group.scheduled_day_type.add(day)  # Add the day to the group
+        # `scheduled_day_type` is already a list of Day instances due to PrimaryKeyRelatedField
+        group.scheduled_day_type.set(scheduled_day_type_data)  # Using `.set()` to update the Many-to-Many field
 
         return group
 
