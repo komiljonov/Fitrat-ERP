@@ -7,8 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Group
-from .serializers import GroupSerializer, GroupLessonSerializer
+from .models import Group, Room
+from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -68,3 +68,42 @@ class TeachersGroupsView(ListAPIView):
             teacher_groups = Group.objects.filter(teacher__id=teacher_id)
             return teacher_groups
         return Group.objects.none()
+
+
+
+class RoomListAPIView(ListCreateAPIView):
+    queryset = Room.objects.all()
+    serializer_class = RoomsSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
+    search_fields = ('room_number','room_filling')
+    ordering_fields = ('room_number','room_filling')
+    filterset_fields = ('room_number','room_filling')
+
+    def get_queryset(self):
+        filial = self.request.user.filial
+        if filial:
+            return Room.objects.filter(filial=filial)
+
+    def perform_create(self, serializer):
+        """Automatically assign the requesting user's filial when creating a room."""
+        serializer.save(filial=self.request.user.filial)
+
+
+class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Room.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = RoomsSerializer
+
+
+class RoomNoPG(ListAPIView):
+    queryset = Room.objects.all()
+    serializer_class = RoomsSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
+    search_fields = ('room_number','room_filling')
+    ordering_fields = ('room_number','room_filling')
+    filterset_fields = ('room_number','room_filling')
+
+    def get_paginated_response(self, data):
+        return Response(data)

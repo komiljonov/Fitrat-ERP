@@ -51,8 +51,7 @@ class Results(TimeStampModel):
     speaking_score = models.FloatField(null=True,blank=True)
     writing_score = models.FloatField(null=True,blank=True)
 
-    upload_file : "File" = models.ForeignKey("upload.File",
-                                             on_delete=models.CASCADE)
+    upload_file : "File" = models.ManyToManyField("upload.File")
     status = models.CharField(
         choices=[
             ("Accepted", "Accepted"),

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .lesson_date_calculator import calculate_lessons
-from .models import Group, Subject, Level, Day
+from .models import Group, Subject, Level, Day, Room
 from ..studentgroup.models import StudentGroup
 from ..subject.serializers import SubjectSerializer, LevelSerializer
 from ...account.models import CustomUser
@@ -93,3 +93,15 @@ class GroupLessonSerializer(serializers.ModelSerializer):
             lesson_dates = calculate_lessons(start_date, end_date, lesson_type, holidays, days_off)
             return lesson_dates
         return []
+
+
+class RoomsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = [
+            'id',
+            'room_number',
+            'room_filling',
+            'created_at',
+            'updated_at',
+        ]

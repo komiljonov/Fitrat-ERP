@@ -71,7 +71,7 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
 class StudentResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
-    upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
+    upload_file = FileUploadSerializer(many=True)
 
     class Meta:
         model = Results
