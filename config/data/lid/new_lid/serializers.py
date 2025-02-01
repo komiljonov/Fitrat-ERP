@@ -22,11 +22,9 @@ class LidSerializer(serializers.ModelSerializer):
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
     call_operator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.filter(role='CALL_OPERATOR'), allow_null=True)
 
-    # comments = serializers.SerializerMethodField()
-    # tasks = serializers.SerializerMethodField()
+    course = serializers.SerializerMethodField()
+    group = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
-
-    # student_group = serializers.SerializerMethodField()
 
     class Meta:
         model = Lid
@@ -51,9 +49,8 @@ class LidSerializer(serializers.ModelSerializer):
             "ordered_stages",
             "lid_stages",
             "is_archived",
-            # "comments",
-            # "tasks",
-            # "student_group",
+            'course',
+            'group',
             'moderator',
             "call_operator",
             "lessons_count",
@@ -93,24 +90,20 @@ class LidSerializer(serializers.ModelSerializer):
             queryset = queryset.filter(Q(call_operator=user) | Q(call_operator=None), filial=None)
         return queryset
 
-    # def get_comments(self, obj):
-    #     comments = Comment.objects.filter(lid=obj)
-    #     CommentSerializer = import_string("data.comments.serializers.CommentSerializer")
-    #     return CommentSerializer(comments, many=True).data
-    #
-    # def get_tasks(self, obj):
-    #     tasks = Task.objects.filter(lid=obj)
-    #     TaskSerializer = import_string("data.tasks.serializers.TaskSerializer")
-    #     return TaskSerializer(tasks, many=True).data
 
     def get_lessons_count(self, obj):
         attendance_count = Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
         return attendance_count
 
-    # def get_student_group(self,obj):
-    #     group = StudentGroup.objects.filter(lid=obj)
-    #     StudentGroupMixSerializer = import_string("data.student.studentgroup.serializers.StudentGroupMixSerializer")
-    #     return StudentGroupMixSerializer(group, many=True).data
+    def get_course(self, obj):
+        courses = (StudentGroup.objects.filter(lid=obj)
+                   .values_list("group__course__name", flat=True))
+        return list(courses)
+
+    def get_group(self, obj):
+        courses = (StudentGroup.objects.filter(lid=obj)
+                   .values_list("group__name", flat=True))
+        return list(courses)
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
