@@ -219,84 +219,71 @@ class ExportLidToExcelAPIView(APIView):
         return response
 
 
-
-class LidStatisticsView(APIView):
+class LidStatisticsView(ListAPIView):
     permission_classes = [IsAuthenticated]
+    queryset = Lid.objects.all()
 
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         user = request.user
         is_call_operator = user.role == "CALL_OPERATOR"
 
-        # Base filter for "NEW_LID"
-        base_filter = Q(is_archived=False, lid_stage_type="NEW_LID")
-
-        # Filter for "CALL_OPERATOR" - only those assigned to the user or with no call operator assigned
+        # Filters for NEW_LID statistics
+        new_lid_filter = Q(is_archived=False, lid_stage_type="NEW_LID")
         call_operator_filter = Q(call_operator=None) | Q(call_operator=user) if is_call_operator else Q()
 
-        # Combine the filters for "NEW_LID"
-        combined_filter = base_filter & call_operator_filter
+        # NEW_LID statistics
+        leads_count = Lid.objects.filter(new_lid_filter & call_operator_filter).count()
+        new_leads = Lid.objects.filter(new_lid_filter & Q(call_operator=None)).count()
+        in_progress = Lid.objects.filter(new_lid_filter & Q(call_operator=user)).count() if is_call_operator else 0
+        order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID", call_operator=user).count() if is_call_operator else 0
+        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID", call_operator=user).count() if is_call_operator else 0
 
-        # Get statistics for "NEW_LID"
-        leads_count = Lid.objects.filter(combined_filter).count()
-        new_leads = Lid.objects.filter(combined_filter & Q(lid_stages="YANGI_LEAD") & Q(call_operator=None)).count()
-        order_creating = Lid.objects.filter(combined_filter & Q(call_operator=user)).count()
-        archived_new_leads = Lid.objects.filter(combined_filter & Q(is_archived=True)).count()
-        re_called = Lid.objects.filter(
-            combined_filter & Q(lid_stages="QAYTA_ALOQA") & Q(call_operator=user if is_call_operator else None)
-        ).count()
+        # Filters for ORDERED_LID statistics
+        ordered_filter = Q(is_archived=False, lid_stage_type="ORDERED_LID", filial=user.filial)
+        ordered_leads_count = Lid.objects.filter(ordered_filter).count()
+        ordered_waiting_leads = StudentGroup.objects.filter(lid__isnull=True).count()
+        ordered_archived = Lid.objects.filter(is_archived=True, lid_stage_type="ORDERED_LID", filial=user.filial).count()
 
-        # Handle specific `lid_id` if provided
-        lid_id = kwargs.get("lid")
+        # Attendance statistics (if lid_id is provided)
+        lid_id = kwargs.get("lid_id")
         if lid_id:
             attendance_filter = Q(is_archived=False, lid=lid_id, filial=user.filial)
-
-            first_lesson_not = Attendance.objects.filter(
-                attendance_filter & Q(reason__in=["UNREASONED", "REASONED"])
-            ).count()
-            first_lesson = Attendance.objects.filter(
-                attendance_filter & Q(reason="IS_PRESENT")
-            ).count()
+            first_lesson_not = Attendance.objects.filter(attendance_filter & Q(reason__in=["UNREASONED", "REASONED"])).count()
+            first_lesson = Attendance.objects.filter(attendance_filter & Q(reason="IS_PRESENT")).count()
         else:
             first_lesson_not = 0
             first_lesson = 0
 
-        # Filter for "ORDERED_LID"
-        ordered_filter = Q(is_archived=False, filial=user.filial, lid_stage_type="ORDERED_LID")
-        ordered_leads_count = Lid.objects.filter(ordered_filter & Q(ordered_stages='YANGI_BUYURTMA')).count()
-        ordered_new_leads = Lid.objects.filter(ordered_filter & Q(ordered_stages='KUTULMOQDA')).count()
-        archived_ordered_leads = Lid.objects.filter(ordered_filter & Q(is_archived=True)).count()
-
-        # Count archived lids and orders
-        all_lids = Lid.objects.filter(is_archived=True, is_student=False).count()
+        # Archived statistics
+        all_archived = Lid.objects.filter(is_archived=True, is_student=False).count()
         archived_lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_student=False, is_archived=True).count()
         archived_order = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_student=False, is_archived=True).count()
 
-        # Prepare statistics for the response
-        statistics = {
+        # Compile statistics into response
+        new_lid_statistics = {
             "leads_count": leads_count,
             "new_leads": new_leads,
-            "re_called": re_called,
-            "order_creating": order_creating,
+            "in_progress": in_progress,
+            "order_created": order_created,
             "archived_new_leads": archived_new_leads,
         }
 
         ordered_statistics = {
             "ordered_leads_count": ordered_leads_count,
-            "ordered_waiting_leads": ordered_new_leads,
+            "ordered_waiting_leads": ordered_waiting_leads,
             "ordered_first_lesson_not_come": first_lesson_not,
             "ordered_first_lesson": first_lesson,
-            "ordered_archived": archived_ordered_leads,
+            "ordered_archived": ordered_archived,
         }
 
         lid_archived = {
-            "all": all_lids,
+            "all": all_archived,
             "lid": archived_lid,
-            "order": archived_order
+            "order": archived_order,
         }
 
-        # Combine all statistics into the response data
         response_data = {
-            "statistics": statistics,
+            "new_lid_statistics": new_lid_statistics,
             "ordered_statistics": ordered_statistics,
             "lid_archived": lid_archived,
         }
