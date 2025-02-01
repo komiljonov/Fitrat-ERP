@@ -228,7 +228,7 @@ class LidStatisticsView(ListAPIView):
         is_call_operator = user.role == "CALL_OPERATOR"
 
         leads_count = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,).count()
-        new_leads = Lid.objects.filter().count(lid_stage_type="NEW_LID",is_archived=False,call_operator=None).count()
+        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,call_operator=None).count()
         in_progress = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,call_operator=user,lid_stages="KUTULMOQDA").count()
         order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID", call_operator=user).count()
         archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID", call_operator=user).count()
