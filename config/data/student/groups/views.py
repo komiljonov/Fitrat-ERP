@@ -17,9 +17,9 @@ class StudentGroupsView(ListCreateAPIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
     filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
-    search_fields = ('name','scheduled_day_type__name')
-    ordering_fields = ('name','scheduled_day_type','start_date','end_date','price_type')
-    filterset_fields = ('name','scheduled_day_type__name','price_type')
+    search_fields = ('name','scheduled_day_type__name',"status")
+    ordering_fields = ('name','scheduled_day_type','start_date','end_date','price_type',"status")
+    filterset_fields = ('name','scheduled_day_type__name','price_type',"status")
 
 
 

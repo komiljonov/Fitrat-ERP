@@ -225,7 +225,6 @@ class LidStatisticsView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         user = request.user
-        is_call_operator = user.role == "CALL_OPERATOR"
 
         leads_count = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,).count()
         new_leads = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,call_operator=None).count()
