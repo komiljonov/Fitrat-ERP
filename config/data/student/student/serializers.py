@@ -80,12 +80,14 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def get_course(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
-                   .values_list("group__course__name", flat=True))
+                   .values("group__course__name","group__course__level__name"))
         return list(courses)
 
     def get_group(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
-                   .values_list("group__name", flat=True))
+                   .values(
+        "group__name", "group__status", "group__started_at", "group__ended_at",
+        ))
         return list(courses)
 
     def get_attendance_count(self, obj):

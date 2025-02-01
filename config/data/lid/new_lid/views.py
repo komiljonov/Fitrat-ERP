@@ -59,7 +59,7 @@ class LidListCreateView(ListCreateAPIView):
         # Role-based filtering
         if user.role == "CALL_OPERATOR":
             queryset = queryset.filter(
-                Q(call_operator__in=[user, None], filial=None)
+                Q(call_operator__in=[user, None])
             )
         if user.role == "ADMINISTRATOR":
             queryset = queryset.filter(filial=user.filial)
@@ -230,11 +230,10 @@ class LidStatisticsView(APIView):
 
         # Base filters for "NEW_LID"
         base_filter = Q(is_archived=False, lid_stage_type="NEW_LID")
-        filial_filter = Q(filial=user.filial) if not is_call_operator else Q(filial=None)
         call_operator_filter = Q(call_operator=None) | Q(call_operator=user) if is_call_operator else Q()
 
         # Combine filters for "NEW_LID"
-        combined_filter = base_filter & filial_filter & call_operator_filter
+        combined_filter = base_filter  & call_operator_filter
 
         # Get statistics for "NEW_LID"
         leads_count = Lid.objects.filter(combined_filter).count()
