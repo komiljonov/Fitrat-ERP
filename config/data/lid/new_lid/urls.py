@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import LidListCreateView, LidRetrieveUpdateDestroyView, LidListNoPG, ExportLidToExcelAPIView, \
-    LidStatisticsView
+    LidStatisticsView, BulkUpdate
 
 urlpatterns = [
     path('', LidListCreateView.as_view(), name='lid_list_create'),
@@ -12,4 +12,5 @@ urlpatterns = [
 
     path('statistic/',LidStatisticsView.as_view(), name='lid_statistic'),
 
+    path('bulk-update/',BulkUpdate.as_view(), name='bulk_update'),
 ]

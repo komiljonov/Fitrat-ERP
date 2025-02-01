@@ -71,6 +71,8 @@ INSTALLED_APPS = [
     'data.student.quiz',
     'data.student.mastering',
 
+    'data.parents',
+
     'data.results',
 
     'data.comments',

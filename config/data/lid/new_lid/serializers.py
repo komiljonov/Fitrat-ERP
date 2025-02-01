@@ -1,6 +1,8 @@
 from django.db.models import Q
 from django.utils.module_loading import import_string
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from .models import Lid
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
@@ -117,7 +119,7 @@ class LidSerializer(serializers.ModelSerializer):
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(instance.marketing_channel).data if instance.marketing_channel else None
         representation['call_operator'] = UserSerializer(instance.call_operator).data if instance.call_operator else None
-        representation['subject'] = SubjectSerializer(instance.subject).data if instance.subject else None
+        # representation['subject'] = SubjectSerializer(instance.subject).data if instance.subject else None
         # Add calculated fields
         representation['lessons_count'] = self.get_lessons_count(instance)
 
@@ -148,3 +150,36 @@ class LidAppSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
         ]
+
+
+class LidBulkUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lid
+        fields = [
+            'id', 'sender_id', 'message_text', 'first_name', 'last_name', 'middle_name', 'phone_number',
+            'date_of_birth', 'education_lang', 'student_type', 'edu_class', 'edu_level', 'subject',
+            'ball', 'filial', 'marketing_channel', 'lid_stage_type', 'lid_stages', 'ordered_stages',
+            'is_archived', 'is_dubl', 'call_operator', 'is_student', 'moderator', 'sales_manager'
+        ]
+
+    def update_bulk_lids(self, lids_data):
+        lids_to_update = []
+        for lid_data in lids_data:
+            lid_id = lid_data.get('id')
+            try:
+                lid_instance = Lid.objects.get(id=lid_id)
+                # Validate and update fields
+                lid_instance = self.update(lid_instance, lid_data)  # This uses the `update` method from ModelSerializer
+                lids_to_update.append(lid_instance)
+            except Lid.DoesNotExist:
+                raise ValidationError(f"Lid with ID {lid_id} does not exist.")
+
+        # Perform bulk update using Django's bulk_update method
+        if lids_to_update:
+            Lid.objects.bulk_update(lids_to_update, [
+                'sender_id', 'message_text', 'first_name', 'last_name', 'middle_name', 'phone_number',
+                'date_of_birth', 'education_lang', 'student_type', 'edu_class', 'edu_level', 'subject',
+                'ball', 'filial', 'marketing_channel', 'lid_stage_type', 'lid_stages', 'ordered_stages',
+                'is_archived', 'is_dubl', 'call_operator', 'is_student', 'moderator', 'sales_manager'
+            ])
+        return lids_to_update

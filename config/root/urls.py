@@ -62,6 +62,8 @@ urlpatterns = [
     path('mastering/', include('data.student.mastering.urls')),
     path('results/', include('data.results.urls')),
 
+    path('parents/', include('data.parents.urls')),
+
     path('stages/',include("data.stages.urls")),
 
     path('moderator/', include('data.moderator.urls')),

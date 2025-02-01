@@ -7,6 +7,8 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, \
     ListCreateAPIView, CreateAPIView
@@ -299,3 +301,21 @@ class LidStatisticsView(APIView):
         }
 
         return Response(response_data)
+
+
+class BulkUpdate(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        data = request.data.get('lids', [])
+
+        if not data:
+            raise ValidationError("No lids data provided.")
+
+        serializer = LidSerializer()
+
+        try:
+            updated_lids = serializer.update_bulk_lids(data)
+            return Response({"message": "Bulk update successful.", "updated_lids": updated_lids}, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
