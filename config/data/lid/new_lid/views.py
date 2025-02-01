@@ -227,32 +227,19 @@ class LidStatisticsView(ListAPIView):
         user = request.user
         is_call_operator = user.role == "CALL_OPERATOR"
 
-        # Filters for NEW_LID statistics
-        new_lid_filter = Q(is_archived=False, lid_stage_type="NEW_LID")
-        call_operator_filter = Q(call_operator=None) | Q(call_operator=user) if is_call_operator else Q()
-
-        # NEW_LID statistics
-        leads_count = Lid.objects.filter(new_lid_filter & call_operator_filter).count()
-        new_leads = Lid.objects.filter(new_lid_filter & Q(call_operator=None)).count()
-        in_progress = Lid.objects.filter(new_lid_filter & Q(call_operator=user)).count() if is_call_operator else 0
-        order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID", call_operator=user).count() if is_call_operator else 0
-        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID", call_operator=user).count() if is_call_operator else 0
+        leads_count = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,).count()
+        new_leads = Lid.objects.filter().count(lid_stage_type="NEW_LID",is_archived=False,call_operator=None).count()
+        in_progress = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,call_operator=user,lid_stages="KUTULMOQDA").count()
+        order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID", call_operator=user).count()
+        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID", call_operator=user).count()
 
         # Filters for ORDERED_LID statistics
-        ordered_filter = Q(is_archived=False, lid_stage_type="ORDERED_LID", filial=user.filial)
-        ordered_leads_count = Lid.objects.filter(ordered_filter).count()
-        ordered_waiting_leads = StudentGroup.objects.filter(lid__isnull=True).count()
-        ordered_archived = Lid.objects.filter(is_archived=True, lid_stage_type="ORDERED_LID", filial=user.filial).count()
 
-        # Attendance statistics (if lid_id is provided)
-        lid_id = kwargs.get("lid_id")
-        if lid_id:
-            attendance_filter = Q(is_archived=False, lid=lid_id, filial=user.filial)
-            first_lesson_not = Attendance.objects.filter(attendance_filter & Q(reason__in=["UNREASONED", "REASONED"])).count()
-            first_lesson = Attendance.objects.filter(attendance_filter & Q(reason="IS_PRESENT")).count()
-        else:
-            first_lesson_not = 0
-            first_lesson = 0
+        ordered_leads_count = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, filial=user.filial).count()
+        ordered_waiting_leads = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, ordered_stages="KUTULMOQDA", filial=user.filial).count()
+        ordered_archived = Lid.objects.filter(is_archived=True, lid_stage_type="ORDERED_LID", filial=user.filial).count()
+        first_lesson = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, ordered_stages="BIRINCHI_DARS_BELGILANGAN", filial=user.filial).count()
+        first_lesson_not = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, ordered_stages="BIRINCHI_DARSGA_KELMAGAN", filial=user.filial).count()
 
         # Archived statistics
         all_archived = Lid.objects.filter(is_archived=True, is_student=False).count()

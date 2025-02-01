@@ -68,7 +68,7 @@ class Lid(TimeStampModel):
         choices=[
             ("KUTULMOQDA","KUTULMOQDA"),
             ("BIRINCHI_DARSGA_KELMAGAN","BIRINCHI_DARSGA_KELMAGAN"),
-            ("O'TIB KETGAN","O'TIB KETGAN"),
+            ("BIRINCHI_DARS_BELGILANGAN","BIRINCHI_DARS_BELGILANGAN"),
             ("YANGI_BUYURTMA","YANGI_BUYURTMA"),
         ],
         max_length=100,
