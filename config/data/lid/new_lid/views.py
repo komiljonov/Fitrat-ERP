@@ -219,35 +219,37 @@ class ExportLidToExcelAPIView(APIView):
         return response
 
 
+
 class LidStatisticsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        from django.db.models import Q
-
         user = request.user
         is_call_operator = user.role == "CALL_OPERATOR"
 
-        # Base filters for "NEW_LID"
+        # Base filter for "NEW_LID"
         base_filter = Q(is_archived=False, lid_stage_type="NEW_LID")
+
+        # Filter for "CALL_OPERATOR" - only those assigned to the user or with no call operator assigned
         call_operator_filter = Q(call_operator=None) | Q(call_operator=user) if is_call_operator else Q()
 
-        # Combine filters for "NEW_LID"
-        combined_filter = base_filter  & call_operator_filter
+        # Combine the filters for "NEW_LID"
+        combined_filter = base_filter & call_operator_filter
 
         # Get statistics for "NEW_LID"
         leads_count = Lid.objects.filter(combined_filter).count()
-        new_leads = Lid.objects.filter(combined_filter & Q(call_operator=None), lid_stages="YANGI_LEAD").count()
+        new_leads = Lid.objects.filter(combined_filter & Q(lid_stages="YANGI_LEAD") & Q(call_operator=None)).count()
         order_creating = Lid.objects.filter(combined_filter & Q(call_operator=user)).count()
         archived_new_leads = Lid.objects.filter(combined_filter & Q(is_archived=True)).count()
         re_called = Lid.objects.filter(
-            combined_filter & Q(lid_stages="QAYTA_ALOQA", call_operator=user if is_call_operator else None)
+            combined_filter & Q(lid_stages="QAYTA_ALOQA") & Q(call_operator=user if is_call_operator else None)
         ).count()
 
         # Handle specific `lid_id` if provided
         lid_id = kwargs.get("lid")
         if lid_id:
             attendance_filter = Q(is_archived=False, lid=lid_id, filial=user.filial)
+
             first_lesson_not = Attendance.objects.filter(
                 attendance_filter & Q(reason__in=["UNREASONED", "REASONED"])
             ).count()
@@ -264,12 +266,12 @@ class LidStatisticsView(APIView):
         ordered_new_leads = Lid.objects.filter(ordered_filter & Q(ordered_stages='KUTULMOQDA')).count()
         archived_ordered_leads = Lid.objects.filter(ordered_filter & Q(is_archived=True)).count()
 
-        all = Lid.objects.filter(is_archived=True,is_student=False).count()
-        archived_lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_student=False
-                                          , is_archived=True).count()
-        archived_order = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_student=False,
-                                            is_archived=True).count()
+        # Count archived lids and orders
+        all_lids = Lid.objects.filter(is_archived=True, is_student=False).count()
+        archived_lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_student=False, is_archived=True).count()
+        archived_order = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_student=False, is_archived=True).count()
 
+        # Prepare statistics for the response
         statistics = {
             "leads_count": leads_count,
             "new_leads": new_leads,
@@ -287,12 +289,12 @@ class LidStatisticsView(APIView):
         }
 
         lid_archived = {
-            "all": all,
-            'lid': archived_lid,
-            "order" : archived_order
+            "all": all_lids,
+            "lid": archived_lid,
+            "order": archived_order
         }
 
-        # Combine statistics into response
+        # Combine all statistics into the response data
         response_data = {
             "statistics": statistics,
             "ordered_statistics": ordered_statistics,
@@ -300,7 +302,6 @@ class LidStatisticsView(APIView):
         }
 
         return Response(response_data)
-
 
 class BulkUpdate(APIView):
     permission_classes = [IsAuthenticated]
