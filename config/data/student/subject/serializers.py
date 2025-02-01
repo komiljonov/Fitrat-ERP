@@ -28,6 +28,9 @@ class SubjectSerializer(serializers.ModelSerializer):
         return themes
 
 
+
+
+
 class LevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Level

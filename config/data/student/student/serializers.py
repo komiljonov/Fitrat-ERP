@@ -4,8 +4,6 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Student
 from ..attendance.models import Attendance
-from ..course.models import Course
-from ..studentgroup.models import StudentGroup
 # from ..studentgroup.serializers import StudentGroupSerializer
 from ...account.permission import PhoneAuthBackend
 from ...account.serializers import UserSerializer

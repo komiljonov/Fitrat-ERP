@@ -11,6 +11,7 @@ from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...student.attendance.models import Attendance
 from ...student.studentgroup.models import StudentGroup
+from ...student.subject.serializers import SubjectSerializer
 from ...tasks.models import Task
 
 
@@ -116,7 +117,7 @@ class LidSerializer(serializers.ModelSerializer):
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(instance.marketing_channel).data if instance.marketing_channel else None
         representation['call_operator'] = UserSerializer(instance.call_operator).data if instance.call_operator else None
-
+        representation['subject'] = SubjectSerializer(instance.subject).data if instance.subject else None
         # Add calculated fields
         representation['lessons_count'] = self.get_lessons_count(instance)
 
