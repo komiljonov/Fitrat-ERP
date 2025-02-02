@@ -1,4 +1,3 @@
-
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -14,19 +13,22 @@ from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer
 
 class StudentGroupsView(ListCreateAPIView):
     queryset = Group.objects.all()
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
-    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
-    search_fields = ('name','scheduled_day_type__name',"status")
-    ordering_fields = ('name','scheduled_day_type','start_date','end_date','price_type',"status")
-    filterset_fields = ('name','scheduled_day_type__name','price_type',"status")
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
 
+    search_fields = ('name', 'scheduled_day_type__name', "status")
+    ordering_fields = ('name', 'scheduled_day_type', 'start_date',
+                       'end_date', 'price_type', "status")
+    filterset_fields = ('name', 'scheduled_day_type__name',
+                        'price_type', "status")
 
 
 class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
+
 
 class StudentListAPIView(ListAPIView):
     queryset = Group.objects.all()
@@ -37,11 +39,11 @@ class StudentListAPIView(ListAPIView):
         return Response(data)
 
 
-
 class GroupLessonScheduleView(APIView):
     """
     API endpoint to get the lesson schedule for a given group ID.
     """
+
     def get(self, request, **kwargs):
         try:
             # Fetch the group by ID
@@ -63,7 +65,6 @@ class TeachersGroupsView(ListAPIView):
     serializer_class = GroupSerializer
 
     def get_queryset(self):
-
         teacher_id = self.kwargs.get('pk')
         if teacher_id:
             teacher_groups = Group.objects.filter(teacher__id=teacher_id)
@@ -71,15 +72,14 @@ class TeachersGroupsView(ListAPIView):
         return Group.objects.none()
 
 
-
 class RoomListAPIView(ListCreateAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomsSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
-    search_fields = ('room_number','room_filling')
-    ordering_fields = ('room_number','room_filling')
-    filterset_fields = ('room_number','room_filling')
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+    search_fields = ('room_number', 'room_filling')
+    ordering_fields = ('room_number', 'room_filling')
+    filterset_fields = ('room_number', 'room_filling')
 
     def get_queryset(self):
         filial = self.request.user.filial
@@ -101,14 +101,13 @@ class RoomNoPG(ListAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomsSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
-    search_fields = ('room_number','room_filling')
-    ordering_fields = ('room_number','room_filling')
-    filterset_fields = ('room_number','room_filling')
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+    search_fields = ('room_number', 'room_filling')
+    ordering_fields = ('room_number', 'room_filling')
+    filterset_fields = ('room_number', 'room_filling')
 
     def get_paginated_response(self, data):
         return Response(data)
-
 
 
 class SecondaryGroupsView(ListCreateAPIView):
@@ -116,10 +115,10 @@ class SecondaryGroupsView(ListCreateAPIView):
     serializer_class = SecondaryGroupSerializer
     permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend,OrderingFilter,SearchFilter)
-    search_fields = ('name','scheduled_day_type__name')
-    ordering_fields = ('name','scheduled_day_type','start_date','end_date',)
-    filterset_fields = ('name','scheduled_day_type',)
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+    search_fields = ('name', 'scheduled_day_type__name')
+    ordering_fields = ('name', 'scheduled_day_type', 'start_date', 'end_date',)
+    filterset_fields = ('name', 'scheduled_day_type',)
 
 
 class SecondaryGroupRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -136,11 +135,11 @@ class SecondaryNoPG(ListAPIView):
         return Response(data)
 
 
-
 class DaysAPIView(ListCreateAPIView):
     queryset = Day.objects.all()
     serializer_class = DaySerializer
     permission_classes = [IsAuthenticated]
+
 
 class DaysNoPG(ListAPIView):
     queryset = Day.objects.all()
@@ -149,5 +148,3 @@ class DaysNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
-

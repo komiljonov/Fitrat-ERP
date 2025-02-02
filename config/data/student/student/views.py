@@ -279,11 +279,3 @@ class ExportLidToExcelAPIView(APIView):
         workbook.save(response)
 
         return response
-
-    # def get_student_subjects(self, student):
-    #     # Check if the student has an active group
-    #     active_group = StudentGroup.objects.filter(student=student, group__status="ACTIVE").first()
-    #     if active_group:
-    #         # Return the subjects associated with the active group
-    #         return ', '.join([subject.name for subject in active_group.subjects.all()])
-    #     return "No active group"

@@ -41,6 +41,9 @@ class GroupSerializer(serializers.ModelSerializer):
             'finish_date',
         ]
 
+    def get_lessons_count(self, obj):
+        pass
+
     def get_student_count(self, obj):
         student_count = StudentGroup.objects.filter(group=obj).count()
         return student_count
@@ -59,6 +62,7 @@ class GroupSerializer(serializers.ModelSerializer):
         group.scheduled_day_type.set(scheduled_day_type_data)  # Using `.set()` to update the Many-to-Many field
 
         return group
+
 
 class GroupLessonSerializer(serializers.ModelSerializer):
     group_lesson_dates = serializers.SerializerMethodField()  # Add this field
@@ -117,8 +121,6 @@ class RoomsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-
-
 
 
 class SecondaryGroupSerializer(serializers.ModelSerializer):

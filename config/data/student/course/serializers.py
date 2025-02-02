@@ -7,7 +7,7 @@ from data.student.subject.serializers import SubjectSerializer, ThemeSerializer,
 
 class CourseSerializer(serializers.ModelSerializer):
     level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all())
-    theme = ThemeSerializer(many=True)
+    theme = ThemeSerializer(many=True, allow_null=True)
 
     class Meta:
         model = Course
