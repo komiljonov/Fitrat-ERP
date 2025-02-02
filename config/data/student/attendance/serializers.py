@@ -20,6 +20,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
             'student',
             'reason',
             'remarks',
+            'created_at',
+            'updated_at',
         ]
 
     def to_representation(self, instance):
