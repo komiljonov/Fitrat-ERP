@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.utils.dateparse import parse_datetime
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
@@ -35,6 +37,11 @@ class StudentFinanceListAPIView(ListAPIView):
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
 
+    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
+    search_fields = ("action", "kind")
+    ordering_fields = ("action", "kind")
+    filterset_fields = ("action", "kind")
+
     def get_queryset(self, **kwargs):
         # Initialize the queryset to all Finance records
         queryset = Finance.objects.all()
@@ -51,16 +58,7 @@ class StudentFinanceListAPIView(ListAPIView):
             queryset = queryset.filter(student=student)
         elif lid:
             queryset = queryset.filter(lid=lid)
-        print(queryset)
-        # Action filtering: INCOME or EXPENSE
-        action = self.request.query_params.get('action')
-        if action:
-            if action == 'INCOME':
-                queryset = queryset.filter(action='INCOME')
-            elif action == 'EXPENSE':
-                queryset = queryset.filter(action='EXPENSE')
 
-        # Filter by date range if provided
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
 

@@ -29,11 +29,11 @@ class Theme(TimeStampModel):
 
     title = models.CharField(max_length=100)
     description = models.TextField()
-    video : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,
-                                       related_name='videos')
-    file : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,
+    video : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
+                                       related_name='videos',)
+    file : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
                                       related_name='files')
-    photo : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,
+    photo : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
                                        related_name='photos')
 
 

@@ -42,8 +42,8 @@ class LevelSerializer(serializers.ModelSerializer):
 
 class ThemeSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all())
-    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
+    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     class Meta:
         model = Theme

@@ -16,7 +16,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         res = super().to_internal_value(data)
-        res["theme"] = res.get("theme", [])  # Ensure 'theme' is always a list
+        res["theme"] = res.get("theme", [])
         return res
 
     def validate_theme(self, value):
