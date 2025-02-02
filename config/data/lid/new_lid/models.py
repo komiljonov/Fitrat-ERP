@@ -9,6 +9,14 @@ from ...stages.models import NewLidStages, NewOredersStages
 from ...account.models import CustomUser
 
 
+class Relatives(TimeStampModel):
+    name = models.CharField(null=True, blank=True, max_length=100)
+    phone = models.CharField(null=True, blank=True, max_length=100)
+    who = models.CharField(null=True, blank=True, max_length=100)
+
+    def __str__(self):
+        return f"{self.who}"
+
 class Lid(TimeStampModel):
 
     sender_id = models.CharField(max_length=120,null=True,blank=True)
@@ -96,6 +104,13 @@ class Lid(TimeStampModel):
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser',
                                                     on_delete=models.CASCADE, null=True, related_name="sales_manager")
 
+
+    relatives :"Relatives"  = models.ManyToManyField("new_lid.Relatives",null=True,blank=True,)
+
+
+
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"
+
+
 
