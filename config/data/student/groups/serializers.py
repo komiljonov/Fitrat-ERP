@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework import serializers
 from rest_framework.generics import ListCreateAPIView
 
@@ -47,11 +48,18 @@ class GroupSerializer(serializers.ModelSerializer):
         ]
 
     def get_lessons_count(self, obj):
-        attendance = Lesson.objects.filter(group=obj).count()
-        attended = Attendance.objects.filter(lesson__group=obj).count()
+        total_lessons = Lesson.objects.filter(group=obj).count()
+
+        attended_lessons = (
+            Attendance.objects.filter(lesson__group=obj)
+            .values("lesson")  # Group by lesson
+            .annotate(attended_count=Count("id"))  # Count attendance per lesson
+            .count()  # Count unique lessons with attendance records
+        )
+
         return {
-            'attendance': attendance,
-            'attended': attended,
+            "lessons": total_lessons,  # Total lessons in the group
+            "attended": attended_lessons,  # Lessons that have attendance records
         }
 
     def get_student_count(self, obj):
