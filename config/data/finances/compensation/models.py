@@ -6,14 +6,13 @@ from data.command.models import TimeStampModel
 
 
 class Compensation(TimeStampModel):
-    #When lead has gone to edu center branch this bonus will be given to call_operator
-    call_center_lead = models.FloatField(default=0)
+    name = models.CharField(max_length=100)
+    amount = models.DecimalField(decimal_places=2, max_digits=10)
 
-    administrator_first_lesson_come = models.FloatField(default=0)
-    administrator_first_lesson_nt_come = models.FloatField(default=0)
+class Bonus(TimeStampModel):
+    name = models.CharField(max_length=100)
+    amount = models.DecimalField(decimal_places=2, max_digits=10)
 
-    administrator_new_to_active_student = models.FloatField(default=0)
-    administrator_new_to_active_student_nt = models.FloatField(default=0)
 
 
 

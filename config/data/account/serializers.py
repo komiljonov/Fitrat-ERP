@@ -3,6 +3,8 @@ from rest_framework.serializers import ModelSerializer
 
 from .models import CustomUser
 from ..account.permission import PhoneAuthBackend
+from ..finances.compensation.models import Compensation, Bonus
+from ..finances.compensation.serializers import CompensationSerializer, BonusSerializer
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
@@ -97,17 +99,34 @@ class UserListSerializer(ModelSerializer):
         return rep
 
 
-class UserSerializer(ModelSerializer):
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
+class UserSerializer(serializers.ModelSerializer):
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    compensation = serializers.PrimaryKeyRelatedField(queryset=Compensation.objects.all(), many=True, allow_null=True)
+    bonus = serializers.PrimaryKeyRelatedField(queryset=Bonus.objects.all(), many=True, allow_null=True)
 
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name","first_name","last_name", 'phone', "role", "photo", "filial", "balance", "ball",
-            "enter", 'leave','date_of_birth', 'created_at',
-            'updated_at')
+            "id", "full_name", "first_name", "last_name", "phone", "role",
+            "photo", "filial", "balance", "ball",
+            "enter", "leave", "date_of_birth", "created_at",
+            "updated_at", "compensation", "bonus"
+        )
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['photo'] = FileUploadSerializer(instance.photo).data
+        rep["photo"] = FileUploadSerializer(instance.photo).data if instance.photo else None
+        rep["compensation"] = CompensationSerializer(instance.compensation.all(), many=True).data
+        rep["bonus"] = BonusSerializer(instance.bonus.all(), many=True).data
         return rep
+
+    def create(self, validated_data):
+        compensation_data = validated_data.pop("compensation", [])
+        bonus_data = validated_data.pop("bonus", [])
+
+        user = CustomUser.objects.create(**validated_data)
+
+        user.compensation.set(compensation_data)
+        user.bonus.set(bonus_data)
+
+        return user

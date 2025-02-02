@@ -7,7 +7,7 @@ from django.db import models
 from data.department.filial.models import Filial
 from ..account.managers import UserManager
 from ..upload.models import File
-
+from ..finances.compensation.models import Compensation, Bonus
 
 
 class CustomUser(AbstractUser):
@@ -51,6 +51,8 @@ class CustomUser(AbstractUser):
 
     filial : 'Filial' = models.ForeignKey('filial.Filial', on_delete=models.SET_NULL, blank=True, null=True)
 
+    compensation : 'Compensation' = models.ManyToManyField('compensation.Compensation', null=True,blank=True)
+    bonus : 'Bonus'= models.ManyToManyField('compensation.Bonus', null=True,blank=True)
 
     USERNAME_FIELD = 'phone'
     # REQUIRED_FIELDS = ['phone']
