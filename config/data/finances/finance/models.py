@@ -1,3 +1,5 @@
+from calendar import mdays
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -37,6 +39,8 @@ class Finance(TimeStampModel):
     stuff : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,null=True,blank=True,related_name='finance_stuff')
 
     creator : 'CustomUser' = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL,null=True,blank=True, related_name='finance_creator')
+
+    comment = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.amount} {self.kind} {self.action}'

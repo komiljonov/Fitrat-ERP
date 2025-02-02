@@ -27,6 +27,7 @@ class FinanceSerializer(serializers.ModelSerializer):
             'balance',
             'total',
             'creator',
+            'comment',
             'created_at',
             'updated_at',
         ]
@@ -39,6 +40,8 @@ class FinanceSerializer(serializers.ModelSerializer):
         outcome_sum = Finance.objects.filter(action='EXPENSE').aggregate(total=Sum('amount'))['total'] or 0
         # Calculate the balance
         return income_sum - outcome_sum
+
+
 
     def get_balance(self, obj):
         # Fetch the related CustomUser instance
