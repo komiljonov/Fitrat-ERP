@@ -30,29 +30,35 @@ class FinanceNoPGList(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 class StudentFinanceListAPIView(ListAPIView):
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self, **kwargs):
+        # Initialize the queryset to all Finance records
         queryset = Finance.objects.all()
 
+        # Get the pk from the URL kwargs
         pk = self.kwargs.get('pk')
-        student = Student.objects.filter(id=pk).first()  # Safer query, no exception if not found
-        lid = Lid.objects.filter(id=pk).first()  # Safer query for lid
 
+        # Try to fetch the student or lid based on the pk
+        student = Student.objects.filter(id=pk).first()  # Safer query, returns None if not found
+        lid = Lid.objects.filter(id=pk).first()  # Safer query for lid, returns None if not found
+
+        # Filter by student or lid if present
         if student:
             queryset = queryset.filter(student=student)
         elif lid:
             queryset = queryset.filter(lid=lid)
-
+        print(queryset)
+        # Action filtering: INCOME or EXPENSE
         action = self.request.query_params.get('action')
-        print(action)
-
-        if action == 'INCOME':
-            queryset = queryset.filter(action='INCOME')
-        elif action == 'EXPENSE':
-            queryset = queryset.filter(action='EXPENSE')
+        if action:
+            if action == 'INCOME':
+                queryset = queryset.filter(action='INCOME')
+            elif action == 'EXPENSE':
+                queryset = queryset.filter(action='EXPENSE')
 
         # Filter by date range if provided
         start_date = self.request.query_params.get("start_date")
@@ -60,6 +66,7 @@ class StudentFinanceListAPIView(ListAPIView):
 
         if start_date and end_date:
             try:
+                # Parse and filter by date range
                 start_date = parse_datetime(start_date).date()
                 end_date = parse_datetime(end_date).date()
                 queryset = queryset.filter(created_at__range=[start_date, end_date])
@@ -67,19 +74,21 @@ class StudentFinanceListAPIView(ListAPIView):
                 pass  # Handle invalid date format, if necessary
         elif start_date:
             try:
+                # Parse and filter by start date
                 start_date = parse_datetime(start_date).date()
                 queryset = queryset.filter(created_at__date=start_date)
             except ValueError:
                 pass  # Handle invalid date format, if necessary
         elif end_date:
             try:
+                # Parse and filter by end date
                 end_date = parse_datetime(end_date).date()
                 queryset = queryset.filter(created_at__date=end_date)
             except ValueError:
                 pass  # Handle invalid date format, if necessary
 
+        # Return queryset (even if it's empty, which will result in no matching records)
         return queryset
-
 
 class StuffFinanceListAPIView(ListAPIView):
     queryset = Finance.objects.all()
