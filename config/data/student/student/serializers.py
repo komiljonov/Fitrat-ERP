@@ -6,7 +6,6 @@ from .models import Student
 from ..attendance.models import Attendance
 from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup
-# from ..studentgroup.serializers import StudentGroupSerializer
 from ...account.permission import PhoneAuthBackend
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
@@ -113,8 +112,6 @@ class StudentSerializer(serializers.ModelSerializer):
         return representation
 
 
-
-
 class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
     phone = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -144,7 +141,6 @@ class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         attrs['user'] = user
         return attrs
-
 
 
 class StudentAppSerializer(serializers.ModelSerializer):
