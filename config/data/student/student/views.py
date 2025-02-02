@@ -135,30 +135,36 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
 
     def get(self, request, *args, **kwargs):
         # Calculate statistics
-        if request.user.role != "CALL_OPERATOR" :
-            user= request.user.role
+        if request.user.role != "CALL_OPERATOR":
+            user = request.user  # Set 'user' to the actual user object
         else:
             user = None
-        new_students_count = Student.objects.filter(is_archived=False, filial=user.filial,
+
+        if user:
+            filial = user.filial  # Get the filial of the authenticated user
+        else:
+            filial = None  # Handle the case where user is None (e.g., for CALL_OPERATOR)
+
+        new_students_count = Student.objects.filter(is_archived=False, filial=filial,
                                                     student_stage_type="NEW_STUDENT").count()
         total_debt = \
-        Student.objects.filter(is_archived=False, filial=user.filial, student_stage_type="NEW_STUDENT",
-                               balance__lt=0).aggregate(total_debt=Sum('balance'))['total_debt'] or 0
-        archived_new_students = Student.objects.filter(is_archived=True, filial=user.filial,
+            Student.objects.filter(is_archived=False, filial=filial, student_stage_type="NEW_STUDENT",
+                                   balance__lt=0).aggregate(total_debt=Sum('balance'))['total_debt'] or 0
+        archived_new_students = Student.objects.filter(is_archived=True, filial=filial,
                                                        student_stage_type="NEW_STUDENT").count()
 
         # Ordered statistics
-        student_count = Student.objects.filter(is_archived=False, filial=user.filial,
+        student_count = Student.objects.filter(is_archived=False, filial=filial,
                                                student_stage_type="ACTIVE_STUDENT").count()
         total_income = \
-        Student.objects.filter(is_archived=False, filial=user.filial, student_stage_type="ACTIVE_STUDENT",
-                               balance__gt=0).aggregate(total_income=Sum('balance'))['total_income'] or 0
+            Student.objects.filter(is_archived=False, filial=filial, student_stage_type="ACTIVE_STUDENT",
+                                   balance__gt=0).aggregate(total_income=Sum('balance'))['total_income'] or 0
         student_total_debt = \
-            Student.objects.filter(is_archived=False, filial=user.filial, student_stage_type="ACTIVE_STUDENT",
+            Student.objects.filter(is_archived=False, filial=filial, student_stage_type="ACTIVE_STUDENT",
                                    balance__lt=0).aggregate(
                 total_debt=Sum('balance'))['total_debt'] or 0
 
-        archived_student = Student.objects.filter(is_archived=True, filial=user.filial,
+        archived_student = Student.objects.filter(is_archived=True, filial=filial,
                                                   student_stage_type="ACTIVE_STUDENT").count()
 
         statistics = {

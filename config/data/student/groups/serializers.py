@@ -68,8 +68,6 @@ class GroupLessonSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
-            'subject',
-            'level',
             'teacher',
             'status',
             'room_number',
@@ -85,6 +83,7 @@ class GroupLessonSerializer(serializers.ModelSerializer):
             'finish_date',
             'group_lesson_dates',  # Include the new field
         ]
+
     def get_group_lesson_dates(self, obj):
         """
         Calculate lesson dates based on the group data.
@@ -92,13 +91,18 @@ class GroupLessonSerializer(serializers.ModelSerializer):
         # Retrieve required data from the Group instance
         start_date = obj.start_date.strftime("%Y-%m-%d") if obj.start_date else None
         end_date = obj.finish_date.strftime("%Y-%m-%d") if obj.finish_date else None
-        lesson_type = obj.scheduled_day_type  # Assume this corresponds to 'ODD', 'EVEN', or 'EVERYDAY'
+
+        # If the lesson type is a Many-to-Many field, get the weekday names
+        lesson_days_queryset = obj.scheduled_day_type.all()  # This retrieves the related days
+        lesson_days = [day.name for day in
+                       lesson_days_queryset]  # Assuming 'name' stores the weekday name (e.g., 'Monday')
+
         holidays = ['']  # Replace with actual logic to fetch holidays, e.g., from another model
-        days_off = ["Sunday"]  # Replace or fetch from settings/config
+        days_off = ["Yakshanba"]  # Replace or fetch from settings/config
 
         if start_date and end_date:
             # Use the calculate_lessons function to get lesson dates
-            lesson_dates = calculate_lessons(start_date, end_date, lesson_type, holidays, days_off)
+            lesson_dates = calculate_lessons(start_date, end_date, ','.join(lesson_days), holidays, days_off,)
             return lesson_dates
         return []
 
