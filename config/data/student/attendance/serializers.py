@@ -1,3 +1,5 @@
+from tokenize import group
+
 from rest_framework import serializers
 
 from .models import Attendance
@@ -10,7 +12,7 @@ from ...lid.new_lid.serializers import LidSerializer
 class AttendanceSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
-
+    teacher = serializers.SerializerMethodField()
     class Meta:
         model = Attendance
         fields = [
@@ -18,11 +20,17 @@ class AttendanceSerializer(serializers.ModelSerializer):
             'lesson',
             'lid',
             'student',
+            'teacher',
             'reason',
             'remarks',
             'created_at',
             'updated_at',
         ]
+
+    def get_teacher(self, obj):
+        teacher = (Attendance.objects.filter(student=obj.student, lesson=obj.lesson)
+                   .values('lesson__group',"lesson__group__teacher__first_name", "lesson__group__teacher__last_name"))
+        return teacher
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
