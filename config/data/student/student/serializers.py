@@ -61,8 +61,6 @@ class StudentSerializer(serializers.ModelSerializer):
         ]
 
 
-
-
     def get_test(self, obj):
         test = Mastering.objects.filter(student=obj)
         MasteringSerializer = import_string("data.student.mastering.serializers.MasteringSerializer")
@@ -76,7 +74,7 @@ class StudentSerializer(serializers.ModelSerializer):
     def get_group(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
                    .values(
-        "group__name", "group__status", "group__started_at", "group__ended_at",
+        "group__name", "group__status", "group__started_at", "group__ended_at","group__teacher__first_name","group__teacher__last_name"
         ))
         return list(courses)
 
