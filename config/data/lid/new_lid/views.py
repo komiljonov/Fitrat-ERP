@@ -19,8 +19,6 @@ from rest_framework.views import APIView
 from .models import Lid
 from .serializers import LidSerializer
 from ...account.permission import FilialRestrictedQuerySetMixin
-from ...student.attendance.models import Attendance
-from ...student.studentgroup.models import StudentGroup
 
 
 class LidListCreateView(ListCreateAPIView):

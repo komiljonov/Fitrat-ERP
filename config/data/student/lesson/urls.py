@@ -8,5 +8,7 @@ urlpatterns = [
     path('no-pg/',LessonNoPG.as_view(), name='no-pg'),
     path('schedule/',AllLessonsView.as_view(), name='schedule'),
 
+    path('first-lesson/' , FistLessonView.as_view(), name='first-lesson'),
 
+    path('first-lesson/<uuid:pk>/',FirstLessonView.as_view(), name='student-fist'),
 ]

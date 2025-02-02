@@ -8,4 +8,5 @@ urlpatterns = [
     path('no-pg/',TaskListNoPGView.as_view(), name='task-list-no-pg'),
 
     path('all/<uuid:pk>/', TaskStudentRetrieveListAPIView.as_view(), name='task-list-student'),
+
 ]

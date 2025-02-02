@@ -1,11 +1,18 @@
+from datetime import date, timedelta
+
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 
-from .models import Lesson
+from .models import Lesson, FirstLLesson
 from ..attendance.models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group
 from ..groups.serializers import GroupSerializer
+from ..student.models import Student
+from ..student.serializers import StudentSerializer
+from ..studentgroup.models import StudentGroup
+from ..studentgroup.serializers import StudentsGroupSerializer
+from ...lid.new_lid.models import Lid
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -116,3 +123,32 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
             **validated_data
         )
         return lesson
+
+
+class FirstLessonSerializer(serializers.ModelSerializer):
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+    class Meta:
+        model = FirstLLesson
+        fields = [
+            'id',
+            'lid',
+            'group',
+            'date',
+            'time',
+            'comment',
+            'creator',
+        ]
+
+    def update(self, instance, validated_data):
+        # Check if 'creator' is present and set it to the current user
+        creator = validated_data.pop('creator', None)
+        if creator is not None:
+            instance.creator = self.context['request'].user
+
+        # Proceed with the standard update logic
+        return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['group'] = GroupSerializer(instance.group).data
+        return rep

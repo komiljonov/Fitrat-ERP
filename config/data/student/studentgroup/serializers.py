@@ -1,13 +1,12 @@
 from rest_framework import serializers
-from typing import TYPE_CHECKING
+
 from .models import StudentGroup, SecondaryStudentGroup
 from ..groups.models import Group
 from ..groups.serializers import GroupSerializer
 from ..student.models import Student
-if TYPE_CHECKING:
-    from ..student.serializers import StudentSerializer, StudentAppSerializer
+from ..student.serializers import StudentSerializer
 from ...lid.new_lid.models import Lid
-from ...lid.new_lid.serializers import LidSerializer, LidAppSerializer
+from ...lid.new_lid.serializers import LidSerializer
 
 
 class StudentsGroupSerializer(serializers.ModelSerializer):
@@ -24,36 +23,30 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'student',
         ]
 
-    def __init__(self, *args, **kwargs):
-        # Call the parent constructor
-
-        # Fields you want to remove (for example, based on some condition)
-        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
-        super(StudentsGroupSerializer, self).__init__(*args, **kwargs)
-
-        if fields_to_remove:
-            # Remove the fields from the serializer
-            for field in fields_to_remove:
-                self.fields.pop(field, None)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        if instance.group:
+            group_data = {
+                'group_name': instance.group.name,  # Adjust based on which fields you want
+                'course': instance.group.course.name,  # Example of nested fields you might want
+                'teacher': instance.group.teacher.full_name if instance.group.teacher else None,
+                'room_number': instance.group.room_number.room_number,  # Assuming you want this info
+                # Add any other group-related fields you want to include here
+            }
+            rep['group'] = group_data
 
-        # Use try-except to avoid potential recursion or circular references
-        try:
-            # Limit the recursion depth by limiting which fields are serialized
-            rep['group'] = GroupSerializer(instance.group, context=self.context).data
-        except RecursionError:
-            rep['group'] = "Error in serialization"
+        else:
+            rep.pop('group', None)
 
         if instance.lid:
-            rep['lid'] = LidSerializer(instance.lid, context=self.context, remove_fields=["student_group"]).data
+            rep['lid'] = LidSerializer(instance.lid).data
 
         else:
             rep.pop('lid', None)
 
         if instance.student:
-            rep['student'] = StudentSerializer(instance.student, context=self.context,remove_fields=["student_group"]).data
+            rep['student'] = StudentSerializer(instance.student).data
 
         else:
             rep.pop('student', None)
