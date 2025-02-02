@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from ..account.models import CustomUser
+from ..lid.new_lid.models import Lid
+from ..student.student.models import Student
 from ..tasks.models import Task
 from ..account.serializers import UserListSerializer
 
@@ -9,12 +11,15 @@ from ..account.serializers import UserListSerializer
 
 class TaskSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     class Meta:
         model = Task
         fields = [
             "id",
             "creator",
+            'lid',
+            'student',
             "task",
             "comment",
             "date_of_expired",

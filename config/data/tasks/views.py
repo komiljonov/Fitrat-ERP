@@ -49,15 +49,19 @@ class TaskListNoPGView(ListAPIView):
 
 
 class TaskStudentRetrieveListAPIView(ListAPIView):
-    queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = (IsAuthenticated,)
-    def get_queryset(self,**kwargs):
-        student = Student.objects.filter(id=kwargs.get('pk'))
-        lid = Lid.objects.filter(id=kwargs.get('pk'))
+
+    def get_queryset(self):
+        pk = self.kwargs.get('pk')
+
+        # Try to get the student or lid object
+        student = Student.objects.filter(id=pk).first()
+        lid = Lid.objects.filter(id=pk).first()
+
         if lid:
-            return Task.objects.filter(lid__id=lid).first()
-        if student:
-            return Task.objects.filter(student__id=student).first()
-        return Task.objects.none()
+            return Task.objects.filter(lid=lid)  # Return queryset instead of .first()
+        elif student:
+            return Task.objects.filter(student=student)  # Return queryset instead of .first()
+        return Task.objects.none()  # Re
 
