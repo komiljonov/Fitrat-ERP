@@ -3,6 +3,8 @@ from rest_framework.generics import ListCreateAPIView
 
 from .lesson_date_calculator import calculate_lessons
 from .models import Group, Subject, Level, Day, Room, SecondaryGroup
+from ..attendance.models import Attendance
+from ..lesson.models import Lesson
 from ..studentgroup.models import StudentGroup
 from ..subject.serializers import SubjectSerializer, LevelSerializer
 from ...account.models import CustomUser
@@ -19,6 +21,7 @@ class GroupSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     scheduled_day_type = serializers.PrimaryKeyRelatedField(queryset=Day.objects.all(), many=True)
     student_count = serializers.SerializerMethodField()
+    lessons_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
@@ -30,6 +33,7 @@ class GroupSerializer(serializers.ModelSerializer):
             'status',
             'course',
             'student_count',
+            'lessons_count',
             'room_number',
             'price_type',
             'price',
@@ -39,10 +43,16 @@ class GroupSerializer(serializers.ModelSerializer):
             'ended_at',
             'start_date',
             'finish_date',
+            'is_secondary',
         ]
 
     def get_lessons_count(self, obj):
-        pass
+        attendance = Lesson.objects.filter(group=obj).count()
+        attended = Attendance.objects.filter(lesson__group=obj).count()
+        return {
+            'attendance': attendance,
+            'attended': attended,
+        }
 
     def get_student_count(self, obj):
         student_count = StudentGroup.objects.filter(group=obj).count()
