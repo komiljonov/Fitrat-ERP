@@ -147,3 +147,6 @@ class StuffList(ListAPIView):
         else:
             return CustomUser.objects.none()
 
+    def get_paginated_response(self, data):
+        return Response(data)
+
