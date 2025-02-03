@@ -21,7 +21,7 @@ urlpatterns = [
 
     path('',UserList.as_view(), name='user_list'),
     path('<uuid:pk>/', StuffList.as_view(), name='user_info'),
-    path('<uuid:pk>/', UserUpdateAPIView.as_view(), name='user_update'),
+    path('update/<uuid:pk>/', UserUpdateAPIView.as_view(), name='user_update'),
     path('logout', LogoutAPIView.as_view(), name='logout'),
     path('me/',UserInfo.as_view(), name='user-info'),
 
