@@ -59,10 +59,14 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.moderator = instance.moderator
                 student.save()
 
-            # Update attendance records
-            Attendance.objects.filter(lid=instance).update(student=student)
-            Relatives.objects.filter(lid=instance).update(student=student)
-            # Archive the Lid
+            for attendance in Attendance.objects.filter(lid=instance):
+                attendance.student = student
+                attendance.save()
+
+            # Update relatives records
+            for relative in Relatives.objects.filter(lid=instance):
+                relative.student = student
+                relative.save()
             post_save.disconnect(on_details_create, sender=Lid)
             instance.is_archived = True
             instance.save()
