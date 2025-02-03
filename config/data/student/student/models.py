@@ -5,7 +5,7 @@ from ...account.models import CustomUser
 from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
-
+from ...parents.models import Relatives
 
 class Student(TimeStampModel):
     first_name = models.CharField(max_length=100)
@@ -84,6 +84,6 @@ class Student(TimeStampModel):
     call_operator: 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,
                                                     null=True, blank=True, help_text="Call operator",
                                                     related_name="student_call_operator")
-
+    relatives: "Relatives" = models.ManyToManyField("parents.Relatives", null=True, blank=True, )
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"

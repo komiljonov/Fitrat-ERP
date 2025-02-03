@@ -12,6 +12,8 @@ from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
+from ...parents.models import Relatives
+from ...parents.serializers import RelativesSerializer
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -20,6 +22,7 @@ class StudentSerializer(serializers.ModelSerializer):
     test = serializers.SerializerMethodField()
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
+    relatives = serializers.PrimaryKeyRelatedField(queryset=Relatives.objects.all(), many=True, allow_null=True)
 
     password  = serializers.CharField(write_only=True)
     attendance_count = serializers.SerializerMethodField()
@@ -55,6 +58,9 @@ class StudentSerializer(serializers.ModelSerializer):
             "is_archived",
 
             "attendance_count",
+
+            'relatives',
+
             "created_at",
             "updated_at",
         ]
@@ -87,6 +93,10 @@ class StudentSerializer(serializers.ModelSerializer):
             instance.set_password(password)
             instance.save()
 
+        relatives_data = validated_data.pop("relatives", [])
+        instance = super().update(instance, validated_data)
+        instance.relatives.set(relatives_data)  # Handle Many-to-Many relationship
+
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -108,7 +118,7 @@ class StudentSerializer(serializers.ModelSerializer):
         #     representation['active_student_stages'] = StudentStagesSerializer(instance.active_student_stages).data
         # else:
         #     representation['active_student_stages'] = None
-
+        representation['relatives'] = RelativesSerializer(instance.relatives.all(), many=True).data
         return representation
 
 
