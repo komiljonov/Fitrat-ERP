@@ -67,7 +67,7 @@ class LidSerializer(serializers.ModelSerializer):
         return Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
 
     def get_relatives(self, obj):
-        relative = Relatives.objects.filter(lid=obj)
+        relative = Relatives.objects.filter(lid=obj).values('name','phone','who')
         return list(relative)
 
     def get_course(self, obj):

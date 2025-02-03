@@ -84,7 +84,7 @@ class StudentSerializer(serializers.ModelSerializer):
         return list(courses)
 
     def get_relatives(self, obj):
-        relative = Relatives.objects.filter(student=obj)
+        relative = Relatives.objects.filter(student=obj).values('name', 'phone', 'who')
         return list(relative)
 
     def get_attendance_count(self, obj):
@@ -97,11 +97,6 @@ class StudentSerializer(serializers.ModelSerializer):
             instance.set_password(password)
             instance.save()
 
-        relatives_data = validated_data.pop("relatives", [])
-        instance = super().update(instance, validated_data)
-        instance.relatives.set(relatives_data)  # Handle Many-to-Many relationship
-
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
@@ -111,18 +106,7 @@ class StudentSerializer(serializers.ModelSerializer):
         representation['sales_manager'] = UserSerializer(instance.sales_manager).data if instance.sales_manager else None
 
         representation['moderator'] = UserSerializer(instance.moderator).data if instance.moderator else None
-        # Safely handle new_student_stages
-        # if isinstance(instance.new_student_stages, NewStudentStages):
-        #     representation['new_student_stages'] = NewStudentStagesSerializer(instance.new_student_stages).data
-        # else:
-        #     representation['new_student_stages'] = None
-        #
-        # # # Safely handle active_student_stages
-        # if isinstance(instance.active_student_stages, StudentStages):
-        #     representation['active_student_stages'] = StudentStagesSerializer(instance.active_student_stages).data
-        # else:
-        #     representation['active_student_stages'] = None
-        representation['relatives'] = RelativesSerializer(instance.relatives.all(), many=True).data
+
         return representation
 
 
