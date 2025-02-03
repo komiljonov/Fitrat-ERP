@@ -65,8 +65,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
 
             # Update relatives records
             for relative in Relatives.objects.filter(lid=instance):
-                relative.student = student
-                relative.save()
+                relative.student.set([student])
             post_save.disconnect(on_details_create, sender=Lid)
             instance.is_archived = True
             instance.save()
