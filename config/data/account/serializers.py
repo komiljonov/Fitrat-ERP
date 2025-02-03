@@ -10,19 +10,31 @@ from ..upload.serializers import FileUploadSerializer
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
     class Meta:
         model = CustomUser
-        fields = ('phone', 'password', 'role', 'full_name', 'balance', 'photo')
-        extra_kwargs = {
-            'password': {'write_only': True},
-            'role': {'default': 'ADMINISTRATOR'},
-        }
+        fields = (
+            "full_name", "first_name", "last_name", "phone", "role","password",
+            "photo", "filial", "balance", "ball",
+            "enter", "leave", "date_of_birth", "compensation", "bonus"
+        )
+        # We don't need to add extra_kwargs for password
 
     def create(self, validated_data):
-        # Extract and hash the password
-        password = validated_data.pop('password')
+        # Ensure password is provided in the request
+        password = validated_data.pop('password', None)
+        print(password)
+        if not password:
+            raise serializers.ValidationError({"password": "Password is required."})
+
+        compensation_data = validated_data.pop('compensation', [])
+        bonus_data = validated_data.pop('bonus', [])
+
         user = CustomUser(**validated_data)
         user.set_password(password)  # Hash the password
+        user.save()
+        user.compensation.set(compensation_data)  # Set the compensation
+        user.bonus.set(bonus_data)  # Set the bonus
         user.save()
         return user
 
@@ -73,17 +85,37 @@ class UserLoginSerializer(serializers.Serializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
+    compensation = serializers.PrimaryKeyRelatedField(queryset=Compensation.objects.all(), many=True, required=False)
+    bonus = serializers.PrimaryKeyRelatedField(queryset=Bonus.objects.all(), many=True, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ['phone', 'full_name',"first_name","last_name", 'password', 'role', "photo", "date_of_birth", ]
+        fields = ['phone', 'full_name', 'first_name', 'last_name', 'password', 'role', 'photo', 'date_of_birth', 'compensation', 'bonus']
 
-    def validate(self, attrs):
-        user = self.instance  # Get the user instance
-        if 'password' in attrs:
-            user.set_password(attrs['password'])
-            user.save()
-        return attrs
+    def update(self, instance, validated_data):
+        # Extract and update the password if provided
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)  # Hash the password
+            instance.save()  # Save after setting the password
+
+        # Update other fields (except compensation and bonus)
+        for attr, value in validated_data.items():
+            if attr not in ['compensation', 'bonus']:  # Avoid setting many-to-many fields directly
+                setattr(instance, attr, value)
+
+        # Handle many-to-many relationships correctly
+        compensation_data = validated_data.pop('compensation', None)
+        bonus_data = validated_data.pop('bonus', None)
+
+        if compensation_data is not None:
+            instance.compensation.set(compensation_data)  # Correctly update compensation
+        if bonus_data is not None:
+            instance.bonus.set(bonus_data)  # Correctly update bonus
+
+        instance.save()  # Save the instance after all updates
+        return instance
+
 
 
 class UserListSerializer(ModelSerializer):
@@ -91,7 +123,8 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name","first_name","last_name",'role', "photo", "filial", ]
+        fields = ['id', 'phone', "full_name","first_name","last_name",'role',
+                  "photo", "filial", ]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
