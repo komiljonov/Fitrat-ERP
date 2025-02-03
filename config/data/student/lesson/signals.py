@@ -9,7 +9,7 @@ def on_create(sender, instance: FirstLLesson, created, **kwargs):
     if created:
         student = StudentGroup.objects.get_or_create(
             group=instance.group,
-            student=instance.student if instance.student else None,
+            student=None,
             lid=instance.lid if instance.lid else None,
         )
         notif = Notification.objects.create(
