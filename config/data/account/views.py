@@ -133,3 +133,17 @@ class StuffRolesView(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class StuffList(ListAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
+
+    def get_queryset(self):
+        id = self.kwargs['pk']
+        if id:
+            return CustomUser.objects.filter(id=id)
+        else:
+            return CustomUser.objects.none()
+
