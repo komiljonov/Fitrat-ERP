@@ -2,14 +2,11 @@
 from django.db import models
 from django.utils import timezone
 
+from ...account.models import CustomUser
 from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...stages.models import NewLidStages, NewOredersStages
-from ...account.models import CustomUser
-from ...parents.models import Relatives
-
-
 
 
 class Lid(TimeStampModel):
@@ -98,11 +95,6 @@ class Lid(TimeStampModel):
 
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser',
                                                     on_delete=models.CASCADE, null=True, related_name="sales_manager")
-
-
-    relatives :"Relatives"  = models.ManyToManyField("parents.Relatives",null=True,blank=True,)
-
-
 
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"

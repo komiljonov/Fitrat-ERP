@@ -2,14 +2,14 @@ from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from .models import Lid, Relatives
+from .models import Lid
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
-from ...parents.serializers import RelativesSerializer
+from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.studentgroup.models import StudentGroup
 
@@ -23,7 +23,7 @@ class LidSerializer(serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
-    relatives = serializers.PrimaryKeyRelatedField(queryset=Relatives.objects.all(), many=True, allow_null=True)
+    relatives = serializers.SerializerMethodField()
 
     class Meta:
         model = Lid
@@ -66,6 +66,10 @@ class LidSerializer(serializers.ModelSerializer):
     def get_lessons_count(self, obj):
         return Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
 
+    def get_relatives(self, obj):
+        relative = Relatives.objects.filter(lid=obj)
+        return list(relative)
+
     def get_course(self, obj):
         return list(StudentGroup.objects.filter(lid=obj).values_list("group__course__name", flat=True))
 
@@ -79,7 +83,6 @@ class LidSerializer(serializers.ModelSerializer):
             instance.marketing_channel).data if instance.marketing_channel else None
         representation['call_operator'] = UserSerializer(
             instance.call_operator).data if instance.call_operator else None
-        representation['relatives'] = RelativesSerializer(instance.relatives.all(), many=True).data
         return representation
 
     def update(self, instance, validated_data):
@@ -90,11 +93,6 @@ class LidSerializer(serializers.ModelSerializer):
 
         if instance.sales_manager is None and request.user.role == 'ADMINISTRATOR':
             validated_data['sales_manager'] = request.user
-
-        relatives_data = validated_data.pop("relatives", [])
-        instance = super().update(instance, validated_data)
-        instance.relatives.set(relatives_data)  # Handle Many-to-Many relationship
-
         return instance
 
 

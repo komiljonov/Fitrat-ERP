@@ -1,26 +1,19 @@
 from django.db.models import Q
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-# Create your views here.
-
-
-from .serializers import RelativesSerializer
 from .models import Relatives
+from .serializers import RelativesSerializer
+
+
+# Create your views here.
 
 class ParentListView(ListCreateAPIView):
     queryset = Relatives.objects.all()
     serializer_class = RelativesSerializer
     permission_classes = [IsAuthenticated]
 
-    filter_backends = (SearchFilter, OrderingFilter,DjangoFilterBackend)
-
-    search_fields = ('fathers_name','mothers_name','fathers_phone',)
-    ordering_fields = ('fathers_name','mothers_name','fathers_phone','mothers_phone')
-    filterset_fields = ('fathers_name','mothers_name','fathers_phone','mothers_phone')
 
 
 class ParentDetailView(RetrieveUpdateDestroyAPIView):

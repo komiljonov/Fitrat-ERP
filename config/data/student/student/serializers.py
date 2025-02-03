@@ -22,7 +22,7 @@ class StudentSerializer(serializers.ModelSerializer):
     test = serializers.SerializerMethodField()
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
-    relatives = serializers.PrimaryKeyRelatedField(queryset=Relatives.objects.all(), many=True, allow_null=True)
+    relatives = serializers.SerializerMethodField()
 
     password  = serializers.CharField(write_only=True)
     attendance_count = serializers.SerializerMethodField()
@@ -82,6 +82,10 @@ class StudentSerializer(serializers.ModelSerializer):
         "group__name", "group__status", "group__started_at", "group__ended_at","group__teacher__first_name","group__teacher__last_name"
         ))
         return list(courses)
+
+    def get_relatives(self, obj):
+        relative = Relatives.objects.filter(student=obj)
+        return list(relative)
 
     def get_attendance_count(self, obj):
         attendance = Attendance.objects.filter(student=obj)
