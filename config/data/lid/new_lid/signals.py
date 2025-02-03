@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from ..new_lid.models import Lid
-from ...parents.models import Parent
+from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.student.models import Student
 
@@ -61,7 +61,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
 
             # Update attendance records
             Attendance.objects.filter(lid=instance).update(student=student)
-            Parent.objects.filter(lid=instance).update(student=student)
+            Relatives.objects.filter(lid=instance).update(student=student)
             # Archive the Lid
             post_save.disconnect(on_details_create, sender=Lid)
             instance.is_archived = True

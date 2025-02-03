@@ -1,32 +1,17 @@
 from django.db.models import Q
-from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from .models import Lid, Relatives
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
-from ...comments.models import Comment
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
+from ...parents.serializers import RelativesSerializer
 from ...student.attendance.models import Attendance
 from ...student.studentgroup.models import StudentGroup
-from ...student.subject.serializers import SubjectSerializer
-from ...tasks.models import Task
-
-
-
-class RelativesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Relatives
-        fields = ['id',
-                  'name',
-                  'phone',
-                  'who',
-                  ]
-
 
 
 class LidSerializer(serializers.ModelSerializer):

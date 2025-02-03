@@ -1,17 +1,13 @@
 from rest_framework import serializers
 
-from data.parents.models import Parent
+from data.parents.models import Relatives
 
 
-class ParentSerializer(serializers.ModelSerializer):
+class RelativesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Parent
-        fields = [
-            'id',
-            'fathers_name',
-            'fathers_phone',
-            'mothers_name',
-            'mothers_phone',
-            'lid',
-            'student',
-        ]
+        model = Relatives
+        fields = ['id',
+                  'name',
+                  'phone',
+                  'who',
+                  ]

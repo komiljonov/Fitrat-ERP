@@ -8,12 +8,12 @@ from rest_framework.response import Response
 # Create your views here.
 
 
-from .serializers import ParentSerializer
-from .models import Parent
+from .serializers import RelativesSerializer
+from .models import Relatives
 
 class ParentListView(ListCreateAPIView):
-    queryset = Parent.objects.all()
-    serializer_class = ParentSerializer
+    queryset = Relatives.objects.all()
+    serializer_class = RelativesSerializer
     permission_classes = [IsAuthenticated]
 
     filter_backends = (SearchFilter, OrderingFilter,DjangoFilterBackend)
@@ -24,27 +24,27 @@ class ParentListView(ListCreateAPIView):
 
 
 class ParentDetailView(RetrieveUpdateDestroyAPIView):
-    queryset = Parent.objects.all()
-    serializer_class = ParentSerializer
+    queryset = Relatives.objects.all()
+    serializer_class = RelativesSerializer
     permission_classes = [IsAuthenticated]
 
 
 
-class ParentListNoPGView(ListAPIView):
-    queryset = Parent.objects.all()
-    serializer_class = ParentSerializer
+class RelativesListNoPGView(ListAPIView):
+    queryset = Relatives.objects.all()
+    serializer_class = RelativesSerializer
     permission_classes = [IsAuthenticated]
 
     def get_paginated_response(self, data):
         return Response(data)
 
 
-class StudentsParentListView(ListAPIView):
-    queryset = Parent.objects.all()
-    serializer_class = ParentSerializer
+class StudentsRelativesListView(ListAPIView):
+    queryset = Relatives.objects.all()
+    serializer_class = RelativesSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         id = self.kwargs.get('pk')
-        queryset = Parent.objects.filter(Q(student__id=id) | Q(lid__id=id))
+        queryset = Relatives.objects.filter(Q(student__id=id) | Q(lid__id=id))
         return queryset

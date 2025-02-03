@@ -7,15 +7,10 @@ from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...stages.models import NewLidStages, NewOredersStages
 from ...account.models import CustomUser
+from ...parents.models import Relatives
 
 
-class Relatives(TimeStampModel):
-    name = models.CharField(null=True, blank=True, max_length=100)
-    phone = models.CharField(null=True, blank=True, max_length=100)
-    who = models.CharField(null=True, blank=True, max_length=100)
 
-    def __str__(self):
-        return f"{self.who}"
 
 class Lid(TimeStampModel):
 
@@ -105,7 +100,7 @@ class Lid(TimeStampModel):
                                                     on_delete=models.CASCADE, null=True, related_name="sales_manager")
 
 
-    relatives :"Relatives"  = models.ManyToManyField("new_lid.Relatives",null=True,blank=True,)
+    relatives :"Relatives"  = models.ManyToManyField("parents.Relatives",null=True,blank=True,)
 
 
 
