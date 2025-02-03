@@ -7,6 +7,8 @@ class RelativesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Relatives
         fields = ['id',
+                  'lid',
+                  'student',
                   'name',
                   'phone',
                   'who',

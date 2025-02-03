@@ -8,8 +8,8 @@ from ...student.student.models import Student
 
 class Attendance(TimeStampModel):
     lesson : Lesson = models.ForeignKey('lesson.Lesson', on_delete=models.CASCADE)
-    lid : Lid = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True)
-    student : Student = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True)
+    lid : 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True)
+    student : 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True)
 
     REASON_CHOICES = [
         ('IS_PRESENT', 'Is Present'),
