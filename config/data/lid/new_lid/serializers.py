@@ -98,7 +98,7 @@ class LidSerializer(serializers.ModelSerializer):
                 validated_data['sales_manager'] = request.user
                 validated_data['filial'] = request.user.filial
 
-        # Apply all validated data updates to the instance
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 

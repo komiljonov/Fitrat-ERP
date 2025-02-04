@@ -21,3 +21,7 @@ def on_create(sender, instance: FirstLLesson, created, **kwargs):
             print(notif)
         else:
             return "Notification not created couse creator is not here ???"
+
+    if created and instance.lid.lid_stage_type == "ORDERED_LID":
+        instance.lid.ordered_stages = "BIRINCHI_DARS_BELGILANGAN"
+        instance.lid.save()
