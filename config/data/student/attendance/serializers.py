@@ -9,8 +9,8 @@ from ...lid.new_lid.serializers import LidSerializer
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
     teacher = serializers.SerializerMethodField()
     class Meta:
         model = Attendance
