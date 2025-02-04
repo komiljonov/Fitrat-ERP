@@ -67,10 +67,19 @@ class ThemeList(ListCreateAPIView):
     filterser_fields = ('title','theme','type',)
 
     def get_queryset(self):
+        queryset = Theme.objects.all()  # Start with all themes by default
+
+        # Apply filter for 'theme' if provided
+        theme = self.request.query_params.get('theme')
+        if theme:
+            queryset = queryset.filter(theme=theme)
+
+        # Apply filter for 'id' if provided
         id = self.request.query_params.get('id')
         if id:
-            return Theme.objects.filter(group__id=id)
+            queryset = queryset.filter(group__id=id)
 
+        return queryset
 
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):

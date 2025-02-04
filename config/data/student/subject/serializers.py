@@ -52,6 +52,7 @@ class ThemeSerializer(serializers.ModelSerializer):
             'subject',
             'title',
             'theme',
+            "group",
             'description',
             'video',
             'file',
