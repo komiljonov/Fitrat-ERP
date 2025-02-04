@@ -3,7 +3,9 @@ from rest_framework import serializers
 
 from ..account.models import CustomUser
 from ..lid.new_lid.models import Lid
+from ..lid.new_lid.serializers import LidSerializer
 from ..student.student.models import Student
+from ..student.student.serializers import StudentSerializer
 from ..tasks.models import Task
 from ..account.serializers import UserListSerializer
 
@@ -43,6 +45,24 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        # Corrected the syntax for `UserListSerializer`
+
         representation["creator"] = UserListSerializer(instance.creator).data
-        return representation
+
+        # Corrected the syntax for `UserListSerializer`
+
+        if instance.lid:
+            representation['lid'] = LidSerializer(instance.lid).data
+
+        else:
+            representation.pop('lid', None)
+
+        if instance.student:
+            representation['student'] = StudentSerializer(instance.student).data
+
+        else:
+            representation.pop('student', None)
+
+        # Filter out unwanted values
+        filtered_data = {key: value for key, value in representation.items() if value not in [{}, [], None, "", False]}
+        return filtered_data
+
