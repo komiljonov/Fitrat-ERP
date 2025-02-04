@@ -1,9 +1,11 @@
 from django.db import models
 
-from ...command.models import TimeStampModel
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from data.student.course.models import Course
+from ...command.models import TimeStampModel
 from ...upload.models import File
-from ...student.groups.models import Group
 
 
 class Subject(TimeStampModel):
@@ -23,10 +25,8 @@ class Level(TimeStampModel):
 
 
 
-
 class Theme(TimeStampModel):
-
-    subject : 'Subject' = models.ForeignKey('subject.Subject', on_delete=models.CASCADE)
+    subject = models.ForeignKey('subject.Subject', on_delete=models.CASCADE)
 
     title = models.CharField(max_length=100)
     description = models.TextField()
@@ -35,29 +35,34 @@ class Theme(TimeStampModel):
         choices=[
             ('Lesson', 'Lesson'),
             ('Repeat', 'Repeat'),
-            ],
+        ],
         default='Lesson',
         max_length=100
     )
 
-    type = models.CharField(choices=[
-        ('HOMEWORK', 'HOMEWORK'),
-        ('COURSE_WORK', 'COURSE_WORK'),
-        ('EXTRA', 'EXTRA'),
-    ],
-    default='HOMEWORK',
-    max_length=100,)
-
-    group: "Group" = models.ForeignKey(
-        "groups.Group", on_delete=models.CASCADE, related_name="courses_themes"
+    type = models.CharField(
+        choices=[
+            ('HOMEWORK', 'HOMEWORK'),
+            ('COURSE_WORK', 'COURSE_WORK'),
+            ('EXTRA', 'EXTRA'),
+        ],
+        default='HOMEWORK',
+        max_length=100,
     )
 
-    video : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
-                                       related_name='videos',)
-    file : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
-                                      related_name='files')
-    photo : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
-                                       related_name='photos')
+    course = models.ForeignKey(
+        "course.Course", on_delete=models.CASCADE, related_name="courses_themes"
+    )
+
+    video = models.ManyToManyField(
+        'upload.File',null=True, blank=True, related_name='videos'
+    )
+    file = models.ManyToManyField(
+        'upload.File',null=True, blank=True, related_name='files'
+    )
+    photo = models.ManyToManyField(
+        'upload.File',null=True, blank=True, related_name='photos'
+    )
 
     def __str__(self):
         return f"{self.subject} - {self.title}  {self.type}"

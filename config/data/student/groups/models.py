@@ -1,9 +1,11 @@
+from typing import TYPE_CHECKING
+
+from django.db import models
 from django.utils import timezone
 from django.utils.timezone import now
-from django.db import models
+
 from ...command.models import TimeStampModel
 
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..course.models import Course
 from ...account.models import CustomUser

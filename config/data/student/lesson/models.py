@@ -1,7 +1,9 @@
 from django.db import models
 
 from data.account.models import CustomUser
-from data.student.subject.models import Theme
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from data.student.subject.models import Theme
 from ..groups.models import Group
 from ..subject.models import Subject
 from ...command.models import TimeStampModel

@@ -42,9 +42,10 @@ class LevelSerializer(serializers.ModelSerializer):
 
 class ThemeSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all())
-    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True, required=False)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True, required=False)
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True, required=False)
+
     class Meta:
         model = Theme
         fields = [
@@ -52,17 +53,22 @@ class ThemeSerializer(serializers.ModelSerializer):
             'subject',
             'title',
             'theme',
-            "group",
+            'course',
             'description',
             'video',
             'file',
             'photo',
             'type',
         ]
+
+    def get_course(self, obj):
+        return list(Course.objects.filter(subject=obj.subject).values('id', 'group__id'))
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['subject'] = SubjectSerializer(instance.subject).data
-        rep['video'] = FileUploadSerializer(instance.video).data
-        rep['file'] = FileUploadSerializer(instance.file).data
-        rep['photo'] = FileUploadSerializer(instance.photo).data
+        rep['video'] = FileUploadSerializer(instance.video.all(), many=True).data
+        rep['file'] = FileUploadSerializer(instance.file.all(), many=True).data
+        rep['photo'] = FileUploadSerializer(instance.photo.all(), many=True).data
+        rep['course'] = self.get_course(instance)
         return rep

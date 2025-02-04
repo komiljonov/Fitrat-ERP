@@ -1,16 +1,13 @@
-from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Subject, Level, Theme
 # Create your views here.
-from .serializers import SubjectSerializer,LevelSerializer,ThemeSerializer
-
-from rest_framework.generics import ListCreateAPIView,ListAPIView,RetrieveUpdateDestroyAPIView
-
-from ...account.permission import FilialRestrictedQuerySetMixin
+from .serializers import SubjectSerializer, LevelSerializer, ThemeSerializer
+from ..groups.models import Group
 
 
 class SubjectList(ListCreateAPIView):
@@ -67,17 +64,19 @@ class ThemeList(ListCreateAPIView):
     filterser_fields = ('title','theme','type',)
 
     def get_queryset(self):
-        queryset = Theme.objects.all()  # Start with all themes by default
+        queryset = Theme.objects.all()
 
-        # Apply filter for 'theme' if provided
         theme = self.request.query_params.get('theme')
         if theme:
             queryset = queryset.filter(theme=theme)
 
-        # Apply filter for 'id' if provided
         id = self.request.query_params.get('id')
         if id:
-            queryset = queryset.filter(group__id=id)
+            try:
+                course = Group.objects.get(id=id)  # Agar id yo'q bo'lsa, xatolik qaytaradi
+                queryset = queryset.filter(course=course.course)
+            except Group.DoesNotExist:
+                pass  # Agar Group topilmasa, filtr qo'llanilmaydi
 
         return queryset
 
