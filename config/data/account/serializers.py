@@ -94,11 +94,15 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                   'date_of_birth', 'compensation', 'bonus']
 
     def update(self, instance, validated_data):
-        # Extract and update the password if provided
         password = validated_data.pop('password', None)
         if password:
             instance.set_password(password)  # Hash the password
             instance.save()  # Save after setting the password
+        phone = validated_data.pop('phone', None)
+        if phone and phone != instance.phone:  # Only update if changed
+            if CustomUser.objects.filter(phone=phone).exclude(id=instance.id).exists():
+                raise serializers.ValidationError({"phone": "This phone number is already in use."})
+            instance.phone = phone
 
         # Update other fields (except compensation and bonus)
         for attr, value in validated_data.items():
