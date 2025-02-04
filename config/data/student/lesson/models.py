@@ -30,6 +30,7 @@ class Lesson(TimeStampModel):
         default="Lesson",
         max_length=100,
     )
+
     lesson_status = models.CharField(
         choices=[
             ("ACTIVE", "Active"),

@@ -5,7 +5,7 @@ from data.student.subject.models import Level, Theme
 from data.student.subject.serializers import SubjectSerializer, ThemeSerializer, LevelSerializer
 
 class CourseSerializer(serializers.ModelSerializer):
-    level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all())
+    level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all(),allow_null=True)
     theme = serializers.PrimaryKeyRelatedField(
         queryset=Theme.objects.all(), many=True, required=False, allow_null=True
     )
@@ -36,6 +36,9 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["level"] = LevelSerializer(instance.level).data
+        if instance.level:
+            rep["level"] = LevelSerializer(instance.level).data
+        else:
+            rep["level"] = None
         rep["theme"] = ThemeSerializer(instance.theme.all(), many=True).data  # Return full theme data
         return rep

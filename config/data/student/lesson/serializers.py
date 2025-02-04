@@ -110,20 +110,20 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
 
         return data
 
-    def create(self, validated_data):
-        """
-        Create the lesson after validation.
-        """
-        group = validated_data.pop('group')
-        subject_id = validated_data.pop('subject_id')
-
-        # Create the lesson
-        lesson = Lesson.objects.create(
-            group=group,
-            subject_id=subject_id,
-            **validated_data
-        )
-        return lesson
+    # def create(self, validated_data):
+    #     """
+    #     Create the lesson after validation.
+    #     """
+    #     group = validated_data.pop('group')
+    #     subject_id = validated_data.pop('subject_id')
+    #
+    #     # Create the lesson
+    #     lesson = Lesson.objects.create(
+    #         group=group,
+    #         subject_id=subject_id,
+    #         **validated_data
+    #     )
+    #     return lesson
 
 
 class FirstLessonSerializer(serializers.ModelSerializer):
