@@ -1,3 +1,5 @@
+import hashlib
+
 from django.db import models
 from django.utils import timezone
 
@@ -14,7 +16,7 @@ class Student(TimeStampModel):
     phone = models.CharField(max_length=100)
     date_of_birth = models.DateField(default=timezone.now())
 
-    password = models.CharField(max_length=100,null=True, blank=True)
+    password = models.CharField(max_length=100,null=True,blank=True,default=hashlib.sha256("1".encode()).hexdigest())
 
     language_choice = (("ENG", "ENG"),
                        ("RU", "RU"),

@@ -22,6 +22,14 @@ class Lesson(TimeStampModel):
 
     theme : 'Theme' = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL, null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
+    type = models.CharField(
+        choices=[
+            ("Lesson", "Lesson"),
+            ("Repeat", "Repeat"),
+        ],
+        default="Lesson",
+        max_length=100,
+    )
     lesson_status = models.CharField(
         choices=[
             ("ACTIVE", "Active"),
@@ -58,3 +66,6 @@ class FirstLLesson(TimeStampModel):
     creator : 'CustomUser' = models.ForeignKey(
         'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True
     )
+
+    def __str__(self):
+        return f"{self.lid.first_name} | {self.group.name} | {self.date} | {self.time}"

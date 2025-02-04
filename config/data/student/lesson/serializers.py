@@ -30,6 +30,7 @@ class LessonSerializer(serializers.ModelSerializer):
             "id",
             'name',
             "subject",
+            'type',
             'group',
             'comment',
             'teacher',
