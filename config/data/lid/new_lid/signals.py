@@ -76,3 +76,8 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             instance.save()
             post_save.connect(on_details_create, sender=Lid)
 
+    if created:
+        if instance.lid_stage_type == "ORDERED_LID":
+            instance.filial = instance.sales_manager.filial
+            instance.save()
+            post_save.disconnect(on_details_create, sender=Lid)
