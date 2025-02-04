@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -58,6 +60,18 @@ class ThemeList(ListCreateAPIView):
     queryset = Theme.objects.all()
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
+
+    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
+    search_fields = ('title','theme','type',)
+    ordering_fields = ('title','theme','type',)
+    filterser_fields = ('title','theme','type',)
+
+    def get_queryset(self):
+        id = self.request.query_params.get('id')
+        if id:
+            return Theme.objects.filter(group__id=id)
+
+
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):
     queryset = Theme.objects.all()

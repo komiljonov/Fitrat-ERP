@@ -45,8 +45,8 @@ class CustomUser(AbstractUser):
 
     ball = models.FloatField(default=0)
 
-    enter = models.DateTimeField(null=True,blank=True)
-    leave = models.DateTimeField(null=True,blank=True)
+    enter = models.TimeField(null=True,blank=True)
+    leave = models.TimeField(null=True,blank=True)
 
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateField(auto_now=True, null=True, blank=True)

@@ -46,18 +46,18 @@ class GroupSerializer(serializers.ModelSerializer):
         ]
 
     def get_lessons_count(self, obj):
-        total_lessons = Lesson.objects.filter(group=obj).count()
-
-        attended_lessons = (
-            Attendance.objects.filter(lesson__group=obj)
-            .values("lesson")  # Group by lesson
-            .annotate(attended_count=Count("id"))  # Count attendance per lesson
-            .count()  # Count unique lessons with attendance records
-        )
+        # total_lessons = Lesson.objects.filter(group=obj).count()
+        #
+        # attended_lessons = (
+        #     Attendance.objects.filter(lesson__group=obj)
+        #     .values("lesson")  # Group by lesson
+        #     .annotate(attended_count=Count("id"))  # Count attendance per lesson
+        #     .count()  # Count unique lessons with attendance records
+        # )
 
         return {
-            "lessons": total_lessons,  # Total lessons in the group
-            "attended": attended_lessons,  # Lessons that have attendance records
+            "lessons": 0,  # Total lessons in the group
+            "attended": 0,  # Lessons that have attendance records
         }
 
     def get_student_count(self, obj):

@@ -31,6 +31,15 @@ class Theme(TimeStampModel):
     title = models.CharField(max_length=100)
     description = models.TextField()
 
+    theme = models.CharField(
+        choices=[
+            ('Lesson', 'Lesson'),
+            ('Repeat', 'Repeat'),
+            ],
+        default='Lesson',
+        max_length=100
+    )
+
     type = models.CharField(choices=[
         ('HOMEWORK', 'HOMEWORK'),
         ('COURSE_WORK', 'COURSE_WORK'),

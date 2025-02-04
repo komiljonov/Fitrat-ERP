@@ -232,6 +232,7 @@ class LidStatisticsView(ListAPIView):
 
         # Filters for ORDERED_LID statistics
 
+        ordered_new = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, filial=user.filial,ordered_stages="YANGI_BUYURTMA",).count()
         ordered_leads_count = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, filial=user.filial).count()
         ordered_waiting_leads = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, ordered_stages="KUTULMOQDA", filial=user.filial).count()
         ordered_archived = Lid.objects.filter(is_archived=True, lid_stage_type="ORDERED_LID", filial=user.filial).count()
@@ -254,6 +255,7 @@ class LidStatisticsView(ListAPIView):
 
         ordered_statistics = {
             "ordered_leads_count": ordered_leads_count,
+            "ordered_new" : ordered_new,
             "ordered_waiting_leads": ordered_waiting_leads,
             "ordered_first_lesson_not_come": first_lesson_not,
             "ordered_first_lesson": first_lesson,
