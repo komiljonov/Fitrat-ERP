@@ -83,14 +83,13 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    phone = serializers.CharField(max_length=15, required=False)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
     compensation = serializers.PrimaryKeyRelatedField(queryset=Compensation.objects.all(), many=True, required=False)
     bonus = serializers.PrimaryKeyRelatedField(queryset=Bonus.objects.all(), many=True, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ['phone', 'full_name', 'first_name', 'last_name', 'password', 'role', 'photo', "salary","enter", "leave",
+        fields = ['full_name', 'first_name', 'last_name', 'password', 'role', 'photo', "salary","enter", "leave",
                   'date_of_birth', 'compensation', 'bonus']
 
     def update(self, instance, validated_data):
@@ -98,11 +97,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if password:
             instance.set_password(password)  # Hash the password
             instance.save()  # Save after setting the password
-        phone = validated_data.pop('phone', None)
-        if phone and phone != instance.phone:  # Only update if changed
-            if CustomUser.objects.filter(phone=phone).exclude(id=instance.id).exists():
-                raise serializers.ValidationError({"phone": "This phone number is already in use."})
-            instance.phone = phone
 
         # Update other fields (except compensation and bonus)
         for attr, value in validated_data.items():
