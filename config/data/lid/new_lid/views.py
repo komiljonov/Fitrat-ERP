@@ -224,11 +224,11 @@ class LidStatisticsView(ListAPIView):
     def list(self, request, *args, **kwargs):
         user = request.user
 
-        leads_count = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,).count()
-        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,call_operator=None).count()
-        in_progress = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,call_operator=user,lid_stages="KUTULMOQDA").count()
-        order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID", call_operator=user).count()
-        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID", call_operator=user).count()
+        leads_count = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,filial__in=[None,user.filial]).count()
+        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,call_operator=None,filial__in=[None,user.filial]).count()
+        in_progress = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,filial__in=[None,user.filial],call_operator=user,lid_stages="KUTULMOQDA").count()
+        order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",filial__in=[None,user.filial], call_operator=user).count()
+        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",filial__in=[None,user.filial], call_operator=user).count()
 
         # Filters for ORDERED_LID statistics
 
