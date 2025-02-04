@@ -2,6 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Attendance
+from ..groups.models import Group
 from ...notifications.models import Notification
 from ...stages.models import NewOredersStages
 
@@ -53,24 +54,24 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
             )
 
 
-
-
 @receiver(post_save, sender=Attendance)
 def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     if created:
         if (
-            instance.reason in ["IS_PRESENT", "UNREASONED"]
-            and instance.theme.group.price_type == "DAILY"
+                instance.reason in ["IS_PRESENT", "UNREASONED"]
+                and instance.theme.exists()  # Check if there are related themes
         ):
-            if instance.student:  # Ensure student is not None
-                instance.student.balance -= instance.theme.group.price
-                instance.student.save()
-            else:
-                print("Attendance does not have a related student.")
+            for theme in instance.theme.all():  # Iterate over all related themes
+                if theme.group.price_type == "DAILY":
+                    if instance.student:
+                        instance.student.balance -= theme.group.price
+                        instance.student.save()
+                    else:
+                        print("Attendance does not have a related student.")
 
     if not created:
         if instance.reason == "REASONED":
-            if instance.student:  # Ensure student is not None
+            if instance.student:
                 Notification.objects.create(
                     user=instance.student.moderator or instance.student.call_operator,
                     comment=f"{instance.student.first_name} {instance.student.phone} "
@@ -78,10 +79,5 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                             f"qoldirilganga o'zgartirildi. E'tiborli bo'ling, bu dars uchun to'langan to'lov qaytarilishiga sabab bo'ldi.",
                     come_from=instance.student,
                 )
-
             else:
                 print("Attendance does not have a related student.")
-
-        # if instance.reason == "HOLIDAY" and instance.lesson.group.price_type == "DAILY":
-        #     instance.student.balance += instance.lesson.group.price
-        #     instance.student.save()

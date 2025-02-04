@@ -6,6 +6,6 @@ from .models import Attendance
 # Register your models here.
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
-    list_display = ('theme', 'lid','student','reason')
-    list_filter = ('theme','reason')
-    search_fields = ('theme','reason')
+    list_display = ( 'lid','student','reason')
+    list_filter = ('reason',)
+    search_fields = ('reason',)
