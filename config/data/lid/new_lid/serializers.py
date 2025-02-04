@@ -88,13 +88,15 @@ class LidSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context['request']
 
-        # Automatically assign call_operator if it's None and user is CALL_OPERATOR
-        if instance.call_operator is None and request.user.role == 'CALL_OPERATOR':
-            validated_data['call_operator'] = request.user
+        if instance.lid_stage_type == "NEW_LID":
+            if instance.call_operator is None and request.user.role == 'CALL_OPERATOR':
+                validated_data['call_operator'] = request.user
 
-        # Automatically assign sales_manager if it's None and user is ADMINISTRATOR
-        if instance.sales_manager is None and request.user.role == 'ADMINISTRATOR':
-            validated_data['sales_manager'] = request.user
+            # Automatically assign sales_manager if it's None and user is ADMINISTRATOR
+        if instance.lid_stage_type == "ORDERED_LID":
+            if instance.sales_manager is None and request.user.role == 'ADMINISTRATOR':
+                validated_data['sales_manager'] = request.user
+                validated_data['filial'] = request.user.filial
 
         # Apply all validated data updates to the instance
         for attr, value in validated_data.items():
