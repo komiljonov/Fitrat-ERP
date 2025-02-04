@@ -1,13 +1,11 @@
 from django.db.models import Count
 from rest_framework import serializers
-from rest_framework.generics import ListCreateAPIView
 
 from .lesson_date_calculator import calculate_lessons
-from .models import Group, Subject, Level, Day, Room, SecondaryGroup
+from .models import Group, Day, Room, SecondaryGroup
 from ..attendance.models import Attendance
 from ..lesson.models import Lesson
 from ..studentgroup.models import StudentGroup
-from ..subject.serializers import SubjectSerializer, LevelSerializer
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 

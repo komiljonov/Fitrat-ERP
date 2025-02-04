@@ -2,13 +2,10 @@ from django.db import models
 
 from data.account.models import CustomUser
 from data.student.subject.models import Theme
-from ...command.models import TimeStampModel
 from ..groups.models import Group
 from ..subject.models import Subject
-
+from ...command.models import TimeStampModel
 from ...lid.new_lid.models import Lid
-from ...student.student.models import Student
-from ...student.studentgroup.models import StudentGroup
 
 
 class Lesson(TimeStampModel):

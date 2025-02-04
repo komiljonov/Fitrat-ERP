@@ -3,7 +3,7 @@ from django.db import models
 from ...command.models import TimeStampModel
 
 from ...upload.models import File
-
+from ...student.groups.models import Group
 
 
 class Subject(TimeStampModel):
@@ -30,13 +30,6 @@ class Theme(TimeStampModel):
 
     title = models.CharField(max_length=100)
     description = models.TextField()
-    video : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
-                                       related_name='videos',)
-    file : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
-                                      related_name='files')
-    photo : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
-                                       related_name='photos')
-
 
     type = models.CharField(choices=[
         ('HOMEWORK', 'HOMEWORK'),
@@ -45,5 +38,17 @@ class Theme(TimeStampModel):
     ],
     default='HOMEWORK',
     max_length=100,)
+
+    group: "Group" = models.ForeignKey(
+        "groups.Group", on_delete=models.CASCADE, related_name="courses_themes"
+    )
+
+    video : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
+                                       related_name='videos',)
+    file : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
+                                      related_name='files')
+    photo : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True,blank=True,
+                                       related_name='photos')
+
     def __str__(self):
         return f"{self.subject} - {self.title}  {self.type}"

@@ -16,7 +16,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         model = Attendance
         fields = [
             'id',
-            'lesson',
+            'theme',
             'lid',
             'student',
             'teacher',
@@ -27,8 +27,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
         ]
 
     def get_teacher(self, obj):
-        teacher = (Attendance.objects.filter(student=obj.student, lesson=obj.lesson)
-                   .values('lesson__group',"lesson__group__teacher__first_name", "lesson__group__teacher__last_name"))
+        teacher = (Attendance.objects.filter(student=obj.student, theme=obj.theme)
+                   .values('theme__group',"theme__group__teacher__first_name", "theme__group__teacher__last_name"))
         return teacher
 
     def to_representation(self, instance):

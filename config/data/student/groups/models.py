@@ -1,11 +1,11 @@
-from django.db import models
-
-from dateutil.utils import today
 from django.utils import timezone
 from django.utils.timezone import now
+from django.db import models
+from ...command.models import TimeStampModel
 
-from ..course.models import Course
-from ..subject.models import *
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..course.models import Course
 from ...account.models import CustomUser
 
 

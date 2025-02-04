@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import Student, FirstLLesson
+from .models import  FirstLLesson
 from ..studentgroup.models import StudentGroup
 from ...notifications.models import Notification
 
