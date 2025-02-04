@@ -6,6 +6,7 @@ from .models import Group, Day, Room, SecondaryGroup
 from ..attendance.models import Attendance
 from ..lesson.models import Lesson
 from ..studentgroup.models import StudentGroup
+from ..subject.models import Theme
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 
@@ -46,18 +47,18 @@ class GroupSerializer(serializers.ModelSerializer):
         ]
 
     def get_lessons_count(self, obj):
-        # total_lessons = Lesson.objects.filter(group=obj).count()
-        #
-        # attended_lessons = (
-        #     Attendance.objects.filter(lesson__group=obj)
-        #     .values("lesson")  # Group by lesson
-        #     .annotate(attended_count=Count("id"))  # Count attendance per lesson
-        #     .count()  # Count unique lessons with attendance records
-        # )
+        total_lessons = Theme.objects.filter(group=obj).count()
+
+        attended_lessons = (
+            Attendance.objects.filter(theme__group=obj)
+            .values("theme")  # Group by lesson
+            .annotate(attended_count=Count("id"))  # Count attendance per lesson
+            .count()  # Count unique lessons with attendance records
+        )
 
         return {
-            "lessons": 0,  # Total lessons in the group
-            "attended": 0,  # Lessons that have attendance records
+            "lessons": total_lessons,  # Total lessons in the group
+            "attended": attended_lessons,  # Lessons that have attendance records
         }
 
     def get_student_count(self, obj):
