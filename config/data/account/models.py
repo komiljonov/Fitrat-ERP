@@ -41,6 +41,8 @@ class CustomUser(AbstractUser):
 
     balance = models.FloatField(default=0)
 
+    salary = models.FloatField(default=0)
+
     ball = models.FloatField(default=0)
 
     enter = models.DateTimeField(null=True,blank=True)

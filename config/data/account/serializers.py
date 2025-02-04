@@ -14,7 +14,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            "full_name", "first_name", "last_name", "phone", "role","password",
+            "full_name", "first_name", "last_name", "phone", "role","password","salary",
             "photo", "filial", "balance", "ball",
             "enter", "leave", "date_of_birth", "compensation", "bonus"
         )
@@ -90,7 +90,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['phone', 'full_name', 'first_name', 'last_name', 'password', 'role', 'photo', 'date_of_birth', 'compensation', 'bonus']
+        fields = ['phone', 'full_name', 'first_name', 'last_name', 'password', 'role', 'photo', "salary",
+                  'date_of_birth', 'compensation', 'bonus']
 
     def update(self, instance, validated_data):
         # Extract and update the password if provided
@@ -123,7 +124,7 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name","first_name","last_name",'role',
+        fields = ['id', 'phone', "full_name","first_name","last_name",'role',"salary",
                   "photo", "filial", ]
 
     def to_representation(self, instance):
@@ -141,7 +142,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "phone", "role",
-            "photo", "filial", "balance", "ball",
+            "photo", "filial", "balance", "ball","salary",
             "enter", "leave", "date_of_birth", "created_at",
             "updated_at", "compensation", "bonus"
         )
