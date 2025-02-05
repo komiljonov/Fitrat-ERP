@@ -1,20 +1,16 @@
-from datetime import date, datetime
+from datetime import date
 
 from django.db.models import Q
 from rest_framework import serializers
+
 from .models import Attendance
-from ..groups.lesson_date_calculator import calculate_lessons
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
-from ..studentgroup.models import StudentGroup
 from ..subject.models import Theme
 from ..subject.serializers import ThemeSerializer
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
 
-from datetime import date, datetime
-
-from datetime import datetime, timedelta
 
 class AttendanceSerializer(serializers.ModelSerializer):
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
@@ -53,14 +49,21 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def get_is_attendance(self, obj):
         # Determine whether obj_student is a Student or a Lid
         obj_student = obj.student if obj.student else obj.lid
+        print(obj_student)
 
         # Ensure obj_student is a Lid instance before querying with it
         if isinstance(obj_student, Lid):
-            att = Attendance.objects.filter(Q(lid=obj_student), created_at__gte=date.today())
+            att = (Attendance.objects.filter(Q(lid=obj_student), created_at__gte=date.today())
+                   .values('reason'))
         else:
-            att = Attendance.objects.filter(Q(student=obj_student), created_at__gte=date.today())
+            att = (Attendance.objects.filter(Q(student=obj_student), created_at__gte=date.today())
+                   .values('reason'))
 
-        return att
+
+        print(att)
+
+        # Serialize the queryset
+        return list(att)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)

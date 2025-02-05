@@ -7,8 +7,8 @@ def calculate_lessons(start_date, end_date, lesson_type, holidays, days_off):
     Calculate lesson schedule based on start and end dates, lesson type (specific weekdays), holidays, and days off.
 
     Args:
-        start_date (datetime.date): Start date of the group.
-        end_date (datetime.date): End date of the group.
+        start_date (str): Start date of the group (YYYY-MM-DD).
+        end_date (str): End date of the group (YYYY-MM-DD).
         lesson_type (str): Comma-separated weekdays for the lesson schedule (e.g., "Monday,Wednesday,Friday").
         holidays (list): List of holidays (YYYY-MM-DD).
         days_off (list): List of day-off weekdays (e.g., ["Sunday"]).
@@ -16,23 +16,24 @@ def calculate_lessons(start_date, end_date, lesson_type, holidays, days_off):
     Returns:
         dict: Dictionary where the key is the month and the value is a list of scheduled lesson dates (YYYY-MM-DD).
     """
-    # Ensure the start_date and end_date are datetime objects
-    if isinstance(start_date, datetime):
-        start_date = start_date.date()
-    if isinstance(end_date, datetime):
-        end_date = end_date.date()
+
+    # Convert string date inputs to datetime objects
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
     # Filter out empty strings from holidays list
-    holidays = set(datetime.strptime(date, "%Y-%m-%d").date() for date in holidays if date)
+    holidays = set(datetime.strptime(date, "%Y-%m-%d") for date in holidays if date)
 
     # Days off as numbers (Monday=0, Sunday=6)
-    days_off_numbers = {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].index(day) for day in days_off}
+    days_off_numbers = {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].index(day) for
+                        day in days_off}
 
     # Split the lesson_type into a list of days (e.g., "Monday,Wednesday,Friday" -> ["Monday", "Wednesday", "Friday"])
     lesson_days = [day.strip() for day in lesson_type.split(',')]
 
     # Weekday mappings for lesson days
-    lesson_day_numbers = {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].index(day) for day in lesson_days}
+    lesson_day_numbers = {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].index(day) for
+                          day in lesson_days}
 
     # Generate all dates in the range
     all_dates = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
