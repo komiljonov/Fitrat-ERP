@@ -121,6 +121,9 @@ class FilialRestrictedQuerySetMixin:
     def get_queryset(self):
         # Get the base queryset from the view
         queryset = super().get_queryset()
+        role = self.request.query_params.get('role', None)
+        if role:
+            return CustomUser.objects.filter(role=role)
 
         # Get the user's filial
         user = self.request.user

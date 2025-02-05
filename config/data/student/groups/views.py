@@ -17,11 +17,14 @@ class StudentGroupsView(ListCreateAPIView):
     serializer_class = GroupSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
 
-    search_fields = ('name', 'scheduled_day_type__name', "status")
+    search_fields = ('name', 'scheduled_day_type__name', "status",'teacher__id',
+                     'course__subject__id','course__level__id')
     ordering_fields = ('name', 'scheduled_day_type', 'start_date',
-                       'end_date', 'price_type', "status")
+                       'end_date', 'price_type', "status",'teacher__id',
+                     'course__subject__id','course__level__id')
     filterset_fields = ('name', 'scheduled_day_type__name',
-                        'price_type', "status")
+                        'price_type', "status",'teacher__id',
+                     'course__subject__id','course__level__id')
 
 
 class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):

@@ -48,7 +48,6 @@ class UserList(FilialRestrictedQuerySetMixin,ListAPIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
     queryset = CustomUser.objects.all().order_by('id')
-
     serializer_class = UserListSerializer
 
 
@@ -89,7 +88,7 @@ class UserUpdateAPIView(APIView):
 
     def put(self, request, *args, **kwargs):
         user = request.user
-        serializer = UserUpdateSerializer(user, data=request.data, partial=True)  # Allow partial updates
+        serializer = UserUpdateSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

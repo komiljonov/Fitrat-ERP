@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
@@ -46,10 +47,15 @@ class LessonAttendanceList(ListAPIView):
     # permission_classes = [RoleBasedPermission]
 
     def get_queryset(self, *args, **kwargs):
+        themes = self.request.query_params.getlist('theme', None)
+        if themes:
+            # Create a Q object that checks if all themes are present in the attendance's theme field
+            query = Q()
+            for theme in themes:
+                query &= Q(theme__id=theme)
+            return Attendance.objects.filter(query)
+
         id = self.kwargs.get('pk')
-
-        lesson = Lesson.objects.filter(id=id).first()
-        if lesson:
-            return Attendance.objects.filter(lesson=lesson)
-
+        if id:
+            return Attendance.objects.filter(theme__course__group__id=id).first()
         return Attendance.objects.none()

@@ -1,9 +1,13 @@
+from datetime import date
+
+from dateutil.relativedelta import relativedelta
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Student
 from ..attendance.models import Attendance
+from ..groups.lesson_date_calculator import calculate_lessons
 from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup
 from ...account.permission import PhoneAuthBackend
