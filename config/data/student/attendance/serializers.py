@@ -17,7 +17,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     teacher = serializers.SerializerMethodField()
-    is_attendance = serializers.SerializerMethodField()
 
     class Meta:
         model = Attendance
@@ -30,7 +29,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
             'teacher',
             'reason',
             'remarks',
-            'is_attendance',
             'created_at',
             'updated_at',
         ]
@@ -46,24 +44,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 return teacher[0]
         return None
 
-    def get_is_attendance(self, obj):
-        # Determine whether obj_student is a Student or a Lid
-        obj_student = obj.student if obj.student else obj.lid
-        print(obj_student)
-
-        # Ensure obj_student is a Lid instance before querying with it
-        if isinstance(obj_student, Lid):
-            att = (Attendance.objects.filter(Q(lid=obj_student), created_at__gte=date.today())
-                   .values('reason'))
-        else:
-            att = (Attendance.objects.filter(Q(student=obj_student), created_at__gte=date.today())
-                   .values('reason'))
-
-
-        print(att)
-
-        # Serialize the queryset
-        return list(att)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)

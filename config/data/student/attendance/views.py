@@ -48,22 +48,26 @@ class AttendanceListView(ListAPIView):
 
 class LessonAttendanceList(ListAPIView):
     serializer_class = AttendanceSerializer
-    queryset = Attendance.objects.all()
 
     def get_queryset(self, *args, **kwargs):
         themes = self.request.query_params.getlist('theme', None)
+        group_id = self.kwargs.get('pk', None)
+
+        query = Q()  # Start with an empty query to chain filters
+
+        # If themes are provided, filter by theme IDs
         if themes:
-            query = Q()
+            theme_query = Q()
             for theme in themes:
-                query &= Q(theme__id=theme)
-            return Attendance.objects.filter(query)
+                theme_query &= Q(theme__id=theme)
+            query &= theme_query  # Combine the theme filter with the existing query
 
-        id = self.kwargs.get('pk')
-        if id:
-            # Ensure we return a queryset, not a single object
-            return Attendance.objects.filter(theme__course__group__id=id)
+        # If group ID is provided, filter by group ID
+        if group_id:
+            query &= Q(theme__course__group__id=group_id)
 
-        return Attendance.objects.none()
+        # Apply the combined query to the Attendance model
+        return Attendance.objects.filter(query)
 
     def get_paginated_response(self, data):
         return Response(data)
