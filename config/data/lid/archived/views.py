@@ -46,15 +46,10 @@ class StudentArchivedListAPIView(ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        queryset = Student.objects.all()
-        serializer_class = ArchivedSerializer
-        permission_classes = (IsAuthenticated,)
+        queryset = Archived.objects.all()
 
-        def get_queryset(self):
-            queryset = Archived.objects.all()
-
-            id = self.request.query_params.get('id', None)
-            if id:
-                queryset = queryset.filter(Q(student__id=id) | Q(lid__id=id))
-            return queryset
+        id = self.request.query_params.get('id', None)
+        if id:
+            queryset = queryset.filter(Q(student__id=id) | Q(lid__id=id))
+        return queryset
 
