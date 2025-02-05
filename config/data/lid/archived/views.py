@@ -49,6 +49,7 @@ class StudentArchivedListAPIView(ListAPIView):
         queryset = Archived.objects.all()
 
         id = self.request.query_params.get('id', None)
+        print(id)
         if id:
             queryset = queryset.filter(Q(student__id=id) | Q(lid__id=id))
         return queryset
