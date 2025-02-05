@@ -65,57 +65,60 @@ class LessonAttendanceList(ListAPIView):
 
         return Attendance.objects.none()
 
+    def get_paginated_response(self, data):
+        return Response(data)
 
 
 
-class FilterAttendanceView(APIView):
-    def get(self, request, *args, **kwargs):
-        # Get parameters
-        themes = request.query_params.getlist('theme', [])
-        group_id = request.query_params.get('id', None)
-        today = timezone.now().date()
 
-        # Debugging
-        print(f"Themes: {themes}")
-        print(f"Group ID: {group_id}")
-        print(f"Date: {today}")
-
-        if not themes:
-            return Response({'detail': 'No themes provided.'}, status=status.HTTP_400_BAD_REQUEST)
-        if not group_id:
-            return Response({'detail': 'No group_id provided.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            student_group = StudentGroup.objects.filter(group__id=group_id)
-            print(student_group)
-        except StudentGroup.DoesNotExist:
-            return Response({'detail': 'Group not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        students_or_lids_with_attendance = []
-
-        for student_or_lid in student_group:
-            if isinstance(student_or_lid, Student):
-                # Query for attendance using student
-                query = Q(created_at=today) & Q(theme__id__in=themes) & Q(student=student_or_lid)
-                attendance = Attendance.objects.filter(query).first()
-
-                students_or_lids_with_attendance.append({
-                    'student_or_lid': StudentSerializer(student_or_lid).data,
-                    'attendance': attendance.reason if attendance else None
-                })
-            elif isinstance(student_or_lid, Lid):
-                # Query for attendance using lid
-                query = Q(created_at=today) & Q(theme__id__in=themes) & Q(lid=student_or_lid)
-                attendance = Attendance.objects.filter(query).first()
-
-                students_or_lids_with_attendance.append({
-                    'student_or_lid': LidSerializer(student_or_lid).data,
-                    'attendance': attendance.reason if attendance else None
-                })
-
-        # Prepare final response data
-        data = {
-            'students_or_lids_with_attendance': students_or_lids_with_attendance,
-        }
-
-        return Response(data, status=status.HTTP_200_OK)
+# class FilterAttendanceView(APIView):
+#     def get(self, request, *args, **kwargs):
+#         # Get parameters
+#         themes = request.query_params.getlist('theme', [])
+#         group_id = request.query_params.get('id', None)
+#         today = timezone.now().date()
+#
+#         # Debugging
+#         print(f"Themes: {themes}")
+#         print(f"Group ID: {group_id}")
+#         print(f"Date: {today}")
+#
+#         if not themes:
+#             return Response({'detail': 'No themes provided.'}, status=status.HTTP_400_BAD_REQUEST)
+#         if not group_id:
+#             return Response({'detail': 'No group_id provided.'}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         try:
+#             student_group = StudentGroup.objects.filter(group__id=group_id)
+#             print(student_group)
+#         except StudentGroup.DoesNotExist:
+#             return Response({'detail': 'Group not found.'}, status=status.HTTP_404_NOT_FOUND)
+#
+#         students_or_lids_with_attendance = []
+#
+#         for student_or_lid in student_group:
+#             if isinstance(student_or_lid, Student):
+#                 # Query for attendance using student
+#                 query = Q(created_at=today) & Q(theme__id__in=themes) & Q(student=student_or_lid)
+#                 attendance = Attendance.objects.filter(query).first()
+#
+#                 students_or_lids_with_attendance.append({
+#                     'student_or_lid': StudentSerializer(student_or_lid).data,
+#                     'attendance': attendance.reason if attendance else None
+#                 })
+#             elif isinstance(student_or_lid, Lid):
+#                 # Query for attendance using lid
+#                 query = Q(created_at=today) & Q(theme__id__in=themes) & Q(lid=student_or_lid)
+#                 attendance = Attendance.objects.filter(query).first()
+#
+#                 students_or_lids_with_attendance.append({
+#                     'student_or_lid': LidSerializer(student_or_lid).data,
+#                     'attendance': attendance.reason if attendance else None
+#                 })
+#
+#         # Prepare final response data
+#         data = {
+#             'students_or_lids_with_attendance': students_or_lids_with_attendance,
+#         }
+#
+#         return Response(data, status=status.HTTP_200_OK)
