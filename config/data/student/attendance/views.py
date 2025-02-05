@@ -44,12 +44,10 @@ class AttendanceListView(ListAPIView):
 class LessonAttendanceList(ListAPIView):
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all()
-    # permission_classes = [RoleBasedPermission]
 
     def get_queryset(self, *args, **kwargs):
         themes = self.request.query_params.getlist('theme', None)
         if themes:
-            # Create a Q object that checks if all themes are present in the attendance's theme field
             query = Q()
             for theme in themes:
                 query &= Q(theme__id=theme)
@@ -57,5 +55,7 @@ class LessonAttendanceList(ListAPIView):
 
         id = self.kwargs.get('pk')
         if id:
-            return Attendance.objects.filter(theme__course__group__id=id).first()
+            # Ensure we return a queryset, not a single object
+            return Attendance.objects.filter(theme__course__group__id=id)
+
         return Attendance.objects.none()
