@@ -26,7 +26,7 @@ class Task(TimeStampModel):
             ("COMPLATED","COMPLATED"),
             ("EXPIRED",'EXPIRED'),
             ("ONGOING",'ONGOING'),
-            ("PAUSED",'PAUSED'),
+            ("SOON",'SOON'),
             ("CANCELLED","CANCELLED")
                  ],
         default="WAITING",
