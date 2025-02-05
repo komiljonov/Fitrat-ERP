@@ -16,6 +16,7 @@ class SubjectSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'course',
+            'has_level',
             'all_themes',
             'label',
         ]
