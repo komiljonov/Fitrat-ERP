@@ -1,11 +1,17 @@
+from django.db.models import Q
+from django.utils import timezone
+from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      ListAPIView)
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import Attendance
+from .models import Attendance, Student  # Import necessary models
 from .serializers import AttendanceSerializer
+from .serializers import StudentSerializer  # Ensure this serializer exists
 from ..studentgroup.models import StudentGroup
 # from ...account.permission import RoleBasedPermission
 from ...lid.new_lid.models import Lid
@@ -60,13 +66,6 @@ class LessonAttendanceList(ListAPIView):
         return Attendance.objects.none()
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils import timezone
-from django.db.models import Q
-from .models import Attendance, Student  # Import necessary models
-from .serializers import StudentSerializer  # Ensure this serializer exists
 
 
 class FilterAttendanceView(APIView):
@@ -88,28 +87,27 @@ class FilterAttendanceView(APIView):
 
         try:
             student_group = StudentGroup.objects.filter(group__id=group_id)
-            students_in_group = [(sg.student if sg.student else sg.lid) for sg in student_group]
+            print(student_group)
         except StudentGroup.DoesNotExist:
             return Response({'detail': 'Group not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         students_or_lids_with_attendance = []
 
-        for student_or_lid in students_in_group:
+        for student_or_lid in student_group:
             if isinstance(student_or_lid, Student):
                 # Query for attendance using student
                 query = Q(created_at=today) & Q(theme__id__in=themes) & Q(student=student_or_lid)
-            else:
-                query = Q(created_at=today) & Q(theme__id__in=themes) & Q(lid=student_or_lid)
+                attendance = Attendance.objects.filter(query).first()
 
-            attendance = Attendance.objects.filter(query).first()
-
-
-            if isinstance(student_or_lid, Student):
                 students_or_lids_with_attendance.append({
                     'student_or_lid': StudentSerializer(student_or_lid).data,
                     'attendance': attendance.reason if attendance else None
                 })
-            else:
+            elif isinstance(student_or_lid, Lid):
+                # Query for attendance using lid
+                query = Q(created_at=today) & Q(theme__id__in=themes) & Q(lid=student_or_lid)
+                attendance = Attendance.objects.filter(query).first()
+
                 students_or_lids_with_attendance.append({
                     'student_or_lid': LidSerializer(student_or_lid).data,
                     'attendance': attendance.reason if attendance else None
@@ -121,4 +119,3 @@ class FilterAttendanceView(APIView):
         }
 
         return Response(data, status=status.HTTP_200_OK)
-
