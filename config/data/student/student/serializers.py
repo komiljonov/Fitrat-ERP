@@ -1,13 +1,9 @@
-from datetime import date
-
-from dateutil.relativedelta import relativedelta
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Student
 from ..attendance.models import Attendance
-from ..groups.lesson_date_calculator import calculate_lessons
 from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup
 from ...account.permission import PhoneAuthBackend
@@ -17,7 +13,6 @@ from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...parents.models import Relatives
-from ...parents.serializers import RelativesSerializer
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -96,10 +91,18 @@ class StudentSerializer(serializers.ModelSerializer):
         return attendance.count() + 1
 
     def update(self, instance, validated_data):
-        if validated_data.get('password'):
-            password = validated_data.get('password')
+        # Check if 'password' is in validated_data and is not None
+        password = validated_data.get('password')
+        if password:
             instance.set_password(password)
-            instance.save()
+
+        # Loop through the validated_data and update other fields
+        for attr, value in validated_data.items():
+            if attr != 'password':  # Skip password field
+                setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
