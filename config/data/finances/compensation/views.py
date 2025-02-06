@@ -6,8 +6,9 @@ from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIVi
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Bonus,Compensation
-from .serializers import BonusSerializer,CompensationSerializer
+from .models import Bonus, Compensation, Page
+from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer
+
 
 class BonusList(ListCreateAPIView):
     queryset = Bonus.objects.all()
@@ -62,3 +63,10 @@ class CompensationNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+
+class PagesList(ListCreateAPIView):
+    queryset = Page.objects.all()
+    serializer_class = PagesSerializer
+    permission_classes = [IsAuthenticated]

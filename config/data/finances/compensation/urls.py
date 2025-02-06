@@ -12,4 +12,5 @@ urlpatterns = [
     path('compensation/<uuid:pk>/', CompensationDetail.as_view()),
     path('compensation-no-pg/', CompensationNoPG.as_view()),
 
+    path('pages/', CompensationList.as_view()),
 ]
