@@ -3,8 +3,8 @@ from rest_framework.serializers import ModelSerializer
 
 from .models import CustomUser
 from ..account.permission import PhoneAuthBackend
-from ..finances.compensation.models import Compensation, Bonus
-from ..finances.compensation.serializers import CompensationSerializer, BonusSerializer
+from ..finances.compensation.models import Compensation, Bonus, Page
+from ..finances.compensation.serializers import CompensationSerializer, BonusSerializer, PagesSerializer
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
@@ -89,6 +89,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=128, write_only=True, required=False)
     compensation = serializers.PrimaryKeyRelatedField(queryset=Compensation.objects.all(), many=True, required=False)
     bonus = serializers.PrimaryKeyRelatedField(queryset=Bonus.objects.all(), many=True, required=False)
+    pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, required=False)
 
     class Meta:
         model = CustomUser
@@ -109,7 +110,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         # Update other fields (except compensation and bonus)
         for attr, value in validated_data.items():
-            if attr not in ['compensation', 'bonus', 'phone']:  # Skip phone here
+            if attr not in ['compensation', 'bonus','pages', 'phone']:  # Skip phone here
                 setattr(instance, attr, value)
 
         # Handle many-to-many relationships correctly
@@ -142,11 +143,12 @@ class UserSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     compensation = serializers.PrimaryKeyRelatedField(queryset=Compensation.objects.all(), many=True, allow_null=True)
     bonus = serializers.PrimaryKeyRelatedField(queryset=Bonus.objects.all(), many=True, allow_null=True)
+    pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, allow_null=True)
 
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "phone", "role",
+            "id", "full_name", "first_name", "last_name", "phone", "role","pages",
             "photo", "filial", "balance", "ball","salary",
             "enter", "leave", "date_of_birth", "created_at",
             "updated_at", "compensation", "bonus"
@@ -157,6 +159,7 @@ class UserSerializer(serializers.ModelSerializer):
         rep["photo"] = FileUploadSerializer(instance.photo).data if instance.photo else None
         rep["compensation"] = CompensationSerializer(instance.compensation.all(), many=True).data
         rep["bonus"] = BonusSerializer(instance.bonus.all(), many=True).data
+        rep["pages"] = PagesSerializer(instance.pages.all(), many=True).data
         return rep
 
     def create(self, validated_data):

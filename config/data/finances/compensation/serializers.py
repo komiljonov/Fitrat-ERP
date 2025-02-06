@@ -20,3 +20,11 @@ class CompensationSerializer(serializers.ModelSerializer):
             'name',
             'amount',
         ]
+
+class PagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Compensation
+        fields = [
+            'id',
+            'name',
+        ]
