@@ -59,15 +59,14 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     if created:
         if (
                 instance.reason in ["IS_PRESENT", "UNREASONED"]
-                and instance.theme.exists()  # Check if there are related themes
+                and instance.group.exists()  # Check if there are related themes
         ):
-            for theme in instance.theme.all():  # Iterate over all related themes
-                if theme.group.price_type == "DAILY":
-                    if instance.student:
-                        instance.student.balance -= theme.group.price
-                        instance.student.save()
-                    else:
-                        print("Attendance does not have a related student.")
+            if instance.group.price_type == "DAILY":
+                if instance.student:
+                    instance.student.balance -= instance.group.price
+                    instance.student.save()
+                else:
+                    print("Attendance does not have a related student.")
 
     if not created:
         if instance.reason == "REASONED":

@@ -24,6 +24,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             'id',
             'theme',
             'repeated',
+            'group',
             'lid',
             'student',
             'teacher',

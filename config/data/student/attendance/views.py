@@ -58,7 +58,7 @@ class LessonAttendanceList(ListAPIView):
 
         # If group ID is provided, filter by group ID
         if group_id:
-            query &= Q(theme__course__group__id=group_id)
+            query &= Q(group__id=group_id)
 
         return Attendance.objects.filter(query)
 

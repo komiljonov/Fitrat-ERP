@@ -5,10 +5,12 @@ if TYPE_CHECKING:
 from ...command.models import TimeStampModel
 from ...lid.new_lid.models import Lid
 from ...student.student.models import Student
+from ...student.groups.models import Group
 
 
 class Attendance(TimeStampModel):
     theme : 'Theme' = models.ManyToManyField('subject.Theme', null=True, blank=True,related_name='attendance_theme')
+    group : "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE, null=True, blank=True)
     repeated = models.BooleanField(default=False)
     lid : 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True)
     student : 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True)
