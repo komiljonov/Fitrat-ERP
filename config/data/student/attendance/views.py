@@ -39,6 +39,7 @@ class AttendanceListView(ListAPIView):
 
         raise NotFound("No attendance records found for the given ID.")
 
+
 class LessonAttendanceList(ListAPIView):
     serializer_class = AttendanceSerializer
 
@@ -53,13 +54,12 @@ class LessonAttendanceList(ListAPIView):
             theme_query = Q()
             for theme in themes:
                 theme_query &= Q(theme__id=theme)
-            query &= theme_query  # Combine the theme filter with the existing query
+            query &= theme_query
 
         # If group ID is provided, filter by group ID
         if group_id:
             query &= Q(theme__course__group__id=group_id)
 
-        # Apply the combined query to the Attendance model
         return Attendance.objects.filter(query)
 
     def get_paginated_response(self, data):
