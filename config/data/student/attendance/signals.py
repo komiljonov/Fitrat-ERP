@@ -59,7 +59,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     if created:
         if (
                 instance.reason in ["IS_PRESENT", "UNREASONED"]
-                and instance.group.exists()  # Check if there are related themes
+                and instance.group
         ):
             if instance.group.price_type == "DAILY":
                 if instance.student:
