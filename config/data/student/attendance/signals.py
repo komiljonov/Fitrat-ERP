@@ -18,6 +18,8 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
             if instance.reason == "IS_PRESENT":
                 instance.lid.is_student = True
                 instance.lid.save()
+
+
             else:
                 stage_name = f"{attendances_count} darsga qatnashmagan"
                 Notification.objects.create(
@@ -80,3 +82,9 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 )
             else:
                 print("Attendance does not have a related student.")
+
+@receiver(post_save, sender=Attendance)
+def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
+    if created:
+        pass
+

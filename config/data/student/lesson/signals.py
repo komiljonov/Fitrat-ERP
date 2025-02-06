@@ -12,15 +12,15 @@ def on_create(sender, instance: FirstLLesson, created, **kwargs):
             student=None,
             lid=instance.lid if instance.lid else None,
         )
-        notif = Notification.objects.create(
-            user=instance.creator,
-            comment="First Lesson",
-            come_from=instance,
-        )
-        if notif:
-            print(notif)
-        else:
-            return "Notification not created couse creator is not here ???"
+        # notif = Notification.objects.create(
+        #     user=instance.creator,
+        #     comment="First Lesson",
+        #     come_from=instance,
+        # )
+        # if notif:
+        #     print(notif)
+        # else:
+        #     return "Notification not created couse creator is not here ???"
 
     if created and instance.lid.lid_stage_type == "ORDERED_LID":
         instance.lid.ordered_stages = "BIRINCHI_DARS_BELGILANGAN"

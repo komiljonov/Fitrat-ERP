@@ -60,7 +60,8 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.save()
 
             # Update attendance records
-            Attendance.objects.filter(lid=instance).update(student=student)
+            Attendance.objects.filter(lid=instance).update(student=student,lid=None)
+
             Relatives.objects.filter(lid=instance).update(student=student)
             # Archive the Lid
             post_save.disconnect(on_details_create, sender=Lid)
