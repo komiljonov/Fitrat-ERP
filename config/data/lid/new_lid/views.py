@@ -230,7 +230,7 @@ class LidStatisticsView(ListAPIView):
             order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",filial__in=[None,user.filial], call_operator=user).count()
             archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",filial__in=[None,user.filial], call_operator=user).count()
 
-        if user.role == "ADMINISTRATOR":
+        elif user.role == "ADMINISTRATOR":
             leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
                                              filial__in=[None, user.filial]).count()
             new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False, call_operator=None,
