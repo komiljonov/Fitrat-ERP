@@ -1,17 +1,12 @@
-from datetime import date, timedelta
-
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 
 from .models import Lesson, FirstLLesson
 from ..attendance.models import Attendance
-from ..groups.lesson_date_calculator import calculate_lessons
+from ..course.models import Course
 from ..groups.models import Group
 from ..groups.serializers import GroupSerializer
-from ..student.models import Student
-from ..student.serializers import StudentSerializer
-from ..studentgroup.models import StudentGroup
-from ..studentgroup.serializers import StudentsGroupSerializer
+from ..subject.models import Subject
 from ...lid.new_lid.models import Lid
 
 
@@ -73,42 +68,53 @@ class LessonSerializer(serializers.ModelSerializer):
 
 
 class LessonScheduleSerializer(serializers.ModelSerializer):
-    group_id = serializers.UUIDField(write_only=True)
-    subject_id = serializers.UUIDField(write_only=True)
+    teacher_name = serializers.SerializerMethodField()
+    room_number = serializers.SerializerMethodField()
+    group_name = serializers.SerializerMethodField()
+    scheduled_day_type = serializers.SerializerMethodField()
+    started_at = serializers.SerializerMethodField()
+    ended_at = serializers.SerializerMethodField()
 
     class Meta:
-        model = Lesson
+        model = Group
         fields = [
-            'id', 'name', 'group_id', 'subject_id',
-            'day', 'start_time', 'end_time', 'comment', 'lesson_status', 'lessons_count'
+            'subject_name',
+            'subject_label',
+            'teacher_name',
+            'room_number',
+            'group_name',
+            'scheduled_day_type',
+            'started_at',
+            'ended_at'
         ]
-        read_only_fields = ['id', 'lesson_status', 'lessons_count']
 
-    def validate(self, data):
-        group_id = data.get('group_id')
-        group = Group.objects.get(id=group_id)
-        room_number = group.room_number
-        day = data.get('day')
-        start_time = data.get('start_time')
-        end_time = data.get('end_time')
+    def get_subject_name(self, obj):
+        subject = Group.objects.get(id=obj.id).course.subject.name
+        return subject
 
-        # Check if group exists
-        try:
-            group = Group.objects.get(id=group_id)
-        except Group.DoesNotExist:
-            raise serializers.ValidationError({"group_id": "Group not found."})
-        data['group'] = group  # Attach group object for later use
+    def get_subject_label(self, obj):
+        subject = Group.objects.get(id=obj.id).course.subject.label
+        return subject
 
-        # Check for scheduling conflicts
-        if Lesson.objects.filter(
-                room_number=room_number,
-                day=day,
-                start_time__lt=end_time,  # Overlap: Starts before another lesson ends
-                end_time__gt=start_time  # Overlap: Ends after another lesson starts
-        ).exists():
-            raise serializers.ValidationError({"schedule": "Conflict detected with an existing lesson."})
+    def get_teacher_name(self, obj):
+        teacher = obj.teacher
+        return teacher.full_name if teacher else None
 
-        return data
+    def get_room_number(self, obj):
+        room = Group.objects.get(id=obj.id).room_number.room_number
+        return room
+
+    def get_group_name(self, obj):
+        return obj.name
+
+    def get_scheduled_day_type(self, obj):
+        return [day.name for day in obj.scheduled_day_type.all()]
+
+    def get_started_at(self, obj):
+        return obj.started_at.strftime('%H:%M')
+
+    def get_ended_at(self, obj):
+        return obj.ended_at.strftime('%H:%M')
 
 
 class FirstLessonSerializer(serializers.ModelSerializer):

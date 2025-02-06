@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -9,6 +11,7 @@ from rest_framework.views import APIView
 from .models import Group, Room, SecondaryGroup, Day
 from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer, \
     DaySerializer
+from ..lesson.serializers import LessonScheduleSerializer
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -181,5 +184,61 @@ class GroupSchedule(ListAPIView):
                 created_at__lte=end_date,
             ).order_by('started_at'))
         return queryset
+
+
+class LessonScheduleListApi(ListAPIView):
+    serializer_class = LessonScheduleSerializer
+
+    def get_queryset(self):
+        queryset = Group.objects.all()
+
+        # Filter by date
+        lesson_date = self.request.query_params.get('date')
+        if lesson_date:
+            try:
+                lesson_date = datetime.strptime(lesson_date, '%Y-%m-%d')
+                queryset = queryset.filter(
+                    start_date__lte=lesson_date, finish_date__gte=lesson_date
+                )
+            except ValueError:
+                return Response({"detail": "Invalid date format. Please use YYYY-MM-DD."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        # Filter by room
+        room = self.request.query_params.get('room')
+        if room:
+            queryset = queryset.filter(room_number__room_number=room)
+
+        # Filter by teacher
+        teacher_id = self.request.query_params.get('teacher')
+        if teacher_id:
+            queryset = queryset.filter(teacher_id=teacher_id)
+
+        # Filter by subject
+        subject_id = self.request.query_params.get('subject')
+        if subject_id:
+            queryset = queryset.filter(course__subject_id=subject_id)
+
+        # Filter by group name
+        group_name = self.request.query_params.get('group_name')
+        if group_name:
+            queryset = queryset.filter(name__icontains=group_name)
+
+        # Filter by secondary group
+        secondary_group = self.request.query_params.get('secondary_group')
+        if secondary_group:
+            queryset = queryset.filter(secondarygroup__name__icontains=secondary_group)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        # Serialize the queryset
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Return the serialized data
+        return Response(serializer.data)
+
 
 

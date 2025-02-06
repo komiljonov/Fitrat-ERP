@@ -73,6 +73,8 @@ class GroupStudentList(ListAPIView):
         queryset = StudentGroup.objects.filter(group__id=group_id)  # Filter by the group id
         return queryset
 
+    def get_paginated_response(self, data):
+        return Response(data)
 
 class GroupStudentDetail(ListAPIView):
     permission_classes = [IsAuthenticated]

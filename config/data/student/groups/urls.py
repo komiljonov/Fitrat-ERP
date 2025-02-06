@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import StudentGroupsView, StudentRetrieveUpdateDestroyAPIView, StudentListAPIView, TeachersGroupsView, \
     RoomListAPIView, RoomRetrieveUpdateDestroyAPIView, RoomNoPG, SecondaryGroupsView, \
-    SecondaryGroupRetrieveUpdateDestroyAPIView, SecondaryNoPG, DaysNoPG, DaysAPIView, GroupSchedule
+    SecondaryGroupRetrieveUpdateDestroyAPIView, SecondaryNoPG, DaysNoPG, DaysAPIView, LessonScheduleListApi
 
 urlpatterns = [
     path('', StudentGroupsView.as_view(), name='group-list'),
@@ -12,7 +12,9 @@ urlpatterns = [
     path('teacher/<uuid:pk>/', TeachersGroupsView.as_view(), name='student-detail'),
 
 
-    path('schedule/',GroupSchedule.as_view(), name='group-schedule'),
+    path('schedule/',LessonScheduleListApi.as_view(), name='group-schedule'),
+
+
 
     path('room',RoomListAPIView.as_view(), name='room-list'),
     path('room/<uuid:pk>/', RoomRetrieveUpdateDestroyAPIView.as_view(), name='room-detail'),
