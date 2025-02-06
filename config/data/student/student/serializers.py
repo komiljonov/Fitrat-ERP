@@ -1,3 +1,5 @@
+import hashlib
+
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -16,14 +18,15 @@ from ...parents.models import Relatives
 
 
 class StudentSerializer(serializers.ModelSerializer):
-    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(),allow_null=True)
-    marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(),allow_null=True)
+    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
+    marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
     test = serializers.SerializerMethodField()
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
 
-    password  = serializers.CharField(write_only=True,allow_null=True)
+    # Use CharField for password
+    password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -42,7 +45,6 @@ class StudentSerializer(serializers.ModelSerializer):
             "ball",
             "filial",
             "marketing_channel",
-
             "student_stage_type",
             'balance_status',
             'balance',
@@ -51,19 +53,13 @@ class StudentSerializer(serializers.ModelSerializer):
             'course',
             'group',
             'call_operator',
-
             'sales_manager',
-
             "is_archived",
-
             "attendance_count",
-
             'relatives',
-
             "created_at",
             "updated_at",
         ]
-
 
     def get_test(self, obj):
         test = Mastering.objects.filter(student=obj)
@@ -72,14 +68,14 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def get_course(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
-                   .values("group__course__name","group__course__level__name"))
+                   .values("group__course__name", "group__course__level__name"))
         return list(courses)
 
     def get_group(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
                    .values(
-        "group__name", "group__status", "group__started_at", "group__ended_at","group__teacher__first_name","group__teacher__last_name"
-        ))
+                       "group__name", "group__status", "group__started_at", "group__ended_at", "group__teacher__first_name", "group__teacher__last_name"
+                   ))
         return list(courses)
 
     def get_relatives(self, obj):
@@ -91,14 +87,17 @@ class StudentSerializer(serializers.ModelSerializer):
         return attendance.count() + 1
 
     def update(self, instance, validated_data):
-        # Check if 'password' is in validated_data and is not None
         password = validated_data.get('password')
-        if password:
-            instance.set_password(password)
+        if password:  # Only set the password if it's provided
+            print(password)
+            # Encode the password to bytes before hashing
+            instance.password = hashlib.sha512(password.encode('utf-8')).hexdigest()
+            print(instance.password)
+            instance.save()
 
-        # Loop through the validated_data and update other fields
+        # Update other fields
         for attr, value in validated_data.items():
-            if attr != 'password':  # Skip password field
+            if attr != 'password':  # Skip the password field
                 setattr(instance, attr, value)
 
         instance.save()
@@ -115,7 +114,6 @@ class StudentSerializer(serializers.ModelSerializer):
         representation['moderator'] = UserSerializer(instance.moderator).data if instance.moderator else None
 
         return representation
-
 
 class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
     phone = serializers.CharField()
