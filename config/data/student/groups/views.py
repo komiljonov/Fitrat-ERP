@@ -171,6 +171,12 @@ class GroupSchedule(ListAPIView):
             return (queryset.filter(
                 room_number=room_id,
                 room_number__filial=filial,
+            ).order_by('started_at'))
+
+        if start_date and end_date:
+            return (queryset.filter(
+                room_number=room_id,
+                room_number__filial=filial,
                 created_at__gte=start_date,
                 created_at__lte=end_date,
             ).order_by('started_at'))
