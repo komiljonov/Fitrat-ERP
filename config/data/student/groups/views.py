@@ -153,3 +153,22 @@ class DaysNoPG(ListAPIView):
         return Response(data)
 
 
+
+
+class GroupSchedule(ListAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Group.objects.all()
+        filial = self.request.user.filial
+        room_id = self.request.query_params.get('room')
+        if room_id:
+            return (queryset.filter(
+                room_number=room_id,
+                room_number__filial=filial
+            ).order_by('started_at'))
+        return queryset
+
+
