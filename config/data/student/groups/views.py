@@ -162,12 +162,17 @@ class GroupSchedule(ListAPIView):
 
     def get_queryset(self):
         queryset = Group.objects.all()
+        start_date = self.request.query_params.get('from',None)
+        end_date = self.request.query_params.get('to', None)
+
         filial = self.request.user.filial
         room_id = self.request.query_params.get('room')
         if room_id:
             return (queryset.filter(
                 room_number=room_id,
-                room_number__filial=filial
+                room_number__filial=filial,
+                created_at__gte=start_date,
+                created_at__lte=end_date,
             ).order_by('started_at'))
         return queryset
 
