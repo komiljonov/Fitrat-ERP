@@ -39,7 +39,6 @@ class AttendanceListView(ListAPIView):
 
         raise NotFound("No attendance records found for the given ID.")
 
-
 class LessonAttendanceList(ListAPIView):
     serializer_class = AttendanceSerializer
 

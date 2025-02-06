@@ -7,7 +7,7 @@ from django.db import models
 from data.department.filial.models import Filial
 from ..account.managers import UserManager
 from ..upload.models import File
-from ..finances.compensation.models import Compensation, Bonus
+from ..finances.compensation.models import Compensation, Bonus,Page
 
 
 class CustomUser(AbstractUser):
@@ -55,6 +55,8 @@ class CustomUser(AbstractUser):
 
     compensation : 'Compensation' = models.ManyToManyField('compensation.Compensation', null=True,blank=True)
     bonus : 'Bonus'= models.ManyToManyField('compensation.Bonus', null=True,blank=True)
+
+    pages : 'Page'= models.ManyToManyField('compensation.Page', null=True, blank=True)
 
     USERNAME_FIELD = 'phone'
     # REQUIRED_FIELDS = ['phone']

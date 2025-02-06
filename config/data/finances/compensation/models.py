@@ -18,5 +18,8 @@ class Bonus(TimeStampModel):
     def __str__(self):
         return f"{self.name}  {self.amount}"
 
+class Page(TimeStampModel):
+    name = models.CharField(max_length=100)
 
-
+    def __str__(self):
+        return f"{self.name}"

@@ -15,7 +15,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "full_name", "first_name", "last_name", "phone", "role","password","salary",
-            "photo", "filial", "balance", "ball",
+            "photo", "filial", "balance", "ball","pages",
             "enter", "leave", "date_of_birth", "compensation", "bonus"
         )
         # We don't need to add extra_kwargs for password
@@ -29,12 +29,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         compensation_data = validated_data.pop('compensation', [])
         bonus_data = validated_data.pop('bonus', [])
+        page_data = validated_data.pop('pages', [])
 
         user = CustomUser(**validated_data)
         user.set_password(password)  # Hash the password
         user.save()
         user.compensation.set(compensation_data)  # Set the compensation
         user.bonus.set(bonus_data)  # Set the bonus
+        user.pages.set(page_data)
         user.save()
         return user
 
@@ -90,7 +92,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['phone', 'full_name', 'first_name', 'last_name', 'password', 'role', 'photo', "salary","enter", "leave",
+        fields = ['phone', 'full_name', 'first_name', 'last_name', 'password', 'role', 'photo', "salary","enter", "leave","pages",
                   'date_of_birth', 'compensation', 'bonus']
 
     def update(self, instance, validated_data):
@@ -115,6 +117,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             instance.compensation.set(validated_data["compensation"])
         if "bonus" in validated_data:
             instance.bonus.set(validated_data["bonus"])
+        if "pages" in validated_data:
+            instance.pages.set(validated_data["pages"])
 
         instance.save()
         return instance
@@ -125,7 +129,7 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name","first_name","last_name",'role',"salary",
+        fields = ['id', 'phone', "full_name","first_name","last_name",'role',"salary","pages",
                   "photo", "filial", ]
 
     def to_representation(self, instance):
@@ -158,10 +162,12 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         compensation_data = validated_data.pop("compensation", [])
         bonus_data = validated_data.pop("bonus", [])
+        page_data = validated_data.pop("pages", [])
 
         user = CustomUser.objects.create(**validated_data)
 
         user.compensation.set(compensation_data)
         user.bonus.set(bonus_data)
+        user.pages.set(page_data)
 
         return user
