@@ -27,8 +27,6 @@ class StudentSerializer(serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
-
-    password  = serializers.CharField(write_only=True,allow_null=True)
     attendance_count = serializers.SerializerMethodField()
 
     class Meta:
