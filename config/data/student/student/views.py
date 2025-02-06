@@ -244,25 +244,26 @@ class ExportLidToExcelAPIView(APIView):
             # Retrieve the learning subjects if the group is active
             # subjects = self.get_student_subjects(student)
 
-            sheet.append([
-                student.first_name,
-                student.last_name,
-                student.phone,
-                student.date_of_birth.strftime('%d-%m-%Y') if student.date_of_birth else "",
-                student.education_lang,
-                student.edu_class,
-                student.subject.name if student.subject else "",
-                student.ball,
-                student.filial.name if student.filial else "",
-                student.marketing_channel.name if student.marketing_channel else "",
-                student.student_stage_type,
-                student.balance_status if student.balance_status else "",
-                student.balance if student.balance else "",
-                "Ha" if student.is_archived else "Yo'q",
-                student.call_operator.full_name if student.call_operator else "",
-                student.moderator.full_name if student.moderator else "",
-                student.created_at.strftime('%d-%m-%Y %H:%M:%S') if student.created_at else "",
-            ])
+            for student in queryset:
+                sheet.append([
+                    student.first_name,
+                    student.last_name,
+                    student.phone,
+                    student.date_of_birth.strftime('%d-%m-%Y') if student.date_of_birth else "",
+                    "Uzbek tili" if student.education_lang == "UZB" else "Ingliz tili" if student.education_lang == "ENG" else "Rus tili" if student.education_lang == "RU" else "",
+                    "Maktab" if student.edu_class == "SCHOOL" else "Universitet" if student.edu_class == "UNIVERSITY" else "",
+                    student.subject.name if student.subject else "",
+                    student.ball,
+                    student.filial.name if student.filial else "",
+                    student.marketing_channel.name if student.marketing_channel else "",
+                    "Yangi student" if student.student_stage_type == "NEW_STUDENT" else "Faol student",
+                    student.balance_status if student.balance_status else "",
+                    student.balance if student.balance else "",
+                    "Ha" if student.is_archived else "Yo'q",
+                    student.call_operator.full_name if student.call_operator else "",
+                    student.moderator.full_name if student.moderator else "",
+                    student.created_at.strftime('%d-%m-%Y %H:%M:%S') if student.created_at else "",
+                ])
 
         # Style headers
         for col_num, header in enumerate(headers, 1):
