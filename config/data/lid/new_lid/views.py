@@ -57,7 +57,7 @@ class LidListCreateView(ListCreateAPIView):
         # Role-based filtering
         if user.role == "CALL_OPERATOR":
             queryset = queryset.filter(
-                call_operator__in=[user, None]
+                Q(call_operator__in=[user, None])
             )
         if user.role == "ADMINISTRATOR":
             queryset = queryset.filter(filial=user.filial)
