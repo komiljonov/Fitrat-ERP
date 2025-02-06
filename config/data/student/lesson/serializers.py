@@ -67,54 +67,49 @@ class LessonSerializer(serializers.ModelSerializer):
         return rep
 
 
+from rest_framework import serializers
+from .models import Group
+
 class LessonScheduleSerializer(serializers.ModelSerializer):
+    subject = serializers.SerializerMethodField()
+    subject_label = serializers.SerializerMethodField()
     teacher_name = serializers.SerializerMethodField()
-    room_number = serializers.SerializerMethodField()
-    group_name = serializers.SerializerMethodField()
-    scheduled_day_type = serializers.SerializerMethodField()
     started_at = serializers.SerializerMethodField()
     ended_at = serializers.SerializerMethodField()
+    scheduled_day_type = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
         fields = [
-            'subject_name',
+            'subject',
             'subject_label',
             'teacher_name',
             'room_number',
-            'group_name',
+            'name',
             'scheduled_day_type',
             'started_at',
             'ended_at'
         ]
 
-    def get_subject_name(self, obj):
-        subject = Group.objects.get(id=obj.id).course.subject.name
-        return subject
+    def get_subject(self, obj):
+        # Use select_related for efficient querying
+        return obj.course.subject.name if obj.course and obj.course.subject else None
 
     def get_subject_label(self, obj):
-        subject = Group.objects.get(id=obj.id).course.subject.label
-        return subject
+        return obj.course.subject.label if obj.course and obj.course.subject else None
 
     def get_teacher_name(self, obj):
-        teacher = obj.teacher
-        return teacher.full_name if teacher else None
-
-    def get_room_number(self, obj):
-        room = Group.objects.get(id=obj.id).room_number.room_number
-        return room
-
-    def get_group_name(self, obj):
-        return obj.name
+        fullname = f"{obj.teacher.first_name if obj.teacher.first_name else ""}  {obj.teacher.last_name if obj.teacher and obj.teacher.first_name else ""}"
+        return fullname if obj.teacher else None
 
     def get_scheduled_day_type(self, obj):
-        return [day.name for day in obj.scheduled_day_type.all()]
+        return [day.name for day in obj.scheduled_day_type.all()] if obj.scheduled_day_type else []
 
     def get_started_at(self, obj):
-        return obj.started_at.strftime('%H:%M')
+        return obj.started_at.strftime('%H:%M') if obj.started_at else None
 
     def get_ended_at(self, obj):
-        return obj.ended_at.strftime('%H:%M')
+        return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
 
 
 class FirstLessonSerializer(serializers.ModelSerializer):
