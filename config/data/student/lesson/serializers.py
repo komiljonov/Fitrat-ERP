@@ -4,7 +4,7 @@ from rest_framework import serializers
 from .models import Lesson, FirstLLesson
 from ..attendance.models import Attendance
 from ..course.models import Course
-from ..groups.models import Group
+from ..groups.models import Group, Room
 from ..groups.serializers import GroupSerializer
 from ..subject.models import Subject
 from ...lid.new_lid.models import Lid
@@ -72,6 +72,7 @@ from .models import Group
 
 class LessonScheduleSerializer(serializers.ModelSerializer):
     subject = serializers.SerializerMethodField()
+    room = serializers.SerializerMethodField()
     subject_label = serializers.SerializerMethodField()
     teacher_name = serializers.SerializerMethodField()
     started_at = serializers.SerializerMethodField()
@@ -84,7 +85,7 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
             'subject',
             'subject_label',
             'teacher_name',
-            'room_number',
+            'room',
             'name',
             'scheduled_day_type',
             'started_at',
@@ -92,8 +93,14 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
         ]
 
     def get_subject(self, obj):
-        # Use select_related for efficient querying
         return obj.course.subject.name if obj.course and obj.course.subject else None
+
+    def get_room(self, obj):
+        room = Group.objects.filter(id=obj.id).values_list('room_number',
+                                                           flat=True).first()  # Use first() for efficiency
+        if room:
+            room_obj = Room.objects.filter(id=room).first()  # Fetch the actual Room object
+            return room_obj.room_number if room_obj else None  # Return a serializable field, like room_number
 
     def get_subject_label(self, obj):
         return obj.course.subject.label if obj.course and obj.course.subject else None
@@ -110,6 +117,7 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
 
     def get_ended_at(self, obj):
         return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
+
 
 
 class FirstLessonSerializer(serializers.ModelSerializer):
