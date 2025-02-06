@@ -224,11 +224,17 @@ class LidStatisticsView(ListAPIView):
     def list(self, request, *args, **kwargs):
         user = request.user
         # if user.role == "CALL_OPERATOR":
-        leads_count = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,filial__in=[None,user.filial]).count()
-        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,call_operator=None,filial__in=[None,user.filial]).count()
-        in_progress = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=False,filial__in=[None,user.filial],call_operator=user,lid_stages="KUTULMOQDA").count()
-        order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",filial__in=[None,user.filial], call_operator=user).count()
-        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",filial__in=[None,user.filial], call_operator=user).count()
+        leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,call_operator__in=[None,user],
+                                         filial__in=[None, user.filial]).count()
+        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,call_operator__in=[None,user],
+                                       call_operator=None, filial__in=[None, user.filial]).count()
+        in_progress = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
+                                         filial__in=[None, user.filial], call_operator=user,
+                                         lid_stages="KUTULMOQDA").count()
+        order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",
+                                           filial__in=[None, user.filial], call_operator=user).count()
+        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
+                                                filial__in=[None, user.filial], call_operator=user).count()
         #
         # elif user.role == "ADMINISTRATOR":
         #     leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
@@ -243,12 +249,18 @@ class LidStatisticsView(ListAPIView):
         #     archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
         #                                             filial__in=[None, user.filial], ).count()
 
-        ordered_new = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, filial=user.filial,ordered_stages="YANGI_BUYURTMA",).count()
-        ordered_leads_count = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, filial=user.filial).count()
-        ordered_waiting_leads = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, ordered_stages="KUTULMOQDA", filial=user.filial).count()
-        ordered_archived = Lid.objects.filter(is_archived=True, lid_stage_type="ORDERED_LID", filial=user.filial).count()
-        first_lesson = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, ordered_stages="BIRINCHI_DARS_BELGILANGAN", filial=user.filial).count()
-        first_lesson_not = Lid.objects.filter(lid_stage_type="ORDERED_LID",is_archived=False, ordered_stages="BIRINCHI_DARSGA_KELMAGAN", filial=user.filial).count()
+        ordered_new = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=False, filial=user.filial,
+                                         ordered_stages="YANGI_BUYURTMA", ).count()
+        ordered_leads_count = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=False,
+                                                 filial=user.filial).count()
+        ordered_waiting_leads = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=False,
+                                                   ordered_stages="KUTULMOQDA", filial=user.filial).count()
+        ordered_archived = Lid.objects.filter(is_archived=True, lid_stage_type="ORDERED_LID",
+                                              filial=user.filial).count()
+        first_lesson = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=False,
+                                          ordered_stages="BIRINCHI_DARS_BELGILANGAN", filial=user.filial).count()
+        first_lesson_not = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=False,
+                                              ordered_stages="BIRINCHI_DARSGA_KELMAGAN", filial=user.filial).count()
 
         # Archived statistics
         all_archived = Lid.objects.filter(is_archived=True, is_student=False).count()
@@ -266,7 +278,7 @@ class LidStatisticsView(ListAPIView):
 
         ordered_statistics = {
             "ordered_leads_count": ordered_leads_count,
-            "ordered_new" : ordered_new,
+            "ordered_new": ordered_new,
             "ordered_waiting_leads": ordered_waiting_leads,
             "ordered_first_lesson_not_come": first_lesson_not,
             "ordered_first_lesson": first_lesson,
@@ -287,6 +299,7 @@ class LidStatisticsView(ListAPIView):
 
         return Response(response_data)
 
+
 class BulkUpdate(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -300,6 +313,7 @@ class BulkUpdate(APIView):
 
         try:
             updated_lids = serializer.update_bulk_lids(data)
-            return Response({"message": "Bulk update successful.", "updated_lids": updated_lids}, status=status.HTTP_200_OK)
+            return Response({"message": "Bulk update successful.", "updated_lids": updated_lids},
+                            status=status.HTTP_200_OK)
         except ValidationError as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
