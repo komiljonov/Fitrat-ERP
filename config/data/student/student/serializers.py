@@ -35,6 +35,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'id',
             "first_name",
             "last_name",
+            "middle_name",
             "phone",
             'password',
             "date_of_birth",
