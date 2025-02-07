@@ -37,7 +37,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         attendance = Attendance.objects.filter(
             group=obj.group,
             created_at__date=today,
-        ).values("theme",'repeated')
+        ).values("theme","repeated")
         return list(attendance)
 
 
