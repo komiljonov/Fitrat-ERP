@@ -70,3 +70,6 @@ class PagesList(ListCreateAPIView):
     queryset = Page.objects.all()
     serializer_class = PagesSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_paginated_response(self, data):
+        return Response(data)

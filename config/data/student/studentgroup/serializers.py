@@ -1,6 +1,11 @@
+import datetime
+from datetime import date
+
+import icecream
 from rest_framework import serializers
 
 from .models import StudentGroup, SecondaryStudentGroup
+from ..attendance.models import Attendance
 from ..groups.models import Group
 from ..groups.serializers import GroupSerializer
 from ..student.models import Student
@@ -14,6 +19,8 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
 
+    current_theme = serializers.SerializerMethodField()
+
     class Meta:
         model = StudentGroup
         fields = [
@@ -21,18 +28,27 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'group',
             'lid',
             'student',
+            'current_theme',
         ]
+
+    def get_current_theme(self, obj):
+        today = date.today()
+        icecream.ic(today)
+        attendance = Attendance.objects.filter(
+            group=obj.group,
+            created_at__date=today,
+        ).values("theme",'repeated')
+        return list(attendance)
 
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         if instance.group:
             group_data = {
-                'group_name': instance.group.name,  # Adjust based on which fields you want
-                'course': instance.group.course.name,  # Example of nested fields you might want
+                'group_name': instance.group.name,
+                'course': instance.group.course.name,
                 'teacher': instance.group.teacher.full_name if instance.group.teacher else None,
-                'room_number': instance.group.room_number.room_number,  # Assuming you want this info
-                # Add any other group-related fields you want to include here
+                'room_number': instance.group.room_number.room_number,
             }
             rep['group'] = group_data
 
@@ -50,6 +66,8 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
 
         else:
             rep.pop('student', None)
+
+
 
         # Filter out unwanted values
         filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}

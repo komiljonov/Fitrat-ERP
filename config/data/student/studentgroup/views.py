@@ -1,16 +1,12 @@
 from django.db.models import Q
-from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializer
-
 from .models import StudentGroup, SecondaryStudentGroup
-from ...account.permission import FilialRestrictedQuerySetMixin
+from .serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializer
 
 
 class StudentsGroupList(ListCreateAPIView):
@@ -63,7 +59,7 @@ class StudentGroupNopg(ListAPIView):
 
 class GroupStudentList(ListAPIView):
     serializer_class = StudentsGroupSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         """
@@ -75,6 +71,7 @@ class GroupStudentList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
 
 class GroupStudentDetail(ListAPIView):
     permission_classes = [IsAuthenticated]
