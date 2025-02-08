@@ -70,8 +70,6 @@ class LessonSerializer(serializers.ModelSerializer):
         return rep
 
 
-from rest_framework import serializers
-from .models import Group
 
 class LessonScheduleSerializer(serializers.ModelSerializer):
     subject = serializers.SerializerMethodField()
@@ -81,7 +79,7 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
     started_at = serializers.SerializerMethodField()
     ended_at = serializers.SerializerMethodField()
     scheduled_day_type = serializers.SerializerMethodField()
-    days = serializers.SerializerMethodField()
+    days = serializers.SerializerMethodField()  # Include 'days' for today's and other days schedules
 
     class Meta:
         model = Group
@@ -94,24 +92,23 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
             'scheduled_day_type',
             'started_at',
             'ended_at',
-            'days',
+            'days',  # Add 'days' to return the schedule dates
         ]
 
     def get_subject(self, obj):
         return obj.course.subject.name if obj.course and obj.course.subject else None
 
     def get_room(self, obj):
-        room = Group.objects.filter(id=obj.id).values_list('room_number',
-                                                           flat=True).first()  # Use first() for efficiency
+        room = Group.objects.filter(id=obj.id).values_list('room_number', flat=True).first()
         if room:
-            room_obj = Room.objects.filter(id=room).first()  # Fetch the actual Room object
-            return room_obj.room_number if room_obj else None  # Return a serializable field, like room_number
+            room_obj = Room.objects.filter(id=room).first()
+            return room_obj.room_number if room_obj else None
 
     def get_subject_label(self, obj):
         return obj.course.subject.label if obj.course and obj.course.subject else None
 
     def get_teacher_name(self, obj):
-        fullname = f"{obj.teacher.first_name if obj.teacher.first_name else ""}  {obj.teacher.last_name if obj.teacher and obj.teacher.first_name else ""}"
+        fullname = f"{obj.teacher.first_name if obj.teacher.first_name else ''} {obj.teacher.last_name if obj.teacher.last_name else ''}"
         return fullname if obj.teacher else None
 
     def get_scheduled_day_type(self, obj):
@@ -123,22 +120,68 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
     def get_ended_at(self, obj):
         return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
 
-    def get_days(self, obj):
-        holidays = ['']  # Replace with actual logic to fetch holidays, e.g., from another model
-        days_off = ["Yakshanba"]
-        lesson_days_queryset = obj.scheduled_day_type.all()  # This retrieves the related days
-        lesson_days = [day.name for day in
-                       lesson_days_queryset]
-        start_date = datetime.date.today().strftime("%Y-%m-%d") if datetime.date.today() else None
-        end_date = (datetime.date.today() + datetime.timedelta(days=30)).strftime("%Y-%m-%d") \
-            if datetime.date.today() else None
-        days = calculate_lessons(start_date=start_date,
-                                 end_date=end_date,
-                                 lesson_type=','.join(lesson_days),
-                                 holidays=holidays,
-                                 days_off=days_off,
-                                 )
-        return days
+    from datetime import datetime
+
+    class LessonScheduleSerializer(serializers.ModelSerializer):
+        subject = serializers.SerializerMethodField()
+        room = serializers.SerializerMethodField()
+        subject_label = serializers.SerializerMethodField()
+        teacher_name = serializers.SerializerMethodField()
+        started_at = serializers.SerializerMethodField()
+        ended_at = serializers.SerializerMethodField()
+        scheduled_day_type = serializers.SerializerMethodField()
+        days = serializers.SerializerMethodField()  # Add the days field
+
+        class Meta:
+            model = Group
+            fields = [
+                'subject',
+                'subject_label',
+                'teacher_name',
+                'room',
+                'name',
+                'scheduled_day_type',
+                'started_at',
+                'ended_at',
+                'days',
+            ]
+
+        def get_subject(self, obj):
+            return obj.course.subject.name if obj.course and obj.course.subject else None
+
+        def get_room(self, obj):
+            room = Group.objects.filter(id=obj.id).values_list('room_number',
+                                                               flat=True).first()  # Use first() for efficiency
+            if room:
+                room_obj = Room.objects.filter(id=room).first()  # Fetch the actual Room object
+                return room_obj.room_number if room_obj else None  # Return a serializable field, like room_number
+
+        def get_subject_label(self, obj):
+            return obj.course.subject.label if obj.course and obj.course.subject else None
+
+        def get_teacher_name(self, obj):
+            fullname = f"{obj.teacher.first_name if obj.teacher.first_name else ''} {obj.teacher.last_name if obj.teacher else ''}"
+            return fullname if obj.teacher else None
+
+        def get_scheduled_day_type(self, obj):
+            return [day.name for day in obj.scheduled_day_type.all()] if obj.scheduled_day_type else []
+
+        def get_started_at(self, obj):
+            return obj.started_at.strftime('%H:%M') if obj.started_at else None
+
+        def get_ended_at(self, obj):
+            return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
+
+        def get_days(self, obj):
+            today = datetime.today().date()
+            schedule_date = obj.started_at.date() if obj.started_at else None
+
+            if schedule_date:
+                if schedule_date == today:
+                    return "Today"
+                elif schedule_date > today:
+                    return f"Upcoming ({schedule_date})"
+            return "Past"
 
 
 class FirstLessonSerializer(serializers.ModelSerializer):

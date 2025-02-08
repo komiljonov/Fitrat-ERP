@@ -6,7 +6,6 @@ from ..account.serializers import UserSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     class Meta:
         model = Notification
         fields = [
@@ -19,9 +18,9 @@ class NotificationSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-
-        rep['user'] = UserSerializer(instance.user).data
-
-        return rep
+    # def to_representation(self, instance):
+    #     rep = super().to_representation(instance)
+    #
+    #     rep['user'] = UserSerializer(instance.user).data
+    #
+    #     return rep
