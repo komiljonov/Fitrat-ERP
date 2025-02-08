@@ -108,17 +108,24 @@ class LidSerializer(serializers.ModelSerializer):
         instance.save()  # <- This is what was missing
 
         return instance
+
     def create(self, validated_data):
         request = self.context['request']
-        if request.user.role == 'CALL_OPERATOR' :
+
+        if request.user.role == 'CALL_OPERATOR':
             validated_data['call_operator'] = request.user
             if request.user.filial is not None:
                 validated_data['filial'] = request.user.filial
+
         elif request.user.role == 'ADMINISTRATOR' and request.user.filial is not None:
             validated_data['sales_manager'] = request.user
             validated_data['filial'] = request.user.filial
+
         else:
             validated_data['filial'] = request.user.filial
+
+        # ✅ Now create and return the instance
+        return Lid.objects.create(**validated_data)
 
 class LidAppSerializer(serializers.ModelSerializer):
     class Meta:
