@@ -228,7 +228,7 @@ class LidStatisticsView(ListAPIView):
             #                                  filial__in=[None, user.filial]).count()
 
             leads_count = Lid.objects.filter(Q(call_operator=None) | Q(call_operatpr=user), lid_stage_type="NEW_LID",archived=False, )
-            new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,call_operator__in=[None,user],
+            new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
                                            call_operator=None, filial__in=[None, user.filial]).count()
             in_progress = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
                                              filial__in=[None, user.filial], call_operator=user,
