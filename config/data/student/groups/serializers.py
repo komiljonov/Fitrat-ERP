@@ -7,7 +7,6 @@ from rest_framework import serializers
 from .lesson_date_calculator import calculate_lessons
 from .models import Group, Day, Room, SecondaryGroup
 from ..attendance.models import Attendance
-from ..lesson.models import Lesson
 from ..studentgroup.models import StudentGroup
 from ..subject.models import Theme
 from ...account.models import CustomUser
