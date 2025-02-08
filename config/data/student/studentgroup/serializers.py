@@ -36,7 +36,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         icecream.ic(today)
         attendance = Attendance.objects.filter(
             group=obj.group,
-            created_at__date=today,
+            created_at__gte=today,
         ).values("theme","repeated")
         return list(attendance)
 
