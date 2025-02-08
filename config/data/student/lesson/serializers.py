@@ -71,57 +71,54 @@ class LessonSerializer(serializers.ModelSerializer):
         return rep
 
 
+class LessonScheduleWebSerializer(serializers.ModelSerializer):
+    subject = serializers.SerializerMethodField()
+    room = serializers.SerializerMethodField()
+    subject_label = serializers.SerializerMethodField()
+    teacher_name = serializers.SerializerMethodField()
+    started_at = serializers.SerializerMethodField()
+    ended_at = serializers.SerializerMethodField()
+    scheduled_day_type = serializers.SerializerMethodField()
 
-# class LessonScheduleSerializer(serializers.ModelSerializer):
-#     subject = serializers.SerializerMethodField()
-#     room = serializers.SerializerMethodField()
-#     subject_label = serializers.SerializerMethodField()
-#     teacher_name = serializers.SerializerMethodField()
-#     started_at = serializers.SerializerMethodField()
-#     ended_at = serializers.SerializerMethodField()
-#     scheduled_day_type = serializers.SerializerMethodField()
-#     days = serializers.SerializerMethodField()  # Include 'days' for today's and other days schedules
-#
-#     class Meta:
-#         model = Group
-#         fields = [
-#             'subject',
-#             'subject_label',
-#             'teacher_name',
-#             'room',
-#             'name',
-#             'scheduled_day_type',
-#             'started_at',
-#             'ended_at',
-#             'days',  # Add 'days' to return the schedule dates
-#         ]
-#
-#     def get_subject(self, obj):
-#         return obj.course.subject.name if obj.course and obj.course.subject else None
-#
-#     def get_room(self, obj):
-#         room = Group.objects.filter(id=obj.id).values_list('room_number', flat=True).first()
-#         if room:
-#             room_obj = Room.objects.filter(id=room).first()
-#             return room_obj.room_number if room_obj else None
-#
-#     def get_subject_label(self, obj):
-#         return obj.course.subject.label if obj.course and obj.course.subject else None
-#
-#     def get_teacher_name(self, obj):
-#         fullname = f"{obj.teacher.first_name if obj.teacher.first_name else ''} {obj.teacher.last_name if obj.teacher.last_name else ''}"
-#         return fullname if obj.teacher else None
-#
-#     def get_scheduled_day_type(self, obj):
-#         return [day.name for day in obj.scheduled_day_type.all()] if obj.scheduled_day_type else []
-#
-#     def get_started_at(self, obj):
-#         return obj.started_at.strftime('%H:%M') if obj.started_at else None
-#
-#     def get_ended_at(self, obj):
-#         return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
-#
-#     from datetime import datetime
+    class Meta:
+        model = Group
+        fields = [
+            'subject',
+            'subject_label',
+            'teacher_name',
+            'room',
+            'name',
+            'scheduled_day_type',
+            'started_at',
+            'ended_at'
+        ]
+
+    def get_subject(self, obj):
+        return obj.course.subject.name if obj.course and obj.course.subject else None
+
+    def get_room(self, obj):
+        room = Group.objects.filter(id=obj.id).values_list('room_number',
+                                                           flat=True).first()  # Use first() for efficiency
+        if room:
+            room_obj = Room.objects.filter(id=room).first()  # Fetch the actual Room object
+            return room_obj.room_number if room_obj else None  # Return a serializable field, like room_number
+
+    def get_subject_label(self, obj):
+        return obj.course.subject.label if obj.course and obj.course.subject else None
+
+    def get_teacher_name(self, obj):
+        fullname = f"{obj.teacher.first_name if obj.teacher.first_name else ""}  {obj.teacher.last_name if obj.teacher and obj.teacher.first_name else ""}"
+        return fullname if obj.teacher else None
+
+    def get_scheduled_day_type(self, obj):
+        return [day.name for day in obj.scheduled_day_type.all()] if obj.scheduled_day_type else []
+
+    def get_started_at(self, obj):
+        return obj.started_at.strftime('%H:%M') if obj.started_at else None
+
+    def get_ended_at(self, obj):
+        return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
+
 
 class LessonScheduleSerializer(serializers.ModelSerializer):
     subject = serializers.SerializerMethodField()

@@ -5,14 +5,12 @@ from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Group, Room, SecondaryGroup, Day
 from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer, \
     DaySerializer
-from ..lesson.serializers import LessonScheduleSerializer
-from ..lesson.views import LessonSchedule
+from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -188,11 +186,6 @@ class GroupSchedule(ListAPIView):
 
 
 from rest_framework.response import Response
-from rest_framework.response import Response
-from collections import defaultdict
-import datetime
-
-from rest_framework.response import Response
 from collections import defaultdict
 import datetime
 
@@ -239,3 +232,13 @@ class LessonScheduleListApi(ListAPIView):
             })
 
         return Response(sorted_lessons)
+
+
+class LessonScheduleWebListApi(ListAPIView):
+    serializer_class = LessonScheduleWebSerializer
+    queryset = Group.objects.filter(status="ACTIVE")
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+
+    ordering_fields = ['start_date', 'end_date', 'name']
+    search_fields = ['name', 'teacher__id', 'course__subject__name', 'room_number']
+    filterset_fields = ('name', 'teacher__id', 'course__subject__name', 'room_number')

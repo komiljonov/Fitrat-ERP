@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import *
+from ..groups.views import LessonScheduleWebListApi
 
 urlpatterns = [
     path('', LessonList.as_view(), name='student-list'),
