@@ -247,8 +247,15 @@ class LidStatisticsView(ListAPIView):
             in_progress = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
                                              filial=user.filial,
                                              lid_stages="KUTULMOQDA").count()
-            order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",
-                                               filial=user.filial).count()
+            order_created = Lid.objects.filter(
+                is_archived=False,
+                lid_stage_type="ORDERED_LID",
+                filial=user.filial
+            ).exclude(
+                call_operator__isnull=True  # Exclude if call_operator is None
+            ).exclude(
+                call_operator=user  # Exclude if call_operator is not the requested user
+            ).count()
             archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
                                                     filial=user.filial).count()
 
