@@ -19,6 +19,18 @@ class Finance(TimeStampModel):
 
     amount = models.FloatField(default=0)
 
+
+    casher = models.CharField(
+        choices=[
+            ('ADMINISTRATOR', 'ADMINISTRATOR'),
+            ('CASHER', 'CASHER'),
+            ("BUXGALTER", "BUXGALTER"),
+        ],
+        default='CASHER',
+        max_length=20,
+    )
+
+
     kind = models.CharField(
         choices=[
             ('COURSE_PAYMENT', 'COURSE_PAYMENT'),

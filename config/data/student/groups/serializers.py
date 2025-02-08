@@ -23,6 +23,7 @@ class GroupSerializer(serializers.ModelSerializer):
     student_count = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
 
+
     class Meta:
         model = Group
         fields = [

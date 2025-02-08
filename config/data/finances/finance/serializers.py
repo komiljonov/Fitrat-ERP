@@ -85,3 +85,5 @@ class FinanceSerializer(serializers.ModelSerializer):
         # Use the `UserListSerializer` to serialize the creator field
         representation["creator"] = UserListSerializer(instance.creator).data
         return representation
+
+

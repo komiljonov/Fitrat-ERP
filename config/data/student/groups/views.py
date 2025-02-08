@@ -189,7 +189,7 @@ class GroupSchedule(ListAPIView):
 
 class LessonScheduleListApi(ListAPIView):
     serializer_class = LessonScheduleSerializer
-    queryset = Group.objects.all()
+    queryset = Group.objects.filter(status="ACTIVE")
     filter_backends = (DjangoFilterBackend, OrderingFilter,SearchFilter)
 
     ordering_fields = ['start_date', 'end_date', 'name']

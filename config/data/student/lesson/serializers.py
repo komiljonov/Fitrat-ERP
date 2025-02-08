@@ -1,9 +1,12 @@
+import datetime
+
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 
 from .models import Lesson, FirstLLesson
 from ..attendance.models import Attendance
 from ..course.models import Course
+from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group, Room
 from ..groups.serializers import GroupSerializer
 from ..subject.models import Subject
@@ -78,6 +81,7 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
     started_at = serializers.SerializerMethodField()
     ended_at = serializers.SerializerMethodField()
     scheduled_day_type = serializers.SerializerMethodField()
+    days = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
@@ -89,7 +93,8 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
             'name',
             'scheduled_day_type',
             'started_at',
-            'ended_at'
+            'ended_at',
+            'days',
         ]
 
     def get_subject(self, obj):
@@ -118,6 +123,22 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
     def get_ended_at(self, obj):
         return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
 
+    def get_days(self, obj):
+        holidays = ['']  # Replace with actual logic to fetch holidays, e.g., from another model
+        days_off = ["Yakshanba"]
+        lesson_days_queryset = obj.scheduled_day_type.all()  # This retrieves the related days
+        lesson_days = [day.name for day in
+                       lesson_days_queryset]
+        start_date = datetime.date.today().strftime("%Y-%m-%d") if datetime.date.today() else None
+        end_date = (datetime.date.today() + datetime.timedelta(days=30)).strftime("%Y-%m-%d") \
+            if datetime.date.today() else None
+        days = calculate_lessons(start_date=start_date,
+                                 end_date=end_date,
+                                 lesson_type=','.join(lesson_days),
+                                 holidays=holidays,
+                                 days_off=days_off,
+                                 )
+        return days
 
 
 class FirstLessonSerializer(serializers.ModelSerializer):

@@ -47,6 +47,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                             f"{attendances_count} darsga qatnashdi va balansi statusi inactive, To'lov haqida ogohlantiring!",
                     come_from=instance.lid,
                 )
+
         if attendances_count > 1 and instance.reason == "UNREASONED":
 
             Notification.objects.create(
@@ -54,6 +55,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashmagan!",
                 come_from=instance.student,
             )
+
 
 
 @receiver(post_save, sender=Attendance)
