@@ -17,7 +17,7 @@ def calculate_lessons(start_date, end_date, lesson_type, holidays, days_off):
         dict: Dictionary where the key is the month and the value is a list of scheduled lesson dates (YYYY-MM-DD).
     """
 
-    # Convert string date inputs to datetime objects
+    start_date = str(start_date)
     start_date = datetime.strptime(start_date, "%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d")
 

@@ -249,7 +249,7 @@ class LidStatisticsView(ListAPIView):
             order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",
                                                filial=user.filial,).count()
             archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
-                                                    filial=user.filial, ).count()
+                                                    filial=user.filial).count()
 
         ordered_new = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=False, filial=user.filial,
                                          ordered_stages="YANGI_BUYURTMA", ).count()

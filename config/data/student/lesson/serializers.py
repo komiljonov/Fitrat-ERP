@@ -1,5 +1,6 @@
 import datetime
 
+import icecream
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 
@@ -122,9 +123,6 @@ class LessonSerializer(serializers.ModelSerializer):
 #
 #     from datetime import datetime
 
-import datetime
-from datetime import timedelta
-
 class LessonScheduleSerializer(serializers.ModelSerializer):
     subject = serializers.SerializerMethodField()
     room = serializers.SerializerMethodField()
@@ -133,7 +131,7 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
     started_at = serializers.SerializerMethodField()
     ended_at = serializers.SerializerMethodField()
     scheduled_day_type = serializers.SerializerMethodField()
-    days = serializers.SerializerMethodField()  # Add the days field
+    days = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
@@ -176,57 +174,54 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
 
     def get_days(self, obj):
         today = datetime.datetime.today().date()
-        upcoming_days = []
         schedule_days = obj.scheduled_day_type.all()  # Assuming scheduled_day_type contains day objects
+        lesson_schedule = {}
 
-        # Get the list of weekdays in string format
-        weekdays = {
-            "Monday": 0,
-            "Tuesday": 1,
-            "Wednesday": 2,
-            "Thursday": 3,
-            "Friday": 4,
-            "Saturday": 5,
-            "Sunday": 6
-        }
+        start_date = datetime.datetime.today().strftime('%Y-%m-%d')
+        end_date = datetime.datetime.today() + datetime.timedelta(days=30)
 
-        # Loop through each scheduled day and calculate the next occurrence
-        for day in schedule_days:
-            scheduled_day = day.name
+        lesson_type = ','.join([day.name for day in schedule_days])
+        holidays = []
+        days_off = ["Yakshanba"]
 
-            if scheduled_day in weekdays:
-                day_num = weekdays[scheduled_day]
-                next_occurrence = self.get_next_day_of_week(today, day_num)
+        # Get the scheduled lesson dates using the calculate_lessons function
+        grouped_schedule = calculate_lessons(
+            start_date=start_date,
+            end_date=end_date.strftime('%Y-%m-%d'),
+            lesson_type=lesson_type,
+            holidays=holidays,
+            days_off=days_off
+        )
 
-                if next_occurrence:
-                    if next_occurrence == today:
-                        upcoming_days.append(f"Today ({today})")
-                    elif next_occurrence > today:
-                        upcoming_days.append(f"Upcoming ({next_occurrence})")
+        # Collect lessons by date
+        lesson_by_date = {}
 
-        # Sort the upcoming days from today and within the next month
-        upcoming_days.sort(key=lambda x: datetime.datetime.strptime(x.split('(')[1][:-1], "%Y-%m-%d"))
+        for month, lesson_dates in grouped_schedule.items():
+            for lesson_date in lesson_dates:
+                lesson_date_obj = datetime.datetime.strptime(lesson_date, "%Y-%m-%d").date()
+                if lesson_date_obj >= today:
+                    if lesson_date_obj not in lesson_by_date:
+                        lesson_by_date[lesson_date_obj] = []
 
-        # Limit results to the next month
-        next_month = today + timedelta(days=30)
-        upcoming_days = [day for day in upcoming_days if datetime.datetime.strptime(day.split('(')[1][:-1], "%Y-%m-%d").date() <= next_month]
+                    lesson_by_date[lesson_date_obj].append({
+                        "subject": obj.course.subject.name if obj.course and obj.course.subject else None,
+                        "subject_label": obj.course.subject.label if obj.course and obj.course.subject else None,
+                        "teacher_name": f"{obj.teacher.first_name if obj.teacher.first_name else ''} {obj.teacher.last_name if obj.teacher else ''}",
+                        "room": self.get_room(obj),
+                        "name": obj.name,
+                        "started_at": obj.started_at.strftime('%H:%M') if obj.started_at else None,
+                        "ended_at": obj.ended_at.strftime('%H:%M') if obj.ended_at else None,
+                    })
 
-        return upcoming_days if upcoming_days else ["No upcoming lessons"]
+        # Format the response to include lessons by date
+        result = []
+        for lesson_date, lessons in lesson_by_date.items():
+            result.append({
+                "date": lesson_date.strftime('%d-%m-%Y'),
+                "lessons": lessons
+            })
 
-    def get_next_day_of_week(self, current_date, target_day_num):
-        """
-        Returns the next occurrence of a target weekday after the current date.
-        current_date: datetime.date object (today's date)
-        target_day_num: int (weekday number, 0 for Monday, 6 for Sunday)
-        """
-        days_ahead = target_day_num - current_date.weekday()
-
-        if days_ahead <= 0:
-            days_ahead += 7  # If the target day is earlier in the week, schedule it for next week
-
-        next_occurrence = current_date + timedelta(days=days_ahead)
-        return next_occurrence
-
+        return result
 
 
 class FirstLessonSerializer(serializers.ModelSerializer):

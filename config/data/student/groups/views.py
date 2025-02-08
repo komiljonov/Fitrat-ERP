@@ -187,12 +187,43 @@ class GroupSchedule(ListAPIView):
         return queryset
 
 
+from rest_framework.response import Response
+from rest_framework.response import Response
+from collections import defaultdict
+import datetime
+
 class LessonScheduleListApi(ListAPIView):
     serializer_class = LessonScheduleSerializer
     queryset = Group.objects.filter(status="ACTIVE")
-    filter_backends = (DjangoFilterBackend, OrderingFilter,SearchFilter)
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
 
     ordering_fields = ['start_date', 'end_date', 'name']
     search_fields = ['name', 'teacher__id', 'course__subject__name', 'room_number']
     filterset_fields = ('name', 'teacher__id', 'course__subject__name', 'room_number')
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Prepare to collect lessons grouped by date
+        lessons_by_date = defaultdict(list)
+
+        for item in serializer.data:
+            # Extract the days data
+            days = item.get('days', [])
+            for day in days:
+                lesson_date = datetime.datetime.strptime(day['date'], "%d-%m-%Y").date()
+                lessons_by_date[lesson_date].extend(day['lessons'])
+
+        # Sort the dates in ascending order
+        sorted_dates = sorted(lessons_by_date.keys())
+
+        # Prepare the sorted response
+        sorted_lessons = []
+        for lesson_date in sorted_dates:
+            sorted_lessons.append({
+                "date": lesson_date.strftime('%d-%m-%Y'),
+                "lessons": lessons_by_date[lesson_date]
+            })
+
+        return Response(sorted_lessons)
