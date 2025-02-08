@@ -56,13 +56,13 @@ class Lid(TimeStampModel):
     )
     lid_stages = models.CharField(choices=[
         ("YANGI_LEAD","YANGI_LEAD"),
-        ("O'TIB_KETGAN","O'TIB_KETGAN"),
         ("KUTULMOQDA","KUTULMOQDA"),
     ],
         max_length=100,
         help_text="LID's YANGI_LEAD stage type",
         null=True,blank=True
     )
+    is_expired = models.BooleanField(default=False)
     ordered_stages = models.CharField(
         choices=[
             ("KUTULMOQDA","KUTULMOQDA"),

@@ -223,31 +223,33 @@ class LidStatisticsView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         user = request.user
-        # if user.role == "CALL_OPERATOR":
-        leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,call_operator__in=[None,user],
-                                         filial__in=[None, user.filial]).count()
-        new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,call_operator__in=[None,user],
-                                       call_operator=None, filial__in=[None, user.filial]).count()
-        in_progress = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
-                                         filial__in=[None, user.filial], call_operator=user,
-                                         lid_stages="KUTULMOQDA").count()
-        order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",
-                                           filial__in=[None, user.filial], call_operator=user).count()
-        archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
+        if user.role == "CALL_OPERATOR":
+            # leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,call_operator__in=[None,user],
+            #                                  filial__in=[None, user.filial]).count()
+
+            leads_count = Lid.objects.filter(Q(call_operator=None) | Q(call_operatpr=user), lid_stage_type="NEW_LID",archived=False, )
+            new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,call_operator__in=[None,user],
+                                           call_operator=None, filial__in=[None, user.filial]).count()
+            in_progress = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
+                                             filial__in=[None, user.filial], call_operator=user,
+                                             lid_stages="KUTULMOQDA").count()
+            order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",
+                                               filial__in=[None, user.filial], call_operator=user).count()
+            archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
                                                 filial__in=[None, user.filial], call_operator=user).count()
-        #
-        # elif user.role == "ADMINISTRATOR":
-        #     leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
-        #                                      filial__in=[None, user.filial]).count()
-        #     new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False, call_operator=None,
-        #                                    filial__in=[None, user.filial]).count()
-        #     in_progress = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
-        #                                      filial__in=[None, user.filial],
-        #                                      lid_stages="KUTULMOQDA").count()
-        #     order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",
-        #                                        filial__in=[None, user.filial],).count()
-        #     archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
-        #                                             filial__in=[None, user.filial], ).count()
+
+        else:
+            leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
+                                             filial=user.filial).count()
+            new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False, call_operator=None,
+                                           filial=user.filial).count()
+            in_progress = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
+                                             filial=user.filial,
+                                             lid_stages="KUTULMOQDA").count()
+            order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",
+                                               filial=user.filial,).count()
+            archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
+                                                    filial=user.filial, ).count()
 
         ordered_new = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=False, filial=user.filial,
                                          ordered_stages="YANGI_BUYURTMA", ).count()

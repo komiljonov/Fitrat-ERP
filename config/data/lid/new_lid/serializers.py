@@ -17,7 +17,7 @@ from ...student.studentgroup.models import StudentGroup
 class LidSerializer(serializers.ModelSerializer):
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
-    call_operator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.filter(role='CALL_OPERATOR'),
+    call_operator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),
                                                        allow_null=True)
 
     course = serializers.SerializerMethodField()
@@ -33,7 +33,7 @@ class LidSerializer(serializers.ModelSerializer):
             "edu_class", "edu_level", "subject", "ball", "filial",
             "marketing_channel", "lid_stage_type", "ordered_stages",
             "lid_stages", "is_archived", "course", "group", "moderator",
-            "call_operator", "relatives", "lessons_count", "created_at"
+            "call_operator", "relatives", "lessons_count", "created_at","sales_manager","is_expired",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -92,6 +92,8 @@ class LidSerializer(serializers.ModelSerializer):
         if instance.lid_stage_type == "NEW_LID":
             if instance.call_operator is None and request.user.role == 'CALL_OPERATOR':
                 validated_data['call_operator'] = request.user
+            else:
+                validated_data['call_operator'] = None
 
             # Automatically assign sales_manager if it's None and user is ADMINISTRATOR
         if instance.lid_stage_type == "ORDERED_LID":
