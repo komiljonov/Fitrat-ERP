@@ -59,7 +59,7 @@ class LidListCreateView(ListCreateAPIView):
             queryset = queryset.filter(
                 Q(call_operator__in=[user, None])
             )
-        if user.role == "ADMINISTRATOR":
+        else:
             queryset = queryset.filter(filial=user.filial)
 
         # Debugging search_term
