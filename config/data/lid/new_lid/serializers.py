@@ -110,9 +110,10 @@ class LidSerializer(serializers.ModelSerializer):
         return instance
     def create(self, validated_data):
         request = self.context['request']
-        if request.user.role == 'CALL_OPERATOR' and request.user.filial is not None:
+        if request.user.role == 'CALL_OPERATOR' :
             validated_data['call_operator'] = request.user
-            validated_data['filial'] = request.user.filial
+            if request.user.filial is not None:
+                validated_data['filial'] = request.user.filial
         elif request.user.role == 'ADMINISTRATOR' and request.user.filial is not None:
             validated_data['sales_manager'] = request.user
             validated_data['filial'] = request.user.filial
