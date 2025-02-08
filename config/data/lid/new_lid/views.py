@@ -253,8 +253,6 @@ class LidStatisticsView(ListAPIView):
                 filial=user.filial
             ).exclude(
                 call_operator__isnull=True  # Exclude if call_operator is None
-            ).exclude(
-                call_operator=user  # Exclude if call_operator is not the requested user
             ).count()
             archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
                                                     filial=user.filial).count()
