@@ -1,3 +1,6 @@
+from datetime import date
+
+import icecream
 from django.db.models import Count
 from rest_framework import serializers
 
@@ -22,7 +25,7 @@ class GroupSerializer(serializers.ModelSerializer):
     scheduled_day_type = serializers.PrimaryKeyRelatedField(queryset=Day.objects.all(), many=True)
     student_count = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
-
+    current_theme = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
@@ -45,7 +48,19 @@ class GroupSerializer(serializers.ModelSerializer):
             'start_date',
             'finish_date',
             'is_secondary',
+            'current_theme',
         ]
+
+    def get_current_theme(self, obj):
+        today = date.today()
+        icecream.ic(today)# Ensures the correct timezone
+        attendance = Attendance.objects.filter(
+            group=obj,
+            created_at__date=today  # Ensures we compare only the date
+        ).values("theme", "repeated")
+
+        return list(attendance)
+
 
     def get_lessons_count(self, obj):
         total_lessons = Theme.objects.filter(course__group=obj).count()

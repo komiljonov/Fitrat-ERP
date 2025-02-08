@@ -14,8 +14,8 @@ def check_daily_leads():
         updated_at__lte=now() - timedelta(days=3),
     )
     for task in overdue_lead:
-        if task.lid_stage_type == "NEW_LID" or task.lid_stage_type == "ORDERED_LID":
-            task.lid_stage_type = "O'TIB_KETGAN"
+        if task.lid_stage_type == "NEW_LID" or task.is_expired:
+            task.is_expired = "O'TIB_KETGAN"
             task.save()
             logging.info(f"Lead {task.id} stage updated to 'O'TIB_KETGAN'.")
 
