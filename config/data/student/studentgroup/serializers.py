@@ -19,7 +19,6 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
 
-    current_theme = serializers.SerializerMethodField()
 
     class Meta:
         model = StudentGroup
@@ -30,15 +29,6 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'student',
             'current_theme',
         ]
-
-    def get_current_theme(self, obj):
-        today = date.today()
-        icecream.ic(today)
-        attendance = Attendance.objects.filter(
-            group=obj.group,
-            created_at__gte=today,
-        ).values("theme","repeated")
-        return list(attendance)
 
 
     def to_representation(self, instance):
