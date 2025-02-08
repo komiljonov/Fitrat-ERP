@@ -192,6 +192,11 @@ from rest_framework.response import Response
 from collections import defaultdict
 import datetime
 
+from rest_framework.response import Response
+from collections import defaultdict
+import datetime
+
+
 class LessonScheduleListApi(ListAPIView):
     serializer_class = LessonScheduleSerializer
     queryset = Group.objects.filter(status="ACTIVE")
@@ -205,6 +210,10 @@ class LessonScheduleListApi(ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
 
+        # Get the date filter from query params (optional)
+        date_filter = self.request.query_params.get('date', None)
+        date_filter = datetime.datetime.strptime(date_filter, "%d-%m-%Y").date() if date_filter else None
+
         # Prepare to collect lessons grouped by date
         lessons_by_date = defaultdict(list)
 
@@ -213,6 +222,9 @@ class LessonScheduleListApi(ListAPIView):
             days = item.get('days', [])
             for day in days:
                 lesson_date = datetime.datetime.strptime(day['date'], "%d-%m-%Y").date()
+                # Filter lessons by date if the date filter is provided
+                if date_filter and lesson_date != date_filter:
+                    continue
                 lessons_by_date[lesson_date].extend(day['lessons'])
 
         # Sort the dates in ascending order
