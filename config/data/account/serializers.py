@@ -86,6 +86,7 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False)
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
     compensation = serializers.PrimaryKeyRelatedField(queryset=Compensation.objects.all(), many=True, required=False)
     bonus = serializers.PrimaryKeyRelatedField(queryset=Bonus.objects.all(), many=True, required=False)
@@ -123,6 +124,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['photo'] = FileUploadSerializer(instance.photo).data
+        return ret
 
 
 class UserListSerializer(ModelSerializer):
