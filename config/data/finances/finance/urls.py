@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import FinanceListAPIView, FinanceDetailAPIView, FinanceNoPGList, StudentFinanceListAPIView, \
-    StuffFinanceListAPIView, CasherListCreateAPIView
+    StuffFinanceListAPIView, CasherListCreateAPIView, CasherRetrieveUpdateDestroyAPIView
 
 urlpatterns = [
     path('', FinanceListAPIView.as_view(), name='finance_list'),
@@ -12,6 +12,6 @@ urlpatterns = [
     path('stuff/<uuid:pk>/',StuffFinanceListAPIView.as_view(), name='finance_stuff'),
 
     path('casher',CasherListCreateAPIView.as_view(), name='finance_casher'),
-    path('casher/<uuid:pk>/',CasherListCreateAPIView.as_view(), name='finance_casher'),
+    path('casher/<uuid:pk>/',CasherRetrieveUpdateDestroyAPIView.as_view(), name='finance_casher'),
 
 ]
