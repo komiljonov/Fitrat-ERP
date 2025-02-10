@@ -53,13 +53,16 @@ class StudentCourse(ListAPIView):
     def get_queryset(self):
         id = self.kwargs.get('pk')
 
-        # Get the first StudentGroup that matches the filter
-        group = StudentGroup.objects.filter(Q(lid__id=id) | Q(student__id=id)).select_related('group').first()
+        # Get all StudentGroups that match the filter (either by lid or student id)
+        groups = StudentGroup.objects.filter(Q(lid__id=id) | Q(student__id=id)).select_related('group')
 
-        if group and group.group and group.group.course:
-            return Course.objects.filter(id=group.group.course.id)
+        courses = set()  # Use a set to avoid duplicates
+        for group in groups:
+            if group.group and group.group.course:
+                courses.add(group.group.course)
 
-        return Course.objects.none()
+        # Convert set to list to ensure compatibility with the paginator
+        return list(courses)
 
 
 class CourseTheme(ListAPIView):
