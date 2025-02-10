@@ -7,17 +7,39 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 
-from .models import Finance
-from .serializers import FinanceSerializer
+from .models import Finance, Casher
+from .serializers import FinanceSerializer, CasherSerializer
 from data.account.models import CustomUser
 from data.student.student.models import Student
 from ...lid.new_lid.models import Lid
+
+
+class CasherListCreateAPIView(ListCreateAPIView):
+    queryset = Casher.objects.all()
+    serializer_class = CasherSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class CasherRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Casher.objects.all()
+    serializer_class = CasherSerializer
+    permission_classes = [IsAuthenticated]
+
 
 
 class FinanceListAPIView(ListCreateAPIView):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        id = self.request.query_params.get('casher_id', None)
+        finance = Finance.objects.filter(casher__id=id)
+        if finance:
+            return finance
+        return Finance.objects.none()
+
+
 
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Finance.objects.all()

@@ -5,8 +5,32 @@ from data.command.models import TimeStampModel
 from data.lid.new_lid.models import Lid
 from data.student.student.models import Student
 
+class Casher(TimeStampModel):
+    user: "CustomUser" = models.ForeignKey(
+        'account.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='finances',
+    )
+    role = models.CharField(
+        choices=[
+            ('ADMINISTRATOR', 'ADMINISTRATOR'),
+            ('WEALTH', 'WEALTH'),
+            ("ACCOUNTANT", "ACCOUNTANT"),
+        ],
+        default='ADMINISTRATOR',
+        max_length=20,
+    )
+    def __str__(self):
+        return self.user.phone + self.role
 
 class Finance(TimeStampModel):
+
+    casher : "Casher" = models.ForeignKey(
+        'finance.Casher',
+        on_delete=models.CASCADE,
+        related_name='finances_casher',
+    )
+
     action = models.CharField(
         choices=[
                 ('INCOME', 'INCOME'),
@@ -17,18 +41,6 @@ class Finance(TimeStampModel):
     )
 
     amount = models.FloatField(default=0)
-
-
-    casher = models.CharField(
-        choices=[
-            ('ADMINISTRATOR', 'ADMINISTRATOR'),
-            ('WEALTH', 'WEALTH'),
-            ("ACCOUNTANT", "ACCOUNTANT"),
-        ],
-        default='ADMINISTRATOR',
-        max_length=20,
-    )
-
 
     kind = models.CharField(
         choices=[
