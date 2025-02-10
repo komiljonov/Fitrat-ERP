@@ -27,7 +27,6 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'group',
             'lid',
             'student',
-            'current_theme',
         ]
 
 

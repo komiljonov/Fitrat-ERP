@@ -1,11 +1,10 @@
-
-from django.contrib.auth import get_user_model
 from django.db import models
 
 from data.account.models import CustomUser
 from data.command.models import TimeStampModel
-from data.student.student.models import Student
 from data.lid.new_lid.models import Lid
+from data.student.student.models import Student
+
 
 class Finance(TimeStampModel):
     action = models.CharField(
@@ -23,10 +22,10 @@ class Finance(TimeStampModel):
     casher = models.CharField(
         choices=[
             ('ADMINISTRATOR', 'ADMINISTRATOR'),
-            ('CASHER', 'CASHER'),
-            ("BUXGALTER", "BUXGALTER"),
+            ('WEALTH', 'WEALTH'),
+            ("ACCOUNTANT", "ACCOUNTANT"),
         ],
-        default='CASHER',
+        default='ADMINISTRATOR',
         max_length=20,
     )
 
