@@ -6,12 +6,12 @@ from .models import Finance, Casher
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
-
 class CasherSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     balance = serializers.SerializerMethodField()
     income = serializers.SerializerMethodField()
     expense = serializers.SerializerMethodField()
+
     class Meta:
         model = Casher
         fields = [
@@ -25,21 +25,21 @@ class CasherSerializer(serializers.ModelSerializer):
         ]
 
     def get_balance(self, obj):
-        balance = Finance.objects.filter(casher=obj).aggregate(Sum('amount'))['amount__sum']
-        return balance if balance is not None else 0
+        income = Finance.objects.filter(casher=obj, action='INCOME').aggregate(Sum('amount'))['amount__sum'] or 0
+        expense = Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(Sum('amount'))['amount__sum'] or 0
+        return income - expense
 
     def get_income(self, obj):
-        income = Finance.objects.filter(casher=obj, kind='income').aggregate(Sum('amount'))['amount__sum']
-        return income if income is not None else 0
+        return Finance.objects.filter(casher=obj, action='INCOME').aggregate(Sum('amount'))['amount__sum'] or 0
 
     def get_expense(self, obj):
-        expense = Finance.objects.filter(casher=obj, kind='expense').aggregate(Sum('amount'))['amount__sum']
-        return expense if expense is not None else 0
+        return Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(Sum('amount'))['amount__sum'] or 0
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["user"] = UserListSerializer(instance.user).data
         return rep
+
 
 
 
