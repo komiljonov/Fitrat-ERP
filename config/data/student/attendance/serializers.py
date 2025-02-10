@@ -63,3 +63,27 @@ class AttendanceSerializer(serializers.ModelSerializer):
         filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
         return filtered_data
 
+
+class AttendanceTHSerializer(serializers.ModelSerializer):
+    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
+
+    class Meta:
+        model = Attendance
+        fields = [
+            'id',
+            'theme',
+            'repeated',
+            'group',
+            'created_at',
+            'updated_at',
+        ]
+
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        rep['theme'] = ThemeSerializer(instance.theme, many=True).data
+        filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
+        return filtered_data
+
+

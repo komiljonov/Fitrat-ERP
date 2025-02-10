@@ -9,17 +9,40 @@ from data.student.student.models import Student
 
 class CasherSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    balance = serializers.SerializerMethodField()
+    income = serializers.SerializerMethodField()
+    expense = serializers.SerializerMethodField()
     class Meta:
         model = Casher
         fields = [
             'id',
+            'name',
             'user',
             'role',
+            'balance',
+            'income',
+            'expense',
         ]
+
+    def get_balance(self, obj):
+        balance = Finance.objects.filter(casher=obj).aggregate(Sum('balance'))['balance__sum']
+        return balance
+
+    def get_income(self, obj):
+        income = Finance.objects.filter(casher=obj).aggregate(Sum('income'))
+        return income['income__sum']
+    def get_expense(self, obj):
+        expense = Finance.objects.filter(casher=obj).aggregate(Sum('expense'))
+        return expense['expense__sum']
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["user"] = UserListSerializer(instance.user).data
         return rep
+
+
+
+
 
 class FinanceSerializer(serializers.ModelSerializer):
     # Automatically assign `creator` from the request user

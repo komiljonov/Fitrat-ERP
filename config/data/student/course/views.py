@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from .models import Course
 from .serializers import CourseSerializer
 from ..attendance.models import Attendance
-from ..attendance.serializers import AttendanceSerializer
+from ..attendance.serializers import AttendanceSerializer, AttendanceTHSerializer
 from ..groups.models import Group
 from ..studentgroup.models import StudentGroup
 
@@ -67,12 +67,13 @@ class StudentCourse(ListAPIView):
 
 class CourseTheme(ListAPIView):
     queryset = Attendance.objects.all()
-    serializer_class = AttendanceSerializer
+    serializer_class = AttendanceTHSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         id = self.kwargs.get('pk')
         course = Course.objects.filter(id=id).first()
+        print(course)
         if course:
             return Attendance.objects.filter(theme__course=course)
         return Attendance.objects.none()

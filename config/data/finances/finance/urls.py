@@ -12,6 +12,6 @@ urlpatterns = [
     path('stuff/<uuid:pk>/',StuffFinanceListAPIView.as_view(), name='finance_stuff'),
 
     path('casher',CasherListCreateAPIView.as_view(), name='finance_casher'),
-    path('cahser/<uuid:pk>/',CasherListCreateAPIView.as_view(), name='finance_casher'),
+    path('casher/<uuid:pk>/',CasherListCreateAPIView.as_view(), name='finance_casher'),
 
 ]

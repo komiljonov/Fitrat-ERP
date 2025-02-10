@@ -6,6 +6,7 @@ from data.lid.new_lid.models import Lid
 from data.student.student.models import Student
 
 class Casher(TimeStampModel):
+    name = models.CharField(max_length=100)
     user: "CustomUser" = models.ForeignKey(
         'account.CustomUser',
         on_delete=models.CASCADE,
