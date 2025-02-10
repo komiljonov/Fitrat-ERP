@@ -7,4 +7,6 @@ urlpatterns = [
     path('<uuid:pk>/',CourseDetail.as_view()),
     path('no-pg/',CourseNoPG.as_view()),
 
+    path('students/<uuid:pk>/',StudentCourse.as_view()),
+
 ]

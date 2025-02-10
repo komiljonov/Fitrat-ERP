@@ -1,3 +1,5 @@
+import icecream
+from django.db.models import Q
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -10,6 +12,9 @@ from rest_framework.response import Response
 
 from .models import Course
 from .serializers import CourseSerializer
+from ..groups.models import Group
+from ..studentgroup.models import StudentGroup
+
 
 class CourseList(ListCreateAPIView):
     queryset = Course.objects.all()
@@ -36,3 +41,26 @@ class CourseNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class StudentCourse(ListAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.kwargs.get('pk')
+
+        # Get the first StudentGroup that matches the filter
+        group = StudentGroup.objects.filter(Q(lid__id=id) | Q(student__id=id)).select_related('group').first()
+
+        if group and group.group and group.group.course:
+            return Course.objects.filter(id=group.group.course.id)
+
+        return Course.objects.none()
+
+
+
+# class CourseTheme(ListAPIView):
+#     queryset = Course.objects.all()
+#     serializer_class = CourseSerializer
