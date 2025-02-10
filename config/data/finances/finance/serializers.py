@@ -25,15 +25,16 @@ class CasherSerializer(serializers.ModelSerializer):
         ]
 
     def get_balance(self, obj):
-        balance = Finance.objects.filter(casher=obj).aggregate(Sum('balance'))['balance__sum']
-        return balance
+        balance = Finance.objects.filter(casher=obj).aggregate(Sum('amount'))['amount__sum']
+        return balance if balance is not None else 0
 
     def get_income(self, obj):
-        income = Finance.objects.filter(casher=obj).aggregate(Sum('income'))
-        return income['income__sum']
+        income = Finance.objects.filter(casher=obj, kind='income').aggregate(Sum('amount'))['amount__sum']
+        return income if income is not None else 0
+
     def get_expense(self, obj):
-        expense = Finance.objects.filter(casher=obj).aggregate(Sum('expense'))
-        return expense['expense__sum']
+        expense = Finance.objects.filter(casher=obj, kind='expense').aggregate(Sum('amount'))['amount__sum']
+        return expense if expense is not None else 0
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
