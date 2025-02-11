@@ -53,7 +53,7 @@ class UserList(FilialRestrictedQuerySetMixin,ListAPIView):
         role = self.request.query_params.get('role', None)
         if role:
             return CustomUser.objects.filter(role=role).order_by('-created_at')
-        return CustomUser.objects.none().order_by('-created_at')
+        return CustomUser.objects.none()
 
 
 
