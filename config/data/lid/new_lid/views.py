@@ -221,25 +221,49 @@ class ExportLidToExcelAPIView(APIView):
 class LidStatisticsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Lid.objects.all()
+    from django.db.models import Q
 
     def list(self, request, *args, **kwargs):
         user = request.user
-        if user.role == "CALL_OPERATOR":
-            # leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,call_operator__in=[None,user],
-            #                                  filial__in=[None, user.filial]).count()
-            filial = (Q(filial=user.filial) | Q(filial__isnull=True))
-            leads_count = Lid.objects.filter(Q(call_operator=None) | Q(call_operator=user),
-                                             lid_stage_type="NEW_LID",is_archived=False, filial=(Q(filial=user.filial) | Q(filial__isnull=True))).count()
-            new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
-                                           call_operator=None,filial=(Q(filial=user.filial) | Q(filial__isnull=True))).count()
+        filial_condition = Q(filial=user.filial) | Q(filial__isnull=True)
 
-            in_progress = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
-                                             filial=(Q(filial=user.filial) | Q(filial__isnull=True)), call_operator=user,
-                                             lid_stages="KUTULMOQDA").count()
-            order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",
-                                                filial=user.filial, call_operator=user).count()
-            archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
-                                                 filial=(Q(filial=user.filial) | Q(filial__isnull=True)), call_operator=user).count()
+        if user.role == "CALL_OPERATOR":
+            # Counting the leads with the provided conditions
+            leads_count = Lid.objects.filter(
+                Q(call_operator=None) | Q(call_operator=user),
+                lid_stage_type="NEW_LID",
+                is_archived=False,
+                filial=filial_condition
+            ).count()
+
+            new_leads = Lid.objects.filter(
+                lid_stage_type="NEW_LID",
+                is_archived=False,
+                call_operator=None,
+                filial=filial_condition
+            ).count()
+
+            in_progress = Lid.objects.filter(
+                lid_stage_type="NEW_LID",
+                is_archived=False,
+                filial=filial_condition,
+                call_operator=user,
+                lid_stages="KUTULMOQDA"
+            ).count()
+
+            order_created = Lid.objects.filter(
+                is_archived=False,
+                lid_stage_type="ORDERED_LID",
+                filial=user.filial,
+                call_operator=user
+            ).count()
+
+            archived_new_leads = Lid.objects.filter(
+                is_archived=True,
+                lid_stage_type="NEW_LID",
+                filial=filial_condition,
+                call_operator=user
+            ).count()
 
         else:
             leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
