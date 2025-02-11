@@ -16,7 +16,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         fields = (
             "full_name", "first_name", "last_name", "phone", "role","password","salary",
             "photo", "filial", "balance", "ball","pages",
-            "enter", "leave", "date_of_birth", "compensation", "bonus"
+            "enter", "leave", "date_of_birth",
         )
         # We don't need to add extra_kwargs for password
 
@@ -27,15 +27,11 @@ class UserCreateSerializer(serializers.ModelSerializer):
         if not password:
             raise serializers.ValidationError({"password": "Password is required."})
 
-        compensation_data = validated_data.pop('compensation', [])
-        bonus_data = validated_data.pop('bonus', [])
         page_data = validated_data.pop('pages', [])
 
         user = CustomUser(**validated_data)
         user.set_password(password)  # Hash the password
         user.save()
-        user.compensation.set(compensation_data)  # Set the compensation
-        user.bonus.set(bonus_data)  # Set the bonus
         user.pages.set(page_data)
         user.save()
         return user
@@ -88,14 +84,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False)
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
-    compensation = serializers.PrimaryKeyRelatedField(queryset=Compensation.objects.all(), many=True, required=False)
-    bonus = serializers.PrimaryKeyRelatedField(queryset=Bonus.objects.all(), many=True, required=False)
     pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, required=False)
 
     class Meta:
         model = CustomUser
         fields = ['phone', 'full_name', 'first_name', 'last_name', 'password', 'role', 'photo', "salary","enter", "leave","pages",
-                  'date_of_birth', 'compensation', 'bonus']
+                  'date_of_birth', ]
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
@@ -111,17 +105,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         # Update other fields (except compensation and bonus)
         for attr, value in validated_data.items():
-            if attr not in ['compensation', 'bonus','pages', 'phone']:  # Skip phone here
+            if attr not in ['pages', 'phone']:  # Skip phone here
                 setattr(instance, attr, value)
 
-        # Handle many-to-many relationships correctly
-        if "compensation" in validated_data:
-            instance.compensation.set(validated_data["compensation"])
-        if "bonus" in validated_data:
-            instance.bonus.set(validated_data["bonus"])
         if "pages" in validated_data:
             instance.pages.set(validated_data["pages"])
-
         instance.save()
         return instance
     def to_representation(self, instance):
@@ -132,11 +120,22 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class UserListSerializer(ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
+    bonus = serializers.SerializerMethodField()
+    compensation = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
         fields = ['id', 'phone', "full_name","first_name","last_name",'role',"salary","pages",
-                  "photo", "filial", ]
+                  "photo", "filial","bonus","compensation", ]
+
+    def get_bonus(self, obj):
+        bonus = Bonus.objects.filter(user=obj).values("name","amount","price_type")
+        return list(bonus)
+
+    def get_compensation(self, obj):
+        compensation = Compensation.objects.filter(user=obj).values("name","amount","price_type")
+        return list(compensation)
+
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -146,36 +145,37 @@ class UserListSerializer(ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-    compensation = serializers.PrimaryKeyRelatedField(queryset=Compensation.objects.all(), many=True, allow_null=True)
-    bonus = serializers.PrimaryKeyRelatedField(queryset=Bonus.objects.all(), many=True, allow_null=True)
     pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, allow_null=True)
-
+    bonus = serializers.SerializerMethodField()
+    compensation = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "phone", "role","pages",
             "photo", "filial", "balance", "ball","salary",
-            "enter", "leave", "date_of_birth", "created_at",
-            "updated_at", "compensation", "bonus"
+            "enter", "leave", "date_of_birth", "created_at","bonus","compensation",
+            "updated_at"
         )
+
+    def get_bonus(self, obj):
+        bonus = Bonus.objects.filter(user=obj).values("name", "amount", "price_type")
+        return list(bonus)
+
+    def get_compensation(self, obj):
+        compensation = Compensation.objects.filter(user=obj).values("name", "amount", "price_type")
+        return list(compensation)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["photo"] = FileUploadSerializer(instance.photo).data if instance.photo else None
-        rep["compensation"] = CompensationSerializer(instance.compensation.all(), many=True).data
-        rep["bonus"] = BonusSerializer(instance.bonus.all(), many=True).data
         rep["pages"] = PagesSerializer(instance.pages.all(), many=True).data
         return rep
 
     def create(self, validated_data):
-        compensation_data = validated_data.pop("compensation", [])
-        bonus_data = validated_data.pop("bonus", [])
         page_data = validated_data.pop("pages", [])
 
         user = CustomUser.objects.create(**validated_data)
 
-        user.compensation.set(compensation_data)
-        user.bonus.set(bonus_data)
         user.pages.set(page_data)
 
         return user

@@ -1,13 +1,12 @@
 import uuid
-from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from data.department.filial.models import Filial
 from ..account.managers import UserManager
+from ..finances.compensation.models import Compensation, Bonus, Page
 from ..upload.models import File
-from ..finances.compensation.models import Compensation, Bonus,Page
 
 
 class CustomUser(AbstractUser):

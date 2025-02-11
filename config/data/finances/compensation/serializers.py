@@ -1,25 +1,28 @@
 from rest_framework import serializers
-
 from .models import Bonus, Compensation
 
 class BonusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bonus
-        fields = [
-            'id',
-            'name',
-            'amount',
-        ]
+        fields = ['id', 'name', 'user', 'price_type', 'amount']
+
+    def create(self, validated_data):
+        if isinstance(validated_data, list):
+            return Bonus.objects.bulk_create([Bonus(**data) for data in validated_data])
+        return super().create(validated_data)
 
 
 class CompensationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Compensation
-        fields = [
-            'id',
-            'name',
-            'amount',
-        ]
+        fields = ['id', 'name', 'user', 'price_type', 'amount']
+
+    def create(self, validated_data):
+        if isinstance(validated_data, list):
+            return Compensation.objects.bulk_create([Compensation(**data) for data in validated_data])
+        return super().create(validated_data)
+
+
 
 class PagesSerializer(serializers.ModelSerializer):
     class Meta:
