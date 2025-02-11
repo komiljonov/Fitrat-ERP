@@ -78,11 +78,12 @@ class Handover(TimeStampModel):
     casher : "Casher" = models.ForeignKey(
         'finance.Casher',
         on_delete=models.CASCADE,
-        related_name='finances_casher',
+        related_name='finances_casher_handover',
     )
     receiver : "Casher" = models.ForeignKey(
         'finance.Casher',
         on_delete=models.CASCADE,
+        related_name='finances_receiver_handover',
     )
     amount = models.FloatField(default=0)
 
