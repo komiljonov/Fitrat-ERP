@@ -236,8 +236,10 @@ class CasherStatisticsAPIView(APIView):
     def get(self, request, *args, **kwargs):
         casher = self.kwargs.get('pk')
         if casher:
-            income = Finance.objects.filter(casher__id=casher, action='INCOME').aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher__id=casher, action='EXPENSE').aggregate(Sum('amount'))['amount__sum'] or 0
+            income = Finance.objects.filter(casher__id=casher, action='INCOME'
+                                            ).aggregate(Sum('amount'))['amount__sum'] or 0
+            expense = Finance.objects.filter(casher__id=casher, action='EXPENSE'
+                                             ).aggregate(Sum('amount'))['amount__sum'] or 0
             balance = income - expense
             return Response({
                 "income": income,

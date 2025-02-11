@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ...account.models import CustomUser
 
 class Compensation(TimeStampModel):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=256)
     user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     price_type = models.CharField(choices=[
@@ -21,7 +21,7 @@ class Compensation(TimeStampModel):
 
 
 class Bonus(TimeStampModel):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=256)
     user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     price_type = models.CharField(choices=[
