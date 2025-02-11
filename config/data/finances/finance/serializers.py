@@ -64,7 +64,8 @@ class FinanceSerializer(serializers.ModelSerializer):
     # Automatically assign `creator` from the request user
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
-
+    total = serializers.SerializerMethodField()
+    balance = serializers.SerializerMethodField()
 
     class Meta:
         model = Finance
@@ -80,42 +81,44 @@ class FinanceSerializer(serializers.ModelSerializer):
             'comment',
             'created_at',
             'updated_at',
+            'total',
+            'balance',
         ]
 
 
-    #
-    # def get_total(self, obj):
-    #     # Aggregate the sum of income and outcome
-    #     income_sum = Finance.objects.filter(action='INCOME').aggregate(total=Sum('amount'))['total'] or 0
-    #     outcome_sum = Finance.objects.filter(action='EXPENSE').aggregate(total=Sum('amount'))['total'] or 0
-    #     # Calculate the balance
-    #     return income_sum - outcome_sum
+
+    def get_total(self, obj):
+        # Aggregate the sum of income and outcome
+        income_sum = Finance.objects.filter(action='INCOME').aggregate(total=Sum('amount'))['total'] or 0
+        outcome_sum = Finance.objects.filter(action='EXPENSE').aggregate(total=Sum('amount'))['total'] or 0
+        # Calculate the balance
+        return income_sum - outcome_sum
 
 
 
-    # def get_balance(self, obj):
-    #     # Fetch the related CustomUser instance
-    #     stuff = obj.stuff
-    #     student = obj.student
-    #
-    #     # Ensure that stuff or student is not None
-    #     if stuff:
-    #         income = Finance.objects.filter(stuff=stuff, action="INCOME").aggregate(balance=Sum('amount'))[
-    #                      'balance'] or 0
-    #         outcome = Finance.objects.filter(stuff=stuff, action="EXPENSE").aggregate(balance=Sum('amount'))[
-    #                       'balance'] or 0
-    #         return income - outcome
-    #
-    #     # Optional: handle balance calculation for students if needed
-    #     if student:
-    #         income = Finance.objects.filter(student=student, action="INCOME").aggregate(balance=Sum('amount'))[
-    #                      'balance'] or 0
-    #         outcome = Finance.objects.filter(student=student, action="EXPENSE").aggregate(balance=Sum('amount'))[
-    #                       'balance'] or 0
-    #         return income - outcome
-    #
-    #     # Default to 0 if neither stuff nor student exists
-    #     return 0
+    def get_balance(self, obj):
+        # Fetch the related CustomUser instance
+        stuff = obj.stuff
+        student = obj.student
+
+        # Ensure that stuff or student is not None
+        if stuff:
+            income = Finance.objects.filter(stuff=stuff, action="INCOME").aggregate(balance=Sum('amount'))[
+                         'balance'] or 0
+            outcome = Finance.objects.filter(stuff=stuff, action="EXPENSE").aggregate(balance=Sum('amount'))[
+                          'balance'] or 0
+            return income - outcome
+
+        # Optional: handle balance calculation for students if needed
+        if student:
+            income = Finance.objects.filter(student=student, action="INCOME").aggregate(balance=Sum('amount'))[
+                         'balance'] or 0
+            outcome = Finance.objects.filter(student=student, action="EXPENSE").aggregate(balance=Sum('amount'))[
+                          'balance'] or 0
+            return income - outcome
+
+        # Default to 0 if neither stuff nor student exists
+        return 0
 
     def to_internal_value(self, data):
 
