@@ -50,6 +50,9 @@ class LidListCreateView(ListCreateAPIView):
         queryset = Lid.objects.all()
 
         # Dynamically filter by `is_archived` if provided
+        is_student = self.request.query_params.get("is_student")
+        if is_student:
+            queryset = queryset.filter(is_student=is_student)
         is_archived = self.request.query_params.get("is_archived")
         if is_archived == "True":
             queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
