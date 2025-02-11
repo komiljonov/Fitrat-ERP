@@ -195,3 +195,13 @@ class FinanceStatisticsAPIView(APIView):
             "admin_casher": admin_casher_balance,
             "accounting_casher": accounting_casher_balance,
         })
+
+class CasherHandoverHistory(ListAPIView):
+    serializer_class = FinanceSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self,**kwargs):
+        casher = self.kwargs.get('pk')
+        if casher:
+            return Finance.objects.filter(casher__id=casher,
+                kind__in=["CASHIER_HANDOVER","CASHIER_ACCEPTANCE"])
+        return Finance.objects.none()
