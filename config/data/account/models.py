@@ -5,7 +5,9 @@ from django.db import models
 
 from data.department.filial.models import Filial
 from ..account.managers import UserManager
-from ..finances.compensation.models import Compensation, Bonus, Page
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..finances.compensation.models import Compensation, Bonus, Page
 from ..upload.models import File
 
 
@@ -51,9 +53,6 @@ class CustomUser(AbstractUser):
     updated_at = models.DateField(auto_now=True, null=True, blank=True)
 
     filial : 'Filial' = models.ForeignKey('filial.Filial', on_delete=models.SET_NULL, blank=True, null=True)
-
-    compensation : 'Compensation' = models.ManyToManyField('compensation.Compensation', null=True,blank=True)
-    bonus : 'Bonus'= models.ManyToManyField('compensation.Bonus', null=True,blank=True)
 
     pages : 'Page'= models.ManyToManyField('compensation.Page', null=True, blank=True)
 
