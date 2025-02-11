@@ -22,7 +22,7 @@ class Casher(TimeStampModel):
         max_length=20,
     )
     def __str__(self):
-        return self.user.phone + self.role
+        return f"{self.user.phone} {self.role}"
 
 class Finance(TimeStampModel):
 
@@ -50,6 +50,8 @@ class Finance(TimeStampModel):
             ('BONUS', 'BONUS'),
             ('MONEY_BACK', 'MONEY_BACK'),
             ('OTHER', 'OTHER'),
+            ('CASHIER_HANDOVER', 'Kassa topshirish'),
+            ('CASHIER_ACCEPTANCE', 'Kassa qabul qilish'),
         ],
         default='COURSE_PAYMENT',
         max_length=20,
@@ -64,7 +66,7 @@ class Finance(TimeStampModel):
     creator : 'CustomUser' = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL,null=True,blank=True, related_name='finance_creator')
 
     comment = models.TextField(null=True, blank=True)
-          
+
 
     def __str__(self):
         return f'{self.amount} {self.kind} {self.action}'

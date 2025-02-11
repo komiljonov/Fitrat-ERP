@@ -41,6 +41,21 @@ class CasherSerializer(serializers.ModelSerializer):
         return rep
 
 
+class CasherHandoverSerializer(serializers.ModelSerializer):
+    receiver = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
+    amount = serializers.IntegerField()
+    casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
+    class Meta:
+        model = Casher
+        fields = [
+            'id',
+            'receiver',
+            'amount',
+            'casher',
+            'created_at',
+            'updated_at',
+        ]
+
 
 
 

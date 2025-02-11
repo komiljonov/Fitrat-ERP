@@ -1,14 +1,17 @@
+import icecream
+from django.db.models import Sum
 from django.shortcuts import render
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
 
 from .models import Finance, Casher
-from .serializers import FinanceSerializer, CasherSerializer
+from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer
 from data.account.models import CustomUser
 from data.student.student.models import Student
 from ...lid.new_lid.models import Lid
@@ -38,7 +41,6 @@ class FinanceListAPIView(ListCreateAPIView):
         if finance:
             return finance
         return Finance.objects.none()
-
 
 
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -121,3 +123,47 @@ class StuffFinanceListAPIView(ListAPIView):
         return Finance.objects.none()
 
 
+class CasherHandoverAPIView(CreateAPIView):
+    serializer_class = CasherHandoverSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        receiver = serializer.validated_data.get("receiver")
+        casher = serializer.validated_data.get("casher")
+        amount = serializer.validated_data.get("amount")
+        icecream.ic(receiver, casher, amount)
+
+
+        if int(amount) > 0:
+            # Deduct from sender (casher)
+            Finance.objects.create(
+                casher=casher,
+                amount=amount,
+                action='EXPENSE',
+                kind="CASHIER_HANDOVER",
+                creator=request.user,
+                comment=f"{casher.user.first_name} handed over {amount} to {receiver.user.first_name}"
+            )
+
+            # Add to receiver
+            Finance.objects.create(
+                casher=receiver,
+                amount=amount,
+                action='INCOME',
+                kind="CASHIER_ACCEPTANCE",
+                creator=request.user,
+                comment=f"{receiver.user.first_name} received {amount} from {casher.user.first_name}"
+            )
+
+            return Response(
+                {"message": "Cashier handover completed successfully"},
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            {"error": "Insufficient balance for handover"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
