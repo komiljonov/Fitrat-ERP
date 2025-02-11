@@ -225,3 +225,21 @@ class TeacherHandover(ListAPIView):
             if user:
                 return Finance.objects.filter(stuff__id=id)
         return Finance.objects.none()
+
+
+class CasherStatisticsAPIView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FinanceSerializer
+    queryset = Finance.objects.all()
+    def get_queryset(self,**kwargs):
+        casher = self.kwargs.get('pk')
+        if casher:
+            income = Finance.objects.filter(casher=casher, action='INCOME').aggregate(Sum('amount'))['amount__sum'] or 0
+            expense = Finance.objects.filter(casher=casher, action='EXPENSE').aggregate(Sum('amount'))['amount__sum'] or 0
+            balance = income - expense
+            return {
+                "income": income,
+                "expense": expense,
+                "balance": balance,
+            }
+        return Finance.objects.none()
