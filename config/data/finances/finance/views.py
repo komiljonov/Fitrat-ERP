@@ -1,19 +1,19 @@
 import icecream
 from django.db.models import Sum
-from django.shortcuts import render
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, \
+    RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import Finance, Casher
-from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer
 from data.account.models import CustomUser
 from data.student.student.models import Student
+from .models import Finance, Casher
+from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer
 from ...lid.new_lid.models import Lid
 
 
@@ -28,6 +28,14 @@ class CasherRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
 
+
+class CasherNoPg(ListAPIView):
+    queryset = Casher.objects.all()
+    serializer_class = CasherSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_paginated_response(self, data):
+        return Response(data)
 
 
 class FinanceListAPIView(ListCreateAPIView):
@@ -167,3 +175,30 @@ class CasherHandoverAPIView(CreateAPIView):
             {"error": "Insufficient balance for handover"},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class FinanceStatisticsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Asosiy kassa balansi
+        main_casher_income = Finance.objects.filter(casher__role="WEALTH", action="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+        main_casher_outcome = Finance.objects.filter(casher__role="WEALTH", action="OUTCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+        main_casher_balance = main_casher_income - main_casher_outcome
+
+        # Administrativ kassa balansi
+        admin_casher_income = Finance.objects.filter(casher__role="ADMINISTRATOR", action="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+        admin_casher_outcome = Finance.objects.filter(casher__role="ADMINISTRATOR", action="OUTCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+        admin_casher_balance = admin_casher_income - admin_casher_outcome
+
+        # Accountant kassa balansi
+        accounting_casher_income = Finance.objects.filter(casher__role="ACCOUNTANT", action="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+        accounting_casher_outcome = Finance.objects.filter(casher__role="ACCOUNTANT", action="OUTCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+        accounting_casher_balance = accounting_casher_income - accounting_casher_outcome
+
+        # JSON response qaytarish
+        return Response({
+            "main_casher": main_casher_balance,
+            "admin_casher": admin_casher_balance,
+            "accounting_casher": accounting_casher_balance,
+        })
