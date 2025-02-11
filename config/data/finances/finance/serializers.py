@@ -57,9 +57,6 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
         ]
 
 
-
-
-
 class FinanceSerializer(serializers.ModelSerializer):
     # Automatically assign `creator` from the request user
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())

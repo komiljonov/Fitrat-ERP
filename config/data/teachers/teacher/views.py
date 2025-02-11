@@ -13,7 +13,7 @@ from ...student.groups.models import Group, SecondaryGroup
 from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
-from ...student.studentgroup.models import StudentGroup
+from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...student.studentgroup.serializers import StudentsGroupSerializer
 
 
@@ -140,3 +140,20 @@ class AsistantTeachersView(ListAPIView):
         return queryset
 
 
+class AssistantStatisticsView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+
+        students = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user).count()
+        average_assimilation = None
+        low_assimilation = None
+        high_assimilation = None
+
+        statistics = {
+            "students": students,
+            "average_assimilation": average_assimilation,
+            "high_assimilation": high_assimilation,
+            "low_assimilation": low_assimilation
+        }
+        return Response(statistics)
