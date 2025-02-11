@@ -2,7 +2,7 @@ from django.contrib.admin import action
 from django.db.models import Sum
 from rest_framework import serializers
 
-from .models import Finance, Casher
+from .models import Finance, Casher, Handover
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
@@ -46,7 +46,7 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField()
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
     class Meta:
-        model = Casher
+        model = Handover
         fields = [
             'id',
             'receiver',
@@ -55,6 +55,12 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["receiver"] = CasherSerializer(instance.receiver).data
+        rep["casher"] = CasherSerializer(instance.casher).data
+        return rep
+
 
 
 class FinanceSerializer(serializers.ModelSerializer):

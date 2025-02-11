@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 
 from data.account.models import CustomUser
 from data.student.student.models import Student
-from .models import Finance, Casher
+from .models import Finance, Casher, Handover
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer
 from ...lid.new_lid.models import Lid
 
@@ -162,6 +162,12 @@ class CasherHandoverAPIView(CreateAPIView):
                         f" from {casher.user.first_name}"
             )
 
+            Handover.objects.create(
+                amount=amount,
+                receiver=receiver,
+                casher=casher,
+            )
+
             return Response(
                 {"message": "Cashier handover completed successfully"},
                 status=status.HTTP_201_CREATED
@@ -199,11 +205,10 @@ class FinanceStatisticsAPIView(APIView):
         })
 
 class CasherHandoverHistory(ListAPIView):
-    serializer_class = FinanceSerializer
+    serializer_class = CasherHandoverSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self,**kwargs):
         casher = self.kwargs.get('pk')
         if casher:
-            return Finance.objects.filter(casher__id=casher,
-                kind__in=["CASHIER_HANDOVER","CASHIER_ACCEPTANCE"])
+            return Handover.objects.filter(casher__id=casher)
         return Finance.objects.none()
