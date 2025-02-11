@@ -226,20 +226,22 @@ class TeacherHandover(ListAPIView):
                 return Finance.objects.filter(stuff__id=id)
         return Finance.objects.none()
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
-class CasherStatisticsAPIView(ListAPIView):
+class CasherStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = FinanceSerializer
-    queryset = Finance.objects.all()
-    def get_queryset(self,**kwargs):
+
+    def get(self, request, *args, **kwargs):
         casher = self.kwargs.get('pk')
         if casher:
-            income = Finance.objects.filter(casher=casher, action='INCOME').aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher=casher, action='EXPENSE').aggregate(Sum('amount'))['amount__sum'] or 0
+            income = Finance.objects.filter(casher__id=casher, action='INCOME').aggregate(Sum('amount'))['amount__sum'] or 0
+            expense = Finance.objects.filter(casher__id=casher, action='EXPENSE').aggregate(Sum('amount'))['amount__sum'] or 0
             balance = income - expense
-            return {
+            return Response({
                 "income": income,
                 "expense": expense,
                 "balance": balance,
-            }
-        return Finance.objects.none()
+            })
+        return Response({"error": "Casher not found"}, status=404)
