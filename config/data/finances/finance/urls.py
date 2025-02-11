@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import FinanceListAPIView, FinanceDetailAPIView, FinanceNoPGList, StudentFinanceListAPIView, \
     StuffFinanceListAPIView, CasherListCreateAPIView, CasherRetrieveUpdateDestroyAPIView, CasherHandoverAPIView, \
-    FinanceStatisticsAPIView, CasherNoPg, CasherHandoverHistory
+    FinanceStatisticsAPIView, CasherNoPg, CasherHandoverHistory, TeacherHandover
 
 urlpatterns = [
     path('', FinanceListAPIView.as_view(), name='finance_list'),
@@ -20,5 +20,5 @@ urlpatterns = [
     path('handover/<uuid:pk>/', CasherHandoverHistory.as_view(), name='finance_handover_history'),
 
     path('statistics/', FinanceStatisticsAPIView.as_view(), name='finance_statistics'),
-
+    path('teacher/<uuid:pk>/',TeacherHandover.as_view(), name='finance_teacher'),
 ]

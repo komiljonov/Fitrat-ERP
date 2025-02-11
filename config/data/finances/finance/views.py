@@ -212,3 +212,16 @@ class CasherHandoverHistory(ListAPIView):
         if casher:
             return Handover.objects.filter(casher__id=casher)
         return Finance.objects.none()
+
+
+class TeacherHandover(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Finance.objects.all()
+    serializer_class = FinanceSerializer
+    def get_queryset(self,**kwargs):
+        id = self.kwargs.get('pk')
+        if id:
+            user = CustomUser.objects.filter(id=id).first()
+            if user:
+                return Finance.objects.filter(stuff__id=id)
+        return Finance.objects.none()
