@@ -44,7 +44,8 @@ class Results(TimeStampModel):
         ("OTHER","OTHER"),
     ],
     default="IELTS",
-    max_length=100,null=True,blank=True)
+    max_length=100,null=True,blank=True
+    )
     band_score = models.FloatField(null=True,blank=True)
     reading_score = models.FloatField(null=True,blank=True)
     lessoning_score = models.FloatField(null=True,blank=True)
