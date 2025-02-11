@@ -147,7 +147,8 @@ class CasherHandoverAPIView(CreateAPIView):
                 action='EXPENSE',
                 kind="CASHIER_HANDOVER",
                 creator=request.user,
-                comment=f"{casher.user.first_name} handed over {amount} to {receiver.user.first_name}"
+                comment=f"{casher.user.first_name} handed over {amount} "
+                        f"to {receiver.user.first_name}"
             )
 
             # Add to receiver
@@ -157,7 +158,8 @@ class CasherHandoverAPIView(CreateAPIView):
                 action='INCOME',
                 kind="CASHIER_ACCEPTANCE",
                 creator=request.user,
-                comment=f"{receiver.user.first_name} received {amount} from {casher.user.first_name}"
+                comment=f"{receiver.user.first_name} received {amount}"
+                        f" from {casher.user.first_name}"
             )
 
             return Response(

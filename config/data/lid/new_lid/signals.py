@@ -14,6 +14,10 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
     provided `is_student=True` and `phone_number` is available.
     """
     if not created:
+        if instance.is_expired:
+            instance.is_expired = False
+            instance.save()
+
         if instance.is_student and instance.filial:
             import hashlib
             password_hash = hashlib.sha256("1".encode()).hexdigest()
