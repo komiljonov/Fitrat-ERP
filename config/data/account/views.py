@@ -45,10 +45,15 @@ class RegisterAPIView(CreateAPIView):
 
 
 class UserList(FilialRestrictedQuerySetMixin,ListAPIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (JWTAuthentication,)
-    queryset = CustomUser.objects.all().order_by('id')
+    permission_classes = [IsAuthenticated,]
+    queryset = CustomUser.objects.all().order_by('-created_at')
     serializer_class = UserListSerializer
+
+    def get_queryset(self):
+        role = self.request.query_params.get('role', None)
+        if role:
+            return CustomUser.objects.filter(role=role).order_by('-created_at')
+        return CustomUser.objects.none().order_by('-created_at')
 
 
 
