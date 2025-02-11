@@ -229,17 +229,17 @@ class LidStatisticsView(ListAPIView):
             #                                  filial__in=[None, user.filial]).count()
             filial = (Q(filial=user.filial) | Q(filial__isnull=True))
             leads_count = Lid.objects.filter(Q(call_operator=None) | Q(call_operator=user),
-                                             lid_stage_type="NEW_LID",is_archived=False, filial=filial).count()
+                                             lid_stage_type="NEW_LID",is_archived=False, filial=(Q(filial=user.filial) | Q(filial__isnull=True))).count()
             new_leads = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
-                                           call_operator=None,filial=filial).count()
+                                           call_operator=None,filial=(Q(filial=user.filial) | Q(filial__isnull=True))).count()
 
             in_progress = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
-                                             filial=filial, call_operator=user,
+                                             filial=(Q(filial=user.filial) | Q(filial__isnull=True)), call_operator=user,
                                              lid_stages="KUTULMOQDA").count()
             order_created = Lid.objects.filter(is_archived=False, lid_stage_type="ORDERED_LID",
-                                                filial=filial, call_operator=user).count()
+                                                filial=user.filial, call_operator=user).count()
             archived_new_leads = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID",
-                                                 filial=filial, call_operator=user).count()
+                                                 filial=(Q(filial=user.filial) | Q(filial__isnull=True)), call_operator=user).count()
 
         else:
             leads_count = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,
