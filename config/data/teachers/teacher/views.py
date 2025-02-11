@@ -4,13 +4,13 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import TeacherSerializer
+from .serializers import TeacherSerializer, AssistantSerializer
 from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...notifications.models import Complaint
 from ...results.models import Results
-from ...student.groups.models import Group
-from ...student.groups.serializers import GroupSerializer
+from ...student.groups.models import Group, SecondaryGroup
+from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.studentgroup.models import StudentGroup
@@ -123,3 +123,20 @@ class TeachersGroupsView(ListAPIView):
             queryset = queryset.order_by(ordering)  # Explicitly apply ordering
 
         return queryset
+
+class AsistantTeachersView(ListAPIView):
+    serializer_class = SecondaryGroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        status = self.request.query_params.get("status")
+        teacher_id = self.request.user.pk
+        queryset = SecondaryGroup.objects.filter(teacher__id=teacher_id)
+        if status:
+            queryset = queryset.filter(status=status)
+        ordering = self.request.query_params.get("ordering")
+        if ordering:
+            queryset = queryset.order_by(ordering)
+        return queryset
+
+
