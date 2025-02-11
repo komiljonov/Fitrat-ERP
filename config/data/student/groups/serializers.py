@@ -52,14 +52,15 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def get_current_theme(self, obj):
         today = date.today()
-        icecream.ic(today)# Ensures the correct timezone
-        attendance = Attendance.objects.filter(
-            group=obj,
-            created_at__date=today  # Ensures we compare only the date
-        ).values("theme", "repeated")
+
+        # Ensures we compare only the date and remove duplicate themes
+        attendance = (
+            Attendance.objects.filter(group=obj, created_at__date=today)
+            .values("theme", "repeated")
+            .distinct()  # Remove duplicates
+        )
 
         return list(attendance)
-
 
     def get_lessons_count(self, obj):
         total_lessons = Theme.objects.filter(course__group=obj).count()

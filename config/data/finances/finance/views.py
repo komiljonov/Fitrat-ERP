@@ -22,12 +22,10 @@ class CasherListCreateAPIView(ListCreateAPIView):
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
 
-
 class CasherRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Casher.objects.all()
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
-
 
 class CasherNoPg(ListAPIView):
     queryset = Casher.objects.all()
@@ -36,7 +34,6 @@ class CasherNoPg(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
 
 class FinanceListAPIView(ListCreateAPIView):
     queryset = Finance.objects.all()
@@ -50,7 +47,6 @@ class FinanceListAPIView(ListCreateAPIView):
             return finance
         return Finance.objects.none()
 
-
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
@@ -63,7 +59,6 @@ class FinanceNoPGList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
 
 class StudentFinanceListAPIView(ListAPIView):
     serializer_class = FinanceSerializer
@@ -130,7 +125,6 @@ class StuffFinanceListAPIView(ListAPIView):
             return Finance.objects.filter(stuff=stuff)
         return Finance.objects.none()
 
-
 class CasherHandoverAPIView(CreateAPIView):
     serializer_class = CasherHandoverSerializer
     permission_classes = [IsAuthenticated]
@@ -175,7 +169,6 @@ class CasherHandoverAPIView(CreateAPIView):
             {"error": "Insufficient balance for handover"},
             status=status.HTTP_400_BAD_REQUEST
         )
-
 
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
