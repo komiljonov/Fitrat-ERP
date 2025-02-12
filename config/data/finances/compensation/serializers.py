@@ -6,7 +6,7 @@ from .models import Bonus, Compensation, Page
 class BonusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bonus
-        fields = ['id', 'name', 'user', 'price_type', 'amount']
+        fields = ['id', 'name', 'user', 'amount']
 
     def create(self, validated_data):
         if isinstance(validated_data, list):
@@ -17,7 +17,7 @@ class BonusSerializer(serializers.ModelSerializer):
 class CompensationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Compensation
-        fields = ['id', 'name', 'user', 'price_type', 'amount']
+        fields = ['id', 'name', 'user', 'amount']
 
     def create(self, validated_data):
         if isinstance(validated_data, list):
