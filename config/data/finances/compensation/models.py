@@ -1,7 +1,9 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from data.command.models import TimeStampModel
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ...account.models import CustomUser
 
