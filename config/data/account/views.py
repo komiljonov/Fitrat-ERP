@@ -28,7 +28,6 @@ class RegisterAPIView(CreateAPIView):
     # permission_classes = [IsAuthenticated]  # Only authenticated users can create new users
 
     def create(self, request, *args, **kwargs):
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -41,8 +40,11 @@ class RegisterAPIView(CreateAPIView):
         # Save the user (this calls the `create` method of the serializer)
         user = serializer.save()
 
-        return Response({"user":user,'success': True, 'message': 'User created successfully.'}, status=status.HTTP_201_CREATED)
+        # Serialize the user to return a JSON response
+        user_serializer = UserCreateSerializer(user)
 
+        return Response({"user": user_serializer.data, 'success': True, 'message': 'User created successfully.'},
+                        status=status.HTTP_201_CREATED)
 
 class UserList(FilialRestrictedQuerySetMixin,ListAPIView):
     permission_classes = [IsAuthenticated,]
