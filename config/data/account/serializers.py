@@ -1,3 +1,4 @@
+import icecream
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
@@ -137,6 +138,7 @@ class UserListSerializer(ModelSerializer):
     def get_compensation(self, obj):
         compensation = Compensation.objects.filter(user=obj).values("id","name","amount","price_type")
         return list(compensation)
+
     def get_pages(self, obj):
         pages = Page.objects.filter(user=obj).values("id","name","user","is_editable","is_readable","is_parent")
         return list(pages)
@@ -150,7 +152,7 @@ class UserListSerializer(ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-    pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, allow_null=True)
+    pages = serializers.SerializerMethodField()
     bonus = serializers.SerializerMethodField()
     compensation = serializers.SerializerMethodField()
     class Meta:
@@ -170,17 +172,18 @@ class UserSerializer(serializers.ModelSerializer):
         compensation = Compensation.objects.filter(user=obj).values("name", "amount", "price_type")
         return list(compensation)
 
+    def get_pages(self, obj):
+        icecream.ic(obj)
+        pages = Page.objects.filter(user=obj).values("id","name","user","is_editable",
+                                                     "is_readable","is_parent")
+        icecream.ic(list(pages))
+        return list(pages)
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["photo"] = FileUploadSerializer(instance.photo).data if instance.photo else None
-        rep["pages"] = PagesSerializer(instance.pages.all(), many=True).data
         return rep
 
     def create(self, validated_data):
-        page_data = validated_data.pop("pages", [])
-
         user = CustomUser.objects.create(**validated_data)
-
-        user.pages.set(page_data)
-
         return user
