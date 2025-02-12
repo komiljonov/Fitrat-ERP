@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (BonusList, BonusDetail, BonusNoPG
-, CompensationList, CompensationDetail, CompensationNoPG, PageCreateView)
+, CompensationList, CompensationDetail, CompensationNoPG, PageCreateView, PageBulkUpdateView)
 
 urlpatterns = [
     path('bonus/', BonusList.as_view()),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('compensation-no-pg/', CompensationNoPG.as_view()),
 
     path('pages/', PageCreateView.as_view()),
+    path("pages/update/",PageBulkUpdateView.as_view()),
 ]

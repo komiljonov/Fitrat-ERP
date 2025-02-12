@@ -3,9 +3,18 @@ from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
 from .models import Bonus, Compensation, Page
 from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer
+
+
+import json
+from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from ...account.models import CustomUser
 
 
 class BonusList(ListCreateAPIView):
@@ -103,10 +112,44 @@ class PageCreateView(ListCreateAPIView):
         return Response(data)
 
 
-import json
-from rest_framework.generics import ListAPIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+class PageBulkUpdateView(APIView):
+    def put(self, request, *args, **kwargs):
+        # Ensure the request body is a list of pages with ids and updated data
+        if isinstance(request.data, list):
+            updated_pages = []
+            for data in request.data:
+                try:
+                    # Find the Page object to update
+                    page = Page.objects.get(id=data['id'])
+
+                    # If the 'user' field is provided, get the CustomUser instance
+                    if 'user' in data:
+                        try:
+                            user_instance = CustomUser.objects.get(id=data['user'])
+                            data['user'] = user_instance  # Assign the CustomUser instance
+                        except CustomUser.DoesNotExist:
+                            return Response({"detail": f"CustomUser with id {data['user']} does not exist."},
+                                            status=status.HTTP_400_BAD_REQUEST)
+
+                    # Update each field
+                    for attr, value in data.items():
+                        setattr(page, attr, value)
+                    updated_pages.append(page)
+                except Page.DoesNotExist:
+                    # Handle if the Page with the given ID doesn't exist
+                    continue
+
+            # Perform bulk update (only if there are pages to update)
+            if updated_pages:
+                Page.objects.bulk_update(updated_pages,
+                                         fields=['name', 'user', 'is_editable', 'is_readable', 'is_parent'])
+
+            return Response(
+                {"updated_pages": PagesSerializer(updated_pages, many=True).data},
+                status=status.HTTP_200_OK
+            )
+
+        return Response({"detail": "Expected a list of pages for update."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FilterJSONData(ListAPIView):

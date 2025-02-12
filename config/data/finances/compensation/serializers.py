@@ -24,15 +24,16 @@ class CompensationSerializer(serializers.ModelSerializer):
             return Compensation.objects.bulk_create([Compensation(**data) for data in validated_data])
         return super().create(validated_data)
 
+from rest_framework import serializers
+from .models import Page
 
 class PagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ['id', 'name', 'user', 'is_editable', 'is_readable','is_parent']
+        fields = ['id', 'name', 'user', 'is_editable', 'is_readable', 'is_parent']
 
     def create(self, validated_data):
         if isinstance(validated_data, list):
-            return Page.objects.bulk_create([Page(**data) for data in validated_data])  # Fix here: `Page` instead of `Compensation`
+            return Page.objects.bulk_create([Page(**data) for data in validated_data])
         return super().create(validated_data)
-
 
