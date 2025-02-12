@@ -15,7 +15,8 @@ from .serializers import CourseSerializer
 from ..attendance.models import Attendance
 from ..attendance.serializers import AttendanceSerializer, AttendanceTHSerializer
 from ..groups.models import Group
-from ..studentgroup.models import StudentGroup
+from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
+from ...account.models import CustomUser
 
 
 class CourseList(ListCreateAPIView):
@@ -79,7 +80,6 @@ class CourseTheme(ListAPIView):
         return Attendance.objects.none()
 
 
-
 class CourseTeacher(ListAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
@@ -87,11 +87,22 @@ class CourseTeacher(ListAPIView):
 
     def get_queryset(self):
         teacher_id = self.kwargs.get('pk')
-        if teacher_id:
-            # Filter StudentGroup objects where the group’s teacher is the given teacher ID
+        user = CustomUser.objects.filter(id=teacher_id).first()
+        icecream.ic(user)
+        if user.role == 'TEACHER':
+
             student_groups = StudentGroup.objects.filter(group__teacher__id=teacher_id)
-            icecream.ic(student_groups)
-            # Get all related courses for those student groups
-            courses = Course.objects.filter(studentgroup__in=student_groups).distinct()
+
+            courses = Course.objects.filter(id__in=student_groups.values('group__course__id')).distinct()
+
             return courses
-        return Course.objects.none()  # Return empty queryset if no teacher ID provided
+        elif user.role == 'ASSISTANT':
+
+            student_groups = SecondaryStudentGroup.objects.filter(group__teacher__id=teacher_id)
+
+            courses = Course.objects.filter(id__in=student_groups.values('group__group__course__id')).distinct()
+
+            return courses
+
+        return Course.objects.none()
+
