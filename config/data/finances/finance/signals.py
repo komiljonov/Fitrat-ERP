@@ -18,6 +18,9 @@ def on_create(sender, instance: Finance, created, **kwargs):
             if instance.action == "EXPENSE" and (instance.kind == "SALARY" or instance.kind == "BONUS"):
                 instance.stuff.balance += instance.amount
                 instance.stuff.save()
+            else:
+                instance.stuff.balance -= instance.amount
+                instance.stuff.save()
 
 
 
