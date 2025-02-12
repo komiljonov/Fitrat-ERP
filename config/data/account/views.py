@@ -1,5 +1,5 @@
 # Create your views here.
-
+import icecream
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from passlib.context import CryptContext
@@ -46,16 +46,18 @@ class RegisterAPIView(CreateAPIView):
         return Response({"user": user_serializer.data, 'success': True, 'message': 'User created successfully.'},
                         status=status.HTTP_201_CREATED)
 
-class UserList(FilialRestrictedQuerySetMixin,ListAPIView):
+class UserList(ListAPIView):
     permission_classes = [IsAuthenticated,]
     queryset = CustomUser.objects.all().order_by('-created_at')
     serializer_class = UserListSerializer
 
     def get_queryset(self):
+        user = self.request.user
+        icecream.ic(user.filial)
         role = self.request.query_params.get('role', None)
         if role:
-            return CustomUser.objects.filter(role=role).order_by('-created_at')
-        return CustomUser.objects.none()
+            return CustomUser.objects.filter(role=role,filial=user.filial).order_by('-created_at')
+        return CustomUser.objects.all().order_by('-created_at')
 
 
 
