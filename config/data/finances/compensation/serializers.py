@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Bonus, Compensation
+from .models import Bonus, Compensation,Page
 
 class BonusSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +26,7 @@ class CompensationSerializer(serializers.ModelSerializer):
 
 class PagesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Compensation
+        model = Page
         fields = [
             'id',
             'name',

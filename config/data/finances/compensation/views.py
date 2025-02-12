@@ -73,3 +73,51 @@ class PagesList(ListCreateAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+import json
+from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+
+class FilterJSONData(ListAPIView):
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        # Load JSON data from file
+        with open("your_file.json", "r", encoding="utf-8") as file:
+            json_data = json.load(file)
+
+        # Get filtering parameters from request
+        is_editable = self.request.query_params.get("is_editable")
+        is_readable = self.request.query_params.get("is_readable")
+
+        def filter_json(data):
+            """Recursively filter nested JSON data."""
+            filtered_data = {}
+
+            for key, value in data.items():
+                if isinstance(value, dict):
+                    if "is_editable" in value and "is_readable" in value:
+                        conditions_met = True
+                        if is_editable is not None:
+                            conditions_met &= value["is_editable"] == (is_editable.lower() == "true")
+                        if is_readable is not None:
+                            conditions_met &= value["is_readable"] == (is_readable.lower() == "true")
+
+                        if conditions_met:
+                            filtered_data[key] = value
+                    else:
+                        nested_result = filter_json(value)
+                        if nested_result:
+                            filtered_data[key] = nested_result
+
+            return filtered_data
+
+        filtered_result = filter_json(json_data)
+        return filtered_result
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        return Response(queryset)
