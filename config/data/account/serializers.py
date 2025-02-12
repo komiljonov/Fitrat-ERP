@@ -129,11 +129,11 @@ class UserListSerializer(ModelSerializer):
                   "photo", "filial","bonus","compensation", ]
 
     def get_bonus(self, obj):
-        bonus = Bonus.objects.filter(user=obj).values("name","amount","price_type")
+        bonus = Bonus.objects.filter(user=obj).values("id","name","amount","price_type")
         return list(bonus)
 
     def get_compensation(self, obj):
-        compensation = Compensation.objects.filter(user=obj).values("name","amount","price_type")
+        compensation = Compensation.objects.filter(user=obj).values("id","name","amount","price_type")
         return list(compensation)
 
 
