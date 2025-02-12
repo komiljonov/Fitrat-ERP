@@ -123,6 +123,7 @@ class UserListSerializer(ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
     bonus = serializers.SerializerMethodField()
     compensation = serializers.SerializerMethodField()
+    pages = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
@@ -136,6 +137,9 @@ class UserListSerializer(ModelSerializer):
     def get_compensation(self, obj):
         compensation = Compensation.objects.filter(user=obj).values("id","name","amount","price_type")
         return list(compensation)
+    def get_pages(self, obj):
+        pages = Page.objects.filter(user=obj).values("id","name","user","is_editable","is_readable","is_parent")
+        return list(pages)
 
 
     def to_representation(self, instance):
