@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Bonus, Compensation,Page
+from .models import Bonus, Compensation, Page
 
 class BonusSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,13 +23,14 @@ class CompensationSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-
 class PagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = [
-            'id',
-            'name',
-            'is_editable',
-            'is_readable',
-        ]
+        fields = ['id', 'name', 'user', 'is_editable', 'is_readable','is_parent']
+
+    def create(self, validated_data):
+        if isinstance(validated_data, list):
+            return Page.objects.bulk_create([Page(**data) for data in validated_data])  # Fix here: `Page` instead of `Compensation`
+        return super().create(validated_data)
+
+

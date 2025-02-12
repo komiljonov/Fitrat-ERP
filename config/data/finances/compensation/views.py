@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView,ListAPIView
@@ -18,6 +19,16 @@ class BonusList(ListCreateAPIView):
     search_fields = ("name",)
     filterset_fields = ("name",)
     ordering_fields = ("name",)
+
+    def create(self, request, *args, **kwargs):
+        if isinstance(request.data, list):
+            serializer = self.get_serializer(data=request.data, many=True)  # Use `many=True`
+        else:
+            serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class BonusDetail(RetrieveUpdateDestroyAPIView):
     queryset = Bonus.objects.all()
@@ -48,6 +59,16 @@ class CompensationList(ListCreateAPIView):
     filterset_fields = ("name",)
     ordering_fields = ("name",)
 
+    def create(self, request, *args, **kwargs):
+        if isinstance(request.data, list):
+            serializer = self.get_serializer(data=request.data, many=True)  # Use `many=True`
+        else:
+            serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 class CompensationDetail(RetrieveUpdateDestroyAPIView):
     queryset = Compensation.objects.all()
     serializer_class = CompensationSerializer
@@ -66,10 +87,20 @@ class CompensationNoPG(ListAPIView):
 
 
 
-class PagesList(ListCreateAPIView):
+class PageCreateView(ListCreateAPIView):
     queryset = Page.objects.all()
     serializer_class = PagesSerializer
-    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        # Check if request data is a list
+        if isinstance(request.data, list):
+            serializer = self.get_serializer(data=request.data, many=True)  # Use `many=True`
+        else:
+            serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_paginated_response(self, data):
         return Response(data)
