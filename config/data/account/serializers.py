@@ -173,10 +173,8 @@ class UserSerializer(serializers.ModelSerializer):
         return list(compensation)
 
     def get_pages(self, obj):
-        icecream.ic(obj)
         pages = Page.objects.filter(user=obj).values("id","name","user","is_editable",
                                                      "is_readable","is_parent")
-        icecream.ic(list(pages))
         return list(pages)
 
     def to_representation(self, instance):
