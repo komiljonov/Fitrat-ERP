@@ -77,3 +77,21 @@ class CourseTheme(ListAPIView):
         if course:
             return Attendance.objects.filter(theme__course=course)
         return Attendance.objects.none()
+
+
+
+class CourseTeacher(ListAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        teacher_id = self.kwargs.get('pk')
+        if teacher_id:
+            # Filter StudentGroup objects where the group’s teacher is the given teacher ID
+            student_groups = StudentGroup.objects.filter(group__teacher__id=teacher_id)
+            icecream.ic(student_groups)
+            # Get all related courses for those student groups
+            courses = Course.objects.filter(studentgroup__in=student_groups).distinct()
+            return courses
+        return Course.objects.none()  # Return empty queryset if no teacher ID provided

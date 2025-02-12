@@ -1,8 +1,3 @@
-from django.db import models
-
-from data.student.subject.models import Theme
-from ...command.models import TimeStampModel
-from ...student.subject.models import Subject
 from ..subject.models import *
 
 # Create your models here.
