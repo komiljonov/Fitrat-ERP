@@ -37,6 +37,8 @@ class Bonus(TimeStampModel):
 
 class Page(TimeStampModel):
     name = models.CharField(max_length=100)
+    is_editable = models.BooleanField(default=False)
+    is_readable = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name, self.is_editable, self.is_readable}"

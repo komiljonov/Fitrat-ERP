@@ -30,4 +30,6 @@ class PagesSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
+            'is_editable',
+            'is_readable',
         ]
