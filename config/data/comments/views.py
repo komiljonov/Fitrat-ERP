@@ -28,7 +28,11 @@ class CommentLidRetrieveListAPIView(ListAPIView):
 
     def get_queryset(self):
         id = self.kwargs.get('pk')
+        creator = self.request.query_params.get('creator')
         if id:
             return Comment.objects.filter(Q(lid__id=id) | Q(student__id=id))
+
+        if creator:
+            return Comment.objects.filter((Q(lid__id=id) | Q(student__id=id)), creator__id=creator)
         return Comment.objects.none()
 

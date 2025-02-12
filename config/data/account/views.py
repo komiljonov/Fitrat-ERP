@@ -41,7 +41,7 @@ class RegisterAPIView(CreateAPIView):
         # Save the user (this calls the `create` method of the serializer)
         user = serializer.save()
 
-        return Response({'success': True, 'message': 'User created successfully.'}, status=status.HTTP_201_CREATED)
+        return Response({"user":user,'success': True, 'message': 'User created successfully.'}, status=status.HTTP_201_CREATED)
 
 
 class UserList(FilialRestrictedQuerySetMixin,ListAPIView):
