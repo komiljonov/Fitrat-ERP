@@ -9,7 +9,7 @@ User = get_user_model()
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    creator = serializers.SerializerMethodField()
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     class Meta:
         model = Comment
         fields = [
