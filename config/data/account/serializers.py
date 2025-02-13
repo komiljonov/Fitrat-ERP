@@ -16,7 +16,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id","full_name", "first_name", "last_name", "phone", "role","password","salary",
-            "photo", "filial", "balance", "ball","pages",
+            "photo", "filial", "balance", "ball","pages","files",
             "enter", "leave", "date_of_birth",
         )
         # We don't need to add extra_kwargs for password
@@ -29,11 +29,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": "Password is required."})
 
         page_data = validated_data.pop('pages', [])
+        files = validated_data.pop('files', [])
 
         user = CustomUser(**validated_data)
         user.set_password(password)  # Hash the password
         user.save()
         user.pages.set(page_data)
+        user.files.set(files)
         user.save()
         return user
 
@@ -86,11 +88,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
     pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, required=False)
+    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+
 
     class Meta:
         model = CustomUser
         fields = ["id",'phone', 'full_name', 'first_name', 'last_name', 'password',
-                  'role', 'photo', "salary","enter", "leave","pages",
+                  'role', 'photo', "salary","enter", "leave","pages","files",
                   'date_of_birth', ]
 
     def update(self, instance, validated_data):
@@ -107,11 +111,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         # Update other fields (except compensation and bonus)
         for attr, value in validated_data.items():
-            if attr not in ['pages', 'phone']:  # Skip phone here
+            if attr not in ['pages', "files",'phone']:  # Skip phone here
                 setattr(instance, attr, value)
 
         if "pages" in validated_data:
             instance.pages.set(validated_data["pages"])
+        if "files" in validated_data:
+            instance.files.set(validated_data["files"])
         instance.save()
         return instance
     def to_representation(self, instance):
@@ -125,10 +131,11 @@ class UserListSerializer(ModelSerializer):
     bonus = serializers.SerializerMethodField()
     compensation = serializers.SerializerMethodField()
     pages = serializers.SerializerMethodField()
+    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True)
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name","first_name","last_name",'role',"salary","pages",
+        fields = ['id', 'phone', "full_name","first_name","last_name",'role',"salary","pages","files",
                   "photo", "filial","bonus","compensation", ]
 
     def get_bonus(self, obj):
@@ -147,6 +154,7 @@ class UserListSerializer(ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['photo'] = FileUploadSerializer(instance.photo).data
+        rep['files'] = FileUploadSerializer(instance.files).data
         return rep
 
 
@@ -155,10 +163,11 @@ class UserSerializer(serializers.ModelSerializer):
     pages = serializers.SerializerMethodField()
     bonus = serializers.SerializerMethodField()
     compensation = serializers.SerializerMethodField()
+    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "phone", "role","pages",
+            "id", "full_name", "first_name", "last_name", "phone", "role","pages","files",
             "photo", "filial", "balance", "ball","salary",
             "enter", "leave", "date_of_birth", "created_at","bonus","compensation",
             "updated_at"
@@ -180,6 +189,7 @@ class UserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["photo"] = FileUploadSerializer(instance.photo).data if instance.photo else None
+        rep['files'] = FileUploadSerializer(instance.files).data
         return rep
 
     def create(self, validated_data):

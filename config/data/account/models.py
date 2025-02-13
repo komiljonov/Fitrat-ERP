@@ -1,25 +1,28 @@
 import uuid
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from data.department.filial.models import Filial
 from ..account.managers import UserManager
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from ..finances.compensation.models import Compensation, Bonus, Page
+    from ..finances.compensation.models import Page
 from ..upload.models import File
 
 
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
+    files : 'File' = models.ManyToManyField('upload.File',
+                                            blank=True,null=True,related_name='account_files')
     full_name = models.CharField(max_length=100, blank=True, null=True)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=255, unique=True, blank=True, null=True)
 
-    photo : File = models.ForeignKey('upload.File', on_delete=models.SET_NULL, blank=True, null=True)
+    photo : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, blank=True, null=True)
 
     date_of_birth = models.DateField(blank=True, null=True)
 
