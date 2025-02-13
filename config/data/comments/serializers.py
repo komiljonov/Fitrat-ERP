@@ -5,11 +5,9 @@ from ..account.models import CustomUser
 from ..account.serializers import UserSerializer
 from ..upload.serializers import FileUploadSerializer
 
-User = get_user_model()
-
 
 class CommentSerializer(serializers.ModelSerializer):
-    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    creator = serializers.SerializerMethodField()
     class Meta:
         model = Comment
         fields = [
