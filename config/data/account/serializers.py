@@ -12,11 +12,12 @@ from ..upload.serializers import FileUploadSerializer
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+
     class Meta:
         model = CustomUser
         fields = (
-            "id","full_name", "first_name", "last_name", "phone", "role","password","salary",
-            "photo", "filial", "balance", "ball","pages","files",
+            "id", "full_name", "first_name", "last_name", "phone", "role", "password", "salary",
+            "photo", "filial", "balance", "ball", "pages", "files",
             "enter", "leave", "date_of_birth",
         )
         # We don't need to add extra_kwargs for password
@@ -85,16 +86,15 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False)
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
     pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, required=False)
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
 
-
     class Meta:
         model = CustomUser
-        fields = ["id",'phone', 'full_name', 'first_name', 'last_name', 'password',
-                  'role', 'photo', "salary","enter", "leave","pages","files",
+        fields = ["id", 'phone', 'full_name', 'first_name', 'last_name', 'password',
+                  'role', 'photo', "salary", "enter", "leave", "pages", "files",
                   'date_of_birth', ]
 
     def update(self, instance, validated_data):
@@ -128,30 +128,29 @@ class UserListSerializer(ModelSerializer):
     bonus = serializers.SerializerMethodField()
     compensation = serializers.SerializerMethodField()
     pages = serializers.SerializerMethodField()
-    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True)
+    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name","first_name","last_name",'role',"salary","pages","files",
-                  "photo", "filial","bonus","compensation", ]
+        fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role', "salary", "pages", "files",
+                  "photo", "filial", "bonus", "compensation", ]
 
     def get_bonus(self, obj):
-        bonus = Bonus.objects.filter(user=obj).values("id","name","amount")
+        bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
         return list(bonus)
 
     def get_compensation(self, obj):
-        compensation = Compensation.objects.filter(user=obj).values("id","name","amount")
+        compensation = Compensation.objects.filter(user=obj).values("id", "name", "amount")
         return list(compensation)
 
     def get_pages(self, obj):
-        pages = Page.objects.filter(user=obj).values("id","name","user","is_editable","is_readable","is_parent")
+        pages = Page.objects.filter(user=obj).values("id", "name", "user", "is_editable", "is_readable", "is_parent")
         return list(pages)
-
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['photo'] = FileUploadSerializer(instance.photo).data
-        rep['files'] = FileUploadSerializer(instance.files.all(),many=True).data
+        rep['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
+        rep['files'] = FileUploadSerializer(instance.files.all(), many=True, context=self.context).data
         return rep
 
 
@@ -161,32 +160,33 @@ class UserSerializer(serializers.ModelSerializer):
     bonus = serializers.SerializerMethodField()
     compensation = serializers.SerializerMethodField()
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
+
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "phone", "role","pages","files",
-            "photo", "filial", "balance", "ball","salary",
-            "enter", "leave", "date_of_birth", "created_at","bonus","compensation",
+            "id", "full_name", "first_name", "last_name", "phone", "role", "pages", "files",
+            "photo", "filial", "balance", "ball", "salary",
+            "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation",
             "updated_at"
         )
 
     def get_bonus(self, obj):
-        bonus = Bonus.objects.filter(user=obj).values("id","name", "amount")
+        bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
         return list(bonus)
 
     def get_compensation(self, obj):
-        compensation = Compensation.objects.filter(user=obj).values("id","name", "amount")
+        compensation = Compensation.objects.filter(user=obj).values("id", "name", "amount")
         return list(compensation)
 
     def get_pages(self, obj):
-        pages = Page.objects.filter(user=obj).values("id","name","user","is_editable",
-                                                     "is_readable","is_parent")
+        pages = Page.objects.filter(user=obj).values("id", "name", "user", "is_editable",
+                                                     "is_readable", "is_parent")
         return list(pages)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["photo"] = FileUploadSerializer(instance.photo).data if instance.photo else None
-        rep['files'] = FileUploadSerializer(instance.files.all(),many=True).data
+        rep['files'] = FileUploadSerializer(instance.files.all(), many=True,context=self.context).data
         return rep
 
     def create(self, validated_data):

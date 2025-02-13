@@ -43,6 +43,6 @@ class CommentSerializer(serializers.ModelSerializer):
                 "full_name": creator.full_name,
                 "first_name": creator.first_name,
                 "last_name": creator.last_name,
-                "photo": FileUploadSerializer(creator.photo).data if creator.photo else None
+                "photo": FileUploadSerializer(creator.photo,context=self.context).data if creator.photo else None
             }
         return None
