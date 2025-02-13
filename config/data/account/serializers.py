@@ -98,8 +98,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                   'date_of_birth', ]
 
     def update(self, instance, validated_data):
-        print("Validated data:", validated_data)  # Debugging line to check the validated data
-
         password = validated_data.pop('password', None)
         if password:
             instance.set_password(password)
