@@ -98,33 +98,31 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                   'date_of_birth', ]
 
     def update(self, instance, validated_data):
+        print("Validated data:", validated_data)  # Debugging line to check the validated data
+
         password = validated_data.pop('password', None)
         if password:
             instance.set_password(password)
 
-        # Handle phone field properly
-        phone = validated_data.get('phone')  # Use `.get()` instead of `.pop()`
+        phone = validated_data.get('phone')
         if phone and phone != instance.phone:
             if CustomUser.objects.exclude(id=instance.id).filter(phone=phone).exists():
                 raise serializers.ValidationError({"phone": "This phone number is already in use."})
             instance.phone = phone
 
-        # Update other fields (except compensation and bonus)
+        # Update other fields (excluding pages and files)
         for attr, value in validated_data.items():
-            if attr not in ['pages', "files",'phone']:  # Skip phone here
+            if attr not in ['pages', "files", 'phone']:  # Skip phone here
                 setattr(instance, attr, value)
 
         if "pages" in validated_data:
             instance.pages.set(validated_data["pages"])
         if "files" in validated_data:
+            print("Updating files:", validated_data["files"])  # Debugging line to check files data
             instance.files.set(validated_data["files"])
+
         instance.save()
         return instance
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        ret['photo'] = FileUploadSerializer(instance.photo).data
-        ret['files'] = FileUploadSerializer(instance.files.all(), many=True).data
-        return ret
 
 
 class UserListSerializer(ModelSerializer):

@@ -97,12 +97,12 @@ class UserUpdateAPIView(APIView):
 
     def put(self, request, *args, **kwargs):
         user = request.user
+        print("Request Data:", request.data)  # Debugging line to check request data
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
