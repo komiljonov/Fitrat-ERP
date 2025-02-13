@@ -107,7 +107,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if phone and phone != instance.phone:
             if CustomUser.objects.exclude(id=instance.id).filter(phone=phone).exists():
                 raise serializers.ValidationError({"phone": "This phone number is already in use."})
-            instance.phone = phone  # Only update if changed
+            instance.phone = phone
 
         # Update other fields (except compensation and bonus)
         for attr, value in validated_data.items():
@@ -175,11 +175,11 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def get_bonus(self, obj):
-        bonus = Bonus.objects.filter(user=obj).values("name", "amount")
+        bonus = Bonus.objects.filter(user=obj).values("id","name", "amount")
         return list(bonus)
 
     def get_compensation(self, obj):
-        compensation = Compensation.objects.filter(user=obj).values("name", "amount")
+        compensation = Compensation.objects.filter(user=obj).values("id","name", "amount")
         return list(compensation)
 
     def get_pages(self, obj):
