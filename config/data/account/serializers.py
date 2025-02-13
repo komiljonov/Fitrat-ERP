@@ -123,6 +123,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['photo'] = FileUploadSerializer(instance.photo).data
+        ret['files'] = FileUploadSerializer(instance.files.all(), many=True).data
         return ret
 
 
@@ -154,7 +155,7 @@ class UserListSerializer(ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['photo'] = FileUploadSerializer(instance.photo).data
-        rep['files'] = FileUploadSerializer(instance.files).data
+        rep['files'] = FileUploadSerializer(instance.files.all(),many=True).data
         return rep
 
 
@@ -189,7 +190,7 @@ class UserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["photo"] = FileUploadSerializer(instance.photo).data if instance.photo else None
-        rep['files'] = FileUploadSerializer(instance.files).data
+        rep['files'] = FileUploadSerializer(instance.files.all(),many=True).data
         return rep
 
     def create(self, validated_data):
