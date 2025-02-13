@@ -185,8 +185,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["photo"] = FileUploadSerializer(instance.photo,context=self.context).data if instance.photo else None
-        rep['files'] = FileUploadSerializer(instance.files.all(), many=True,context=self.context).data
+        rep['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
+        rep['files'] = FileUploadSerializer(instance.files.all(), many=True, context=self.context).data
         return rep
 
     def create(self, validated_data):

@@ -124,7 +124,9 @@ class UserInfo(APIView):
             raise NotFound(detail="User not found.")
 
         # Serialize the user data
-        user_serializer = UserSerializer(user)
+        user_serializer = UserSerializer(user,context ={
+            "request": request
+        })
         return Response(user_serializer.data)
 
 

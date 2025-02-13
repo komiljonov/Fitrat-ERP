@@ -10,7 +10,6 @@ from .serializers import CommentSerializer
 from ..lid.new_lid.models import Lid
 from ..student.student.models import Student
 
-User = get_user_model()
 
 class CommentListCreateAPIView(ListCreateAPIView):
     queryset = Comment.objects.filter()
