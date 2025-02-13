@@ -86,41 +86,47 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False)
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True, required=False)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
     pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, required=False)
-    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ["id", 'phone', 'full_name', 'first_name', 'last_name', 'password',
-                  'role', 'photo', "salary", "enter", "leave", "pages", "files",
-                  'date_of_birth', ]
+        fields = ["id", "phone", "full_name", "first_name", "last_name", "password",
+                  "role", "photo", "salary", "enter", "leave", "pages", "files",
+                  "date_of_birth"]
 
     def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
+        password = validated_data.pop("password", None)
         if password:
             instance.set_password(password)
 
-        phone = validated_data.get('phone')
+        phone = validated_data.get("phone")
         if phone and phone != instance.phone:
             if CustomUser.objects.exclude(id=instance.id).filter(phone=phone).exists():
                 raise serializers.ValidationError({"phone": "This phone number is already in use."})
             instance.phone = phone
 
-        # Update other fields (excluding pages and files)
+        # Update `photo` field manually
+        if "photo" in validated_data:
+            instance.photo = validated_data["photo"]
+
+        # Update other fields except many-to-many
         for attr, value in validated_data.items():
-            if attr not in ['pages', "files", 'phone']:  # Skip phone here
+            if attr not in ["pages", "files"]:
                 setattr(instance, attr, value)
 
+        # Update Many-to-Many Fields Safely
         if "pages" in validated_data:
-            instance.pages.set(validated_data["pages"])
+            instance.pages.set(validated_data["pages"] or [])  # Ensure empty lists don't cause errors
         if "files" in validated_data:
-            print("Updating files:", validated_data["files"])  # Debugging line to check files data
-            instance.files.set(validated_data["files"])
+            print("Updating files:", validated_data["files"])  # Debugging
+            instance.files.set(validated_data["files"] or [])
 
         instance.save()
         return instance
+
 
 
 class UserListSerializer(ModelSerializer):

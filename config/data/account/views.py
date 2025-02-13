@@ -90,18 +90,19 @@ class CustomAuthToken(TokenObtainPairView):
             'filial': filial,
         }, status=status.HTTP_200_OK)
 
-
 class UserUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     def put(self, request, *args, **kwargs):
         user = request.user
-        print("Request Data:", request.data)  # Debugging line to check request data
+        print("Request Data:", request.data)  # Debugging
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        print("Errors:", serializer.errors)  # Debugging
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutAPIView(APIView):
