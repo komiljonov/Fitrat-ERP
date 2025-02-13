@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import Comment
 from ..account.models import CustomUser
 from ..account.serializers import UserSerializer
+from ..upload.serializers import FileUploadSerializer
 
 User = get_user_model()
 
@@ -33,6 +34,15 @@ class CommentSerializer(serializers.ModelSerializer):
     #             self.fields.pop(field, None)
 
     def get_creator(self, obj):
-        data = (CustomUser.objects.filter(id=obj.creator.id)
-                .values("id","full_name","first_name","last_name","photo"))
-        return list(data)
+        # Fetch creator data
+        creator = CustomUser.objects.filter(id=obj.creator.id).first()
+        if creator:
+            # Serialize the creator's photo if it exists
+            return {
+                "id": creator.id,
+                "full_name": creator.full_name,
+                "first_name": creator.first_name,
+                "last_name": creator.last_name,
+                "photo": FileUploadSerializer(creator.photo).data if creator.photo else None
+            }
+        return None
