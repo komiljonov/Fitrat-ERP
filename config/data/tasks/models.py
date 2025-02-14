@@ -29,7 +29,7 @@ class Task(TimeStampModel):
             ("SOON",'SOON'),
             ("CANCELLED","CANCELLED")
                  ],
-        default="WAITING",
+        default="SOON",
         max_length=50
     )
 

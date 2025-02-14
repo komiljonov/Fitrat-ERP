@@ -78,6 +78,8 @@ class Lid(TimeStampModel):
 
     is_dubl = models.BooleanField(default=False,help_text="Is this student duble or not")
 
+    is_frozen = models.BooleanField(default=False,help_text="Is this student frozen or not")
+
     call_operator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL,
                                                      null=True, blank=True,
                                                      help_text="CallOperator for this lid",
