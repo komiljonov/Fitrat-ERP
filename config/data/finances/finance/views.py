@@ -1,5 +1,5 @@
 import icecream
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -218,17 +218,29 @@ class TeacherHandover(ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
-    def get_queryset(self,**kwargs):
-        id = self.kwargs.get('pk')
-        if id:
-            user = CustomUser.objects.filter(id=id).first()
-            if user:
-                return Finance.objects.filter(stuff__id=id)
-        return Finance.objects.none()
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+    def get_queryset(self, **kwargs):
+        user_id = self.kwargs.get('pk')  # Get user ID from URL parameter
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        queryset = Finance.objects.all()
+
+        if user_id:
+            user = CustomUser.objects.filter(id=user_id).first()
+            if user:
+                # If user is found, filter based on the user
+                queryset = queryset.filter(stuff__id=user_id)
+
+            # If both start_date and end_date are provided
+            if start_date and end_date:
+                queryset = queryset.filter(stuff__id=user_id, created_at__gte=start_date, created_at__lte=end_date)
+            # If only start_date is provided
+            elif start_date:
+                queryset = queryset.filter(stuff__id=user_id, created_at__gte=start_date)
+
+        return queryset
+
 
 class CasherStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
