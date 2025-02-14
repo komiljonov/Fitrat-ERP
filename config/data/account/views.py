@@ -96,7 +96,6 @@ class UserUpdateAPIView(APIView):
 
     def put(self, request, *args, **kwargs):
         user = request.user
-        print("Request Data:", request.data)  # Debugging
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
 
         if serializer.is_valid():
