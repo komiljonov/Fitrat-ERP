@@ -1,10 +1,11 @@
 from django.shortcuts import render
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 # Create your views here.
-from .serializers import UniversityResultsSerializer, CertificationResultsSerializer, StudentResultsSerializer
+from .serializers import UniversityResultsSerializer, CertificationResultsSerializer, StudentResultsSerializer, \
+    OtherResultsSerializer
 
 from .models import Results
 
@@ -88,3 +89,28 @@ class ResultsViewSet(ListAPIView):
 
     def get_queryset(self):
         return Results.objects.filter(teacher=self.request.user)
+
+
+
+class OtherResultsViewSet(CreateAPIView):
+    queryset = Results.objects.all()
+    serializer_class = OtherResultsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Results.objects.filter(teacher=self.request.user)
+        status = self.request.query_params.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+        certification_type = self.request.query_params.get('certificate_type')
+        if certification_type:
+            queryset = queryset.filter(certificate_type=certification_type)
+        return queryset
+
+    def get_paginated_response(self, data):
+        return Response(data)
+
+class OtherResultsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Results.objects.all()
+    serializer_class = OtherResultsSerializer
+    permission_classes = [IsAuthenticated]
