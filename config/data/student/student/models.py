@@ -82,6 +82,7 @@ class Student(TimeStampModel):
 
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True, )
     is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
+    is_frozen = models.BooleanField(default=False, help_text="Is this student frozen or not")
 
     call_operator: 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,
                                                     null=True, blank=True, help_text="Call operator",
