@@ -11,4 +11,7 @@ urlpatterns = [
     path('certificate/no-pg/', CertificationResultsNoPg.as_view()),
 
     path('all/',ResultsViewSet.as_view()),
+
+    path('other/',OtherResultsViewSet.as_view()),
+    path('other/<uuid:pk>/',OtherResultsRetrieveAPIView.as_view()),
 ]

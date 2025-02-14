@@ -52,6 +52,11 @@ class Results(TimeStampModel):
     speaking_score = models.FloatField(null=True,blank=True)
     writing_score = models.FloatField(null=True,blank=True)
 
+    result_name = models.CharField(max_length=120,null=True,blank=True)
+    result_score = models.CharField(max_length=120,null=True,blank=True)
+    subject_name = models.CharField(max_length=120,null=True,blank=True)
+
+
     upload_file : "File" = models.ManyToManyField("upload.File")
     status = models.CharField(
         choices=[
