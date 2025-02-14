@@ -7,7 +7,7 @@ from ..upload.serializers import FileUploadSerializer
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    creator = serializers.SerializerMethodField()
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     class Meta:
         model = Comment
         fields = [
@@ -31,16 +31,18 @@ class CommentSerializer(serializers.ModelSerializer):
     #         for field in fields_to_remove:
     #             self.fields.pop(field, None)
 
-    def get_creator(self, obj):
-        # Fetch creator data
-        creator = CustomUser.objects.filter(id=obj.creator.id).first()
+    def to_representation(self, instance):
+        # Fetch the original representation
+        rep = super().to_representation(instance)
+
+        # Ensure the 'creator' field exists in the representation
+        creator = instance.creator if instance.creator else None
+
         if creator:
-            # Serialize the creator's photo if it exists
-            return {
-                "id": creator.id,
-                "full_name": creator.full_name,
-                "first_name": creator.first_name,
-                "last_name": creator.last_name,
-                "photo": FileUploadSerializer(creator.photo,context=self.context).data if creator.photo else None
-            }
-        return None
+            rep[
+                "full_name"] = f"{creator.first_name} {creator.last_name}"  # You can combine first and last name if desired
+            rep["first_name"] = creator.first_name
+            rep["last_name"] = creator.last_name
+            rep["photo"] = FileUploadSerializer(creator.photo, context=self.context).data if creator.photo else None
+
+        return rep
