@@ -151,6 +151,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
             'id',
             'teacher',
             'student',
+            'certificate_type',
             'result_name',
             'result_score',
             'subject_name',
