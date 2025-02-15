@@ -40,5 +40,5 @@ class CourseSerializer(serializers.ModelSerializer):
             rep["level"] = LevelSerializer(instance.level).data
         else:
             rep["level"] = None
-        rep["theme"] = ThemeSerializer(instance.theme.all(), many=True).data  # Return full theme data
+        rep["theme"] = ThemeSerializer(instance.theme.all(), many=True,context=self.context).data  # Return full theme data
         return rep

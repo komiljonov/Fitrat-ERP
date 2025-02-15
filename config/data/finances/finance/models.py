@@ -72,8 +72,6 @@ class Finance(TimeStampModel):
         return f'{self.amount} {self.kind} {self.action}'
 
 
-
-
 class Handover(TimeStampModel):
     casher : "Casher" = models.ForeignKey(
         'finance.Casher',
