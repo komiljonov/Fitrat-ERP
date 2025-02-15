@@ -16,8 +16,14 @@ class Comment(TimeStampModel):
     student : 'Student' = models.ForeignKey('student.Student', on_delete=models.CASCADE, null=True,blank=True)
     comment : str = models.TextField()
 
+
     def __str__(self):
         return self.comment
 
     class Meta:
         ordering = []
+
+class StuffComments(TimeStampModel):
+    comment : str = models.TextField()
+    creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
+    stuff : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,blank=True)
