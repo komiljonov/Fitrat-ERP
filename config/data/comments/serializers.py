@@ -77,7 +77,7 @@ class CommentStuffSerializer(serializers.ModelSerializer):
 
         if creator:
             rep[
-                "full_name"] = f"{creator.first_name} {creator.last_name}"  # You can combine first and last name if desired
+                "full_name"] = creator.full_name
             rep["first_name"] = creator.first_name
             rep["last_name"] = creator.last_name
             rep["photo"] = FileUploadSerializer(creator.photo, context=self.context).data if creator.photo else None
