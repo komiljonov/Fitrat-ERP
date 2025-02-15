@@ -7,6 +7,7 @@ from ...account.models import CustomUser
 from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
+from ...upload.models import File
 
 
 class Student(TimeStampModel):
@@ -83,6 +84,9 @@ class Student(TimeStampModel):
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True, )
     is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
     is_frozen = models.BooleanField(default=False, help_text="Is this student frozen or not")
+
+    file : "File" = models.ManyToManyField('upload.File', blank=True,
+                related_name="student_files", help_text="File for this student")
 
     call_operator: 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,
                                                     null=True, blank=True, help_text="Call operator",

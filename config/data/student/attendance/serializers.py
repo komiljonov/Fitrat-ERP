@@ -82,7 +82,7 @@ class AttendanceTHSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep['theme'] = ThemeSerializer(instance.theme, many=True).data
+        rep['theme'] = ThemeSerializer(instance.theme, many=True,context=self.context).data
         filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
         return filtered_data
 

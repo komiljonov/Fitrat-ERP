@@ -7,7 +7,7 @@ from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...stages.models import NewLidStages, NewOredersStages
-
+from ...upload.models import File
 
 class Lid(TimeStampModel):
 
@@ -97,6 +97,10 @@ class Lid(TimeStampModel):
 
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser',
                                                     on_delete=models.CASCADE, null=True, related_name="sales_manager")
+
+    file : "File" = models.ManyToManyField("upload.File",
+                                           related_name="lid_file",null=True,blank=True)
+
 
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"

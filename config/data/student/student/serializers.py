@@ -15,6 +15,8 @@ from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...parents.models import Relatives
+from ...upload.models import File
+from ...upload.serializers import FileUploadSerializer
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -24,7 +26,7 @@ class StudentSerializer(serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
-
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True,allow_null=True)
     # Use CharField for password
     password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
@@ -58,6 +60,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "is_archived",
             "attendance_count",
             'relatives',
+            'file',
             "created_at",
             "updated_at",
         ]
@@ -113,7 +116,7 @@ class StudentSerializer(serializers.ModelSerializer):
         representation['sales_manager'] = UserSerializer(instance.sales_manager).data if instance.sales_manager else None
 
         representation['moderator'] = UserSerializer(instance.moderator).data if instance.moderator else None
-
+        representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
         return representation
 
 class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
