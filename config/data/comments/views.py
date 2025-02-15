@@ -59,7 +59,7 @@ class CommentStuff(ListCreateAPIView):
     queryset = StuffComments.objects.all()
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.request.query_params.get('id')
         creator = self.request.query_params.get('creator')
         if id:
             return StuffComments.objects.filter(stuff__id=id)
