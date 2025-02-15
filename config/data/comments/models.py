@@ -29,3 +29,4 @@ class StuffComments(TimeStampModel):
                                                related_name='comments_stuff')
     stuff : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,blank=True,
                                              related_name='comments_stuff_user')
+    is_archived = models.BooleanField(default=False)

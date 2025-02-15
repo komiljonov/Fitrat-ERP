@@ -1,3 +1,4 @@
+import icecream
 from rest_framework import serializers
 
 from .models import Archived
@@ -5,6 +6,7 @@ from ..new_lid.models import Lid
 from ..new_lid.serializers import LidSerializer
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
+from ...comments.models import Comment
 from ...student.student.models import Student
 from ...student.student.serializers import StudentSerializer
 
@@ -49,3 +51,26 @@ class ArchivedSerializer(serializers.ModelSerializer):
 
 
 
+class StuffArchivedSerializer(ArchivedSerializer):
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    stuff = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+    comment = serializers.CharField(max_length=100)
+    class Meta:
+        model = Comment
+        fields = [
+            'id',
+            'creator',
+            'stuff',
+            'comment',
+            'created_at',
+            'updated_at',
+        ]
+    def create(self, validated_data):
+        comment = Comment.objects.create(
+            creator=validated_data['creator'],
+            comment=validated_data['comment'],
+            stuff=validated_data['stuff'],
+            is_archived=True,
+        )
+        if comment:
+            icecream.ic(comment)

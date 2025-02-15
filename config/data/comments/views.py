@@ -71,3 +71,5 @@ class CommentLid(RetrieveUpdateDestroyAPIView):
     queryset = StuffComments.objects.all()
     serializer_class = CommentStuffSerializer
     permission_classes = (IsAuthenticated,)
+
+

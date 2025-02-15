@@ -8,4 +8,6 @@ urlpatterns = [
     path('no-pg/',ListArchivedListNOPgAPIView.as_view(), name='archived-no-pg'),
 
     path('students/', StudentArchivedListAPIView.as_view(), name='students'),
+
+    path('stuff/', StuffArchive.as_view(), name='stuff'),
 ]
