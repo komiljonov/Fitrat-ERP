@@ -25,5 +25,7 @@ class Comment(TimeStampModel):
 
 class StuffComments(TimeStampModel):
     comment : str = models.TextField()
-    creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
-    stuff : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,blank=True)
+    creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE,
+                                               related_name='comments_stuff')
+    stuff : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,blank=True,
+                                             related_name='comments_stuff_user')
