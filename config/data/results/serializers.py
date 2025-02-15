@@ -148,6 +148,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Results
         fields = [
+            
             'id',
             'teacher',
             'student',

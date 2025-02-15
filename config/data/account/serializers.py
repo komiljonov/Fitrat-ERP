@@ -129,6 +129,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 
 
+
+
 class UserListSerializer(ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
     bonus = serializers.SerializerMethodField()
