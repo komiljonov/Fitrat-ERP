@@ -12,6 +12,9 @@ from ...department.marketing_channel.serializers import MarketingChannelSerializ
 from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.studentgroup.models import StudentGroup
+from ...upload.models import File
+from ...upload.serializers import FileUploadSerializer
+from ...upload.views import UploadFileAPIView
 
 
 class LidSerializer(serializers.ModelSerializer):
@@ -24,6 +27,7 @@ class LidSerializer(serializers.ModelSerializer):
     group = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
 
     class Meta:
         model = Lid
@@ -33,7 +37,7 @@ class LidSerializer(serializers.ModelSerializer):
             "edu_class", "edu_level", "subject", "ball", "filial","is_frozen",
             "marketing_channel", "lid_stage_type", "ordered_stages",
             "lid_stages", "is_archived", "course", "group", "moderator",'is_student',
-            "call_operator", "relatives", "lessons_count", "created_at","sales_manager","is_expired",
+            "call_operator", "relatives", "lessons_count", "created_at","sales_manager","is_expired","file"
         ]
 
     def __init__(self, *args, **kwargs):
@@ -84,6 +88,7 @@ class LidSerializer(serializers.ModelSerializer):
             instance.marketing_channel).data if instance.marketing_channel else None
         representation['call_operator'] = UserSerializer(
             instance.call_operator).data if instance.call_operator else None
+        representation['file'] = FileUploadSerializer(instance.file.all(), many=True,context=self.context).data
         return representation
 
     def update(self, instance, validated_data):
