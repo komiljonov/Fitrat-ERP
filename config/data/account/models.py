@@ -59,6 +59,8 @@ class CustomUser(AbstractUser):
 
     pages : 'Page'= models.ManyToManyField('compensation.Page', null=True, blank=True)
 
+    is_archived = models.BooleanField(default=False)
+
     USERNAME_FIELD = 'phone'
     # REQUIRED_FIELDS = ['phone']
 
