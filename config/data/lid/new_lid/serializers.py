@@ -100,19 +100,19 @@ class LidSerializer(serializers.ModelSerializer):
             else:
                 validated_data['call_operator'] = None
 
-            # Automatically assign sales_manager if it's None and user is ADMINISTRATOR
         if instance.lid_stage_type == "ORDERED_LID":
             if instance.sales_manager is None and request.user.role == 'ADMINISTRATOR':
                 validated_data['sales_manager'] = request.user
                 validated_data['filial'] = request.user.filial
 
+        # Handling file updates using set()
         files = validated_data.get('file', None)
         if files is not None:
-            # Convert the provided list of files to a set to avoid duplicates
-            instance.file.set(files)
+            instance.file.set(files)  # Use set() to assign files
 
+        # Update other fields
         for attr, value in validated_data.items():
-            if attr != 'file':
+            if attr != 'file':  # Skip file field to avoid conflict
                 setattr(instance, attr, value)
 
         instance.save()
@@ -134,8 +134,16 @@ class LidSerializer(serializers.ModelSerializer):
         else:
             validated_data['filial'] = request.user.filial
 
-        # ✅ Now create and return the instance
-        return Lid.objects.create(**validated_data)
+        # Handle file field using set() to avoid Many-to-Many direct assignment error
+        files = validated_data.pop('file', None)  # Remove the file field from validated_data
+        instance = Lid.objects.create(**validated_data)  # Create the instance first
+
+        # Now assign files to the ManyToMany relationship using set()
+        if files is not None:
+            instance.file.set(files)
+
+        return instance
+
 
 class LidAppSerializer(serializers.ModelSerializer):
     class Meta:
