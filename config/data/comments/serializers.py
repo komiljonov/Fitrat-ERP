@@ -69,7 +69,17 @@ class CommentStuffSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
+        # Fetch the original representation
         rep = super().to_representation(instance)
-        rep["creator"] = UserSerializer(instance.creator).data
-        rep['stuff'] = UserSerializer(instance.stuff).data
+
+        # Ensure the 'creator' field exists in the representation
+        creator = instance.creator if instance.creator else None
+
+        if creator:
+            rep[
+                "full_name"] = f"{creator.first_name} {creator.last_name}"  # You can combine first and last name if desired
+            rep["first_name"] = creator.first_name
+            rep["last_name"] = creator.last_name
+            rep["photo"] = FileUploadSerializer(creator.photo, context=self.context).data if creator.photo else None
+
         return rep
