@@ -6,7 +6,7 @@ from ..command.models import TimeStampModel
 
 
 class Notification(TimeStampModel):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True,blank=True)
+    user : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,blank=True)
     comment = models.TextField(null=True,blank=True)
     come_from = models.TextField(null=True,blank=True)
     is_read = models.BooleanField(default=False)
