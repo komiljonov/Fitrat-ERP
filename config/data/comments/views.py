@@ -68,6 +68,6 @@ class CommentStuff(ListCreateAPIView):
         return StuffComments.objects.none()
 
 class CommentLid(RetrieveUpdateDestroyAPIView):
-    queryset = CommentStuffSerializer.objects.all()
+    queryset = StuffComments.objects.all()
     serializer_class = CommentStuffSerializer
     permission_classes = (IsAuthenticated,)
