@@ -106,11 +106,16 @@ class LidSerializer(serializers.ModelSerializer):
                 validated_data['sales_manager'] = request.user
                 validated_data['filial'] = request.user.filial
 
+        files = validated_data.get('file', None)
+        if files is not None:
+            # Convert the provided list of files to a set to avoid duplicates
+            instance.file.set(files)
 
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            if attr != 'file':
+                setattr(instance, attr, value)
 
-        instance.save()  # <- This is what was missing
+        instance.save()
 
         return instance
 

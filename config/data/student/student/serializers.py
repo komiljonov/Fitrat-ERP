@@ -93,15 +93,18 @@ class StudentSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         password = validated_data.get('password')
         if password:  # Only set the password if it's provided
-            print(password)
-            # Encode the password to bytes before hashing
             instance.password = hashlib.sha512(password.encode('utf-8')).hexdigest()
-            print(instance.password)
             instance.save()
+
+        # Handle file updates with set()
+        files = validated_data.get('file', None)
+        if files is not None:
+            # Convert the provided list of files to a set to avoid duplicates
+            instance.file.set(files)
 
         # Update other fields
         for attr, value in validated_data.items():
-            if attr != 'password':  # Skip the password field
+            if attr != 'password' and attr != 'file':  # Skip the password and file fields
                 setattr(instance, attr, value)
 
         instance.save()
