@@ -1,5 +1,6 @@
 import hashlib
 
+from django.db.models import F
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -71,12 +72,19 @@ class StudentSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-
     def get_secondary_group(self, obj):
-        group = SecondaryStudentGroup.objects.filter(student=obj).values('id','group__name')
+        # Annotate the queryset to rename group__name to name
+        group = SecondaryStudentGroup.objects.filter(student=obj).annotate(
+            name=F('group__name')  # Rename group__name to name
+        ).values('id', 'name')
         return list(group)
+
     def get_secondary_teacher(self, obj):
-        teacher = SecondaryStudentGroup.objects.filter(student=obj).values('id','group__teacher__first_name','group__teacher__last_name')
+        # Annotate the queryset to rename teacher first_name and last_name
+        teacher = SecondaryStudentGroup.objects.filter(student=obj).annotate(
+            first_name=F('group__teacher__first_name'),  # Rename first_name
+            last_name=F('group__teacher__last_name')  # Rename last_name
+        ).values('id', 'first_name', 'last_name')
         return list(teacher)
 
     def get_test(self, obj):

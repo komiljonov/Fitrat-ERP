@@ -155,3 +155,14 @@ class Room_place(APIView):
             "is_free_percent": is_free_percent,
         }
         return Response(response)
+class FinanceDashboard(APIView):
+    def get(self, request, *args, **kwargs):
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        filters = {}
+        if start_date:
+            filters['created_at__gte'] = start_date
+        if end_date:
+            filters['created_at__lte'] = end_date
+
