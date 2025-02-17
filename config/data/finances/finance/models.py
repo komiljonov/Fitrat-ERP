@@ -58,6 +58,9 @@ class Finance(TimeStampModel):
         max_length=20,
     )
 
+    attendance = models.ForeignKey('attendance.Attendance',on_delete=models.SET_NULL,null=True,blank=True,
+                                   related_name='attendance_finances')
+
     student : 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True)
 
     lid : 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True)
