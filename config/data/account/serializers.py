@@ -127,6 +127,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+    def to_representation(self, instance):
+        # Get the base URL for media
+        representation = super().to_representation(instance)
+        if instance.photo:
+            representation['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
+        return representation
+
 
 class UserListSerializer(ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
