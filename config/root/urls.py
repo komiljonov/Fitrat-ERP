@@ -76,6 +76,7 @@ urlpatterns = [
     path('notifications/', include('data.notifications.urls')),
 
     path('upload/', include('data.upload.urls')),
+    path('dashboard/', include('data.dashboard.urls')),
 
 
 
