@@ -162,6 +162,14 @@ class Room_place(APIView):
         }
         return Response(response)
 
+from django.db.models import Sum, F
+from django.utils.timezone import datetime
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.views import APIView
+from django.db.models.functions import ExtractWeekDay
+from rest_framework.permissions import IsAuthenticated
+
 class DashboardLineGraphAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -178,11 +186,10 @@ class DashboardLineGraphAPIView(APIView):
         if casher_id:
             try:
                 casher = Casher.objects.get(id=casher_id)
-                filters['casher__id'] = casher
+                filters['casher__id'] = casher.id
             except Casher.DoesNotExist:
                 return Response({"error": "Casher not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Filter by payment_type if provided
         if payment_type:
             filters['action'] = payment_type
 
@@ -199,15 +206,26 @@ class DashboardLineGraphAPIView(APIView):
             except ValueError:
                 return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Query the filtered data and include the casher field in the values
-        queryset = Finance.objects.filter(**filters)
+        # Query the filtered data and group by weekday
+        queryset = (
+            Finance.objects
+            .filter(**filters)
+            .annotate(weekday=ExtractWeekDay('created_at'))  # Extract weekday (1=Sunday, 7=Saturday)
+            .values('weekday')
+            .annotate(total_amount=Sum('amount'))  # Sum amounts per weekday
+            .order_by('weekday')
+        )
 
-        # Annotate and aggregate data by date
-        data = queryset.annotate(
-            total_amount=Sum('amount')
-        ).order_by('created_at__date')
+        # Convert weekday numbers to names (e.g., Monday, Tuesday)
+        weekday_map = {
+            1: 'Sunday', 2: 'Monday', 3: 'Tuesday', 4: 'Wednesday',
+            5: 'Thursday', 6: 'Friday', 7: 'Saturday'
+        }
 
-        # Serialize the data
-        serialized_data = FinanceSerializer(data, many=True)
+        result = [
+            {"weekday": weekday_map[item['weekday']], "total_amount": item['total_amount']}
+            for item in queryset
+        ]
 
-        return Response(serialized_data.data, status=status.HTTP_200_OK)
+        return Response(result, status=status.HTTP_200_OK)
+
