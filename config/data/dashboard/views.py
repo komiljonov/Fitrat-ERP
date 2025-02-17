@@ -1,6 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from data.department.marketing_channel.models import MarketingChannel
+from data.department.marketing_channel.serializers import MarketingChannelSerializer
 from data.finances.finance.models import Finance
 from data.lid.new_lid.models import Lid
 from data.student.studentgroup.models import StudentGroup
@@ -82,3 +84,15 @@ class DashboardView(APIView):
         # Return the response
         return Response(data)
 
+class MarketingChannels(APIView):
+    def get(self, request, *args, **kwargs):
+
+        channels = MarketingChannel.objects.all()
+
+
+        channel_counts = {}
+
+        for channel in channels:
+            channel_counts[channel.name] = Lid.objects.filter(marketing_channel=channel).count()
+
+        return Response(channel_counts)
