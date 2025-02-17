@@ -5,6 +5,7 @@ from data.department.marketing_channel.models import MarketingChannel
 from data.department.marketing_channel.serializers import MarketingChannelSerializer
 from data.finances.finance.models import Finance
 from data.lid.new_lid.models import Lid
+from data.student.groups.models import Room
 from data.student.studentgroup.models import StudentGroup
 
 
@@ -96,3 +97,14 @@ class MarketingChannels(APIView):
             channel_counts[channel.name] = Lid.objects.filter(marketing_channel=channel).count()
 
         return Response(channel_counts)
+
+
+class Room_place(APIView):
+    def get(self, request, *args, **kwargs):
+        rooms = Room.objects.all()
+        all_places = 0
+        for room in rooms:
+            all_places += room.room_filling
+
+        is_used = StudentGroup.objects.all().count()
+
