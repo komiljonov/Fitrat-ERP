@@ -1,16 +1,5 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from data.department.marketing_channel.models import MarketingChannel
-from data.department.marketing_channel.serializers import MarketingChannelSerializer
-from data.finances.finance.models import Finance
-from data.lid.new_lid.models import Lid
-from data.student.groups.models import Room
-from data.student.studentgroup.models import StudentGroup
-
-
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from data.department.marketing_channel.models import MarketingChannel
 from data.finances.finance.models import Finance
 from data.lid.new_lid.models import Lid
@@ -22,21 +11,24 @@ class DashboardView(APIView):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
 
-        # Query counts for dashboard data with start_date and end_date filters
+        filters = {}
+        if start_date:
+            filters['created_at__gte'] = start_date
+        if end_date:
+            filters['created_at__lte'] = end_date
+
         orders = Lid.objects.filter(
             is_archived=False,
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
-            created_at__gte=start_date,
-            created_at__lte=end_date,
+            **filters,
         ).count()
 
         orders_archived = Lid.objects.filter(
             is_archived=True,
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
-            created_at__gte=start_date,
-            created_at__lte=end_date,
+            **filters,
         ).count()
 
         first_lesson = Lid.objects.filter(
@@ -44,8 +36,7 @@ class DashboardView(APIView):
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
             ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-            created_at__gte=start_date,
-            created_at__lte=end_date,
+            **filters,
         ).count()
 
         first_lesson_archived = Lid.objects.filter(
@@ -53,8 +44,7 @@ class DashboardView(APIView):
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
             ordered_stages="BIRINCHI_DARSGA_KELMAGAN",
-            created_at__gte=start_date,
-            created_at__lte=end_date,
+            **filters,
         ).count()
 
         first_lesson_come = Lid.objects.filter(
@@ -62,8 +52,7 @@ class DashboardView(APIView):
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
             ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-            created_at__gte=start_date,
-            created_at__lte=end_date,
+            **filters,
         ).count()
 
         first_lesson_come_archived = 35  # Static value, update as needed
@@ -72,8 +61,7 @@ class DashboardView(APIView):
             action="INCOME",
             kind="COURSE_PAYMENT",
             is_first=True,
-            created_at__gte=start_date,
-            created_at__lte=end_date,
+            **filters,
         ).count()
 
         first_course_payment_archived = Finance.objects.filter(
@@ -81,14 +69,12 @@ class DashboardView(APIView):
             kind="COURSE_PAYMENT",
             is_first=True,
             student__is_archived=True,
-            created_at__gte=start_date,
-            created_at__lte=end_date,
+            **filters,
         ).count()
 
         course_ended = StudentGroup.objects.filter(
             group__status="INACTIVE",
-            created_at__gte=start_date,
-            created_at__lte=end_date,
+            **filters,
         ).count()
 
         moved_to_filial = 45  # Static value, update as needed
@@ -111,10 +97,17 @@ class DashboardView(APIView):
         # Return the response
         return Response(data)
 
+
 class MarketingChannels(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+
+        filters = {}
+        if start_date:
+            filters['created_at__gte'] = start_date
+        if end_date:
+            filters['created_at__lte'] = end_date
 
         channels = MarketingChannel.objects.all()
         channel_counts = {}
@@ -122,16 +115,22 @@ class MarketingChannels(APIView):
         for channel in channels:
             channel_counts[channel.name] = Lid.objects.filter(
                 marketing_channel=channel,
-                created_at__gte=start_date,
-                created_at__lte=end_date,
+                **filters,
             ).count()
 
         return Response(channel_counts)
+
 
 class Room_place(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+
+        filters = {}
+        if start_date:
+            filters['created_at__gte'] = start_date
+        if end_date:
+            filters['created_at__lte'] = end_date
 
         rooms = Room.objects.all()
         all_places = 0
@@ -140,8 +139,7 @@ class Room_place(APIView):
 
         is_used = StudentGroup.objects.filter(
             group__status="ACTIVE",
-            created_at__gte=start_date,
-            created_at__lte=end_date,
+            **filters,
         ).count()
         is_free = all_places - is_used
 
