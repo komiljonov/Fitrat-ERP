@@ -184,7 +184,7 @@ class DashboardLineGraphAPIView(APIView):
 
         # Filter by payment_type if provided
         if payment_type:
-            filters['kind'] = payment_type
+            filters['action'] = payment_type
 
         # Filter by start_date and end_date if provided
         if start_date:
