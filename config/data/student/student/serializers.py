@@ -6,8 +6,9 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Student
 from ..attendance.models import Attendance
+from ..groups.models import SecondaryGroup
 from ..mastering.models import Mastering
-from ..studentgroup.models import StudentGroup
+from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...account.permission import PhoneAuthBackend
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
@@ -30,6 +31,9 @@ class StudentSerializer(serializers.ModelSerializer):
     # Use CharField for password
     password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
+
+    secondary_group = serializers.SerializerMethodField()
+    secondary_teacher = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
@@ -61,9 +65,19 @@ class StudentSerializer(serializers.ModelSerializer):
             "attendance_count",
             'relatives',
             'file',
+            'secondary_group',
+            'secondary_teacher',
             "created_at",
             "updated_at",
         ]
+
+
+    def get_secondary_group(self, obj):
+        group = SecondaryStudentGroup.objects.filter(student=obj).values('id','group__name')
+        return list(group)
+    def get_secondary_teacher(self, obj):
+        teacher = SecondaryStudentGroup.objects.filter(student=obj).values('id','group__teacher__first_name','group__teacher__last_name')
+        return list(teacher)
 
     def get_test(self, obj):
         test = Mastering.objects.filter(student=obj)
