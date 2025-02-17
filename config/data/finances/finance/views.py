@@ -15,6 +15,7 @@ from data.student.student.models import Student
 from .models import Finance, Casher, Handover
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer
 from ...lid.new_lid.models import Lid
+from ...student.attendance.models import Attendance
 
 
 class CasherListCreateAPIView(ListCreateAPIView):
@@ -259,3 +260,17 @@ class CasherStatisticsAPIView(APIView):
                 "balance": balance,
             })
         return Response({"error": "Casher not found"}, status=404)
+
+
+class TeacherFinanceAPIView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Finance.objects.all()
+    serializer_class = FinanceSerializer
+    def get_queryset(self, **kwargs):
+        teacher = self.kwargs.get('pk')
+        if teacher:
+            date = Attendance.objects.filter(theme__course=teacher, action="INCOME")
+            summ = Finance.objects.filter(kind="LESSON_PAYMENT",created_at__gte=date).aggregate(
+                Sum('amount'))['amount__sum'] or 0
+
+            pass

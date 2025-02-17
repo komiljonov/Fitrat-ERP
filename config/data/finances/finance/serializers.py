@@ -143,3 +143,22 @@ class FinanceSerializer(serializers.ModelSerializer):
         return representation
 
 
+class FinanceGroupSerializer(serializers.ModelSerializer):
+    summ = serializers.SerializerMethodField()
+    class Meta:
+        model = Finance
+        fields = [
+            "id",
+            "casher",
+            "action",
+            "amount",
+            "kind",
+            "student",
+            "lid",
+            "stuff",
+            "summ",
+            "creator",
+            "comment",
+            "created_at",
+        ]
+

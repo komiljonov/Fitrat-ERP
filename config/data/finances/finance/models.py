@@ -46,6 +46,7 @@ class Finance(TimeStampModel):
     kind = models.CharField(
         choices=[
             ('COURSE_PAYMENT', 'COURSE_PAYMENT'),
+            ('LESSON_PAYMENT', 'LESSON_PAYMENT'),
             ('SALARY', 'SALARY'),
             ('BONUS', 'BONUS'),
             ('MONEY_BACK', 'MONEY_BACK'),
@@ -66,6 +67,8 @@ class Finance(TimeStampModel):
     creator : 'CustomUser' = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL,null=True,blank=True, related_name='finance_creator')
 
     comment = models.TextField(null=True, blank=True)
+
+    is_first = models.BooleanField(default=False)
 
 
     def __str__(self):
