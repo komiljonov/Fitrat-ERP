@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from .models import StudentGroup, SecondaryStudentGroup
 from .serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializer
 from ..groups.models import SecondaryGroup
-from ..groups.serializers import SecondaryGroupSerializer
+from ..groups.serializers import SecondaryGroupSerializer, SecondarygroupModelSerializer
 
 
 class StudentsGroupList(ListCreateAPIView):
@@ -102,10 +102,9 @@ class SecondaryStudentList(ListCreateAPIView):
             return queryset
 
 
-
 class SecondaryGroupList(ListAPIView):
-    serializer_class = SecondaryGroupSerializer
-    queryset = SecondaryGroup
+    serializer_class = SecondarygroupModelSerializer
+    queryset = SecondaryGroup.objects.all()  # Corrected to fetch data
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -113,4 +112,7 @@ class SecondaryGroupList(ListAPIView):
         if id:
             return SecondaryGroup.objects.filter(teacher__id=id)
         return SecondaryGroup.objects.none()
+
+    def get_paginated_response(self, data):
+        return Response(data)
 

@@ -182,3 +182,9 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
         rep['teacher'] = UserSerializer(instance.teacher).data
         rep['group'] = GroupSerializer(instance.group).data
         return rep
+
+class SecondarygroupModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SecondaryGroup
+        fields = ['id', 'name']
+
