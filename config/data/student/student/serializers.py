@@ -73,19 +73,28 @@ class StudentSerializer(serializers.ModelSerializer):
         ]
 
     def get_secondary_group(self, obj):
-        # Annotate the queryset to rename group__name to name
         group = SecondaryStudentGroup.objects.filter(student=obj).annotate(
             name=F('group__name')  # Rename group__name to name
         ).values('id', 'name')
-        return list(group)
+
+        # Convert the queryset to a list of dictionaries with keys as 'id' and 'name'
+        group_list = [{'id': item['id'], 'name': item['name']} for item in group]
+        return group_list[0] if group_list else None
 
     def get_secondary_teacher(self, obj):
-        # Annotate the queryset to rename teacher first_name and last_name
+        # Annotate the queryset to rename teacher's id, first_name, and last_name
         teacher = SecondaryStudentGroup.objects.filter(student=obj).annotate(
-            first_name=F('group__teacher__first_name'),  # Rename first_name
-            last_name=F('group__teacher__last_name')  # Rename last_name
-        ).values('id', 'first_name', 'last_name')
-        return list(teacher)
+            teacher_id=F('group__teacher__id'),  # Rename to 'teacher_id'
+            teacher_first_name=F('group__teacher__first_name'),  # Rename to 'teacher_first_name'
+            teacher_last_name=F('group__teacher__last_name')  # Rename to 'teacher_last_name'
+        ).values('teacher_id', 'teacher_first_name', 'teacher_last_name')
+
+        # Convert the queryset to a list of dictionaries with custom keys
+        teacher_list = [
+            {'id': item['teacher_id'], 'first_name': item['teacher_first_name'], 'last_name': item['teacher_last_name']}
+            for item in teacher]
+
+        return teacher_list[0] if teacher_list else None
 
     def get_test(self, obj):
         test = Mastering.objects.filter(student=obj)
