@@ -35,6 +35,8 @@ class StuffMasteringSerializer(serializers.ModelSerializer):
             "compensation",
             "bonus",
             "ball",
+            'created_at',
+            'updated_at',
         ]
 
     def to_representation(self, instance):
