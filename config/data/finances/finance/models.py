@@ -71,8 +71,7 @@ class Finance(TimeStampModel):
 
     comment = models.TextField(null=True, blank=True)
 
-    is_first = models.BooleanField(default=False)
-
+    is_first = models.BooleanField(default=False,null=True,blank=True)
 
     def __str__(self):
         return f'{self.amount} {self.kind} {self.action}'
