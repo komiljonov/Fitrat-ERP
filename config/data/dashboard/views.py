@@ -162,7 +162,6 @@ class Room_place(APIView):
         }
         return Response(response)
 
-
 class DashboardLineGraphAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -179,7 +178,7 @@ class DashboardLineGraphAPIView(APIView):
         if casher_id:
             try:
                 casher = Casher.objects.get(id=casher_id)
-                filters['casher'] = casher
+                filters['casher__id'] = casher
             except Casher.DoesNotExist:
                 return Response({"error": "Casher not found"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -200,11 +199,11 @@ class DashboardLineGraphAPIView(APIView):
             except ValueError:
                 return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Query the filtered data
+        # Query the filtered data and include the casher field in the values
         queryset = Finance.objects.filter(**filters)
 
         # Annotate and aggregate data by date
-        data = queryset.values('created_at__date').annotate(
+        data = queryset.annotate(
             total_amount=Sum('amount')
         ).order_by('created_at__date')
 
@@ -212,4 +211,3 @@ class DashboardLineGraphAPIView(APIView):
         serialized_data = FinanceSerializer(data, many=True)
 
         return Response(serialized_data.data, status=status.HTTP_200_OK)
-
