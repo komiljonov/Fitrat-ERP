@@ -1,3 +1,4 @@
+import icecream
 from django.shortcuts import render
 
 from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
@@ -46,8 +47,8 @@ class TeacherMasteringList(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.kwargs.get('id')
+        id = self.kwargs.get('pk')
+        icecream.ic(id)
         if id:
             return MasteringTeachers.objects.filter(teacher__id=id)
-
         return MasteringTeachers.objects.none()
