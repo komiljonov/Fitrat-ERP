@@ -190,13 +190,13 @@ class DashboardLineGraphAPIView(APIView):
         # Filter by start_date and end_date if provided
         if start_date:
             try:
-                filters['created__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+                filters['created_at__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
             except ValueError:
                 return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
 
         if end_date:
             try:
-                filters['created__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+                filters['created_at__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
             except ValueError:
                 return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -204,9 +204,9 @@ class DashboardLineGraphAPIView(APIView):
         queryset = Finance.objects.filter(**filters)
 
         # Annotate and aggregate data by date
-        data = queryset.values('created__date').annotate(
+        data = queryset.values('created_at__date').annotate(
             total_amount=Sum('amount')
-        ).order_by('created__date')
+        ).order_by('created_at__date')
 
         # Serialize the data
         serialized_data = FinanceSerializer(data, many=True)
