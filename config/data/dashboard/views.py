@@ -1,6 +1,8 @@
 from datetime import datetime
 
+import icecream
 from django.db.models import Sum
+from django.db.models.functions import ExtractWeekDay
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -162,18 +164,15 @@ class Room_place(APIView):
         }
         return Response(response)
 
-from django.db.models import Sum, F
-from django.utils.timezone import datetime
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.views import APIView
-from django.db.models.functions import ExtractWeekDay
-from rest_framework.permissions import IsAuthenticated
 
 class DashboardLineGraphAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        from datetime import datetime
+        from django.db.models import Sum
+        from django.db.models.functions import ExtractWeekDay
+
         # Extract parameters
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
@@ -190,8 +189,13 @@ class DashboardLineGraphAPIView(APIView):
             except Casher.DoesNotExist:
                 return Response({"error": "Casher not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if payment_type:
-            filters['action'] = payment_type
+        # Ensure valid payment_type is provided (INCOME or EXPENSE)
+        valid_payment_types = ["INCOME", "EXPENSE"]
+        if payment_type and payment_type.upper() in valid_payment_types:
+            icecream.ic(payment_type)
+            filters['action__exact'] = payment_type.upper()
+        elif payment_type:  # Invalid value
+            return Response({"error": "Invalid payment type. Use 'INCOME' or 'EXPENSE'."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Filter by start_date and end_date if provided
         if start_date:
@@ -213,19 +217,21 @@ class DashboardLineGraphAPIView(APIView):
             .annotate(weekday=ExtractWeekDay('created_at'))  # Extract weekday (1=Sunday, 7=Saturday)
             .values('weekday')
             .annotate(total_amount=Sum('amount'))  # Sum amounts per weekday
-            .order_by('weekday')
         )
 
-        # Convert weekday numbers to names (e.g., Monday, Tuesday)
+        # Initialize default data for all weekdays
         weekday_map = {
             1: 'Sunday', 2: 'Monday', 3: 'Tuesday', 4: 'Wednesday',
             5: 'Thursday', 6: 'Friday', 7: 'Saturday'
         }
+        full_week_data = {day: 0 for day in weekday_map.values()}
 
-        result = [
-            {"weekday": weekday_map[item['weekday']], "total_amount": item['total_amount']}
-            for item in queryset
-        ]
+        # Update full week data with actual totals
+        for item in queryset:
+            weekday_name = weekday_map[item['weekday']]
+            full_week_data[weekday_name] = item['total_amount']
+
+        # Convert dictionary to list format
+        result = [{"weekday": day, "total_amount": total} for day, total in full_week_data.items()]
 
         return Response(result, status=status.HTTP_200_OK)
-
