@@ -6,6 +6,7 @@ from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room
 from data.student.studentgroup.models import StudentGroup
 
+
 class DashboardView(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
@@ -143,9 +144,14 @@ class Room_place(APIView):
         ).count()
         is_free = all_places - is_used
 
+        is_used_percent = all_places / 100 * is_used
+        is_free_percent = 100 - is_used_percent
+
         response = {
             "all_places": all_places,
             "is_used": is_used,
             "is_free": is_free,
+            "is_used_percent": is_used_percent,
+            "is_free_percent": is_free_percent,
         }
         return Response(response)
