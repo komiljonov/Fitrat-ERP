@@ -57,7 +57,6 @@ class LidListCreateView(ListCreateAPIView):
         if is_archived == "True":
             queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
 
-        # Role-based filtering
         if user.role == "CALL_OPERATOR":
             queryset = queryset.filter(
                 (Q(call_operator=user) | Q(call_operator__isnull=True)),
