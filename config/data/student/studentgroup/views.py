@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from .models import StudentGroup, SecondaryStudentGroup
 from .serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializer
 from ..groups.models import SecondaryGroup
+from ..groups.serializers import SecondaryGroupSerializer
 
 
 class StudentsGroupList(ListCreateAPIView):
@@ -93,16 +94,24 @@ class SecondaryStudentList(ListCreateAPIView):
 
 
     def get_queryset(self):
-        id = self.request.query_params.get('id')
         if self.request.user.role == 'ASSISTANT' and id is None:
             queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
-            return queryset
-        elif id is not None:
-            queryset = SecondaryGroup.objects.filter(teacher__id=id)
             return queryset
         else:
             queryset = StudentGroup.objects.filter(group__filial=self.request.user.filial)
             return queryset
 
 
+
+class SecondaryGroupList(ListAPIView):
+    serializer_class = SecondaryGroupSerializer
+    queryset = SecondaryGroup
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.kwargs.get('pk')
+        if id :
+            queryset = SecondaryGroup.objects.filter(teacher__id=id)
+            return queryset
+        return SecondaryGroup.objects.none()
 
