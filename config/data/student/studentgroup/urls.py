@@ -14,7 +14,7 @@ urlpatterns = [
     path('student/<uuid:pk>/', GroupStudentDetail.as_view()),
     path('students/',Teacher_StudentsView.as_view()),
 
-    path('secondary',SecondaryStudentList.as_view()),
+    path('secondary/',SecondaryStudentList.as_view()),
 
     path('secondary/<uuid:pk>/', SecondaryGroupList.as_view()),
 
