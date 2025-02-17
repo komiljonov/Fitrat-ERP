@@ -1,10 +1,16 @@
+from datetime import datetime
+
+from django.db.models import Sum
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from data.department.marketing_channel.models import MarketingChannel
-from data.finances.finance.models import Finance
+from data.finances.finance.models import Finance, Casher
 from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room
 from data.student.studentgroup.models import StudentGroup
+from ..finances.finance.serializers import FinanceSerializer
 
 
 class DashboardView(APIView):
@@ -155,14 +161,55 @@ class Room_place(APIView):
             "is_free_percent": is_free_percent,
         }
         return Response(response)
-class FinanceDashboard(APIView):
+
+
+class DashboardLineGraphAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        # Extract parameters
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        casher_id = request.query_params.get('casher')
+        payment_type = request.query_params.get('kind')
 
         filters = {}
+
+        # Filter by Casher if provided
+        if casher_id:
+            try:
+                casher = Casher.objects.get(id=casher_id)
+                filters['casher'] = casher
+            except Casher.DoesNotExist:
+                return Response({"error": "Casher not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Filter by payment_type if provided
+        if payment_type:
+            filters['kind'] = payment_type
+
+        # Filter by start_date and end_date if provided
         if start_date:
-            filters['created_at__gte'] = start_date
+            try:
+                filters['created__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+            except ValueError:
+                return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
         if end_date:
-            filters['created_at__lte'] = end_date
+            try:
+                filters['created__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+            except ValueError:
+                return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Query the filtered data
+        queryset = Finance.objects.filter(**filters)
+
+        # Annotate and aggregate data by date
+        data = queryset.values('created__date').annotate(
+            total_amount=Sum('amount')
+        ).order_by('created__date')
+
+        # Serialize the data
+        serialized_data = FinanceSerializer(data, many=True)
+
+        return Response(serialized_data.data, status=status.HTTP_200_OK)
 
