@@ -106,5 +106,10 @@ class Room_place(APIView):
         for room in rooms:
             all_places += room.room_filling
 
-        is_used = StudentGroup.objects.all().count()
-
+        is_used = StudentGroup.objects.filter(group__status="ACTIVE").count()
+        is_free = all_places - is_used
+        response = {
+            "all_places": all_places,
+            "is_used": is_used,
+            "is_free": is_free}
+        return Response(response)
