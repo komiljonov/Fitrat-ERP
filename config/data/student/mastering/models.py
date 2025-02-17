@@ -1,11 +1,12 @@
 from django.db import models
 
+from ...finances.compensation.models import Compensation,Bonus
 from ...lid.new_lid.models import Lid
 from ..student.models import Student
 from ...command.models import TimeStampModel
 from ..quiz.models import Quiz
 from ..groups.models import Group
-
+from ...account.models import CustomUser
 
 # Create your models here.
 class Mastering(TimeStampModel):
@@ -20,3 +21,16 @@ class Mastering(TimeStampModel):
 
     def __str__(self):
         return  self.lid.first_name if self.lid else self.student.first_name + " " + self.ball
+
+class MasteringTeachers(TimeStampModel):
+    teacher : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL ,
+                                               null=True,blank=True,
+                                               related_name='teacher_mastering')
+    compensation : "Compensation" = models.ForeignKey('finances.Compensation',
+                                                      on_delete=models.SET_NULL ,
+                                                      null=True,blank=True,
+                                                      related_name='compensation_mastering')
+    bonus : "Bonus" = models.ForeignKey('finances.Bonus', on_delete=models.SET_NULL ,)
+    ball = models.CharField(max_length=255, default=0)
+    def __str__(self):
+        return self.teacher.first_name  | self.ball

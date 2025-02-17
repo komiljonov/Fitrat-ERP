@@ -37,3 +37,6 @@ class PagesSerializer(serializers.ModelSerializer):
             return Page.objects.bulk_create([Page(**data) for data in validated_data])
         return super().create(validated_data)
 
+
+
+

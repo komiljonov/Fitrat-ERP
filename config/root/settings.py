@@ -79,6 +79,8 @@ INSTALLED_APPS = [
     'data.moderator',
     'data.upload',
 
+    'data.dashboard',
+
     'data.department.filial',
     'data.department.marketing_channel',
 

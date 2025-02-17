@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 # Create your views here.
-from .serializers import MasteringSerializer
-from .models import Mastering
+from .serializers import MasteringSerializer, StuffMasteringSerializer
+from .models import Mastering, MasteringTeachers
 
 
 class MasteringList(ListCreateAPIView):
@@ -39,3 +39,15 @@ class MasteringQuizFilter(ListAPIView):
         if quiz:
             return quiz
         return Mastering.objects.none()
+
+class TeacherMasteringList(ListAPIView):
+    queryset = MasteringTeachers.objects.all()
+    serializer_class = StuffMasteringSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.kwargs.get('id')
+        if id:
+            return MasteringTeachers.objects.filter(teacher__id=id)
+
+        return MasteringTeachers.objects.none()
