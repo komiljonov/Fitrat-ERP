@@ -26,11 +26,11 @@ class MasteringTeachers(TimeStampModel):
     teacher : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL ,
                                                null=True,blank=True,
                                                related_name='teacher_mastering')
-    compensation : "Compensation" = models.ForeignKey('finances.Compensation',
+    compensation : "Compensation" = models.ForeignKey('compensation.Compensation',
                                                       on_delete=models.SET_NULL ,
                                                       null=True,blank=True,
                                                       related_name='compensation_mastering')
-    bonus : "Bonus" = models.ForeignKey('finances.Bonus', on_delete=models.SET_NULL ,related_name='bonus_mastering')
+    bonus : "Bonus" = models.ForeignKey('compensation.Bonus', on_delete=models.SET_NULL ,null=True,blank=True,related_name='bonus_mastering')
     ball = models.CharField(max_length=255, default=0)
     def __str__(self):
         return self.teacher.first_name  | self.ball
