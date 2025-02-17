@@ -110,8 +110,7 @@ class SecondaryGroupList(ListAPIView):
 
     def get_queryset(self):
         id = self.kwargs.get('pk')
-        if id :
-            queryset = SecondaryGroup.objects.filter(teacher__id=id)
-            return queryset
+        if id:
+            return SecondaryGroup.objects.filter(teacher__id=id)
         return SecondaryGroup.objects.none()
 
