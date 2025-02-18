@@ -2,8 +2,10 @@ import datetime
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from icecream import ic
 
 from .models import Attendance
+from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group
 from ...notifications.models import Notification
 from ...stages.models import NewOredersStages
@@ -64,21 +66,50 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 @receiver(post_save, sender=Attendance)
 def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     if created:
-        if (
-                instance.reason in ["IS_PRESENT", "UNREASONED","REASONED"]
-                and instance.group
-        ):
+        if instance.reason in ["IS_PRESENT", "UNREASONED", "REASONED"] and instance.group:
             if instance.group.price_type == "DAILY":
                 if instance.student:
                     instance.student.balance -= instance.group.price
                     instance.student.save()
-
                 else:
                     print("Attendance does not have a related student.")
-            # elif instance.group.price_type == "MONTHLY":
-            #     if instance.student:
-            #         month = datetime.datetime.month
-            #         one_day = instance.group.price / instance.group
-            #         instance.student.balance -= instance.group.price
-            #         instance.student.save()
 
+            elif instance.group.price_type == "MONTHLY":
+                if instance.student:
+                    # Get the first day of the current month (YYYY-MM format)
+                    current_month_start = datetime.date.today().replace(day=1).strftime("%Y-%m-%d")
+
+                    # Extract lesson days from group and format as a comma-separated string
+                    lesson_days_queryset = instance.group.scheduled_day_type.all()  # Ensure `.all()` is used
+                    lesson_days = ",".join([day.name for day in lesson_days_queryset]) if lesson_days_queryset else ""
+
+                    # Define holidays & days off
+                    holidays = []
+                    days_off = ["Yakshanba"]
+
+                    # Calculate lessons for the month from the start of the month
+                    lessons_per_month = calculate_lessons(
+                        start_date=current_month_start,  # Always start from the 1st of the month
+                        end_date=instance.group.finish_date.strftime("%Y-%m-%d"),
+                        lesson_type=lesson_days,
+                        holidays=holidays,
+                        days_off=days_off,
+                    )
+
+                    ic(lessons_per_month.get(current_month_start[:7], []))
+                    lesson_count = len(lessons_per_month.get(current_month_start[:7], []))  # Extract YYYY-MM
+
+                    ic(lesson_count)
+
+                    if lesson_count > 0:
+                        price_per_lesson = instance.group.price / lesson_count
+                        ic(price_per_lesson)
+                        instance.student.balance -= price_per_lesson
+                        instance.student.save()
+
+                        # 30 % for every lesson payment
+
+                        instance.group.teacher.balance += price_per_lesson * 0.3
+
+                    else:
+                        print(f"No lessons scheduled for {current_month_start}, skipping balance deduction.")
