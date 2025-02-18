@@ -46,7 +46,7 @@ class TaskSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        representation["creator"] = UserListSerializer(instance.creator).data
+        representation["creator"] = UserListSerializer(instance.creator,context=self.context).data
 
         # Corrected the syntax for `UserListSerializer`
 

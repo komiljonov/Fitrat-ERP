@@ -40,7 +40,6 @@ class TaskListNoPGView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Filter tasks by the current user as the creator
         queryset = Task.objects.filter(creator=self.request.user).order_by("-date_of_expired")
         return queryset
 
