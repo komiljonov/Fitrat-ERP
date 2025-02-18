@@ -222,6 +222,7 @@ class DashboardLineGraphAPIView(APIView):
             .values('weekday')
             .annotate(total_amount=Sum('amount'))  # Sum amounts per weekday
         )
+        summ = queryset.aggregate(Sum('amount'))
 
         # Initialize default data for all weekdays
         weekday_map = {
@@ -236,7 +237,7 @@ class DashboardLineGraphAPIView(APIView):
             full_week_data[weekday_name] = item['total_amount']
 
         # Convert dictionary to list format
-        result = [{"weekday": day, "total_amount": total} for day, total in full_week_data.items()]
+        result = [{"weekday": day, "total_amount": total,"total" : summ} for day, total in full_week_data.items()]
 
         return Response(result, status=status.HTTP_200_OK)
 
