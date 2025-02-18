@@ -46,7 +46,7 @@ def generate_fake_data():
         MarketingChannel.objects.create(name=channel)
 
     # Days
-    days = ['Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba', 'Yakshanba']
+    days = [  'Yakshanba','Shanba', 'Juma','Payshanba',  'Chorshanba', 'Seshanba','Dushanba',]
     for day in days:
         Day.objects.create(name=day)
 
