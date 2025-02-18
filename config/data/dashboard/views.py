@@ -242,28 +242,54 @@ class DashboardLineGraphAPIView(APIView):
 
 
 
+
 class MonitoringView(APIView):
     def get(self, request, *args, **kwargs):
+        # Get query parameters
+        full_name = request.query_params.get('full_name', None)
+        start_date = request.query_params.get('start_date', None)
+        end_date = request.query_params.get('end_date', None)
+        subject_id = request.query_params.get('subject', None)
+
+        # Base queryset for teachers
         teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
             name=Concat(F('first_name'), Value(' '), F('last_name')),
             overall_point=F('ball')
         )
 
+        # Apply filters based on query parameters
+        if full_name:
+            teachers = teachers.filter(name__icontains=full_name)
+
+        if start_date and end_date:
+            teachers = teachers.filter(created_at__date__range=[start_date, end_date])
+        elif start_date:
+            teachers = teachers.filter(created_at__date__gte=start_date)
+        elif end_date:
+            teachers = teachers.filter(created_at__date__lte=end_date)
+
         teacher_data = []
 
         for teacher in teachers:
-            subjects = Group.objects.filter(teacher=teacher).values("id", "name")
+            # Filter subjects for the teacher
+            subjects_query = Group.objects.filter(teacher=teacher).values("id", "name")
+            if subject_id:
+                subjects_query = subjects_query.filter(id=subject_id)
+
+            subjects = list(subjects_query)
+
+            # Count results for the teacher
             results = Results.objects.filter(teacher=teacher).count()
 
-            # Use FileUploadSerializer for photo (handling None cases)
-            image_data = FileUploadSerializer(teacher.photo, context={"request": self.request}).data if teacher.photo else None
+            # Use FileUploadSerializer for the photo (handling None cases)
+            image_data = FileUploadSerializer(teacher.photo, context={"request": request}).data if teacher.photo else None
 
             teacher_data.append({
                 "id": teacher.id,
                 "full_name": teacher.name,
                 "image": image_data,
                 "overall_point": teacher.overall_point,
-                "subjects": list(subjects),
+                "subjects": subjects,
                 "results": results,
             })
 
