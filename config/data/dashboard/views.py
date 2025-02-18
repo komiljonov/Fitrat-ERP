@@ -246,7 +246,7 @@ class DashboardLineGraphAPIView(APIView):
 class MonitoringView(APIView):
     def get(self, request, *args, **kwargs):
         # Get query parameters
-        full_name = request.query_params.get('full_name', None)
+        full_name = request.query_params.get('search', None)
         start_date = request.query_params.get('start_date', None)
         end_date = request.query_params.get('end_date', None)
         subject_id = request.query_params.get('subject', None)
@@ -278,8 +278,13 @@ class MonitoringView(APIView):
 
             subjects = list(subjects_query)
 
-            # Count results for the teacher
-            results = Results.objects.filter(teacher=teacher).count()
+            if start_date and end_date:
+                results = Results.objects.filter(teacher=teacher,created_at__gte=start_date
+                                                 ,created_at_lte=end_date).count()
+            elif start_date:
+                results = Results.objects.filter(teacher=teacher,created_at__gte=start_date)
+            else:
+                results = Results.objects.filter(teacher=teacher).count()
 
             # Use FileUploadSerializer for the photo (handling None cases)
             image_data = FileUploadSerializer(teacher.photo, context={"request": request}).data if teacher.photo else None
