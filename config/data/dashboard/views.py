@@ -269,8 +269,14 @@ class MonitoringView(APIView):
         teacher_data = []
 
         for teacher in teachers:
-            # Filter subjects for the teacher
-            subjects_query = Group.objects.filter(teacher=teacher).values("id", "name")
+            subjects_query = (
+                Group.objects.filter(teacher=teacher)
+                .annotate(
+                    subject_id=F("course__subject__id"),
+                    subject_name=F("course__subject__name")
+                )
+                .values("subject_id", "subject_name")  # Ensure renamed fields are used in values()
+            )
             if subject_id:
                 subjects_query = subjects_query.filter(id=subject_id)
 
