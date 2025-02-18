@@ -305,7 +305,6 @@ class MonitoringView(APIView):
         return Response(teacher_data)
 
 
-
 class DashboardWeeklyFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -366,21 +365,29 @@ class DashboardWeeklyFinanceAPIView(APIView):
             5: 'Thursday', 6: 'Friday', 7: 'Saturday'
         }
 
-        # Prepare response data
-        weekly_data = {day: {kind: 0 for kind in allowed_kinds} for day in weekday_map.values()}  # Initialize
+        # Initialize totals for each weekday and category
+        weekly_data = {day: {kind: 0 for kind in allowed_kinds} for day in weekday_map.values()}
+        total_overall = {kind: 0 for kind in allowed_kinds}  # Overall total per category
 
+        # Populate data
         for item in queryset:
             weekday_name = weekday_map[item['weekday']]
             category = item['kind']
             amount = item['total_amount']
-            weekly_data[weekday_name][category] += amount  # Aggregate amounts
+            weekly_data[weekday_name][category] += amount
+            total_overall[category] += amount  # Aggregate total for percentage calculation
 
-        # Convert to response format
-        result = [
-            {"weekday": day, "totals": data} for day, data in weekly_data.items()
-        ]
+        # Compute category-wise percentages
+        total_sum = sum(total_overall.values())  # Total amount of all categories combined
 
-        return Response(result, status=200)
+        if total_sum > 0:
+            percentages = {
+                category: round((total / total_sum) * 100, 2) for category, total in total_overall.items()
+            }
+        else:
+            percentages = {category: 0 for category in allowed_kinds}
 
+        # Convert data to response format
+        result = [{"weekday": day, "totals": totals} for day, totals in weekly_data.items()]
 
-
+        return Response({"weekly_data": result, "percentages": percentages}, status=200)
