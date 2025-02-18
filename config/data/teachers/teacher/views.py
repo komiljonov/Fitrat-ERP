@@ -13,6 +13,8 @@ from ...student.groups.models import Group, SecondaryGroup
 from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
+from ...student.mastering.models import Mastering, MasteringTeachers
+from ...student.mastering.serializers import MasteringSerializer, StuffMasteringSerializer
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...student.studentgroup.serializers import StudentsGroupSerializer
 
@@ -161,3 +163,15 @@ class AssistantStatisticsView(ListAPIView):
             "low_assimilation": low_assimilation
         }
         return Response(statistics)
+
+
+class TeacherMasteringStatisticsView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = MasteringTeachers.objects.all()
+    serializer_class = StuffMasteringSerializer
+
+    def get_queryset(self):
+        queryset = MasteringTeachers.objects.filter(teacher=self.request.user)
+        if queryset:
+            return queryset
+        return Mastering.objects.none()
