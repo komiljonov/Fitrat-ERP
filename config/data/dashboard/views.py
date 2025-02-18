@@ -16,6 +16,7 @@ from ..account.models import CustomUser
 from ..finances.finance.serializers import FinanceSerializer
 from ..results.models import Results
 from ..student.course.models import Course
+from ..upload.serializers import FileUploadSerializer
 
 
 class DashboardView(APIView):
@@ -253,13 +254,17 @@ class MonitoringView(APIView):
         for teacher in teachers:
             subjects = Group.objects.filter(teacher=teacher).values("id", "name")
             results = Results.objects.filter(teacher=teacher).count()
+
+            # Use FileUploadSerializer for photo (handling None cases)
+            image_data = FileUploadSerializer(teacher.photo, context={"request": self.request}).data if teacher.photo else None
+
             teacher_data.append({
                 "id": teacher.id,
                 "full_name": teacher.name,
+                "image": image_data,
                 "overall_point": teacher.overall_point,
                 "subjects": list(subjects),
                 "results": results,
             })
 
         return Response(teacher_data)
-
