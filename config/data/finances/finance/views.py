@@ -215,34 +215,6 @@ class CasherHandoverHistory(ListAPIView):
         return Finance.objects.none()
 
 
-class TeacherHandover(ListAPIView):
-    permission_classes = [IsAuthenticated]
-    queryset = Finance.objects.all()
-    serializer_class = FinanceSerializer
-
-    def get_queryset(self, **kwargs):
-        user_id = self.kwargs.get('pk')  # Get user ID from URL parameter
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-
-        queryset = Finance.objects.all()
-
-        if user_id:
-            user = CustomUser.objects.filter(id=user_id).first()
-            if user:
-                # If user is found, filter based on the user
-                queryset = queryset.filter(stuff__id=user_id)
-
-            # If both start_date and end_date are provided
-            if start_date and end_date:
-                queryset = queryset.filter(stuff__id=user_id, created_at__gte=start_date, created_at__lte=end_date)
-            # If only start_date is provided
-            elif start_date:
-                queryset = queryset.filter(stuff__id=user_id, created_at__gte=start_date)
-
-        return queryset
-
-
 class CasherStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -262,15 +234,66 @@ class CasherStatisticsAPIView(APIView):
         return Response({"error": "Casher not found"}, status=404)
 
 
-class TeacherFinanceAPIView(ListAPIView):
-    permission_classes = [IsAuthenticated]
-    queryset = Finance.objects.all()
-    serializer_class = FinanceSerializer
-    def get_queryset(self, **kwargs):
-        teacher = self.kwargs.get('pk')
-        if teacher:
-            date = Attendance.objects.filter(theme__course=teacher, action="INCOME")
-            summ = Finance.objects.filter(kind="LESSON_PAYMENT",created_at__gte=date).aggregate(
-                Sum('amount'))['amount__sum'] or 0
 
-            pass
+class TeacherFinanceHandoverAPIView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FinanceSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs.get('pk')  # Get teacher ID from URL parameter
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        # Ensure the teacher exists
+        teacher = CustomUser.objects.filter(id=teacher_id).first()
+        if not teacher:
+            return Finance.objects.none()
+
+        # Base queryset for finance records related to the teacher
+        queryset = Finance.objects.filter(stuff__id=teacher_id)
+
+        # Apply date filters safely
+        filters = Q()
+        if start_date:
+            filters &= Q(created_at__gte=start_date)
+        if end_date:
+            filters &= Q(created_at__lte=end_date)
+
+        queryset = queryset.filter(filters)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        teacher_id = self.kwargs.get('pk')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        teacher = CustomUser.objects.filter(id=teacher_id).first()
+        if not teacher:
+            return Response({"error": "Teacher not found"}, status=404)
+
+        # Ensure start_date and end_date are not None before filtering
+        lesson_filters = Q(group__teacher=teacher)
+        if start_date:
+            lesson_filters &= Q(created_at__gte=start_date)
+        if end_date:
+            lesson_filters &= Q(created_at__lte=end_date)
+
+        # Get attended lessons based on finance records
+        attended_lessons = Attendance.objects.filter(lesson_filters)
+
+        total_payment = (
+            Finance.objects.filter(attendance__in=attended_lessons)
+            .aggregate(Sum('amount'))['amount__sum'] or 0
+        )
+
+        groups = attended_lessons.values_list('group__name', flat=True).distinct()
+
+        finance_data = self.get_serializer(queryset, many=True).data
+
+        return Response({
+            "group_names": list(groups),  # Convert QuerySet to list
+            "students_count": queryset.count(),
+            "total_payment": total_payment,
+            "finance_data": finance_data
+        })

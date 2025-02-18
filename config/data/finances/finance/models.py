@@ -28,8 +28,10 @@ class Finance(TimeStampModel):
 
     casher : "Casher" = models.ForeignKey(
         'finance.Casher',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='finances_casher',
+        null=True,
+        blank=True,
     )
 
     action = models.CharField(

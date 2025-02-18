@@ -7,12 +7,14 @@ from icecream import ic
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group
+from ...finances.finance.models import Finance
 from ...notifications.models import Notification
 from ...stages.models import NewOredersStages
 
 
 @receiver(post_save, sender=Attendance)
 def on_attendance_create(sender, instance: Attendance, created, **kwargs):
+
 
     if instance.lid:
 
@@ -71,6 +73,17 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 if instance.student:
                     instance.student.balance -= instance.group.price
                     instance.student.save()
+                    is_first = True if Attendance.objects.filter(student=instance.student).count() ==2 else False
+
+                    Finance.objects.create(
+                        action="INCOME",
+                        amount=instance.group.price * 0.7,
+                        kind="LESSON_PAYMENT",
+                        attendance=instance,
+                        student=instance.student,
+                        is_first=is_first,
+                        comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
+                    )
                 else:
                     print("Attendance does not have a related student.")
 
