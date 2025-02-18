@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from rest_framework.generics import CreateAPIView, ListCreateAPIView
+from rest_framework.generics import CreateAPIView, ListCreateAPIView, DestroyAPIView
 
 from .models import File
 from .serializers import FileUploadSerializer
@@ -10,5 +10,10 @@ from .serializers import FileUploadSerializer
 
 class UploadFileAPIView(ListCreateAPIView):
 
+    serializer_class = FileUploadSerializer
+    queryset = File.objects.all()
+
+
+class UploadDestroyAPIView(DestroyAPIView):
     serializer_class = FileUploadSerializer
     queryset = File.objects.all()
