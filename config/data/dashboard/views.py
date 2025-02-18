@@ -1,8 +1,8 @@
 from datetime import datetime
 
 import icecream
-from django.db.models import Sum
-from django.db.models.functions import ExtractWeekDay
+from django.db.models import Sum, F, Value
+from django.db.models.functions import ExtractWeekDay, Concat
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,9 +10,12 @@ from rest_framework.views import APIView
 from data.department.marketing_channel.models import MarketingChannel
 from data.finances.finance.models import Finance, Casher
 from data.lid.new_lid.models import Lid
-from data.student.groups.models import Room
+from data.student.groups.models import Room, Group
 from data.student.studentgroup.models import StudentGroup
+from ..account.models import CustomUser
 from ..finances.finance.serializers import FinanceSerializer
+from ..results.models import Results
+from ..student.course.models import Course
 
 
 class DashboardView(APIView):
@@ -235,3 +238,28 @@ class DashboardLineGraphAPIView(APIView):
         result = [{"weekday": day, "total_amount": total} for day, total in full_week_data.items()]
 
         return Response(result, status=status.HTTP_200_OK)
+
+
+
+class MonitoringView(APIView):
+    def get(self, request, *args, **kwargs):
+        teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
+            name=Concat(F('first_name'), Value(' '), F('last_name')),
+            overall_point=F('ball')
+        )
+
+        teacher_data = []
+
+        for teacher in teachers:
+            subjects = Group.objects.filter(teacher=teacher).values("id", "name")
+            results = Results.objects.filter(teacher=teacher).count()
+            teacher_data.append({
+                "id": teacher.id,
+                "full_name": teacher.name,
+                "overall_point": teacher.overall_point,
+                "subjects": list(subjects),
+                "results": results,
+            })
+
+        return Response(teacher_data)
+
