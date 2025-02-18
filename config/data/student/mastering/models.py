@@ -26,11 +26,7 @@ class MasteringTeachers(TimeStampModel):
     teacher : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL ,
                                                null=True,blank=True,
                                                related_name='teacher_mastering')
-    compensation : "Compensation" = models.ForeignKey('compensation.Compensation',
-                                                      on_delete=models.SET_NULL ,
-                                                      null=True,blank=True,
-                                                      related_name='compensation_mastering')
-    bonus : "Bonus" = models.ForeignKey('compensation.Bonus', on_delete=models.SET_NULL ,null=True,blank=True,related_name='bonus_mastering')
+    reason = models.TextField(blank=True,null=True)
     ball = models.FloatField(max_length=255, default=0)
     def __str__(self):
         return f"{self.teacher.first_name} {self.ball}"

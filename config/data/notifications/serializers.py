@@ -14,6 +14,7 @@ class NotificationSerializer(serializers.ModelSerializer):
             'comment',
             'come_from',
             'is_read',
+            'has_read',
             'created_at',
             'updated_at',
         ]
