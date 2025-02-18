@@ -43,9 +43,14 @@ class LevelSerializer(serializers.ModelSerializer):
 
 class ThemeSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all())
-    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True, required=False)
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True, required=False)
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True, required=False)
+
+    homework_files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True ,allow_null=True)
+    course_work_files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
+    extra_work_files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
+
+    videos = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True, required=False)
+    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True, required=False)
+    photos = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True, required=False)
 
     class Meta:
         model = Theme
@@ -56,10 +61,13 @@ class ThemeSerializer(serializers.ModelSerializer):
             'theme',
             'course',
             'description',
-            'video',
-            'file',
-            'photo',
-            'type',
+            'videos',
+            'files',
+            'photos',
+
+            'homework_files',
+            'course_work_files',
+            'extra_work_files',
         ]
 
     def get_course(self, obj):
@@ -68,8 +76,13 @@ class ThemeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['subject'] = SubjectSerializer(instance.subject).data
-        rep['video'] = FileUploadSerializer(instance.video.all(), many=True,context=self.context).data
-        rep['file'] = FileUploadSerializer(instance.file.all(), many=True,context=self.context).data
-        rep['photo'] = FileUploadSerializer(instance.photo.all(), many=True,context=self.context).data
+        rep['videos'] = FileUploadSerializer(instance.videos.all(), many=True,context=self.context).data
+        rep['files'] = FileUploadSerializer(instance.files.all(), many=True,context=self.context).data
+        rep['photos'] = FileUploadSerializer(instance.photos.all(), many=True,context=self.context).data
+
+        rep['course_work_files'] = FileUploadSerializer(instance.course_work_files, many=True,context=self.context).data
+        rep['homework_files'] = FileUploadSerializer(instance.homework_files, many=True,context=self.context).data
+        rep['extra_work_files'] = FileUploadSerializer(instance.extra_work_files, many=True,context=self.context).data
+
         rep['course'] = self.get_course(instance)
         return rep
