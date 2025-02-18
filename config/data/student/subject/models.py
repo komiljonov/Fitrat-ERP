@@ -24,7 +24,6 @@ class Level(TimeStampModel):
         return self.name
 
 
-
 class Theme(TimeStampModel):
     subject = models.ForeignKey('subject.Subject', on_delete=models.CASCADE)
 
@@ -40,29 +39,31 @@ class Theme(TimeStampModel):
         max_length=100
     )
 
-    type = models.CharField(
-        choices=[
-            ('HOMEWORK', 'HOMEWORK'),
-            ('COURSE_WORK', 'COURSE_WORK'),
-            ('EXTRA', 'EXTRA'),
-        ],
-        default='HOMEWORK',
-        max_length=100,
-    )
-
     course = models.ForeignKey(
         "course.Course", on_delete=models.CASCADE, related_name="courses_themes"
     )
 
-    video = models.ManyToManyField(
-        'upload.File',null=True, blank=True, related_name='videos'
+    # Separate fields for different types of work within the same Theme
+    homework_files = models.ManyToManyField(
+        'upload.File', null=True, blank=True, related_name='theme_homework_files'
     )
-    file = models.ManyToManyField(
-        'upload.File',null=True, blank=True, related_name='files'
+    course_work_files = models.ManyToManyField(
+        'upload.File', null=True, blank=True, related_name='theme_course_work_files'
     )
-    photo = models.ManyToManyField(
-        'upload.File',null=True, blank=True, related_name='photos'
+    extra_work_files = models.ManyToManyField(
+        'upload.File', null=True, blank=True, related_name='theme_extra_work_files'
+    )
+
+    # General media fields
+    videos = models.ManyToManyField(
+        'upload.File', null=True, blank=True, related_name='theme_videos'
+    )
+    files = models.ManyToManyField(
+        'upload.File', null=True, blank=True, related_name='theme_files'
+    )
+    photos = models.ManyToManyField(
+        'upload.File', null=True, blank=True, related_name='theme_photos'
     )
 
     def __str__(self):
-        return f"{self.subject} - {self.title}  {self.type}"
+        return f"{self.subject} - {self.title}"
