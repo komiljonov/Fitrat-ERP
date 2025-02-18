@@ -233,11 +233,17 @@ class CasherStatisticsAPIView(APIView):
             })
         return Response({"error": "Casher not found"}, status=404)
 
+from rest_framework.pagination import PageNumberPagination
 
+class TeacherFinancePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class TeacherFinanceHandoverAPIView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = FinanceSerializer
+    pagination_class = TeacherFinancePagination  # Enable pagination
 
     def get_queryset(self):
         teacher_id = self.kwargs.get('pk')  # Get teacher ID from URL parameter
@@ -289,10 +295,22 @@ class TeacherFinanceHandoverAPIView(ListAPIView):
 
         groups = attended_lessons.values_list('group__name', flat=True).distinct()
 
+        # Apply pagination
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            finance_data = self.get_serializer(page, many=True).data
+            return self.get_paginated_response({
+                "group_names": list(groups),
+                "students_count": queryset.count(),
+                "total_payment": total_payment,
+                "finance_data": finance_data
+            })
+
+        # If pagination is not applied, return all data
         finance_data = self.get_serializer(queryset, many=True).data
 
         return Response({
-            "group_names": list(groups),  # Convert QuerySet to list
+            "group_names": list(groups),
             "students_count": queryset.count(),
             "total_payment": total_payment,
             "finance_data": finance_data
