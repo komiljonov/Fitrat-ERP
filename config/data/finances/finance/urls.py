@@ -22,4 +22,5 @@ urlpatterns = [
 
     path('statistics/', FinanceStatisticsAPIView.as_view(), name='finance_statistics'),
     path('teacher/<uuid:pk>/',TeacherHandover.as_view(), name='finance_teacher'),
+
 ]
