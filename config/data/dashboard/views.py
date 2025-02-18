@@ -241,8 +241,6 @@ class DashboardLineGraphAPIView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
-
-
 class MonitoringView(APIView):
     def get(self, request, *args, **kwargs):
         # Get query parameters
@@ -299,3 +297,84 @@ class MonitoringView(APIView):
             })
 
         return Response(teacher_data)
+
+
+
+class DashboardWeeklyFinanceAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Extract query parameters
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        casher_id = request.query_params.get('casher')
+        action_type = request.query_params.get('action')  # INCOME or EXPENSE
+        kind = request.query_params.get('kind')  # Payment type (SALARY, BONUS, etc.)
+
+        filters = {}
+
+        # Filter by Casher if provided
+        if casher_id:
+            filters['casher__id'] = casher_id
+
+        # Ensure valid action type (INCOME or EXPENSE)
+        if action_type and action_type.upper() in ["INCOME", "EXPENSE"]:
+            filters['action__exact'] = action_type.upper()
+        elif action_type:
+            return Response({"error": "Invalid action. Use 'INCOME' or 'EXPENSE'."}, status=400)
+
+        # Filter by start_date and end_date
+        if start_date:
+            try:
+                filters['created_at__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+            except ValueError:
+                return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=400)
+
+        if end_date:
+            try:
+                filters['created_at__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+            except ValueError:
+                return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=400)
+
+        # Filter only for SALARY, BONUS, MONEY_BACK, OTHER
+        allowed_kinds = ["SALARY", "BONUS", "MONEY_BACK", "OTHER"]
+        filters['kind__in'] = allowed_kinds
+
+        # If kind is specified, ensure it's valid
+        if kind:
+            if kind not in allowed_kinds:
+                return Response({"error": f"Invalid kind. Allowed values: {', '.join(allowed_kinds)}"}, status=400)
+            filters['kind'] = kind  # Apply additional filter
+
+        # Query and group by weekday
+        queryset = (
+            Finance.objects.filter(**filters)
+            .annotate(weekday=ExtractWeekDay('created_at'))
+            .values('weekday', 'kind')
+            .annotate(total_amount=Sum('amount'))
+        )
+
+        # Map weekday numbers to names
+        weekday_map = {
+            1: 'Sunday', 2: 'Monday', 3: 'Tuesday', 4: 'Wednesday',
+            5: 'Thursday', 6: 'Friday', 7: 'Saturday'
+        }
+
+        # Prepare response data
+        weekly_data = {day: {kind: 0 for kind in allowed_kinds} for day in weekday_map.values()}  # Initialize
+
+        for item in queryset:
+            weekday_name = weekday_map[item['weekday']]
+            category = item['kind']
+            amount = item['total_amount']
+            weekly_data[weekday_name][category] += amount  # Aggregate amounts
+
+        # Convert to response format
+        result = [
+            {"weekday": day, "totals": data} for day, data in weekly_data.items()
+        ]
+
+        return Response(result, status=200)
+
+
+
