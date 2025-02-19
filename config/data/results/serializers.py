@@ -182,3 +182,34 @@ class OtherResultsSerializer(serializers.ModelSerializer):
             certificate.upload_file.set(upload_files)
 
         return certificate
+
+
+
+class ResultsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Results
+        fields = [
+            'id',
+            'results',
+            'teacher',
+            'student',
+            'university_type',
+            'university_name',
+            'university_entering_type',
+            'university_entering_ball',
+            'certificate_type',
+            'band_score',
+            'reading_score',
+            'lessoning_score',
+            'speaking_score',
+            'writing_score',
+            'upload_file',
+            'status',
+            'created_at',
+            'updated_at',
+        ]
+
+    def to_representation(self, instance):
+        """ Remove fields that are None or empty """
+        data = super().to_representation(instance)
+        return {key: value for key, value in data.items() if value not in [None, "", []]}

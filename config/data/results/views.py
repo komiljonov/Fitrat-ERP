@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 # Create your views here.
 from .serializers import UniversityResultsSerializer, CertificationResultsSerializer, StudentResultsSerializer, \
-    OtherResultsSerializer
+    OtherResultsSerializer, ResultsSerializer
 
 from .models import Results
 
@@ -123,3 +123,19 @@ class OtherResultsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Results.objects.all()
     serializer_class = OtherResultsSerializer
     permission_classes = [IsAuthenticated]
+
+
+class ResultsView(ListAPIView):
+    queryset = Results.objects.all()
+    serializer_class = ResultsSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        queryset = Results.objects.filter(filial=self.request.user.filial)
+        status = self.request.query_params.get('status')
+        type = self.request.query_params.get('type')
+
+        if status:
+            queryset = queryset.filter(status=status)
+        if type:
+            queryset = queryset.filter(results=type)
+        return queryset
