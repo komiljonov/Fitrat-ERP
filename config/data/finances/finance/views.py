@@ -1,8 +1,11 @@
 import icecream
+import pandas as pd
 from django.db.models import Sum, Q
+from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
+from pandas import io
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, \
@@ -353,4 +356,63 @@ class FinanceTeacher(ListAPIView):
         return Finance.objects.none()
 
 
-# class FinanceExcel(APIView):
+class FinanceExcel(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        casher_id = request.query_params.get('casher')
+        action = request.query_params.get('action')  # INCOME / EXPENSE
+        kind = request.query_params.get('kind')  # COURSE_PAYMENT, LESSON_PAYMENT, etc.
+
+        # Base queryset
+        finance_queryset = Finance.objects.all()
+
+        # Apply casher filter if provided
+        if casher_id:
+            finance_queryset = finance_queryset.filter(casher_id=casher_id)
+
+        # Apply action filter if provided
+        if action:
+            finance_queryset = finance_queryset.filter(action=action.upper())
+
+        # Apply kind filter if provided
+        if kind:
+            finance_queryset = finance_queryset.filter(kind=kind.upper())
+
+        # Convert queryset to a list of dictionaries
+        finance_data = list(finance_queryset.values(
+            'casher__user__phone', 'action', 'amount', 'kind',
+            'student__first_name', 'student__last_name',
+            'stuff__phone_number', 'creator__phone_number',
+            'comment', 'created_at',
+        ))
+
+        # Convert to DataFrame
+        df = pd.DataFrame(finance_data)
+
+        # Rename columns for readability
+        df.rename(columns={
+            'casher__user__phone': 'Kassa egasi raqami',
+            'action': 'Action turi',
+            'amount': 'Qiymat',
+            'kind': "To'lov turi",
+            'student__first_name': "O'quvchining ismi",
+            'student__last_name': "O'quvchining familiyasi",
+            'stuff__phone_number': 'Xodim raqami',
+            'creator__phone_number': "To'lov qabul qiluvchining raqami",
+            'comment': 'Comment',
+            'created_at': 'Yaratilgan vaqti',
+        }, inplace=True)
+
+        # Convert DataFrame to Excel
+        excel_buffer = io.BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Finance Data')
+
+        # Prepare response
+        response = HttpResponse(
+            excel_buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="finance_data.xlsx"'
+        return response
