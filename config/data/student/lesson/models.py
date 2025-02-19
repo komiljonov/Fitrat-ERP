@@ -8,7 +8,7 @@ from ..groups.models import Group
 from ..subject.models import Subject
 from ...command.models import TimeStampModel
 from ...lid.new_lid.models import Lid
-
+from ...student.student.models import Student
 
 class Lesson(TimeStampModel):
     name = models.CharField(max_length=100)
@@ -69,3 +69,38 @@ class FirstLLesson(TimeStampModel):
 
     def __str__(self):
         return f"{self.lid.first_name} | {self.group.name} | {self.date} | {self.time}"
+
+
+class ExtraLessonGroup(TimeStampModel):
+    group : "Group" = models.ForeignKey(
+        'groups.Group', on_delete=models.SET_NULL, null=True, blank=True, related_name="groups_extra_lesson"
+    )
+    date = models.DateField(null=True, blank=True)
+    time = models.TimeField(null=True, blank=True)
+    creator : 'CustomUser' = models.ForeignKey(
+        'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name="groups_extra_lesson_creator"
+    )
+    comment = models.TextField(null=True, blank=True)
+    is_payable = models.BooleanField(default=False)
+    is_attendance = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.group.name} | {self.date} | {self.time} | {self.is_payable} | {self.is_attendance}"
+
+
+class ExtraLesson(TimeStampModel):
+    student : "Student" = models.ForeignKey(
+        'student.Student', on_delete=models.SET_NULL, null=True, blank=True, related_name="students_extra_lesson"
+    )
+    date = models.DateField(null=True, blank=True)
+    time = models.TimeField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    creator : 'CustomUser' = models.ForeignKey(
+        'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True
+    )
+    is_payable = models.BooleanField(default=False)
+    is_attendance = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.student.phone} | {self.date} | {self.time} | {self.is_payable} | {self.is_attendance}"
+

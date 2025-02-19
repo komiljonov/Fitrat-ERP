@@ -1,16 +1,14 @@
 import datetime
 
-import icecream
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 
-from .models import Lesson, FirstLLesson
+from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
 from ..attendance.models import Attendance
-from ..course.models import Course
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group, Room
 from ..groups.serializers import GroupSerializer
-from ..subject.models import Subject
+from ..student.models import Student
 from ...lid.new_lid.models import Lid
 
 
@@ -248,3 +246,34 @@ class FirstLessonSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['group'] = GroupSerializer(instance.group).data
         return rep
+
+
+class ExtraLessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExtraLesson
+        fields = [
+            'id',
+            'group',
+            'date',
+            'time',
+            'comment',
+            'creator',
+            'is_payable',
+            'is_attendance',
+            'created_at'
+        ]
+
+class ExtraLessonGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExtraLessonGroup
+        fields = [
+            'id',
+            'group',
+            'date',
+            'time',
+            'comment',
+            'creator',
+            'is_payable',
+            'is_attendance',
+            'created_at',
+        ]

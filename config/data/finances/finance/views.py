@@ -2,6 +2,7 @@ import icecream
 from django.db.models import Sum, Q
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
+from icecream import ic
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, \
@@ -13,7 +14,7 @@ from rest_framework.views import APIView
 from data.account.models import CustomUser
 from data.student.student.models import Student
 from .models import Finance, Casher, Handover
-from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer
+from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, FinanceTeacherSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 
@@ -233,85 +234,74 @@ class CasherStatisticsAPIView(APIView):
             })
         return Response({"error": "Casher not found"}, status=404)
 
-from rest_framework.pagination import PageNumberPagination
 
-class TeacherFinancePagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 100
 
-class TeacherFinanceHandoverAPIView(ListAPIView):
+class TeacherGroupFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = FinanceSerializer
-    pagination_class = TeacherFinancePagination  # Enable pagination
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         teacher_id = self.kwargs.get('pk')  # Get teacher ID from URL parameter
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
 
-        # Ensure the teacher exists
-        teacher = CustomUser.objects.filter(id=teacher_id).first()
-        if not teacher:
-            return Finance.objects.none()
-
-        # Base queryset for finance records related to the teacher
-        queryset = Finance.objects.filter(stuff__id=teacher_id)
-
-        # Apply date filters safely
-        filters = Q()
+        # Get attended groups for the teacher
+        group_filters = {"group__teacher_id": teacher_id}
         if start_date:
-            filters &= Q(created_at__gte=start_date)
+            group_filters["created_at__gte"] = start_date
         if end_date:
-            filters &= Q(created_at__lte=end_date)
+            group_filters["created_at__lte"] = end_date
 
-        queryset = queryset.filter(filters)
-        return queryset
+        attended_groups = Attendance.objects.filter(**group_filters).values_list('group_id', flat=True).distinct()
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        teacher_id = self.kwargs.get('pk')
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        # Use a dictionary to store unique group data
+        group_data_dict = {}
 
-        teacher = CustomUser.objects.filter(id=teacher_id).first()
-        if not teacher:
-            return Response({"error": "Teacher not found"}, status=404)
+        for group_id in attended_groups:
+            if group_id in group_data_dict:
+                continue  # Skip duplicate groups
 
-        # Ensure start_date and end_date are not None before filtering
-        lesson_filters = Q(group__teacher=teacher)
-        if start_date:
-            lesson_filters &= Q(created_at__gte=start_date)
-        if end_date:
-            lesson_filters &= Q(created_at__lte=end_date)
+            # Fetch finance records sorted by group and date
+            finance_records = Finance.objects.filter(attendance__group__id=group_id).order_by("created_at")
 
-        # Get attended lessons based on finance records
-        attended_lessons = Attendance.objects.filter(lesson_filters)
 
-        total_payment = (
-            Finance.objects.filter(attendance__in=attended_lessons)
-            .aggregate(Sum('amount'))['amount__sum'] or 0
-        )
+            # Sum total payments for the group on each date
+            total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
+            ic(total_group_payment)
 
-        groups = attended_lessons.values_list('group__name', flat=True).distinct()
+            # Get distinct students per group
+            student_data = []
+            students = Student.objects.filter(attendance__group_id=group_id).distinct()
+            ic(students)
 
-        # Apply pagination
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            finance_data = self.get_serializer(page, many=True).data
-            return self.get_paginated_response({
-                "group_names": list(groups),
-                "students_count": queryset.count(),
-                "total_payment": total_payment,
-                "finance_data": finance_data
-            })
+            for student in students:
+                student_attendances = Attendance.objects.filter(group_id=group_id, student=student).order_by("created_at")
 
-        # If pagination is not applied, return all data
-        finance_data = self.get_serializer(queryset, many=True).data
+                if student_attendances.exists():
+                    first_attendance = student_attendances.first()
+                    total_student_payment = Finance.objects.filter(
+                        attendance__in=student_attendances,
+                        created_at__date=first_attendance.created_at.date()  # Filter only for same-day finance transactions
+                    ).aggregate(Sum('amount'))['amount__sum'] or 0
+                else:
+                    total_student_payment = 0
 
-        return Response({
-            "group_names": list(groups),
-            "students_count": queryset.count(),
-            "total_payment": total_payment,
-            "finance_data": finance_data
-        })
+                student_data.append({
+                    "student_id": str(student.id),
+                    "student_name": f"{student.first_name} {student.last_name}",
+                    "total_payment": total_student_payment
+                })
+
+            # Get group name safely
+            group_name = Attendance.objects.filter(group_id=group_id).first()
+            group_name = group_name.group.name if group_name else "Unknown Group"
+
+
+            group_data_dict[group_id] = {
+                "group_id": str(group_id),
+                "group_name": group_name,
+                "total_group_payment": total_group_payment,
+                "students": student_data
+            }
+
+
+        return Response(list(group_data_dict.values()))
