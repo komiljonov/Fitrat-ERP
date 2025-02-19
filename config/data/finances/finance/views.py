@@ -351,3 +351,6 @@ class FinanceTeacher(ListAPIView):
             return queryset
 
         return Finance.objects.none()
+
+
+# class FinanceExcel(APIView):
