@@ -274,7 +274,10 @@ class TeacherGroupFinanceAPIView(APIView):
         for group_id in attended_groups:
             # Fetch finance records sorted by group and date
             finance_records = Finance.objects.filter(attendance__group__id=group_id).order_by("created_at")
-
+            if finance_records.exists():
+                created_at = finance_records.first().created_at
+            else:
+                created_at = None
             # Sum total payments for the group on each date
             total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
             ic(total_group_payment)
@@ -313,7 +316,7 @@ class TeacherGroupFinanceAPIView(APIView):
                 "group_name": group_name,
                 "total_group_payment": total_group_payment,
                 "students": student_data,
-                "created_at": finance_records[0].created_at,
+                "created_at": created_at,
             })
 
         # 🔹 Apply Pagination
