@@ -234,21 +234,10 @@ class CasherStatisticsAPIView(APIView):
             })
         return Response({"error": "Casher not found"}, status=404)
 
-
-
-
-# Custom Pagination Class
 class CustomPagination(PageNumberPagination):
-    page_size = 10  # Default page size
-    page_size_query_param = 'page_size'  # Allow clients to override page size
-    max_page_size = 100  # Prevent very large page sizes
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from django.db.models import Sum, Q
-from .models import Attendance, Finance, Student
-from icecream import ic  # For debugging
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class TeacherGroupFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
