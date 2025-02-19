@@ -8,8 +8,9 @@ from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Lesson, FirstLLesson
-from .serializers import LessonSerializer, LessonScheduleSerializer, FirstLessonSerializer
+from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
+from .serializers import LessonSerializer, LessonScheduleSerializer, FirstLessonSerializer, ExtraLessonSerializer, \
+    ExtraLessonGroupSerializer
 from ..studentgroup.models import StudentGroup
 
 
@@ -74,3 +75,14 @@ class FirstLessonView(ListAPIView):
         print(id)
         return FirstLLesson.objects.filter(lid__id=id)
 
+
+class ExtraLessonView(ListCreateAPIView):
+    serializer_class = ExtraLessonSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = ExtraLesson.objects.all()
+
+
+class ExtraLessonGroupView(ListCreateAPIView):
+    serializer_class = ExtraLessonGroupSerializer
+    queryset = ExtraLessonGroup.objects.all()
+    permission_classes = [IsAuthenticated]

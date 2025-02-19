@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import  FirstLLesson
+from .models import FirstLLesson, ExtraLessonGroup
 from ..studentgroup.models import StudentGroup
 from ...notifications.models import Notification
 
@@ -25,3 +25,10 @@ def on_create(sender, instance: FirstLLesson, created, **kwargs):
     if created and instance.lid.lid_stage_type == "ORDERED_LID":
         instance.lid.ordered_stages = "BIRINCHI_DARS_BELGILANGAN"
         instance.lid.save()
+
+
+@receiver(post_save, sender=ExtraLessonGroup)
+def on_create(sender, instance: ExtraLessonGroup, created, **kwargs):
+    if created:
+        pass
+
