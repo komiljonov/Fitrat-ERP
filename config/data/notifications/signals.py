@@ -1,3 +1,4 @@
+import icecream
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -15,6 +16,7 @@ def on_attendance_create(sender, instance: Notification, created, **kwargs):
 def on_attendance_update(sender, instance: Notification, created, **kwargs):
     """Send push notification when a new notification is created."""
     if created:
+        icecream.ic(instance.user.pk)
         fcm.send_push(
             title="Notification !",
             msg=instance.comment,
