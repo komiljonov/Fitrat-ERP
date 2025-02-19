@@ -333,10 +333,18 @@ class FinanceTeacher(ListAPIView):
 
     def get_queryset(self):
         teacher = self.request.user
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
         ic(teacher)
         if teacher:
-            return Finance.objects.filter(
+            queryset = Finance.objects.filter(
                 stuff=teacher,
                 attendance__isnull=True
             )
+            if start_date:
+                queryset = queryset.filter(created_at__gte=start_date)
+            if start_date and end_date:
+                queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            return queryset
+
         return Finance.objects.none()
