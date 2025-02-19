@@ -63,6 +63,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'call_operator',
             'sales_manager',
             "is_archived",
+            'is_frozen',
             "attendance_count",
             'relatives',
             'file',
