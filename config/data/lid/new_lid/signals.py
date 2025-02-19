@@ -80,3 +80,11 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             post_save.disconnect(on_details_create, sender=Lid)
             instance.save()
             post_save.connect(on_details_create, sender=Lid)
+
+
+@receiver(post_save, sender=Lid)
+def on_expired_delete(sender, instance: Lid, created, **kwargs):
+    if not created:
+        if instance.is_expired:
+            instance.is_expired = False
+            instance.save()
