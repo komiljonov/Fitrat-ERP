@@ -215,7 +215,6 @@ class CasherHandoverHistory(ListAPIView):
             return Handover.objects.filter(casher__id=casher)
         return Finance.objects.none()
 
-
 class CasherStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -235,9 +234,25 @@ class CasherStatisticsAPIView(APIView):
         return Response({"error": "Casher not found"}, status=404)
 
 
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from django.db.models import Sum
+from .models import Attendance, Finance, Student
+from icecream import ic  # For debugging
+
+
+# Custom Pagination Class
+class CustomPagination(PageNumberPagination):
+    page_size = 10  # Default page size
+    page_size_query_param = 'page_size'  # Allow clients to override page size
+    max_page_size = 100  # Prevent very large page sizes
+
 
 class TeacherGroupFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination  # Attach custom pagination
 
     def get(self, request, *args, **kwargs):
         teacher_id = self.kwargs.get('pk')  # Get teacher ID from URL parameter
@@ -254,15 +269,11 @@ class TeacherGroupFinanceAPIView(APIView):
         attended_groups = Attendance.objects.filter(**group_filters).values_list('group_id', flat=True).distinct()
 
         # Use a dictionary to store unique group data
-        group_data_dict = {}
+        group_data_list = []  # Change dict to list for pagination
 
         for group_id in attended_groups:
-            if group_id in group_data_dict:
-                continue  # Skip duplicate groups
-
             # Fetch finance records sorted by group and date
             finance_records = Finance.objects.filter(attendance__group__id=group_id).order_by("created_at")
-
 
             # Sum total payments for the group on each date
             total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
@@ -274,13 +285,14 @@ class TeacherGroupFinanceAPIView(APIView):
             ic(students)
 
             for student in students:
-                student_attendances = Attendance.objects.filter(group_id=group_id, student=student).order_by("created_at")
+                student_attendances = Attendance.objects.filter(group_id=group_id, student=student).order_by(
+                    "created_at")
 
                 if student_attendances.exists():
                     first_attendance = student_attendances.first()
                     total_student_payment = Finance.objects.filter(
                         attendance__in=student_attendances,
-                        created_at__date=first_attendance.created_at.date()  # Filter only for same-day finance transactions
+                        created_at__date=first_attendance.created_at.date()
                     ).aggregate(Sum('amount'))['amount__sum'] or 0
                 else:
                     total_student_payment = 0
@@ -295,16 +307,19 @@ class TeacherGroupFinanceAPIView(APIView):
             group_name = Attendance.objects.filter(group_id=group_id).first()
             group_name = group_name.group.name if group_name else "Unknown Group"
 
-
-            group_data_dict[group_id] = {
+            # Append group data to list
+            group_data_list.append({
                 "group_id": str(group_id),
                 "group_name": group_name,
                 "total_group_payment": total_group_payment,
                 "students": student_data
-            }
+            })
 
+        # 🔹 Apply Pagination
+        paginator = self.pagination_class()
+        paginated_data = paginator.paginate_queryset(group_data_list, request)
 
-        return Response(list(group_data_dict.values()))
+        return paginator.get_paginated_response(paginated_data)
 
 
 class FinanceTeacher(ListAPIView):
