@@ -28,7 +28,7 @@ def send_push(title, msg, topics, dataObj=None):
         response = messaging.send_multicast(message)
         print(f"Send successfully ... {response}")
         return response
-    except messaging.ApiCallError as e:
+    except messaging.ErrorInfo as e:
         print(f"FCM API error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
