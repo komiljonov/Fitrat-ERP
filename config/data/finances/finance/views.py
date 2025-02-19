@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, \
     RetrieveAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -234,13 +235,6 @@ class CasherStatisticsAPIView(APIView):
         return Response({"error": "Casher not found"}, status=404)
 
 
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from django.db.models import Sum
-from .models import Attendance, Finance, Student
-from icecream import ic  # For debugging
 
 
 # Custom Pagination Class
@@ -273,11 +267,19 @@ class TeacherGroupFinanceAPIView(APIView):
 
         for group_id in attended_groups:
             # Fetch finance records sorted by group and date
-            finance_records = Finance.objects.filter(attendance__group__id=group_id).order_by("created_at")
+            finance_filters = {"attendance__group__id": group_id}
+            if start_date:
+                finance_filters["created_at__gte"] = start_date
+            if end_date:
+                finance_filters["created_at__lte"] = end_date
+
+            finance_records = Finance.objects.filter(**finance_filters).order_by("created_at")
+
             if finance_records.exists():
                 created_at = finance_records.first().created_at
             else:
                 created_at = None
+
             # Sum total payments for the group on each date
             total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
             ic(total_group_payment)
@@ -288,15 +290,18 @@ class TeacherGroupFinanceAPIView(APIView):
             ic(students)
 
             for student in students:
-                student_attendances = Attendance.objects.filter(group_id=group_id, student=student).order_by(
-                    "created_at")
+                student_attendances = Attendance.objects.filter(group_id=group_id, student=student).order_by("created_at")
+
+                student_finance_filters = {"attendance__in": student_attendances}
+                if start_date:
+                    student_finance_filters["created_at__gte"] = start_date
+                if end_date:
+                    student_finance_filters["created_at__lte"] = end_date
 
                 if student_attendances.exists():
                     first_attendance = student_attendances.first()
-                    total_student_payment = Finance.objects.filter(
-                        attendance__in=student_attendances,
-                        created_at__date=first_attendance.created_at.date()
-                    ).aggregate(Sum('amount'))['amount__sum'] or 0
+                    student_finance_filters["created_at__date"] = first_attendance.created_at.date()
+                    total_student_payment = Finance.objects.filter(**student_finance_filters).aggregate(Sum('amount'))['amount__sum'] or 0
                 else:
                     total_student_payment = 0
 
@@ -324,7 +329,6 @@ class TeacherGroupFinanceAPIView(APIView):
         paginated_data = paginator.paginate_queryset(group_data_list, request)
 
         return paginator.get_paginated_response(paginated_data)
-
 
 class FinanceTeacher(ListAPIView):
     serializer_class = FinanceSerializer
