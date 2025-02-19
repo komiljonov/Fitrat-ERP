@@ -312,7 +312,8 @@ class TeacherGroupFinanceAPIView(APIView):
                 "group_id": str(group_id),
                 "group_name": group_name,
                 "total_group_payment": total_group_payment,
-                "students": student_data
+                "students": student_data,
+                "created_at": finance_records[0].created_at,
             })
 
         # 🔹 Apply Pagination
