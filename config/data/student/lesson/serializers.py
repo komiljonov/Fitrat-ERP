@@ -253,7 +253,6 @@ class ExtraLessonSerializer(serializers.ModelSerializer):
         model = ExtraLesson
         fields = [
             'id',
-            'group',
             'date',
             'time',
             'comment',

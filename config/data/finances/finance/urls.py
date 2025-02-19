@@ -3,7 +3,7 @@ from django.urls import path
 from .views import FinanceListAPIView, FinanceDetailAPIView, FinanceNoPGList, StudentFinanceListAPIView, \
     StuffFinanceListAPIView, CasherListCreateAPIView, CasherRetrieveUpdateDestroyAPIView, CasherHandoverAPIView, \
     FinanceStatisticsAPIView, CasherNoPg, CasherHandoverHistory, CasherStatisticsAPIView, \
-    TeacherGroupFinanceAPIView
+    TeacherGroupFinanceAPIView, FinanceTeacher
 
 urlpatterns = [
     path('', FinanceListAPIView.as_view(), name='finance_list'),
@@ -23,5 +23,6 @@ urlpatterns = [
 
     path('statistics/', FinanceStatisticsAPIView.as_view(), name='finance_statistics'),
     path('teacher/<uuid:pk>/',TeacherGroupFinanceAPIView.as_view(), name='finance_teacher'),
+    path('teachers/', FinanceTeacher.as_view(), name='finance_teacher'),
 
 ]

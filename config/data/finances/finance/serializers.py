@@ -67,9 +67,9 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
 
 
 class FinanceSerializer(serializers.ModelSerializer):
-    # Automatically assign `creator` from the request user
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
+    attendance = serializers.PrimaryKeyRelatedField(queryset=Attendance.objects.all(),allow_null=True)
     total = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
 
@@ -82,6 +82,7 @@ class FinanceSerializer(serializers.ModelSerializer):
             'amount',
             'kind',
             'student',
+            'attendance',
             'stuff',
             'creator',
             'comment',
@@ -91,16 +92,12 @@ class FinanceSerializer(serializers.ModelSerializer):
             'balance',
         ]
 
-
-
     def get_total(self, obj):
         # Aggregate the sum of income and outcome
         income_sum = Finance.objects.filter(action='INCOME').aggregate(total=Sum('amount'))['total'] or 0
         outcome_sum = Finance.objects.filter(action='EXPENSE').aggregate(total=Sum('amount'))['total'] or 0
         # Calculate the balance
         return income_sum - outcome_sum
-
-
 
     def get_balance(self, obj):
         # Fetch the related CustomUser instance
