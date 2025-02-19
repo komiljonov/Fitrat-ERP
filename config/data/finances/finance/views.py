@@ -383,7 +383,7 @@ class FinanceExcel(APIView):
         finance_data = list(finance_queryset.values(
             'casher__user__phone', 'action', 'amount', 'kind',
             'student__first_name', 'student__last_name',
-            'stuff__phone_number', 'creator__phone_number',
+            'stuff__phone', 'creator__phone',
             'comment', 'created_at',
         ))
 
@@ -398,8 +398,8 @@ class FinanceExcel(APIView):
             'kind': "To'lov turi",
             'student__first_name': "O'quvchining ismi",
             'student__last_name': "O'quvchining familiyasi",
-            'stuff__phone_number': 'Xodim raqami',
-            'creator__phone_number': "To'lov qabul qiluvchining raqami",
+            'stuff__phone': 'Xodim raqami',
+            'creator__phone': "To'lov qabul qiluvchining raqami",
             'comment': 'Comment',
             'created_at': 'Yaratilgan vaqti',
         }, inplace=True)
