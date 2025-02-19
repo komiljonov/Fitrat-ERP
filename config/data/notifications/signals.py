@@ -18,6 +18,6 @@ def on_attendance_update(sender, instance: Notification, created, **kwargs):
         fcm.send_push(
             title="Notification !",
             msg=instance.comment,
-            topics=f"user_{instance.user.pk}",  # Ensure the topic is passed as a string
+            topics=instance.user.pk
         )
         print(f"Notification sent to user_{instance.user.pk}")
