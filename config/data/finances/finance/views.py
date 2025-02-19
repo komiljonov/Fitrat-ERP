@@ -242,7 +242,13 @@ class CustomPagination(PageNumberPagination):
     page_size = 10  # Default page size
     page_size_query_param = 'page_size'  # Allow clients to override page size
     max_page_size = 100  # Prevent very large page sizes
-
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from django.db.models import Sum, Q
+from .models import Attendance, Finance, Student
+from icecream import ic  # For debugging
 
 class TeacherGroupFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -255,24 +261,27 @@ class TeacherGroupFinanceAPIView(APIView):
 
         # Get attended groups for the teacher
         group_filters = {"group__teacher_id": teacher_id}
-        if start_date:
+
+        if start_date and end_date:
+            group_filters["created_at__range"] = (start_date, end_date)  # Use range filter
+        elif start_date:
             group_filters["created_at__gte"] = start_date
-        if end_date:
-            group_filters["created_at__lte"] = end_date
 
         attended_groups = Attendance.objects.filter(**group_filters).values_list('group_id', flat=True).distinct()
 
-        # Use a dictionary to store unique group data
-        group_data_list = []  # Change dict to list for pagination
+        # Use a list to store unique group data for pagination
+        group_data_list = []
 
         for group_id in attended_groups:
-            # Fetch finance records sorted by group and date
+            # Apply start_date and end_date filters dynamically
             finance_filters = {"attendance__group__id": group_id}
-            if start_date:
-                finance_filters["created_at__gte"] = start_date
-            if end_date:
-                finance_filters["created_at__lte"] = end_date
 
+            if start_date and end_date:
+                finance_filters["created_at__range"] = (start_date, end_date)
+            elif start_date:
+                finance_filters["created_at__gte"] = start_date
+
+            # Fetch finance records sorted by group and date
             finance_records = Finance.objects.filter(**finance_filters).order_by("created_at")
 
             if finance_records.exists():
@@ -293,10 +302,11 @@ class TeacherGroupFinanceAPIView(APIView):
                 student_attendances = Attendance.objects.filter(group_id=group_id, student=student).order_by("created_at")
 
                 student_finance_filters = {"attendance__in": student_attendances}
-                if start_date:
+
+                if start_date and end_date:
+                    student_finance_filters["created_at__range"] = (start_date, end_date)
+                elif start_date:
                     student_finance_filters["created_at__gte"] = start_date
-                if end_date:
-                    student_finance_filters["created_at__lte"] = end_date
 
                 if student_attendances.exists():
                     first_attendance = student_attendances.first()
