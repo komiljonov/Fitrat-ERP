@@ -3,6 +3,7 @@ from django.db import models
 from data.account.models import CustomUser
 from data.command.models import TimeStampModel
 from data.lid.new_lid.models import Lid
+from data.student.attendance.models import Attendance
 from data.student.student.models import Student
 
 class Casher(TimeStampModel):
@@ -60,7 +61,7 @@ class Finance(TimeStampModel):
         max_length=20,
     )
 
-    attendance = models.ForeignKey('attendance.Attendance',on_delete=models.SET_NULL,null=True,blank=True,
+    attendance : "Attendance" = models.ForeignKey('attendance.Attendance',on_delete=models.SET_NULL,null=True,blank=True,
                                    related_name='attendance_finances')
 
     student : 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True)

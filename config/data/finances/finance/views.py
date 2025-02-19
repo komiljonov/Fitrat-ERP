@@ -305,3 +305,19 @@ class TeacherGroupFinanceAPIView(APIView):
 
 
         return Response(list(group_data_dict.values()))
+
+
+class FinanceTeacher(ListAPIView):
+    serializer_class = FinanceSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Finance.objects.all()
+
+    def get_queryset(self):
+        teacher = self.request.user
+        ic(teacher)
+        if teacher:
+            return Finance.objects.filter(
+                stuff=teacher,
+                attendance__isnull=True
+            )
+        return Finance.objects.none()
