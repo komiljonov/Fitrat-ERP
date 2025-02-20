@@ -17,8 +17,9 @@ from rest_framework.views import APIView
 
 from data.account.models import CustomUser
 from data.student.student.models import Student
-from .models import Finance, Casher, Handover
-from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, FinanceTeacherSerializer
+from .models import Finance, Casher, Handover, Kind
+from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, FinanceTeacherSerializer, \
+    KindSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 
@@ -416,3 +417,13 @@ class FinanceExcel(APIView):
         )
         response['Content-Disposition'] = 'attachment; filename="finance_data.xlsx"'
         return response
+
+class Kind(ListCreateAPIView):
+    serializer_class = KindSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Kind.objects.all()
+
+class KindRetrive(RetrieveUpdateDestroyAPIView):
+    serializer_class = KindSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Kind.objects.all()
