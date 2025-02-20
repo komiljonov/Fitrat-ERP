@@ -234,12 +234,16 @@ class LidStatisticsView(ListAPIView):
         # Director sees everything
         if user.role == "DIRECTOR":
             queryset = Lid.objects.all()
-        else:
+
+        if user.role != "CALL_OPERATOR" and user.is_call_center:
+            queryset = Lid.objects.filter(filial=user.filial)
+
+        if user.role != "CALL OPERATOR" and user.is_call_center == False:
             queryset = Lid.objects.filter(filial=user.filial)
 
         # Special conditions for call operators
         if user.role == "CALL_OPERATOR" or user.is_call_center:
-            queryset = queryset.filter(
+            queryset = Lid.objects.filter(
                 Q(call_operator=user) | Q(call_operator__isnull=True),
                 Q(filial=user.filial) | Q(filial__isnull=True)
             )
