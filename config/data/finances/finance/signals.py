@@ -15,7 +15,7 @@ def on_create(sender, instance: Finance, created, **kwargs):
                 instance.student.save()
 
         if instance.stuff:
-            if instance.action == "EXPENSE" and (instance.kind == "SALARY" or instance.kind == "BONUS"):
+            if instance.action == "EXPENSE" and (instance.kind.name == "Salary" or instance.kind.name == "Bonus"):
                 instance.stuff.balance += instance.amount
                 instance.stuff.save()
             else:
