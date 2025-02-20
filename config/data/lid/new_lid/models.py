@@ -14,6 +14,8 @@ class Lid(TimeStampModel):
     sender_id = models.CharField(max_length=120,null=True,blank=True)
     message_text = models.CharField(max_length=120,null=True,blank=True)
 
+    photo : "File" = models.ForeignKey('upload.File',on_delete=models.CASCADE,null=True,blank=True,related_name='lids_photo')
+
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100,null=True,blank=True)
     middle_name = models.CharField(max_length=100,null=True,blank=True)

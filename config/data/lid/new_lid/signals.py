@@ -28,6 +28,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 defaults={
                     "first_name": instance.first_name,
                     "last_name": instance.last_name,
+                    "photo": instance.photo,
                     "password" : password_hash,
                     "middle_name": instance.middle_name,
                     "date_of_birth": instance.date_of_birth,
@@ -48,6 +49,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             if not student_created:
                 student.first_name = instance.first_name
                 student.last_name = instance.last_name
+                student.photo = instance.photo
                 student.middle_name = instance.middle_name
                 student.date_of_birth = instance.date_of_birth
                 student.password = password_hash
