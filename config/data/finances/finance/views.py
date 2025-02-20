@@ -147,23 +147,29 @@ class CasherHandoverAPIView(CreateAPIView):
 
 
         if int(amount) > 0:
+            handover = Kind.objects.get_or_create(
+                name="CASHIER_HANDOVER"
+            )
             # Deduct from sender (casher)
             Finance.objects.create(
                 casher=casher,
                 amount=amount,
                 action='EXPENSE',
-                kind="CASHIER_HANDOVER",
+                kind=handover,
                 creator=request.user,
                 comment=f"{casher.user.first_name} handed over {amount} "
                         f"to {receiver.user.first_name}"
             )
 
             # Add to receiver
+            acception = Kind.objects.get_or_create(
+                name="CASHIER_ACCEPTANCE"
+            )
             Finance.objects.create(
                 casher=receiver,
                 amount=amount,
                 action='INCOME',
-                kind="CASHIER_ACCEPTANCE",
+                kind=acception,
                 creator=request.user,
                 comment=f"{receiver.user.first_name} received {amount}"
                         f" from {casher.user.first_name}"
@@ -356,7 +362,6 @@ class FinanceTeacher(ListAPIView):
 
         return Finance.objects.none()
 
-
 class FinanceExcel(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -428,12 +433,10 @@ class KindRetrive(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Kind.objects.all()
 
-
 class PaymentMethodsList(ListCreateAPIView):
     queryset = PaymentMethod.objects.all()
     serializer_class = PaymentMethodSerializer
     permission_classes = [IsAuthenticated]
-
 
 class PaymentMethodsRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = PaymentMethodSerializer
