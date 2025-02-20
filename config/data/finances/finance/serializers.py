@@ -2,11 +2,21 @@ from django.contrib.admin import action
 from django.db.models import Sum
 from rest_framework import serializers
 
-from .models import Finance, Casher, Handover
+from .models import Finance, Casher, Handover, Kind
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
 from ...student.attendance.models import Attendance
+
+class KindSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Kind
+        fields = [
+            'id',
+            'name',
+            'created_at',
+        ]
+
 
 
 class CasherSerializer(serializers.ModelSerializer):
