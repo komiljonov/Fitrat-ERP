@@ -5,6 +5,8 @@ import random
 import django
 from faker import Faker
 
+from data.finances.finance.models import Kind
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
 
@@ -23,32 +25,18 @@ def generate_fake_data():
     for _ in range(5):
         Filial.objects.create(name=fake.city())
 
-    # # Stages
-    # stages = {
-    #     'lid': ['NEW_LEAD', 'JARAYONDA', 'RAD ETDI'],
-    #     'order': ['FILIAL_BIRIKTIRILDI', 'BIRINCHI SINOV DARSIGA YOZILDI', 'SINOV DARSIGA KELMADI', 'RAD ETDI'],
-    #     'student': ['TO\'LOV KUTILMOQDA', 'RAD ETDI'],
-    #     'active_student': ['ACTIVE TALABA', 'QARIZDOR TALABA', 'DARSNI TUXTATGAN', 'KURSNI TUGATGAN'],
-    # }
-    #
-    # for name in stages['lid']:
-    #     NewLidStages.objects.create(name=name)
-    # for name in stages['order']:
-    #     NewOredersStages.objects.create(name=name)
-    # for name in stages['student']:
-    #     NewStudentStages.objects.create(name=name)
-    # for name in stages['active_student']:
-    #     StudentStages.objects.create(name=name)
 
-    # Marketing Channels
-    marketing_channels = ['Instagram', 'Telegram', 'Facebook ADD', 'Telegram bot', 'Flyer']
+    marketing_channels = ["Tanishlar orqali",'Instagram', 'Telegram', 'Facebook reklamasi',
+                          'Flayer','Olimpiadalar',"Reklama bannerlar va doskalari","Loyihalardan"]
     for channel in marketing_channels:
         MarketingChannel.objects.create(name=channel)
 
     # Days
-    days = [  'Yakshanba','Shanba', 'Juma','Payshanba',  'Chorshanba', 'Seshanba','Dushanba',]
+    days = ['Yakshanba','Shanba', 'Juma','Payshanba','Chorshanba','Seshanba','Dushanba',]
     for day in days:
         Day.objects.create(name=day)
+    kind = ["Salary","Bonus","Course payment","Lesson payment","Money back","CASHIER_HANDOVER","CASHIER_ACCEPTANCE"]
+    Kind.objects.create(name='Kinda')
 
     # CustomUser (Staff)
     roles = [role[0] for role in CustomUser.ROLE_CHOICES]
@@ -60,44 +48,44 @@ def generate_fake_data():
             balance=round(random.uniform(100000, 5000000), 2),
         )
 
-    # Students
-    for _ in range(20):
-        Student.objects.create(
-            first_name=fake.first_name(),
-            last_name=fake.last_name(),
-            phone=fake.phone_number(),
-            date_of_birth=fake.date_of_birth(minimum_age=10, maximum_age=18),
-            education_lang=random.choice(['ENG', 'RU', 'UZB']),
-            edu_class=random.choice(["SCHOOL", "UNIVERSITY","NONE"]),
-            edu_level=random.choice(["1", "10", "5", "7", "3", "2"]),
-            subject=Subject.objects.order_by('?').first(),
-            filial=Filial.objects.order_by('?').first(),
-            ball=fake.random_int(min=50, max=100),
-            balance=round(random.uniform(100000, 1000000),5),
-            marketing_channel=MarketingChannel.objects.order_by("?").first(),
-            student_stage_type=random.choice(['NEW_STUDENT','ACTIVE_STUDENT']),
-            new_student_stages=random.choice(['BIRINCHI_DARS',"GURUH_O'ZGARTIRGAN","QARIZDOR"])
-        )
-
-    # Lids
-    for _ in range(15):
-        Lid.objects.create(
-            first_name=fake.first_name(),
-            last_name=fake.last_name(),
-            phone_number=fake.phone_number(),
-            date_of_birth=fake.date_of_birth(minimum_age=20, maximum_age=40),
-            education_lang=random.choice(['ENG', 'RU', 'UZB']),
-            student_type="student",
-            edu_class=random.choice(["SCHOOL", "UNIVERSITY", "NONE"]),
-            edu_level=random.choice(["1", "10", "5", "7", "3", "2"]),
-            subject=Subject.objects.order_by('?').first(),
-            ball=fake.random_int(min=50, max=100),
-            filial=Filial.objects.order_by('?').first(),
-            call_operator=CustomUser.objects.filter(role="CALL_OPERATOR").order_by('?').first(),
-            lid_stages=NewLidStages.objects.order_by('?').first(),
-            ordered_stages=NewOredersStages.objects.order_by('?').first(),
-            marketing_channel=MarketingChannel.objects.order_by("?").first(),
-        )
+    # # Students
+    # for _ in range(20):
+    #     Student.objects.create(
+    #         first_name=fake.first_name(),
+    #         last_name=fake.last_name(),
+    #         phone=fake.phone_number(),
+    #         date_of_birth=fake.date_of_birth(minimum_age=10, maximum_age=18),
+    #         education_lang=random.choice(['ENG', 'RU', 'UZB']),
+    #         edu_class=random.choice(["SCHOOL", "UNIVERSITY","NONE"]),
+    #         edu_level=random.choice(["1", "10", "5", "7", "3", "2"]),
+    #         subject=Subject.objects.order_by('?').first(),
+    #         filial=Filial.objects.order_by('?').first(),
+    #         ball=fake.random_int(min=50, max=100),
+    #         balance=round(random.uniform(100000, 1000000),5),
+    #         marketing_channel=MarketingChannel.objects.order_by("?").first(),
+    #         student_stage_type=random.choice(['NEW_STUDENT','ACTIVE_STUDENT']),
+    #         new_student_stages=random.choice(['BIRINCHI_DARS',"GURUH_O'ZGARTIRGAN","QARIZDOR"])
+    #     )
+    #
+    # # Lids
+    # for _ in range(15):
+    #     Lid.objects.create(
+    #         first_name=fake.first_name(),
+    #         last_name=fake.last_name(),
+    #         phone_number=fake.phone_number(),
+    #         date_of_birth=fake.date_of_birth(minimum_age=20, maximum_age=40),
+    #         education_lang=random.choice(['ENG', 'RU', 'UZB']),
+    #         student_type="student",
+    #         edu_class=random.choice(["SCHOOL", "UNIVERSITY", "NONE"]),
+    #         edu_level=random.choice(["1", "10", "5", "7", "3", "2"]),
+    #         subject=Subject.objects.order_by('?').first(),
+    #         ball=fake.random_int(min=50, max=100),
+    #         filial=Filial.objects.order_by('?').first(),
+    #         call_operator=CustomUser.objects.filter(role="CALL_OPERATOR").order_by('?').first(),
+    #         lid_stages=NewLidStages.objects.order_by('?').first(),
+    #         ordered_stages=NewOredersStages.objects.order_by('?').first(),
+    #         marketing_channel=MarketingChannel.objects.order_by("?").first(),
+    #     )
 
     print("Fake data generation completed!")
 
