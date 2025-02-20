@@ -5,25 +5,51 @@ import random
 import django
 from faker import Faker
 
+from data.finances.compensation.models import Page
 from data.finances.finance.models import Kind
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
 
-from data.stages.models import NewLidStages, NewOredersStages, NewStudentStages, StudentStages
-from data.lid.new_lid.models import Lid
-from data.student.student.models import Student
 from data.student.groups.models import Day
 from data.account.models import CustomUser
 from data.department.filial.models import Filial
 from data.department.marketing_channel.models import MarketingChannel
-from data.student.subject.models import Subject
+
 fake = Faker()
 
 def generate_fake_data():
-    # Filial
-    for _ in range(5):
-        Filial.objects.create(name=fake.city())
+
+    pages = [
+      "reports",
+      "admin_report",
+      "edu_report",
+      "monitoring",
+      "finance_report",
+      "leads",
+      "new_leads",
+      "orders",
+      "archived_leads",
+      "students",
+      "new_students",
+      "active_students",
+      "archived_students",
+      "all_students",
+      "edu_section",
+      "materials",
+      "subjects",
+      "levels",
+      "courses",
+      "themes",
+      "groups",
+      "rooms",
+      "schedule",
+      "cashiers",
+      "tasks",
+      "employees",
+    ]
+    for i in pages:
+        Page.objects.create(name=i)
 
 
     marketing_channels = ["Tanishlar orqali",'Instagram', 'Telegram', 'Facebook reklamasi',
