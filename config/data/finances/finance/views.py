@@ -131,6 +131,7 @@ class StuffFinanceListAPIView(ListAPIView):
         if stuff:
             return Finance.objects.filter(stuff=stuff)
         return Finance.objects.none()
+
 class CasherHandoverAPIView(CreateAPIView):
     serializer_class = CasherHandoverSerializer
     permission_classes = [IsAuthenticated]
@@ -188,7 +189,6 @@ class CasherHandoverAPIView(CreateAPIView):
             {"error": "Insufficient balance for handover"},
             status=status.HTTP_400_BAD_REQUEST
         )
-
 
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
