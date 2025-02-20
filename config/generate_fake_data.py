@@ -51,7 +51,9 @@ def generate_fake_data():
     for i in pages:
         Page.objects.create(
             user=CustomUser.objects.filter(phone="+998901234567").first(),
-            name=i
+            name=i,
+            is_readable=True,
+            is_editable=True,
         )
 
 
