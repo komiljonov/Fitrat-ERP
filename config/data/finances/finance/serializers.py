@@ -14,6 +14,7 @@ class KindSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
+            'action',
             'created_at',
         ]
 

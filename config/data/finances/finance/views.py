@@ -147,7 +147,7 @@ class CasherHandoverAPIView(CreateAPIView):
 
         if int(amount) > 0:
             # Get the Kind instance (unpacking the tuple)
-            handover, _ = Kind.objects.get_or_create(name="CASHIER_HANDOVER")
+            handover, _ = Kind.objects.get_or_create(name="CASHIER_HANDOVER",action="EXPENSE")
 
             # Deduct from sender (casher)
             Finance.objects.create(
@@ -161,7 +161,7 @@ class CasherHandoverAPIView(CreateAPIView):
             )
 
             # Get the Kind instance (unpacking the tuple)
-            acception, _ = Kind.objects.get_or_create(name="CASHIER_ACCEPTANCE")
+            acception, _ = Kind.objects.get_or_create(name="CASHIER_ACCEPTANCE",action="INCOME")
 
             # Add to receiver
             Finance.objects.create(

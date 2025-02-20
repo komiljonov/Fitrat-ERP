@@ -26,10 +26,18 @@ class Casher(TimeStampModel):
         return f"{self.user.phone} {self.role}"
 
 class Kind(TimeStampModel):
+    action = models.CharField(
+        choices=[
+                ('INCOME', 'INCOME'),
+                ('EXPENSE', 'EXPENSE'),
+        ],
+        default='INCOME',
+        max_length=20,
+    )
     name = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.action} {self.name}"
 
 
 class PaymentMethod(TimeStampModel):

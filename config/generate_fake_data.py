@@ -66,9 +66,20 @@ def generate_fake_data():
     days = ['Yakshanba','Shanba', 'Juma','Payshanba','Chorshanba','Seshanba','Dushanba',]
     for day in days:
         Day.objects.create(name=day)
-    kind = ["Salary","Bonus","Course payment","Lesson payment","Money back","CASHIER_HANDOVER","CASHIER_ACCEPTANCE"]
-    for i in kind:
-        Kind.objects.create(name=i)
+
+    kind_actions = {
+        "Salary": "EXPENSE",
+        "Bonus": "EXPENSE",
+        "Course payment": "INCOME",
+        "Lesson payment": "INCOME",
+        "Money back": "EXPENSE",
+        "CASHIER_HANDOVER": "EXPENSE",
+        "CASHIER_ACCEPTANCE": "INCOME",
+    }
+
+    # Loop through the kinds and create them dynamically
+    for name, action in kind_actions.items():
+        Kind.objects.get_or_create(name=name, defaults={"action": action})
 
     # # CustomUser (Staff)
     # roles = [role[0] for role in CustomUser.ROLE_CHOICES]
