@@ -428,10 +428,10 @@ class KindList(ListCreateAPIView):
     queryset = Kind.objects.all()
 
     def get_queryset(self):
-        kind = self.request.query_params.get('kind')
+        kind = self.request.query_params.get('action')
         if kind:
             queryset = Kind.objects.filter(
-                kind=kind,
+                action=kind,
             )
             return queryset
         return Kind.objects.none()
