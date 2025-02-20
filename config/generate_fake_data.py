@@ -49,7 +49,10 @@ def generate_fake_data():
       "employees",
     ]
     for i in pages:
-        Page.objects.create(name=i)
+        Page.objects.create(
+            user=CustomUser.objects.filter(phone="+998901234567").first(),
+            name=i
+        )
 
 
     marketing_channels = ["Tanishlar orqali",'Instagram', 'Telegram', 'Facebook reklamasi',
