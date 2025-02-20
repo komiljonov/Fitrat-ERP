@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from data.department.marketing_channel.models import MarketingChannel
-from data.finances.finance.models import Finance, Casher
+from data.finances.finance.models import Finance, Casher, Kind
 from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group
 from data.student.studentgroup.models import StudentGroup
@@ -69,17 +69,17 @@ class DashboardView(APIView):
         ).count()
 
         first_lesson_come_archived = 35  # Static value, update as needed
-
+        course_payment = Kind.objects.filter(name="Course payment").first()
         first_course_payment = Finance.objects.filter(
             action="INCOME",
-            kind="COURSE_PAYMENT",
+            kind=course_payment,
             is_first=True,
             **filters,
         ).count()
 
         first_course_payment_archived = Finance.objects.filter(
             action="INCOME",
-            kind="COURSE_PAYMENT",
+            kind=course_payment,
             is_first=True,
             student__is_archived=True,
             **filters,
@@ -306,6 +306,7 @@ class MonitoringView(APIView):
         return Response(teacher_data)
 
 
+
 class DashboardWeeklyFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -315,9 +316,12 @@ class DashboardWeeklyFinanceAPIView(APIView):
         end_date = request.query_params.get('end_date')
         casher_id = request.query_params.get('casher')
         action_type = request.query_params.get('action')  # INCOME or EXPENSE
-        kind = request.query_params.get('kind')  # Payment type (SALARY, BONUS, etc.)
+        kind = request.query_params.get('kind')  # Dynamically fetched kinds
 
         filters = {}
+
+        # Get all dynamic kinds from DB
+        existing_kinds = list(Kind.objects.values_list('name', flat=True))  # Fetch all available kinds dynamically
 
         # Filter by Casher if provided
         if casher_id:
@@ -342,21 +346,17 @@ class DashboardWeeklyFinanceAPIView(APIView):
             except ValueError:
                 return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=400)
 
-        # Filter only for SALARY, BONUS, MONEY_BACK, OTHER
-        allowed_kinds = ["SALARY", "BONUS", "MONEY_BACK", "OTHER"]
-        filters['kind__in'] = allowed_kinds
-
-        # If kind is specified, ensure it's valid
+        # Ensure kind filtering is valid
         if kind:
-            if kind not in allowed_kinds:
-                return Response({"error": f"Invalid kind. Allowed values: {', '.join(allowed_kinds)}"}, status=400)
-            filters['kind'] = kind  # Apply additional filter
+            if kind not in existing_kinds:
+                return Response({"error": f"Invalid kind. Allowed values: {', '.join(existing_kinds)}"}, status=400)
+            filters['kind__name'] = kind  # Ensure kind filtering is correctly applied
 
         # Query and group by weekday
         queryset = (
             Finance.objects.filter(**filters)
             .annotate(weekday=ExtractWeekDay('created_at'))
-            .values('weekday', 'kind')
+            .values('weekday', 'kind__name')
             .annotate(total_amount=Sum('amount'))
         )
 
@@ -367,13 +367,13 @@ class DashboardWeeklyFinanceAPIView(APIView):
         }
 
         # Initialize totals for each weekday and category
-        weekly_data = {day: {kind: 0 for kind in allowed_kinds} for day in weekday_map.values()}
-        total_overall = {kind: 0 for kind in allowed_kinds}  # Overall total per category
+        weekly_data = {day: {k: 0 for k in existing_kinds} for day in weekday_map.values()}
+        total_overall = {k: 0 for k in existing_kinds}  # Overall total per category
 
         # Populate data
         for item in queryset:
             weekday_name = weekday_map[item['weekday']]
-            category = item['kind']
+            category = item['kind__name']
             amount = item['total_amount']
             weekly_data[weekday_name][category] += amount
             total_overall[category] += amount  # Aggregate total for percentage calculation
@@ -386,9 +386,13 @@ class DashboardWeeklyFinanceAPIView(APIView):
                 category: round((total / total_sum) * 100, 2) for category, total in total_overall.items()
             }
         else:
-            percentages = {category: 0 for category in allowed_kinds}
+            percentages = {category: 0 for category in existing_kinds}
 
         # Convert data to response format
         result = [{"weekday": day, "totals": totals} for day, totals in weekly_data.items()]
 
-        return Response({"weekly_data": result, "percentages": percentages}, status=200)
+        return Response({
+            "weekly_data": result,
+            "percentages": percentages,
+            "available_kinds": existing_kinds  # Returning available kinds for front-end usage
+        }, status=200)
