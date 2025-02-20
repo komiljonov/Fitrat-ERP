@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, \
+    RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -139,3 +140,8 @@ class ResultsView(ListAPIView):
         if type:
             queryset = queryset.filter(results=type)
         return queryset
+
+class ResultsRetrieveAPIView(RetrieveUpdateAPIView):
+    queryset = Results.objects.all()
+    serializer_class = ResultsSerializer
+    permission_classes = [IsAuthenticated]
