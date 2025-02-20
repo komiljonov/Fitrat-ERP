@@ -23,12 +23,21 @@ class DashboardView(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+        channel = self.request.query_params.get('channel')
+        manager = self.request.query_params.get('manager')
+        teacher = self.request.query_params.get('teacher')
 
         filters = {}
         if start_date:
             filters['created_at__gte'] = start_date
         if end_date:
             filters['created_at__lte'] = end_date
+        if channel:
+            filters['channel'] = channel
+        if manager:
+            filters['manager'] = manager
+        if teacher:
+            filters['teacher'] = teacher
 
         orders = Lid.objects.filter(
             is_archived=False,

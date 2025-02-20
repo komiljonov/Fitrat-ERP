@@ -186,6 +186,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
 
 
 class ResultsSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     class Meta:
         model = Results
         fields = [
@@ -212,4 +213,5 @@ class ResultsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """ Remove fields that are None or empty """
         data = super().to_representation(instance)
+        data['user'] = UserListSerializer(instance.user,context=self.context).data
         return {key: value for key, value in data.items() if value not in [None, "", []]}
