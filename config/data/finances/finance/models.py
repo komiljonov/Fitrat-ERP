@@ -25,6 +25,11 @@ class Casher(TimeStampModel):
     def __str__(self):
         return f"{self.user.phone} {self.role}"
 
+class Kind(TimeStampModel):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.name}"
 class Finance(TimeStampModel):
 
     casher : "Casher" = models.ForeignKey(
@@ -46,19 +51,10 @@ class Finance(TimeStampModel):
 
     amount = models.FloatField(default=0)
 
-    kind = models.CharField(
-        choices=[
-            ('COURSE_PAYMENT', 'COURSE_PAYMENT'),
-            ('LESSON_PAYMENT', 'LESSON_PAYMENT'),
-            ('SALARY', 'SALARY'),
-            ('BONUS', 'BONUS'),
-            ('MONEY_BACK', 'MONEY_BACK'),
-            ('OTHER', 'OTHER'),
-            ('CASHIER_HANDOVER', 'Kassa topshirish'),
-            ('CASHIER_ACCEPTANCE', 'Kassa qabul qilish'),
-        ],
-        default='COURSE_PAYMENT',
-        max_length=20,
+    kind = models.ForeignKey(
+        "finance.Kind",on_delete=models.SET_NULL,
+        related_name='finances_kind',
+        null=True,blank=True
     )
 
     attendance : "Attendance" = models.ForeignKey('attendance.Attendance',on_delete=models.SET_NULL,null=True,blank=True,
@@ -77,7 +73,7 @@ class Finance(TimeStampModel):
     is_first = models.BooleanField(default=False,null=True,blank=True)
 
     def __str__(self):
-        return f'{self.amount} {self.kind} {self.action}'
+        return f'{self.amount} {self.kind.name} {self.action}'
 
 
 class Handover(TimeStampModel):
