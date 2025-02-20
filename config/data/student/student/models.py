@@ -11,6 +11,7 @@ from ...upload.models import File
 
 
 class Student(TimeStampModel):
+    photo = models.ForeignKey('upload.File', on_delete=models.SET_NULL,null=True,blank=True,related_name='students_photo')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     middle_name = models.CharField(max_length=100, null=True, blank=True)

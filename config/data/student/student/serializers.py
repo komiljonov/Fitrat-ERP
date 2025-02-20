@@ -22,6 +22,7 @@ from ...upload.serializers import FileUploadSerializer
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
     test = serializers.SerializerMethodField()
@@ -40,6 +41,7 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = [
             'id',
+            'photo',
             "first_name",
             "last_name",
             "middle_name",
@@ -144,6 +146,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        representation['photo'] = FileUploadSerializer(instance.photo,context=self.context).data
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(
             instance.marketing_channel).data if instance.marketing_channel else None

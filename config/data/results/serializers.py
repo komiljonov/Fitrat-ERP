@@ -211,7 +211,9 @@ class ResultsSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
+
         """ Remove fields that are None or empty """
+
         data = super().to_representation(instance)
         data['student'] = StudentSerializer(instance.student,context=self.context).data
         return {key: value for key, value in data.items() if value not in [None, "", []]}
