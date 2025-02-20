@@ -158,6 +158,8 @@ class FinanceSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         # Use the `UserListSerializer` to serialize the creator field
         representation["creator"] = UserListSerializer(instance.creator).data
+        representation['kind'] = KindSerializer(instance.kind).data
+        representation['payment_method'] = PaymentMethodSerializer(instance.payment_method).data
         return representation
 
 
