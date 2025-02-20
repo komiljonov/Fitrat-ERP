@@ -18,6 +18,7 @@ from ...upload.views import UploadFileAPIView
 
 
 class LidSerializer(serializers.ModelSerializer):
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
     call_operator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),
@@ -32,7 +33,7 @@ class LidSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lid
         fields = [
-            "id", "sender_id", "message_text", "first_name", "last_name", "middle_name",
+            "id", "sender_id", "message_text", "photo" ,"first_name", "last_name", "middle_name",
             "phone_number", "date_of_birth", "education_lang", "student_type",
             "edu_class", "edu_level", "subject", "ball", "filial","is_frozen",
             "marketing_channel", "lid_stage_type", "ordered_stages",
@@ -83,6 +84,7 @@ class LidSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        representation['photo'] = FileUploadSerializer(instance.photo).data
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(
             instance.marketing_channel).data if instance.marketing_channel else None
