@@ -427,6 +427,20 @@ class KindList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Kind.objects.all()
 
+    def get_queryset(self):
+        kind = self.request.query_params.get('kind')
+        if kind:
+            queryset = Kind.objects.filter(
+                kind=kind,
+            )
+            return queryset
+        return Kind.objects.none()
+
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
+
 class KindRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = KindSerializer
     permission_classes = [IsAuthenticated]
