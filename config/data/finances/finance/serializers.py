@@ -2,7 +2,7 @@ from django.contrib.admin import action
 from django.db.models import Sum
 from rest_framework import serializers
 
-from .models import Finance, Casher, Handover, Kind
+from .models import Finance, Casher, Handover, Kind, PaymentMethod
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
@@ -17,6 +17,13 @@ class KindSerializer(serializers.ModelSerializer):
             'created_at',
         ]
 
+class PaymentMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentMethod
+        fields = [
+            'id',
+            'name',
+        ]
 
 
 class CasherSerializer(serializers.ModelSerializer):
@@ -75,7 +82,6 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
         return rep
 
 
-
 class FinanceSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
@@ -91,6 +97,7 @@ class FinanceSerializer(serializers.ModelSerializer):
             'casher',
             'amount',
             'kind',
+            'payment_method',
             'student',
             'attendance',
             'stuff',
@@ -172,6 +179,7 @@ class FinanceGroupSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
 class FinanceTeacherSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
@@ -185,6 +193,7 @@ class FinanceTeacherSerializer(serializers.ModelSerializer):
             'casher',
             'amount',
             'kind',
+            'payment_method',
             'student',
             'stuff',
             'creator',

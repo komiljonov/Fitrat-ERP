@@ -17,9 +17,9 @@ from rest_framework.views import APIView
 
 from data.account.models import CustomUser
 from data.student.student.models import Student
-from .models import Finance, Casher, Handover, Kind
+from .models import Finance, Casher, Handover, Kind, PaymentMethod
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, FinanceTeacherSerializer, \
-    KindSerializer
+    KindSerializer, PaymentMethodSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 
@@ -427,3 +427,15 @@ class KindRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = KindSerializer
     permission_classes = [IsAuthenticated]
     queryset = Kind.objects.all()
+
+
+class PaymentMethodsList(ListCreateAPIView):
+    queryset = PaymentMethod.objects.all()
+    serializer_class = PaymentMethodSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class PaymentMethodsRetrive(RetrieveUpdateDestroyAPIView):
+    serializer_class = PaymentMethodSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = PaymentMethod.objects.all()

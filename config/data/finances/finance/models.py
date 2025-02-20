@@ -30,6 +30,14 @@ class Kind(TimeStampModel):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class PaymentMethod(TimeStampModel):
+    name = models.CharField(max_length=100)
+    def __str__(self):
+        return f"{self.name}"
+
+
 class Finance(TimeStampModel):
 
     casher : "Casher" = models.ForeignKey(
@@ -55,6 +63,14 @@ class Finance(TimeStampModel):
         "finance.Kind",on_delete=models.SET_NULL,
         related_name='finances_kind',
         null=True,blank=True
+    )
+
+    payment_method = models.ForeignKey(
+        "finance.PaymentMethod",
+        on_delete=models.SET_NULL,
+        related_name='finances_payment_method',
+        null=True,
+        blank=True,
     )
 
     attendance : "Attendance" = models.ForeignKey('attendance.Attendance',on_delete=models.SET_NULL,null=True,blank=True,

@@ -1,9 +1,11 @@
 from django.urls import path
 
+from .models import PaymentMethod
 from .views import FinanceListAPIView, FinanceDetailAPIView, FinanceNoPGList, StudentFinanceListAPIView, \
     StuffFinanceListAPIView, CasherListCreateAPIView, CasherRetrieveUpdateDestroyAPIView, CasherHandoverAPIView, \
     FinanceStatisticsAPIView, CasherNoPg, CasherHandoverHistory, CasherStatisticsAPIView, \
-    TeacherGroupFinanceAPIView, FinanceTeacher, FinanceExcel, KindRetrive, KindList
+    TeacherGroupFinanceAPIView, FinanceTeacher, FinanceExcel, KindRetrive, KindList, PaymentMethodsRetrive, \
+    PaymentMethodsList
 
 urlpatterns = [
     path('', FinanceListAPIView.as_view(), name='finance_list'),
@@ -29,5 +31,8 @@ urlpatterns = [
 
     path('kind/',KindList.as_view(), name='finance_kind'),
     path('kind/<uuid:pk>/', KindRetrive.as_view(), name='finance_kind'),
+
+    path('method/',PaymentMethodsList.as_view(), name='payment_method'),
+    path('method/<uuid:pk>/', PaymentMethodsRetrive.as_view(), name='payment_method'),
 
 ]
