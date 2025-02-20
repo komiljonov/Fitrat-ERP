@@ -93,8 +93,12 @@ class DashboardView(APIView):
         moved_to_filial = 45  # Static value, update as needed
         come_from_filial = 13  # Static value, update as needed
 
-        # Prepare the data for the response
+        lids = Lid.objects.filter(
+            is_archived=False,
+            is_frozen=False,
+        )
         data = {
+            "lids" : lids,
             "orders": orders,
             "orders_archived": orders_archived,
             "first_lesson": first_lesson,
