@@ -84,7 +84,7 @@ class LidSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['photo'] = FileUploadSerializer(instance.photo).data
+        representation['photo'] = FileUploadSerializer(instance.photo,context=self.context).data
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(
             instance.marketing_channel).data if instance.marketing_channel else None
