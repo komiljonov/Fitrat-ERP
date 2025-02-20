@@ -131,7 +131,6 @@ class StuffFinanceListAPIView(ListAPIView):
         if stuff:
             return Finance.objects.filter(stuff=stuff)
         return Finance.objects.none()
-
 class CasherHandoverAPIView(CreateAPIView):
     serializer_class = CasherHandoverSerializer
     permission_classes = [IsAuthenticated]
@@ -145,34 +144,33 @@ class CasherHandoverAPIView(CreateAPIView):
         amount = serializer.validated_data.get("amount")
         icecream.ic(receiver, casher, amount)
 
-
         if int(amount) > 0:
-            handover = Kind.objects.get_or_create(
-                name="CASHIER_HANDOVER"
-            )
+            # Get the Kind instance (unpacking the tuple)
+            handover, _ = Kind.objects.get_or_create(name="CASHIER_HANDOVER")
+
             # Deduct from sender (casher)
             Finance.objects.create(
                 casher=casher,
                 amount=amount,
                 action='EXPENSE',
-                kind=handover,
+                kind=handover,  # Now it's correctly assigned
                 creator=request.user,
                 comment=f"{casher.user.first_name} handed over {amount} "
                         f"to {receiver.user.first_name}"
             )
 
+            # Get the Kind instance (unpacking the tuple)
+            acception, _ = Kind.objects.get_or_create(name="CASHIER_ACCEPTANCE")
+
             # Add to receiver
-            acception = Kind.objects.get_or_create(
-                name="CASHIER_ACCEPTANCE"
-            )
             Finance.objects.create(
                 casher=receiver,
                 amount=amount,
                 action='INCOME',
-                kind=acception,
+                kind=acception,  # Now it's correctly assigned
                 creator=request.user,
-                comment=f"{receiver.user.first_name} received {amount}"
-                        f" from {casher.user.first_name}"
+                comment=f"{receiver.user.first_name} received {amount} "
+                        f"from {casher.user.first_name}"
             )
 
             Handover.objects.create(
@@ -190,6 +188,7 @@ class CasherHandoverAPIView(CreateAPIView):
             {"error": "Insufficient balance for handover"},
             status=status.HTTP_400_BAD_REQUEST
         )
+
 
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
