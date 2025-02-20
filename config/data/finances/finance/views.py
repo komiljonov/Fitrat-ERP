@@ -418,7 +418,7 @@ class FinanceExcel(APIView):
         response['Content-Disposition'] = 'attachment; filename="finance_data.xlsx"'
         return response
 
-class Kind(ListCreateAPIView):
+class KindList(ListCreateAPIView):
     serializer_class = KindSerializer
     permission_classes = [IsAuthenticated]
     queryset = Kind.objects.all()

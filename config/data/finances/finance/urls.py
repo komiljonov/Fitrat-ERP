@@ -3,7 +3,7 @@ from django.urls import path
 from .views import FinanceListAPIView, FinanceDetailAPIView, FinanceNoPGList, StudentFinanceListAPIView, \
     StuffFinanceListAPIView, CasherListCreateAPIView, CasherRetrieveUpdateDestroyAPIView, CasherHandoverAPIView, \
     FinanceStatisticsAPIView, CasherNoPg, CasherHandoverHistory, CasherStatisticsAPIView, \
-    TeacherGroupFinanceAPIView, FinanceTeacher, FinanceExcel, Kind, KindRetrive
+    TeacherGroupFinanceAPIView, FinanceTeacher, FinanceExcel, KindRetrive, KindList
 
 urlpatterns = [
     path('', FinanceListAPIView.as_view(), name='finance_list'),
@@ -27,7 +27,7 @@ urlpatterns = [
 
     path('excel/',FinanceExcel.as_view(), name='finance_excel'),
 
-    path('kind/',Kind.as_view(), name='finance_kind'),
+    path('kind/',KindList.as_view(), name='finance_kind'),
     path('kind/<uuid:pk>/', KindRetrive.as_view(), name='finance_kind'),
 
 ]
