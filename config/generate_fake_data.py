@@ -5,8 +5,7 @@ import random
 import django
 from faker import Faker
 
-from data.finances.compensation.models import Page
-from data.finances.finance.models import Kind
+
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 django.setup()
@@ -15,7 +14,8 @@ from data.student.groups.models import Day
 from data.account.models import CustomUser
 from data.department.filial.models import Filial
 from data.department.marketing_channel.models import MarketingChannel
-
+from data.finances.compensation.models import Page
+from data.finances.finance.models import Kind
 fake = Faker()
 
 def generate_fake_data():
