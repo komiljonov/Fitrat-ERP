@@ -62,17 +62,18 @@ def generate_fake_data():
     for day in days:
         Day.objects.create(name=day)
     kind = ["Salary","Bonus","Course payment","Lesson payment","Money back","CASHIER_HANDOVER","CASHIER_ACCEPTANCE"]
-    Kind.objects.create(name='Kinda')
+    for i in kind:
+        Kind.objects.create(name=i)
 
-    # CustomUser (Staff)
-    roles = [role[0] for role in CustomUser.ROLE_CHOICES]
-    for _ in range(10):
-        CustomUser.objects.create(
-            full_name=fake.name(),
-            phone=fake.phone_number(),
-            role=random.choice(roles),
-            balance=round(random.uniform(100000, 5000000), 2),
-        )
+    # # CustomUser (Staff)
+    # roles = [role[0] for role in CustomUser.ROLE_CHOICES]
+    # for _ in range(10):
+    #     CustomUser.objects.create(
+    #         full_name=fake.name(),
+    #         phone=fake.phone_number(),
+    #         role=random.choice(roles),
+    #         balance=round(random.uniform(100000, 5000000), 2),
+    #     )
 
     # # Students
     # for _ in range(20):
