@@ -48,10 +48,15 @@ class FinanceListAPIView(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
+        kind = self.request.query_params.get('kind', None)
         id = self.request.query_params.get('casher_id', None)
         finance = Finance.objects.filter(casher__id=id)
         if finance:
             return finance
+        if kind:
+            return Finance.objects.filter(kind=Kind.objects.get(id=kind))
+        if kind and id:
+            return Finance.objects.filter(casher__id=id, kind=Kind.objects.get(id=kind))
         return Finance.objects.none()
 
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -194,19 +199,23 @@ class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        kind = self.request.query_params.get('kind', None)
+        filter = {}
+        if kind:
+            filter['kind'] = Kind.objects.get(id=kind)
         # Asosiy kassa balansi
-        main_casher_income = Finance.objects.filter(casher__role="WEALTH", action="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
-        main_casher_outcome = Finance.objects.filter(casher__role="WEALTH", action="OUTCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+        main_casher_income = Finance.objects.filter(casher__role="WEALTH", action="INCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
+        main_casher_outcome = Finance.objects.filter(casher__role="WEALTH", action="OUTCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
         main_casher_balance = main_casher_income - main_casher_outcome
 
         # Administrativ kassa balansi
-        admin_casher_income = Finance.objects.filter(casher__role="ADMINISTRATOR", action="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
-        admin_casher_outcome = Finance.objects.filter(casher__role="ADMINISTRATOR", action="OUTCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+        admin_casher_income = Finance.objects.filter(casher__role="ADMINISTRATOR", action="INCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
+        admin_casher_outcome = Finance.objects.filter(casher__role="ADMINISTRATOR", action="OUTCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
         admin_casher_balance = admin_casher_income - admin_casher_outcome
 
         # Accountant kassa balansi
-        accounting_casher_income = Finance.objects.filter(casher__role="ACCOUNTANT", action="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
-        accounting_casher_outcome = Finance.objects.filter(casher__role="ACCOUNTANT", action="OUTCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+        accounting_casher_income = Finance.objects.filter(casher__role="ACCOUNTANT", action="INCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
+        accounting_casher_outcome = Finance.objects.filter(casher__role="ACCOUNTANT", action="OUTCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
         accounting_casher_balance = accounting_casher_income - accounting_casher_outcome
 
         # JSON response qaytarish
@@ -230,10 +239,14 @@ class CasherStatisticsAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         casher = self.kwargs.get('pk')
+        kind = self.request.query_params.get('kind', None)
+        filter = {}
+        if kind:
+            filter['kind'] = Kind.objects.get(id=kind)
         if casher:
-            income = Finance.objects.filter(casher__id=casher, action='INCOME'
+            income = Finance.objects.filter(casher__id=casher, action='INCOME',**filter
                                             ).aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher__id=casher, action='EXPENSE'
+            expense = Finance.objects.filter(casher__id=casher, action='EXPENSE',**filter
                                              ).aggregate(Sum('amount'))['amount__sum'] or 0
             balance = income - expense
             return Response({
