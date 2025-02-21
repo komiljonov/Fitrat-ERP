@@ -502,6 +502,42 @@ class PaymentStatistics(APIView):
             "naqt": get_total_amount('Naqt pul'),
             "perchesliniya": get_total_amount("Pul o'tkazish")
         }
+        data["total"] = sum(data.values())
 
         return Response(data)
 
+
+class PaymentCasherStatistics(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        filter = {}
+        if start_date:
+            filter['created_at__gte'] = start_date
+        if end_date:
+            filter['created_at__lte'] = end_date
+
+        valid_payment_methods = [
+            'Click', 'Payme', 'Naqt pul', 'Card', "Pul o'tkazish"
+        ]
+
+        def get_total_amount(payment_name):
+            payment_method = PaymentMethod.objects.filter(name=payment_name).first()
+            if not payment_method:
+                return 0
+            return Finance.objects.filter(payment_method=payment_method, **filter).aggregate(total=Sum('amount'))[
+                'total'] or 0
+
+        data = {
+            "click": get_total_amount('Click'),
+            "payme": get_total_amount('Payme'),
+            "karta": get_total_amount('Card'),
+            "naqt": get_total_amount('Naqt pul'),
+            "perchesliniya": get_total_amount("Pul o'tkazish"),
+        }
+
+        data["total"] = sum(data.values())
+
+        return Response(data)
