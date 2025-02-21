@@ -484,31 +484,19 @@ class PaymentStatistics(APIView):
         if end_date:
             filter['created_at__lte'] = end_date
 
-        click = Finance.objects.filter(
-            payment_method = PaymentMethod.objects.get(name='click'),
-            **filter
-        )
-        payme = Finance.objects.filter(
-            payment_method=PaymentMethod.objects.get(name='payme'),
-            **filter
-        )
-        karta = Finance.objects.filter(
-            payment_method=PaymentMethod.objects.get(name='karta'),
-            **filter
-        )
-        naqt = Finance.objects.filter(
-            payment_method=PaymentMethod.objects.get(name='naqt'),
-            **filter
-        )
-        perches = Finance.objects.filter(
-            payment_method=PaymentMethod.objects.get(name="pul o'tkazma"),
-            **filter
-        )
-        # JSON response qaytarish
-        return Response({
-            "click": click,
-            "payme": payme,
-            "karta": karta,
-            "naqt":naqt,
-            "perchesliniya":perches
-        })
+        def get_total_amount(payment_name):
+            payment_method = PaymentMethod.objects.filter(name=payment_name).first()
+            if not payment_method:
+                return 0
+            return Finance.objects.filter(payment_method=payment_method, **filter).aggregate(total=Sum('amount'))[
+                'total'] or 0
+
+        data = {
+            "click": get_total_amount('click'),
+            "payme": get_total_amount('payme'),
+            "karta": get_total_amount('karta'),
+            "naqt": get_total_amount('naqt'),
+            "perchesliniya": get_total_amount("pul o'tkazma")
+        }
+
+        return Response(data)
