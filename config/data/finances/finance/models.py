@@ -78,12 +78,14 @@ class Finance(TimeStampModel):
         null=True,blank=True
     )
 
-    payment_method = models.ForeignKey(
-        "finance.PaymentMethod",
-        on_delete=models.SET_NULL,
-        related_name='finances_payment_method',
-        null=True,
-        blank=True,
+    payment_method = models.CharField(
+        choices=[
+            ('Click', 'Click'),
+            ('Payme', 'Payme'),
+            ('Cash','Naqt pul'),
+            ('Card','Card'),
+            ('Money_send',"Pul o'tkazish")
+        ],default='Payme',null=True,blank=True
     )
 
     attendance : "Attendance" = models.ForeignKey('attendance.Attendance',on_delete=models.SET_NULL,null=True,blank=True,
