@@ -1,6 +1,6 @@
 import icecream
 import pandas as pd
-from django.db.models import Sum, Q
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,8 +8,7 @@ from icecream import ic
 from pandas import io
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, \
-    RetrieveAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -18,11 +17,9 @@ from rest_framework.views import APIView
 from data.account.models import CustomUser
 from data.student.student.models import Student
 from .models import Finance, Casher, Handover, Kind, PaymentMethod
-from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, FinanceTeacherSerializer, \
-    KindSerializer, PaymentMethodSerializer
+from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, KindSerializer, \
+    PaymentMethodSerializer
 from ...lid.new_lid.models import Lid
-from ...results.models import Results
-from ...results.serializers import NationalSerializer
 from ...student.attendance.models import Attendance
 
 
@@ -496,26 +493,45 @@ class PaymentStatistics(APIView):
         return Response(data)
 
 
-class PaymentCasherStatistics(APIView):
+
+class PaymentCasherStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+    def list(self, request, *args, **kwargs):
+        """Fetch and return payment statistics per cashier."""
+        id = self.kwargs.get('pk')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        # Validate that `id` exists
+        if not id:
+            return Response({"error": "Casher ID is required"}, status=400)
+
+        # Define filters
         filter = {}
         if start_date:
             filter['created_at__gte'] = start_date
         if end_date:
             filter['created_at__lte'] = end_date
 
+        # Define valid payment methods
         valid_payment_methods = [
             'Click', 'Payme', 'Naqt pul', 'Card', "Pul o'tkazish"
         ]
 
-        def get_total_amount(payment_name):
-            return Finance.objects.filter(payment_method=payment_name, **filter).aggregate(total=Sum('amount'))['total'] or 0
+        # Compute total amounts
+        data = {
+            payment.lower().replace(" ", "_"): Finance.objects.filter(
+                casher__id=id, payment_method=payment, **filter
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            for payment in valid_payment_methods
+        }
 
-        data = {payment.lower().replace(" ", "_"): get_total_amount(payment) for payment in valid_payment_methods}
         data["total"] = sum(data.values())
 
         return Response(data)
+
+    def get_queryset(self):
+        """ListAPIView requires a queryset; returning an empty one to satisfy DRF behavior."""
+        return Finance.objects.none()
+
