@@ -481,7 +481,7 @@ class PaymentStatistics(APIView):
             filter['created_at__lte'] = end_date
 
         valid_payment_methods = [
-            'Click', 'Payme', 'Naqt pul', 'Card', "Pul o'tkazish"
+            'Click', 'Payme', 'Cash', 'Card', "Money_send"
         ]
 
         def get_total_amount(payment_name):
