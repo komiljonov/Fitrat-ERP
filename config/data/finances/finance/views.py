@@ -484,6 +484,10 @@ class PaymentStatistics(APIView):
         if end_date:
             filter['created_at__lte'] = end_date
 
+        valid_payment_methods = [
+            'Click', 'Payme', 'Naqt pul', 'Card', "Pul o'tkazish"
+        ]
+
         def get_total_amount(payment_name):
             payment_method = PaymentMethod.objects.filter(name=payment_name).first()
             if not payment_method:
@@ -492,11 +496,12 @@ class PaymentStatistics(APIView):
                 'total'] or 0
 
         data = {
-            "click": get_total_amount('click'),
-            "payme": get_total_amount('payme'),
-            "karta": get_total_amount('karta'),
-            "naqt": get_total_amount('naqt'),
-            "perchesliniya": get_total_amount("pul o'tkazma")
+            "click": get_total_amount('Click'),
+            "payme": get_total_amount('Payme'),
+            "karta": get_total_amount('Card'),
+            "naqt": get_total_amount('Naqt pul'),
+            "perchesliniya": get_total_amount("Pul o'tkazish")
         }
 
         return Response(data)
+
