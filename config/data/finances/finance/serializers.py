@@ -15,6 +15,7 @@ class KindSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'action',
+            'color',
             'created_at',
         ]
 
