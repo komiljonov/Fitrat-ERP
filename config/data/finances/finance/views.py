@@ -471,7 +471,6 @@ class PaymentMethodsRetrive(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = PaymentMethod.objects.all()
 
-
 class PaymentStatistics(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -489,19 +488,9 @@ class PaymentStatistics(APIView):
         ]
 
         def get_total_amount(payment_name):
-            payment_method = PaymentMethod.objects.filter(name=payment_name).first()
-            if not payment_method:
-                return 0
-            return Finance.objects.filter(payment_method=payment_method, **filter).aggregate(total=Sum('amount'))[
-                'total'] or 0
+            return Finance.objects.filter(payment_method=payment_name, **filter).aggregate(total=Sum('amount'))['total'] or 0
 
-        data = {
-            "click": get_total_amount('Click'),
-            "payme": get_total_amount('Payme'),
-            "karta": get_total_amount('Card'),
-            "naqt": get_total_amount('Naqt pul'),
-            "perchesliniya": get_total_amount("Pul o'tkazish")
-        }
+        data = {payment.lower().replace(" ", "_"): get_total_amount(payment) for payment in valid_payment_methods}
         data["total"] = sum(data.values())
 
         return Response(data)
@@ -524,20 +513,9 @@ class PaymentCasherStatistics(APIView):
         ]
 
         def get_total_amount(payment_name):
-            payment_method = PaymentMethod.objects.filter(name=payment_name).first()
-            if not payment_method:
-                return 0
-            return Finance.objects.filter(payment_method=payment_method, **filter).aggregate(total=Sum('amount'))[
-                'total'] or 0
+            return Finance.objects.filter(payment_method=payment_name, **filter).aggregate(total=Sum('amount'))['total'] or 0
 
-        data = {
-            "click": get_total_amount('Click'),
-            "payme": get_total_amount('Payme'),
-            "karta": get_total_amount('Card'),
-            "naqt": get_total_amount('Naqt pul'),
-            "perchesliniya": get_total_amount("Pul o'tkazish"),
-        }
-
+        data = {payment.lower().replace(" ", "_"): get_total_amount(payment) for payment in valid_payment_methods}
         data["total"] = sum(data.values())
 
         return Response(data)
