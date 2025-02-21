@@ -20,7 +20,6 @@ from ...parents.models import Relatives
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
-
 class StudentSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
@@ -186,7 +185,6 @@ class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         attrs['user'] = user
         return attrs
-
 
 class StudentAppSerializer(serializers.ModelSerializer):
     class Meta:
