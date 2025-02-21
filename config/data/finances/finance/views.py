@@ -472,3 +472,43 @@ class PaymentMethodsRetrive(RetrieveUpdateDestroyAPIView):
     queryset = PaymentMethod.objects.all()
 
 
+class PaymentStatistics(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        filter = {}
+        if start_date:
+            filter['created_at__gte'] = start_date
+        if end_date:
+            filter['created_at__lte'] = end_date
+
+        click = Finance.objects.filter(
+            payment_method = PaymentMethod.objects.get(name='click'),
+            **filter
+        )
+        payme = Finance.objects.filter(
+            payment_method=PaymentMethod.objects.get(name='payme'),
+            **filter
+        )
+        karta = Finance.objects.filter(
+            payment_method=PaymentMethod.objects.get(name='karta'),
+            **filter
+        )
+        naqt = Finance.objects.filter(
+            payment_method=PaymentMethod.objects.get(name='naqt'),
+            **filter
+        )
+        perches = Finance.objects.filter(
+            payment_method=PaymentMethod.objects.get(name="pul o'tkazma"),
+            **filter
+        )
+        # JSON response qaytarish
+        return Response({
+            "click": click,
+            "payme": payme,
+            "karta": karta,
+            "naqt":naqt,
+            "perchesliniya":perches
+        })
