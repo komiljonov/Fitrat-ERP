@@ -1,13 +1,10 @@
-import datetime
-from datetime import date
+from rest_framework import serializers
 
-import icecream
 from rest_framework import serializers
 
 from .models import StudentGroup, SecondaryStudentGroup
-from ..attendance.models import Attendance
 from ..groups.models import Group, SecondaryGroup
-from ..groups.serializers import GroupSerializer, SecondaryGroupSerializer
+from ..groups.serializers import SecondaryGroupSerializer
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ...lid.new_lid.models import Lid
@@ -86,54 +83,26 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
         return rep
 
 
+from typing import List, Optional
 class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
-    group = serializers.PrimaryKeyRelatedField(queryset=SecondaryGroup.objects.all())
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
+    group = serializers.PrimaryKeyRelatedField(queryset=SecondaryGroup.objects.all(), required=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
 
     class Meta:
         model = SecondaryStudentGroup
-        fields = [
-            'id',
-            'group',
-            'lid',
-            'student',
-        ]
+        fields = ['id', 'group', 'lid', 'student']
 
-    def __init__(self, *args, **kwargs):
-        # Call the parent constructor
-
-        # Fields you want to remove (for example, based on some condition)
-        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
-        super(SecondaryStudentsGroupSerializer, self).__init__(*args, **kwargs)
-
-        if fields_to_remove:
-            # Remove the fields from the serializer
-            for field in fields_to_remove:
-                self.fields.pop(field, None)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        # Use try-except to avoid potential recursion or circular references
         try:
-            # Limit the recursion depth by limiting which fields are serialized
             rep['group'] = SecondaryGroupSerializer(instance.group, context=self.context).data
         except RecursionError:
             rep['group'] = "Error in serialization"
 
-        if instance.lid:
-            rep['lid'] = LidSerializer(instance.lid, context=self.context, remove_fields=["student_group"]).data
+        rep['lid'] = LidSerializer(instance.lid, context=self.context).data if instance.lid else None
+        rep['student'] = StudentSerializer(instance.student, context=self.context).data if instance.student else None
 
-        else:
-            rep.pop('lid', None)
-
-        if instance.student:
-            rep['student'] = StudentSerializer(instance.student, context=self.context,remove_fields=["student_group"]).data
-
-        else:
-            rep.pop('student', None)
-
-        # Filter out unwanted values
-        filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
-        return filtered_data
+        return {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}

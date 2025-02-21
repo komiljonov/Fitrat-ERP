@@ -190,7 +190,6 @@ from rest_framework.response import Response
 from collections import defaultdict
 import datetime
 
-
 class LessonScheduleListApi(ListAPIView):
     serializer_class = LessonScheduleSerializer
     queryset = Group.objects.filter(status="ACTIVE")
@@ -211,21 +210,36 @@ class LessonScheduleListApi(ListAPIView):
         # Prepare to collect lessons grouped by date
         lessons_by_date = defaultdict(list)
 
-        extra_added_lessons = []
-        extra = ExtraLessonGroup.objects.filter(
-            group=queryset.first(),
-            created_at__gte=date_filter,
-        )
-
+        # Collect lessons from the main schedule
         for item in serializer.data:
-            # Extract the days data
             days = item.get('days', [])
             for day in days:
                 lesson_date = datetime.datetime.strptime(day['date'], "%d-%m-%Y").date()
-                # Filter lessons by date if the date filter is provided
                 if date_filter and lesson_date != date_filter:
                     continue
                 lessons_by_date[lesson_date].extend(day['lessons'])
+
+        # Fetch extra lessons for the groups
+        extra_lessons = ExtraLessonGroup.objects.filter(
+            group__in=queryset,
+            extra_lesson=True,  # Filtering only extra lessons
+        )
+
+        # Process extra lessons
+        for extra in extra_lessons:
+            lesson_date = extra.date  # Assuming `date` field exists in ExtraLessonGroup
+            if date_filter and lesson_date != date_filter:
+                continue
+            lesson_data = {
+                "subject": extra.group.course.subject.name if extra.group.course and extra.group.course.subject else None,
+                "subject_label": extra.group.course.subject.label if extra.group.course and extra.group.course.subject else None,
+                "teacher_name": f"{extra.group.teacher.first_name if extra.group.teacher.first_name else ''} {extra.group.teacher.last_name if extra.group.teacher else ''}",
+                "room": extra.group.room_number,
+                "name": extra.group.name,
+                "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
+                "ended_at": extra.ended_at.strftime('%H:%M') if extra.ended_at else None,
+            }
+            lessons_by_date[lesson_date].append(lesson_data)
 
         # Sort the dates in ascending order
         sorted_dates = sorted(lessons_by_date.keys())

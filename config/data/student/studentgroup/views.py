@@ -94,12 +94,9 @@ class SecondaryStudentList(ListCreateAPIView):
 
 
     def get_queryset(self):
-        if self.request.user.role == 'ASSISTANT' and id is None:
-            queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
-            return queryset
-        else:
-            queryset = StudentGroup.objects.filter(group__filial=self.request.user.filial)
-            return queryset
+        if self.request.user.role == 'ASSISTANT':
+            return SecondaryStudentGroup.objects.filter(group__teacher__id=self.request.user.id)
+        return SecondaryStudentGroup.objects.filter(group__filial=self.request.user.filial)
 
 
 class SecondaryGroupList(ListAPIView):
