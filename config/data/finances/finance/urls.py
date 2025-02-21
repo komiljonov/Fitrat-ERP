@@ -5,7 +5,7 @@ from .views import FinanceListAPIView, FinanceDetailAPIView, FinanceNoPGList, St
     StuffFinanceListAPIView, CasherListCreateAPIView, CasherRetrieveUpdateDestroyAPIView, CasherHandoverAPIView, \
     FinanceStatisticsAPIView, CasherNoPg, CasherHandoverHistory, CasherStatisticsAPIView, \
     TeacherGroupFinanceAPIView, FinanceTeacher, FinanceExcel, KindRetrive, KindList, PaymentMethodsRetrive, \
-    PaymentMethodsList
+    PaymentMethodsList, PaymentStatistics
 
 urlpatterns = [
     path('', FinanceListAPIView.as_view(), name='finance_list'),
@@ -34,5 +34,6 @@ urlpatterns = [
 
     path('method/',PaymentMethodsList.as_view(), name='payment_method'),
     path('method/<uuid:pk>/', PaymentMethodsRetrive.as_view(), name='payment_method'),
+    path('payment_statistics/',PaymentStatistics.as_view(), name='payment_method'),
 
 ]
