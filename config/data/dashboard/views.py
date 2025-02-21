@@ -23,7 +23,7 @@ class DashboardView(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
-        channel = self.request.query_params.get('marketing_channel')
+        channel_id = self.request.query_params.get('marketing_channel')
         manager = self.request.query_params.get('manager')
         teacher = self.request.query_params.get('teacher')
 
@@ -32,15 +32,19 @@ class DashboardView(APIView):
             filters['created_at__gte'] = start_date
         if end_date:
             filters['created_at__lte'] = end_date
-        # if channel:
-        #     filters['channel'] = channel
 
+        channel = None
+        if channel_id:
+            try:
+                channel = MarketingChannel.objects.get(id=channel_id)
+                filters['marketing_channel'] = channel
+            except MarketingChannel.DoesNotExist:
+                return Response({"error": "Invalid marketing_channel ID"}, status=400)
 
         orders = Lid.objects.filter(
             is_archived=False,
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
-            marketing_channel=channel,
             **filters,
         ).count()
 
@@ -48,7 +52,6 @@ class DashboardView(APIView):
             is_archived=True,
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
-            marketing_channel=channel,
             **filters,
         ).count()
 
@@ -57,7 +60,6 @@ class DashboardView(APIView):
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
             ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-            marketing_channel=channel,
             **filters,
         ).count()
 
@@ -66,7 +68,6 @@ class DashboardView(APIView):
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
             ordered_stages="BIRINCHI_DARSGA_KELMAGAN",
-            marketing_channel=channel,
             **filters,
         ).count()
 
@@ -75,17 +76,15 @@ class DashboardView(APIView):
             is_frozen=False,
             lid_stage_type="ORDERED_LID",
             ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-            marketing_channel=channel,
             **filters,
         ).count()
 
         att_once = Attendance.objects.values('lid').annotate(attendance_count=Count('id')).filter(attendance_count=1)
 
-        # Step 2: Count lids that have exactly one attendance and are archived
         first_lesson_come_archived = Lid.objects.filter(
-            id__in=[a['lid'] for a in att_once],  # Get lids that attended once
-            is_archived=True,  # Only count archived ones
-            marketing_channel=channel,
+            id__in=[a['lid'] for a in att_once],
+            is_archived=True,
+            **filters,
         ).count()
 
         course_payment = Kind.objects.filter(name="Course payment").first()
@@ -93,7 +92,7 @@ class DashboardView(APIView):
             action="INCOME",
             kind=course_payment,
             is_first=True,
-            student__marketing_channel=channel,
+            student__marketing_channel=channel if channel else None,
             **filters,
         ).count()
 
@@ -102,20 +101,20 @@ class DashboardView(APIView):
             kind=course_payment,
             is_first=True,
             student__is_archived=True,
-            student__marketing_channel=channel,
+            student__marketing_channel=channel if channel else None,
             **filters,
         ).count()
 
         if StudentGroup.student:
             course_ended = StudentGroup.objects.filter(
                 group__status="INACTIVE",
-                student__marketing_channel=channel,
+                student__marketing_channel=channel if channel else None,
                 **filters,
             ).count()
         else:
             course_ended = StudentGroup.objects.filter(
                 group__status="INACTIVE",
-                lid__marketing_channel=channel,
+                lid__marketing_channel=channel if channel else None,
                 **filters,
             ).count()
 
@@ -124,11 +123,12 @@ class DashboardView(APIView):
 
         lids = Lid.objects.filter(
             is_archived=False,
-            marketing_channel=channel,
             is_frozen=False,
+            **filters,
         )
+
         data = {
-            "lids" : lids,
+            "lids": lids.count(),
             "orders": orders,
             "orders_archived": orders_archived,
             "first_lesson": first_lesson,
@@ -141,10 +141,7 @@ class DashboardView(APIView):
             "come_from_filial": come_from_filial,
         }
 
-        # Return the response
         return Response(data)
-
-
 class MarketingChannels(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
