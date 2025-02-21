@@ -51,7 +51,6 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
 
         return certificate
 
-
 class CertificationResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
@@ -143,7 +142,6 @@ class StudentResultsSerializer(serializers.ModelSerializer):
 
         return certificate
 
-
 class OtherResultsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Results
@@ -183,6 +181,41 @@ class OtherResultsSerializer(serializers.ModelSerializer):
 
         return certificate
 
+class NationalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Results
+        fields = [
+            'id',
+            'results',
+            'teacher',
+            'student',
+            'certificate_type',
+            'national',
+            'band_score',
+            'upload_file',
+            'status',
+        ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,
+                                                  context=self.context).data if instance.upload_file else None
+        rep["teacher"] = UserListSerializer(instance.teacher).data
+        rep["student"] = StudentSerializer(instance.student).data
+        return rep
+
+    def create(self, validated_data):
+        # Pop the 'upload_file' field to handle it separately
+        upload_files = validated_data.pop('upload_file', [])
+
+        # Create the Results instance
+        certificate = Results.objects.create(**validated_data)
+
+        # If 'upload_file' has data, assign the file instances to the Results instance
+        if upload_files:
+            certificate.upload_file.set(upload_files)
+
+        return certificate
 
 
 class ResultsSerializer(serializers.ModelSerializer):

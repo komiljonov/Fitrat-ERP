@@ -21,6 +21,8 @@ from .models import Finance, Casher, Handover, Kind, PaymentMethod
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, FinanceTeacherSerializer, \
     KindSerializer, PaymentMethodSerializer
 from ...lid.new_lid.models import Lid
+from ...results.models import Results
+from ...results.serializers import NationalSerializer
 from ...student.attendance.models import Attendance
 
 
@@ -468,3 +470,5 @@ class PaymentMethodsRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = PaymentMethodSerializer
     permission_classes = [IsAuthenticated]
     queryset = PaymentMethod.objects.all()
+
+
