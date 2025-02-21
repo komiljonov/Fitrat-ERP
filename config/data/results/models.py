@@ -9,7 +9,8 @@ from data.upload.models import File
 class Results(TimeStampModel):
     results = models.CharField(choices=[
         ("University" , "entering to the university" ),
-        ("Certificate", "Geting certificate")
+        ("Certificate", "Geting certificate"),
+        ("National","Milliy sertificate"),
     ],
     default="University",
     max_length=100,
@@ -18,6 +19,18 @@ class Results(TimeStampModel):
                                                on_delete=models.CASCADE,related_name="teacher_results")
     student : "Student" = models.ForeignKey("student.Student", on_delete=models.CASCADE,related_name="student_results")
 
+
+    national = models.CharField(choices=[
+        ('English', 'English'),
+        ('Math', 'Math'),
+        ('Mother_tongue','Mother_tongue'),
+        ('Fizika','Fizika'),
+        ('Chemistry','Chemistry'),
+        ('History','History'),
+    ],default="English",
+    max_length=100,
+    null=True,
+    blank=True)
 
     university_type = models.CharField(choices=[
         ("Official", "Official"),
