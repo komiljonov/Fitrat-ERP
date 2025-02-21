@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from .models import Group, Room, SecondaryGroup, Day
 from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer, \
     DaySerializer
+from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
 
 
@@ -209,6 +210,12 @@ class LessonScheduleListApi(ListAPIView):
 
         # Prepare to collect lessons grouped by date
         lessons_by_date = defaultdict(list)
+
+        extra_added_lessons = []
+        extra = ExtraLessonGroup.objects.filter(
+            group=queryset.first(),
+            created_at__gte=date_filter,
+        )
 
         for item in serializer.data:
             # Extract the days data

@@ -77,7 +77,7 @@ def generate_fake_data():
         "CASHIER_ACCEPTANCE": "INCOME",
     }
 
-    # Loop through the kinds and create them dynamically
+
     for name, action in kind_actions.items():
         Kind.objects.get_or_create(name=name, defaults={"action": action})
 

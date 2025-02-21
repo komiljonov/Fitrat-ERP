@@ -7,16 +7,15 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from data.department.marketing_channel.models import MarketingChannel
 from data.finances.finance.models import Finance, Casher, Kind
 from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
-from ..finances.finance.serializers import FinanceSerializer
 from ..results.models import Results
 from ..student.attendance.models import Attendance
-from ..student.course.models import Course
 from ..upload.serializers import FileUploadSerializer
 
 
@@ -85,7 +84,8 @@ class DashboardView(APIView):
         # Step 2: Count lids that have exactly one attendance and are archived
         first_lesson_come_archived = Lid.objects.filter(
             id__in=[a['lid'] for a in att_once],  # Get lids that attended once
-            is_archived=True  # Only count archived ones
+            is_archived=True,  # Only count archived ones
+            marketing_channel=channel,
         ).count()
 
         course_payment = Kind.objects.filter(name="Course payment").first()
@@ -93,7 +93,7 @@ class DashboardView(APIView):
             action="INCOME",
             kind=course_payment,
             is_first=True,
-            marketing_channel=channel,
+            student__marketing_channel=channel,
             **filters,
         ).count()
 
@@ -102,15 +102,22 @@ class DashboardView(APIView):
             kind=course_payment,
             is_first=True,
             student__is_archived=True,
-            marketing_channel=channel,
+            student__marketing_channel=channel,
             **filters,
         ).count()
 
-        course_ended = StudentGroup.objects.filter(
-            group__status="INACTIVE",
-            marketing_channel=channel,
-            **filters,
-        ).count()
+        if StudentGroup.student:
+            course_ended = StudentGroup.objects.filter(
+                group__status="INACTIVE",
+                student__marketing_channel=channel,
+                **filters,
+            ).count()
+        else:
+            course_ended = StudentGroup.objects.filter(
+                group__status="INACTIVE",
+                lid__marketing_channel=channel,
+                **filters,
+            ).count()
 
         moved_to_filial = 45  # Static value, update as needed
         come_from_filial = 13  # Static value, update as needed
