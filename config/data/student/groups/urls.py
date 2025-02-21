@@ -23,7 +23,7 @@ urlpatterns = [
     path('room/<uuid:pk>/', RoomRetrieveUpdateDestroyAPIView.as_view(), name='room-detail'),
     path('room/no-pg/',RoomNoPG.as_view(), name='room-no-pg-list'),
 
-    path('secondary',SecondaryGroupsView.as_view(), name='secondary-list'),
+    path('secondary/',SecondaryGroupsView.as_view(), name='secondary-list'),
     path('secondary/<uuid:pk>/', SecondaryGroupRetrieveUpdateDestroyAPIView.as_view(),
          name='secondary-detail'),
     path('Secondary/no-pg/',SecondaryNoPG.as_view(), name='secondary-no-pg-list'),
