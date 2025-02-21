@@ -6,8 +6,8 @@ from rest_framework import serializers
 
 from .models import StudentGroup, SecondaryStudentGroup
 from ..attendance.models import Attendance
-from ..groups.models import Group
-from ..groups.serializers import GroupSerializer
+from ..groups.models import Group, SecondaryGroup
+from ..groups.serializers import GroupSerializer, SecondaryGroupSerializer
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ...lid.new_lid.models import Lid
@@ -87,7 +87,7 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
 
 
 class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
-    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
+    group = serializers.PrimaryKeyRelatedField(queryset=SecondaryGroup.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
 
@@ -118,7 +118,7 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
         # Use try-except to avoid potential recursion or circular references
         try:
             # Limit the recursion depth by limiting which fields are serialized
-            rep['group'] = GroupSerializer(instance.group, context=self.context).data
+            rep['group'] = SecondaryGroupSerializer(instance.group, context=self.context).data
         except RecursionError:
             rep['group'] = "Error in serialization"
 
