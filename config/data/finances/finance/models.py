@@ -85,7 +85,7 @@ class Finance(TimeStampModel):
             ('Cash','Naqt pul'),
             ('Card','Card'),
             ('Money_send',"Pul o'tkazish")
-        ],default='Payme',null=True,blank=True
+        ],default='Payme',max_length=100,null=True,blank=True
     )
 
     attendance : "Attendance" = models.ForeignKey('attendance.Attendance',on_delete=models.SET_NULL,null=True,blank=True,
