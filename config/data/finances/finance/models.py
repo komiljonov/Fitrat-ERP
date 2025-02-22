@@ -129,9 +129,26 @@ class KpiFinance(TimeStampModel):
         'account.CustomUser',
         on_delete=models.CASCADE,
     )
+    lid : "Lid" = models.ForeignKey(
+        'lid.Lid',on_delete=models.SET_NULL,null=True,blank=True,related_name='finances'
+    )
+    student : "Student" = models.ForeignKey(
+        'student.Student',on_delete=models.SET_NULL,null=True,blank=True,related_name='finances'
+    )
+
     reason = models.CharField(
         max_length=100,null=True,blank=True,
     )
     amount = models.FloatField(default=0)
 
+    type = models.CharField(
+        choices=[
+            ('INCOME', 'INCOME'),
+            ('EXPENSE', 'EXPENSE'),
+        ],
+        default='INCOME',
+        max_length=20,
+    )
+    def __str__(self):
+        return f"{self.user.phone} {self.type} {self.amount}"
 
