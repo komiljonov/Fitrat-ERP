@@ -186,9 +186,13 @@ class GroupSchedule(ListAPIView):
         return queryset
 
 
-from rest_framework.response import Response
 from collections import defaultdict
 import datetime
+from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
+
 
 class LessonScheduleListApi(ListAPIView):
     serializer_class = LessonScheduleSerializer
@@ -219,14 +223,14 @@ class LessonScheduleListApi(ListAPIView):
                     continue
                 lessons_by_date[lesson_date].extend(day['lessons'])
 
-        # Fetch extra lessons for the groups
-        extra_lessons = ExtraLessonGroup.objects.filter(
+        # Fetch extra lessons for the groups (ExtraLessonGroup)
+        extra_lessons_group = ExtraLessonGroup.objects.filter(
             group__in=queryset,
             created_at__gte=datetime.date.today(),
         )
 
-        # Process extra lessons
-        for extra in extra_lessons:
+        # Process extra lessons for groups
+        for extra in extra_lessons_group:
             lesson_date = extra.date
             if date_filter and lesson_date != date_filter:
                 continue
@@ -236,9 +240,30 @@ class LessonScheduleListApi(ListAPIView):
                 "teacher_name": f"{extra.group.teacher.first_name if extra.group.teacher.first_name else ''} {extra.group.teacher.last_name if extra.group.teacher else ''}",
                 "room": extra.group.room_number.room_number if extra.group.room_number else None,
                 "name": extra.group.name,
-                "status" : "Extra_lessons",
+                "status": "Extra_lessons",
                 "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
                 "ended_at": extra.ended_at.strftime('%H:%M') if extra.ended_at else None,
+            }
+            lessons_by_date[lesson_date].append(lesson_data)
+
+        # Fetch extra lessons for individual students (ExtraLesson)
+        extra_lessons_individual = ExtraLesson.objects.filter(
+            date__gte=datetime.date.today(),
+        )
+
+        # Process extra lessons for individual students
+        for extra in extra_lessons_individual:
+            lesson_date = extra.date
+            if date_filter and lesson_date != date_filter:
+                continue
+            lesson_data = {
+                "name": f"{extra.student.first_name} {extra.student.last_name}" if extra.student else None,  # You can change this to any student info you need
+                "comment": extra.comment,
+                "status": "Extra_lessons",
+                "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
+                "ended_at": extra.ended_at.strftime('%H:%M') if extra.ended_at else None,
+                "is_payable": extra.is_payable,
+                "is_attendance": extra.is_attendance,
             }
             lessons_by_date[lesson_date].append(lesson_data)
 
@@ -254,6 +279,7 @@ class LessonScheduleListApi(ListAPIView):
             })
 
         return Response(sorted_lessons)
+
 
 
 class LessonScheduleWebListApi(ListAPIView):
