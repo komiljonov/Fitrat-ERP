@@ -66,7 +66,7 @@ class Results(TimeStampModel):
     writing_score = models.FloatField(null=True,blank=True)
 
     result_name = models.CharField(max_length=120,null=True,blank=True)
-    result_score = models.CharField(max_length=120,null=True,blank=True)
+    result_score = models.FloatField(default=0,null=True,blank=True)
     subject_name = models.CharField(max_length=120,null=True,blank=True)
 
 

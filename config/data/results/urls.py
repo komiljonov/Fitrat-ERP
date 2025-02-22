@@ -15,6 +15,8 @@ urlpatterns = [
     path('other/',OtherResultsViewSet.as_view()),
     path('other/<uuid:pk>/',OtherResultsRetrieveAPIView.as_view()),
 
+    path('national/',NationalSertificateApi.as_view()),
+
     path('',ResultsView.as_view()),
     path('<uuid:pk>/',ResultsRetrieveAPIView.as_view()),
 ]
