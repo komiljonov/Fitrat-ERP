@@ -94,7 +94,8 @@ class ExtraLesson(TimeStampModel):
         'student.Student', on_delete=models.SET_NULL, null=True, blank=True, related_name="students_extra_lesson"
     )
     date = models.DateField(null=True, blank=True)
-    time = models.TimeField(null=True, blank=True)
+    started_at = models.TimeField(null=True, blank=True)
+    ended_at = models.TimeField(null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
     creator : 'CustomUser' = models.ForeignKey(
         'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True
@@ -103,5 +104,5 @@ class ExtraLesson(TimeStampModel):
     is_attendance = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.student.phone} | {self.date} | {self.time} | {self.is_payable} | {self.is_attendance}"
+        return f"{self.student.phone} | {self.date} | {self.started_at} | {self.is_payable} | {self.is_attendance}"
 
