@@ -117,6 +117,8 @@ class StudentResultsSerializer(serializers.ModelSerializer):
             'university_entering_type',
             'university_entering_ball',
 
+            'national',
+
             'result_name',
             'result_score',
             'subject_name',
