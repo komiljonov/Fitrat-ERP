@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
 from .serializers import LessonSerializer, LessonScheduleSerializer, FirstLessonSerializer, ExtraLessonSerializer, \
-    ExtraLessonGroupSerializer
+    ExtraLessonGroupSerializer, CombinedExtraLessonSerializer
 from ..studentgroup.models import StudentGroup
 
 
@@ -30,7 +30,6 @@ class LessonDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-
 class LessonNoPG(ListAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
@@ -38,6 +37,7 @@ class LessonNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
 
 class LessonSchedule(ListAPIView):
     permission_classes = [IsAuthenticated]
@@ -49,7 +49,6 @@ class LessonSchedule(ListAPIView):
             lesson = serializer.save()
             return Response({"message": "Lesson created successfully.", "lesson_id": lesson.id})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class AllLessonsView(ListAPIView):
@@ -86,3 +85,34 @@ class ExtraLessonGroupView(ListCreateAPIView):
     serializer_class = ExtraLessonGroupSerializer
     queryset = ExtraLessonGroup.objects.all()
     permission_classes = [IsAuthenticated]
+
+
+class ExtraLessonScheduleView(ListAPIView):
+    serializer_class = CombinedExtraLessonSerializer
+
+    def get_queryset(self):
+        """ Fetch both ExtraLesson and ExtraLessonGroup, then sort them by started_at. """
+        date_filter = self.request.query_params.get("date", None)
+
+        # Filter by date if provided
+        query = Q()
+        if date_filter:
+            query &= Q(date=date_filter)
+
+        # Get all lessons
+        individual_lessons = ExtraLesson.objects.filter(query)
+        group_lessons = ExtraLessonGroup.objects.filter(query)
+
+        # Combine both queries and sort by started_at
+        combined_lessons = sorted(
+            list(individual_lessons) + list(group_lessons),
+            key=lambda lesson: (lesson.started_at, lesson.date)
+        )
+
+        return combined_lessons
+
+    def list(self, request, *args, **kwargs):
+        """ Override list to return serialized sorted data """
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

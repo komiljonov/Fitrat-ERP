@@ -5,6 +5,7 @@ from django.template.context_processors import request
 from .models import MasteringTeachers
 from ..attendance.models import Attendance
 from ...account.models import CustomUser
+from ...finances.compensation.models import Bonus
 from ...notifications.models import Notification
 
 
@@ -27,4 +28,9 @@ def on_create(sender, instance: MasteringTeachers, created, **kwargs):
 def bonus_call_operator(sender, instance: Attendance, created, **kwargs):
     if created:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
-        pass
+        if attendances_count == 1:
+            bonus = Bonus.objects.filter(user=instance.student.call_operator, name="Markazga kelgan oq’uvchi uchun bonus").first()
+            if bonus:
+                instance.student.call_operator += bonus
+                instance.student.save()
+
