@@ -118,12 +118,13 @@ class DashboardView(APIView):
                 **filters,
             ).count()
 
-        moved_to_filial = 45  # Static value, update as needed
-        come_from_filial = 13  # Static value, update as needed
+        # moved_to_filial = 45  # Static value, update as needed
+        # come_from_filial = 13  # Static value, update as needed
 
         lids = Lid.objects.filter(
             is_archived=False,
             is_frozen=False,
+            lid_stage_type="NEW_LID",
             **filters,
         )
 
@@ -137,8 +138,8 @@ class DashboardView(APIView):
             "first_course_payment": first_course_payment,
             "first_course_payment_archived": first_course_payment_archived,
             "course_ended": course_ended,
-            "moved_to_filial": moved_to_filial,
-            "come_from_filial": come_from_filial,
+            # "moved_to_filial": moved_to_filial,
+            # "come_from_filial": come_from_filial,
         }
 
         return Response(data)
