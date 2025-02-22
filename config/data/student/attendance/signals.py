@@ -126,3 +126,9 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
                     else:
                         print(f"No lessons scheduled for {current_month_start}, skipping balance deduction.")
+
+
+# @receiver(post_save, sender=Attendance)
+# def on_attendance_extra(sender, instance: Attendance, created, **kwargs):
+#     if created:
+#         pass
