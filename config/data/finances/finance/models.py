@@ -130,10 +130,10 @@ class KpiFinance(TimeStampModel):
         on_delete=models.CASCADE,
     )
     lid : "Lid" = models.ForeignKey(
-        'lid.Lid',on_delete=models.SET_NULL,null=True,blank=True,related_name='finances'
+        'new_lid.Lid',on_delete=models.SET_NULL,null=True,blank=True,related_name='finances_kpi_lid'
     )
     student : "Student" = models.ForeignKey(
-        'student.Student',on_delete=models.SET_NULL,null=True,blank=True,related_name='finances'
+        'student.Student',on_delete=models.SET_NULL,null=True,blank=True,related_name='finances_kpi_student'
     )
 
     reason = models.CharField(
