@@ -88,14 +88,20 @@ class ExtraLessonGroup(TimeStampModel):
     def __str__(self):
         return f"{self.group.name} | {self.date} | {self.started_at} | {self.is_payable} | {self.is_attendance}"
 
-
+from ..groups.models import Room
 class ExtraLesson(TimeStampModel):
     student : "Student" = models.ForeignKey(
         'student.Student', on_delete=models.SET_NULL, null=True, blank=True, related_name="students_extra_lesson"
     )
+    teacher : "CustomUser" = models.ForeignKey(
+        'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name="teachers_extra_lesson"
+    )
     date = models.DateField(null=True, blank=True)
     started_at = models.TimeField(null=True, blank=True)
     ended_at = models.TimeField(null=True, blank=True)
+    room : "Room" = models.ForeignKey(
+        'groups.Room', on_delete=models.SET_NULL, null=True, blank=True, related_name="rooms_extra_lesson"
+    )
     comment = models.TextField(null=True, blank=True)
     creator : 'CustomUser' = models.ForeignKey(
         'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True
