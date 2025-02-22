@@ -78,7 +78,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                     Finance.objects.create(
                         action="INCOME",
                         amount=instance.group.price * 0.7,
-                        kind="LESSON_PAYMENT",
+                        kind="Lesson payment",
                         attendance=instance,
                         student=instance.student,
                         is_first=is_first,
