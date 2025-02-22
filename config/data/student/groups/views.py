@@ -222,19 +222,19 @@ class LessonScheduleListApi(ListAPIView):
         # Fetch extra lessons for the groups
         extra_lessons = ExtraLessonGroup.objects.filter(
             group__in=queryset,
-            extra_lesson=True,  # Filtering only extra lessons
+            created_at__gte=datetime.date.today(),
         )
 
         # Process extra lessons
         for extra in extra_lessons:
-            lesson_date = extra.date  # Assuming `date` field exists in ExtraLessonGroup
+            lesson_date = extra.date
             if date_filter and lesson_date != date_filter:
                 continue
             lesson_data = {
                 "subject": extra.group.course.subject.name if extra.group.course and extra.group.course.subject else None,
                 "subject_label": extra.group.course.subject.label if extra.group.course and extra.group.course.subject else None,
                 "teacher_name": f"{extra.group.teacher.first_name if extra.group.teacher.first_name else ''} {extra.group.teacher.last_name if extra.group.teacher else ''}",
-                "room": extra.group.room_number,
+                "room": extra.group.room_number.room_number if extra.group.room_number else None,
                 "name": extra.group.name,
                 "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
                 "ended_at": extra.ended_at.strftime('%H:%M') if extra.ended_at else None,
