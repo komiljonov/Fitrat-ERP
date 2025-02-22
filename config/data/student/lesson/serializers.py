@@ -7,8 +7,10 @@ from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
 from ..attendance.models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group, Room
-from ..groups.serializers import GroupSerializer
+from ..groups.serializers import GroupSerializer, RoomsSerializer
+from ..student.serializers import StudentSerializer
 from ..studentgroup.models import StudentGroup
+from ...account.serializers import UserSerializer
 from ...lid.new_lid.models import Lid
 
 
@@ -296,3 +298,63 @@ class ExtraLessonGroupSerializer(serializers.ModelSerializer):
             'is_attendance',
             'created_at',
         ]
+
+
+from rest_framework import serializers
+from .models import ExtraLesson, ExtraLessonGroup
+
+
+class CombinedExtraLessonSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    type = serializers.CharField()
+    date = serializers.DateField()
+    started_at = serializers.TimeField()
+    ended_at = serializers.TimeField()
+    comment = serializers.CharField(allow_null=True, required=False)
+    creator = serializers.PrimaryKeyRelatedField(read_only=True)
+    is_payable = serializers.BooleanField()
+    is_attendance = serializers.BooleanField()
+
+    # Fields specific to ExtraLesson
+    student = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
+    teacher = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
+    room = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
+
+    # Fields specific to ExtraLessonGroup
+    group = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
+
+    def to_representation(self, instance):
+        """Convert the model instance into the combined format"""
+        if isinstance(instance, ExtraLesson):
+            return {
+                "id": instance.id,
+                "type": "individual",
+                "date": instance.date,
+                "started_at": instance.started_at,
+                "ended_at": instance.ended_at,
+                "comment": instance.comment,
+                "creator": instance.creator.id if instance.creator else None,
+                "is_payable": instance.is_payable,
+                "is_attendance": instance.is_attendance,
+                "student":  StudentSerializer(instance.student).data if instance.student else None,
+                "teacher": UserSerializer(instance.teacher).data if instance.teacher else None,
+                "room": RoomsSerializer(instance.room).data if instance.room else None,
+                "group": None,  # Not applicable for individual lessons
+            }
+        elif isinstance(instance, ExtraLessonGroup):
+            return {
+                "id": instance.id,
+                "type": "group",
+                "date": instance.date,
+                "started_at": instance.started_at,
+                "ended_at": instance.ended_at,
+                "comment": instance.comment,
+                "creator": instance.creator.id if instance.creator else None,
+                "is_payable": instance.is_payable,
+                "is_attendance": instance.is_attendance,
+                "student": None,  # Not applicable for group lessons
+                "teacher": None,
+                "room": None,
+                "group": GroupSerializer(instance.group).data if instance.group else None,
+            }
+        return super().to_representation(instance)

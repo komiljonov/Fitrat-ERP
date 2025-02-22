@@ -7,7 +7,7 @@ from icecream import ic
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group
-from ...finances.finance.models import Finance
+from ...finances.finance.models import Finance, Kind
 from ...notifications.models import Notification
 from ...stages.models import NewOredersStages
 
@@ -74,11 +74,11 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                     instance.student.balance -= instance.group.price
                     instance.student.save()
                     is_first = True if Attendance.objects.filter(student=instance.student).count() ==2 else False
-
+                    kind = Kind.objects.get(name="Lesson payment")
                     Finance.objects.create(
                         action="INCOME",
                         amount=instance.group.price * 0.7,
-                        kind="Lesson payment",
+                        kind=kind,
                         attendance=instance,
                         student=instance.student,
                         is_first=is_first,
