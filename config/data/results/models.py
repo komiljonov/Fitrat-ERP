@@ -27,7 +27,7 @@ class Results(TimeStampModel):
         ('Fizika','Fizika'),
         ('Chemistry','Chemistry'),
         ('History','History'),
-    ],default="English",
+    ],
     max_length=100,
     null=True,
     blank=True)
