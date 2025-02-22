@@ -9,6 +9,7 @@ from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group, Room
 from ..groups.serializers import GroupSerializer
 from ..student.models import Student
+from ..studentgroup.models import StudentGroup
 from ...lid.new_lid.models import Lid
 
 
@@ -76,6 +77,8 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
     teacher_name = serializers.SerializerMethodField()
     started_at = serializers.SerializerMethodField()
     ended_at = serializers.SerializerMethodField()
+    student_count = serializers.SerializerMethodField()
+    room_fillings = serializers.SerializerMethodField()
     scheduled_day_type = serializers.SerializerMethodField()
 
     class Meta:
@@ -85,11 +88,21 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
             'subject_label',
             'teacher_name',
             'room',
+            'room_fillings',
+            'student_count',
             'name',
             'scheduled_day_type',
             'started_at',
             'ended_at'
         ]
+
+    def get_student_count(self, obj):
+        return StudentGroup.objects.filter(group=obj).count()
+    def get_room_fillings(self, obj):
+        room = Group.objects.filter(id=obj.id).values_list('room_number', flat=True).first()
+        if room:
+            room_fillings = Room.objects.filter(id=room).first()
+            return room_fillings.room_filling if room_fillings else None
 
     def get_subject(self, obj):
         return obj.course.subject.name if obj.course and obj.course.subject else None

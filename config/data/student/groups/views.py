@@ -263,3 +263,6 @@ class LessonScheduleWebListApi(ListAPIView):
     ordering_fields = ['start_date', 'end_date', 'name']
     search_fields = ['name', 'teacher__id', 'course__subject__name', 'room_number']
     filterset_fields = ('name', 'teacher__id', 'course__subject__name', 'room_number')
+
+    def get_paginated_response(self, data):
+        return Response(data)
