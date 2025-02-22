@@ -236,6 +236,7 @@ class LessonScheduleListApi(ListAPIView):
                 "teacher_name": f"{extra.group.teacher.first_name if extra.group.teacher.first_name else ''} {extra.group.teacher.last_name if extra.group.teacher else ''}",
                 "room": extra.group.room_number.room_number if extra.group.room_number else None,
                 "name": extra.group.name,
+                "status" : "Extra_lessons",
                 "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
                 "ended_at": extra.ended_at.strftime('%H:%M') if extra.ended_at else None,
             }
