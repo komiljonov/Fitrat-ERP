@@ -124,4 +124,14 @@ class Handover(TimeStampModel):
         return f'{self.casher} {self.receiver} {self.amount}'
 
 
+class KpiFinance(TimeStampModel):
+    user: "CustomUser" = models.ForeignKey(
+        'account.CustomUser',
+        on_delete=models.CASCADE,
+    )
+    reason = models.CharField(
+        max_length=100,null=True,blank=True,
+    )
+    amount = models.FloatField(default=0)
+
 
