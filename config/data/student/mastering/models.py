@@ -30,3 +30,5 @@ class MasteringTeachers(TimeStampModel):
     ball = models.FloatField(max_length=255, default=0)
     def __str__(self):
         return f"{self.teacher.first_name} {self.ball}"
+
+
