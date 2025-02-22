@@ -30,5 +30,11 @@ def on_create(sender, instance: FirstLLesson, created, **kwargs):
 @receiver(post_save, sender=ExtraLessonGroup)
 def on_create(sender, instance: ExtraLessonGroup, created, **kwargs):
     if created:
-        pass
+        students = StudentGroup.objects.filter(
+            group=instance.group,
+        ).all()
+        if students:
+            for student in students:
+                pass
+
 
