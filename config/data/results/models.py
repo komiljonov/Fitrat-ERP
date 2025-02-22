@@ -12,8 +12,8 @@ class Results(TimeStampModel):
         ("Certificate", "Geting certificate"),
         ("National","Milliy sertificate"),
     ],
-    default="University",
-    max_length=100,
+    max_length=100,null=True,
+    blank=True,
     )
     teacher : "CustomUser" = models.ForeignKey("account.CustomUser",
                                                on_delete=models.CASCADE,related_name="teacher_results")
@@ -37,7 +37,6 @@ class Results(TimeStampModel):
         ("Unofficial", "Unofficial"),
         ("Foreign_university", "Foreign_university"),
     ],
-    default="Official",
     max_length=100,null=True,blank=True)
     university_name = models.CharField(max_length=120,null=True,blank=True)
     university_entering_type = models.CharField(choices=[
@@ -45,7 +44,6 @@ class Results(TimeStampModel):
         ("Kontrakt", "Kontrakt"),
         ("Super_Kontrakt", "Super_Kontrakt"),
     ],
-    default="Kontrakt",
     max_length=100,null=True,blank=True)
     university_entering_ball = models.FloatField(null=True,blank=True)
 
@@ -56,7 +54,6 @@ class Results(TimeStampModel):
         ("SAT","SAT"),
         ("OTHER","OTHER"),
     ],
-    default="IELTS",
     max_length=100,null=True,blank=True
     )
     band_score = models.FloatField(null=True,blank=True)
