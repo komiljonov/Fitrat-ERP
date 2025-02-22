@@ -1,7 +1,9 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from data.account.models import CustomUser
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from data.student.subject.models import Theme
 from ..groups.models import Group
@@ -9,6 +11,7 @@ from ..subject.models import Subject
 from ...command.models import TimeStampModel
 from ...lid.new_lid.models import Lid
 from ...student.student.models import Student
+
 
 class Lesson(TimeStampModel):
     name = models.CharField(max_length=100)
@@ -19,7 +22,7 @@ class Lesson(TimeStampModel):
         "groups.Group", on_delete=models.CASCADE, related_name="lessons"
     )
 
-    theme : 'Theme' = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL, null=True, blank=True)
+    theme: 'Theme' = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL, null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
     type = models.CharField(
         choices=[
@@ -50,7 +53,7 @@ class Lesson(TimeStampModel):
 
 
 class FirstLLesson(TimeStampModel):
-    lid : 'Lid' = models.ForeignKey(
+    lid: 'Lid' = models.ForeignKey(
         'new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True
     )
 
@@ -63,7 +66,7 @@ class FirstLLesson(TimeStampModel):
 
     comment = models.TextField(null=True, blank=True)
 
-    creator : 'CustomUser' = models.ForeignKey(
+    creator: 'CustomUser' = models.ForeignKey(
         'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True
     )
 
@@ -72,14 +75,15 @@ class FirstLLesson(TimeStampModel):
 
 
 class ExtraLessonGroup(TimeStampModel):
-    group : "Group" = models.ForeignKey(
+    group: "Group" = models.ForeignKey(
         'groups.Group', on_delete=models.SET_NULL, null=True, blank=True, related_name="groups_extra_lesson"
     )
     date = models.DateField(null=True, blank=True)
     started_at = models.TimeField(null=True, blank=True)
     ended_at = models.TimeField(null=True, blank=True)
-    creator : 'CustomUser' = models.ForeignKey(
-        'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name="groups_extra_lesson_creator"
+    creator: 'CustomUser' = models.ForeignKey(
+        'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="groups_extra_lesson_creator"
     )
     comment = models.TextField(null=True, blank=True)
     is_payable = models.BooleanField(default=False)
@@ -88,22 +92,25 @@ class ExtraLessonGroup(TimeStampModel):
     def __str__(self):
         return f"{self.group.name} | {self.date} | {self.started_at} | {self.is_payable} | {self.is_attendance}"
 
+
 from ..groups.models import Room
+
+
 class ExtraLesson(TimeStampModel):
-    student : "Student" = models.ForeignKey(
+    student: "Student" = models.ForeignKey(
         'student.Student', on_delete=models.SET_NULL, null=True, blank=True, related_name="students_extra_lesson"
     )
-    teacher : "CustomUser" = models.ForeignKey(
+    teacher: "CustomUser" = models.ForeignKey(
         'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name="teachers_extra_lesson"
     )
     date = models.DateField(null=True, blank=True)
     started_at = models.TimeField(null=True, blank=True)
     ended_at = models.TimeField(null=True, blank=True)
-    room : "Room" = models.ForeignKey(
+    room: "Room" = models.ForeignKey(
         'groups.Room', on_delete=models.SET_NULL, null=True, blank=True, related_name="rooms_extra_lesson"
     )
     comment = models.TextField(null=True, blank=True)
-    creator : 'CustomUser' = models.ForeignKey(
+    creator: 'CustomUser' = models.ForeignKey(
         'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True
     )
     is_payable = models.BooleanField(default=False)
@@ -111,4 +118,3 @@ class ExtraLesson(TimeStampModel):
 
     def __str__(self):
         return f"{self.student.phone} | {self.date} | {self.started_at} | {self.is_payable} | {self.is_attendance}"
-

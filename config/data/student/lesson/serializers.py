@@ -8,7 +8,6 @@ from ..attendance.models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group, Room
 from ..groups.serializers import GroupSerializer
-from ..student.models import Student
 from ..studentgroup.models import StudentGroup
 from ...lid.new_lid.models import Lid
 
@@ -98,6 +97,7 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
 
     def get_student_count(self, obj):
         return StudentGroup.objects.filter(group=obj).count()
+
     def get_room_fillings(self, obj):
         room = Group.objects.filter(id=obj.id).values_list('room_number', flat=True).first()
         if room:
@@ -234,6 +234,7 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
 
 class FirstLessonSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+
     class Meta:
         model = FirstLLesson
         fields = [
@@ -278,6 +279,7 @@ class ExtraLessonSerializer(serializers.ModelSerializer):
             'is_attendance',
             'created_at'
         ]
+
 
 class ExtraLessonGroupSerializer(serializers.ModelSerializer):
     class Meta:
