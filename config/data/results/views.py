@@ -102,7 +102,7 @@ class ResultsViewSet(ListAPIView):
 
 
 
-class OtherResultsViewSet(CreateAPIView):
+class OtherResultsViewSet(ListCreateAPIView):
     queryset = Results.objects.all()
     serializer_class = OtherResultsSerializer
     permission_classes = [IsAuthenticated]
