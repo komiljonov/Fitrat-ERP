@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.template.context_processors import request
 
 from .models import MasteringTeachers
+from ..attendance.models import Attendance
 from ...account.models import CustomUser
 from ...notifications.models import Notification
 
@@ -20,4 +21,10 @@ def on_create(sender, instance: MasteringTeachers, created, **kwargs):
                 come_from=instance
             )
 
+#------------- Monitoring edits -----------#
 
+@receiver(post_save, sender=Attendance)
+def bonus_call_operator(sender, instance: Attendance, created, **kwargs):
+    if created:
+        attendances_count = Attendance.objects.filter(student=instance.student).count()
+        pass
