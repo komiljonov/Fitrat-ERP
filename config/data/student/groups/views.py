@@ -259,7 +259,9 @@ class LessonScheduleListApi(ListAPIView):
             lesson_data = {
                 "name": f"{extra.student.first_name} {extra.student.last_name}" if extra.student else None,  # You can change this to any student info you need
                 "comment": extra.comment,
+                "teacher_name" : f"{extra.teacher.first_name} {extra.teacher.last_name}" if extra.teacher else None,
                 "status": "Extra_lessons",
+                "room": extra.room.room_number if extra.room else None,
                 "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
                 "ended_at": extra.ended_at.strftime('%H:%M') if extra.ended_at else None,
                 "is_payable": extra.is_payable,

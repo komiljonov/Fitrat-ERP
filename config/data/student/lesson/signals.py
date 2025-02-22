@@ -1,6 +1,8 @@
+from cmath import isnan
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import FirstLLesson, ExtraLessonGroup
+from .models import FirstLLesson, ExtraLessonGroup, ExtraLesson
 from ..studentgroup.models import StudentGroup
 from ...notifications.models import Notification
 
@@ -35,6 +37,32 @@ def on_create(sender, instance: ExtraLessonGroup, created, **kwargs):
         ).all()
         if students:
             for student in students:
-                pass
+                Notification.objects.create(
+                    user=student,
+                    comment = f"Siz uchun {instance.date} da {instance.group.name} "
+                              f"guruhi bilan qo'shimcha dars belgilandi !",
+                    come_from=instance,
+                )
+            Notification.objects.create(
+                user=instance.group.teacher,
+                comment = f"Siz uchun {instance.date} da {instance.group.name} guruhi uchun qo'shimcha dars belgilandi ! ",
+                come_from=instance,
+            )
+
+@receiver(post_save, sender=ExtraLesson)
+def on_create(sender, instance: ExtraLesson, created, **kwargs):
+    if created:
+        Notification.objects.create(
+            user=instance.student,
+            comment=f"Siz uchun {instance.date} sanasida qo'shimcha dars belgilandi !",
+            come_from=instance,
+        )
+        Notification.objects.create(
+            user=instance.teacher,
+            comment=f"Siz uchun {instance.date} sanasida qo'shimcha dars belgilandi !",
+            come_from=instance,
+        )
+
+
 
 
