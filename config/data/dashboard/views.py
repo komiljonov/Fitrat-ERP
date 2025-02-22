@@ -212,7 +212,7 @@ class DashboardLineGraphAPIView(APIView):
         # Extract parameters
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
-        casher_id = request.query_params.get('casher')
+        casher_id = request.query_params.get('cashier')
         payment_type = request.query_params.get('kind')
 
         filters = {}
