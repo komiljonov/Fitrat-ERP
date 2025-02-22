@@ -36,13 +36,13 @@ def on_create(sender, instance: ExtraLessonGroup, created, **kwargs):
             group=instance.group,
         ).all()
         if students:
-            for student in students:
-                Notification.objects.create(
-                    user=student,
-                    comment = f"Siz uchun {instance.date} da {instance.group.name} "
-                              f"guruhi bilan qo'shimcha dars belgilandi !",
-                    come_from=instance,
-                )
+            # for student in students:
+            #     Notification.objects.create(
+            #         user=student,
+            #         comment = f"Siz uchun {instance.date} da {instance.group.name} "
+            #                   f"guruhi bilan qo'shimcha dars belgilandi !",
+            #         come_from=instance,
+            #     )
             Notification.objects.create(
                 user=instance.group.teacher,
                 comment = f"Siz uchun {instance.date} da {instance.group.name} guruhi uchun qo'shimcha dars belgilandi ! ",
@@ -52,11 +52,11 @@ def on_create(sender, instance: ExtraLessonGroup, created, **kwargs):
 @receiver(post_save, sender=ExtraLesson)
 def on_create(sender, instance: ExtraLesson, created, **kwargs):
     if created:
-        Notification.objects.create(
-            user=instance.student,
-            comment=f"Siz uchun {instance.date} sanasida qo'shimcha dars belgilandi !",
-            come_from=instance,
-        )
+        # Notification.objects.create(
+        #     user=instance.student,
+        #     comment=f"Siz uchun {instance.date} sanasida qo'shimcha dars belgilandi !",
+        #     come_from=instance,
+        # )
         Notification.objects.create(
             user=instance.teacher,
             comment=f"Siz uchun {instance.date} sanasida qo'shimcha dars belgilandi !",
