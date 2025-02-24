@@ -28,10 +28,12 @@ class CasherListCreateAPIView(ListCreateAPIView):
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
 
+
 class CasherRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Casher.objects.all()
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
+
 
 class CasherNoPg(ListAPIView):
     queryset = Casher.objects.all()
@@ -40,6 +42,7 @@ class CasherNoPg(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
 
 class FinanceListAPIView(ListCreateAPIView):
     queryset = Finance.objects.all()
@@ -58,10 +61,12 @@ class FinanceListAPIView(ListCreateAPIView):
             return Finance.objects.filter(casher__id=id, kind=Kind.objects.get(id=kind))
         return Finance.objects.none()
 
+
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
+
 
 class FinanceNoPGList(ListAPIView):
     queryset = Finance.objects.all()
@@ -71,11 +76,12 @@ class FinanceNoPGList(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 class StudentFinanceListAPIView(ListAPIView):
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
 
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ("action", "kind")
     ordering_fields = ("action", "kind")
     filterset_fields = ("action", "kind")
@@ -126,15 +132,18 @@ class StudentFinanceListAPIView(ListAPIView):
         # Return queryset (even if it's empty, which will result in no matching records)
         return queryset
 
+
 class StuffFinanceListAPIView(ListAPIView):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
-    def get_queryset(self,**kwargs):
+
+    def get_queryset(self, **kwargs):
         stuff = CustomUser.objects.get(id=self.kwargs['pk'])
         if stuff:
             return Finance.objects.filter(stuff=stuff)
         return Finance.objects.none()
+
 
 class CasherHandoverAPIView(CreateAPIView):
     serializer_class = CasherHandoverSerializer
@@ -151,7 +160,7 @@ class CasherHandoverAPIView(CreateAPIView):
 
         if int(amount) > 0:
             # Get the Kind instance (unpacking the tuple)
-            handover, _ = Kind.objects.get_or_create(name="CASHIER_HANDOVER",action="EXPENSE")
+            handover, _ = Kind.objects.get_or_create(name="CASHIER_HANDOVER", action="EXPENSE")
 
             # Deduct from sender (casher)
             Finance.objects.create(
@@ -165,7 +174,7 @@ class CasherHandoverAPIView(CreateAPIView):
             )
 
             # Get the Kind instance (unpacking the tuple)
-            acception, _ = Kind.objects.get_or_create(name="CASHIER_ACCEPTANCE",action="INCOME")
+            acception, _ = Kind.objects.get_or_create(name="CASHIER_ACCEPTANCE", action="INCOME")
 
             # Add to receiver
             Finance.objects.create(
@@ -194,6 +203,7 @@ class CasherHandoverAPIView(CreateAPIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -203,18 +213,30 @@ class FinanceStatisticsAPIView(APIView):
         if kind:
             filter['kind'] = Kind.objects.get(id=kind)
         # Asosiy kassa balansi
-        main_casher_income = Finance.objects.filter(casher__role="WEALTH", action="INCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
-        main_casher_outcome = Finance.objects.filter(casher__role="WEALTH", action="OUTCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
+        main_casher_income = \
+        Finance.objects.filter(casher__role="WEALTH", action="INCOME", **filter).aggregate(Sum("amount"))[
+            "amount__sum"] or 0
+        main_casher_outcome = \
+        Finance.objects.filter(casher__role="WEALTH", action="OUTCOME", **filter).aggregate(Sum("amount"))[
+            "amount__sum"] or 0
         main_casher_balance = main_casher_income - main_casher_outcome
 
         # Administrativ kassa balansi
-        admin_casher_income = Finance.objects.filter(casher__role="ADMINISTRATOR", action="INCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
-        admin_casher_outcome = Finance.objects.filter(casher__role="ADMINISTRATOR", action="OUTCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
+        admin_casher_income = \
+        Finance.objects.filter(casher__role="ADMINISTRATOR", action="INCOME", **filter).aggregate(Sum("amount"))[
+            "amount__sum"] or 0
+        admin_casher_outcome = \
+        Finance.objects.filter(casher__role="ADMINISTRATOR", action="OUTCOME", **filter).aggregate(Sum("amount"))[
+            "amount__sum"] or 0
         admin_casher_balance = admin_casher_income - admin_casher_outcome
 
         # Accountant kassa balansi
-        accounting_casher_income = Finance.objects.filter(casher__role="ACCOUNTANT", action="INCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
-        accounting_casher_outcome = Finance.objects.filter(casher__role="ACCOUNTANT", action="OUTCOME",**filter).aggregate(Sum("amount"))["amount__sum"] or 0
+        accounting_casher_income = \
+        Finance.objects.filter(casher__role="ACCOUNTANT", action="INCOME", **filter).aggregate(Sum("amount"))[
+            "amount__sum"] or 0
+        accounting_casher_outcome = \
+        Finance.objects.filter(casher__role="ACCOUNTANT", action="OUTCOME", **filter).aggregate(Sum("amount"))[
+            "amount__sum"] or 0
         accounting_casher_balance = accounting_casher_income - accounting_casher_outcome
 
         # JSON response qaytarish
@@ -224,14 +246,17 @@ class FinanceStatisticsAPIView(APIView):
             "accounting_casher": accounting_casher_balance,
         })
 
+
 class CasherHandoverHistory(ListAPIView):
     serializer_class = CasherHandoverSerializer
     permission_classes = [IsAuthenticated]
-    def get_queryset(self,**kwargs):
+
+    def get_queryset(self, **kwargs):
         casher = self.kwargs.get('pk')
         if casher:
             return Handover.objects.filter(casher__id=casher)
         return Finance.objects.none()
+
 
 class CasherStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -243,9 +268,9 @@ class CasherStatisticsAPIView(APIView):
         if kind:
             filter['kind'] = Kind.objects.get(id=kind)
         if casher:
-            income = Finance.objects.filter(casher__id=casher, action='INCOME',**filter
+            income = Finance.objects.filter(casher__id=casher, action='INCOME', **filter
                                             ).aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher__id=casher, action='EXPENSE',**filter
+            expense = Finance.objects.filter(casher__id=casher, action='EXPENSE', **filter
                                              ).aggregate(Sum('amount'))['amount__sum'] or 0
             balance = income - expense
             return Response({
@@ -255,10 +280,12 @@ class CasherStatisticsAPIView(APIView):
             })
         return Response({"error": "Casher not found"}, status=404)
 
+
 class CustomPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
+
 
 class TeacherGroupFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -309,7 +336,8 @@ class TeacherGroupFinanceAPIView(APIView):
             ic(students)
 
             for student in students:
-                student_attendances = Attendance.objects.filter(group_id=group_id, student=student).order_by("created_at")
+                student_attendances = Attendance.objects.filter(group_id=group_id, student=student).order_by(
+                    "created_at")
 
                 student_finance_filters = {"attendance__in": student_attendances}
 
@@ -321,7 +349,8 @@ class TeacherGroupFinanceAPIView(APIView):
                 if student_attendances.exists():
                     first_attendance = student_attendances.first()
                     student_finance_filters["created_at__date"] = first_attendance.created_at.date()
-                    total_student_payment = Finance.objects.filter(**student_finance_filters).aggregate(Sum('amount'))['amount__sum'] or 0
+                    total_student_payment = Finance.objects.filter(**student_finance_filters).aggregate(Sum('amount'))[
+                                                'amount__sum'] or 0
                 else:
                     total_student_payment = 0
 
@@ -350,6 +379,7 @@ class TeacherGroupFinanceAPIView(APIView):
 
         return paginator.get_paginated_response(paginated_data)
 
+
 class FinanceTeacher(ListAPIView):
     serializer_class = FinanceSerializer
     permission_classes = [IsAuthenticated]
@@ -372,6 +402,7 @@ class FinanceTeacher(ListAPIView):
             return queryset
 
         return Finance.objects.none()
+
 
 class FinanceExcel(APIView):
     permission_classes = [IsAuthenticated]
@@ -434,6 +465,7 @@ class FinanceExcel(APIView):
         response['Content-Disposition'] = 'attachment; filename="finance_data.xlsx"'
         return response
 
+
 class KindList(ListCreateAPIView):
     serializer_class = KindSerializer
     permission_classes = [IsAuthenticated]
@@ -452,21 +484,23 @@ class KindList(ListCreateAPIView):
         return Response(data)
 
 
-
 class KindRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = KindSerializer
     permission_classes = [IsAuthenticated]
     queryset = Kind.objects.all()
+
 
 class PaymentMethodsList(ListCreateAPIView):
     queryset = PaymentMethod.objects.all()
     serializer_class = PaymentMethodSerializer
     permission_classes = [IsAuthenticated]
 
+
 class PaymentMethodsRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = PaymentMethodSerializer
     permission_classes = [IsAuthenticated]
     queryset = PaymentMethod.objects.all()
+
 
 class PaymentStatistics(APIView):
     permission_classes = [IsAuthenticated]
@@ -485,13 +519,13 @@ class PaymentStatistics(APIView):
         ]
 
         def get_total_amount(payment_name):
-            return Finance.objects.filter(payment_method=payment_name,action="INCOME", **filter).aggregate(total=Sum('amount'))['total'] or 0
+            return Finance.objects.filter(payment_method=payment_name, action="INCOME", **filter).aggregate(
+                total=Sum('amount'))['total'] or 0
 
         data = {payment.lower().replace(" ", "_"): get_total_amount(payment) for payment in valid_payment_methods}
         data["total"] = sum(data.values())
 
         return Response(data)
-
 
 
 class PaymentCasherStatistics(ListAPIView):
@@ -522,7 +556,7 @@ class PaymentCasherStatistics(ListAPIView):
         # Compute total amounts
         data = {
             payment.lower().replace(" ", "_"): Finance.objects.filter(
-                action="INCOME",casher__id=id, payment_method=payment, **filter
+                action="INCOME", casher__id=id, payment_method=payment, **filter
             ).aggregate(total=Sum('amount'))['total'] or 0
             for payment in valid_payment_methods
         }
@@ -534,4 +568,3 @@ class PaymentCasherStatistics(ListAPIView):
     def get_queryset(self):
         """ListAPIView requires a queryset; returning an empty one to satisfy DRF behavior."""
         return Finance.objects.none()
-
