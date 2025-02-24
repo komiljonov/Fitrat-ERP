@@ -1,11 +1,9 @@
-import icecream
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from .models import CustomUser
 from ..account.permission import PhoneAuthBackend
 from ..finances.compensation.models import Compensation, Bonus, Page
-from ..finances.compensation.serializers import CompensationSerializer, BonusSerializer, PagesSerializer
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
@@ -93,7 +91,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ["id", "phone", "full_name", "first_name", "last_name", "password","is_archived",
+        fields = ["id", "phone", "full_name", "first_name", "last_name", "password", "is_archived",
                   "role", "photo", "salary", "enter", "leave", "pages", "files",
                   "date_of_birth"]
 
@@ -144,7 +142,8 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role', "salary", "pages", "files","is_archived",
+        fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role', "salary", "pages", "files",
+                  "is_archived",
                   "photo", "filial", "bonus", "compensation", ]
 
     def get_bonus(self, obj):
@@ -179,7 +178,7 @@ class UserSerializer(serializers.ModelSerializer):
             "id", "full_name", "first_name", "last_name", "phone", "role", "pages", "files",
             "photo", "filial", "balance", "ball", "salary",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation",
-            "updated_at","is_archived"
+            "updated_at", "is_archived"
         )
 
     def get_bonus(self, obj):

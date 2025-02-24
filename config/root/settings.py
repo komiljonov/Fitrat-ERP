@@ -79,7 +79,7 @@ INSTALLED_APPS = [
     'data.results',
 
     'data.comments',
-    'data.moderator',
+    # 'data.moderator',
     'data.upload',
 
     'data.dashboard',

@@ -61,7 +61,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         sales_manager_id = self.request.query_params.get('sales_manager')
         call_operator_id = self.request.query_params.get('call_operator')
         course_id = self.request.query_params.get('course')
-        moderator_id = self.request.query_params.get('moderator')
+        service_manager = self.request.query_params.get('service_manager')
         group_id = self.request.query_params.get("group")
         if sales_manager_id:
             queryset = queryset.filter(sales_manager__id=sales_manager_id)
@@ -70,8 +70,8 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         if course_id:
             queryset = queryset.filter(students_group__group__course__id=course_id)  # Assuming Many-to-Many relation in groups
-        if moderator_id:
-            queryset = queryset.filter(moderator__id=moderator_id)
+        if service_manager:
+            queryset = queryset.filter(service_manager__id=service_manager)
 
         if group_id:
             queryset = queryset.filter(students_group__group__id=group_id)
@@ -235,7 +235,7 @@ class ExportLidToExcelAPIView(APIView):
             "Tug'ulgan sanasi", "O'quv tili", "O'quv sinfi",
             "Fan", "Ball", "Filial", "Marketing kanali", "O'quvchi varonkasi",
             "Balansi", "Balans statusi", "Arxivlangan",
-            "Call Operator", "Moderator", "Yaratilgan vaqti"
+            "Call Operator", "Service manager", "Yaratilgan vaqti"
         ]
         sheet.append(headers)
 
@@ -261,7 +261,7 @@ class ExportLidToExcelAPIView(APIView):
                     student.balance if student.balance else "",
                     "Ha" if student.is_archived else "Yo'q",
                     student.call_operator.full_name if student.call_operator else "",
-                    student.moderator.full_name if student.moderator else "",
+                    student.service_manager.full_name if student.service_manager else "",
                     student.created_at.strftime('%d-%m-%Y %H:%M:%S') if student.created_at else "",
                 ])
 

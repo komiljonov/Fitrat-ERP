@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 
 from django.db.models import F
@@ -7,7 +8,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Student
 from ..attendance.models import Attendance
-from ..groups.models import SecondaryGroup
+from ..groups.lesson_date_calculator import calculate_lessons
+from ..groups.models import SecondaryGroup, Group
 from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...account.permission import PhoneAuthBackend
@@ -33,6 +35,8 @@ class StudentSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
 
+    is_attendance = serializers.SerializerMethodField()
+
     secondary_group = serializers.SerializerMethodField()
     secondary_teacher = serializers.SerializerMethodField()
 
@@ -44,6 +48,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "middle_name",
+            "is_attendance",
             "phone",
             'password',
             "date_of_birth",
@@ -73,6 +78,29 @@ class StudentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def get_is_attendance(self, obj):
+        groups = StudentGroup.objects.filter(student=obj).values('group__id',"group__name")
+        if groups:
+            for group in groups:
+                lesson_days_queryset = group.scheduled_day_type.all()  # This retrieves the related days
+                lesson_days = [day.name for day in
+                               lesson_days_queryset]
+                start_date = datetime.datetime.today().strftime("%Y-%m-%d")
+                end_date = group.finish_date.strftime("%Y-%m-%d") if obj.finish_date else None
+                dates = calculate_lessons(
+                    start_date=start_date,
+                    end_date=end_date,
+                    lesson_type=','.join(lesson_days),
+                    holidays=[""],
+                    days_off=["Yakshanba"]
+                )
+                lesson_date = dates[0]
+                is_attendance = Attendance.objects.filter(created_at__gte=lesson_date,student=obj)
+                if lesson_date == start_date and is_attendance.exists():
+                    return {
+                        'is_attendance': is_attendance.reason if is_attendance else lesson_date.strftime("%d-%m-%Y"),
+                    }
 
     def get_secondary_group(self, obj):
         group = SecondaryStudentGroup.objects.filter(student=obj).annotate(
