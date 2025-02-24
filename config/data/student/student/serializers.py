@@ -41,6 +41,8 @@ class StudentSerializer(serializers.ModelSerializer):
     secondary_group = serializers.SerializerMethodField()
     secondary_teacher = serializers.SerializerMethodField()
 
+    learning = serializers.SerializerMethodField()
+
     class Meta:
         model = Student
         fields = [
@@ -51,6 +53,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "middle_name",
             "is_attendance",
             "phone",
+            "learning",
             'password',
             "date_of_birth",
             "education_lang",
@@ -80,6 +83,13 @@ class StudentSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+
+    def get_learning(self, obj):
+        avarage = Mastering.objects.filter(student=obj)
+        return {
+            "score" : 4,
+            "learning" : 81
+        }
 
     def get_is_attendance(self, obj):
         groups = StudentGroup.objects.prefetch_related('group__scheduled_day_type').filter(student=obj)
