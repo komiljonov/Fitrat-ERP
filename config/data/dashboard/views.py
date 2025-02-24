@@ -26,6 +26,7 @@ class DashboardView(APIView):
         channel_id = self.request.query_params.get('marketing_channel')
         service_manager = self.request.query_params.get('service_manager')
         teacher = self.request.query_params.get('teacher')
+        filial = self.request.query_params.get('filial')
         sales_manager = self.request.query_params.get('sales_manager')
 
 
@@ -38,6 +39,8 @@ class DashboardView(APIView):
             filters['sales_manager'] = sales_manager
         if service_manager:
             filters['service_manager'] = service_manager
+        if filial:
+            filters['filial'] = filial
 
         channel = None
         if channel_id:
