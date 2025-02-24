@@ -78,9 +78,9 @@ class Student(TimeStampModel):
         help_text="Balance status",
     )
 
-    moderator: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,
-                                                blank=True, help_text="Moderator for this student",
-                                                related_name="student_moderator")
+    service_manager: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,
+                                                blank=True, help_text="service_manager for this student",
+                                                related_name="student_service_manager")
 
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True, )
     is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")

@@ -58,7 +58,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'balance_status',
             'balance',
             "test",
-            'moderator',
+            'service_manager',
             'course',
             'group',
             'call_operator',
@@ -152,7 +152,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
         representation['sales_manager'] = UserSerializer(instance.sales_manager).data if instance.sales_manager else None
 
-        representation['moderator'] = UserSerializer(instance.moderator).data if instance.moderator else None
+        representation['service_manager'] = UserSerializer(instance.service_manager).data if instance.service_manager else None
         representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
         return representation
 

@@ -37,7 +37,7 @@ class LidSerializer(serializers.ModelSerializer):
             "phone_number", "date_of_birth", "education_lang", "student_type",
             "edu_class", "edu_level", "subject", "ball", "filial","is_frozen",
             "marketing_channel", "lid_stage_type", "ordered_stages",
-            "lid_stages", "is_archived", "course", "group", "moderator",'is_student',
+            "lid_stages", "is_archived", "course", "group", "service_manager",'is_student',
             "call_operator", "relatives", "lessons_count", "created_at","sales_manager","is_expired","file"
         ]
 
@@ -164,7 +164,7 @@ class LidBulkUpdateSerializer(serializers.ModelSerializer):
             'id', 'sender_id', 'message_text', 'first_name', 'last_name', 'middle_name', 'phone_number',
             'date_of_birth', 'education_lang', 'student_type', 'edu_class', 'edu_level', 'subject',
             'ball', 'filial', 'marketing_channel', 'lid_stage_type', 'lid_stages', 'ordered_stages',
-            'is_archived', 'is_dubl', 'call_operator', 'is_student', 'moderator', 'sales_manager'
+            'is_archived', 'is_dubl', 'call_operator', 'is_student', 'service_manager', 'sales_manager'
         ]
 
     def update_bulk_lids(self, lids_data):
@@ -185,6 +185,6 @@ class LidBulkUpdateSerializer(serializers.ModelSerializer):
                 'sender_id', 'message_text', 'first_name', 'last_name', 'middle_name', 'phone_number',
                 'date_of_birth', 'education_lang', 'student_type', 'edu_class', 'edu_level', 'subject',
                 'ball', 'filial', 'marketing_channel', 'lid_stage_type', 'lid_stages', 'ordered_stages',
-                'is_archived', 'is_dubl', 'call_operator', 'is_student', 'moderator', 'sales_manager'
+                'is_archived', 'is_dubl', 'call_operator', 'is_student', 'service_manager', 'sales_manager'
             ])
         return lids_to_update
