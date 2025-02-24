@@ -79,7 +79,7 @@ class CustomAuthToken(TokenObtainPairView):
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
-        filial = user.filial.pk if user.filial else None
+        filial = list(user.filial.values_list('pk', flat=True))  # Get a list of filial IDs
 
         return Response({
             'access_token': access_token,
