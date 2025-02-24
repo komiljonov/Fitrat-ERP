@@ -83,12 +83,27 @@ class StudentSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-
     def get_learning(self, obj):
-        avarage = Mastering.objects.filter(student=obj)
+        mastering_qs = Mastering.objects.filter(student=obj)
+
+        if not mastering_qs.exists():  # If no records, return default values
+            return {
+                "score": 1,  # Default lowest score
+                "learning": 0  # Default lowest percentage
+            }
+
+        # Calculate the average score from 1 to 5
+        average_score = mastering_qs.aggregate(avg_ball=models.Avg('ball'))['avg_ball'] or 0
+
+        # Scale the score between 1 to 5 (assuming 0-100 scores exist)
+        score_scaled = min(max(round(average_score / 20), 1), 5)  # Ensure it's between 1 to 5
+
+        # Scale the percentage between 1 to 100
+        percentage_scaled = min(max(round((average_score / 100) * 100), 0), 100)
+
         return {
-            "score" : 4,
-            "learning" : 81
+            "score": score_scaled,
+            "learning": percentage_scaled
         }
 
     def get_is_attendance(self, obj):
