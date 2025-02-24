@@ -28,7 +28,7 @@ class CustomUser(AbstractUser):
 
     ROLE_CHOICES = (
         ("CALL_OPERATOR", "Call Center"),
-        ("ADMINISTRATOR", "Sotuv Menejeri"),
+        ("ADMINISTRATOR", "Sales Menejeri"),
         ("SERVICE_MANAGER", "Service Manager"),
         ("ACCOUNTING", "Accounting"),
         ("ATTENDANCE_MANAGER", "Attendance Manager"),

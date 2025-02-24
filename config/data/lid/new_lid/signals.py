@@ -41,7 +41,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                     "filial": instance.filial,
                     "marketing_channel": instance.marketing_channel,
                     "call_operator": instance.call_operator,
-                    "moderator": instance.moderator,
+                    "service_manager": instance.service_manager,
                 },
             )
 
@@ -62,7 +62,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.filial = instance.filial
                 student.marketing_channel = instance.marketing_channel
                 student.call_operator = instance.call_operator
-                student.moderator = instance.moderator
+                student.service_manager = instance.service_manager
                 student.save()
 
             # Update attendance records

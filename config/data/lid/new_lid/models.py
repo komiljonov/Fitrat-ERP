@@ -89,10 +89,10 @@ class Lid(TimeStampModel):
 
     is_student = models.BooleanField(default=False,help_text="Is this student or not")
 
-    moderator : "CustomUser" = models.ForeignKey("account.CustomUser",
+    service_manager : "CustomUser" = models.ForeignKey("account.CustomUser",
                                                  on_delete=models.SET_NULL,
                                                  null=True, blank=True,
-                                                 related_name='moderator')
+                                                 related_name='service_manager')
 
     lid_stages : models.QuerySet['NewLidStages']
     ordered_stages : models.QuerySet['NewOredersStages']

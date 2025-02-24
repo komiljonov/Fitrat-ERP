@@ -134,11 +134,18 @@ class ResultsView(ListAPIView):
         queryset = Results.objects.filter(filial=self.request.user.filial)
         status = self.request.query_params.get('status')
         type = self.request.query_params.get('type')
+        filial =self.request.query_params.get('filial')
+        teacher = self.request.query_params.get('teacher')
+
 
         if status:
             queryset = queryset.filter(status=status)
         if type:
             queryset = queryset.filter(results=type)
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        if teacher:
+            queryset = queryset.filter(teacher__id=teacher)
         return queryset
 
 class ResultsRetrieveAPIView(RetrieveUpdateAPIView):

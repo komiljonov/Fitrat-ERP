@@ -24,14 +24,20 @@ class DashboardView(APIView):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
         channel_id = self.request.query_params.get('marketing_channel')
-        manager = self.request.query_params.get('manager')
+        service_manager = self.request.query_params.get('service_manager')
         teacher = self.request.query_params.get('teacher')
+        sales_manager = self.request.query_params.get('sales_manager')
+
 
         filters = {}
         if start_date:
             filters['created_at__gte'] = start_date
         if end_date:
             filters['created_at__lte'] = end_date
+        if sales_manager:
+            filters['sales_manager'] = sales_manager
+        if service_manager:
+            filters['service_manager'] = service_manager
 
         channel = None
         if channel_id:
@@ -143,6 +149,7 @@ class DashboardView(APIView):
         }
 
         return Response(data)
+
 class MarketingChannels(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
