@@ -79,6 +79,7 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             group__teacher=self.request.user
         ).count()
 
+
         statistics = {
             "all_students": all_students,
             "average_assimilation": Average_assimilation,
