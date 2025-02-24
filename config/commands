@@ -11,3 +11,80 @@ admin
 
 ubuntu : find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
 windows : Get-ChildItem -Recurse -Path .\ -Include "*.py" | Where-Object { $_.DirectoryName -like "*migrations*" -and $_.Name -ne "__init__.py" } | Remove-Item -Force
+
+
+
+
+Fitrat Moliya bo’limi
+
+Hodimlar ro’yxati
+
+ 1. Call senter operator
+Markazga kelgan oq’uvchi uchun bonus #     ✅
+
+
+
+ 2. Sotuv menejeri
+Yaratilgan buyurtma uchun bonus #   ✅
+Sinov darsiga kelgani uchun bonus #
+aktive o’quvchiga aylangan yangi o’quvchi uchun bonus #
+
+Jarima: Sinov darsiga yozilb kemaganlar uchun jarima #
+              Sinov darsiga keldi lekin activega o’tmaganligi uchun jarima #
+
+
+ 3. Serveis menejeri
+Hizmat ko’rsatgan har bir active o’quvchi uchun bonus #
+
+
+Jarima: Agar o’quvchi ketib qolsa jarima yoziladi #
+
+ 4. Moliya menejeri
+Har bir qarzdor bo’lmagan va active o’quvchi uchun bonus #
+rejani (jami active va jami yangi o’quvchilar ro’yxati hisobga olinadi)   93 - 94.9, 95%- 97.9% , 98% - 99.9%, 100%  har bitasi uchun alohida summa belgilanadi. Agar 95 da kam bosa bonus berilmiydi
+foizlar activedagi 50% dan kop to’lagan o’quvchilardan kelib chiqan holda hisoblanadi va yangi o’quvchilar esa qarzor bo’masligi kere
+
+Jarima; qarzdorlar soni 85% - 80.1% ,  80%-70.1% gacha 70< bosa jarima belgilanadi
+
+ 5. Davomatchi
+active oq’uvchi soniga bonus
+
+
+ 6. Filial bosh menejeri
+active oq’uvchi soniga bonus #
+
+
+ 7. filial direktori
+active oq’uvchi soniga bonus#
+
+
+ 8. head teacher filialar doirasida bo’ladi
+active oq’uvchi soniga bonus
+
+
+ 9. Monitoringchi
+active oq’uvchi soniga bonus
+
+
+ 10. Testolog
+active oq’uvchi soniga bonus
+
+ 11. Yordamchi ustoz
+bir oyda 10 marta kelgan har bir oquvchi uchun bonus #
+qoshimcha dars uchun bita dars pulidan foiz hisoblanadi
+
+ 12. Ustoz
+o’quvchi to’lagan summadan foiz beriladi
+- 2 xil usulda bo’lishi kere darslar soni uchun oylik to’lanadi yoki bir oydagi darslar sonini oylika bolib oylik hisoblanadi
+natijalar uchun #
+
+
+
+
+
+Jarimani bekor qilish mumkin  bo’ladi
+alohida jarima YOKI Bonus belgilash
+
+
+chegirma belgilash yoki narxni o’gartirish
+ izoh yozish

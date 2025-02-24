@@ -6,10 +6,8 @@ from icecream import ic
 
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
-from ..groups.models import Group
 from ...finances.finance.models import Finance, Kind
 from ...notifications.models import Notification
-from ...stages.models import NewOredersStages
 
 
 @receiver(post_save, sender=Attendance)
@@ -127,8 +125,3 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                     else:
                         print(f"No lessons scheduled for {current_month_start}, skipping balance deduction.")
 
-
-# @receiver(post_save, sender=Attendance)
-# def on_attendance_extra(sender, instance: Attendance, created, **kwargs):
-#     if created:
-#         pass
