@@ -12,12 +12,10 @@ from ..subject.models import Theme
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 
-
 class DaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Day
         fields = ["id","name",]
-
 
 class GroupSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
@@ -95,7 +93,6 @@ class GroupSerializer(serializers.ModelSerializer):
 
         return group
 
-
 class GroupLessonSerializer(serializers.ModelSerializer):
     group_lesson_dates = serializers.SerializerMethodField()  # Add this field
 
@@ -142,7 +139,6 @@ class GroupLessonSerializer(serializers.ModelSerializer):
             return lesson_dates
         return []
 
-
 class RoomsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
@@ -153,7 +149,6 @@ class RoomsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-
 
 class SecondaryGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
