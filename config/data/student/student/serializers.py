@@ -116,7 +116,8 @@ class StudentSerializer(serializers.ModelSerializer):
             attendance = Attendance.objects.filter(created_at__gte=lesson_date, student=obj).first()
 
             return {
-                'is_attendance': attendance.reason if attendance else lesson_date,
+                "date": lesson_date,
+                "attendance" : attendance.reason if attendance else "",
             }
 
         return {'is_attendance': None}  # Default return if no group found
