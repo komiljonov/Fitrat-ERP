@@ -3,6 +3,7 @@ import hashlib
 
 from django.db.models import F
 from django.utils.module_loading import import_string
+from icecream import ic
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -79,28 +80,46 @@ class StudentSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+
     def get_is_attendance(self, obj):
-        groups = StudentGroup.objects.filter(student=obj).values('group__id',"group__name")
-        if groups:
-            for group in groups:
-                lesson_days_queryset = group.scheduled_day_type.all()  # This retrieves the related days
-                lesson_days = [day.name for day in
-                               lesson_days_queryset]
-                start_date = datetime.datetime.today().strftime("%Y-%m-%d")
-                end_date = group.finish_date.strftime("%Y-%m-%d") if obj.finish_date else None
-                dates = calculate_lessons(
-                    start_date=start_date,
-                    end_date=end_date,
-                    lesson_type=','.join(lesson_days),
-                    holidays=[""],
-                    days_off=["Yakshanba"]
-                )
-                lesson_date = dates[0]
-                is_attendance = Attendance.objects.filter(created_at__gte=lesson_date,student=obj)
-                if lesson_date == start_date and is_attendance.exists():
-                    return {
-                        'is_attendance': is_attendance.reason if is_attendance else lesson_date.strftime("%d-%m-%Y"),
-                    }
+        groups = StudentGroup.objects.prefetch_related('group__scheduled_day_type').filter(student=obj)
+
+        for group in groups:
+            lesson_days_queryset = group.group.scheduled_day_type.all()  # Fetch related lesson days
+            lesson_days = [day.name for day in lesson_days_queryset] if lesson_days_queryset else []
+
+            if not lesson_days:  # Skip iteration if no lesson days
+                continue
+
+            start_date = datetime.datetime.today()  # Keep it as a datetime object
+            finish_date = start_date + datetime.timedelta(days=30)  # Properly add 30 days
+
+            # Convert to string format for calculate_lessons
+            start_date_str = start_date.strftime("%Y-%m-%d")
+            finish_date_str = finish_date.strftime("%Y-%m-%d")
+
+
+            dates = calculate_lessons(
+                start_date=start_date_str,
+                end_date=finish_date_str,
+                lesson_type=','.join(lesson_days),
+                holidays=[""],
+                days_off=["Yakshanba"]
+            )
+            ic(dates)  # Debugging output
+
+            if not dates:
+                continue
+            first_month = min(dates.keys())  # Get the first available month
+            lesson_date = dates[first_month][0]  # Get the first lesson date in that month
+
+            attendance = Attendance.objects.filter(created_at__gte=lesson_date, student=obj).first()
+
+            return {
+                'is_attendance': attendance.reason if attendance else lesson_date,
+            }
+
+        return {'is_attendance': None}  # Default return if no group found
 
     def get_secondary_group(self, obj):
         group = SecondaryStudentGroup.objects.filter(student=obj).annotate(
