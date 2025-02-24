@@ -485,7 +485,7 @@ class PaymentStatistics(APIView):
         ]
 
         def get_total_amount(payment_name):
-            return Finance.objects.filter(payment_method=payment_name, **filter).aggregate(total=Sum('amount'))['total'] or 0
+            return Finance.objects.filter(payment_method=payment_name,action="INCOME", **filter).aggregate(total=Sum('amount'))['total'] or 0
 
         data = {payment.lower().replace(" ", "_"): get_total_amount(payment) for payment in valid_payment_methods}
         data["total"] = sum(data.values())
@@ -522,7 +522,7 @@ class PaymentCasherStatistics(ListAPIView):
         # Compute total amounts
         data = {
             payment.lower().replace(" ", "_"): Finance.objects.filter(
-                casher__id=id, payment_method=payment, **filter
+                action="INCOME",casher__id=id, payment_method=payment, **filter
             ).aggregate(total=Sum('amount'))['total'] or 0
             for payment in valid_payment_methods
         }
