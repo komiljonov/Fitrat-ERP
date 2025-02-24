@@ -94,26 +94,6 @@ class UserUpdateAPIView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    def put(self, request, *args, **kwargs):
-        user = self.kwargs.get("pk")
-        if user:
-            serializer = UserUpdateSerializer(user, data=request.data, partial=True,context={'request': request})
-
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            print("Errors:", serializer.errors)  # Debugging
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self, request, *args, **kwargs):
-        user = self.kwargs.get("pk")
-        if user:
-            serializer = UserUpdateSerializer(user, data=request.data, partial=True,context={'request': request})
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class LogoutAPIView(APIView):
