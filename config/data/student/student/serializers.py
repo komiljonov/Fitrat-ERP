@@ -1,7 +1,7 @@
 import datetime
 import hashlib
 
-from django.db.models import F
+from django.db.models import F, Avg
 from django.utils.module_loading import import_string
 from icecream import ic
 from rest_framework import serializers
@@ -93,7 +93,7 @@ class StudentSerializer(serializers.ModelSerializer):
             }
 
         # Calculate the average score from 1 to 5
-        average_score = mastering_qs.aggregate(avg_ball=models.Avg('ball'))['avg_ball'] or 0
+        average_score = mastering_qs.aggregate(avg_ball=Avg('ball'))['avg_ball'] or 0
 
         # Scale the score between 1 to 5 (assuming 0-100 scores exist)
         score_scaled = min(max(round(average_score / 20), 1), 5)  # Ensure it's between 1 to 5
