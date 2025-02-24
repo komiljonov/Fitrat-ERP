@@ -1,14 +1,12 @@
-from django.shortcuts import render
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, \
-    RetrieveUpdateAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from .models import Results
 # Create your views here.
 from .serializers import UniversityResultsSerializer, CertificationResultsSerializer, StudentResultsSerializer, \
     OtherResultsSerializer, ResultsSerializer, NationalSerializer
 
-from .models import Results
 
 class UniversityResultsViewSet(ListCreateAPIView):
     queryset = Results.objects.all()
@@ -26,7 +24,6 @@ class UniversityResultsViewSet(ListCreateAPIView):
         return queryset
 
 
-
 class CertificationResultsViewSet(ListCreateAPIView):
     queryset = Results.objects.all()
     serializer_class = CertificationResultsSerializer
@@ -42,10 +39,12 @@ class CertificationResultsViewSet(ListCreateAPIView):
             queryset = queryset.filter(certificate_type=certification_type)
         return queryset
 
+
 class UniversityResultsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Results.objects.all()
     serializer_class = UniversityResultsSerializer
     permission_classes = [IsAuthenticated]
+
 
 class CertificationResultsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Results.objects.all()
@@ -70,6 +69,7 @@ class UniversityResultsNoPg(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
 
 class CertificationResultsNoPg(ListAPIView):
     queryset = Results.objects.all()
@@ -101,7 +101,6 @@ class ResultsViewSet(ListAPIView):
         return queryset
 
 
-
 class OtherResultsViewSet(ListCreateAPIView):
     queryset = Results.objects.all()
     serializer_class = OtherResultsSerializer
@@ -120,6 +119,7 @@ class OtherResultsViewSet(ListCreateAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 class OtherResultsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Results.objects.all()
     serializer_class = OtherResultsSerializer
@@ -130,13 +130,13 @@ class ResultsView(ListAPIView):
     queryset = Results.objects.all()
     serializer_class = ResultsSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         queryset = Results.objects.filter(filial=self.request.user.filial)
         status = self.request.query_params.get('status')
         type = self.request.query_params.get('type')
-        filial =self.request.query_params.get('filial')
+        filial = self.request.query_params.get('filial')
         teacher = self.request.query_params.get('teacher')
-
 
         if status:
             queryset = queryset.filter(status=status)
@@ -147,6 +147,7 @@ class ResultsView(ListAPIView):
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
         return queryset
+
 
 class ResultsRetrieveAPIView(RetrieveUpdateAPIView):
     queryset = Results.objects.all()

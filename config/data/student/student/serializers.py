@@ -10,7 +10,6 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Student
 from ..attendance.models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
-from ..groups.models import SecondaryGroup, Group
 from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...account.permission import PhoneAuthBackend
@@ -22,6 +21,7 @@ from ...department.marketing_channel.serializers import MarketingChannelSerializ
 from ...parents.models import Relatives
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
+
 
 class StudentSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
