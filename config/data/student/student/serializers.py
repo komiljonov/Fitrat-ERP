@@ -27,7 +27,6 @@ class StudentSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
-    test = serializers.SerializerMethodField()
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
@@ -66,7 +65,6 @@ class StudentSerializer(serializers.ModelSerializer):
             "student_stage_type",
             'balance_status',
             'balance',
-            "test",
             'service_manager',
             'course',
             'group',
@@ -170,11 +168,6 @@ class StudentSerializer(serializers.ModelSerializer):
             for item in teacher]
 
         return teacher_list[0] if teacher_list else None
-
-    def get_test(self, obj):
-        test = Mastering.objects.filter(student=obj)
-        MasteringSerializer = import_string("data.student.mastering.serializers.MasteringSerializer")
-        return MasteringSerializer(test, many=True).data
 
     def get_course(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)

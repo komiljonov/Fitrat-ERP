@@ -1,9 +1,12 @@
+import icecream
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from .models import CustomUser
 from ..account.permission import PhoneAuthBackend
+from ..department.filial.models import Filial
 from ..finances.compensation.models import Compensation, Bonus, Page
+from ..finances.compensation.serializers import CompensationSerializer, BonusSerializer, PagesSerializer
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
@@ -29,10 +32,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         page_data = validated_data.pop('pages', [])
         files = validated_data.pop('files', [])
+        filial = validated_data.pop('filial', None)
 
         user = CustomUser(**validated_data)
         user.set_password(password)  # Hash the password
         user.save()
+        user.filial.set(filial)
         user.pages.set(page_data)
         user.files.set(files)
         user.save()
@@ -88,11 +93,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=128, write_only=True, required=False)
     pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, required=False)
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, required=False)
+    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), required=False)
 
     class Meta:
         model = CustomUser
-        fields = ["id", "phone", "full_name", "first_name", "last_name", "password", "is_archived",
-                  "role", "photo", "salary", "enter", "leave", "pages", "files",
+        fields = ["id", "phone", "full_name", "first_name", "last_name", "password","is_archived",
+                  "role", "photo", "salary", "enter", "leave", "pages", "files","filial",
                   "date_of_birth"]
 
     def update(self, instance, validated_data):
@@ -112,7 +118,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         # Update other fields except many-to-many
         for attr, value in validated_data.items():
-            if attr not in ["pages", "files"]:
+            if attr not in ["pages", "files","filial"]:
                 setattr(instance, attr, value)
 
         # Update Many-to-Many Fields Safely
@@ -121,6 +127,9 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if "files" in validated_data:
             print("Updating files:", validated_data["files"])  # Debugging
             instance.files.set(validated_data["files"] or [])
+
+        if "filial" in validated_data:
+            instance.filial.set(validated_data["filial"])
 
         instance.save()
         return instance
@@ -142,8 +151,8 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role', "salary", "pages", "files",
-                  "is_archived",
+        fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role',
+                  "salary", "pages", "files","is_archived",
                   "photo", "filial", "bonus", "compensation", ]
 
     def get_bonus(self, obj):
@@ -178,7 +187,7 @@ class UserSerializer(serializers.ModelSerializer):
             "id", "full_name", "first_name", "last_name", "phone", "role", "pages", "files",
             "photo", "filial", "balance", "ball", "salary",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation",
-            "updated_at", "is_archived"
+            "updated_at","is_archived"
         )
 
     def get_bonus(self, obj):
