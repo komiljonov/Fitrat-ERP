@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotFound
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -90,27 +90,29 @@ class CustomAuthToken(TokenObtainPairView):
             'filial': filial,
         }, status=status.HTTP_200_OK)
 
-class UserUpdateAPIView(APIView):
+class UserUpdateAPIView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     def put(self, request, *args, **kwargs):
-        user = request.user
-        serializer = UserUpdateSerializer(user, data=request.data, partial=True,context={'request': request})
+        user = self.kwargs.get("pk")
+        if user:
+            serializer = UserUpdateSerializer(user, data=request.data, partial=True,context={'request': request})
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        print("Errors:", serializer.errors)  # Debugging
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            print("Errors:", serializer.errors)  # Debugging
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, *args, **kwargs):
-        user = request.user
-        serializer = UserUpdateSerializer(user, data=request.data, partial=True,context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = self.kwargs.get("pk")
+        if user:
+            serializer = UserUpdateSerializer(user, data=request.data, partial=True,context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

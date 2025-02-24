@@ -20,7 +20,8 @@ class Mastering(TimeStampModel):
     ball = models.FloatField(default=0)
 
     def __str__(self):
-        return  self.lid.first_name if self.lid else self.student.first_name + " " + self.ball
+        return self.lid.first_name if self.lid else self.student.first_name
+
 
 class MasteringTeachers(TimeStampModel):
     teacher : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL ,
