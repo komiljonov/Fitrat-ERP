@@ -180,7 +180,7 @@ class ExportLidToExcelAPIView(APIView):
             "Tug'ulgan sanasi", "O'quv tili", "O'quv sinfi",
             "Fan", "Ball", "Filial", "Marketing kanali", "Lead varonkasi",
             "Lead etapi", "Buyurtma etapi", "Arxivlangan",
-            "Call Operator", "O'quvchi bo'lgan", "Moderator", "Yaratilgan vaqti"
+            "Call Operator", "O'quvchi bo'lgan", "Service manager", "Yaratilgan vaqti"
         ]
         sheet.append(headers)
 
@@ -203,7 +203,7 @@ class ExportLidToExcelAPIView(APIView):
                 "Ha" if lid.is_archived else "Yo'q",
                 lid.call_operator.full_name if lid.call_operator else "",
                 "Ha" if lid.is_student else "Yo'q",
-                lid.moderator.full_name if lid.moderator else "",
+                lid.service_manager.full_name if lid.service_manager else "",
                 lid.created_at.strftime('%d-%m-%Y %H:%M:%S') if lid.created_at else "",
             ])
 

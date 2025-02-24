@@ -66,7 +66,7 @@ urlpatterns = [
 
     path('stages/',include("data.stages.urls")),
 
-    path('moderator/', include('data.moderator.urls')),
+    # path('moderator/', include('data.moderator.urls')),
 
     path('teacher/', include('data.teachers.teacher.urls')),
 
