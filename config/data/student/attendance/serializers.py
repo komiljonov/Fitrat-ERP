@@ -49,9 +49,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep['theme'] = ThemeSerializer(instance.theme, self.context,many=True).data
+        rep['theme'] = ThemeSerializer(instance.theme, context=self.context,many=True).data
         if instance.lid:
-            rep['lid'] = LidSerializer(instance.lid,self.context).data
+            rep['lid'] = LidSerializer(instance.lid,context=self.context).data
         else:
             rep.pop('lid', None)
 
