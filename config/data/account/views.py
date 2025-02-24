@@ -93,6 +93,7 @@ class CustomAuthToken(TokenObtainPairView):
 class UserUpdateAPIView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+    queryset = CustomUser.objects.all()
 
 
 
