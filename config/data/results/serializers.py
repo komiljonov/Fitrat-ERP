@@ -254,5 +254,6 @@ class ResultsSerializer(serializers.ModelSerializer):
         """ Remove fields that are None or empty """
 
         data = super().to_representation(instance)
+        data['upload_file'] = FileUploadSerializer(instance.upload_file,context=self.context, many=True,).data
         data['student'] = StudentSerializer(instance.student,context=self.context).data
         return {key: value for key, value in data.items() if value not in [None, "", []]}

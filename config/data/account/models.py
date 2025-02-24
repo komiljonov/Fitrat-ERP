@@ -1,14 +1,10 @@
 import uuid
-from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from data.department.filial.models import Filial
 from ..account.managers import UserManager
-
-if TYPE_CHECKING:
-    from ..finances.compensation.models import Page
 from ..upload.models import File
 
 
@@ -58,9 +54,7 @@ class CustomUser(AbstractUser):
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateField(auto_now=True, null=True, blank=True)
 
-    filial : 'Filial' = models.ForeignKey('filial.Filial', on_delete=models.SET_NULL, blank=True, null=True)
-
-    pages : 'Page'= models.ManyToManyField('compensation.Page', null=True, blank=True)
+    filial : 'Filial' = models.ManyToManyField('filial.Filial',)
 
     is_archived = models.BooleanField(default=False)
 

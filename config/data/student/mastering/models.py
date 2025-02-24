@@ -1,12 +1,11 @@
 from django.db import models
 
-from ...finances.compensation.models import Compensation,Bonus
-from ...lid.new_lid.models import Lid
-from ..student.models import Student
-from ...command.models import TimeStampModel
 from ..quiz.models import Quiz
-from ..groups.models import Group
+from ..student.models import Student
 from ...account.models import CustomUser
+from ...command.models import TimeStampModel
+from ...lid.new_lid.models import Lid
+
 
 # Create your models here.
 class Mastering(TimeStampModel):
