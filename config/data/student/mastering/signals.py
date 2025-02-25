@@ -4,6 +4,7 @@ from django.template.context_processors import request
 
 from .models import MasteringTeachers
 from ..attendance.models import Attendance
+from ..student.models import Student
 from ...account.models import CustomUser
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import KpiFinance, Finance
@@ -35,7 +36,8 @@ def bonus_call_operator(sender, instance: Attendance, created, **kwargs):
     if created:
         attendances_count = Attendance.objects.filter(student=instance.student,reason="IS_PRESENT").count()
         if attendances_count == 1:
-            bonus = Bonus.objects.filter(user=instance.student.call_operator, name="Markazga kelgan oq’uvchi uchun bonus").first()
+            bonus = Bonus.objects.filter(user=instance.student.call_operator,
+                                         name="Markazga kelgan oq’uvchi uchun bonus").first()
             if bonus:
 
                 KpiFinance.objects.create(
@@ -56,7 +58,7 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
     if not created:
 
         bonus = Bonus.objects.filter(user=instance.student.call_operator,
-                                     name="Markazga kelgan oq’uvchi uchun bonus").first()
+                                     name="Yaratilgan buyurtma uchun bonus").first()
 
         is_bonused = KpiFinance.objects.filter(
             lid=instance,
@@ -77,7 +79,8 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
 def new_created_order(sender, instance: Attendance, created, **kwargs):
     if created:
         attendances_count = Attendance.objects.filter(student=instance.student,reason="IS_PRESENT").count()
-        amount = Bonus.objects.filter(user=instance.student.sales_manager, name="Sinov darsiga kelgani uchun bonus #")
+        amount = Bonus.objects.filter(user=instance.student.sales_manager,
+                                      name="Sinov darsiga kelgani uchun bonus ")
         if attendances_count == 1:
             KpiFinance.objects.create(
                 user=instance.student.sales_manager,
@@ -93,7 +96,7 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
                                        action="INCOME",
                                        ).all()
         amount = Bonus.objects.filter(user=instance.student.sales_manager,
-                                      name="Sinov darsiga kelgani uchun bonus #")
+                                      name="Aktiv o'quvchiga aylangan yangi o’quvchi uchun bonus ")
 
         if count == 1:
             KpiFinance.objects.create(
@@ -111,7 +114,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
     if created:
         attendances_count = Attendance.objects.filter(lid=instance.lid,reason=["UNREASONED"]).count()
         amount = Bonus.objects.filter(user=instance.lid.sales_manager,
-                                      name="Sinov darsiga yozilb kemaganlar uchun jarima #")
+                                      name="Sinov darsiga yozilb kemaganlar uchun jarima (Jarima)")
         if attendances_count == 1:
             KpiFinance.objects.create(
                 user=instance.lid.sales_manager,
@@ -120,6 +123,29 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
                 type="EXPENSE",
                 reason=f"{instance.lid.first_name} {instance.lid.last_name} ning birinchi darsga kelmaganligi uchun jarima "
             )
+
+#Serveis menejeri  -   Hizmat ko’rsatgan har bir active o’quvchi uchun bonus #
+
+@receiver(post_save, sender=Student)
+def new_created_order(sender, instance: Student, created, **kwargs):
+    if not created:
+        finance = Finance.objects.filter(student=instance,action="INCOME").count()
+        if instance.service_manager and instance.balance_status == "ACTIVE" and finance == 1:
+            amount = Bonus.objects.filter(user=instance.service_manager,
+                                          name="Hizmat ko’rsatgan har bir Aktiv o'quvchi uchun bonus ")
+            KpiFinance.objects.create(
+                user=instance.service_manager,
+                student=instance,
+                amount=amount.amount,
+                type="INCOME",
+                reason=f"Hizmat ko'rsatgan {instance.first_name} {instance.last_name} o'quvchi uchun bonus ",
+            )
+
+# #Agar o’quvchi ketib qolsa jarima yoziladi (Jarima)
+# @receiver(post_save, sender=Student)
+# def new_created_order(sender, instance: Student, created, **kwargs):
+#     if not created and instance.is_archived==True,:
+
 
 
 
