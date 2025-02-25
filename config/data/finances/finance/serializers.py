@@ -6,6 +6,7 @@ from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
+from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 
 class KindSerializer(serializers.ModelSerializer):
@@ -250,6 +251,9 @@ class FinanceTeacherSerializer(serializers.ModelSerializer):
         return group_data
 
 class KpiFinanceSerializer(serializers.ModelSerializer):
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     class Meta:
         model = KpiFinance
         fields = [
@@ -262,3 +266,6 @@ class KpiFinanceSerializer(serializers.ModelSerializer):
             "type",
             "created_at",
         ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['user'] = UserListSerializer(instance.user).data
