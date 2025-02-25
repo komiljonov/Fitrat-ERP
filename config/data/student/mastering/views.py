@@ -52,3 +52,14 @@ class TeacherMasteringList(ListAPIView):
         if id:
             return MasteringTeachers.objects.filter(teacher__id=id)
         return MasteringTeachers.objects.none()
+
+
+class StuffMasteringList(ListCreateAPIView):
+    queryset = MasteringTeachers.objects.all()
+    serializer_class = StuffMasteringSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
+    queryset = MasteringTeachers.objects.all()
+    serializer_class = StuffMasteringSerializer

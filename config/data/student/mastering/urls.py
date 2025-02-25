@@ -1,6 +1,7 @@
 from django.urls import include, path
 
-from .views import MasteringList, MasteringNoPG, MasteringDetail, MasteringQuizFilter, TeacherMasteringList
+from .views import MasteringList, MasteringNoPG, MasteringDetail, MasteringQuizFilter, TeacherMasteringList, \
+    StuffMasteringList, MasteringTeachersList
 
 urlpatterns = [
     path('', MasteringList.as_view(), name='mastering_list'),
@@ -9,4 +10,7 @@ urlpatterns = [
 
     path("quiz/<uuid:pk>/", MasteringQuizFilter.as_view(), name='mastering_quiz'),
     path("stuff/<uuid:pk>/", TeacherMasteringList.as_view(), name='mastering_detail'),
+
+    path("employee/",StuffMasteringList.as_view(), name='mastering_list'),
+    path("employee/<uuid:pk>/",MasteringTeachersList.as_view(), name='mastering_list')
 ]
