@@ -18,7 +18,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "phone", "role", "password", "salary",
-            "photo", "filial", "balance", "ball", "pages", "files",
+            "photo", "filial", "balance", "ball", "files",
             "enter", "leave", "date_of_birth",
         )
         # We don't need to add extra_kwargs for password
@@ -30,7 +30,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
         if not password:
             raise serializers.ValidationError({"password": "Password is required."})
 
-        page_data = validated_data.pop('pages', [])
         files = validated_data.pop('files', [])
         filial = validated_data.pop('filial', None)
 
@@ -38,7 +37,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.set_password(password)  # Hash the password
         user.save()
         user.filial.set(filial)
-        user.pages.set(page_data)
         user.files.set(files)
         user.save()
         return user
