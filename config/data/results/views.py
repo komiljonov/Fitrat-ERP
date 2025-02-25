@@ -132,7 +132,7 @@ class ResultsView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Results.objects.filter(filial=self.request.user.filial)
+        queryset = Results.objects.filter(filial__in=self.request.user.filial.all())
         status = self.request.query_params.get('status')
         type = self.request.query_params.get('type')
         filial = self.request.query_params.get('filial')
@@ -143,7 +143,7 @@ class ResultsView(ListAPIView):
         if type:
             queryset = queryset.filter(results=type)
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            queryset = queryset.filter(filial__id__in=filial)
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
         return queryset
