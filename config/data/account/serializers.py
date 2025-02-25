@@ -91,14 +91,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False)
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True, required=False)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
-    pages = serializers.PrimaryKeyRelatedField(queryset=Page.objects.all(), many=True, required=False)
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, required=False)
-    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), required=False)
+    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(),many=True, required=False)
 
     class Meta:
         model = CustomUser
         fields = ["id", "phone", "full_name", "first_name", "last_name", "password","is_archived",
-                  "role", "photo", "salary", "enter", "leave", "pages", "files","filial",
+                  "role", "photo", "salary", "enter", "leave", "files","filial",
                   "date_of_birth"]
 
     def update(self, instance, validated_data):
@@ -118,18 +117,16 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         # Update other fields except many-to-many
         for attr, value in validated_data.items():
-            if attr not in ["pages", "files","filial"]:
+            if attr not in [ "files","filial"]:
                 setattr(instance, attr, value)
 
-        # Update Many-to-Many Fields Safely
-        if "pages" in validated_data:
-            instance.pages.set(validated_data["pages"] or [])  # Ensure empty lists don't cause errors
+
         if "files" in validated_data:
             print("Updating files:", validated_data["files"])  # Debugging
             instance.files.set(validated_data["files"] or [])
 
         if "filial" in validated_data:
-            instance.filial.set(validated_data["filial"])
+            instance.filial.set(validated_data["filial"] or [])
 
         instance.save()
         return instance
