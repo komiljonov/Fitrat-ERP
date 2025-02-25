@@ -134,7 +134,7 @@ class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class LidListNoPG(FilialRestrictedQuerySetMixin, ListAPIView):
+class LidListNoPG(ListAPIView):
     queryset = Lid.objects.all()
     serializer_class = LidSerializer
 

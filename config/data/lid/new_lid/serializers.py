@@ -19,7 +19,7 @@ from ...upload.views import UploadFileAPIView
 
 class LidSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
-    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
+    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), many=True,allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
     call_operator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),
                                                        allow_null=True)
