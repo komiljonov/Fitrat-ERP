@@ -2,7 +2,7 @@ from django.contrib.admin import action
 from django.db.models import Sum
 from rest_framework import serializers
 
-from .models import Finance, Casher, Handover, Kind, PaymentMethod
+from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
@@ -248,3 +248,17 @@ class FinanceTeacherSerializer(serializers.ModelSerializer):
             })
 
         return group_data
+
+class KpiFinanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KpiFinance
+        fields = [
+            "id",
+            "user",
+            "lid",
+            "student",
+            "reason",
+            "amount",
+            "type",
+            "created_at",
+        ]
