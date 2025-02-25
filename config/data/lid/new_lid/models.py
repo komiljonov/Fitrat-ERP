@@ -14,7 +14,10 @@ class Lid(TimeStampModel):
     sender_id = models.CharField(max_length=120,null=True,blank=True)
     message_text = models.CharField(max_length=120,null=True,blank=True)
 
-    photo : "File" = models.ForeignKey('upload.File',on_delete=models.CASCADE,null=True,blank=True,related_name='lids_photo')
+    photo : "File" = models.ForeignKey('upload.File',
+                                       on_delete=models.SET_NULL,
+                                       null=True,blank=True,
+                                       related_name='lids_photo')
 
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100,null=True,blank=True)
@@ -82,7 +85,8 @@ class Lid(TimeStampModel):
 
     is_frozen = models.BooleanField(default=False,help_text="Is this student frozen or not")
 
-    call_operator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL,
+    call_operator : "CustomUser" = models.ForeignKey("account.CustomUser",
+                                                     on_delete=models.SET_NULL,
                                                      null=True, blank=True,
                                                      help_text="CallOperator for this lid",
                                                      related_name="call_operator")
