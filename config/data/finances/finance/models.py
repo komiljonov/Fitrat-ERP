@@ -163,6 +163,7 @@ class Sale(TimeStampModel):
             ("VOUCHER", "VOUCHER"),
             ("SALE", "SALE"),
         ],
+        max_length=20,
         null=True,
         blank=True,
     )
