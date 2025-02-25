@@ -61,6 +61,12 @@ class StuffMasteringList(ListCreateAPIView):
     serializer_class = KpiFinanceSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        id = self.request.query_params.get('id')
+        if id:
+            return KpiFinance.objects.filter(user__id=id)
+        return KpiFinance.objects.all()
+
 
 class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
     queryset = KpiFinance.objects.all()
