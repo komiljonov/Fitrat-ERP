@@ -141,7 +141,7 @@ class FilialRestrictedQuerySetMixin:
             return queryset.none()  # No data if the user has no filial assigned
 
         # Filter the queryset by filial
-        queryset = queryset.filter(filial=user_filial)
+        queryset = queryset.filter(filial__in=user_filial.all())
 
         return queryset
 
