@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 
 import icecream
@@ -19,47 +18,37 @@ from ..results.models import Results
 from ..student.attendance.models import Attendance
 from ..upload.serializers import FileUploadSerializer
 
-import uuid
-import uuid
 
 class DashboardView(APIView):
     def get(self, request, *args, **kwargs):
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        service_manager = request.query_params.get('service_manager')
-        teacher = request.query_params.get('teacher')
-        filial = request.query_params.get('filial')
-        sales_manager = request.query_params.get('sales_manager')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        channel_id = self.request.query_params.get('marketing_channel')
+        service_manager = self.request.query_params.get('service_manager')
+        teacher = self.request.query_params.get('teacher')
+        filial = self.request.query_params.get('filial')
+        sales_manager = self.request.query_params.get('sales_manager')
 
-        # Extract multiple marketing_channel values
-        channel_ids = request.query_params.getlist('marketing_channel')
 
         filters = {}
-
         if start_date:
             filters['created_at__gte'] = start_date
         if end_date:
             filters['created_at__lte'] = end_date
         if sales_manager:
-            filters['sales_manager__id'] = sales_manager
+            filters['sales_manager'] = sales_manager
         if service_manager:
-            filters['service_manager__id'] = service_manager
+            filters['service_manager'] = service_manager
         if filial:
-            filters['filial__in'] = filial
+            filters['filial'] = filial
 
-        # Validate and filter marketing_channel UUIDs
-        if channel_ids:
-            valid_channel_ids = []
-            for ch_id in channel_ids:
-                try:
-                    valid_channel_ids.append(str(uuid.UUID(ch_id)))  # Convert to valid UUID
-                except ValueError:
-                    return Response({"error": f"Invalid marketing_channel UUID: {ch_id}"}, status=400)
+        channel = None
+        if channel_id:
+            try:
+                channel = MarketingChannel.objects.get(id=channel_id)
+            except MarketingChannel.DoesNotExist:
+                return Response({"error": "Invalid marketing_channel ID"}, status=400)
 
-            if valid_channel_ids:
-                filters['marketing_channel__id__in'] = valid_channel_ids  # Use __in to filter multiple UUIDs
-
-        # Queries using the updated filters
         orders = Lid.objects.filter(
             is_archived=False,
             is_frozen=False,
@@ -111,6 +100,7 @@ class DashboardView(APIView):
             action="INCOME",
             kind=course_payment,
             is_first=True,
+            **filters,
         ).count()
 
         first_course_payment_archived = Finance.objects.filter(
@@ -118,16 +108,22 @@ class DashboardView(APIView):
             kind=course_payment,
             is_first=True,
             student__is_archived=True,
+            **filters,
         ).count()
 
         if StudentGroup.student:
             course_ended = StudentGroup.objects.filter(
                 group__status="INACTIVE",
+                **filters,
             ).count()
         else:
             course_ended = StudentGroup.objects.filter(
                 group__status="INACTIVE",
+                **filters,
             ).count()
+
+        # moved_to_filial = 45  # Static value, update as needed
+        # come_from_filial = 13  # Static value, update as needed
 
         lids = Lid.objects.filter(
             is_archived=False,
@@ -146,6 +142,8 @@ class DashboardView(APIView):
             "first_course_payment": first_course_payment,
             "first_course_payment_archived": first_course_payment_archived,
             "course_ended": course_ended,
+            # "moved_to_filial": moved_to_filial,
+            # "come_from_filial": come_from_filial,
         }
 
         return Response(data)
