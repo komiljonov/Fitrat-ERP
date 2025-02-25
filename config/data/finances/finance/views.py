@@ -509,6 +509,7 @@ class PaymentStatistics(APIView):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
         filter = {}
+
         if start_date:
             filter['created_at__gte'] = start_date
         if end_date:
@@ -518,14 +519,23 @@ class PaymentStatistics(APIView):
             'Click', 'Payme', 'Cash', 'Card', "Money_send"
         ]
 
-        def get_total_amount(payment_name):
-            return Finance.objects.filter(payment_method=payment_name, action="INCOME", **filter).aggregate(
+        def get_total_amount(payment_name, action_type):
+            return Finance.objects.filter(payment_method=payment_name, action=action_type, **filter).aggregate(
                 total=Sum('amount'))['total'] or 0
 
-        data = {payment.lower().replace(" ", "_"): get_total_amount(payment) for payment in valid_payment_methods}
-        data["total"] = sum(data.values())
+        data = {}
+
+        for payment in valid_payment_methods:
+            formatted_name = payment.lower().replace(" ", "_")
+            data[f"{formatted_name}_income"] = get_total_amount(payment, "INCOME")
+            data[f"{formatted_name}_expense"] = get_total_amount(payment, "EXPENSE")
+
+        # Compute total income and expense
+        data["total_income"] = sum(data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods)
+        data["total_expense"] = sum(data[f"{p.lower().replace(' ', '_')}_expense"] for p in valid_payment_methods)
 
         return Response(data)
+
 
 
 class PaymentCasherStatistics(ListAPIView):
