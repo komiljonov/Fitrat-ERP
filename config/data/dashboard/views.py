@@ -223,7 +223,6 @@ class DashboardLineGraphAPIView(APIView):
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         casher_id = request.query_params.get('cashier')
-        payment_type = request.query_params.get('kind')
 
         filters = {}
 
@@ -234,14 +233,6 @@ class DashboardLineGraphAPIView(APIView):
                 filters['casher__id'] = casher.id
             except Casher.DoesNotExist:
                 return Response({"error": "Casher not found"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Ensure valid payment_type is provided (INCOME or EXPENSE)
-        valid_payment_types = ["INCOME", "EXPENSE"]
-        if payment_type and payment_type.upper() in valid_payment_types:
-            icecream.ic(payment_type)
-            filters['action__exact'] = payment_type.upper()
-        elif payment_type:  # Invalid value
-            return Response({"error": "Invalid payment type. Use 'INCOME' or 'EXPENSE'."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Filter by start_date and end_date if provided
         if start_date:
@@ -256,32 +247,62 @@ class DashboardLineGraphAPIView(APIView):
             except ValueError:
                 return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Query the filtered data and group by weekday
-        queryset = (
-            Finance.objects
-            .filter(**filters)
-            .annotate(weekday=ExtractWeekDay('created_at'))  # Extract weekday (1=Sunday, 7=Saturday)
-            .values('weekday')
-            .annotate(total_amount=Sum('amount'))  # Sum amounts per weekday
-        )
-        summ = queryset.aggregate(Sum('amount'))
-
-        # Initialize default data for all weekdays
+        # Define weekdays mapping
         weekday_map = {
             1: 'Sunday', 2: 'Monday', 3: 'Tuesday', 4: 'Wednesday',
             5: 'Thursday', 6: 'Friday', 7: 'Saturday'
         }
-        full_week_data = {day: 0 for day in weekday_map.values()}
 
-        # Update full week data with actual totals
-        for item in queryset:
+        # Initialize default structure for all weekdays
+        full_week_data = {day: {"income": 0, "expense": 0} for day in weekday_map.values()}
+
+        # Fetch income data
+        income_queryset = (
+            Finance.objects
+            .filter(action="INCOME", **filters)
+            .annotate(weekday=ExtractWeekDay('created_at'))
+            .values('weekday')
+            .annotate(total_amount=Sum('amount'))
+        )
+
+        # Fetch expense data
+        expense_queryset = (
+            Finance.objects
+            .filter(action="EXPENSE", **filters)
+            .annotate(weekday=ExtractWeekDay('created_at'))
+            .values('weekday')
+            .annotate(total_amount=Sum('amount'))
+        )
+
+        # Aggregate income data
+        for item in income_queryset:
             weekday_name = weekday_map[item['weekday']]
-            full_week_data[weekday_name] = item['total_amount']
+            full_week_data[weekday_name]["income"] = item['total_amount']
+
+        # Aggregate expense data
+        for item in expense_queryset:
+            weekday_name = weekday_map[item['weekday']]
+            full_week_data[weekday_name]["expense"] = item['total_amount']
+
+        # Compute total income and expense
+        total_income = sum(item["income"] for item in full_week_data.values())
+        total_expense = sum(item["expense"] for item in full_week_data.values())
 
         # Convert dictionary to list format
-        result = [{"weekday": day, "total_amount": total,"total" : summ} for day, total in full_week_data.items()]
+        result = [
+            {
+                "weekday": day,
+                "income": total["income"],
+                "expense": total["expense"]
+            }
+            for day, total in full_week_data.items()
+        ]
 
-        return Response(result, status=status.HTTP_200_OK)
+        return Response({
+            "data": result,
+            "total_income": total_income,
+            "total_expense": total_expense
+        }, status=status.HTTP_200_OK)
 
 
 class MonitoringView(APIView):
