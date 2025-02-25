@@ -96,16 +96,17 @@ class LidSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context['request']
 
-        if instance.lid_stage_type == "NEW_LID":
-            if instance.call_operator is None and request.user.role == 'CALL_OPERATOR':
-                validated_data['call_operator'] = request.user
-            else:
-                validated_data['call_operator'] = None
+        # Ensure call_operator is updated properly
+        if instance.lid_stage_type == "NEW_LID" and request.user.role == 'CALL_OPERATOR':
+            instance.call_operator = request.user
 
-        if instance.lid_stage_type == "ORDERED_LID":
-            if instance.sales_manager is None and request.user.role == 'ADMINISTRATOR':
-                validated_data['sales_manager'] = request.user
-                validated_data['filial'] = request.user.filial
+        if instance.lid_stage_type == "ORDERED_LID" and request.user.role == 'ADMINISTRATOR':
+            instance.sales_manager = request.user
+            instance.filial = request.user.filial
+
+        # Update call_operator from request if provided
+        if "call_operator" in validated_data:
+            instance.call_operator = validated_data["call_operator"]
 
         # Handling file updates using set()
         files = validated_data.get('file', None)
@@ -114,7 +115,7 @@ class LidSerializer(serializers.ModelSerializer):
 
         # Update other fields
         for attr, value in validated_data.items():
-            if attr != 'file':  # Skip file field to avoid conflict
+            if attr not in ["file", "call_operator"]:  # Skip file field to avoid conflict
                 setattr(instance, attr, value)
 
         instance.save()
