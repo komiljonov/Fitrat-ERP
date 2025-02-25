@@ -36,17 +36,17 @@ class DashboardView(APIView):
         if end_date:
             filters['created_at__lte'] = end_date
         if sales_manager:
-            filters['sales_manager'] = sales_manager
+            filters['sales_manager__id'] = sales_manager
         if service_manager:
-            filters['service_manager'] = service_manager
+            filters['service_manager__id'] = service_manager
         if filial:
-            filters['filial'] = filial
+            filters['filial__in'] = filial
 
         channel = None
         if channel_id:
             try:
                 channel = MarketingChannel.objects.get(id=channel_id)
-                filters['marketing_channel'] = channel
+                filters['marketing_channel__id'] = channel
             except MarketingChannel.DoesNotExist:
                 return Response({"error": "Invalid marketing_channel ID"}, status=400)
 
