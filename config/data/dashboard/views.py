@@ -48,15 +48,16 @@ class DashboardView(APIView):
             filters['filial__in'] = filial
 
         # Validate and filter marketing_channel UUIDs
-        valid_channel_ids = []
-        for ch_id in channel_ids:
-            try:
-                valid_channel_ids.append(str(uuid.UUID(ch_id)))  # Convert to valid UUID
-            except ValueError:
-                return Response({"error": f"Invalid marketing_channel UUID: {ch_id}"}, status=400)
+        if channel_ids:
+            valid_channel_ids = []
+            for ch_id in channel_ids:
+                try:
+                    valid_channel_ids.append(str(uuid.UUID(ch_id)))  # Convert to valid UUID
+                except ValueError:
+                    return Response({"error": f"Invalid marketing_channel UUID: {ch_id}"}, status=400)
 
-        if valid_channel_ids:
-            filters['marketing_channel__id__in'] = valid_channel_ids  # Use __in to filter multiple UUIDs
+            if valid_channel_ids:
+                filters['marketing_channel__id__in'] = valid_channel_ids  # Use __in to filter multiple UUIDs
 
         # Queries using the updated filters
         orders = Lid.objects.filter(
