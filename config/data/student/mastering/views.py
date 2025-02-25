@@ -8,6 +8,8 @@ from rest_framework.response import Response
 # Create your views here.
 from .serializers import MasteringSerializer, StuffMasteringSerializer
 from .models import Mastering, MasteringTeachers
+from ...finances.finance.models import KpiFinance
+from ...finances.finance.serializers import KpiFinanceSerializer
 
 
 class MasteringList(ListCreateAPIView):
@@ -55,11 +57,12 @@ class TeacherMasteringList(ListAPIView):
 
 
 class StuffMasteringList(ListCreateAPIView):
-    queryset = MasteringTeachers.objects.all()
-    serializer_class = StuffMasteringSerializer
+    queryset = KpiFinance.objects.all()
+    serializer_class = KpiFinanceSerializer
     permission_classes = [IsAuthenticated]
 
 
 class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
-    queryset = MasteringTeachers.objects.all()
-    serializer_class = StuffMasteringSerializer
+    queryset = KpiFinance.objects.all()
+    serializer_class = KpiFinanceSerializer
+    permission_classes = [IsAuthenticated]
