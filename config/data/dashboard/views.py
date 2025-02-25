@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 import icecream
@@ -42,13 +43,16 @@ class DashboardView(APIView):
         if filial:
             filters['filial__in'] = filial
 
-        channel = None
+        channel_id = self.request.query_params.get('marketing_channel')
+
         if channel_id:
             try:
-                channel = MarketingChannel.objects.get(id=channel_id)
-                filters['marketing_channel__id'] = channel
+                channel = MarketingChannel.objects.get(id__in=channel_id)
+                filters['marketing_channel__id'] = channel.id  # Use `.id`, not the object
+            except ValueError:
+                return Response({"error": "Invalid marketing_channel format. Must be a valid UUID."}, status=400)
             except MarketingChannel.DoesNotExist:
-                return Response({"error": "Invalid marketing_channel ID"}, status=400)
+                return Response({"error": "Marketing channel not found"}, status=400)
 
         orders = Lid.objects.filter(
             is_archived=False,
