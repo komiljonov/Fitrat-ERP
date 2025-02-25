@@ -32,7 +32,7 @@ class StudentsGroupList(ListCreateAPIView):
             queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
             return queryset
         else:
-            queryset = StudentGroup.objects.filter(group__filial=self.request.user.filial)
+            queryset = StudentGroup.objects.filter(group__filial__in=self.request.user.filial.all())
             return queryset
 
 
@@ -55,7 +55,7 @@ class StudentGroupNopg(ListAPIView):
             queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
             return queryset
         else:
-            queryset = StudentGroup.objects.filter(group__filial=self.request.user.filial)
+            queryset = StudentGroup.objects.filter(group__filial__in=self.request.user.filial.all())
             return queryset
 
 
@@ -96,7 +96,7 @@ class SecondaryStudentList(ListCreateAPIView):
     def get_queryset(self):
         if self.request.user.role == 'ASSISTANT':
             return SecondaryStudentGroup.objects.filter(group__teacher__id=self.request.user.id)
-        return SecondaryStudentGroup.objects.filter(group__filial=self.request.user.filial)
+        return SecondaryStudentGroup.objects.filter(group__filial__in=self.request.user.filial.all())
 
 
 class SecondaryGroupList(ListAPIView):
