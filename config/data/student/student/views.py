@@ -23,7 +23,7 @@ from ...account.permission import FilialRestrictedQuerySetMixin
 from django.db.models import Q
 
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
-    queryset = Student.objects.all().select_related('filial', 'marketing_channel', 'sales_manager', 'service_manager')
+    queryset = Student.objects.all().select_related('marketing_channel', 'sales_manager', 'service_manager')
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
 
@@ -32,7 +32,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     filterset_fields = [
         "student_type",
         "education_lang",
-        "filial",
         "marketing_channel",
         "student_stage_type",
         "balance_status",
@@ -48,14 +47,15 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         """
         user = self.request.user
 
-        queryset = super().get_queryset()
+        queryset = self.queryset.filter(filial=user.filial.first())
+
 
         # Additional role-based filtering
         if hasattr(user, "role"):
             if user.role == "CALL_OPERATOR":
                 queryset = queryset.none()
             elif user.role == "ADMINISTRATOR":
-                queryset = queryset.filter(filial=user.filial)
+                queryset = queryset.filter(filial=user.filial.all())
 
         # Add filters based on query parameters (for sales manager and operators)
         sales_manager_id = self.request.query_params.get('sales_manager')
@@ -141,7 +141,7 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             user = None
 
         if user:
-            filial = user.filial  # Get the filial of the authenticated user
+            filial = user.filial.all()  # Get the filial of the authenticated user
         else:
             filial = None  # Handle the case where user is None (e.g., for CALL_OPERATOR)
 
@@ -254,7 +254,7 @@ class ExportLidToExcelAPIView(APIView):
                     "Maktab" if student.edu_class == "SCHOOL" else "Universitet" if student.edu_class == "UNIVERSITY" else "",
                     student.subject.name if student.subject else "",
                     student.ball,
-                    student.filial.name if student.filial else "",
+                    ", ".join([filial.name for filial in student.filial.all()]) if student.filial.exists() else "",
                     student.marketing_channel.name if student.marketing_channel else "",
                     "Yangi student" if student.student_stage_type == "NEW_STUDENT" else "Faol student",
                     student.balance_status if student.balance_status else "",
