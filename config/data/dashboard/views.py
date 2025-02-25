@@ -20,16 +20,19 @@ from ..student.attendance.models import Attendance
 from ..upload.serializers import FileUploadSerializer
 
 import uuid
+import uuid
 
 class DashboardView(APIView):
     def get(self, request, *args, **kwargs):
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
-        channel_id = request.query_params.getlist('marketing_channel')  # Get multiple values as a list
         service_manager = request.query_params.get('service_manager')
         teacher = request.query_params.get('teacher')
         filial = request.query_params.get('filial')
         sales_manager = request.query_params.get('sales_manager')
+
+        # Extract multiple marketing_channel values
+        channel_ids = request.query_params.getlist('marketing_channel')
 
         filters = {}
 
@@ -44,19 +47,16 @@ class DashboardView(APIView):
         if filial:
             filters['filial__in'] = filial
 
-        # Validate marketing_channel ID(s)
+        # Validate and filter marketing_channel UUIDs
         valid_channel_ids = []
-        if channel_id:
-            for ch_id in channel_id:
-                try:
-                    uuid.UUID(ch_id)  # Validate UUID
-                    valid_channel_ids.append(ch_id)
-                except ValueError:
-                    return Response({"error": f"Invalid marketing_channel format: {ch_id}. Must be a valid UUID."},
-                                    status=400)
+        for ch_id in channel_ids:
+            try:
+                valid_channel_ids.append(str(uuid.UUID(ch_id)))  # Convert to valid UUID
+            except ValueError:
+                return Response({"error": f"Invalid marketing_channel UUID: {ch_id}"}, status=400)
 
         if valid_channel_ids:
-            filters['marketing_channel__id__in'] = valid_channel_ids  # Apply filter if valid IDs exist
+            filters['marketing_channel__id__in'] = valid_channel_ids  # Use __in to filter multiple UUIDs
 
         # Queries using the updated filters
         orders = Lid.objects.filter(
@@ -109,7 +109,7 @@ class DashboardView(APIView):
         first_course_payment = Finance.objects.filter(
             action="INCOME",
             kind=course_payment,
-            is_first=True
+            is_first=True,
         ).count()
 
         first_course_payment_archived = Finance.objects.filter(
