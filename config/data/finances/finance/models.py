@@ -152,3 +152,36 @@ class KpiFinance(TimeStampModel):
     def __str__(self):
         return f"{self.user.phone} {self.type} {self.amount}"
 
+class Sale(TimeStampModel):
+    creator : "CustomUser" = models.ForeignKey(
+        'account.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='finances_creator_sale',
+    )
+    type = models.CharField(
+        choices=[
+            ("VOUCHER", "VOUCHER"),
+            ("SALE", "SALE"),
+        ],
+        null=True,
+        blank=True,
+    )
+    amount = models.FloatField(default=0)
+
+    student : "Student" = models.ForeignKey(
+        'student.Student',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='finances_sale_student',
+    )
+    lid : "Lid" = models.ForeignKey(
+        'new_lid.Lid',
+        on_delete=models.SET_NULL,
+        related_name='finances_sale_lid',
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return f"{self.creator.phone} {self.type} {self.amount}"

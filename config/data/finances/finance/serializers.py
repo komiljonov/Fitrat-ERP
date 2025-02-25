@@ -2,7 +2,7 @@ from django.contrib.admin import action
 from django.db.models import Sum
 from rest_framework import serializers
 
-from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance
+from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance, Sale
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
@@ -269,3 +269,26 @@ class KpiFinanceSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['user'] = UserListSerializer(instance.user).data
+        return data
+
+
+
+class SalesSerializer(serializers.ModelSerializer):
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    class Meta:
+        model = Sale
+        fields = [
+            "id",
+            "lid",
+            "student",
+            "creator",
+            "amount",
+            "type",
+            "created_at",
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['creator'] = UserListSerializer(instance.creator).data
+        return data

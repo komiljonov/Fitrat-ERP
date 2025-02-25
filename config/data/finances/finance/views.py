@@ -16,9 +16,9 @@ from rest_framework.views import APIView
 
 from data.account.models import CustomUser
 from data.student.student.models import Student
-from .models import Finance, Casher, Handover, Kind, PaymentMethod
+from .models import Finance, Casher, Handover, Kind, PaymentMethod, Sale
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, KindSerializer, \
-    PaymentMethodSerializer
+    PaymentMethodSerializer, SalesSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 
@@ -583,3 +583,15 @@ class PaymentCasherStatistics(ListAPIView):
     def get_queryset(self):
         """ListAPIView requires a queryset; returning an empty one to satisfy DRF behavior."""
         return Finance.objects.none()
+
+
+class SalesList(ListCreateAPIView):
+    serializer_class = SalesSerializer
+    queryset = Sale.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        filial = self.request.query_params.get('filial')
+        if filial:
+            return Sale.objects.filter(filial__in=filial)
+        return Sale.objects.filter(filial__in=self.request.user.filial.all())
