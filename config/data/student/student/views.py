@@ -145,26 +145,26 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         else:
             filial = None  # Handle the case where user is None (e.g., for CALL_OPERATOR)
 
-        new_students_count = Student.objects.filter(is_archived=False, filial=filial,
+        new_students_count = Student.objects.filter(is_archived=False, filial__in=filial,
                                                     student_stage_type="NEW_STUDENT").count()
         total_debt = \
-            Student.objects.filter(is_archived=False, filial=filial, student_stage_type="NEW_STUDENT",
+            Student.objects.filter(is_archived=False, filial__in=filial, student_stage_type="NEW_STUDENT",
                                    balance__lt=0).aggregate(total_debt=Sum('balance'))['total_debt'] or 0
-        archived_new_students = Student.objects.filter(is_archived=True, filial=filial,
+        archived_new_students = Student.objects.filter(is_archived=True, filial__in=filial,
                                                        student_stage_type="NEW_STUDENT").count()
 
         # Ordered statistics
-        student_count = Student.objects.filter(is_archived=False, filial=filial,
+        student_count = Student.objects.filter(is_archived=False, filial__in=filial,
                                                student_stage_type="ACTIVE_STUDENT").count()
         total_income = \
-            Student.objects.filter(is_archived=False, filial=filial, student_stage_type="ACTIVE_STUDENT",
+            Student.objects.filter(is_archived=False, filial__in=filial, student_stage_type="ACTIVE_STUDENT",
                                    balance__gt=0).aggregate(total_income=Sum('balance'))['total_income'] or 0
         student_total_debt = \
-            Student.objects.filter(is_archived=False, filial=filial, student_stage_type="ACTIVE_STUDENT",
+            Student.objects.filter(is_archived=False, filial__in=filial, student_stage_type="ACTIVE_STUDENT",
                                    balance__lt=0).aggregate(
                 total_debt=Sum('balance'))['total_debt'] or 0
 
-        archived_student = Student.objects.filter(is_archived=True, filial=filial,
+        archived_student = Student.objects.filter(is_archived=True, filial__in=filial,
                                                   student_stage_type="ACTIVE_STUDENT").count()
 
         statistics = {
