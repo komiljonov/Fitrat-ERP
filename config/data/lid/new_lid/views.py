@@ -272,8 +272,8 @@ class LidStatisticsView(ListAPIView):
 
         new_leads = queryset.filter(
             lid_stage_type="NEW_LID",
+            lid_stages="YANGI_LEAD",
             is_archived=False,
-            call_operator=None
         ).count()
 
         in_progress = queryset.filter(
