@@ -94,7 +94,7 @@ class RoomListAPIView(ListCreateAPIView):
 
     def perform_create(self, serializer):
         """Automatically assign the requesting user's filial when creating a room."""
-        serializer.save(filial=self.request.user.filial)
+        serializer.save(filial__in=self.request.user.filial.all())
 
 
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
