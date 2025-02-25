@@ -537,7 +537,6 @@ class PaymentStatistics(APIView):
         return Response(data)
 
 
-
 class PaymentCasherStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -552,7 +551,7 @@ class PaymentCasherStatistics(ListAPIView):
             return Response({"error": "Casher ID is required"}, status=400)
 
         # Define filters
-        filter = {}
+        filter = {"casher__id": id}
         if start_date:
             filter['created_at__gte'] = start_date
         if end_date:
@@ -563,15 +562,21 @@ class PaymentCasherStatistics(ListAPIView):
             'Click', 'Payme', 'Naqt pul', 'Card', "Pul o'tkazish"
         ]
 
-        # Compute total amounts
-        data = {
-            payment.lower().replace(" ", "_"): Finance.objects.filter(
-                action="INCOME", casher__id=id, payment_method=payment, **filter
-            ).aggregate(total=Sum('amount'))['total'] or 0
-            for payment in valid_payment_methods
-        }
+        # Function to calculate totals
+        def get_total_amount(payment, action_type):
+            return Finance.objects.filter(payment_method=payment, action=action_type, **filter).aggregate(
+                total=Sum('amount'))['total'] or 0
 
-        data["total"] = sum(data.values())
+        # Compute income and expense for each method
+        data = {}
+        for payment in valid_payment_methods:
+            formatted_name = payment.lower().replace(" ", "_")
+            data[f"{formatted_name}_income"] = get_total_amount(payment, "INCOME")
+            data[f"{formatted_name}_expense"] = get_total_amount(payment, "EXPENSE")
+
+        # Compute total income and expense
+        data["total_income"] = sum(data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods)
+        data["total_expense"] = sum(data[f"{p.lower().replace(' ', '_')}_expense"] for p in valid_payment_methods)
 
         return Response(data)
 
