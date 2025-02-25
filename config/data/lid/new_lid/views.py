@@ -63,11 +63,11 @@ class LidListCreateView(ListCreateAPIView):
         if user.role == "CALL_OPERATOR" or user.is_call_center == True:
             queryset = queryset.filter(
                 Q(call_operator=user) | Q(call_operator__isnull=True),
-                Q(filial=user.filial) | Q(filial__isnull=True)
+                Q(filial__in=user.filial.all()) | Q(filial__isnull=True)
             )
 
         else:
-            queryset = queryset.filter(filial=user.filial)
+            queryset = queryset.filter(Q(filial__in=user.filial.all()) | Q(filial__isnull=True))
 
         # Debugging search_term
         search_term = self.request.query_params.get("search", "")
@@ -211,7 +211,7 @@ class ExportLidToExcelAPIView(APIView):
                 "Maktab" if lid.edu_class == "SCHOOL" else "Universitet" if lid.edu_class == "UNIVERSITY" else "Abutirent" if lid.edu_class else "",
                 lid.subject.name if lid.subject else "",
                 lid.ball,
-                lid.filial.name if lid.filial else "",
+                ", ".join([filial.name for filial in lid.filial.all()]) if lid.filial.exists() else "",
                 lid.marketing_channel.name if lid.marketing_channel else "",
                 "Buyurtma yaratilgan" if lid.lid_stage_type == "ORDERED_LID" else "Yangi lead",
                 lid.lid_stages if lid.lid_stages else "",
@@ -252,16 +252,16 @@ class LidStatisticsView(ListAPIView):
             queryset = Lid.objects.all()
 
         if user.role != "CALL_OPERATOR" and user.is_call_center:
-            queryset = Lid.objects.filter(filial=user.filial)
+            queryset = Lid.objects.filter(filial__in=user.filial.all())
 
         if user.role != "CALL OPERATOR" and user.is_call_center == False:
-            queryset = Lid.objects.filter(filial=user.filial)
+            queryset = Lid.objects.filter(filial__in=user.filial.all())
 
         # Special conditions for call operators
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = Lid.objects.filter(
                 Q(call_operator=user) | Q(call_operator__isnull=True),
-                Q(filial=user.filial) | Q(filial__isnull=True)
+                Q(filial__in=user.filial) | Q(filial__isnull=True)
             )
 
         # Common filters
