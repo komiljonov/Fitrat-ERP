@@ -16,6 +16,7 @@ from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
 from ..results.models import Results
 from ..student.attendance.models import Attendance
+from ..student.student.models import Student
 from ..upload.serializers import FileUploadSerializer
 
 
@@ -454,3 +455,19 @@ class DashboardWeeklyFinanceAPIView(APIView):
             "percentages": percentages,
             "available_kinds": existing_kinds  # Returning available kinds for front-end usage
         }, status=200)
+
+
+class ArchivedView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        lid = Lid.objects.filter(is_archived=True,lid_stage_type="NEW_LID", is_student=False).count()
+        order = Lid.objects.filter(is_archived=True,lid_stage_type="ORDERED_LID", is_student=False).count()
+        new_student = Student.objects.filter(student_stage_type="NEW_STUDENT", is_archived=True).count()
+        student = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", is_archived=True).count()
+
+        return Response({
+            "lid" : lid,
+            "order" : order,
+            "new_student" : new_student,
+            "student" : student,
+        })
