@@ -13,8 +13,8 @@ from ...lid.new_lid.serializers import LidSerializer
 
 class StudentsGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
 
 
     class Meta:

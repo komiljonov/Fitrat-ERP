@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
+from icecream import ic
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -33,6 +34,8 @@ class StudentsGroupList(ListCreateAPIView):
             return queryset
         else:
             queryset = StudentGroup.objects.filter(group__filial__in=self.request.user.filial.all())
+            ic(self.request.user.filial.all())
+            ic(queryset)
             return queryset
 
 
