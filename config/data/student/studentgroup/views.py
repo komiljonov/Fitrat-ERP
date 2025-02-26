@@ -70,8 +70,12 @@ class GroupStudentList(ListAPIView):
         """
         Fetch the students related to a specific group from the URL path parameter.
         """
-        group_id = self.kwargs.get('pk')  # Get the 'pk' from the URL
-        queryset = StudentGroup.objects.filter(group__id=group_id)  # Filter by the group id
+        status = self.request.query_params.get('status')
+        group_id = self.kwargs.get('pk')
+        queryset = StudentGroup.objects.filter(group__id=group_id)
+        if status is not None:
+            queryset = StudentGroup.objects.filter(student__isnull=False,
+                                                   student__balance_status=status)
         return queryset
 
     def get_paginated_response(self, data):
