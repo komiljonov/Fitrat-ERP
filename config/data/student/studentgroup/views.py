@@ -73,9 +73,11 @@ class GroupStudentList(ListAPIView):
         status = self.request.query_params.get('status')
         group_id = self.kwargs.get('pk')
         queryset = StudentGroup.objects.filter(group__id=group_id)
-        if status is not None:
+        if status:
             queryset = StudentGroup.objects.filter(student__isnull=False,
                                                    student__balance_status=status)
+        elif status == "":
+            queryset = StudentGroup.objects.filter(student__isnull=False,)
         return queryset
 
     def get_paginated_response(self, data):
