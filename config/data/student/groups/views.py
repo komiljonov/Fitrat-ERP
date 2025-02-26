@@ -41,6 +41,22 @@ class StudentListAPIView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
 
+    def get_queryset(self):
+        filter = {}
+        queryset = Group.objects.all()
+        course = self.request.query_params.get('course', None)
+        teacher = self.request.query_params.get('teacher', None)
+        start_date = self.request.query_params.get('start_date', None)
+        end_date = self.request.query_params.get('end_date', None)
+        if course:
+            filter['course__id'] = course
+        if teacher:
+            filter['teacher__id'] = teacher
+        if start_date:
+            filter['created_at__gte'] = start_date
+        if end_date:
+            filter['created_at__lte'] = end_date
+        return queryset.filter(**filter)
     def get_paginated_response(self, data):
         return Response(data)
 
