@@ -274,15 +274,11 @@ class KpiFinanceSerializer(serializers.ModelSerializer):
 
 
 class SalesSerializer(serializers.ModelSerializer):
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
-    student = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     class Meta:
         model = Sale
         fields = [
             "id",
-            "lid",
-            "student",
             "creator",
             "amount",
             "type",

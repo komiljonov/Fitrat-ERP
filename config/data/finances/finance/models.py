@@ -158,6 +158,11 @@ class Sale(TimeStampModel):
         on_delete=models.CASCADE,
         related_name='finances_creator_sale',
     )
+    name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+    )
     type = models.CharField(
         choices=[
             ("VOUCHER", "VOUCHER"),
@@ -168,21 +173,6 @@ class Sale(TimeStampModel):
         blank=True,
     )
     amount = models.FloatField(default=0)
-
-    student : "Student" = models.ForeignKey(
-        'student.Student',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='finances_sale_student',
-    )
-    lid : "Lid" = models.ForeignKey(
-        'new_lid.Lid',
-        on_delete=models.SET_NULL,
-        related_name='finances_sale_lid',
-        null=True,
-        blank=True,
-    )
 
     def __str__(self):
         return f"{self.creator.phone} {self.type} {self.amount}"
