@@ -53,10 +53,10 @@ class UserList(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        icecream.ic(user.filial)
+        icecream.ic(user.filial.first())
         role = self.request.query_params.get('role', None)
         if role:
-            return CustomUser.objects.filter(role=role,filial=user.filial).order_by('-created_at')
+            return CustomUser.objects.filter(role=role,filial__in=user.filial.first()).order_by('-created_at')
         return CustomUser.objects.all().order_by('-created_at')
 
 
