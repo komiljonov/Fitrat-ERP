@@ -161,7 +161,7 @@ class NationalSertificateApi(ListCreateAPIView):
     queryset = Results.objects.all()
 
     def get_queryset(self):
-        queryset = Results.objects.filter(filial=self.request.user.filial)
+        queryset = Results.objects.filter(filial__in=self.request.user.filial.all())
         status = self.request.query_params.get('status')
         type = self.request.query_params.get('type')
 
