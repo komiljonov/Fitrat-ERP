@@ -34,7 +34,7 @@ class RegisterAPIView(CreateAPIView):
         # Check if the phone number already exists
         phone = serializer.validated_data['phone']
         if CustomUser.objects.filter(phone=phone).exists():
-            return Response({'success': False, 'message': 'This phone number is already registered.'},
+            return Response({'success': False, 'message': 'already_used_number'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         # Save the user (this calls the `create` method of the serializer)
