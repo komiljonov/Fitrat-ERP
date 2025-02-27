@@ -106,7 +106,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         phone = validated_data.get("phone")
         if phone and phone != instance.phone:
             if CustomUser.objects.exclude(id=instance.id).filter(phone=phone).exists():
-                raise serializers.ValidationError({"phone": "This phone number is already in use."})
+                raise serializers.ValidationError({"phone": "already_used_number"})
             instance.phone = phone
 
         # Update `photo` field manually
