@@ -104,9 +104,9 @@ class RoomListAPIView(ListCreateAPIView):
     filterset_fields = ('room_number', 'room_filling')
 
     def get_queryset(self):
-        filial = self.request.user.filial
+        filial = self.request.user.filial.all()
         if filial:
-            return Room.objects.filter(filial=filial)
+            return Room.objects.filter(filial__in=filial)
 
     def perform_create(self, serializer):
         """Automatically assign the requesting user's filial when creating a room."""
