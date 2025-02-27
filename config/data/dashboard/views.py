@@ -18,6 +18,11 @@ from ..results.models import Results
 from ..student.attendance.models import Attendance
 from ..student.student.models import Student
 from ..upload.serializers import FileUploadSerializer
+import pandas as pd
+from io import BytesIO
+from django.http import HttpResponse
+from rest_framework.views import APIView
+
 
 
 class DashboardView(APIView):
@@ -171,7 +176,6 @@ class MarketingChannels(APIView):
 
         return Response(channel_counts)
 
-
 class Room_place(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
@@ -205,7 +209,6 @@ class Room_place(APIView):
             "is_free_percent": is_free_percent,
         }
         return Response(response)
-
 
 class DashboardLineGraphAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -300,7 +303,6 @@ class DashboardLineGraphAPIView(APIView):
             "total_expense": total_expense
         }, status=status.HTTP_200_OK)
 
-
 class MonitoringView(APIView):
     def get(self, request, *args, **kwargs):
         # Get query parameters
@@ -364,6 +366,81 @@ class MonitoringView(APIView):
 
         return Response(teacher_data)
 
+
+class MonitoringExcelDownloadView(APIView):
+    def get(self, request, *args, **kwargs):
+        # Get query parameters
+        full_name = request.query_params.get('search', None)
+        start_date = request.query_params.get('start_date', None)
+        end_date = request.query_params.get('end_date', None)
+        subject_id = request.query_params.get('subject', None)
+
+        # Base queryset for teachers
+        teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
+            name=Concat(F('first_name'), Value(' '), F('last_name')),
+            overall_point=F('ball')
+        )
+
+        # Apply filters based on query parameters
+        if full_name:
+            teachers = teachers.filter(name__icontains=full_name)
+
+        if start_date and end_date:
+            teachers = teachers.filter(created_at__date__range=[start_date, end_date])
+        elif start_date:
+            teachers = teachers.filter(created_at__date__gte=start_date)
+        elif end_date:
+            teachers = teachers.filter(created_at__date__lte=end_date)
+
+        teacher_data = []
+
+        for teacher in teachers:
+            subjects_query = (
+                Group.objects.filter(teacher=teacher)
+                .annotate(
+                    subject_id=F("course__subject__id"),
+                    subject_name=F("course__subject__name")
+                )
+                .values("subject_id", "subject_name")  # Ensure renamed fields are used in values()
+            )
+            if subject_id:
+                subjects_query = subjects_query.filter(id=subject_id)
+
+            subjects = list(subjects_query)
+
+            if start_date and end_date:
+                results = Results.objects.filter(teacher=teacher, created_at__gte=start_date,
+                                                 created_at__lte=end_date).count()
+            elif start_date:
+                results = Results.objects.filter(teacher=teacher, created_at__gte=start_date).count()
+            else:
+                results = Results.objects.filter(teacher=teacher).count()
+
+            # Format subjects as a string for Excel
+            subject_names = ", ".join([subject["subject_name"] for subject in subjects])
+
+            teacher_data.append({
+                "Full Name": teacher.name,
+                "Overall Point": teacher.overall_point,
+                "Subjects": subject_names,
+                "Results": results,
+            })
+
+        # Convert data to a DataFrame
+        df = pd.DataFrame(teacher_data)
+
+        # Create an in-memory Excel file
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name="Teachers")
+
+        # Prepare response
+        output.seek(0)
+        response = HttpResponse(output.read(),
+                                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response['Content-Disposition'] = 'attachment; filename="monitoring_data.xlsx"'
+
+        return response
 
 
 class DashboardWeeklyFinanceAPIView(APIView):
@@ -455,7 +532,6 @@ class DashboardWeeklyFinanceAPIView(APIView):
             "percentages": percentages,
             "available_kinds": existing_kinds  # Returning available kinds for front-end usage
         }, status=200)
-
 
 class ArchivedView(APIView):
     permission_classes = [IsAuthenticated]

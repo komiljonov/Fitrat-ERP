@@ -31,15 +31,11 @@ class StudentSerializer(serializers.ModelSerializer):
     group = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True,allow_null=True)
-    # Use CharField for password
     password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
-
     is_attendance = serializers.SerializerMethodField()
-
     secondary_group = serializers.SerializerMethodField()
     secondary_teacher = serializers.SerializerMethodField()
-
     learning = serializers.SerializerMethodField()
 
     class Meta:

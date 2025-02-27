@@ -2,6 +2,7 @@
 import icecream
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
+from icecream import ic
 from passlib.context import CryptContext
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotFound
@@ -25,7 +26,7 @@ pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 class RegisterAPIView(CreateAPIView):
     serializer_class = UserCreateSerializer
-    # permission_classes = [IsAuthenticated]  # Only authenticated users can create new users
+    # permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

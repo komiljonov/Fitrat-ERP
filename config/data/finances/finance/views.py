@@ -21,6 +21,10 @@ from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSeri
     PaymentMethodSerializer, SalesSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
+import io
+import pandas as pd
+from django.http import HttpResponse
+from rest_framework.views import APIView
 
 
 class CasherListCreateAPIView(ListCreateAPIView):
@@ -405,8 +409,6 @@ class FinanceTeacher(ListAPIView):
 
 
 class FinanceExcel(APIView):
-    permission_classes = [IsAuthenticated]
-
     def get(self, request, *args, **kwargs):
         casher_id = request.query_params.get('casher')
         action = request.query_params.get('action')  # INCOME / EXPENSE
@@ -453,7 +455,7 @@ class FinanceExcel(APIView):
         }, inplace=True)
 
         # Convert DataFrame to Excel
-        excel_buffer = io.BytesIO()
+        excel_buffer = io.BytesIO()  # <-- Ensure `io.BytesIO()` is used, NOT `pandas.io.BytesIO()`
         with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Finance Data')
 
