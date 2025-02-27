@@ -102,7 +102,7 @@ class LidSerializer(serializers.ModelSerializer):
 
         if instance.lid_stage_type == "ORDERED_LID" and request.user.role == 'ADMINISTRATOR':
             instance.sales_manager = request.user
-            instance.filial = request.user.filial
+            instance.filial = request.user.filial.first()
 
         # Update call_operator from request if provided
         if "call_operator" in validated_data:
@@ -128,14 +128,14 @@ class LidSerializer(serializers.ModelSerializer):
         if request.user.role == 'CALL_OPERATOR':
             validated_data['call_operator'] = request.user
             if request.user.filial is not None:
-                validated_data['filial'] = request.user.filial
+                validated_data['filial'] = request.user.filial.first()
 
         elif request.user.role == 'ADMINISTRATOR' and request.user.filial is not None:
             validated_data['sales_manager'] = request.user
-            validated_data['filial'] = request.user.filial
+            validated_data['filial'] = request.user.filial.first()
 
         else:
-            validated_data['filial'] = request.user.filial
+            validated_data['filial'] = request.user.filial.first()
 
         # Handle file field using set() to avoid Many-to-Many direct assignment error
         files = validated_data.pop('file', None)  # Remove the file field from validated_data
