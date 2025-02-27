@@ -12,6 +12,9 @@ from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
 
 
+from django.utils.timezone import now
+from rest_framework import serializers
+
 class AttendanceSerializer(serializers.ModelSerializer):
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
@@ -45,18 +48,47 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 return teacher[0]
         return None
 
+    def validate(self, data):
+        """
+        Ensure that a student or lid can only have one attendance per group per day.
+        """
+        student = data.get('student', None)
+        lid = data.get('lid', None)
+        group = data.get('group', None)
+        today = now().date()
+
+        if not student and not lid:
+            raise serializers.ValidationError("Either 'student' or 'lid' must be provided.")
+
+        # Check if attendance exists for student
+        if student:
+            existing_attendance = Attendance.objects.filter(
+                student=student, group=group, created_at__date=today
+            ).exists()
+            if existing_attendance:
+                raise serializers.ValidationError("This student has already been marked present today in this group.")
+
+        # Check if attendance exists for lid
+        if lid:
+            existing_attendance = Attendance.objects.filter(
+                lid=lid, group=group, created_at__date=today
+            ).exists()
+            if existing_attendance:
+                raise serializers.ValidationError("This lid has already been marked present today in this group.")
+
+        return data
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep['theme'] = ThemeSerializer(instance.theme, context=self.context,many=True).data
+        rep['theme'] = ThemeSerializer(instance.theme, context=self.context, many=True).data
         if instance.lid:
-            rep['lid'] = LidSerializer(instance.lid,context=self.context).data
+            rep['lid'] = LidSerializer(instance.lid, context=self.context).data
         else:
             rep.pop('lid', None)
 
         if instance.student:
-            rep['student'] = StudentSerializer(instance.student,context=self.context).data
+            rep['student'] = StudentSerializer(instance.student, context=self.context).data
         else:
             rep.pop('student', None)
 
