@@ -17,6 +17,7 @@ class AttendanceList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
+
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
