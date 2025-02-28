@@ -280,6 +280,7 @@ class SalesSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "creator",
+            "name",
             "amount",
             "type",
             "created_at",
