@@ -77,10 +77,10 @@ class LidSerializer(serializers.ModelSerializer):
         return list(relative)
 
     def get_course(self, obj):
-        return list(StudentGroup.objects.filter(lid=obj).values_list("group__course__name","group__course__level__id", flat=True))
+        return list(StudentGroup.objects.filter(lid=obj).values_list("group__course__name","group__course__level__id"))
 
     def get_group(self, obj):
-        return list(StudentGroup.objects.filter(lid=obj).values_list("group__id","group__teacher__id","group__name", flat=True))
+        return list(StudentGroup.objects.filter(lid=obj).values_list("group__id","group__teacher__id","group__name"))
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
