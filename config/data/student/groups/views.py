@@ -104,7 +104,7 @@ class RoomListAPIView(ListCreateAPIView):
     filterset_fields = ('room_number', 'room_filling')
 
     def get_queryset(self):
-        filial = self.request.user.filia
+        filial = self.request.user.filial
         if filial:
             return Room.objects.filter(filial=filial)
 
