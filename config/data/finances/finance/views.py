@@ -16,9 +16,9 @@ from rest_framework.views import APIView
 
 from data.account.models import CustomUser
 from data.student.student.models import Student
-from .models import Finance, Casher, Handover, Kind, PaymentMethod, Sale
+from .models import Finance, Casher, Handover, Kind, PaymentMethod, Sale, SaleStudent
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, KindSerializer, \
-    PaymentMethodSerializer, SalesSerializer
+    PaymentMethodSerializer, SalesSerializer, SaleStudentSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 import io
@@ -597,3 +597,14 @@ class SalesList(ListCreateAPIView):
         if filial:
             return Sale.objects.filter(filial__in=filial)
         return Sale.objects.filter(filial__in=self.request.user.filial.all())
+
+
+class SalesStudent(ListCreateAPIView):
+    serializer_class = SaleStudentSerializer
+    queryset = SaleStudent.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        filial = self.request.query_params.get('filial')
+        if filial:
+            return Sale.objects.filter(filial=filial)

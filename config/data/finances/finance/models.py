@@ -44,12 +44,10 @@ class Kind(TimeStampModel):
     def __str__(self):
         return f"{self.action} {self.name}"
 
-
 class PaymentMethod(TimeStampModel):
     name = models.CharField(max_length=100)
     def __str__(self):
         return f"{self.name}"
-
 
 class Finance(TimeStampModel):
 
@@ -106,7 +104,6 @@ class Finance(TimeStampModel):
     def __str__(self):
         return f'{self.amount} {self.kind.name} {self.action}'
 
-
 class Handover(TimeStampModel):
     casher : "Casher" = models.ForeignKey(
         'finance.Casher',
@@ -122,7 +119,6 @@ class Handover(TimeStampModel):
 
     def __str__(self):
         return f'{self.casher} {self.receiver} {self.amount}'
-
 
 class KpiFinance(TimeStampModel):
     user: "CustomUser" = models.ForeignKey(
@@ -176,3 +172,25 @@ class Sale(TimeStampModel):
 
     def __str__(self):
         return f"{self.creator.phone} {self.type} {self.amount}"
+
+class SaleStudent(TimeStampModel):
+    creator : "CustomUser" = models.ForeignKey(
+        'account.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='finances_creator_student_sale',
+    )
+    sale : "Sale" = models.ForeignKey(
+        'finance.Sale',
+        on_delete=models.CASCADE,
+        related_name='finances_sale_student',
+    )
+    student : "Student" = models.ForeignKey(
+        'student.Student',
+        on_delete=models.CASCADE,
+        related_name='finances_student_sale',
+    )
+    comment = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.creator.phone} {self.sale.amount} to {self.student.phone}"
+    
