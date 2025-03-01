@@ -19,10 +19,6 @@ from ..lesson.models import Lesson
 from ..lesson.serializers import LessonSerializer
 from ..studentgroup.models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
-
-from django.db.models import Q
-
-from ...department import filial
 from ...finances.finance.models import Finance
 
 
@@ -53,7 +49,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         queryset = self.queryset.filter(filial=user.filial.first())
 
-
         # Additional role-based filtering
         if hasattr(user, "role"):
             if user.role == "CALL_OPERATOR":
@@ -73,7 +68,8 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             queryset = queryset.filter(call_operator__id=call_operator_id)
 
         if course_id:
-            queryset = queryset.filter(students_group__group__course__id=course_id)  # Assuming Many-to-Many relation in groups
+            queryset = queryset.filter(
+                students_group__group__course__id=course_id)  # Assuming Many-to-Many relation in groups
         if service_manager:
             queryset = queryset.filter(service_manager__id=service_manager)
 
@@ -182,8 +178,6 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         almost_debt = Student.objects.filter(is_archived=False, filial__in=filial,
                                              balance__lt=1000).count()
 
-
-
         statistics = {
             "new_students_count": new_students_count,
             "new_to_active": from_new_to_active,
@@ -231,10 +225,10 @@ class StudentAllStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
                 group__status="INACTIVE",
             ).count()
         balance_active = Student.objects.filter(is_archived=False, **filter,
-                                              balance_status="ACTIVE",
-                                              ).count()
+                                                balance_status="ACTIVE",
+                                                ).count()
         balance_inactive = Student.objects.filter(
-            is_archived=False, **filter,balance_status="INACTIVE"
+            is_archived=False, **filter, balance_status="INACTIVE"
         ).count()
         response_data = {
             "all_students": all_students,
@@ -244,8 +238,6 @@ class StudentAllStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             "balance_inactive": balance_inactive,
         }
         return Response(response_data)
-
-
 
 
 class ExportLidToExcelAPIView(APIView):
