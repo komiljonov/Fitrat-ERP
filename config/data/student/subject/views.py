@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from .models import Subject, Level, Theme
 # Create your views here.
 from .serializers import SubjectSerializer, LevelSerializer, ThemeSerializer
+from ..course.models import Course
 from ..groups.models import Group
 
 
@@ -36,6 +37,13 @@ class LevelList(ListCreateAPIView):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        subject = self.request.query_params.get('subject', None)
+        group = Course.objects.filter(subject__id=subject)
+        if group:
+            return Level.objects.filter(id__in=group.level.id)
+        return Level.objects.none()
 
 
 class LevelDetail(RetrieveUpdateDestroyAPIView):
