@@ -1,13 +1,13 @@
-from django.contrib.admin import action
 from django.db.models import Sum
 from rest_framework import serializers
 
-from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance, Sale, SaleStudent
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
+from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance, Sale, SaleStudent
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
+
 
 class KindSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,6 +19,7 @@ class KindSerializer(serializers.ModelSerializer):
             'color',
             'created_at',
         ]
+
 
 class PaymentMethodSerializer(serializers.ModelSerializer):
     class Meta:
@@ -68,6 +69,7 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
     receiver = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
     amount = serializers.IntegerField()
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
+
     class Meta:
         model = Handover
         fields = [
@@ -78,6 +80,7 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["receiver"] = CasherSerializer(instance.receiver).data
@@ -88,7 +91,7 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
 class FinanceSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
-    attendance = serializers.PrimaryKeyRelatedField(queryset=Attendance.objects.all(),allow_null=True)
+    attendance = serializers.PrimaryKeyRelatedField(queryset=Attendance.objects.all(), allow_null=True)
     total = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
 
@@ -167,6 +170,7 @@ class FinanceSerializer(serializers.ModelSerializer):
 
 class FinanceGroupSerializer(serializers.ModelSerializer):
     summ = serializers.SerializerMethodField()
+
     class Meta:
         model = Finance
         fields = [
@@ -213,7 +217,8 @@ class FinanceTeacherSerializer(serializers.ModelSerializer):
         teacher = obj.stuff  # Teacher related to the finance record
 
         # Get distinct attended groups for the teacher
-        attended_groups = Attendance.objects.filter(group__teacher=teacher).values_list('group_id', flat=True).distinct()
+        attended_groups = Attendance.objects.filter(group__teacher=teacher).values_list('group_id',
+                                                                                        flat=True).distinct()
 
         group_data = []
 
@@ -250,10 +255,12 @@ class FinanceTeacherSerializer(serializers.ModelSerializer):
 
         return group_data
 
+
 class KpiFinanceSerializer(serializers.ModelSerializer):
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+
     class Meta:
         model = KpiFinance
         fields = [
@@ -266,15 +273,16 @@ class KpiFinanceSerializer(serializers.ModelSerializer):
             "type",
             "created_at",
         ]
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['user'] = UserListSerializer(instance.user).data
         return data
 
 
-
 class SalesSerializer(serializers.ModelSerializer):
-    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+
     class Meta:
         model = Sale
         fields = [
@@ -285,13 +293,16 @@ class SalesSerializer(serializers.ModelSerializer):
             "type",
             "created_at",
         ]
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['creator'] = UserListSerializer(instance.creator).data
         return data
 
+
 class SaleStudentSerializer(serializers.ModelSerializer):
-    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+
     class Meta:
         model = SaleStudent
         fields = [
@@ -302,6 +313,7 @@ class SaleStudentSerializer(serializers.ModelSerializer):
             "comment",
             "created_at",
         ]
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['creator'] = UserListSerializer(instance.creator).data

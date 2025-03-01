@@ -1,32 +1,25 @@
 from datetime import datetime
+from io import BytesIO
 
-import icecream
-from django.db.models import Sum, F, Value, Count
+import pandas as pd
+from django.db.models import Sum, Count, F, Case, When, DecimalField, Value
 from django.db.models.functions import ExtractWeekDay, Concat
+from django.http import HttpResponse
 from rest_framework import status
-from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from data.department.marketing_channel.models import MarketingChannel
-from data.finances.finance.models import Finance, Casher, Kind, SaleStudent, Sale
+from data.finances.finance.models import Finance, Casher, Kind, SaleStudent
 from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
-from ..finances.finance.serializers import SaleStudentSerializer, SalesSerializer
 from ..results.models import Results
 from ..student.attendance.models import Attendance
 from ..student.student.models import Student
 from ..upload.serializers import FileUploadSerializer
-import pandas as pd
-from io import BytesIO
-from django.http import HttpResponse
-from rest_framework.views import APIView
-from django.db.models import Sum, Count, F, Case, When, DecimalField, Value
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 
 class DashboardView(APIView):
@@ -40,7 +33,6 @@ class DashboardView(APIView):
         sales_manager = self.request.query_params.get('sales_manager')
         course = self.request.query_params.get('course')
         subject = self.request.query_params.get('subject')
-
 
         filters = {}
         if start_date:
@@ -160,6 +152,7 @@ class DashboardView(APIView):
 
         return Response(data)
 
+
 class MarketingChannels(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
@@ -181,6 +174,7 @@ class MarketingChannels(APIView):
             ).count()
 
         return Response(channel_counts)
+
 
 class Room_place(APIView):
     def get(self, request, *args, **kwargs):
@@ -216,6 +210,7 @@ class Room_place(APIView):
         }
         return Response(response)
 
+
 class DashboardLineGraphAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -244,13 +239,15 @@ class DashboardLineGraphAPIView(APIView):
             try:
                 filters['created_at__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
             except ValueError:
-                return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."},
+                                status=status.HTTP_400_BAD_REQUEST)
 
         if end_date:
             try:
                 filters['created_at__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
             except ValueError:
-                return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."},
+                                status=status.HTTP_400_BAD_REQUEST)
 
         # Define weekdays mapping
         weekday_map = {
@@ -309,6 +306,7 @@ class DashboardLineGraphAPIView(APIView):
             "total_expense": total_expense
         }, status=status.HTTP_200_OK)
 
+
 class MonitoringView(APIView):
     def get(self, request, *args, **kwargs):
         # Get query parameters
@@ -351,15 +349,16 @@ class MonitoringView(APIView):
             subjects = list(subjects_query)
 
             if start_date and end_date:
-                results = Results.objects.filter(teacher=teacher,created_at__gte=start_date
-                                                 ,created_at_lte=end_date).count()
+                results = Results.objects.filter(teacher=teacher, created_at__gte=start_date
+                                                 , created_at_lte=end_date).count()
             elif start_date:
-                results = Results.objects.filter(teacher=teacher,created_at__gte=start_date)
+                results = Results.objects.filter(teacher=teacher, created_at__gte=start_date)
             else:
                 results = Results.objects.filter(teacher=teacher).count()
 
             # Use FileUploadSerializer for the photo (handling None cases)
-            image_data = FileUploadSerializer(teacher.photo, context={"request": request}).data if teacher.photo else None
+            image_data = FileUploadSerializer(teacher.photo,
+                                              context={"request": request}).data if teacher.photo else None
 
             teacher_data.append({
                 "id": teacher.id,
@@ -371,6 +370,7 @@ class MonitoringView(APIView):
             })
 
         return Response(teacher_data)
+
 
 class MonitoringExcelDownloadView(APIView):
     def get(self, request, *args, **kwargs):
@@ -446,6 +446,7 @@ class MonitoringExcelDownloadView(APIView):
         response['Content-Disposition'] = 'attachment; filename="monitoring_data.xlsx"'
 
         return response
+
 
 class DashboardWeeklyFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -537,20 +538,23 @@ class DashboardWeeklyFinanceAPIView(APIView):
             "available_kinds": existing_kinds  # Returning available kinds for front-end usage
         }, status=200)
 
+
 class ArchivedView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
-        lid = Lid.objects.filter(is_archived=True,lid_stage_type="NEW_LID", is_student=False).count()
-        order = Lid.objects.filter(is_archived=True,lid_stage_type="ORDERED_LID", is_student=False).count()
+        lid = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID", is_student=False).count()
+        order = Lid.objects.filter(is_archived=True, lid_stage_type="ORDERED_LID", is_student=False).count()
         new_student = Student.objects.filter(student_stage_type="NEW_STUDENT", is_archived=True).count()
         student = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", is_archived=True).count()
 
         return Response({
-            "lid" : lid,
-            "order" : order,
-            "new_student" : new_student,
-            "student" : student,
+            "lid": lid,
+            "order": order,
+            "new_student": new_student,
+            "student": student,
         })
+
 
 class SalesApiView(APIView):
     permission_classes = [IsAuthenticated]
@@ -613,6 +617,7 @@ class SalesApiView(APIView):
 
         return Response({"chart_data": chart_data})
 
+
 class FinanceStatisticsApiView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -665,19 +670,20 @@ class FinanceStatisticsApiView(APIView):
             "expenses": expense_stats
         })
 
+
 class StudentLanguage(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         student_uz = Student.objects.filter(language_choice="UZB",
-                                            is_archived=False,is_frozen=False).count()
+                                            is_archived=False, is_frozen=False).count()
         student_eng = Student.objects.filter(language_choice="ENG",
-                                             is_archived=False,is_frozen=False).count()
+                                             is_archived=False, is_frozen=False).count()
         student_ru = Student.objects.filter(language_choice="RU",
-                                            is_archived=False,is_frozen=False).count()
+                                            is_archived=False, is_frozen=False).count()
 
         return Response({
             "student_uz": student_uz,
             "student_eng": student_eng,
             "student_ru": student_ru,
         })
-
