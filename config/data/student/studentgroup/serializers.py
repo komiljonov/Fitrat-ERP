@@ -34,12 +34,12 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         if student:
             existing_student = StudentGroup.objects.filter(group=group, student=student).exists()
             if existing_student:
-                raise serializers.ValidationError({"student": "Student in this group already exists"})
+                raise serializers.ValidationError({"student": "O'quvchi ushbu guruhda allaqachon mavjud!"})
 
         if lid:
             existing_lid = StudentGroup.objects.filter(group=group, lid=lid).exists()
             if existing_lid:
-                raise serializers.ValidationError({"lid": "Lid in this group already exists"})
+                raise serializers.ValidationError({"lid": "O'quvchi ushbu guruhda allaqachon mavjud!"})
 
         return attrs
 
