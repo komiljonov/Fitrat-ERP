@@ -22,6 +22,7 @@ from ...account.permission import FilialRestrictedQuerySetMixin
 
 from django.db.models import Q
 
+from ...department import filial
 from ...finances.finance.models import Finance
 
 
@@ -206,6 +207,45 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         }
 
         return Response(response_data)
+
+
+class StudentAllStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+
+        filter = {}
+        filial = self.request.query_params.get('filial')
+        if filial:
+            filter["filial"] = filial
+
+        all_students = Student.objects.filter(is_archived=False, **filter
+                                              ).count()
+        archived_students = Student.objects.filter(is_archived=True, **filter).count()
+        if StudentGroup.student:
+            course_ended = StudentGroup.objects.filter(
+                group__status="INACTIVE"
+            ).count()
+        else:
+            course_ended = StudentGroup.objects.filter(
+                group__status="INACTIVE",
+            ).count()
+        balance_active = Student.objects.filter(is_archived=False, **filter,
+                                              balance_status="ACTIVE",
+                                              ).count()
+        balance_inactive = Student.objects.filter(
+            is_archived=False, **filter,balance_status="INACTIVE"
+        ).count()
+        response_data = {
+            "all_students": all_students,
+            "archived_students": archived_students,
+            "course_ended": course_ended,
+            "balance_active": balance_active,
+            "balance_inactive": balance_inactive,
+        }
+        return Response(response_data)
+
+
 
 
 class ExportLidToExcelAPIView(APIView):
