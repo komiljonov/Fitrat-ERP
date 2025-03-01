@@ -52,6 +52,7 @@ class LevelDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = LevelSerializer
     permission_classes = [IsAuthenticated]
 
+
 class LevelNoPG(ListAPIView):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
@@ -59,7 +60,6 @@ class LevelNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
 
 
 class ThemeList(ListCreateAPIView):

@@ -173,8 +173,8 @@ class CasherHandoverAPIView(CreateAPIView):
                 action='EXPENSE',
                 kind=handover,  # Now it's correctly assigned
                 creator=request.user,
-                comment=f"{casher.user.first_name} handed over {amount} "
-                        f"to {receiver.user.first_name}"
+                comment=f"{casher.user.first_name} {amount}  so'm  "
+                        f"{receiver.user.first_name}  ga kassa topshirdi ."
             )
 
             # Get the Kind instance (unpacking the tuple)
@@ -187,8 +187,8 @@ class CasherHandoverAPIView(CreateAPIView):
                 action='INCOME',
                 kind=acception,  # Now it's correctly assigned
                 creator=request.user,
-                comment=f"{receiver.user.first_name} received {amount} "
-                        f"from {casher.user.first_name}"
+                comment=f"{receiver.user.first_name} - {amount} so'm  "
+                        f"{casher.user.first_name}  dan kassa qabul qildi."
             )
 
             Handover.objects.create(
