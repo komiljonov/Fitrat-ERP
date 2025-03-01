@@ -172,12 +172,20 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
 
         from_new_to_active = Finance.objects.filter(
             student__isnull=False,
+            student__student_stage_type="ACTIVE_STUDENT",
             attendance__isnull=False,
             is_first=True,
+            filial__in=filial,
         ).count()
+
+        almost_debt = Student.objects.filter(is_archived=False, filial__in=filial,
+                                             balance__lt=1000).count()
+
+
 
         statistics = {
             "new_students_count": new_students_count,
+            "new_to_active": from_new_to_active,
             "new_students_total_debt": total_debt,
             "archived_new_students": archived_new_students,
         }
@@ -185,7 +193,7 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         # Additional ordered statistics (could be pagination or other stats)
         ordered_statistics = {
             "student_count": student_count,
-            "new_to_active": from_new_to_active,
+            "almost_debt": almost_debt,
             "total_income": total_income,  # Serialized data
             "student_total_debt": student_total_debt,
             "archived_student": archived_student,
