@@ -78,6 +78,9 @@ class ThemeList(ListCreateAPIView):
         theme = self.request.query_params.get('theme')
         if theme:
             queryset = queryset.filter(theme=theme)
+        course = self.request.query_params.get('course')
+        if course:
+            queryset = queryset.filter(course__id=course)
 
         id = self.request.query_params.get('id')
         if id:
