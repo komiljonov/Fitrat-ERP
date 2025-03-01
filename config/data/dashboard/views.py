@@ -4,16 +4,18 @@ import icecream
 from django.db.models import Sum, F, Value, Count
 from django.db.models.functions import ExtractWeekDay, Concat
 from rest_framework import status
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from data.department.marketing_channel.models import MarketingChannel
-from data.finances.finance.models import Finance, Casher, Kind
+from data.finances.finance.models import Finance, Casher, Kind, SaleStudent, Sale
 from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
+from ..finances.finance.serializers import SaleStudentSerializer, SalesSerializer
 from ..results.models import Results
 from ..student.attendance.models import Attendance
 from ..student.student.models import Student
@@ -547,3 +549,23 @@ class ArchivedView(APIView):
             "new_student" : new_student,
             "student" : student,
         })
+
+class SalesApiView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SaleStudentSerializer
+    queryset = SaleStudent.objects.all()
+    def get_queryset(self):
+
+        creator = self.request.query_params.get('creator')
+        sale = self.request.query_params.get('sale')
+        student = self.request.query_params.get('student')
+        filters = {}
+        if creator:
+            filters['creator__id'] = creator
+        if sale:
+            filters['sale__id'] = sale
+        if student:
+            filters['student__id'] = student
+        filter = SaleStudent.objects.filter(**filters)
+        return filter
+
