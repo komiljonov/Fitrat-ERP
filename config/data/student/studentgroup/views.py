@@ -86,7 +86,6 @@ class GroupStudentList(ListAPIView):
         return Response(data)
 
 
-
 class GroupStudentDetail(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = StudentsGroupSerializer

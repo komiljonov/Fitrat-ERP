@@ -582,7 +582,7 @@ class SalesApiView(APIView):
             total_voucher_amount=Sum('sale__amount')
         )
 
-        # Calculate SALES with monthly group pricing
+        # Calculate SALES with monthly group pricing discount
         sale_data = SaleStudent.objects.filter(sale__type="SALE", **filters).values('creator').annotate(
             total_sale_discount=Sum(
                 Case(
@@ -601,6 +601,14 @@ class SalesApiView(APIView):
             total_sales_amount=Sum('sale__amount')
         )
 
+        total_income = \
+            Student.objects.filter(is_archived=False, student_stage_type="ACTIVE_STUDENT",
+                                   balance__gt=0).aggregate(total_income=Sum('balance'))['total_income'] or 0
+        student_total_debt = \
+            Student.objects.filter(is_archived=False, student_stage_type="ACTIVE_STUDENT",
+                                   balance__lt=0).aggregate(
+                total_debt=Sum('balance'))['total_debt'] or 0
+
         # Combine data
         chart_data = []
         for entry in student_count:
@@ -613,6 +621,9 @@ class SalesApiView(APIView):
                 "total_students": entry['total_students'],
                 "total_voucher_amount": voucher_entry['total_voucher_amount'],
                 "total_sale_discount": sale_entry['total_sale_discount'],
+                "total_sales_amount": total_sales_entry['total_sales_amount'],
+                "total_debt": student_total_debt,  # Qarzdorlar
+                "active_students_balance": total_income,  # Active Students
             })
 
         return Response({"chart_data": chart_data})
