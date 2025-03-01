@@ -36,6 +36,8 @@ class DashboardView(APIView):
         teacher = self.request.query_params.get('teacher')
         filial = self.request.query_params.get('filial')
         sales_manager = self.request.query_params.get('sales_manager')
+        course = self.request.query_params.get('course')
+        subject = self.request.query_params.get('subject')
 
 
         filters = {}
@@ -368,7 +370,6 @@ class MonitoringView(APIView):
 
         return Response(teacher_data)
 
-
 class MonitoringExcelDownloadView(APIView):
     def get(self, request, *args, **kwargs):
         # Get query parameters
@@ -443,7 +444,6 @@ class MonitoringExcelDownloadView(APIView):
         response['Content-Disposition'] = 'attachment; filename="monitoring_data.xlsx"'
 
         return response
-
 
 class DashboardWeeklyFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
