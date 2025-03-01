@@ -32,6 +32,14 @@ class CasherListCreateAPIView(ListCreateAPIView):
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        role = self.request.query_params.get('role', None)
+        filter={}
+        if role:
+            filter['role'] = role
+        return Casher.objects.filter(**filter)
+
+
 
 class CasherRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Casher.objects.all()
@@ -213,12 +221,11 @@ class FinanceStatisticsAPIView(APIView):
 
     def get(self, request):
         kind = self.request.query_params.get('kind', None)
-        role = self.request.query_params.get('role', None)
+
         filter = {}
         if kind:
             filter['kind'] = Kind.objects.get(id=kind)
-        if role:
-            filter['casher__role'] = role
+
         # Asosiy kassa balansi
         main_casher_income = \
         Finance.objects.filter(casher__role="WEALTH", action="INCOME", **filter).aggregate(Sum("amount"))[
