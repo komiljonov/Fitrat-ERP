@@ -43,7 +43,7 @@ class LevelList(ListCreateAPIView):
         group = Course.objects.filter(subject__id=subject)
         if group:
             return Level.objects.filter(id__in=group.level.id)
-        return Level.objects.none()
+        return Level.objects.all()
 
 
 class LevelDetail(RetrieveUpdateDestroyAPIView):

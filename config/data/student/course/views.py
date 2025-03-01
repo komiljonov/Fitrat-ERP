@@ -31,6 +31,12 @@ class CourseList(ListCreateAPIView):
     ordering_fields = ('status',)  # Ensure 'status' exists in the model and supports ordering
     filterset_fields = ('name', 'subject__name')
 
+    def get_queryset(self):
+        level = self.request.query_params.get('level', None)
+        if level:
+            return Course.objects.filter(level__id=level)
+        return Course.objects.all()
+
 class CourseDetail(RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
