@@ -31,15 +31,19 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         lid = attrs.get("lid")
         group = attrs.get("group")
 
-        if student:
-            existing_student = StudentGroup.objects.filter(group=group, student=student).exists()
+        if student and group:
+            # Ensure that a student is not added to the same group twice
+            existing_student = StudentGroup.objects.filter(group=group, student=student).exclude(
+                id=self.instance.id if self.instance else None).exists()
             if existing_student:
                 raise serializers.ValidationError({"student": "O'quvchi ushbu guruhda allaqachon mavjud!"})
 
-        if lid:
-            existing_lid = StudentGroup.objects.filter(group=group, lid=lid).exists()
+        if lid and group:
+            # Ensure that a lid is not added to the same group twice
+            existing_lid = StudentGroup.objects.filter(group=group, lid=lid).exclude(
+                id=self.instance.id if self.instance else None).exists()
             if existing_lid:
-                raise serializers.ValidationError({"lid": "O'quvchi ushbu guruhda allaqachon mavjud!"})
+                raise serializers.ValidationError({"lid": "Lid ushbu guruhda allaqachon mavjud!"})
 
         return attrs
 
