@@ -187,8 +187,8 @@ class CasherHandoverAPIView(CreateAPIView):
                 action='INCOME',
                 kind=acception,  # Now it's correctly assigned
                 creator=request.user,
-                comment=f"{casher.name} {casher.name} - {amount}  so'm  "
-                        f"{receiver.name} {casher.name} dan kassa qabul qildi ."
+                comment=f"{casher.name}  - {amount}  so'm  "
+                        f"{receiver.name}  dan kassa qabul qildi ."
             )
 
             Handover.objects.create(
