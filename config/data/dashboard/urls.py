@@ -2,7 +2,7 @@ from django.urls import include, path
 
 from data.dashboard.views import DashboardView, MarketingChannels, Room_place, DashboardLineGraphAPIView, \
     MonitoringView, DashboardWeeklyFinanceAPIView, ArchivedView, MonitoringExcelDownloadView, SalesApiView, \
-    FinanceStatisticsApiView
+    FinanceStatisticsApiView, StudentLanguage
 
 urlpatterns = [
     path('admin/',DashboardView.as_view(), name='dashboard'),
@@ -21,4 +21,6 @@ urlpatterns = [
     path("sales/",SalesApiView.as_view(), name='sales'),
 
     path("finance-kind/",FinanceStatisticsApiView.as_view(), name='finance-statistics'),
+
+    path("student-lang/",StudentLanguage.as_view(), name='student-lang'),
 ]

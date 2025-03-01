@@ -19,6 +19,7 @@ from rest_framework.views import APIView
 from .models import Lid
 from .serializers import LidSerializer
 from ...account.permission import FilialRestrictedQuerySetMixin
+from ...finances.finance.models import Finance
 
 
 class LidListCreateView(ListCreateAPIView):
@@ -332,7 +333,7 @@ class LidStatisticsView(ListAPIView):
         archived_lid = queryset.filter(lid_stage_type="NEW_LID", is_student=False, is_archived=True).count()
         archived_order = queryset.filter(lid_stage_type="ORDERED_LID", is_student=False, is_archived=True).count()
 
-        # Compile statistics into response
+
         response_data = {
             "new_lid_statistics": {
                 "leads_count": leads_count,

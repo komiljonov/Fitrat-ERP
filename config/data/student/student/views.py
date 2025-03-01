@@ -22,6 +22,9 @@ from ...account.permission import FilialRestrictedQuerySetMixin
 
 from django.db.models import Q
 
+from ...finances.finance.models import Finance
+
+
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     queryset = Student.objects.all().select_related('marketing_channel', 'sales_manager', 'service_manager')
     serializer_class = StudentSerializer
@@ -167,6 +170,12 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         archived_student = Student.objects.filter(is_archived=True, filial__in=filial,
                                                   student_stage_type="ACTIVE_STUDENT").count()
 
+        from_new_to_active = Finance.objects.filter(
+            student__isnull=False,
+            attendance__isnull=False,
+            is_first=True,
+        ).count()
+
         statistics = {
             "new_students_count": new_students_count,
             "new_students_total_debt": total_debt,
@@ -176,6 +185,7 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         # Additional ordered statistics (could be pagination or other stats)
         ordered_statistics = {
             "student_count": student_count,
+            "new_to_active": from_new_to_active,
             "total_income": total_income,  # Serialized data
             "student_total_debt": student_total_debt,
             "archived_student": archived_student,

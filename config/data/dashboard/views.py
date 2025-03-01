@@ -665,3 +665,16 @@ class FinanceStatisticsApiView(APIView):
             "expenses": expense_stats
         })
 
+class StudentLanguage(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        student_uz = Student.objects.filter(language_choice="UZB", is_archived=False,is_frozen=False).count()
+        student_eng = Student.objects.filter(language_choice="ENG", is_archived=False,is_frozen=False).count()
+        student_ru = Student.objects.filter(language_choice="RU", is_archived=False,is_frozen=False).count()
+
+        return Response({
+            "student_uz": student_uz,
+            "student_eng": student_eng,
+            "student_ru": student_ru,
+        })
+
