@@ -32,7 +32,6 @@ class SubjectNoPG(ListAPIView):
         return Response(data)
 
 
-
 class LevelList(ListCreateAPIView):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
@@ -40,9 +39,11 @@ class LevelList(ListCreateAPIView):
 
     def get_queryset(self):
         subject = self.request.query_params.get('subject', None)
-        group = Course.objects.filter(subject__id=subject)
-        if group:
-            return Level.objects.filter(id__in=group.level.id)
+        if subject:
+            # Get all level IDs from courses that match the subject
+            level_ids = Course.objects.filter(subject__id=subject).values_list("level", flat=True)
+            return Level.objects.filter(id__in=level_ids)
+
         return Level.objects.all()
 
 
