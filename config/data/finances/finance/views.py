@@ -173,8 +173,8 @@ class CasherHandoverAPIView(CreateAPIView):
                 action='EXPENSE',
                 kind=handover,  # Now it's correctly assigned
                 creator=request.user,
-                comment=f"{casher.user.first_name} {casher.user.last_name} - {amount}  so'm  "
-                        f"{receiver.user.first_name} {casher.user.last_name} ga kassa topshirdi ."
+                comment=f"{casher.name}  - {amount}  so'm  "
+                        f"{receiver.name}  ga kassa topshirdi ."
             )
 
             # Get the Kind instance (unpacking the tuple)
