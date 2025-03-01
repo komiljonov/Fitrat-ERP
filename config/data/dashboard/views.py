@@ -24,7 +24,9 @@ import pandas as pd
 from io import BytesIO
 from django.http import HttpResponse
 from rest_framework.views import APIView
-
+from django.db.models import Sum, Count, F, Case, When, DecimalField, Value
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
 class DashboardView(APIView):
@@ -550,15 +552,15 @@ class ArchivedView(APIView):
             "student" : student,
         })
 
-class SalesApiView(ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = SaleStudentSerializer
-    queryset = SaleStudent.objects.all()
-    def get_queryset(self):
 
+class SalesApiView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
         creator = self.request.query_params.get('creator')
         sale = self.request.query_params.get('sale')
         student = self.request.query_params.get('student')
+
         filters = {}
         if creator:
             filters['creator__id'] = creator
@@ -566,6 +568,48 @@ class SalesApiView(ListAPIView):
             filters['sale__id'] = sale
         if student:
             filters['student__id'] = student
-        filter = SaleStudent.objects.filter(**filters)
-        return filter
 
+        # Count total students per creator
+        student_count = SaleStudent.objects.filter(**filters).values('creator').annotate(
+            total_students=Count('student', distinct=True)
+        )
+
+        # Sum up VOUCHER sales
+        voucher_sales = SaleStudent.objects.filter(sale__type="VOUCHER", **filters).values('creator').annotate(
+            total_voucher_amount=Sum('sale__amount')
+        )
+
+        # Calculate SALES with monthly group pricing
+        sale_data = SaleStudent.objects.filter(sale__type="SALE", **filters).values('creator').annotate(
+            total_sale_discount=Sum(
+                Case(
+                    When(
+                        student__students_group__group__price_type="monthly",
+                        then=F('student__students_group__group__price') * F('sale__amount') / Value(100)
+                    ),
+                    default=Value(0),
+                    output_field=DecimalField()
+                )
+            )
+        )
+
+        # Sum of all sales (regardless of type)
+        total_sales = SaleStudent.objects.filter(**filters).values('creator').annotate(
+            total_sales_amount=Sum('sale__amount')
+        )
+
+        # Combine data
+        chart_data = []
+        for entry in student_count:
+            creator_id = entry['creator']
+            voucher_entry = next((v for v in voucher_sales if v['creator'] == creator_id), {'total_voucher_amount': 0})
+            sale_entry = next((s for s in sale_data if s['creator'] == creator_id), {'total_sale_discount': 0})
+            total_sales_entry = next((t for t in total_sales if t['creator'] == creator_id), {'total_sales_amount': 0})
+
+            chart_data.append({
+                "total_students": entry['total_students'],
+                "total_voucher_amount": voucher_entry['total_voucher_amount'],
+                "total_sale_discount": sale_entry['total_sale_discount'],
+            })
+
+        return Response({"chart_data": chart_data})
