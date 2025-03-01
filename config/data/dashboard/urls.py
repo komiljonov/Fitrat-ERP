@@ -1,7 +1,8 @@
 from django.urls import include, path
 
 from data.dashboard.views import DashboardView, MarketingChannels, Room_place, DashboardLineGraphAPIView, \
-    MonitoringView, DashboardWeeklyFinanceAPIView, ArchivedView, MonitoringExcelDownloadView, SalesApiView
+    MonitoringView, DashboardWeeklyFinanceAPIView, ArchivedView, MonitoringExcelDownloadView, SalesApiView, \
+    FinanceStatisticsApiView
 
 urlpatterns = [
     path('admin/',DashboardView.as_view(), name='dashboard'),
@@ -18,4 +19,6 @@ urlpatterns = [
     path('paychart/',DashboardWeeklyFinanceAPIView.as_view(), name='paychart'),
 
     path("sales/",SalesApiView.as_view(), name='sales'),
+
+    path("finance-kind/",FinanceStatisticsApiView.as_view(), name='finance-statistics'),
 ]
