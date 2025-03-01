@@ -33,12 +33,18 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 
 class LevelSerializer(serializers.ModelSerializer):
+    course = serializers.SerializerMethodField()
     class Meta:
         model = Level
         fields = [
             'id',
             'name',
+            "course",
         ]
+    def get_course(self, obj):
+        return Course.objects.filter(level=obj).count()
+
+
 
 
 class ThemeSerializer(serializers.ModelSerializer):
