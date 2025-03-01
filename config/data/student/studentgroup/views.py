@@ -29,6 +29,10 @@ class StudentsGroupList(ListCreateAPIView):
     'group__teacher__id')
 
     def get_queryset(self):
+
+        id = self.kwargs.get('pk')
+        queryset = StudentGroup.objects.filter(group__id=id)
+
         if self.request.user.role == 'TEACHER':
             queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
             return queryset
