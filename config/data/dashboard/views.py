@@ -552,7 +552,6 @@ class ArchivedView(APIView):
             "student" : student,
         })
 
-
 class SalesApiView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -614,8 +613,6 @@ class SalesApiView(APIView):
 
         return Response({"chart_data": chart_data})
 
-
-
 class FinanceStatisticsApiView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -667,3 +664,4 @@ class FinanceStatisticsApiView(APIView):
             "income": income_stats,
             "expenses": expense_stats
         })
+

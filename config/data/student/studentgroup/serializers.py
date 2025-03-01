@@ -26,6 +26,22 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'student',
         ]
 
+    def validate(self, attrs):
+        student = attrs.get("student")
+        lid = attrs.get("lid")
+        group = attrs.get("group")
+
+        if student:
+            existing_student = StudentGroup.objects.filter(group=group, student=student).exists()
+            if existing_student:
+                raise serializers.ValidationError({"student": "Student in this group already exists"})
+
+        if lid:
+            existing_lid = StudentGroup.objects.filter(group=group, lid=lid).exists()
+            if existing_lid:
+                raise serializers.ValidationError({"lid": "Lid in this group already exists"})
+
+        return attrs
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
