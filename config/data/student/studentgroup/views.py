@@ -100,10 +100,10 @@ class GroupStudentStatistics(APIView):
 
             return Response({
                 "students": students,
-                'is_attendanced': is_attendanded,
-                'is_apcent': is_apcent,
-                'persentage_is_attendanded': persentage_is_attendanded,
-                'persentage_is_apcent': persentage_is_apcent,
+                'is_attendant': is_attendanded,
+                'is_absent': is_apcent,
+                'percentage_is_attendant': persentage_is_attendanded,
+                'percentage_is_absent': persentage_is_apcent,
             })
 
 
