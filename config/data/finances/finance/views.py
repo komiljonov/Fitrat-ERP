@@ -2,7 +2,7 @@ import icecream
 import pandas as pd
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.utils.dateparse import parse_datetime
+from django.utils.dateparse import parse_datetime, parse_date
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from pandas import io
@@ -625,3 +625,46 @@ class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
     queryset = SaleStudent.objects.all()
     permission_classes = [IsAuthenticated]
 
+
+class PaymentStatisticsByKind(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Parse and validate dates
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        filters = {}
+        if start_date:
+            start_date = parse_date(start_date)
+            filters['created_at__gte'] = start_date
+        if end_date:
+            end_date = parse_date(end_date)
+            filters['created_at__lte'] = end_date
+
+        kinds = Kind.objects.all()
+
+        # Function to get total amount for a given kind and action type
+        def get_total_amount(kind, action_type):
+            return (
+                Finance.objects.filter(kind=kind, action=action_type, **filters)
+                .aggregate(total=Sum('amount'))['total'] or 0
+            )
+
+        data = {}
+
+        for kind in kinds:
+            kind_name = kind.name.lower().replace(" ", "_")
+            data[kind_name] = {
+                "income": get_total_amount(kind, "INCOME"),
+                "expense": get_total_amount(kind, "EXPENSE")
+            }
+
+        # Compute total income and expense **only from kinds**, excluding any integers in data
+        total_income = sum(item["income"] for item in data.values() if isinstance(item, dict))
+        total_expense = sum(item["expense"] for item in data.values() if isinstance(item, dict))
+
+        data["total_income"] = total_income
+        data["total_expense"] = total_expense
+
+        return Response(data)
