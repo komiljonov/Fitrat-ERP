@@ -6,3 +6,7 @@ from ..command.models import TimeStampModel
 
 class File(TimeStampModel):
     file = models.FileField(upload_to="files/", null=True, blank=True)
+
+
+class Contract(TimeStampModel):
+    file = models.FileField(upload_to="files/", null=True, blank=True)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import File
+from .models import File, Contract
 
 
 class FileUploadSerializer(serializers.ModelSerializer):
@@ -20,3 +20,17 @@ class FileUploadSerializer(serializers.ModelSerializer):
         return representation
 
 
+class ContractUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contract
+        fields = [
+            'id',
+            'file'
+
+       ]
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get("request")
+        if request:
+            representation["file"] = request.build_absolute_uri(instance.file.url)
+        return representation
