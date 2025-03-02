@@ -289,6 +289,7 @@ class SalesSerializer(serializers.ModelSerializer):
             "id",
             "creator",
             "name",
+            "filial",
             "amount",
             "type",
             "created_at",
