@@ -117,7 +117,7 @@ class GroupAttendandedStudents(ListAPIView):
         group = Group.objects.get(id=group)
         if group:
             return Attendance.objects.filter(group=group, created_at__gte=datetime.datetime.today(),
-                 reason="IS_PRESENT", created_at__lte=datetime.datetime.today() + datetime.timedelta(days=1))
+                 reason="IS_PRESENT")
         return Attendance.objects.none()
 
 class GroupStudentDetail(ListAPIView):

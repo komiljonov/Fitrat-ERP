@@ -285,7 +285,7 @@ class LidStatisticsView(ListAPIView):
 
         order_created = queryset.filter(
             is_archived=False,
-            lid_stage_type="ORDERED_LID"
+                    lid_stage_type="ORDERED_LID"
         ).exclude(call_operator__isnull=True).count()
 
         archived_new_leads = queryset.filter(
