@@ -1,3 +1,5 @@
+import datetime
+
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
@@ -5,10 +7,13 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import StudentGroup, SecondaryStudentGroup
 from .serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializer
-from ..groups.models import SecondaryGroup
+from ..attendance.models import Attendance
+from ..attendance.serializers import AttendanceSerializer
+from ..groups.models import SecondaryGroup, Group
 from ..groups.serializers import SecondaryGroupSerializer, SecondarygroupModelSerializer
 
 
@@ -78,6 +83,42 @@ class GroupStudentList(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
+class GroupStudentStatistics(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk,**kwargs):
+        group = Group.objects.get(pk=pk)
+        if group:
+            students = StudentGroup.objects.filter(group=group).count()
+            is_attendanded = Attendance.objects.filter(group=group, created_at__gte=datetime.datetime.today(),reason="IS_PRESENT",created_at__lte=datetime.datetime.today()
+                                                                                        + datetime.timedelta(days=1)).count()
+            is_apcent = Attendance.objects.filter(group=group, reason__in=["REASONED","UNREASONED"],created_at__gte=datetime.datetime.today(),
+                                                  created_at__lte=datetime.datetime.today() + datetime.timedelta(days=1) ).count()
+            persentage_is_attendanded = students /100 * is_attendanded
+            persentage_is_apcent = is_apcent /100 * is_apcent
+
+            return Response({
+                "students": students,
+                'is_attendanced': is_attendanded,
+                'is_apcent': is_apcent,
+                'persentage_is_attendanded': persentage_is_attendanded,
+                'persentage_is_apcent': persentage_is_apcent,
+            })
+
+
+class GroupAttendandedStudents(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AttendanceSerializer
+    queryset = Attendance.objects.all()
+
+    def get_queryset(self):
+        group = self.kwargs.get('pk')
+        group = Group.objects.get(id=group)
+        if group:
+            return Attendance.objects.filter(group=group, created_at__gte=datetime.datetime.today(),
+                 reason="IS_PRESENT", created_at__lte=datetime.datetime.today() + datetime.timedelta(days=1))
+        return Attendance.objects.none()
 
 class GroupStudentDetail(ListAPIView):
     permission_classes = [IsAuthenticated]
