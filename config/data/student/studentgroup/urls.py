@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import StudentGroupDetail, StudentGroupNopg, StudentsGroupList, GroupStudentList, GroupStudentDetail, \
-    SecondaryStudentList, SecondaryGroupList, GroupStudentStatistics, GroupAttendandedStudents
+    SecondaryStudentList, SecondaryGroupList, GroupStudentStatistics, GroupAttendedStudents
 from ...teachers.teacher.views import Teacher_StudentsView
 
 urlpatterns = [
@@ -10,7 +10,7 @@ urlpatterns = [
     path('no-pg/', StudentGroupNopg.as_view()),
 
     path('group/<uuid:pk>/', GroupStudentList.as_view()),
-    path('is_attendant/<uuid:pk>/', GroupAttendandedStudents.as_view()),
+    path('is_attendant/<uuid:pk>/', GroupAttendedStudents.as_view()),
 
     path('student/<uuid:pk>/', GroupStudentDetail.as_view()),
     path('students/',Teacher_StudentsView.as_view()),

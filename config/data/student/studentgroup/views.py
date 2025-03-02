@@ -4,7 +4,7 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -107,18 +107,23 @@ class GroupStudentStatistics(APIView):
             })
 
 
-class GroupAttendandedStudents(ListAPIView):
+class GroupAttendedStudents(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AttendanceSerializer
-    queryset = Attendance.objects.all()
 
     def get_queryset(self):
-        group = self.kwargs.get('pk')
-        group = Group.objects.get(id=group)
-        if group:
-            return Attendance.objects.filter(group=group, created_at__gte=datetime.datetime.today(),
-                 reason="IS_PRESENT")
-        return Attendance.objects.none()
+        group_id = self.kwargs.get('pk')
+        group = get_object_or_404(Group, id=group_id)
+
+        return Attendance.objects.filter(
+            group=group,
+            created_at__date=datetime.date.today(),
+            reason="IS_PRESENT"
+        )
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
 
 class GroupStudentDetail(ListAPIView):
     permission_classes = [IsAuthenticated]
