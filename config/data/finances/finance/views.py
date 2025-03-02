@@ -609,7 +609,7 @@ class SalesList(ListCreateAPIView):
         return Sale.objects.filter(filial__in=self.request.user.filial.all())
 
 
-class SalesStudent(ListCreateAPIView):
+class SalesStudentList(ListCreateAPIView):
     serializer_class = SaleStudentSerializer
     queryset = SaleStudent.objects.all()
     permission_classes = [IsAuthenticated]
@@ -618,3 +618,10 @@ class SalesStudent(ListCreateAPIView):
         filial = self.request.query_params.get('filial')
         if filial:
             return Sale.objects.filter(filial=filial)
+
+
+class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
+    serializer_class = SaleStudentSerializer
+    queryset = SaleStudent.objects.all()
+    permission_classes = [IsAuthenticated]
+
