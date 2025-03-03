@@ -59,9 +59,19 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         # Add filters based on query parameters (for sales manager and operators)
         sales_manager_id = self.request.query_params.get('sales_manager')
         call_operator_id = self.request.query_params.get('call_operator')
+        from_price = self.request.query_params.get('from_price')
+        to_price = self.request.query_params.get('to_price')
         course_id = self.request.query_params.get('course')
         service_manager = self.request.query_params.get('service_manager')
         group_id = self.request.query_params.get("group")
+
+        if from_price:
+            queryset = queryset.filter(balance__gte=from_price)
+        if to_price:
+            queryset = queryset.filter(balance__lte=to_price)
+        if from_price and to_price:
+            queryset = queryset.filter(balance__gte=from_price, balance__lte=to_price)
+
         if sales_manager_id:
             queryset = queryset.filter(sales_manager__id=sales_manager_id)
         if call_operator_id:
