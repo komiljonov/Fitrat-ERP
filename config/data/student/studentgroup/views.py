@@ -1,6 +1,7 @@
 import datetime
 
 from django.db.models import Q
+from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
