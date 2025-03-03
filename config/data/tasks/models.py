@@ -17,6 +17,8 @@ class Task(TimeStampModel):
 
     task = models.TextField()
 
+    performer = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, null=True, blank=True)
+
     comment = models.TextField(blank=True)
 
     date_of_expired = models.DateTimeField()
