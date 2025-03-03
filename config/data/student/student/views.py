@@ -60,10 +60,13 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         sales_manager_id = self.request.query_params.get('sales_manager')
         call_operator_id = self.request.query_params.get('call_operator')
         from_price = self.request.query_params.get('from_price')
+        edu_langauge = self.request.query_params.get('edu_langauge')
         to_price = self.request.query_params.get('to_price')
         course_id = self.request.query_params.get('course')
         service_manager = self.request.query_params.get('service_manager')
         group_id = self.request.query_params.get("group")
+        subject_id = self.request.query_params.get("subject")
+
 
         if from_price:
             queryset = queryset.filter(balance__gte=from_price)
@@ -71,6 +74,12 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             queryset = queryset.filter(balance__lte=to_price)
         if from_price and to_price:
             queryset = queryset.filter(balance__gte=from_price, balance__lte=to_price)
+
+        if edu_langauge:
+            queryset = queryset.filter(education_lang=edu_langauge)
+
+        if subject_id:
+            queryset = queryset.filter(subject__id=subject_id)
 
         if sales_manager_id:
             queryset = queryset.filter(sales_manager__id=sales_manager_id)
