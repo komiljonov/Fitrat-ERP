@@ -125,7 +125,7 @@ class StudentGroupDelete(APIView):
 
         if student:
             student.delete()
-            return Response({"message": "Student removed successfully"}, status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
 
