@@ -19,6 +19,6 @@ urlpatterns = [
 
     path('secondary/<uuid:pk>/', SecondaryGroupList.as_view()),
 
-    path('statistics/', GroupStudentStatistics.as_view()),
+    path('statistics/<uuid:pk>', GroupStudentStatistics.as_view()),
 
 ]
