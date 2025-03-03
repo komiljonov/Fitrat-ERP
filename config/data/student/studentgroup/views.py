@@ -77,6 +77,7 @@ class GroupStudentList(ListAPIView):
         """
         Fetch the students related to a specific group from the URL path parameter.
         """
+
         group_id = self.kwargs.get('pk')
         queryset = StudentGroup.objects.filter(group__id=group_id)
 
