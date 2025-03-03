@@ -194,8 +194,8 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             filial__in=filial,
         ).count()
 
-        almost_debt = Student.objects.filter(is_archived=False, filial__in=filial,
-                                             balance__lt=1000).count()
+        almost_debt = Student.objects.filter(is_archived=False, filial__in=filial,balance__gte=0,
+                                             balance__lte=100000).count()
 
         statistics = {
             "new_students_count": new_students_count,

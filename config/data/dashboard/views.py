@@ -127,9 +127,6 @@ class DashboardView(APIView):
                 **filters,
             ).count()
 
-        # moved_to_filial = 45  # Static value, update as needed
-        # come_from_filial = 13  # Static value, update as needed
-
         lids = Lid.objects.filter(
             is_archived=False,
             is_frozen=False,
