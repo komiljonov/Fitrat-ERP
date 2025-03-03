@@ -15,7 +15,7 @@ class TaskSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
-    performer = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    performer = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
     class Meta:
         model = Task
         fields = [
