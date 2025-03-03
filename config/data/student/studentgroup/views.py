@@ -117,8 +117,7 @@ class GroupAttendedStudents(ListAPIView):
 
         return Attendance.objects.filter(
             group=group,
-            created_at__gte=datetime.date.today(),
-            reason="IS_PRESENT"
+            created_at__gte=datetime.date.today()
         )
     def get_paginated_response(self, data):
         return Response(data)
