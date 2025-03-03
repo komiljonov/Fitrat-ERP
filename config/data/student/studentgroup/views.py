@@ -130,6 +130,30 @@ class StudentGroupDelete(APIView):
 
         return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
 
+class SecondaryStudentGroupDelete(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        student_id = self.kwargs.get("pk")
+        group_id = self.request.query_params.get("group")
+
+        if not student_id or not group_id:
+            return Response({"error": "Missing student or group ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ic(group_id)
+
+        filters = Q(student__id=student_id)
+        if hasattr(SecondaryStudentGroup, "lid"):
+            filters |= Q(lid__id=student_id)
+
+        student = SecondaryStudentGroup.objects.filter(group__id=group_id).filter(filters).first()
+        ic(student)
+
+        if student:
+            student.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class GroupStudentStatistics(APIView):
