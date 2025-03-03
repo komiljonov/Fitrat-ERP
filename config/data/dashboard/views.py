@@ -50,6 +50,7 @@ class DashboardView(APIView):
         if channel_id:
             try:
                 channel = MarketingChannel.objects.get(id=channel_id)
+                filters['marketing_channel'] = channel
             except MarketingChannel.DoesNotExist:
                 return Response({"error": "Invalid marketing_channel ID"}, status=400)
 
