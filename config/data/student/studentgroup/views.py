@@ -3,8 +3,10 @@ import datetime
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
+from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, get_object_or_404
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, get_object_or_404, \
+    CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -82,6 +84,55 @@ class GroupStudentList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class SecondaryGroupStudentList(ListAPIView):
+    serializer_class = SecondaryStudentsGroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Fetch the students related to a specific group from the URL path parameter.
+        """
+        group_id = self.kwargs.get('pk')
+        queryset = SecondaryStudentGroup.objects.filter(group__id=group_id)
+
+        return queryset
+
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
+
+class StudentGroupDelete(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        student_id = self.kwargs.get("pk")
+        group_id = self.request.query_params.get("group")
+
+        if not student_id or not group_id:
+            return Response({"error": "Missing student or group ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Convert group_id to integer safely
+        try:
+            group_id = int(group_id)
+        except (ValueError, TypeError):
+            return Response({"error": "Invalid group ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Construct filter dynamically
+        filters = Q(student__id=student_id)
+        if hasattr(StudentGroup, "lid"):
+            filters |= Q(lid__id=student_id)
+
+        student = StudentGroup.objects.filter(group__id=group_id).filter(filters).first()
+
+        if student:
+            student.delete()
+            return Response({"message": "Student removed successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+        return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 class GroupStudentStatistics(APIView):
