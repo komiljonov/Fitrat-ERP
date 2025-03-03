@@ -113,7 +113,7 @@ class GroupAttendedStudents(ListAPIView):
 
     def get_queryset(self):
         group_id = self.kwargs.get('pk')
-        group = get_object_or_404(Group, id=group_id)
+        group = Group.objects.get(id=group_id)
 
         return Attendance.objects.filter(
             group=group,
