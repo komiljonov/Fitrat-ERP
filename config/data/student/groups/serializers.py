@@ -7,7 +7,7 @@ from rest_framework import serializers
 from .lesson_date_calculator import calculate_lessons
 from .models import Group, Day, Room, SecondaryGroup
 from ..attendance.models import Attendance
-from ..studentgroup.models import StudentGroup
+from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Theme
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
@@ -153,6 +153,7 @@ class RoomsSerializer(serializers.ModelSerializer):
 class SecondaryGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    student_count = serializers.SerializerMethodField()
     class Meta:
         model = SecondaryGroup
         fields = [
@@ -162,6 +163,7 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
             'teacher',
             'scheduled_day_type',
             'status',
+            'student_count',
 
             'started_at',
             'ended_at',
@@ -172,6 +174,10 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+    def get_student_count(self, obj):
+        student_count = SecondaryStudentGroup.objects.filter(group=obj).count()
+        return student_count
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['teacher'] = UserSerializer(instance.teacher).data
