@@ -48,6 +48,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 return teacher[0]
         return None
 
+
     def validate(self, data):
         """
         Ensure that a student or lid can only have one attendance per group per day.
@@ -60,19 +61,23 @@ class AttendanceSerializer(serializers.ModelSerializer):
         if not student and not lid:
             raise serializers.ValidationError("Either 'student' or 'lid' must be provided.")
 
-        # Check if attendance exists for student
+        instance_id = self.instance.id if self.instance else None  # Get existing instance ID if updating
+
+        # Check if attendance exists for student (excluding the current record in updates)
         if student:
             existing_attendance = Attendance.objects.filter(
                 student=student, group=group, created_at__date=today
-            ).exists()
+            ).exclude(id=instance_id).exists()
+
             if existing_attendance:
                 raise serializers.ValidationError("This student has already been marked present today in this group.")
 
-        # Check if attendance exists for lid
+        # Check if attendance exists for lid (excluding the current record in updates)
         if lid:
             existing_attendance = Attendance.objects.filter(
                 lid=lid, group=group, created_at__date=today
-            ).exists()
+            ).exclude(id=instance_id).exists()
+
             if existing_attendance:
                 raise serializers.ValidationError("This lid has already been marked present today in this group.")
 
