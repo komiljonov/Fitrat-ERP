@@ -76,15 +76,49 @@ class GroupStudentList(ListAPIView):
 
     def get_queryset(self):
         """
-        Fetch the students related to a specific group from the URL path parameter.
+        Fetch students related to a specific group, filtering based on attendance reason and date.
         """
-
         group_id = self.kwargs.get('pk')
+        reason = self.request.query_params.get('reason', None)
+
+        # Get today's date for filtering attendance records
+        today = now().date()
+        start_of_day = datetime.datetime.combine(today, datetime.time.min)
+        end_of_day = datetime.datetime.combine(today, datetime.time.max)
+
         queryset = StudentGroup.objects.filter(group__id=group_id)
+
+        if reason == "1":  # Students who were present today
+            present_attendance = Attendance.objects.filter(
+                group_id=group_id,
+                reason="IS_PRESENT",
+                created_at__gte=start_of_day,
+                created_at__lte=end_of_day
+            ).values_list('student_id', 'lid_id', flat=False)  # Get student & lid IDs
+
+        elif reason == "0":  # Students who were absent today (REASONED/UNREASONED)
+            present_attendance = Attendance.objects.filter(
+                group_id=group_id,
+                reason__in=["UNREASONED", "REASONED"],
+                created_at__gte=start_of_day,
+                created_at__lte=end_of_day
+            ).values_list('student_id', 'lid_id', flat=False)
+
+        else:
+            return queryset  # Return all students in the group if no reason is provided
+
+        # Filter StudentGroup based on student & lid attendance
+        student_ids = {entry[0] for entry in present_attendance if entry[0] is not None}
+        lid_ids = {entry[1] for entry in present_attendance if entry[1] is not None}
+
+        queryset = queryset.filter(Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids))
 
         return queryset
 
     def get_paginated_response(self, data):
+        """
+        Returns paginated response if pagination is enabled, otherwise returns all data.
+        """
         return Response(data)
 
 
@@ -103,8 +137,6 @@ class SecondaryGroupStudentList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
-
 
 class StudentGroupDelete(APIView):
     permission_classes = [IsAuthenticated]
