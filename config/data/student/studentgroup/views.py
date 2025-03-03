@@ -155,29 +155,46 @@ class SecondaryStudentGroupDelete(APIView):
 
         return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
 class GroupStudentStatistics(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, pk,**kwargs):
-        group = Group.objects.get(pk=pk)
-        if group:
-            students = StudentGroup.objects.filter(group=group).count()
-            is_attendanded = Attendance.objects.filter(group=group, created_at__gte=datetime.datetime.today(),reason="IS_PRESENT",created_at__lte=datetime.datetime.today()
-                                                                                        + datetime.timedelta(days=1)).count()
-            is_apcent = Attendance.objects.filter(group=group, reason__in=["REASONED","UNREASONED"],created_at__gte=datetime.datetime.today(),
-                                                  created_at__lte=datetime.datetime.today() + datetime.timedelta(days=1) ).count()
-            persentage_is_attendanded = students /100 * is_attendanded
-            persentage_is_apcent = is_apcent /100 * is_apcent
+    def get(self, request, pk, **kwargs):
+        group = get_object_or_404(Group, pk=pk)
 
-            return Response({
-                "students": students,
-                'is_attendant': is_attendanded,
-                'is_absent': is_apcent,
-                'percentage_is_attendant': persentage_is_attendanded,
-                'percentage_is_absent': persentage_is_apcent,
-            })
+        # Get total students in the group
+        students = StudentGroup.objects.filter(group=group).count()
 
+        # Get today's start and end time
+        today = now().date()
+        start_of_day = datetime.datetime.combine(today, datetime.time.min)
+        end_of_day = datetime.datetime.combine(today, datetime.time.max)
+
+        # Get attendance statistics
+        is_attendanded = Attendance.objects.filter(
+            group=group,
+            created_at__gte=start_of_day,
+            created_at__lte=end_of_day,
+            reason="IS_PRESENT"
+        ).count()
+
+        is_absent = Attendance.objects.filter(
+            group=group,
+            reason__in=["REASONED", "UNREASONED"],
+            created_at__gte=start_of_day,
+            created_at__lte=end_of_day
+        ).count()
+
+        # Calculate attendance percentages
+        percentage_is_attendanded = (is_attendanded / students * 100) if students > 0 else 0
+        percentage_is_apcent = (is_absent / students * 100) if students > 0 else 0
+
+        return Response({
+            "students": students,
+            "is_attendant": is_attendanded,
+            "is_absent": is_absent,
+            "percentage_is_attendant": round(percentage_is_attendanded, 2),
+            "percentage_is_absent": round(percentage_is_apcent, 2),
+        })
 
 class GroupAttendedStudents(ListAPIView):
     permission_classes = [IsAuthenticated]
