@@ -16,7 +16,7 @@ from ...student.lesson.serializers import LessonSerializer
 from ...student.mastering.models import Mastering, MasteringTeachers
 from ...student.mastering.serializers import MasteringSerializer, StuffMasteringSerializer
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ...student.studentgroup.serializers import StudentsGroupSerializer
+from ...student.studentgroup.serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializer
 
 
 class TeacherList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
@@ -105,6 +105,7 @@ class Teacher_StudentsView(ListAPIView):
         if group:
             return group
         return StudentGroup.objects.none()
+
 
 
 class TeachersGroupsView(ListAPIView):
