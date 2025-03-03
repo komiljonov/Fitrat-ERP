@@ -114,18 +114,14 @@ class StudentGroupDelete(APIView):
         if not student_id or not group_id:
             return Response({"error": "Missing student or group ID"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Convert group_id to integer safely
-        try:
-            group_id = int(group_id)
-        except (ValueError, TypeError):
-            return Response({"error": "Invalid group ID"}, status=status.HTTP_400_BAD_REQUEST)
+        ic(group_id)
 
-        # Construct filter dynamically
         filters = Q(student__id=student_id)
         if hasattr(StudentGroup, "lid"):
             filters |= Q(lid__id=student_id)
 
         student = StudentGroup.objects.filter(group__id=group_id).filter(filters).first()
+        ic(student)
 
         if student:
             student.delete()
