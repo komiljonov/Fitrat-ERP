@@ -47,19 +47,21 @@ class RegisterAPIView(CreateAPIView):
         return Response({"user": user_serializer.data, 'success': True, 'message': 'User created successfully.'},
                         status=status.HTTP_201_CREATED)
 
+
 class UserList(ListAPIView):
-    permission_classes = [IsAuthenticated,]
-    queryset = CustomUser.objects.all().order_by('-created_at')
+    permission_classes = [IsAuthenticated]
     serializer_class = UserListSerializer
 
     def get_queryset(self):
         user = self.request.user
-        icecream.ic(user.filial.first())
-        role = self.request.query_params.get('role', None)
-        if role:
-            return CustomUser.objects.filter(role=role,filial__in=user.filial.first()).order_by('-created_at')
-        return CustomUser.objects.all().order_by('-created_at')
+        user_filial = user.filial.all()  # Get all related filials
 
+        role = self.request.query_params.get('role', None)
+
+        if role:
+            return CustomUser.objects.filter(role=role, filial__in=user_filial).order_by('-created_at')
+
+        return CustomUser.objects.filter(filial__in=user_filial).order_by('-created_at')
 
 
 class CustomAuthToken(TokenObtainPairView):

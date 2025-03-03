@@ -16,6 +16,7 @@ class TaskSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     performer = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+
     class Meta:
         model = Task
         fields = [
@@ -32,7 +33,6 @@ class TaskSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-
     def to_internal_value(self, data):
 
         data['creator'] = self.context['request'].user.id
@@ -43,7 +43,6 @@ class TaskSerializer(serializers.ModelSerializer):
         request = self.context['request']
         validated_data['creator'] = request.user
         return super().create(validated_data)
-
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
