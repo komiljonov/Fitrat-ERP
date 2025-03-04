@@ -112,17 +112,17 @@ class LidListCreateView(ListCreateAPIView):
         end_date = self.request.query_params.get("end_date")
 
         if start_date and end_date:
-            queryset = queryset.filter(created_at__range=[start_date, end_date])
+            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
         elif start_date:
             try:
                 start_date = parse_datetime(start_date).date()
-                queryset = queryset.filter(created_at__date=start_date)
+                queryset = queryset.filter(created_at__gte=start_date)
             except ValueError:
                 pass  # Handle invalid date format, if necessary
         elif end_date:
             try:
                 end_date = parse_datetime(end_date).date()
-                queryset = queryset.filter(created_at__date=end_date)
+                queryset = queryset.filter(created_at__lte=end_date)
             except ValueError:
                 pass  # Handle invalid date format, if necessary
 
@@ -178,7 +178,7 @@ class ExportLidToExcelAPIView(APIView):
         queryset = Lid.objects.filter(lid_stage_type="ORDERED_LID")
 
         if start_date and end_date:
-            queryset = queryset.filter(created_at__range=[start_date, end_date])
+            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
         if is_student is not None:
             queryset = queryset.filter(is_student=is_student.lower() == "true")
         if filial_id:
