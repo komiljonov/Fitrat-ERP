@@ -53,10 +53,6 @@ class LidListCreateView(ListCreateAPIView):
         # Start with a base queryset
         queryset = Lid.objects.all()
 
-        # Dynamically filter by `is_archived` if provided
-        # is_student = self.request.query_params.get("is_student")
-        # if is_student:
-        #     queryset = queryset.filter(is_student=is_student)
         is_archived = self.request.query_params.get("is_archived")
         if is_archived == "True":
             queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
@@ -80,22 +76,23 @@ class LidListCreateView(ListCreateAPIView):
         subject = self.request.query_params.get('subject')
 
         if service_manager:
-            queryset = queryset.filter(service_manager__id=service_manager)
+            queryset = queryset.filter(service_manager_id=service_manager)
 
         if sales_manager:
-            queryset = queryset.filter(sales_manager__id=sales_manager)
+            queryset = queryset.filter(sales_manager_id=sales_manager)
 
         if teacher:
-            queryset = queryset.filter(teacher__id=teacher)
+            queryset = queryset.filter(teacher_id=teacher)
 
         if subject:
-            queryset = queryset.filter(subject__id=subject)
+            queryset = queryset.filter(subject_id=subject)
 
         if call_operator_id:
-            queryset = queryset.filter(call_operator__id=call_operator_id)
+            print(call_operator_id)
+            queryset = queryset.filter(call_operator_id=call_operator_id)
 
         if course_id:
-            queryset = queryset.filter(lids_group__group__course__id=course_id)
+            queryset = queryset.filter(lids_group__group__course_id=course_id)
 
         if search_term:
             try:
