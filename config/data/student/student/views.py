@@ -323,7 +323,7 @@ class ExportLidToExcelAPIView(APIView):
                     "Maktab" if student.edu_class == "SCHOOL" else "Universitet" if student.edu_class == "UNIVERSITY" else "",
                     student.subject.name if student.subject else "",
                     student.ball,
-                    ", ".join([filial.name for filial in student.filial.all()]) if student.filial.exists() else "",
+                    ", ".join([filial.name for filial in student.filial.all()]) if student.filial else "",
                     student.marketing_channel.name if student.marketing_channel else "",
                     "Yangi student" if student.student_stage_type == "NEW_STUDENT" else "Faol student",
                     student.balance_status if student.balance_status else "",
