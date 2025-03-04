@@ -6,6 +6,7 @@ from django.db.models import Count, Q, Case, When
 from django.db.models import Sum, F, DecimalField, Value
 from django.db.models.functions import ExtractWeekDay, Concat
 from django.http import HttpResponse
+from icecream import ic
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -56,6 +57,7 @@ class DashboardView(APIView):
         # Run queries only if filters are provided
         if dynamic_filter:
             lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter).count()
+            ic(lid)
 
             orders = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters).count()
             orders_archived = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", is_archived=True, **filters).count()
