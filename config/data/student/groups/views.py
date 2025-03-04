@@ -107,6 +107,7 @@ class RoomListAPIView(ListCreateAPIView):
         filial = self.request.query_params.get('filial', None)
         if filial:
             return Room.objects.filter(filial=filial)
+        return Room.objects.all()  # Ensure it always returns a queryset
 
     def perform_create(self, serializer):
         """Automatically assign the requesting user's filial when creating a room."""
