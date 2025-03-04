@@ -47,8 +47,8 @@ class LidListCreateView(ListCreateAPIView):
         if user.is_anonymous:
             return Lid.objects.none()
 
-        if user.role == "DIRECTOR":
-            return Lid.objects.all()
+        # if user.role == "DIRECTOR":
+        #     quer Lid.objects.all()
 
         # Start with a base queryset
         queryset = Lid.objects.all()
