@@ -60,7 +60,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         sales_manager_id = self.request.query_params.get('sales_manager')
         call_operator_id = self.request.query_params.get('call_operator')
         from_price = self.request.query_params.get('from_price')
-        edu_langauge = self.request.query_params.get('edu_langauge')
+        edu_langauge = self.request.query_params.get('language')
         to_price = self.request.query_params.get('to_price')
         course_id = self.request.query_params.get('course')
         service_manager = self.request.query_params.get('service_manager')
