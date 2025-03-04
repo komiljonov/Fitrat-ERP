@@ -113,7 +113,7 @@ class DashboardView(APIView):
             course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).count()
 
         data = {
-            "lid": lid,
+            "lids": lid,
             "orders": orders,
             "orders_archived": orders_archived,
             "first_lesson": first_lesson,
