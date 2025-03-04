@@ -36,18 +36,6 @@ class DashboardView(APIView):
         sales_manager = request.query_params.get('sales_manager')
         filial = request.query_params.get('filial')
 
-        # Initialize default values to prevent UnboundLocalError
-        lid = 0
-        orders = 0
-        orders_archived = 0
-        first_lesson = 0
-        first_lesson_come = 0
-        first_lesson_come_archived = 0
-        first_course_payment = 0
-        first_course_payment_archived = 0
-        course_ended = 0
-
-        # Base Filters
         filters = {}
         if start_date:
             filters["created_at__gte"] = start_date
@@ -67,7 +55,7 @@ class DashboardView(APIView):
 
         # Run queries only if filters are provided
         if dynamic_filter:
-            lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_active=False).filter(dynamic_filter).count()
+            lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter).count()
 
             orders = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters).count()
             orders_archived = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", is_archived=True, **filters).count()
@@ -90,9 +78,38 @@ class DashboardView(APIView):
             first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True, **filters).filter(dynamic_filter).count()
 
             # Courses that ended
-            course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).filter(dynamic_filter).count()
+            course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).count()
 
-        # Response Data
+        else:
+            lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).count()
+
+            orders = Lid.objects.filter( lid_stage_type="ORDERED_LID", **filters).count()
+            orders_archived = Lid.objects.filter( lid_stage_type="ORDERED_LID", is_archived=True,
+                                                 **filters).count()
+            first_lesson = Lid.objects.filter( lid_stage_type="ORDERED_LID",
+                                              ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters).count()
+
+            # Get students with exactly one attendance record
+            students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
+                count=1).values_list("student", flat=True)
+
+            first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters).count()
+            first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance, is_archived=True,
+                                                                **filters).count()
+
+            # Get students who made their first course payment
+            payment_students = Finance.objects.filter(
+                student__isnull=False,
+                kind__name="COURSE_PAYMENT"
+            ).values_list("student", flat=True)
+
+            first_course_payment = Student.objects.filter(id__in=payment_students, **filters).count()
+            first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True,
+                                                                   **filters).count()
+
+            # Courses that ended
+            course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).count()
+
         data = {
             "lid": lid,
             "orders": orders,
