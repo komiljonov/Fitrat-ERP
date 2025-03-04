@@ -52,6 +52,7 @@ class DashboardView(APIView):
             dynamic_filter |= Q(sales_manager__id=sales_manager)
 
         # Orders Count
+        lids = Lid.objects.filter(dynamic_filter,lid_stage_type="NEW_LID",**filters).count()
         orders = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters).count()
         orders_archived = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", is_archived=True,
                                              **filters).count()
@@ -82,6 +83,7 @@ class DashboardView(APIView):
 
         # Response Data
         data = {
+            "lids": lids,
             "orders": orders,
             "orders_archived": orders_archived,
             "first_lesson": first_lesson,
