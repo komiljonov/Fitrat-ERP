@@ -328,8 +328,8 @@ class LessonScheduleWebListApi(ListAPIView):
         group = self.request.query_params.get('group', None)
         subject =self.request.query_params.get('subject')
         teacher = self.request.query_params.get('teacher')
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        start_date = self.request.query_params.get('started_at')
+        end_date = self.request.query_params.get('ended_at')
         queryset = self.queryset.all()
         if group:
             queryset = queryset.filter(id=group)
