@@ -55,105 +55,44 @@ class DashboardView(APIView):
         if subjects:
             dynamic_filter |= Q(subject__id=subjects)
 
+        # Construct the filter for course and teacher before the if block
+        course_teacher_filter = Q()
+        if course:
+            course_teacher_filter |= Q(lids_group__group__course_id=course)
+        if teacher:
+            course_teacher_filter |= Q(lids_group__group__teacher_id=teacher)
 
         # Run queries only if filters are provided
-        if dynamic_filter :
-            if course or teacher:
-                lid = (Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter)
-                       .filter(lids_group__group__course_id=course,
-                               lids_group__group__teacher_id=teacher).count())
+        if dynamic_filter:
+            lid = (Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False)
+                   .filter(dynamic_filter)
+                   .filter(course_teacher_filter).count())
 
-                orders = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters)
-                          .filter(lids_group__group__course_id=course,
-                                  lids_group__group__teacher_id=teacher).count())
-                orders_archived = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
-                                                      is_archived=True, **filters)
-                                .filter(lids_group__group__course_id=course,
-                                           lids_group__group__teacher_id=teacher).count())
-                first_lesson = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
-                                                   ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters)
-                                    .filter(lids_group__group__course_id=course,
-                                        lids_group__group__teacher_id=teacher).count())
+            orders = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters)
+                      .filter(course_teacher_filter).count())
 
-                students_with_one_attendance = (Attendance.objects.values("student").annotate(count=Count("id"))
-                                                .filter(group__course_id=course, group__teacher_id=teacher)
-                                                .filter(count=1).values_list("student", flat=True))
+            orders_archived = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
+                                                  is_archived=True, **filters)
+                               .filter(course_teacher_filter).count())
 
-                first_lesson_come = (Student.objects.filter(id__in=students_with_one_attendance, **filters)
-                                     .filter(dynamic_filter, lids_group__group__course_id=course,
-                                             lids_group__group__teacher_id=teacher).count())
-                first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance,
-                                                                    is_archived=True, **filters).filter(
-                    dynamic_filter).count()
+            first_lesson = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
+                                               ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters)
+                            .filter(course_teacher_filter).count())
 
-                # Get students who made their first course payment
-                payment_students = Finance.objects.filter(
-                    student__isnull=False,
-                    kind__name="COURSE_PAYMENT"
-                ).values_list("student", flat=True)
+            students_with_one_attendance = (Attendance.objects.values("student")
+                                            .annotate(count=Count("id"))
+                                            .filter(course_teacher_filter)
+                                            .filter(count=1)
+                                            .values_list("student", flat=True))
 
-                first_course_payment = (Student.objects.filter(id__in=payment_students, **filters)
-                                        .filter(dynamic_filter, lids_group__group__course_id=course,
-                                                lids_group__group__teacher_id=teacher).count())
-                first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True,
-                                                                       **filters).filter(
-                    dynamic_filter, lids_group__group__course_id=course,
-                    lids_group__group__teacher_id=teacher).count()
+            first_lesson_come = (Student.objects.filter(id__in=students_with_one_attendance, **filters)
+                                 .filter(dynamic_filter)
+                                 .filter(course_teacher_filter).count())
 
-                # Courses that ended
-                course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters,
-                                                           group__course_id=course, group__teacher_id=teacher).count()
-            else:
-
-                lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter).count()
-
-                orders = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters).count()
-                orders_archived = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
-                                                     is_archived=True, **filters).count()
-                first_lesson = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
-                                                  ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters).count()
-
-                # Get students with exactly one attendance record
-                students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
-                    count=1).values_list("student", flat=True)
-
-                first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance,
-                                                           **filters).filter(dynamic_filter).count()
-                first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance,
-                                                                    is_archived=True, **filters).filter(
-                    dynamic_filter).count()
-
-                # Get students who made their first course payment
-                payment_students = Finance.objects.filter(
-                    student__isnull=False,
-                    kind__name="COURSE_PAYMENT"
-                ).values_list("student", flat=True)
-
-                first_course_payment = Student.objects.filter(id__in=payment_students,
-                                                              **filters).filter(dynamic_filter).count()
-                first_course_payment_archived = Student.objects.filter(id__in=payment_students,
-                                                                       is_archived=True, **filters).filter(
-                    dynamic_filter).count()
-
-                # Courses that ended
-                course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).count()
-
-        else:
-            lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).count()
-
-            orders = Lid.objects.filter(lid_stage_type="ORDERED_LID", **filters).count()
-            orders_archived = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=True,
-                                                 **filters).count()
-            first_lesson = Lid.objects.filter(lid_stage_type="ORDERED_LID",
-                                              ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters).count()
-
-            # Get students with exactly one attendance record
-            students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
-                count=1).values_list("student", flat=True)
-
-            first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters).count()
-            first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance, is_archived=True,
-                                                                **filters).count()
+            first_lesson_come_archived = (Student.objects.filter(id__in=students_with_one_attendance,
+                                                                 is_archived=True, **filters)
+                                          .filter(dynamic_filter)
+                                          .filter(course_teacher_filter).count())
 
             # Get students who made their first course payment
             payment_students = Finance.objects.filter(
@@ -161,12 +100,52 @@ class DashboardView(APIView):
                 kind__name="COURSE_PAYMENT"
             ).values_list("student", flat=True)
 
-            first_course_payment = Student.objects.filter(id__in=payment_students, **filters).count()
-            first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True,
-                                                                   **filters).count()
+            first_course_payment = (Student.objects.filter(id__in=payment_students, **filters)
+                                    .filter(dynamic_filter)
+                                    .filter(course_teacher_filter).count())
+
+            first_course_payment_archived = (Student.objects.filter(id__in=payment_students, is_archived=True,
+                                                                    **filters)
+                                             .filter(dynamic_filter)
+                                             .filter(course_teacher_filter).count())
 
             # Courses that ended
-            course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).count()
+            course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).filter(
+                course_teacher_filter).count()
+
+        else:
+            lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(course_teacher_filter).count()
+
+            orders = Lid.objects.filter(lid_stage_type="ORDERED_LID", **filters).filter(course_teacher_filter).count()
+            orders_archived = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=True,
+                                                 **filters).filter(course_teacher_filter).count()
+            first_lesson = Lid.objects.filter(lid_stage_type="ORDERED_LID",
+                                              ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters).filter(
+                course_teacher_filter).count()
+
+            # Get students with exactly one attendance record
+            students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
+                count=1).values_list("student", flat=True)
+
+            first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters).filter(
+                course_teacher_filter).count()
+            first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance, is_archived=True,
+                                                                **filters).filter(course_teacher_filter).count()
+
+            # Get students who made their first course payment
+            payment_students = Finance.objects.filter(
+                student__isnull=False,
+                kind__name="COURSE_PAYMENT"
+            ).values_list("student", flat=True)
+
+            first_course_payment = Student.objects.filter(id__in=payment_students, **filters).filter(
+                course_teacher_filter).count()
+            first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True,
+                                                                   **filters).filter(course_teacher_filter).count()
+
+            # Courses that ended
+            course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).filter(
+                course_teacher_filter).count()
 
         data = {
             "lids": lid,
