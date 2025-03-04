@@ -2,8 +2,7 @@ from datetime import datetime
 from io import BytesIO
 
 import pandas as pd
-from django.db.models import Case, When
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Case, When
 from django.db.models import Sum, F, DecimalField, Value
 from django.db.models.functions import ExtractWeekDay, Concat
 from django.http import HttpResponse
@@ -24,6 +23,10 @@ from ..student.student.models import Student
 from ..upload.serializers import FileUploadSerializer
 
 
+from django.db.models import Count, Q
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 class DashboardView(APIView):
     def get(self, request, *args, **kwargs):
         start_date = request.query_params.get('start_date')
@@ -32,6 +35,17 @@ class DashboardView(APIView):
         service_manager = request.query_params.get('service_manager')
         sales_manager = request.query_params.get('sales_manager')
         filial = request.query_params.get('filial')
+
+        # Initialize default values to prevent UnboundLocalError
+        lid = 0
+        orders = 0
+        orders_archived = 0
+        first_lesson = 0
+        first_lesson_come = 0
+        first_lesson_come_archived = 0
+        first_course_payment = 0
+        first_course_payment_archived = 0
+        course_ended = 0
 
         # Base Filters
         filters = {}
@@ -42,48 +56,45 @@ class DashboardView(APIView):
         if filial:
             filters["filial"] = filial
 
-        # Dynamic Q filter
+        # Dynamic Filtering using Q
         dynamic_filter = Q()
         if channel_id:
-            dynamic_filter |= Q(marketing_channel__id__in=[channel_id])  # Wrap channel_id in list
+            dynamic_filter |= Q(marketing_channel__id=channel_id)
         if service_manager:
             dynamic_filter |= Q(service_manager__id=service_manager)
         if sales_manager:
             dynamic_filter |= Q(sales_manager__id=sales_manager)
 
-        # Orders Count
-        lids = Lid.objects.filter(dynamic_filter,lid_stage_type="NEW_LID",**filters).count()
-        orders = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters).count()
-        orders_archived = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", is_archived=True,
-                                             **filters).count()
-        first_lesson = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
-                                          ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters).count()
+        # Run queries only if filters are provided
+        if dynamic_filter:
+            lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_active=False).filter(dynamic_filter).count()
 
-        # Students with exactly one attendance
-        students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
-            count=1).values_list("student", flat=True)
+            orders = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters).count()
+            orders_archived = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", is_archived=True, **filters).count()
+            first_lesson = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters).count()
 
-        first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters).filter(
-            dynamic_filter).count()
-        first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance, is_archived=True,
-                                                            **filters).filter(dynamic_filter).count()
+            # Get students with exactly one attendance record
+            students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
+                count=1).values_list("student", flat=True)
 
-        # Get students who made their first course payment
-        payment_students = Finance.objects.filter(
-            student__isnull=False,
-            kind__name="COURSE_PAYMENT"
-        ).values_list("student", flat=True)
+            first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters).filter(dynamic_filter).count()
+            first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance, is_archived=True, **filters).filter(dynamic_filter).count()
 
-        first_course_payment = Student.objects.filter(id__in=payment_students, **filters).filter(dynamic_filter).count()
-        first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True,
-                                                               **filters).filter(dynamic_filter).count()
+            # Get students who made their first course payment
+            payment_students = Finance.objects.filter(
+                student__isnull=False,
+                kind__name="COURSE_PAYMENT"
+            ).values_list("student", flat=True)
 
-        # Courses that ended
-        course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).filter(dynamic_filter).count()
+            first_course_payment = Student.objects.filter(id__in=payment_students, **filters).filter(dynamic_filter).count()
+            first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True, **filters).filter(dynamic_filter).count()
+
+            # Courses that ended
+            course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).filter(dynamic_filter).count()
 
         # Response Data
         data = {
-            "lids": lids,
+            "lid": lid,
             "orders": orders,
             "orders_archived": orders_archived,
             "first_lesson": first_lesson,
@@ -95,6 +106,8 @@ class DashboardView(APIView):
         }
 
         return Response(data)
+
+
 
 
 class MarketingChannels(APIView):
