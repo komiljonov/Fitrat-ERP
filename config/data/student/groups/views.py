@@ -332,11 +332,11 @@ class LessonScheduleWebListApi(ListAPIView):
         queryset = self.queryset.all()
         if subject:
             queryset = queryset.filter(
-                group__course__subject_id=subject,
+                course__subject_id=subject,
             )
         if teacher:
             queryset = queryset.filter(
-                group__teacher_id=teacher,
+                teacher_id=teacher,
             )
         if start_date:
             queryset = queryset.filter(
