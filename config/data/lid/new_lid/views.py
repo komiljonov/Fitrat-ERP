@@ -82,7 +82,7 @@ class LidListCreateView(ListCreateAPIView):
             queryset = queryset.filter(sales_manager_id=sales_manager)
 
         if teacher:
-            queryset = queryset.filter(lids_group__teacher_id=teacher)
+            queryset = queryset.filter(lids_group__group__teacher_id=teacher)
 
         if subject:
             queryset = queryset.filter(subject_id=subject)
