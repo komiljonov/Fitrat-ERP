@@ -12,6 +12,7 @@ from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer
     DaySerializer
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
+from ..lesson.views import LessonSchedule
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -112,6 +113,19 @@ class RoomListAPIView(ListCreateAPIView):
     def perform_create(self, serializer):
         """Automatically assign the requesting user's filial when creating a room."""
         serializer.save(filial=self.request.user.filial.first())
+
+
+class RoomFilterView(ListAPIView):
+    queryset = Room.objects.all()
+    serializer_class = RoomsSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+    search_fields = ('room_number', 'room_filling')
+    ordering_fields = ('room_number', 'room_filling')
+    filterset_fields = ('room_number', 'room_filling')
+
+
+
 
 
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -309,6 +323,30 @@ class LessonScheduleWebListApi(ListAPIView):
     ordering_fields = ['start_date', 'end_date', 'name']
     search_fields = ['name', 'teacher__id', 'course__subject__name', 'room_number']
     filterset_fields = ('name', 'teacher__id', 'course__subject__name', 'room_number')
+
+    def get_queryset(self):
+        subject =self.request.query_params.get('subject')
+        teacher = self.request.query_params.get('teacher')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if subject:
+            queryset = self.queryset.filter(
+                group__course__subject_id=subject,
+            )
+        if teacher:
+            queryset = self.queryset.filter(
+                group__teacher_id=teacher,
+            )
+        if start_date:
+            queryset = self.queryset.filter(
+                start_date=start_date
+            )
+        if start_date and end_date:
+            queryset = self.queryset.filter(
+                finish_date=end_date,
+            )
+        return queryset
+
 
     def get_paginated_response(self, data):
         return Response(data)
