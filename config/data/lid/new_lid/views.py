@@ -87,6 +87,7 @@ class LidListCreateView(ListCreateAPIView):
         if subject:
             queryset = queryset.filter(subject_id=subject)
 
+        print(call_operator_id)
         if call_operator_id:
             print(call_operator_id)
             queryset = queryset.filter(call_operator_id=call_operator_id)
