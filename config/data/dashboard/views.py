@@ -46,7 +46,6 @@ class DashboardView(APIView):
 
         # Dynamic Filtering using Q
         dynamic_filter = Q()
-        secondary_filter = Q()
         if channel_id:
             dynamic_filter |= Q(marketing_channel__id=channel_id)
         if service_manager:
@@ -105,52 +104,7 @@ class DashboardView(APIView):
                 course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters,
                                                            group__course__id=course, group__teacher__id=teacher).count()
             else:
-                if course or teacher:
-                    lid = (Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter)
-                           .filter(lids_group__group__course__id=course,
-                                   lids_group__group__teacher__id=teacher).count())
 
-                    orders = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters)
-                              .filter(lids_group__group__course__id=course,
-                                      lids_group__group__teacher__id=teacher).count())
-                    orders_archived = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
-                                                          is_archived=True, **filters)
-                                       .filter(lids_group__group__course__id=course,
-                                               lids_group__group__teacher__id=teacher).count())
-                    first_lesson = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
-                                                       ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters)
-                                    .filter(lids_group__group__course__id=course,
-                                            lids_group__group__teacher__id=teacher).count())
-
-                    students_with_one_attendance = (Attendance.objects.values("student").annotate(count=Count("id"))
-                                                    .filter(group__course__id=course, group__teacher__id=teacher)
-                                                    .filter(count=1).values_list("student", flat=True))
-
-                    first_lesson_come = (Student.objects.filter(id__in=students_with_one_attendance, **filters)
-                                         .filter(dynamic_filter, lids_group__group__course__id=course,
-                                                 lids_group__group__teacher__id=teacher).count())
-                    first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance,
-                                                                        is_archived=True, **filters).filter(
-                        dynamic_filter).count()
-
-                    # Get students who made their first course payment
-                    payment_students = Finance.objects.filter(
-                        student__isnull=False,
-                        kind__name="COURSE_PAYMENT"
-                    ).values_list("student", flat=True)
-
-                    first_course_payment = (Student.objects.filter(id__in=payment_students, **filters)
-                                            .filter(dynamic_filter, lids_group__group__course__id=course,
-                                                    lids_group__group__teacher__id=teacher).count())
-                    first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True,
-                                                                           **filters).filter(
-                        dynamic_filter, lids_group__group__course__id=course,
-                        lids_group__group__teacher__id=teacher).count()
-
-                    # Courses that ended
-                    course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters,
-                                                               group__course__id=course,
-                                                               group__teacher__id=teacher).count()
                 lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter).count()
 
                 orders = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters).count()
