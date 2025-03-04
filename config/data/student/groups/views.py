@@ -325,11 +325,14 @@ class LessonScheduleWebListApi(ListAPIView):
     filterset_fields = ('name', 'teacher__id', 'course__subject__name', 'room_number')
 
     def get_queryset(self):
+        group = self.request.query_params.get('group', None)
         subject =self.request.query_params.get('subject')
         teacher = self.request.query_params.get('teacher')
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
         queryset = self.queryset.all()
+        if group:
+            queryset = queryset.filter(id=group)
         if subject:
             queryset = queryset.filter(
                 course__subject_id=subject,
