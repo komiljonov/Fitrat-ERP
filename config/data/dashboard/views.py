@@ -7,6 +7,8 @@ from django.db.models import Count, Q
 from django.db.models import Sum, F, DecimalField, Value
 from django.db.models.functions import ExtractWeekDay, Concat
 from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -757,3 +759,160 @@ class StudentLanguage(APIView):
             "student_eng": student_eng,
             "student_ru": student_ru,
         })
+
+
+class ExportDashboardToExcelAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        # ✅ 1. Fetch Sales Data
+        creator = request.query_params.get('creator')
+        sale = request.query_params.get('sale')
+        student = request.query_params.get('student')
+        filial = request.query_params.get('filial')
+
+        sales_filters = {}
+        if creator:
+            sales_filters['creator__id'] = creator
+        if sale:
+            sales_filters['sale__id'] = sale
+        if student:
+            sales_filters['student__id'] = student
+        if filial:
+            sales_filters['filial__id'] = filial
+
+        student_count = SaleStudent.objects.filter(**sales_filters).values('creator').annotate(
+            total_students=Count('student', distinct=True)
+        )
+
+        voucher_sales = SaleStudent.objects.filter(sale__type="VOUCHER", **sales_filters).values('creator').annotate(
+            total_voucher_amount=Sum('sale__amount')
+        )
+
+        sale_data = SaleStudent.objects.filter(sale__type="SALE", **sales_filters).values('creator').annotate(
+            total_sale_discount=Sum(
+                Case(
+                    When(
+                        student__students_group__group__price_type="monthly",
+                        then=F('student__students_group__group__price') * F('sale__amount') / Value(100)
+                    ),
+                    default=Value(0),
+                    output_field=DecimalField()
+                )
+            )
+        )
+
+        total_sales = SaleStudent.objects.filter(**sales_filters).values('creator').annotate(
+            total_sales_amount=Sum('sale__amount')
+        )
+
+        # ✅ 2. Fetch Finance Statistics Data
+        finance_filters = {}
+        kind_id = request.query_params.get('kind')
+        action = request.query_params.get('action')
+        creator = request.query_params.get('creator')
+        student = request.query_params.get('student')
+        stuff = request.query_params.get('stuff')
+        casher = request.query_params.get('casher')
+        payment_method = request.query_params.get('payment_method')
+
+        if kind_id:
+            finance_filters['kind__id'] = kind_id
+        if action:
+            finance_filters['action'] = action
+        if creator:
+            finance_filters['creator__id'] = creator
+        if student:
+            finance_filters['student__id'] = student
+        if stuff:
+            finance_filters['stuff__id'] = stuff
+        if casher:
+            finance_filters['casher__id'] = casher
+        if payment_method:
+            finance_filters['payment_method'] = payment_method
+
+        finance_stats = Finance.objects.filter(**finance_filters).values('kind__id', 'kind__name', 'action').annotate(
+            total_amount=Sum('amount')
+        ).order_by('kind__name')
+
+        # ✅ 3. Fetch Weekly Finance Data
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        casher_id = request.query_params.get('casher')
+        kind = request.query_params.get('kind')
+
+        weekly_filters = {}
+        if casher_id:
+            weekly_filters['casher__id'] = casher_id
+        if kind:
+            weekly_filters['kind__name'] = kind
+        if start_date:
+            weekly_filters['created_at__gte'] = start_date
+        if end_date:
+            weekly_filters['created_at__lte'] = end_date
+
+        weekly_finance_data = (
+            Finance.objects.filter(**weekly_filters)
+            .values('kind__name')
+            .annotate(total_amount=Sum('amount'))
+        )
+
+        # ✅ Create Excel Workbook
+        workbook = Workbook()
+
+        # ✅ Create Sales Sheet
+        sales_sheet = workbook.active
+        sales_sheet.title = "Sales Data"
+        sales_headers = ["Creator", "Total Students", "Voucher Sales", "Sale Discount", "Total Sales"]
+        sales_sheet.append(sales_headers)
+
+        for entry in student_count:
+            creator_id = entry['creator']
+            voucher_entry = next((v for v in voucher_sales if v['creator'] == creator_id), {'total_voucher_amount': 0})
+            sale_entry = next((s for s in sale_data if s['creator'] == creator_id), {'total_sale_discount': 0})
+            total_sales_entry = next((t for t in total_sales if t['creator'] == creator_id), {'total_sales_amount': 0})
+
+            sales_sheet.append([
+                entry['total_students'],
+                voucher_entry['total_voucher_amount'],
+                sale_entry['total_sale_discount'],
+                total_sales_entry['total_sales_amount'],
+            ])
+
+        # ✅ Create Finance Statistics Sheet
+        finance_sheet = workbook.create_sheet(title="Finance Statistics")
+        finance_headers = ["Kind Name", "Action", "Total Amount"]
+        finance_sheet.append(finance_headers)
+
+        for entry in finance_stats:
+            finance_sheet.append([
+                entry['kind__name'],
+                entry['action'],
+                entry['total_amount']
+            ])
+
+        # ✅ Create Weekly Finance Data Sheet
+        weekly_sheet = workbook.create_sheet(title="Weekly Finance")
+        weekly_headers = ["Kind Name", "Total Amount"]
+        weekly_sheet.append(weekly_headers)
+
+        for entry in weekly_finance_data:
+            weekly_sheet.append([
+                entry['kind__name'],
+                entry['total_amount']
+            ])
+
+        # ✅ Style headers
+        for sheet in [sales_sheet, finance_sheet, weekly_sheet]:
+            for col_num, header in enumerate(sheet[1], 1):
+                cell = sheet.cell(row=1, column=col_num)
+                cell.font = Font(bold=True, size=12)
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                sheet.column_dimensions[cell.column_letter].width = 20
+
+        # ✅ Create HTTP Response
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="Dashboard_Data.xlsx"'
+        workbook.save(response)
+
+        return response

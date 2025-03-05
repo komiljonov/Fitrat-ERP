@@ -17,6 +17,18 @@ class MasteringSerializer(serializers.ModelSerializer):
             "ball",
             "created_at",
         ]
+    def create(self, validated_data):
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        room = Mastering.objects.create(filial=filial, **validated_data)
+        return room
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -35,4 +47,16 @@ class StuffMasteringSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+    def create(self, validated_data):
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        room = MasteringTeachers.objects.create(filial=filial, **validated_data)
+        return room
 

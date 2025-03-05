@@ -34,10 +34,12 @@ class CasherListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         role = self.request.query_params.get('role', None)
+
         filter={}
         if role:
             filter['role'] = role
-        return Casher.objects.filter(**filter)
+
+        return Casher.objects.filter(filial=self.request.user.filial.first(),**filter)
 
 
 
@@ -51,6 +53,17 @@ class CasherNoPg(ListAPIView):
     queryset = Casher.objects.all()
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
+
+
+    def get_queryset(self):
+        role = self.request.query_params.get('role', None)
+
+        filter = {}
+        if role:
+            filter['role'] = role
+
+        return Casher.objects.filter(filial=self.request.user.filial.first(), **filter)
+
 
     def get_paginated_response(self, data):
         return Response(data)
@@ -222,9 +235,13 @@ class FinanceStatisticsAPIView(APIView):
     def get(self, request):
         kind = self.request.query_params.get('kind', None)
 
+        filial = self.request.query_params.get('filial', None)
+
         filter = {}
         if kind:
             filter['kind'] = Kind.objects.get(id=kind)
+        if filial:
+            filter['filial'] = filial
 
         # Asosiy kassa balansi
         main_casher_income = \
@@ -423,6 +440,7 @@ class FinanceExcel(APIView):
         casher_id = request.query_params.get('casher')
         action = request.query_params.get('action')  # INCOME / EXPENSE
         kind = request.query_params.get('kind')  # COURSE_PAYMENT, LESSON_PAYMENT, etc.
+        filial = self.request.query_params.get('filial')
 
         # Base queryset
         finance_queryset = Finance.objects.all()
@@ -438,6 +456,8 @@ class FinanceExcel(APIView):
         # Apply kind filter if provided
         if kind:
             finance_queryset = finance_queryset.filter(kind=kind.upper())
+        if filial:
+            finance_queryset = finance_queryset.filter(filial=filial)
 
         # Convert queryset to a list of dictionaries
         finance_data = list(finance_queryset.values(
@@ -633,6 +653,7 @@ class PaymentStatisticsByKind(APIView):
         # Parse and validate dates
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+        filial = self.request.query_params.get('filial')
 
         filters = {}
         if start_date:
@@ -641,7 +662,8 @@ class PaymentStatisticsByKind(APIView):
         if end_date:
             end_date = parse_date(end_date)
             filters['created_at__lte'] = end_date
-
+        if filial:
+            filters['filial'] = filial
         kinds = Kind.objects.all()
 
         # Function to get total amount for a given kind and action type

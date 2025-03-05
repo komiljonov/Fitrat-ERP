@@ -49,6 +49,18 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
         if upload_files:
             certificate.upload_file.set(upload_files)
 
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        room = Results.objects.create(filial=filial, **validated_data)
+        return room
+
         return certificate
 
 class CertificationResultsSerializer(serializers.ModelSerializer):

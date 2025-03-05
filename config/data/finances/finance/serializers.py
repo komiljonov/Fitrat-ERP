@@ -60,6 +60,18 @@ class CasherSerializer(serializers.ModelSerializer):
     def get_expense(self, obj):
         return Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(Sum('amount'))['amount__sum'] or 0
 
+    def create(self, validated_data):
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+        casher = Casher.objects.create(filial=filial, **validated_data)
+        return  casher
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["user"] = UserListSerializer(instance.user).data
@@ -158,6 +170,7 @@ class FinanceSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and hasattr(request, 'user'):
             validated_data['creator'] = request.user
+
         return super().create(validated_data)
 
     def to_representation(self, instance):

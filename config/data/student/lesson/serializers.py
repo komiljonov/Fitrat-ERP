@@ -189,6 +189,19 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
     def get_ended_at(self, obj):
         return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
 
+    def create(self, validated_data):
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        group = Group.objects.create(filial=filial, **validated_data)
+        return group
+
 
 class LessonScheduleSerializer(serializers.ModelSerializer):
     subject = serializers.SerializerMethodField()
@@ -315,6 +328,19 @@ class FirstLessonSerializer(serializers.ModelSerializer):
         # Proceed with the standard update logic
         return super().update(instance, validated_data)
 
+    def create(self, validated_data):
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        room = FirstLLesson.objects.create(filial=filial, **validated_data)
+        return room
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['group'] = GroupSerializer(instance.group).data
@@ -340,10 +366,17 @@ class ExtraLessonSerializer(serializers.ModelSerializer):
             'created_at'
         ]
     def create(self, validated_data):
-        filial = validated_data.pop('filial', None)
-        if filial is None:
-            filial = self.context['request'].user.filial
-            filial.save()
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        room = ExtraLesson.objects.create(filial=filial, **validated_data)
+        return room
 
 
 class ExtraLessonGroupSerializer(serializers.ModelSerializer):
@@ -363,10 +396,17 @@ class ExtraLessonGroupSerializer(serializers.ModelSerializer):
             'created_at',
         ]
     def create(self, validated_data):
-        filial = validated_data.pop('filial', None)
-        if filial is None:
-            filial = self.context['request'].user.filial
-            filial.save()
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        room = ExtraLessonGroup.objects.create(filial=filial, **validated_data)
+        return room
 
 
 from rest_framework import serializers
