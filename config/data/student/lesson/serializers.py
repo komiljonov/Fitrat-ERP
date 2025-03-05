@@ -1,7 +1,8 @@
 import datetime
 
 from django.utils.module_loading import import_string
-from rest_framework import serializers
+from icecream import ic
+from rest_framework import serializers, request
 
 from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
 from ..attendance.models import Attendance
@@ -82,6 +83,8 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
     room_fillings = serializers.SerializerMethodField()
     scheduled_day_type = serializers.SerializerMethodField()
 
+    lesson_date = serializers.SerializerMethodField()
+
     class Meta:
         model = Group
         fields = [
@@ -93,9 +96,63 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
             'student_count',
             'name',
             'scheduled_day_type',
+            "lesson_date",
             'started_at',
             'ended_at'
         ]
+
+    def get_lesson_date(self, obj):
+        schedule_days = obj.scheduled_day_type.all()  # Assuming scheduled_day_type contains day objects
+        lesson_schedule = {}
+
+        today = datetime.date.today()
+        start_date = today - datetime.timedelta(days=today.weekday())  # Monday of the current week
+        end_date = start_date + datetime.timedelta(days=5)  # Saturday of the same week
+
+        lesson_type = ','.join([day.name for day in schedule_days])
+        holidays = []
+        days_off = ["Yakshanba"]
+        ic(start_date)
+        ic(end_date)
+
+        # Get the scheduled lesson dates using the calculate_lessons function
+        grouped_schedule = calculate_lessons(
+            start_date=start_date.strftime('%Y-%m-%d'),
+            end_date=end_date.strftime('%Y-%m-%d'),
+            lesson_type=lesson_type,
+            holidays=holidays,
+            days_off=days_off
+        )
+
+        # Collect lessons by date
+        lesson_by_date = {}
+
+        for month, lesson_dates in grouped_schedule.items():
+            for lesson_date in lesson_dates:
+                lesson_date_obj = datetime.datetime.strptime(lesson_date, "%Y-%m-%d").date()
+                if lesson_date_obj >= today:
+                    if lesson_date_obj not in lesson_by_date:
+                        lesson_by_date[lesson_date_obj] = []
+
+                    lesson_by_date[lesson_date_obj].append({
+                        "subject": obj.course.subject.name if obj.course and obj.course.subject else None,
+                        "subject_label": obj.course.subject.label if obj.course and obj.course.subject else None,
+                        "teacher_name": f"{obj.teacher.first_name if obj.teacher.first_name else ''} {obj.teacher.last_name if obj.teacher else ''}",
+                        "room": self.get_room(obj),
+                        "name": obj.name,
+                        "started_at": obj.started_at.strftime('%H:%M') if obj.started_at else None,
+                        "ended_at": obj.ended_at.strftime('%H:%M') if obj.ended_at else None,
+                    })
+
+        # Format the response to include lessons by date
+        result = []
+        for lesson_date, lessons in lesson_by_date.items():
+            result.append({
+                lesson_date.strftime('%d-%m-%Y')
+            })
+
+        return result
+
 
     def get_student_count(self, obj):
         return StudentGroup.objects.filter(group=obj).count()
@@ -272,6 +329,7 @@ class ExtraLessonSerializer(serializers.ModelSerializer):
             'student',
             'date',
             'teacher',
+            'filial',
             'started_at',
             'ended_at',
             'room',
@@ -281,6 +339,11 @@ class ExtraLessonSerializer(serializers.ModelSerializer):
             'is_attendance',
             'created_at'
         ]
+    def create(self, validated_data):
+        filial = validated_data.pop('filial', None)
+        if filial is None:
+            filial = self.context['request'].user.filial
+            filial.save()
 
 
 class ExtraLessonGroupSerializer(serializers.ModelSerializer):
@@ -290,6 +353,7 @@ class ExtraLessonGroupSerializer(serializers.ModelSerializer):
             'id',
             'group',
             'date',
+            'filial',
             'started_at',
             'ended_at',
             'comment',
@@ -298,6 +362,11 @@ class ExtraLessonGroupSerializer(serializers.ModelSerializer):
             'is_attendance',
             'created_at',
         ]
+    def create(self, validated_data):
+        filial = validated_data.pop('filial', None)
+        if filial is None:
+            filial = self.context['request'].user.filial
+            filial.save()
 
 
 from rest_framework import serializers
