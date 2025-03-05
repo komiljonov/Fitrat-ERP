@@ -58,10 +58,16 @@ class UserList(ListAPIView):
 
         role = self.request.query_params.get('role', None)
 
-        if role:
-            return CustomUser.objects.filter(role=role, filial__in=user_filial).order_by('-created_at')
+        subject = self.request.query_params.get('subject', None)
+        queryset = CustomUser.objects.all()
 
-        return CustomUser.objects.filter(filial__in=user_filial).order_by('-created_at')
+        if subject:
+            queryset = queryset.filter(teacher__subject__id=subject, filial__in=user_filial).order_by('-created_at')
+
+        if role:
+            queryset = queryset.objects.filter(role=role, filial__in=user_filial).order_by('-created_at')
+
+        return queryset
 
 
 class CustomAuthToken(TokenObtainPairView):
