@@ -171,6 +171,9 @@ class FinanceSerializer(serializers.ModelSerializer):
         if request and hasattr(request, 'user'):
             validated_data['creator'] = request.user
 
+        if request and hasattr(request.user, 'filial'):
+            validated_data['filial'] = request.user.filial.first()
+
         return super().create(validated_data)
 
     def to_representation(self, instance):
