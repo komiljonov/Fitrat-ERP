@@ -69,7 +69,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         subject_id = self.request.query_params.get("subject")
 
         if teacher_id:
-            queryset = queryset.filter(students_group__teacher__id=teacher_id)  # ✅ Fixed lookup
+            queryset = queryset.filter(students_group__group__teacher__id=teacher_id)  # ✅ Fixed lookup
 
         if from_price:
             queryset = queryset.filter(balance__gte=from_price)
