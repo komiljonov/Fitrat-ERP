@@ -67,9 +67,13 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         service_manager = self.request.query_params.get('service_manager')
         group_id = self.request.query_params.get("group")
         subject_id = self.request.query_params.get("subject")
+        filial_id = self.request.query_params.get("filial")
+
+        if filial_id:
+            queryset = queryset.filter(filial__id=filial_id)
 
         if teacher_id:
-            queryset = queryset.filter(students_group__group__teacher__id=teacher_id)  # ✅ Fixed lookup
+            queryset = queryset.filter(students_group__group__teacher__id=teacher_id)
 
         if from_price:
             queryset = queryset.filter(balance__gte=from_price)
