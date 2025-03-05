@@ -365,7 +365,7 @@ class MonitoringView(APIView):
         if full_name:
             teachers = teachers.filter(name__icontains=full_name)
         if filial:
-            teachers = teachers.filter(filial_id=filial)
+            teachers = teachers.filter(filial__id=filial)
         if start_date and end_date:
             teachers = teachers.filter(created_at__date__gte=start_date, created_at__lte=end_date)
         elif start_date:
