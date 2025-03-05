@@ -541,9 +541,11 @@ class PaymentStatistics(APIView):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
         filial = self.request.query_params.get('filial')
+        casher_id = self.request.query_params.get('casher')
         filter = {}
 
-
+        if casher_id:
+            filter['casher__id'] = casher_id
         if filial:
             filter['filial'] = filial
         if start_date:
