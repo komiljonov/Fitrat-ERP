@@ -1,12 +1,14 @@
 from datetime import datetime
 
 from django_filters.rest_framework import DjangoFilterBackend
+from icecream import ic
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from .lesson_date_calculator import calculate_lessons
 from .models import Group, Room, SecondaryGroup, Day
 from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer, \
     DaySerializer
@@ -142,6 +144,12 @@ class RoomNoPG(ListAPIView):
     search_fields = ('room_number', 'room_filling')
     ordering_fields = ('room_number', 'room_filling')
     filterset_fields = ('room_number', 'room_filling')
+
+    def get_queryset(self):
+        filial = self.request.query_params.get('filial', None)
+        if filial:
+            return Room.objects.filter(filial=filial)
+        return Room.objects.filter(filial=self.request.user.filial.first())
 
     def get_paginated_response(self, data):
         return Response(data)
@@ -314,6 +322,8 @@ class LessonScheduleListApi(ListAPIView):
         return Response(sorted_lessons)
 
 
+from django.db.models import Q
+import datetime
 
 class LessonScheduleWebListApi(ListAPIView):
     serializer_class = LessonScheduleWebSerializer
@@ -326,31 +336,45 @@ class LessonScheduleWebListApi(ListAPIView):
 
     def get_queryset(self):
         group = self.request.query_params.get('group', None)
-        subject =self.request.query_params.get('subject')
+        subject = self.request.query_params.get('subject')
         teacher = self.request.query_params.get('teacher')
-        start_date = self.request.query_params.get('started_at')
-        end_date = self.request.query_params.get('ended_at')
+        start_date_str = self.request.query_params.get('started_at')
+        end_date_str = self.request.query_params.get('ended_at')
+
         queryset = self.queryset.all()
+
+        # Convert query params to date objects
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else None
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else None
+
         if group:
             queryset = queryset.filter(id=group)
         if subject:
-            queryset = queryset.filter(
-                course__subject_id=subject,
-            )
+            queryset = queryset.filter(course__subject_id=subject)
         if teacher:
-            queryset = queryset.filter(
-                teacher_id=teacher,
-            )
-        if start_date:
-            queryset = queryset.filter(
-                start_date=start_date
-            )
-        if start_date and end_date:
-            queryset = queryset.filter(
-                finish_date=end_date,
-            )
-        return queryset
+            queryset = queryset.filter(teacher_id=teacher)
 
+        # Get IDs of objects that match the lesson_date filtering
+        valid_group_ids = []
+        for obj in queryset:
+            lesson_dates = self.serializer_class().get_lesson_date(obj)
+
+            date_str =list(lesson_dates)
+            ic(date_str)
+            lesson_date_objects = [datetime.datetime.strptime(str(date_str), '%d-%m-%Y').date() for d in lesson_dates]
+
+            # Apply filtering based on start_date and end_date
+            if start_date and end_date:
+                if any(start_date <= d <= end_date for d in lesson_date_objects):
+                    valid_group_ids.append(obj.id)
+            elif start_date:
+                if any(d >= start_date for d in lesson_date_objects):
+                    valid_group_ids.append(obj.id)
+            elif end_date:
+                if any(d <= end_date for d in lesson_date_objects):
+                    valid_group_ids.append(obj.id)
+
+        return queryset.filter(id__in=valid_group_ids)
 
     def get_paginated_response(self, data):
         return Response(data)
