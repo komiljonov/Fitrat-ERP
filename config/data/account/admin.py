@@ -32,7 +32,13 @@ class CustomUserAdmin(UserAdmin):
 
     change_form_template = 'admin/auth/user/user_change_form.html'
 
-admin.site.register(CustomUser)
+@admin.register(CustomUser)
+class CustomUserAdmin(UserAdmin):
+    form = CustomUserChangeForm,CustomUserCreationForm
+    model = CustomUser
+    list_display = ("first_name","last_name","phone", "role" , "is_staff", "is_active",)
+    list_filter = ("role", "is_active",)
+
 
 
 
