@@ -631,13 +631,16 @@ class SalesList(ListCreateAPIView):
 
 class SalesStudentList(ListCreateAPIView):
     serializer_class = SaleStudentSerializer
-    queryset = SaleStudent.objects.all()
+    queryset = SaleStudent.objects.all()  # ✅ Default QuerySet
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
+
         if filial:
-            return Sale.objects.filter(filial=filial)
+            return SaleStudent.objects.filter(filial=filial)  # ✅ Correct model
+
+        return SaleStudent.objects.all()  # ✅ Ensures QuerySet is never None
 
 
 class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
