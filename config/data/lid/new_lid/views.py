@@ -246,9 +246,9 @@ class LidStatisticsView(ListAPIView):
     def list(self, request, *args, **kwargs):
         user = request.user
 
-        # Director sees everything
-        if user.role == "DIRECTOR":
-            queryset = Lid.objects.all()
+        # # Directole == "DIRECTOR":
+        # #             queryset = Lid.objects.all()r sees everything
+        # if user.ro
 
         if user.role != "CALL_OPERATOR" and user.is_call_center:
             queryset = Lid.objects.filter(filial__in=user.filial.all())
