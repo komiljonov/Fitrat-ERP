@@ -62,10 +62,10 @@ class UserList(ListAPIView):
         queryset = CustomUser.objects.all()
 
         if subject:
-            queryset = queryset.filter(teacher__subject__id=subject, filial__in=user_filial).order_by('-created_at')
+            queryset = queryset.filter(teachers__subject__id=subject, filial__in=user_filial).order_by('-created_at')
 
         if role:
-            queryset = queryset.objects.filter(role=role, filial__in=user_filial).order_by('-created_at')
+            queryset = queryset.filter(role=role, filial__in=user_filial).order_by('-created_at')
 
         return queryset
 
