@@ -94,11 +94,14 @@ class ExtraLessonScheduleView(ListAPIView):
     def get_queryset(self):
         """ Fetch both ExtraLesson and ExtraLessonGroup, then sort them by started_at. """
         date_filter = self.request.query_params.get("date", None)
+        filial = self.request.query_params.get("filial", None)
 
         # Filter by date if provided
         query = Q()
         if date_filter:
             query &= Q(date=date_filter)
+        if filial:
+            query &= Q(filial=filial)
 
         # Get all lessons
         individual_lessons = ExtraLesson.objects.filter(query)

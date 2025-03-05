@@ -86,10 +86,19 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         scheduled_day_type_data = validated_data.pop('scheduled_day_type', [])
-        group = Group.objects.create(**validated_data)
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
 
-        # `scheduled_day_type` is already a list of Day instances due to PrimaryKeyRelatedField
-        group.scheduled_day_type.set(scheduled_day_type_data)  # Using `.set()` to update the Many-to-Many field
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        group = Group.objects.create(filial=filial,**validated_data)
+
+
+        group.scheduled_day_type.set(scheduled_day_type_data)
 
         return group
 
@@ -149,6 +158,18 @@ class RoomsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+    def create(self, validated_data):
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        room = Room.objects.create(filial=filial, **validated_data)
+        return room
 
 class SecondaryGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
@@ -177,6 +198,20 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
     def get_student_count(self, obj):
         student_count = SecondaryStudentGroup.objects.filter(group=obj).count()
         return student_count
+
+    def create(self, validated_data):
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        group = SecondaryGroup.objects.create(filial=filial, **validated_data)
+        return group
+
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)

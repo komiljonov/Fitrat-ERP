@@ -1,3 +1,4 @@
+from icecream import ic
 from rest_framework import serializers
 
 from data.student.course.models import Course
@@ -12,7 +13,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ["id", "name", "level", "lessons_number", "theme", "subject", "status"]
+        fields = ["id", "name", "level","filial", "lessons_number", "theme", "subject", "status"]
 
     def to_internal_value(self, data):
         res = super().to_internal_value(data)
@@ -28,10 +29,21 @@ class CourseSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        themes = validated_data.pop("theme", [])  # Extract theme IDs (or empty list)
-        course = Course.objects.create(**validated_data)  # Create Course instance
-        if themes:  # Only set themes if the list is not empty
+        themes = validated_data.pop("theme", [])
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        course = Course.objects.create(filial=filial, **validated_data)
+
+        if themes:
             course.theme.set(themes)
+
         return course
 
     def to_representation(self, instance):

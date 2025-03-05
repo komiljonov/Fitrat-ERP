@@ -21,6 +21,20 @@ class SubjectSerializer(serializers.ModelSerializer):
             'label',
         ]
 
+    def create(self, validated_data):
+        filial = validated_data.pop("filial", None)
+        if not filial:
+            request = self.context.get("request")  #
+            if request and hasattr(request.user, "filial"):
+                filial = request.user.filial.first()
+
+        if not filial:
+            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        room = Subject.objects.create(filial=filial, **validated_data)
+        return room
+
+
     def get_course(self, obj):
         return Course.objects.filter(subject=obj).count()
 
@@ -43,6 +57,7 @@ class LevelSerializer(serializers.ModelSerializer):
         ]
     def get_course(self, obj):
         return Course.objects.filter(level=obj).count()
+
 
 
 
@@ -78,6 +93,8 @@ class ThemeSerializer(serializers.ModelSerializer):
 
     def get_course(self, obj):
         return list(Course.objects.filter(subject=obj.subject).values('id', 'group__id'))
+
+
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
