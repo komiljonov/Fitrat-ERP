@@ -7,6 +7,7 @@ from data.student.student.models import Student
 from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance, Sale, SaleStudent
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
+from ...student.student.serializers import StudentSerializer
 
 
 class KindSerializer(serializers.ModelSerializer):
@@ -303,13 +304,14 @@ class SalesSerializer(serializers.ModelSerializer):
 
 class SaleStudentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
-
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     class Meta:
         model = SaleStudent
         fields = [
             "id",
             "creator",
             "sale",
+            "filial",
             "student",
             "comment",
             "created_at",
@@ -318,4 +320,5 @@ class SaleStudentSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['creator'] = UserListSerializer(instance.creator).data
+        data['student'] = StudentSerializer(instance.student).data
         return data
