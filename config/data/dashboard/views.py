@@ -354,6 +354,7 @@ class MonitoringView(APIView):
         start_date = request.query_params.get('start_date', None)
         end_date = request.query_params.get('end_date', None)
         subject_id = request.query_params.get('subject', None)
+        course_id = request.query_params.get('course', None)
         filial = request.query_params.get('filial', None)
 
         # Base queryset for teachers
@@ -362,6 +363,11 @@ class MonitoringView(APIView):
             overall_point=F('ball')
         )
 
+        if course_id:
+            teachers = teachers.filter(teachers__course__id=course_id)
+
+        if subject_id:
+            teachers = teachers.filter(teachers__teacher__id=subject_id)
         if full_name:
             teachers = teachers.filter(name__icontains=full_name)
         if filial:
