@@ -11,6 +11,7 @@ from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
+from ...student.lesson.models import FirstLLesson
 from ...student.studentgroup.models import StudentGroup
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
@@ -29,13 +30,14 @@ class LidSerializer(serializers.ModelSerializer):
     lessons_count = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    is_attendance = serializers.SerializerMethodField()
 
     class Meta:
         model = Lid
         fields = [
             "id", "sender_id", "message_text", "photo" ,"first_name", "last_name", "middle_name",
             "phone_number", "date_of_birth", "education_lang", "student_type",
-            "edu_class", "edu_level", "subject", "ball", "filial","is_frozen",
+            "edu_class", "edu_level", "subject", "ball", "filial","is_frozen","is_attendance",
             "marketing_channel", "lid_stage_type", "ordered_stages",
             "lid_stages", "is_archived", "course", "group", "service_manager",'is_student',
             "call_operator", "relatives", "lessons_count", "created_at","sales_manager","is_expired","file"
@@ -67,6 +69,15 @@ class LidSerializer(serializers.ModelSerializer):
         if user.role == 'CALL_OPERATOR':
             queryset = queryset.filter(Q(call_operator=user) | Q(call_operator=None), filial=None)
         return queryset
+
+
+    def get_is_attendance(self, obj):
+        first_lesson = FirstLLesson.objects.filter(lid=obj).first()
+        if first_lesson :
+            return {
+                "date": first_lesson.date,
+                "time": first_lesson.time,
+            }
 
     def get_lessons_count(self, obj):
         return Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
