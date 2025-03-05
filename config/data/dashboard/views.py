@@ -364,10 +364,10 @@ class MonitoringView(APIView):
         )
 
         if course_id:
-            teachers = teachers.filter(teachers__course__id=course_id)
+            teachers = teachers.filter(teachers_groups__course__id=course_id)  # ✅ Correct related_name usage
 
         if subject_id:
-            teachers = teachers.filter(teachers__teacher__id=subject_id)
+            teachers = teachers.filter(teachers_groups__course__subject__id=subject_id)
         if full_name:
             teachers = teachers.filter(name__icontains=full_name)
         if filial:

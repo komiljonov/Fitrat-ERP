@@ -33,7 +33,7 @@ class Group(TimeStampModel):
 
     teacher: 'CustomUser' = models.ForeignKey('account.CustomUser',
                                               on_delete=models.SET_NULL, null=True, blank=True,
-                                              related_name='teacher')
+                                              related_name='teachers_groups')
     secondary_teacher: 'CustomUser' = models.ForeignKey('account.CustomUser',
                                                         on_delete=models.SET_NULL, null=True, blank=True,
                                                         related_name='secondary_teacher')
