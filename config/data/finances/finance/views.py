@@ -540,8 +540,12 @@ class PaymentStatistics(APIView):
     def get(self, request):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+        filial = self.request.query_params.get('filial')
         filter = {}
 
+
+        if filial:
+            filter['filial'] = filial
         if start_date:
             filter['created_at__gte'] = start_date
         if end_date:
