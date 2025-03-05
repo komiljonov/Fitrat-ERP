@@ -362,7 +362,6 @@ class MonitoringView(APIView):
             overall_point=F('ball')
         )
 
-        # Apply filters based on query parameters
         if full_name:
             teachers = teachers.filter(name__icontains=full_name)
         if filial:

@@ -63,11 +63,13 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         edu_langauge = self.request.query_params.get('language')
         to_price = self.request.query_params.get('to_price')
         course_id = self.request.query_params.get('course')
+        teacher_id = self.request.query_params.get('teacher')
         service_manager = self.request.query_params.get('service_manager')
         group_id = self.request.query_params.get("group")
         subject_id = self.request.query_params.get("subject")
 
-
+        if teacher_id:
+            queryset = queryset.filter(students_group__teacher_id=teacher_id)
         if from_price:
             queryset = queryset.filter(balance__gte=from_price)
         if to_price:
@@ -88,7 +90,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         if course_id:
             queryset = queryset.filter(
-                students_group__group__course__id=course_id)  # Assuming Many-to-Many relation in groups
+                students_group__group__course_id=course_id)  # Assuming Many-to-Many relation in groups
         if service_manager:
             queryset = queryset.filter(service_manager__id=service_manager)
 
