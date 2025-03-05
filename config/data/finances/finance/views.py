@@ -666,7 +666,7 @@ class PaymentStatisticsByKind(APIView):
             end_date = parse_date(end_date)
             filters['created_at__lte'] = end_date
         if filial:
-            filters['filial'] = filial
+            filters['filial_id'] = filial
         kinds = Kind.objects.all()
 
         # Function to get total amount for a given kind and action type
