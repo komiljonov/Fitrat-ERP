@@ -95,9 +95,15 @@ class ExtraLessonScheduleView(ListAPIView):
         """ Fetch both ExtraLesson and ExtraLessonGroup, then sort them by started_at. """
         date_filter = self.request.query_params.get("date", None)
         filial = self.request.query_params.get("filial", None)
+        teacher = self.request.query_params.get("teacher", None)
+        subject = self.request.query_params.get("subject", None)
+        group = self.request.query_params.get("group", None)
 
         # Filter by date if provided
         query = Q()
+        if teacher:
+            query &= Q(teacher__id=teacher)
+
         if date_filter:
             query &= Q(date=date_filter)
         if filial:
@@ -107,11 +113,17 @@ class ExtraLessonScheduleView(ListAPIView):
         individual_lessons = ExtraLesson.objects.filter(query)
         group_lessons = ExtraLessonGroup.objects.filter(query)
 
-        # Combine both queries and sort by started_at
+        if group:
+            group_lessons = group_lessons.filter(group=group)
+        if subject:
+            group_lessons = group_lessons.filter(group__course__subject__is=subject)
+
+
         combined_lessons = sorted(
             list(individual_lessons) + list(group_lessons),
             key=lambda lesson: (lesson.started_at, lesson.date)
         )
+
 
         return combined_lessons
 
