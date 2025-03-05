@@ -221,7 +221,7 @@ class Room_place(APIView):
         if filial:
             filters['filial'] = filial
 
-        rooms = Room.objects.all()
+        rooms = Room.objects.filter(**filters)
         all_places = 0
         for room in rooms:
             all_places += room.room_filling
