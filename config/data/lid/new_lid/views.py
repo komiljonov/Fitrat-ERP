@@ -245,25 +245,21 @@ class LidStatisticsView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         user = request.user
-
-        # # Directole == "DIRECTOR":
-        # #             queryset = Lid.objects.all()r sees everything
-        # if user.ro
-
+        queryset = Lid.objects.all()
         if user.role != "CALL_OPERATOR" and user.is_call_center:
-            queryset = Lid.objects.filter(filial__in=user.filial.all())
+            queryset = queryset.objects.filter(filial__in=user.filial.all())
 
         if user.role != "CALL OPERATOR" and user.is_call_center == False:
-            queryset = Lid.objects.filter(filial__in=user.filial.all())
+            queryset = queryset.objects.filter(filial__in=user.filial.all())
 
         # Special conditions for call operators
         if user.role == "CALL_OPERATOR" or user.is_call_center:
-            queryset = Lid.objects.filter(
+            queryset = queryset.objects.filter(
                 Q(call_operator=user) | Q(call_operator__isnull=True),
                 Q(filial__in=user.filial) | Q(filial__isnull=True)
             )
 
-        # Common filters
+
         leads_count = queryset.filter(
             lid_stage_type="NEW_LID",
             is_archived=False
