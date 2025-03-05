@@ -114,9 +114,9 @@ class ExtraLessonScheduleView(ListAPIView):
         group_lessons = ExtraLessonGroup.objects.filter(query)
 
         if group:
-            group_lessons = group_lessons.filter(group=group)
+            group_lessons = group_lessons.filter(group__id=group)
         if subject:
-            group_lessons = group_lessons.filter(group__course__subject__is=subject)
+            group_lessons = group_lessons.filter(group__course__subject__id=subject)
 
 
         combined_lessons = sorted(
