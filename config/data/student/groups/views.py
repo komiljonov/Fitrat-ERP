@@ -357,11 +357,12 @@ class LessonScheduleWebListApi(ListAPIView):
         # Get IDs of objects that match the lesson_date filtering
         valid_group_ids = []
         for obj in queryset:
-            lesson_dates = self.serializer_class().get_lesson_date(obj)
-
-            date_str =list(lesson_dates)
+            date_str = self.serializer_class().get_lesson_date(obj)
             ic(date_str)
-            lesson_date_objects = [datetime.datetime.strptime(str(date_str), '%d-%m-%Y').date() for d in lesson_dates]
+            cleaned = date_str.strip("{}'")  # Remove {, }, and '
+            result = cleaned.split('-')
+            print(result)
+            lesson_date_objects = [datetime.datetime.strptime(str(date), '%d-%m-%Y').date() for date in date_str]
 
             # Apply filtering based on start_date and end_date
             if start_date and end_date:

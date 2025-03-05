@@ -169,7 +169,7 @@ class ExportLidToExcelAPIView(APIView):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
         is_student = request.query_params.get("is_student")
-        filial_id = request.query_params.get("filial_id")
+        filial_id = request.query_params.get("filial")
         lid_stage_type = request.query_params.get("lid_stage_type")
 
         # Filter queryset
