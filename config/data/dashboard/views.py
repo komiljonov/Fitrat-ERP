@@ -55,9 +55,7 @@ class DashboardView(APIView):
         if subjects:
             dynamic_filter |= Q(subject__id=subjects)
 
-
-        # Run queries only if filters are provided
-        if dynamic_filter :
+        if dynamic_filter:
             if course or teacher:
                 lid = (Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter)
                        .filter(lids_group__group__course_id=course,
@@ -68,11 +66,11 @@ class DashboardView(APIView):
                                   lids_group__group__teacher_id=teacher).count())
                 orders_archived = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
                                                       is_archived=True, **filters)
-                                .filter(lids_group__group__course_id=course,
+                                   .filter(lids_group__group__course_id=course,
                                            lids_group__group__teacher_id=teacher).count())
                 first_lesson = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
                                                    ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters)
-                                    .filter(lids_group__group__course_id=course,
+                                .filter(lids_group__group__course_id=course,
                                         lids_group__group__teacher_id=teacher).count())
 
                 students_with_one_attendance = (Attendance.objects.values("student").annotate(count=Count("id"))
@@ -80,8 +78,8 @@ class DashboardView(APIView):
                                                 .filter(count=1).values_list("student", flat=True))
 
                 first_lesson_come = (Student.objects.filter(id__in=students_with_one_attendance, **filters)
-                                     .filter(dynamic_filter, lids_group__group__course_id=course,
-                                             lids_group__group__teacher_id=teacher).count())
+                                     .filter(dynamic_filter, students_group__group__course_id=course,
+                                             students_group__group__teacher_id=teacher).count())
                 first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance,
                                                                     is_archived=True, **filters).filter(
                     dynamic_filter).count()
@@ -93,12 +91,12 @@ class DashboardView(APIView):
                 ).values_list("student", flat=True)
 
                 first_course_payment = (Student.objects.filter(id__in=payment_students, **filters)
-                                        .filter(dynamic_filter, lids_group__group__course_id=course,
-                                                lids_group__group__teacher_id=teacher).count())
+                                        .filter(dynamic_filter, students_group__group__course_id=course,
+                                                students_group__group__teacher_id=teacher).count())
                 first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True,
                                                                        **filters).filter(
-                    dynamic_filter, lids_group__group__course_id=course,
-                    lids_group__group__teacher_id=teacher).count()
+                    dynamic_filter, students_group__group__course_id=course,
+                    students_group__group__teacher_id=teacher).count()
 
                 # Courses that ended
                 course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters,
@@ -187,12 +185,15 @@ class MarketingChannels(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+        filial = self.request.query_params.get('filial')
 
         filters = {}
         if start_date:
             filters['created_at__gte'] = start_date
         if end_date:
             filters['created_at__lte'] = end_date
+        if filial:
+            filters['filial'] = filial
 
         channels = MarketingChannel.objects.all()
         channel_counts = {}
@@ -210,12 +211,15 @@ class Room_place(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+        filial = self.request.query_params.get('filial')
 
         filters = {}
         if start_date:
             filters['created_at__gte'] = start_date
         if end_date:
             filters['created_at__lte'] = end_date
+        if filial:
+            filters['filial'] = filial
 
         rooms = Room.objects.all()
         all_places = 0
@@ -253,6 +257,7 @@ class DashboardLineGraphAPIView(APIView):
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         casher_id = request.query_params.get('cashier')
+        filial = request.query_params.get('filial')
 
         filters = {}
 
@@ -271,6 +276,9 @@ class DashboardLineGraphAPIView(APIView):
             except ValueError:
                 return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."},
                                 status=status.HTTP_400_BAD_REQUEST)
+
+        if filial:
+            filters['filial'] = filial
 
         if end_date:
             try:
@@ -344,6 +352,7 @@ class MonitoringView(APIView):
         start_date = request.query_params.get('start_date', None)
         end_date = request.query_params.get('end_date', None)
         subject_id = request.query_params.get('subject', None)
+        filial = request.query_params.get('filial', None)
 
         # Base queryset for teachers
         teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
@@ -354,7 +363,8 @@ class MonitoringView(APIView):
         # Apply filters based on query parameters
         if full_name:
             teachers = teachers.filter(name__icontains=full_name)
-
+        if filial:
+            teachers = teachers.filter(filial=filial)
         if start_date and end_date:
             teachers = teachers.filter(created_at__date__range=[start_date, end_date])
         elif start_date:
@@ -409,6 +419,7 @@ class MonitoringExcelDownloadView(APIView):
         start_date = request.query_params.get('start_date', None)
         end_date = request.query_params.get('end_date', None)
         subject_id = request.query_params.get('subject', None)
+        filial = request.query_params.get('filial', None)
 
         # Base queryset for teachers
         teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
@@ -416,7 +427,8 @@ class MonitoringExcelDownloadView(APIView):
             overall_point=F('ball')
         )
 
-        # Apply filters based on query parameters
+        if filial:
+            teachers = teachers.filter(filial=filial)
         if full_name:
             teachers = teachers.filter(name__icontains=full_name)
 
@@ -488,13 +500,15 @@ class DashboardWeeklyFinanceAPIView(APIView):
         casher_id = request.query_params.get('casher')
         action_type = request.query_params.get('action')  # INCOME or EXPENSE
         kind = request.query_params.get('kind')  # Dynamically fetched kinds
+        filial = request.query_params.get('filial')
 
         filters = {}
 
         # Get all dynamic kinds from DB
         existing_kinds = list(Kind.objects.values_list('name', flat=True))  # Fetch all available kinds dynamically
 
-        # Filter by Casher if provided
+        if filial:
+            filters["filial"] = filial
         if casher_id:
             filters['casher__id'] = casher_id
 
@@ -573,6 +587,8 @@ class ArchivedView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        filial = request.query_params.get('filial', None)
+
         lid = Lid.objects.filter(is_archived=True, lid_stage_type="NEW_LID", is_student=False).count()
         order = Lid.objects.filter(is_archived=True, lid_stage_type="ORDERED_LID", is_student=False).count()
         new_student = Student.objects.filter(student_stage_type="NEW_STUDENT", is_archived=True).count()
@@ -593,6 +609,7 @@ class SalesApiView(APIView):
         creator = self.request.query_params.get('creator')
         sale = self.request.query_params.get('sale')
         student = self.request.query_params.get('student')
+        filial = self.request.query_params.get('filial')
 
         filters = {}
         if creator:
@@ -670,8 +687,11 @@ class FinanceStatisticsApiView(APIView):
         stuff = self.request.query_params.get('stuff')
         casher = self.request.query_params.get('casher')
         payment_method = self.request.query_params.get('payment_method')
+        filial = self.request.query_params.get('filial')
 
         filters = {}
+        if filial:
+            filters['filial'] = filial
         if kind_id:
             filters['kind__id'] = kind_id
         if action:
@@ -716,12 +736,21 @@ class StudentLanguage(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        student_uz = Student.objects.filter(language_choice="UZB",
-                                            is_archived=False, is_frozen=False).count()
-        student_eng = Student.objects.filter(language_choice="ENG",
-                                             is_archived=False, is_frozen=False).count()
-        student_ru = Student.objects.filter(language_choice="RU",
-                                            is_archived=False, is_frozen=False).count()
+        filial = self.request.query_params.get('filial')
+        if filial:
+            student_uz = Student.objects.filter(language_choice="UZB",
+                                                is_archived=False, is_frozen=False).count()
+            student_eng = Student.objects.filter(language_choice="ENG",
+                                                 is_archived=False, is_frozen=False).count()
+            student_ru = Student.objects.filter(language_choice="RU",
+                                                is_archived=False, is_frozen=False).count()
+        else:
+            student_uz = Student.objects.filter(language_choice="UZB",
+                                                is_archived=False, is_frozen=False).count()
+            student_eng = Student.objects.filter(language_choice="ENG",
+                                                 is_archived=False, is_frozen=False).count()
+            student_ru = Student.objects.filter(language_choice="RU",
+                                                is_archived=False, is_frozen=False).count()
 
         return Response({
             "student_uz": student_uz,
