@@ -58,28 +58,28 @@ class DashboardView(APIView):
         if dynamic_filter:
             if course or teacher:
                 lid = (Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter)
-                       .filter(lids_group__group__course_id=course,
-                               lids_group__group__teacher_id=teacher).count())
+                       .filter(Q(lids_group__group__course_id=course) |
+                              Q( lids_group__group__teacher_id=teacher)).count())
 
                 orders = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters)
-                          .filter(lids_group__group__course_id=course,
-                                  lids_group__group__teacher_id=teacher).count())
+                          .filter(Q(lids_group__group__course_id=course) |
+                                  Q(lids_group__group__teacher_id=teacher)).count())
                 orders_archived = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
                                                       is_archived=True, **filters)
-                                   .filter(lids_group__group__course_id=course,
-                                           lids_group__group__teacher_id=teacher).count())
+                                   .filter(Q(lids_group__group__course_id=course),
+                                           Q(lids_group__group__teacher_id=teacher)).count())
                 first_lesson = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
                                                    ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters)
-                                .filter(lids_group__group__course_id=course,
-                                        lids_group__group__teacher_id=teacher).count())
+                                .filter(Q(lids_group__group__course_id=course) |
+                                        Q(lids_group__group__teacher_id=teacher)).count())
 
                 students_with_one_attendance = (Attendance.objects.values("student").annotate(count=Count("id"))
-                                                .filter(group__course_id=course, group__teacher_id=teacher)
+                                                .filter(Q(group__course_id=course) | Q(group__teacher_id=teacher))
                                                 .filter(count=1).values_list("student", flat=True))
 
                 first_lesson_come = (Student.objects.filter(id__in=students_with_one_attendance, **filters)
-                                     .filter(dynamic_filter, students_group__group__course_id=course,
-                                             students_group__group__teacher_id=teacher).count())
+                                     .filter(dynamic_filter, Q(students_group__group__course_id=course) |
+                                             Q(students_group__group__teacher_id=teacher)).count())
                 first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance,
                                                                     is_archived=True, **filters).filter(
                     dynamic_filter).count()
@@ -91,16 +91,16 @@ class DashboardView(APIView):
                 ).values_list("student", flat=True)
 
                 first_course_payment = (Student.objects.filter(id__in=payment_students, **filters)
-                                        .filter(dynamic_filter, students_group__group__course_id=course,
-                                                students_group__group__teacher_id=teacher).count())
+                                        .filter(dynamic_filter, Q(students_group__group__course_id=course) |
+                                             Q(students_group__group__teacher_id=teacher)).count())
                 first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True,
                                                                        **filters).filter(
-                    dynamic_filter, students_group__group__course_id=course,
-                    students_group__group__teacher_id=teacher).count()
+                    dynamic_filter, Q(students_group__group__course_id=course) |
+                                             Q(students_group__group__teacher_id=teacher)).count()
 
                 # Courses that ended
-                course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters,
-                                                           group__course_id=course, group__teacher_id=teacher).count()
+                course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).filter(
+                                                           Q(group__course_id=course) | Q(group__teacher_id=teacher)).count()
             else:
 
                 lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter).count()
