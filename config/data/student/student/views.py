@@ -280,7 +280,7 @@ class ExportLidToExcelAPIView(APIView):
         # Get filters from query parameters
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
-        filial_id = request.query_params.get("filial_id")
+        filial_id = request.query_params.get("filial")
         student_stage_type = request.query_params.get("student_stage_type")
 
         # Filter queryset
@@ -307,32 +307,30 @@ class ExportLidToExcelAPIView(APIView):
             "Call Operator", "Service manager", "Yaratilgan vaqti"
         ]
         sheet.append(headers)
+        queryset = Student.objects.all()
+        serialized_data = StudentSerializer(queryset, many=True).data
 
-        # Loop through students and append data
         for student in queryset:
-            # Retrieve the learning subjects if the group is active
-            # subjects = self.get_student_subjects(student)
-
-            for student in queryset:
-                sheet.append([
-                    student.first_name,
-                    student.last_name,
-                    student.phone,
-                    student.date_of_birth.strftime('%d-%m-%Y') if student.date_of_birth else "",
-                    "Uzbek tili" if student.education_lang == "UZB" else "Ingliz tili" if student.education_lang == "ENG" else "Rus tili" if student.education_lang == "RU" else "",
-                    "Maktab" if student.edu_class == "SCHOOL" else "Universitet" if student.edu_class == "UNIVERSITY" else "",
-                    student.subject.name if student.subject else "",
-                    student.ball,
-                    ", ".join([filial.name for filial in student.filial.all()]) if student.filial else "",
-                    student.marketing_channel.name if student.marketing_channel else "",
-                    "Yangi student" if student.student_stage_type == "NEW_STUDENT" else "Faol student",
-                    student.balance_status if student.balance_status else "",
-                    student.balance if student.balance else "",
-                    "Ha" if student.is_archived else "Yo'q",
-                    student.call_operator.full_name if student.call_operator else "",
-                    student.service_manager.full_name if student.service_manager else "",
-                    student.created_at.strftime('%d-%m-%Y %H:%M:%S') if student.created_at else "",
-                ])
+            sheet.append([
+                student.first_name,
+                student.last_name,
+                student.phone,
+                student.date_of_birth.strftime('%d-%m-%Y') if student.date_of_birth else "",
+                "Uzbek tili" if student.education_lang == "UZB" else "Ingliz tili" if student.education_lang == "ENG" else "Rus tili" if student.education_lang == "RU" else "",
+                "Maktab" if student.edu_class == "SCHOOL" else "Universitet" if student.edu_class == "UNIVERSITY" else "",
+                student.subject.name if student.subject else "",
+                student.ball if student.ball else "",
+                student.ball,
+                student.filial.name if student.filial else "",
+                student.marketing_channel.name if student.marketing_channel else "",
+                "Yangi student" if student.student_stage_type == "NEW_STUDENT" else "Faol student",
+                student.balance if student.balance else 0,
+                "Haqdor" if student.balance_status=="ACTIVE" else "Qarzdor"  if student.balance_status else "",
+                "Ha" if student.is_archived else "Yo'q",
+                student.call_operator.full_name if student.call_operator else "",
+                student.service_manager.full_name if student.service_manager else "",
+                student.created_at.strftime('%d-%m-%Y %H:%M:%S') if student.created_at else "",
+            ])
 
         # Style headers
         for col_num, header in enumerate(headers, 1):
