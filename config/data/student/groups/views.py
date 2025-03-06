@@ -204,6 +204,34 @@ class SecondaryNoPG(ListAPIView):
     queryset = SecondaryGroup.objects.all()
     serializer_class = SecondaryGroupSerializer
 
+
+    def get_queryset(self):
+        queryset = SecondaryGroup.objects.all()
+
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        teacher = self.request.query_params.get('teacher')
+        course = self.request.query_params.get('course')
+        filial = self.request.query_params.get('filial')
+
+        # Convert dates to proper format
+        start_date = parse_date(start_date) if start_date else None
+        end_date = parse_date(end_date) if end_date else None
+
+        # Apply filters correctly
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        if start_date:
+            queryset = queryset.filter(start_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(end_date__lte=end_date)
+        if teacher:
+            queryset = queryset.filter(teacher__id=teacher)
+        if course:
+            queryset = queryset.filter(group__course__id=course)
+
+        return queryset
+
     def get_paginated_response(self, data):
         return Response(data)
 
