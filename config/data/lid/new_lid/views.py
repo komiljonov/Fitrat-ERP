@@ -87,8 +87,8 @@ class LidListCreateView(ListCreateAPIView):
 
         if subject:
             queryset = queryset.filter(subject_id=subject)
-        if is_student == "False":
-            queryset = queryset.filter(is_student=(is_student.lower() == "false"))
+        if is_student == "false":
+            queryset = queryset.filter(is_student=False)
 
         print(call_operator_id)
         if call_operator_id:
