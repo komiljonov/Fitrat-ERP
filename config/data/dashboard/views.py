@@ -39,11 +39,17 @@ class DashboardView(APIView):
         teacher = request.query_params.get('teacher')
 
         filters = {}
+        from datetime import datetime, timedelta  # ✅ Import timedelta separately
+
+        filters = {}
+
         if start_date:
             filters["created_at__gte"] = start_date
+
         if end_date:
-            end_date = end_date + datetime.timedelta(days=1)
+            end_date = end_date + timedelta(days=1)  # ✅ Corrected usage of timedelta
             filters["created_at__lte"] = end_date
+
         if filial:
             filters["filial"] = filial
 
