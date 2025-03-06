@@ -214,9 +214,6 @@ class SecondaryNoPG(ListAPIView):
         course = self.request.query_params.get('course')
         filial = self.request.query_params.get('filial')
 
-        # Convert dates to proper format
-        start_date = parse_date(start_date) if start_date else None
-        end_date = parse_date(end_date) if end_date else None
 
         # Apply filters correctly
         if filial:
