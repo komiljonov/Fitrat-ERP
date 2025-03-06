@@ -47,6 +47,7 @@ def generate_fake_data():
       "cashiers",
       "tasks",
       "employees",
+      "control"
     ]
     for i in pages:
         Page.objects.create(

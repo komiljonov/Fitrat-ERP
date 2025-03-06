@@ -35,6 +35,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         user = CustomUser(**validated_data)
         user.set_password(password)  # Hash the password
+        user.full_name = f"{user.first_name} {user.last_name}"
         user.save()
         user.filial.set(filial)
         user.files.set(files)
