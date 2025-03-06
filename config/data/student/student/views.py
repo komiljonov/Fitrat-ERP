@@ -203,8 +203,8 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             **filter,
         ).count()
 
-        almost_debt = Student.objects.filter(is_archived=False,**filter,balance__gte=0,
-                                             balance__lte=100000).count()
+        almost_debt = Student.objects.filter(is_archived=False,**filter,balance__lte=0,
+                                             balance__gte=100000).count()
 
         statistics = {
             "new_students_count": new_students_count,
