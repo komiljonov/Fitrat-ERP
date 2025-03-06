@@ -121,7 +121,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         if "first_name" or "last_name" in validated_data:
             instance.full_name = f"{instance.first_name} {instance.last_name}"
-            
+
 
         if "files" in validated_data:
             print("Updating files:", validated_data["files"])  # Debugging
