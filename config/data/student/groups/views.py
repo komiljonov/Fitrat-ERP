@@ -32,6 +32,31 @@ class StudentGroupsView(ListCreateAPIView):
                         'price_type', "status",'teacher__id',
                      'course__subject__id','course__level__id')
 
+    def get_queryset(self):
+        queryset = Group.objects.all()
+        teacher = self.request.query_params.get('teacher', None)
+        course = self.request.query_params.get('course', None)
+        subject = self.request.query_params.get('subject', None)
+        filial = self.request.query_params.get('filial', None)
+        day = self.request.query_params.get('day', None)
+        price_type = self.request.query_params.get('price_type', None)
+
+        if teacher:
+            queryset = queryset.filter(teacher__id=teacher)
+        if course:
+            queryset = queryset.filter(course__id=course)
+        if subject:
+            queryset = queryset.filter(course__subject__id=subject)
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        if day:
+            queryset = queryset.filter(scheduled_day_type__id=day)
+        if price_type:
+            queryset = queryset.filter(price_type=price_type)
+        return queryset
+
+
+
 
 class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
