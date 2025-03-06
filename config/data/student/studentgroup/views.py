@@ -1,13 +1,13 @@
 import datetime
 
+from django.db.models import OuterRef, Exists
 from django.db.models import Q
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, get_object_or_404, \
-    CreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,35 +17,42 @@ from .serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializ
 from ..attendance.models import Attendance
 from ..attendance.serializers import AttendanceSerializer
 from ..groups.models import SecondaryGroup, Group
-from ..groups.serializers import SecondaryGroupSerializer, SecondarygroupModelSerializer
+from ..groups.serializers import SecondarygroupModelSerializer
 
 
 class StudentsGroupList(ListCreateAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentsGroupSerializer
-    # permission_classes = [IsAuthenticated]
-
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+
     search_fields = (
-    'group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name', 'group__status',
-    'group__teacher__id')
-    filter_fields = (
-    'group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name', 'group__status',
-    'group__teacher__id')
-    filterset_fields = (
-    'group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name', 'group__status',
-    'group__teacher__id')
+        'group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name', 'group__status',
+        'group__teacher__id'
+    )
+    filter_fields = filterset_fields = search_fields
 
     def get_queryset(self):
+        today = datetime.date.today()
+        user = self.request.user
 
-        if self.request.user.role == 'TEACHER':
-            queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
-            return queryset
+        if user.role == 'TEACHER':
+            queryset = StudentGroup.objects.filter(group__teacher__id=user.id)
         else:
-            queryset = StudentGroup.objects.filter(group__filial__in=self.request.user.filial.all())
-            ic(self.request.user.filial.all())
-            ic(queryset)
-            return queryset
+            queryset = StudentGroup.objects.filter(group__filial__in=user.filial.all())
+
+        # **Exclude students who have attended today**
+        attended_today = Attendance.objects.filter(
+            student_id=OuterRef("student_id"),
+            group_id=OuterRef("group_id"),
+            created_at__gte=today
+        )
+
+        queryset = queryset.annotate(
+            has_attended_today=Exists(attended_today)
+        ).filter(has_attended_today=False)
+
+        return queryset
+
 
 
 class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
