@@ -57,11 +57,22 @@ def generate_fake_data():
             is_editable=True,
         )
 
+    marketing_channels = {
+        "Tanishlar orqali": "#FF5733",  # Bright Red-Orange
+        "Instagram": "#33FF57",  # Vibrant Green
+        "Telegram": "#3357FF",  # Deep Blue
+        "Facebook reklamasi": "#F4A261",  # Warm Sand
+        "Flayer": "#9B5DE5",  # Purple Glow
+        "Olimpiadalar": "#00C9A7",  # Teal Mint
+        "Reklama bannerlar va doskalari": "#E63946",  # Coral Red
+        "Loyihalardan": "#FDCB58",  # Golden Yellow
+    }
 
-    marketing_channels = ["Tanishlar orqali",'Instagram', 'Telegram', 'Facebook reklamasi',
-                          'Flayer','Olimpiadalar',"Reklama bannerlar va doskalari","Loyihalardan"]
-    for channel in marketing_channels:
-        MarketingChannel.objects.create(name=channel)
+    for name, color in marketing_channels.items():
+        MarketingChannel.objects.get_or_create(
+            name=name,
+            defaults={"type": color}
+        )
 
     # Days
     days = ['Yakshanba','Shanba', 'Juma','Payshanba','Chorshanba','Seshanba','Dushanba',]
@@ -69,18 +80,20 @@ def generate_fake_data():
         Day.objects.create(name=day)
 
     kind_actions = {
-        "Salary": "EXPENSE",
-        "Bonus": "EXPENSE",
-        "Course payment": "INCOME",
-        "Lesson payment": "INCOME",
-        "Money back": "EXPENSE",
-        "CASHIER_HANDOVER": "EXPENSE",
-        "CASHIER_ACCEPTANCE": "INCOME",
+        "Salary": ("EXPENSE", "#FF5733"),  # Bright Red-Orange
+        "Bonus": ("EXPENSE", "#33FF57"),  # Vibrant Green
+        "Course payment": ("INCOME", "#3357FF"),  # Deep Blue
+        "Lesson payment": ("INCOME", "#F4A261"),  # Warm Sand
+        "Money back": ("EXPENSE", "#9B5DE5"),  # Purple Glow
+        "CASHIER_HANDOVER": ("EXPENSE", "#00C9A7"),  # Teal Mint
+        "CASHIER_ACCEPTANCE": ("INCOME", "#E63946"),  # Coral Red
     }
 
-
-    for name, action in kind_actions.items():
-        Kind.objects.get_or_create(name=name, defaults={"action": action})
+    for name, (action, color) in kind_actions.items():
+        Kind.objects.get_or_create(
+            name=name,
+            defaults={"action": action, "color": color}
+        )
 
     # # CustomUser (Staff)
     # roles = [role[0] for role in CustomUser.ROLE_CHOICES]
