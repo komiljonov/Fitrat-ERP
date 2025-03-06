@@ -270,12 +270,12 @@ class LidStatisticsView(ListAPIView):
         ordered_new = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, ordered_stages="YANGI_BUYURTMA").count()
         ordered_leads_count = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False).count()
         ordered_waiting_leads = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, ordered_stages="KUTULMOQDA").count()
-        ordered_archived = queryset.filter(is_archived=True, lid_stage_type="ORDERED_LID").count()
+        ordered_archived = queryset.filter(is_archived=True,is_student=False, lid_stage_type="ORDERED_LID").count()
         first_lesson = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
         first_lesson_not = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, ordered_stages="BIRINCHI_DARSGA_KELMAGAN").count()
 
         # ✅ Archived Leads
-        all_archived = queryset.filter(is_archived=True).count()
+        all_archived = queryset.filter(is_archived=True,is_student=False).count()
         archived_lid = queryset.filter(lid_stage_type="NEW_LID", is_student=False, is_archived=True).count()
 
         response_data = {
