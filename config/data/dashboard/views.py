@@ -38,17 +38,18 @@ class DashboardView(APIView):
         course = request.query_params.get('course')
         teacher = request.query_params.get('teacher')
 
-        filters = {}
-        from datetime import datetime, timedelta  # ✅ Import timedelta separately
 
         filters = {}
-
+        if start_date and end_date:
+            filters["created_at__gte","created_at__lte"] = (start_date, end_date)
         if start_date:
             filters["created_at__gte"] = start_date
 
         if end_date:
-            end_date = end_date + timedelta(days=1)  # ✅ Corrected usage of timedelta
             filters["created_at__lte"] = end_date
+
+        if start_date and end_date:
+            filters["created_at__gte","created_at__lte"] = (start_date, end_date)
 
         if filial:
             filters["filial"] = filial
@@ -68,7 +69,7 @@ class DashboardView(APIView):
             if course or teacher:
                 lid = (Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter)
                        .filter(Q(lids_group__group__course_id=course) |
-                              Q( lids_group__group__teacher_id=teacher)).count())
+                               Q(lids_group__group__teacher_id=teacher)).count())
 
                 orders = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters)
                           .filter(Q(lids_group__group__course_id=course) |
@@ -101,15 +102,15 @@ class DashboardView(APIView):
 
                 first_course_payment = (Student.objects.filter(id__in=payment_students, **filters)
                                         .filter(dynamic_filter, Q(students_group__group__course_id=course) |
-                                             Q(students_group__group__teacher_id=teacher)).count())
+                                                Q(students_group__group__teacher_id=teacher)).count())
                 first_course_payment_archived = Student.objects.filter(id__in=payment_students, is_archived=True,
                                                                        **filters).filter(
                     dynamic_filter, Q(students_group__group__course_id=course) |
-                                             Q(students_group__group__teacher_id=teacher)).count()
+                                    Q(students_group__group__teacher_id=teacher)).count()
 
                 # Courses that ended
                 course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).filter(
-                                                           Q(group__course_id=course) | Q(group__teacher_id=teacher)).count()
+                    Q(group__course_id=course) | Q(group__teacher_id=teacher)).count()
             else:
 
                 lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter).count()
