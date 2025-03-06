@@ -165,6 +165,25 @@ class SecondaryGroupsView(ListCreateAPIView):
     ordering_fields = ('name', 'scheduled_day_type', 'start_date', 'end_date',)
     filterset_fields = ('name', 'scheduled_day_type',)
 
+    def get_queryset(self):
+        start_date = self.request.query_params.get('start_date', None)
+        end_date = self.request.query_params.get('end_date', None)
+        teacher = self.request.query_params.get('teacher', None)
+        course = self.request.query_params.get('course', None)
+        filial = self.request.query_params.get('filial', None)
+        queryset = SecondaryGroup.objects.all()
+        if filial:
+            queryset = SecondaryGroup.objects.filter(filial__id=filial)
+        if start_date:
+            queryset = queryset.objects.filter(start_date__gte=start_date)
+        if end_date:
+            queryset = queryset.objects.filter(end_date__lte=end_date)
+        if teacher:
+            queryset = queryset.filter(teacher__id=teacher)
+        if course:
+            queryset = queryset.filter(group__course__id=course)
+        return queryset
+
 
 class SecondaryGroupRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = SecondaryGroup.objects.all()
