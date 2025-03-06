@@ -188,6 +188,10 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
                                    balance__lt=0).aggregate(
                 total_debt=Sum('balance'))['total_debt'] or 0
 
+        balance_active = Student.objects.filter(is_archived=False, **filter,
+                                                balance_status="ACTIVE",
+                                                ).count()
+
         archived_student = Student.objects.filter(is_archived=True, **filter,
                                                   student_stage_type="ACTIVE_STUDENT").count()
 
@@ -212,6 +216,7 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         # Additional ordered statistics (could be pagination or other stats)
         ordered_statistics = {
             "student_count": student_count,
+            "balance_active": balance_active,
             "almost_debt": almost_debt,
             "total_income": total_income,  # Serialized data
             "student_total_debt": student_total_debt,
