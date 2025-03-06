@@ -165,6 +165,7 @@ class StuffFinanceListAPIView(ListAPIView):
 
     def get_queryset(self, **kwargs):
         stuff = CustomUser.objects.get(id=self.kwargs['pk'])
+
         if stuff:
             return Finance.objects.filter(stuff=stuff)
         return Finance.objects.none()
