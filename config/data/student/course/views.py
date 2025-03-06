@@ -34,10 +34,11 @@ class CourseList(ListCreateAPIView):
     def get_queryset(self):
         level = self.request.query_params.get('level', None)
         filial = self.request.query_params.get('filial', None)
+        queryset = Course.objects.all()
         if filial:
-            queryset = Course.objects.filter(filial=filial)
+            queryset = queryset.objects.filter(filial=filial)
         else:
-            queryset = Course.objects.filter(filial = self.request.user.filial.first())
+            queryset = queryset.objects.filter(filial = self.request.user.filial.first())
         if level:
             queryset =  queryset.objects.filter(level__id=level)
         return queryset

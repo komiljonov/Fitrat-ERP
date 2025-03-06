@@ -25,7 +25,13 @@ class TaskListCreateView(ListCreateAPIView):
 
     def get_queryset(self):
         # Filter tasks by the current user as the creator
-        queryset = Task.objects.filter(creator=self.request.user).order_by("-date_of_expired")
+
+        filial = self.request.query_params.get("filial")
+        queryset = Task.objects.all()
+        if filial:
+            queryset = queryset.objects.filter(filial__id=filial)
+
+        queryset = queryset.objects.filter(creator=self.request.user).order_by("-date_of_expired")
         return queryset
 
 
@@ -40,7 +46,11 @@ class TaskListNoPGView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Task.objects.filter(creator=self.request.user).order_by("-date_of_expired")
+        filial = self.request.query_params.get("filial")
+        queryset = Task.objects.all()
+        if filial:
+            queryset = queryset.objects.filter(filial__id=filial)
+        queryset = queryset.objects.filter(creator=self.request.user).order_by("-date_of_expired")
         return queryset
 
     def get_paginated_response(self, data):
@@ -53,8 +63,6 @@ class TaskStudentRetrieveListAPIView(ListAPIView):
 
     def get_queryset(self):
         pk = self.kwargs.get('pk')
-
-        # Try to get the student or lid object
         student = Student.objects.filter(id=pk).first()
         lid = Lid.objects.filter(id=pk).first()
 

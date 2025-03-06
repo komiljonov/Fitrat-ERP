@@ -16,6 +16,13 @@ class SubjectList(ListCreateAPIView):
     serializer_class = SubjectSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        queryset = Subject.objects.all()
+        filial = self.request.query_params.get('filial', None)
+        if filial:
+            queryset = queryset.filter(filial=filial)
+        return queryset
+
 
 class SubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = Subject.objects.all()
@@ -28,6 +35,12 @@ class SubjectNoPG(ListAPIView):
     serializer_class = SubjectSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        queryset = Subject.objects.all()
+        filial = self.request.query_params.get('filial', None)
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        return queryset
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -39,9 +52,13 @@ class LevelList(ListCreateAPIView):
 
     def get_queryset(self):
         subject = self.request.query_params.get('subject', None)
+        filial = self.request.query_params.get('filial', None)
+        filter = {}
+        if filial:
+            filter["filial__id"] = filial
         if subject:
             # Get all level IDs from courses that match the subject
-            level_ids = Course.objects.filter(subject__id=subject).values_list("level", flat=True)
+            level_ids = Course.objects.filter(subject__id=subject, **filter).values_list("level", flat=True)
             return Level.objects.filter(id__in=level_ids)
 
         return Level.objects.all()
@@ -57,6 +74,16 @@ class LevelNoPG(ListAPIView):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
     permission_classes = [IsAuthenticated]
+
+
+    def get_queryset(self):
+        filial = self.request.query_params.get('filial', None)
+
+        queryset = Level.objects.all()
+
+        if filial:
+            queryset = queryset.filter(filial=filial)
+        return queryset
 
     def get_paginated_response(self, data):
         return Response(data)

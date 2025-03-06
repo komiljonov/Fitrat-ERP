@@ -1,20 +1,21 @@
-from datetime import datetime
+import datetime
+from collections import defaultdict
 
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
-from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .lesson_date_calculator import calculate_lessons
 from .models import Group, Room, SecondaryGroup, Day
 from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer, \
     DaySerializer
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
-from ..lesson.views import LessonSchedule
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -23,14 +24,14 @@ class StudentGroupsView(ListCreateAPIView):
     serializer_class = GroupSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
 
-    search_fields = ('name', 'scheduled_day_type__name', "status",'teacher__id',
-                     'course__subject__id','course__level__id')
+    search_fields = ('name', 'scheduled_day_type__name', "status", 'teacher__id',
+                     'course__subject__id', 'course__level__id')
     ordering_fields = ('name', 'scheduled_day_type', 'start_date',
-                       'end_date', 'price_type', "status",'teacher__id',
-                     'course__subject__id','course__level__id')
+                       'end_date', 'price_type', "status", 'teacher__id',
+                       'course__subject__id', 'course__level__id')
     filterset_fields = ('name', 'scheduled_day_type__name',
-                        'price_type', "status",'teacher__id',
-                     'course__subject__id','course__level__id')
+                        'price_type', "status", 'teacher__id',
+                        'course__subject__id', 'course__level__id')
 
     def get_queryset(self):
         queryset = Group.objects.all()
@@ -54,8 +55,6 @@ class StudentGroupsView(ListCreateAPIView):
         if price_type:
             queryset = queryset.filter(price_type=price_type)
         return queryset
-
-
 
 
 class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -85,6 +84,7 @@ class StudentListAPIView(ListAPIView):
         if end_date:
             filter['created_at__lte'] = end_date
         return queryset.filter(**filter)
+
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -152,9 +152,6 @@ class RoomFilterView(ListAPIView):
     filterset_fields = ('room_number', 'room_filling')
 
 
-
-
-
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Room.objects.all()
     permission_classes = [IsAuthenticated]
@@ -179,7 +176,9 @@ class RoomNoPG(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 from django.utils.dateparse import parse_date
+
 
 class SecondaryGroupsView(ListCreateAPIView):
     queryset = SecondaryGroup.objects.all()
@@ -229,7 +228,6 @@ class SecondaryNoPG(ListAPIView):
     queryset = SecondaryGroup.objects.all()
     serializer_class = SecondaryGroupSerializer
 
-
     def get_queryset(self):
         queryset = SecondaryGroup.objects.all()
 
@@ -238,7 +236,6 @@ class SecondaryNoPG(ListAPIView):
         teacher = self.request.query_params.get('teacher')
         course = self.request.query_params.get('course')
         filial = self.request.query_params.get('filial')
-
 
         # Apply filters correctly
         if filial:
@@ -273,8 +270,6 @@ class DaysNoPG(ListAPIView):
         return Response(data)
 
 
-
-
 class GroupSchedule(ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
@@ -282,7 +277,7 @@ class GroupSchedule(ListAPIView):
 
     def get_queryset(self):
         queryset = Group.objects.all()
-        start_date = self.request.query_params.get('from',None)
+        start_date = self.request.query_params.get('from', None)
         end_date = self.request.query_params.get('to', None)
 
         filial = self.request.user.filial
@@ -301,14 +296,6 @@ class GroupSchedule(ListAPIView):
                 created_at__lte=end_date,
             ).order_by('started_at'))
         return queryset
-
-
-from collections import defaultdict
-import datetime
-from rest_framework.response import Response
-from rest_framework.generics import ListAPIView
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter, SearchFilter
 
 
 class LessonScheduleListApi(ListAPIView):
@@ -374,9 +361,10 @@ class LessonScheduleListApi(ListAPIView):
             if date_filter and lesson_date != date_filter:
                 continue
             lesson_data = {
-                "name": f"{extra.student.first_name} {extra.student.last_name}" if extra.student else None,  # You can change this to any student info you need
+                "name": f"{extra.student.first_name} {extra.student.last_name}" if extra.student else None,
+                # You can change this to any student info you need
                 "comment": extra.comment,
-                "teacher_name" : f"{extra.teacher.first_name} {extra.teacher.last_name}" if extra.teacher else None,
+                "teacher_name": f"{extra.teacher.first_name} {extra.teacher.last_name}" if extra.teacher else None,
                 "status": "Extra_lessons",
                 "room": extra.room.room_number if extra.room else None,
                 "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
@@ -400,9 +388,6 @@ class LessonScheduleListApi(ListAPIView):
         return Response(sorted_lessons)
 
 
-from django.db.models import Q
-import datetime
-
 class LessonScheduleWebListApi(ListAPIView):
     serializer_class = LessonScheduleWebSerializer
     queryset = Group.objects.filter(status="ACTIVE")
@@ -422,8 +407,10 @@ class LessonScheduleWebListApi(ListAPIView):
         queryset = self.queryset.all()
 
         # Convert query params to date objects
-        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else None
-        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else None
+        start_date = datetime.datetime.strptime(start_date_str,
+                                                '%Y-%m-%d').date() if start_date_str else None
+        end_date = datetime.datetime.strptime(end_date_str,
+                                              '%Y-%m-%d').date() if end_date_str else None
 
         if group:
             queryset = queryset.filter(id=group)
@@ -440,7 +427,8 @@ class LessonScheduleWebListApi(ListAPIView):
             cleaned = date_str.strip("{}'")  # Remove {, }, and '
             result = cleaned.split('-')
             print(result)
-            lesson_date_objects = [datetime.datetime.strptime(str(date), '%d-%m-%Y').date() for date in date_str]
+            lesson_date_objects = [datetime.datetime.strptime(str(date),
+                                                              '%d-%m-%Y').date() for date in date_str]
 
             # Apply filtering based on start_date and end_date
             if start_date and end_date:
