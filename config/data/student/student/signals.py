@@ -15,7 +15,7 @@ def on_create(sender, instance: Student, created, **kwargs):
 
     if not created:
         try:
-            _signal_active = True  # Set the flag to prevent recursion
+            _signal_active = True  #Set the flag to prevent recursion
 
             if instance.balance <= 0:
                 Notification.objects.create(

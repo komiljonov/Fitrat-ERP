@@ -17,6 +17,7 @@ def on_pre_save(sender, instance, **kwargs):
     - The lid_stage_type is changing from 'NEW_LID' to 'ORDERED_LID'
     - The call_operator field is None, then assign the first available call operator.
     """
+
     if not instance._state.adding:  # Ensure it's an update, not a new instance
         # Fetch previous value of `lid_stage_type` before update
         previous_instance = sender.objects.get(pk=instance.pk)
@@ -42,6 +43,13 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
     provided `is_student=True` and `phone_number` is available.
     """
     if not created:
+        if instance.lid_stage_type == "NEW_LID":
+            if instance.lid_stages == "YANGI_LEAD":
+                instance.lid_stages = "KUTULMOQDA"
+        if instance.lid_stages == "ORDERED_LID":
+            if instance.ordered_stages == "YANGI_BUYURTMA":
+                instance.ordered_stages = "KUTULMOQDA"
+
         if instance.is_expired:
             instance.is_expired = False
             instance.save()
