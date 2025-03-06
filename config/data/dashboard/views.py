@@ -42,6 +42,7 @@ class DashboardView(APIView):
         if start_date:
             filters["created_at__gte"] = start_date
         if end_date:
+            end_date = datetime.combine(end_date, datetime.max.time())
             filters["created_at__lte"] = end_date
         if filial:
             filters["filial"] = filial
