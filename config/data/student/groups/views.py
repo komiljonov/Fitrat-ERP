@@ -154,6 +154,7 @@ class RoomNoPG(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+from django.utils.dateparse import parse_date
 
 class SecondaryGroupsView(ListCreateAPIView):
     queryset = SecondaryGroup.objects.all()
@@ -166,22 +167,30 @@ class SecondaryGroupsView(ListCreateAPIView):
     filterset_fields = ('name', 'scheduled_day_type',)
 
     def get_queryset(self):
-        start_date = self.request.query_params.get('start_date', None)
-        end_date = self.request.query_params.get('end_date', None)
-        teacher = self.request.query_params.get('teacher', None)
-        course = self.request.query_params.get('course', None)
-        filial = self.request.query_params.get('filial', None)
         queryset = SecondaryGroup.objects.all()
+
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        teacher = self.request.query_params.get('teacher')
+        course = self.request.query_params.get('course')
+        filial = self.request.query_params.get('filial')
+
+        # Convert dates to proper format
+        start_date = parse_date(start_date) if start_date else None
+        end_date = parse_date(end_date) if end_date else None
+
+        # Apply filters correctly
         if filial:
-            queryset = queryset.objects.filter(filial__id=filial)
+            queryset = queryset.filter(filial__id=filial)
         if start_date:
-            queryset = queryset.objects.filter(start_date__gte=start_date)
+            queryset = queryset.filter(start_date__gte=start_date)
         if end_date:
-            queryset = queryset.objects.filter(end_date__lte=end_date)
+            queryset = queryset.filter(end_date__lte=end_date)
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
         if course:
             queryset = queryset.filter(group__course__id=course)
+
         return queryset
 
 
