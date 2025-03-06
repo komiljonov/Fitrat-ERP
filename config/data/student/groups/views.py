@@ -173,7 +173,7 @@ class SecondaryGroupsView(ListCreateAPIView):
         filial = self.request.query_params.get('filial', None)
         queryset = SecondaryGroup.objects.all()
         if filial:
-            queryset = SecondaryGroup.objects.filter(filial__id=filial)
+            queryset = queryset.objects.filter(filial__id=filial)
         if start_date:
             queryset = queryset.objects.filter(start_date__gte=start_date)
         if end_date:
