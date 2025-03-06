@@ -1,7 +1,6 @@
 import datetime
 
-from django.db.models import OuterRef, Exists
-from django.db.models import Q
+from django.db.models import OuterRef, Exists, Q
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
@@ -26,7 +25,8 @@ class StudentsGroupList(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     search_fields = (
-        'group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name', 'group__status',
+        'group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name',
+        'group__status',
         'group__teacher__id'
     )
     filter_fields = filterset_fields = search_fields
@@ -42,17 +42,20 @@ class StudentsGroupList(ListCreateAPIView):
 
         # **Exclude students who have attended today**
         attended_today = Attendance.objects.filter(
-            student_id=OuterRef("student_id"),
-            group_id=OuterRef("group_id"),
-            created_at__gte=today
+            student=OuterRef("student"),  # Ensure this matches your Attendance model field
+            group=OuterRef("group"),
+            created_at__date=today
         )
 
+        # Apply filters
         queryset = queryset.annotate(
             has_attended_today=Exists(attended_today)
-        ).filter(has_attended_today=False)
+        ).filter(
+            has_attended_today=False,  # Exclude students who attended today
+            lid__isnull=False  # Exclude null `lid`
+        )
 
         return queryset
-
 
 
 class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
@@ -68,6 +71,7 @@ class StudentGroupNopg(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
     def get_queryset(self):
         if self.request.user.role == 'TEACHER':
             queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
@@ -94,8 +98,6 @@ class GroupStudentList(ListAPIView):
         end_of_day = datetime.datetime.combine(today, datetime.time.max)
 
         queryset = StudentGroup.objects.filter(group__id=group_id)
-
-
 
         if reason == "1":  # Students who were present today
             present_attendance = Attendance.objects.filter(
@@ -149,6 +151,7 @@ class SecondaryGroupStudentList(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 class StudentGroupDelete(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -174,6 +177,7 @@ class StudentGroupDelete(APIView):
 
         return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
 
+
 class SecondaryStudentGroupDelete(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -198,6 +202,7 @@ class SecondaryStudentGroupDelete(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+
 
 class GroupStudentStatistics(APIView):
     permission_classes = [IsAuthenticated]
@@ -240,6 +245,7 @@ class GroupStudentStatistics(APIView):
             "percentage_is_absent": round(percentage_is_apcent, 2),
         })
 
+
 class GroupAttendedStudents(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AttendanceSerializer
@@ -252,6 +258,7 @@ class GroupAttendedStudents(ListAPIView):
             group=group,
             created_at__gte=datetime.date.today()
         )
+
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -272,7 +279,6 @@ class SecondaryStudentList(ListCreateAPIView):
     queryset = SecondaryStudentGroup.objects.all()
     permission_classes = [IsAuthenticated]
 
-
     def get_queryset(self):
         if self.request.user.role == 'ASSISTANT':
             return SecondaryStudentGroup.objects.filter(group__teacher__id=self.request.user.id)
@@ -292,4 +298,3 @@ class SecondaryGroupList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
