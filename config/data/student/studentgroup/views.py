@@ -88,10 +88,13 @@ class GroupStudentList(ListAPIView):
 
         queryset = StudentGroup.objects.filter(group__id=group_id)
 
+
+
         if reason == "1":  # Students who were present today
             present_attendance = Attendance.objects.filter(
                 group_id=group_id,
                 reason="IS_PRESENT",
+                lid__isnull=True,
                 created_at__gte=start_of_day,
                 created_at__lte=end_of_day
             ).values_list('student_id', 'lid_id', flat=False)  # Get student & lid IDs
@@ -100,6 +103,7 @@ class GroupStudentList(ListAPIView):
             present_attendance = Attendance.objects.filter(
                 group_id=group_id,
                 reason__in=["UNREASONED", "REASONED"],
+                lid__isnull=True,
                 created_at__gte=start_of_day,
                 created_at__lte=end_of_day
             ).values_list('student_id', 'lid_id', flat=False)
