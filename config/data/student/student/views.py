@@ -50,13 +50,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         queryset = self.queryset.filter(filial=user.filial.first())
 
-        # Additional role-based filtering
-        if hasattr(user, "role"):
-            if user.role == "CALL_OPERATOR":
-                queryset = queryset.none()
-            elif user.role == "ADMINISTRATOR":
-                queryset = queryset.filter(filial=user.filial.all())
-
         # Add filters based on query parameters (for sales manager and operators)
         sales_manager_id = self.request.query_params.get('sales_manager')
         call_operator_id = self.request.query_params.get('call_operator')
