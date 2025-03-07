@@ -79,7 +79,7 @@ class ExtraLessonGroup(TimeStampModel):
         'groups.Group', on_delete=models.SET_NULL, null=True, blank=True, related_name="groups_extra_lesson"
     )
     room : "Room" = models.ForeignKey(
-        'group.Room', on_delete=models.SET_NULL, null=True, blank=True, related_name="extra_group_lessons_room"
+        'groups.Room', on_delete=models.SET_NULL, null=True, blank=True, related_name="extra_group_lessons_room"
     )
     date = models.DateField(null=True, blank=True)
     started_at = models.TimeField(null=True, blank=True)
