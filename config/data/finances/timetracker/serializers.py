@@ -14,8 +14,7 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "action",
-            "is_there",
-            "is_gone",
+            "type",
             "created_at",
         ]
 
