@@ -183,7 +183,7 @@ class ExportLidToExcelAPIView(APIView):
         if is_student is not None:
             queryset = queryset.filter(is_student=is_student.lower() == "true")
         if filial_id:
-            queryset = queryset.filter(filial_id=filial_id)
+            queryset = queryset.filter(filial__id=filial_id)
         if lid_stage_type:
             queryset = queryset.filter(lid_stage_type=lid_stage_type)
 

@@ -109,7 +109,6 @@ class ExtraLessonScheduleView(ListAPIView):
         if filial:
             query &= Q(filial=filial)
 
-        # Get all lessons
         individual_lessons = ExtraLesson.objects.filter(query)
         group_lessons = ExtraLessonGroup.objects.filter(query)
 
@@ -118,13 +117,10 @@ class ExtraLessonScheduleView(ListAPIView):
         if subject:
             group_lessons = group_lessons.filter(group__course__subject__id=subject)
 
-
         combined_lessons = sorted(
             list(individual_lessons) + list(group_lessons),
             key=lambda lesson: (lesson.started_at, lesson.date)
         )
-
-
         return combined_lessons
 
     def list(self, request, *args, **kwargs):

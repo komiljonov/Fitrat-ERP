@@ -296,7 +296,7 @@ class DashboardLineGraphAPIView(APIView):
                                 status=status.HTTP_400_BAD_REQUEST)
 
         if filial:
-            filters['filial'] = filial
+            filters['filial__id'] = filial
 
         if end_date:
             try:
