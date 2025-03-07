@@ -1,8 +1,6 @@
 # Create your views here.
-import icecream
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
-from icecream import ic
 from passlib.context import CryptContext
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotFound
@@ -16,7 +14,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import CustomUser
-from .permission import FilialRestrictedQuerySetMixin
 from .serializers import UserCreateSerializer, UserUpdateSerializer
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
 
@@ -54,18 +51,20 @@ class UserList(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        user_filial = user.filial.all()  # Get all related filials
+        filial = self.request.query_params.get('filial', None)
 
         role = self.request.query_params.get('role', None)
 
         subject = self.request.query_params.get('subject', None)
         queryset = CustomUser.objects.all()
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
 
         if subject:
-            queryset = queryset.filter(teachers__subject__id=subject, filial__in=user_filial).order_by('-created_at')
+            queryset = queryset.filter(teachers__subject__id=subject).order_by('-created_at')
 
         if role:
-            queryset = queryset.filter(role=role, filial__in=user_filial).order_by('-created_at')
+            queryset = queryset.filter(role=role).order_by('-created_at')
 
         return queryset
 
