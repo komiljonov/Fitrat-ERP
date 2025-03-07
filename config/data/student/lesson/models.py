@@ -49,7 +49,7 @@ class Lesson(TimeStampModel):
     day = models.DateField(null=True, blank=True)  # Specific day of the lesson
 
     def __str__(self):
-        return f"Lesson {self.name} | {self.group} | Room {self.group.room_number}"
+        return f"Lesson {self.name}      {self.group}      Room {self.group.room_number}"
 
 
 class FirstLLesson(TimeStampModel):
@@ -71,12 +71,15 @@ class FirstLLesson(TimeStampModel):
     )
 
     def __str__(self):
-        return f"{self.lid.first_name} | {self.group.name} | {self.date} | {self.time}"
+        return f"{self.lid.first_name}      {self.group.name}     {self.date}     {self.time}"
 
 
 class ExtraLessonGroup(TimeStampModel):
     group: "Group" = models.ForeignKey(
         'groups.Group', on_delete=models.SET_NULL, null=True, blank=True, related_name="groups_extra_lesson"
+    )
+    room : "Room" = models.ForeignKey(
+        'group.Room', on_delete=models.SET_NULL, null=True, blank=True, related_name="extra_group_lessons_room"
     )
     date = models.DateField(null=True, blank=True)
     started_at = models.TimeField(null=True, blank=True)
@@ -90,7 +93,7 @@ class ExtraLessonGroup(TimeStampModel):
     is_attendance = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.group.name} | {self.date} | {self.started_at} | {self.is_payable} | {self.is_attendance}"
+        return f"{self.group.name}      {self.date}      {self.started_at}      {self.is_payable}      {self.is_attendance}"
 
 
 from ..groups.models import Room
@@ -117,4 +120,4 @@ class ExtraLesson(TimeStampModel):
     is_attendance = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.student.phone} | {self.date} | {self.started_at} | {self.is_payable} | {self.is_attendance}"
+        return f"{self.student.phone}      {self.date}      {self.started_at}      {self.is_payable}      {self.is_attendance}"
