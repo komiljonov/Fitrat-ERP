@@ -7,6 +7,7 @@ from django.db.models import Count, Q
 from django.db.models import Sum, F, DecimalField, Value
 from django.db.models.functions import ExtractWeekDay, Concat
 from django.http import HttpResponse
+from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from rest_framework import status
@@ -40,6 +41,7 @@ class DashboardView(APIView):
 
 
         filters = {}
+        ic(start_date,end_date)
         if start_date:
             filters["created_at__gte"] = start_date
 
@@ -48,6 +50,7 @@ class DashboardView(APIView):
 
         if filial:
             filters["filial"] = filial
+        ic(filters)
 
         # Dynamic Filtering using Q
         dynamic_filter = Q()
@@ -62,7 +65,7 @@ class DashboardView(APIView):
 
         if dynamic_filter:
             if course or teacher:
-                lid = (Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter)
+                lid = (Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,**filters).filter(dynamic_filter)
                        .filter(Q(lids_group__group__course_id=course) |
                                Q(lids_group__group__teacher_id=teacher)).count())
 
@@ -108,7 +111,7 @@ class DashboardView(APIView):
                     Q(group__course_id=course) | Q(group__teacher_id=teacher)).count()
             else:
 
-                lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).filter(dynamic_filter).count()
+                lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,**filters).filter(dynamic_filter).count()
 
                 orders = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters).count()
                 orders_archived = Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
@@ -142,7 +145,7 @@ class DashboardView(APIView):
                 course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).count()
 
         else:
-            lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False).count()
+            lid = Lid.objects.filter(lid_stage_type="NEW_LID", is_archived=False,**filters).count()
 
             orders = Lid.objects.filter(lid_stage_type="ORDERED_LID", **filters).count()
             orders_archived = Lid.objects.filter(lid_stage_type="ORDERED_LID", is_archived=True,
@@ -217,6 +220,10 @@ class Room_place(APIView):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
         filial = self.request.query_params.get('filial')
+        lesson_hours = self.request.query_params.get('lesson_hours')
+        start_time = self.request.query_params.get('start_time')
+        end_time = self.request.query_params.get('end_time')
+
 
         filters = {}
         if start_date:
@@ -225,6 +232,7 @@ class Room_place(APIView):
             filters['created_at__lte'] = end_date
         if filial:
             filters['filial'] = filial
+
 
         rooms = Room.objects.filter(**filters)
         all_places = 0
