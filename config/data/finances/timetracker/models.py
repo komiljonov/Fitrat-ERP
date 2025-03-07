@@ -15,10 +15,5 @@ class Employee_attendance(TimeStampModel):
     def __str__(self):
         return f"{self.user.full_name}  {self.action} {self.is_there if self.is_there  else self.is_gone if self.is_gone else "Kelmagan"}"
 
-    def get_total_work_hours(self):
-        if self.action == "Is_Present" and self.is_there:
-            come = self.is_there
-            gone = self.is_gone
-            pass
 
 

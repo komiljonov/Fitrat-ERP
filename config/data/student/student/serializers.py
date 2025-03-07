@@ -37,6 +37,7 @@ class StudentSerializer(serializers.ModelSerializer):
     secondary_group = serializers.SerializerMethodField()
     secondary_teacher = serializers.SerializerMethodField()
     learning = serializers.SerializerMethodField()
+    teacher = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
@@ -64,6 +65,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'service_manager',
             'course',
             'group',
+            'teacher',
             'call_operator',
             'sales_manager',
             "is_archived",
@@ -76,6 +78,12 @@ class StudentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+    def get_teacher(self, obj):
+        teacher = StudentGroup.objects.filter(student=obj)
+        if teacher:
+            return {
+                "id" : teacher[0].id,
+            }
 
     def get_learning(self, obj):
         mastering_qs = Mastering.objects.filter(student=obj)
