@@ -299,7 +299,7 @@ class ExportLidToExcelAPIView(APIView):
         if start_date and end_date:
             queryset = queryset.filter(created_at__range=[start_date, end_date])
         if filial_id:
-            queryset = queryset.filter(filial__id__in=filial_id)
+            queryset = queryset.filter(filial__id=filial_id)
         if student_stage_type:
             queryset = queryset.filter(student_stage_type=student_stage_type)
 
@@ -317,8 +317,6 @@ class ExportLidToExcelAPIView(APIView):
             "Call Operator", "Service manager", "Yaratilgan vaqti"
         ]
         sheet.append(headers)
-        queryset = Student.objects.all()
-        serialized_data = StudentSerializer(queryset, many=True).data
 
         for student in queryset:
             sheet.append([
