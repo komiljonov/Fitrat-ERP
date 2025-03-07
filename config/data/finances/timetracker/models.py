@@ -16,11 +16,8 @@ class Employee_attendance(TimeStampModel):
         ("Late","Late"),
     ], max_length=120, null=True, blank=True)
 
-    is_there = models.DateTimeField(auto_now_add=True)
-    is_gone = models.DateTimeField(auto_now=True)
-
     def __str__(self):
-        return f"{self.user.full_name}  {self.action} {self.is_there if self.is_there  else self.is_gone if self.is_gone else "Kelmagan"}"
+        return f"{self.user.full_name}   {self.action}   {self.type}"
 
 
 
