@@ -4,6 +4,7 @@ from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 from rest_framework import status
@@ -160,40 +161,37 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-
         filial = self.request.query_params.get('filial')
 
-        # Calculate statistics
-        if request.user.role != "CALL_OPERATOR":
-            user = request.user  # Set 'user' to the actual user object
         filter = {}
         if filial:
             filter["filial__id"] = filial
-        new_students_count = Student.objects.filter(is_archived=False, **filter,
-                                                    student_stage_type="NEW_STUDENT").count()
+            ic(filial)
+        new_students_count = Student.objects.filter(is_archived=False,
+                                                    student_stage_type="NEW_STUDENT", **filter).count()
         total_debt = \
-            Student.objects.filter(is_archived=False, **filter, student_stage_type="NEW_STUDENT",
-                                   balance__lt=0).aggregate(total_debt=Sum('balance'))['total_debt'] or 0
-        archived_new_students = Student.objects.filter(is_archived=True, **filter,
-                                                       student_stage_type="NEW_STUDENT").count()
+            Student.objects.filter(is_archived=False, student_stage_type="NEW_STUDENT",
+                                   balance__lt=0, **filter).aggregate(total_debt=Sum('balance'))['total_debt'] or 0
+        archived_new_students = Student.objects.filter(is_archived=True,
+                                                       student_stage_type="NEW_STUDENT", **filter).count()
 
         # Ordered statistics
-        student_count = Student.objects.filter(is_archived=False, **filter,
-                                               student_stage_type="ACTIVE_STUDENT").count()
+        student_count = Student.objects.filter(is_archived=False,
+                                               student_stage_type="ACTIVE_STUDENT", **filter).count()
         total_income = \
-            Student.objects.filter(is_archived=False, **filter, student_stage_type="ACTIVE_STUDENT",
-                                   balance__gt=0).aggregate(total_income=Sum('balance'))['total_income'] or 0
+            Student.objects.filter(is_archived=False, student_stage_type="ACTIVE_STUDENT",
+                                   balance__gt=0, **filter).aggregate(total_income=Sum('balance'))['total_income'] or 0
         student_total_debt = \
-            Student.objects.filter(is_archived=False, **filter, student_stage_type="ACTIVE_STUDENT",
-                                   balance__lt=0).aggregate(
+            Student.objects.filter(is_archived=False, student_stage_type="ACTIVE_STUDENT",
+                                   balance__lt=0, **filter).aggregate(
                 total_debt=Sum('balance'))['total_debt'] or 0
 
-        balance_active = Student.objects.filter(is_archived=False, **filter,
-                                                balance_status="ACTIVE",
+        balance_active = Student.objects.filter(is_archived=False,
+                                                balance_status="ACTIVE", **filter
                                                 ).count()
 
-        archived_student = Student.objects.filter(is_archived=True, **filter,
-                                                  student_stage_type="ACTIVE_STUDENT").count()
+        archived_student = Student.objects.filter(is_archived=True,
+                                                  student_stage_type="ACTIVE_STUDENT", **filter).count()
 
         from_new_to_active = Finance.objects.filter(
             student__isnull=False,
@@ -203,8 +201,8 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             **filter,
         ).count()
 
-        almost_debt = Student.objects.filter(is_archived=False,**filter,balance__lte=0,
-                                             balance__gte=100000).count()
+        almost_debt = Student.objects.filter(is_archived=False,balance__lte=0,
+                                             balance__gte=100000,**filter).count()
 
         statistics = {
             "new_students_count": new_students_count,
@@ -240,7 +238,7 @@ class StudentAllStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         filter = {}
         filial = self.request.query_params.get('filial')
         if filial:
-            filter["filial"] = filial
+            filter["filial__id"] = filial
 
         all_students = Student.objects.filter(is_archived=False, **filter
                                               ).count()
