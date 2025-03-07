@@ -1,4 +1,5 @@
 import datetime
+import locale
 from collections import defaultdict
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -405,15 +406,10 @@ class LessonScheduleWebListApi(ListAPIView):
         subject = self.request.query_params.get('subject')
         teacher = self.request.query_params.get('teacher')
         start_date_str = self.request.query_params.get('started_at')
-        end_date_str = self.request.query_params.get('ended_at')
 
         queryset = self.queryset.all()
 
-        # Convert query params to date objects
-        start_date = datetime.datetime.strptime(start_date_str,
-                                                '%Y-%m-%d').date() if start_date_str else None
-        end_date = datetime.datetime.strptime(end_date_str,
-                                              '%Y-%m-%d').date() if end_date_str else None
+
 
         if group:
             queryset = queryset.filter(id=group)
@@ -422,29 +418,32 @@ class LessonScheduleWebListApi(ListAPIView):
         if teacher:
             queryset = queryset.filter(teacher_id=teacher)
 
-        # Get IDs of objects that match the lesson_date filtering
-        valid_group_ids = []
-        for obj in queryset:
-            date_str = self.serializer_class().get_lesson_date(obj)
-            ic(date_str)
-            cleaned = date_str.strip("{}'")  # Remove {, }, and '
-            result = cleaned.split('-')
-            print(result)
-            lesson_date_objects = [datetime.datetime.strptime(str(date),
-                                                              '%d-%m-%Y').date() for date in date_str]
+        locale.setlocale(locale.LC_TIME, "uz_UZ.UTF-8")
 
-            # Apply filtering based on start_date and end_date
-            if start_date and end_date:
-                if any(start_date <= d <= end_date for d in lesson_date_objects):
-                    valid_group_ids.append(obj.id)
-            elif start_date:
-                if any(d >= start_date for d in lesson_date_objects):
-                    valid_group_ids.append(obj.id)
-            elif end_date:
-                if any(d <= end_date for d in lesson_date_objects):
-                    valid_group_ids.append(obj.id)
+        if start_date_str:
+            # Convert string to datetime object
+            start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d")
+            # Convert to Uzbek weekday name
+            weekday_name = start_date.strftime("%A")  # Returns the full weekday name
 
-        return queryset.filter(id__in=valid_group_ids)
+            # Manually map to Uzbek names if locale doesn't support it
+            uzbek_weekdays = {
+                "Monday": "Dushanba",
+                "Tuesday": "Seshanba",
+                "Wednesday": "Chorshanba",
+                "Thursday": "Payshanba",
+                "Friday": "Juma",
+                "Saturday": "Shanba",
+                "Sunday": "Yakshanba",
+            }
+            weekday_name = uzbek_weekdays.get(weekday_name, weekday_name)
+            ic(weekday_name.capitalize())
+            days = Day.objects.get(name=weekday_name.capitalize())
+
+            ic(weekday_name)
+            if weekday_name:
+                queryset = queryset.filter(scheduled_day_type=days)
+        return queryset
 
     def get_paginated_response(self, data):
         return Response(data)
