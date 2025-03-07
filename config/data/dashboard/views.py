@@ -95,7 +95,8 @@ class DashboardView(APIView):
                 # Get students who made their first course payment
                 payment_students = Finance.objects.filter(
                     student__isnull=False,
-                    kind__name="COURSE_PAYMENT"
+                    kind__name="COURSE_PAYMENT",
+                    **filters
                 ).values_list("student", flat=True)
 
                 first_course_payment = (Student.objects.filter(id__in=payment_students, **filters)
@@ -121,7 +122,9 @@ class DashboardView(APIView):
 
                 # Get students with exactly one attendance record
                 students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
-                    count=1).values_list("student", flat=True)
+                count=1,
+                **filters
+                ).values_list("student", flat=True)
 
                 first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance,
                                                            **filters).filter(dynamic_filter).count()
@@ -132,7 +135,8 @@ class DashboardView(APIView):
                 # Get students who made their first course payment
                 payment_students = Finance.objects.filter(
                     student__isnull=False,
-                    kind__name="COURSE_PAYMENT"
+                    kind__name="COURSE_PAYMENT",
+                    **filters
                 ).values_list("student", flat=True)
 
                 first_course_payment = Student.objects.filter(id__in=payment_students,
@@ -155,7 +159,7 @@ class DashboardView(APIView):
 
             # Get students with exactly one attendance record
             students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
-                count=1).values_list("student", flat=True)
+                count=1,**filters).values_list("student", flat=True)
 
             first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters).count()
             first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance, is_archived=True,
@@ -164,7 +168,8 @@ class DashboardView(APIView):
             # Get students who made their first course payment
             payment_students = Finance.objects.filter(
                 student__isnull=False,
-                kind__name="COURSE_PAYMENT"
+                kind__name="COURSE_PAYMENT",
+                **filters
             ).values_list("student", flat=True)
 
             first_course_payment = Student.objects.filter(id__in=payment_students, **filters).count()

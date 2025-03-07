@@ -76,15 +76,22 @@ class FinanceListAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         kind = self.request.query_params.get('kind', None)
+        start_date = self.request.query_params.get('start_date', None)
+        end_date = self.request.query_params.get('end_date', None)
         id = self.request.query_params.get('casher_id', None)
-        finance = Finance.objects.filter(casher__id=id)
-        if finance:
-            return finance
+
+
+        queryset = Finance.objects.filter(casher__id=id)
         if kind:
-            return Finance.objects.filter(kind=Kind.objects.get(id=kind))
+            queryset = Finance.objects.filter(kind=Kind.objects.get(id=kind))
         if kind and id:
-            return Finance.objects.filter(casher__id=id, kind=Kind.objects.get(id=kind))
-        return Finance.objects.none()
+            queryset = queryset.objects.filter(casher__id=id, kind=Kind.objects.get(id=kind))
+        if start_date:
+            queryset = queryset.objects.filter(created_at__gte=start_date)
+        if start_date and end_date:
+            queryset = queryset.objects.filter(created_at__gte=start_date, created_at__lte=end_date)
+
+        return queryset
 
 
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
