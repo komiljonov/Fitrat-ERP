@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'data.tasks',
     'data.finances.finance',
     'data.finances.compensation',
+    'data.finances.timetracker',
     'data.notifications',
 
     'data.lid.archived',

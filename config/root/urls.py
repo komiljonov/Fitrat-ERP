@@ -72,6 +72,7 @@ urlpatterns = [
 
     path('finance/', include('data.finances.finance.urls')),
     path('compensation/', include('data.finances.compensation.urls')),
+    path('timetracker/', include('data.finances.timetracker.urls')),
 
     path('notifications/', include('data.notifications.urls')),
 
