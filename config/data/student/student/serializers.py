@@ -78,12 +78,10 @@ class StudentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
     def get_teacher(self, obj):
-        teacher = StudentGroup.objects.filter(student=obj)
-        if teacher:
-            return {
-                "id" : teacher[0].id,
-            }
+        teachers = StudentGroup.objects.filter(student=obj).values_list("group__teacher__id", flat=True)
+        return list(teachers)
 
     def get_learning(self, obj):
         mastering_qs = Mastering.objects.filter(student=obj)

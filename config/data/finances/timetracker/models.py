@@ -6,9 +6,16 @@ from ...command.models import TimeStampModel
 class Employee_attendance(TimeStampModel):
     user : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name="employee_attendance")
     action = models.CharField(choices=[
-        ("Is_Present","Is_Present"),
-        ("Unreasoned","Unreasoned")
+        ("In_office","In_office"),
+        ("Gone","Gone"),
+        ("Apsent","Apsent"),
     ],max_length=120, null=True, blank=True)
+
+    type = models.CharField(choices=[
+        ("On_time","On_time"),
+        ("Late","Late"),
+    ], max_length=120, null=True, blank=True)
+
     is_there = models.DateTimeField(auto_now_add=True)
     is_gone = models.DateTimeField(auto_now=True)
 
