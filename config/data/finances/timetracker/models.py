@@ -16,8 +16,8 @@ class Employee_attendance(TimeStampModel):
         ("Late","Late"),
     ], max_length=120, null=True, blank=True)
 
-    date = models.DateField(auto_now_add=True)
-    time = models.TimeField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
+    time = models.TimeField(null=True, blank=True,auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.full_name}   {self.action}   {self.type}"
