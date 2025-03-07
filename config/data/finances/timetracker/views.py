@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Employee_attendance
@@ -38,5 +38,3 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
     permission_classes = [IsAuthenticated]
-
-

@@ -23,6 +23,10 @@ app.conf.beat_schedule = {
             'task': 'data.lid.new_lid.tasks.check_daily_leads',
             'schedule': crontab(minute='*/1'),
         },
+    "check_attendance_daily": {
+            "task": "app.tasks.check_daily_user_attendance",
+            "schedule": crontab(hour=0, minute=0),
+        },
 
 }
 
