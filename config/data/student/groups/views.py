@@ -196,8 +196,8 @@ class CheckRoomLessonScheduleView(APIView):
 
         except ValueError:
             return Response({'error': 'Invalid date or time format'}, status=400)
-        ic(date, started_at, ended_at,day)
 
+        # Check conflicts in Regular Group Lessons
         conflicting_groups = Group.objects.filter(
             room_number__id=room_id,
             start_date__lte=date,
@@ -206,12 +206,35 @@ class CheckRoomLessonScheduleView(APIView):
         ).filter(
             Q(started_at__lt=ended_at, ended_at__gt=started_at)
         )
-        ic(conflicting_groups)
 
-        if conflicting_groups.exists():
-            return Response({'available': False, 'conflicts': GroupLessonSerializer(conflicting_groups, many=True).data})
+        # Check conflicts in ExtraLessonGroup (Group-based extra lessons)
+        conflicting_extra_group_lessons = ExtraLessonGroup.objects.filter(
+            room_id=room_id,
+            date=date
+        ).filter(
+            Q(started_at__lt=ended_at, ended_at__gt=started_at)
+        )
+
+        # Check conflicts in ExtraLesson (Individual extra lessons)
+        conflicting_extra_lessons = ExtraLesson.objects.filter(
+            room_id=room_id,
+            date=date
+        ).filter(
+            Q(started_at__lt=ended_at, ended_at__gt=started_at)
+        )
+
+        # Serialize conflicts
+        conflicts = {
+            "group_lessons": GroupLessonSerializer(conflicting_groups, many=True).data,
+            "extra_group_lessons": [{"group": lesson.group.name, "date": lesson.date, "started_at": lesson.started_at, "ended_at": lesson.ended_at} for lesson in conflicting_extra_group_lessons],
+            "extra_lessons": [{"student": lesson.student.phone if lesson.student else None, "teacher": lesson.teacher.username if lesson.teacher else None, "date": lesson.date, "started_at": lesson.started_at, "ended_at": lesson.ended_at} for lesson in conflicting_extra_lessons],
+        }
+
+        if conflicting_groups.exists() or conflicting_extra_group_lessons.exists() or conflicting_extra_lessons.exists():
+            return Response({'available': False, 'conflicts': conflicts})
 
         return Response({'available': True})
+
 
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Room.objects.all()
