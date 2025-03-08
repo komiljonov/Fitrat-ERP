@@ -262,9 +262,6 @@ class FinanceStatisticsAPIView(APIView):
             except Kind.DoesNotExist:
                 return Response({"error": "Invalid kind ID"}, status=400)
 
-        if filial:
-            filters["filial_id"] = filial
-
 
         def get_balance(role):
             income = Finance.objects.filter(casher__role=role, action="INCOME", **filters).aggregate(Sum("amount"))["amount__sum"] or 0
