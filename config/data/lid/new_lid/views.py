@@ -73,8 +73,14 @@ class LidListCreateView(ListCreateAPIView):
         service_manager = self.request.query_params.get('service_manager')
         sales_manager = self.request.query_params.get('sales_manager')
         teacher = self.request.query_params.get('teacher')
+        channel = self.request.query_params.get('channel')
         subject = self.request.query_params.get('subject')
         is_student = self.request.query_params.get('is_student')
+
+        if channel:
+            queryset = queryset.filter(
+                marketing_channel__id = channel
+            )
 
         if service_manager:
             queryset = queryset.filter(service_manager_id=service_manager)
