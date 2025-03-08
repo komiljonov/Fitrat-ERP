@@ -42,29 +42,12 @@ class LidListCreateView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        # Handle anonymous users
         if user.is_anonymous:
             return Lid.objects.none()
 
         queryset = Lid.objects.all()
 
         is_archived = self.request.query_params.get("is_archived")
-
-        if is_archived == "True":
-            queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
-
-        filial = self.request.query_params.get("filial")
-
-        if user.role == "CALL_OPERATOR" or user.is_call_center:
-            queryset = queryset.filter(
-                Q(call_operator=user) | Q(call_operator__isnull=True),
-                Q(filial__in=filial) | Q(filial__isnull=True)
-            )
-        else:
-            queryset = queryset.filter(
-                Q(filial__in=filial) | Q(filial__isnull=True)
-            )
-
         search_term = self.request.query_params.get("search", "")
         course_id = self.request.query_params.get("course")
         call_operator_id = self.request.query_params.get("call_operator")
@@ -74,6 +57,22 @@ class LidListCreateView(ListCreateAPIView):
         channel = self.request.query_params.get("channel")
         subject = self.request.query_params.get("subject")
         is_student = self.request.query_params.get("is_student")
+        filial = self.request.query_params.get("filial")
+
+        if is_archived == "True":
+            queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
+
+
+        if user.role == "CALL_OPERATOR" or user.is_call_center:
+            queryset = queryset.filter(
+                Q(call_operator=user) | Q(call_operator__isnull=True),
+                Q(filial__id=filial) | Q(filial__isnull=True)
+            )
+        else:
+            queryset = queryset.filter(
+                Q(filial__id=filial) | Q(filial__isnull=True)
+            )
+
 
         if channel:
             queryset = queryset.filter(marketing_channel__id=channel)
