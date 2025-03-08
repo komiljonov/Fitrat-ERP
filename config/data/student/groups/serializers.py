@@ -24,6 +24,9 @@ class GroupSerializer(serializers.ModelSerializer):
     lessons_count = serializers.SerializerMethodField()
     current_theme = serializers.SerializerMethodField()
 
+    subject = serializers.SerializerMethodField()
+    level = serializers.SerializerMethodField()
+
     class Meta:
         model = Group
         fields = [
@@ -33,6 +36,8 @@ class GroupSerializer(serializers.ModelSerializer):
             'secondary_teacher',
             'status',
             'course',
+            'subject',
+            "level",
             'student_count',
             'lessons_count',
             'room_number',
@@ -47,6 +52,12 @@ class GroupSerializer(serializers.ModelSerializer):
             'is_secondary',
             'current_theme',
         ]
+
+    def get_subject(self, obj):
+        return Group.objects.filter(pk=obj.pk).values_list("course__subject", flat=True).first()
+
+    def get_level(self, obj):
+        return Group.objects.filter(pk=obj.pk).values_list("course__level", flat=True).first()
 
     def get_current_theme(self, obj):
         today = date.today()
