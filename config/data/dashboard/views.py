@@ -33,6 +33,7 @@ class DashboardView(APIView):
         end_date = request.query_params.get('end_date')
         channel_id = request.query_params.get('marketing_channel')
         service_manager = request.query_params.get('service_manager')
+        call_operator = request.query_params.get('call_operator')
         sales_manager = request.query_params.get('sales_manager')
         filial = request.query_params.get('filial')
         subjects = request.query_params.get('subject')
@@ -60,6 +61,8 @@ class DashboardView(APIView):
             dynamic_filter |= Q(service_manager__id=service_manager)
         if sales_manager:
             dynamic_filter |= Q(sales_manager__id=sales_manager)
+        if call_operator:
+            dynamic_filter |= Q(call_operator__id=call_operator)
         if subjects:
             dynamic_filter |= Q(subject__id=subjects)
 
