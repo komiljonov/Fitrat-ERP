@@ -24,6 +24,8 @@ class LidSerializer(serializers.ModelSerializer):
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
     call_operator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),
                                                        allow_null=True)
+    service_manager = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+    sales_manager = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
 
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
