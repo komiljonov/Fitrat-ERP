@@ -101,6 +101,8 @@ class ExtraLessonScheduleView(ListAPIView):
 
         # Filter by date if provided
         query = Q()
+
+
         if teacher:
             query &= Q(teacher__id=teacher)
 
