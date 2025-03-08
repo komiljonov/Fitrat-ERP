@@ -142,6 +142,16 @@ class StuffRolesView(ListAPIView):
     ordering_fields = ('role','first_name','last_name')
     filterset_fields = ('role','first_name','last_name')
 
+    def get_queryset(self):
+        filial = self.request.query_params.get('filial', None)
+        role = self.request.query_params.get('role', None)
+        queryset = CustomUser.objects.all().order_by('-created_at')
+        if filial:
+            queryset = CustomUser.objects.filter(filil__id=filial)
+        if role:
+            queryset = queryset.filter(role=role)
+        return queryset
+
     def get_paginated_response(self, data):
         return Response(data)
 
