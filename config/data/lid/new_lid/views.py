@@ -5,6 +5,7 @@ from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from rest_framework import status
@@ -47,26 +48,23 @@ class LidListCreateView(ListCreateAPIView):
 
         queryset = Lid.objects.all()
 
-        # ✅ Archive filter
         is_archived = self.request.query_params.get("is_archived")
+
         if is_archived == "True":
             queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
 
-        # ✅ Filial filtering logic: Include lids with user's filial OR no filial
-        user_filials = user.filial.all()
+        filial = self.request.query_params.get("filial")
 
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
                 Q(call_operator=user) | Q(call_operator__isnull=True),
-                Q(filial__in=user_filials) | Q(filial__isnull=True)  # ✅ Ensures lids appear with or without a filial
+                Q(filial__in=filial) | Q(filial__isnull=True)
             )
         else:
             queryset = queryset.filter(
-                Q(filial__in=user_filials) | Q(filial__isnull=True)
-                # ✅ Ensures non-call center users also see lids without a filial
+                Q(filial__in=filial) | Q(filial__isnull=True)
             )
 
-        # ✅ Apply filters based on query parameters
         search_term = self.request.query_params.get("search", "")
         course_id = self.request.query_params.get("course")
         call_operator_id = self.request.query_params.get("call_operator")
