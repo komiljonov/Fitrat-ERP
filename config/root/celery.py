@@ -24,8 +24,12 @@ app.conf.beat_schedule = {
             'schedule': crontab(minute='*/1'),
         },
     "check_attendance_daily": {
-            "task": "app.tasks.check_daily_user_attendance",
+            "task": "data.finances.timetracker.tasks.check_daily_user_attendance",
             "schedule": crontab(hour=0, minute=0),
+        },
+    'check-monthly-extra-lessons': {
+            'task': 'data.student.mastering.tasks.check_monthly_extra_lessons',
+            'schedule': crontab(day_of_month=8, hour=19, minute=32),
         },
 
 }
