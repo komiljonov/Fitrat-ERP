@@ -258,7 +258,7 @@ class FinanceStatisticsAPIView(APIView):
 
         if kind:
             try:
-                filters["kind_id"] = kind
+                filters["kind__id"] = kind
             except Kind.DoesNotExist:
                 return Response({"error": "Invalid kind ID"}, status=400)
 
