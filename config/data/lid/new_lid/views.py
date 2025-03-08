@@ -176,7 +176,7 @@ class ExportLidToExcelAPIView(APIView):
         service_manager = self.request.query_params.get("service_manager")
         sales_manager = self.request.query_params.get("sales_manager")
         teacher = self.request.query_params.get("teacher")
-        channel = self.request.query_params.get("channel")
+        channel = self.request.query_params.get("marketing_channel")
         subject = self.request.query_params.get("subject")
         is_student = self.request.query_params.get("is_student")
 
