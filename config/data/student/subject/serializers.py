@@ -48,15 +48,22 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 class LevelSerializer(serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
+    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
     class Meta:
         model = Level
         fields = [
             'id',
             'name',
+            'subject',
             "course",
         ]
     def get_course(self, obj):
         return Course.objects.filter(level=obj).count()
+
+    def to_representation(self, obj):
+        rep = super().to_representation(obj)
+        rep["subject"] = SubjectSerializer(obj.subject).data
+        return rep
 
 
 

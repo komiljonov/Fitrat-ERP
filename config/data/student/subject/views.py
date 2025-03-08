@@ -57,9 +57,7 @@ class LevelList(ListCreateAPIView):
         if filial:
             filter["filial__id"] = filial
         if subject:
-            # Get all level IDs from courses that match the subject
-            level_ids = Course.objects.filter(subject__id=subject, **filter).values_list("level", flat=True)
-            return Level.objects.filter(id__in=level_ids)
+            return Level.objects.filter(subject__id=subject, **filter)
 
         return Level.objects.all()
 
@@ -78,11 +76,15 @@ class LevelNoPG(ListAPIView):
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial', None)
+        subject = self.request.query_params.get('subject', None)
 
         queryset = Level.objects.all()
 
+        if subject:
+            queryset = queryset.filter(subject__id=subject)
+
         if filial:
-            queryset = queryset.filter(filial=filial)
+            queryset = queryset.filter(filial__id=filial)
         return queryset
 
     def get_paginated_response(self, data):
