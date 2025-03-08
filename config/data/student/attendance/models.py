@@ -12,8 +12,10 @@ class Attendance(TimeStampModel):
     theme : 'Theme' = models.ManyToManyField('subject.Theme', null=True, blank=True,related_name='attendance_theme')
     group : "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE, null=True, blank=True, related_name='attendance_group')
     repeated = models.BooleanField(default=False)
-    lid : 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True)
-    student : 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True)
+    lid : 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True,
+                                    related_name='attendance_lid')
+    student : 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True,
+                                            related_name='attendance_student')
 
     REASON_CHOICES = [
         ('IS_PRESENT', 'Is Present'),
