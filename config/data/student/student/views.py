@@ -281,8 +281,6 @@ class ExportLidToExcelAPIView(APIView):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
         student_stage_type = request.query_params.get("student_stage_type")
-
-        # Add filters based on query parameters (for sales manager and operators)
         sales_manager_id = self.request.query_params.get('sales_manager')
         call_operator_id = self.request.query_params.get('call_operator')
         from_price = self.request.query_params.get('from_price')
@@ -297,6 +295,7 @@ class ExportLidToExcelAPIView(APIView):
 
 
         queryset = Student.objects.all()
+
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id)
 
@@ -305,8 +304,10 @@ class ExportLidToExcelAPIView(APIView):
 
         if from_price:
             queryset = queryset.filter(balance__gte=from_price)
+
         if to_price:
             queryset = queryset.filter(balance__lte=to_price)
+
         if from_price and to_price:
             queryset = queryset.filter(balance__gte=from_price, balance__lte=to_price)
 
@@ -318,12 +319,14 @@ class ExportLidToExcelAPIView(APIView):
 
         if sales_manager_id:
             queryset = queryset.filter(sales_manager__id=sales_manager_id)
+
         if call_operator_id:
             queryset = queryset.filter(call_operator__id=call_operator_id)
 
         if course_id:
             queryset = queryset.filter(
                 students_group__group__course__id=course_id)  # Assuming Many-to-Many relation in groups
+
         if service_manager:
             queryset = queryset.filter(service_manager__id=service_manager)
 
@@ -332,10 +335,13 @@ class ExportLidToExcelAPIView(APIView):
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
+
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id)
+
         if student_stage_type:
             queryset = queryset.filter(student_stage_type=student_stage_type)
 
