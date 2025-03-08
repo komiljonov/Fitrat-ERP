@@ -34,14 +34,18 @@ class CourseList(ListCreateAPIView):
     def get_queryset(self):
         level = self.request.query_params.get('level', None)
         filial = self.request.query_params.get('filial', None)
-        queryset = Course.objects.all()
+        queryset = Course.objects.all()  # ✅ Correct QuerySet initialization
+
         if filial:
-            queryset = queryset.objects.filter(filial=filial)
+            queryset = queryset.filter(filial=filial)  # ✅ Removed `.objects`
         else:
-            queryset = queryset.objects.filter(filial = self.request.user.filial.first())
+            queryset = queryset.filter(filial=self.request.user.filial.first())  # ✅ Removed `.objects`
+
         if level:
-            queryset =  queryset.objects.filter(level__id=level)
+            queryset = queryset.filter(level__id=level)  # ✅ Removed `.objects`
+
         return queryset
+
 
 class CourseDetail(RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
