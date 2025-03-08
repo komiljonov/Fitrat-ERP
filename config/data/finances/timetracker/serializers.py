@@ -16,10 +16,10 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
             "action",
             "type",
             "date",
-            "time",
             "created_at",
         ]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["user"] = UserSerializer(instance.user).data
+        return rep

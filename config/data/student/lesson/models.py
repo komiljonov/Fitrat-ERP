@@ -11,7 +11,7 @@ from ..subject.models import Subject
 from ...command.models import TimeStampModel
 from ...lid.new_lid.models import Lid
 from ...student.student.models import Student
-
+from ..groups.models import Room
 
 class Lesson(TimeStampModel):
     name = models.CharField(max_length=100)
@@ -94,9 +94,6 @@ class ExtraLessonGroup(TimeStampModel):
 
     def __str__(self):
         return f"{self.group.name}      {self.date}      {self.started_at}      {self.is_payable}      {self.is_attendance}"
-
-
-from ..groups.models import Room
 
 
 class ExtraLesson(TimeStampModel):

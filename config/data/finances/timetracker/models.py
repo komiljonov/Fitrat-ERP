@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from data.account.models import CustomUser
 from ...command.models import TimeStampModel
@@ -16,8 +17,7 @@ class Employee_attendance(TimeStampModel):
         ("Late","Late"),
     ], max_length=120, null=True, blank=True)
 
-    date = models.DateField(null=True, blank=True)
-    time = models.TimeField(null=True, blank=True,auto_now_add=True)
+    date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.user.full_name}   {self.action}   {self.type}"

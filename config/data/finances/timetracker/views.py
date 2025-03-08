@@ -1,11 +1,10 @@
-from django.shortcuts import render
-
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from django.utils.dateparse import parse_datetime
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Employee_attendance
-from ...account.models import CustomUser
 from .serializers import TimeTrackerSerializer
+
 
 class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
@@ -14,23 +13,29 @@ class AttendanceList(ListCreateAPIView):
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
-        id = self.request.query_params.get('id')
+        user_id = self.request.query_params.get('id')
         action = self.request.query_params.get('action')
+        type = self.request.query_params.get('type')
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+
         queryset = Employee_attendance.objects.all()
 
         if start_date:
-            queryset = queryset.filter(created_at__gte=start_date)
-        if end_date:
-            queryset = queryset.filter(created_at__lte=end_date)
+            queryset = queryset.filter(date__gte=parse_datetime(start_date))
+        if start_date and end_date:
+            queryset = queryset.filter(date__gte=parse_datetime(start_date),
+                                       date__lte=parse_datetime(end_date))
 
+        if type:
+            queryset = queryset.filter(type=type)
         if action:
             queryset = queryset.filter(action=action)
         if filial:
             queryset = queryset.filter(filial__id=filial)
-        if id:
-            queryset = queryset.filter(user__id=id)
+        if user_id:
+            queryset = queryset.filter(user__id=user_id)
+
         return queryset
 
 
