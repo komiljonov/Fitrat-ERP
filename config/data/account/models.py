@@ -40,7 +40,7 @@ class CustomUser(AbstractUser):
 
     is_call_center = models.BooleanField(default=False)
 
-    role = models.CharField(choices=ROLE_CHOICES, max_length=30, default="ADMINISTRATOR")
+    role = models.CharField(choices=ROLE_CHOICES, max_length=30, default="DIRECTOR")
 
     balance = models.FloatField(default=0)
 
