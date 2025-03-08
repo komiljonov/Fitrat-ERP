@@ -247,53 +247,34 @@ class CasherHandoverAPIView(CreateAPIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         kind = self.request.query_params.get('kind', None)
-
         filial = self.request.query_params.get('filial', None)
 
-        filter = {}
+        filters = {}
+
         if kind:
-            filter['kind'] = Kind.objects.get(id=kind)
+            try:
+                filters["kind_id"] = kind
+            except Kind.DoesNotExist:
+                return Response({"error": "Invalid kind ID"}, status=400)
+
         if filial:
-            filter['filial'] = filial
+            filters["filial_id"] = filial
 
-        # Asosiy kassa balansi
-        main_casher_income = \
-        Finance.objects.filter(casher__role="WEALTH", action="INCOME", **filter).aggregate(Sum("amount"))[
-            "amount__sum"] or 0
-        main_casher_outcome = \
-        Finance.objects.filter(casher__role="WEALTH", action="OUTCOME", **filter).aggregate(Sum("amount"))[
-            "amount__sum"] or 0
-        main_casher_balance = main_casher_income - main_casher_outcome
 
-        # Administrativ kassa balansi
-        admin_casher_income = \
-        Finance.objects.filter(casher__role="ADMINISTRATOR", action="INCOME", **filter).aggregate(Sum("amount"))[
-            "amount__sum"] or 0
-        admin_casher_outcome = \
-        Finance.objects.filter(casher__role="ADMINISTRATOR", action="OUTCOME", **filter).aggregate(Sum("amount"))[
-            "amount__sum"] or 0
-        admin_casher_balance = admin_casher_income - admin_casher_outcome
+        def get_balance(role):
+            income = Finance.objects.filter(casher__role=role, action="INCOME", **filters).aggregate(Sum("amount"))["amount__sum"] or 0
+            outcome = Finance.objects.filter(casher__role=role, action="OUTCOME", **filters).aggregate(Sum("amount"))["amount__sum"] or 0
+            return income - outcome
 
-        # Accountant kassa balansi
-        accounting_casher_income = \
-        Finance.objects.filter(casher__role="ACCOUNTANT", action="INCOME", **filter).aggregate(Sum("amount"))[
-            "amount__sum"] or 0
-        accounting_casher_outcome = \
-        Finance.objects.filter(casher__role="ACCOUNTANT", action="OUTCOME", **filter).aggregate(Sum("amount"))[
-            "amount__sum"] or 0
-        accounting_casher_balance = accounting_casher_income - accounting_casher_outcome
-
-        # JSON response qaytarish
         return Response({
-            "main_casher": main_casher_balance,
-            "admin_casher": admin_casher_balance,
-            "accounting_casher": accounting_casher_balance,
+            "main_casher": get_balance("WEALTH"),
+            "admin_casher": get_balance("ADMINISTRATOR"),
+            "accounting_casher": get_balance("ACCOUNTANT"),
         })
 
 
