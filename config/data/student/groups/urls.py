@@ -3,7 +3,7 @@ from django.urls import path
 from .views import StudentGroupsView, StudentRetrieveUpdateDestroyAPIView, StudentListAPIView, TeachersGroupsView, \
     RoomListAPIView, RoomRetrieveUpdateDestroyAPIView, RoomNoPG, SecondaryGroupsView, \
     SecondaryGroupRetrieveUpdateDestroyAPIView, SecondaryNoPG, DaysNoPG, DaysAPIView, LessonScheduleListApi, \
-    GroupLessonScheduleView, LessonScheduleWebListApi
+    GroupLessonScheduleView, LessonScheduleWebListApi, CheckRoomLessonScheduleView
 from ..lesson.views import ExtraLessonScheduleView
 
 urlpatterns = [
@@ -18,6 +18,8 @@ urlpatterns = [
     path('schedule-all/', LessonScheduleWebListApi.as_view(), name='schedule-all'),
     path('schedule-extra/',ExtraLessonScheduleView.as_view(), name='extra-lesson-schedule'),
     path('<uuid:pk>/schedule/',GroupLessonScheduleView.as_view(), name='group-schedule'),
+
+    path("room-check/",CheckRoomLessonScheduleView.as_view(), name='check-room-lesson-schedule'),
 
 
 
