@@ -40,7 +40,7 @@ class LidSerializer(serializers.ModelSerializer):
             "id", "sender_id", "message_text", "photo" ,"first_name", "last_name", "middle_name",
             "phone_number", "date_of_birth", "education_lang", "student_type",
             "edu_class", "edu_level", "subject", "ball", "filial","is_frozen","is_attendance",
-            "marketing_channel", "lid_stage_type", "ordered_stages",
+            "marketing_channel", "lid_stage_type", "ordered_stages","extra_number",
             "lid_stages", "is_archived", "course", "group", "service_manager",'is_student',
             "call_operator", "relatives", "lessons_count", "created_at","sales_manager","is_expired","file"
         ]
