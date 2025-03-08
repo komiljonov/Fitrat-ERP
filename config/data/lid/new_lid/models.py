@@ -103,7 +103,7 @@ class Lid(TimeStampModel):
     ordered_stages: models.QuerySet['NewOredersStages']
 
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser',
-                                                    on_delete=models.CASCADE, null=True, related_name="sales_manager")
+                                                    on_delete=models.CASCADE, null=True,blank=True, related_name="sales_manager")
 
     file: "File" = models.ManyToManyField("upload.File",
                                           related_name="lid_file", null=True, blank=True)
