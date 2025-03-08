@@ -53,13 +53,15 @@ class LevelList(ListCreateAPIView):
     def get_queryset(self):
         subject = self.request.query_params.get('subject', None)
         filial = self.request.query_params.get('filial', None)
-        filter = {}
-        if filial:
-            filter["filial__id"] = filial
-        if subject:
-            return Level.objects.filter(subject__id=subject, **filter)
 
-        return Level.objects.all()
+        queryset = Level.objects.all()
+
+        if subject:
+            queryset = queryset.filter(subject__id=subject)
+
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        return queryset
 
 
 class LevelDetail(RetrieveUpdateDestroyAPIView):
