@@ -18,8 +18,6 @@ from rest_framework.views import APIView
 
 from .models import Lid
 from .serializers import LidSerializer
-from ...account.permission import FilialRestrictedQuerySetMixin
-from ...finances.finance.models import Finance
 
 
 class LidListCreateView(ListCreateAPIView):
@@ -47,40 +45,40 @@ class LidListCreateView(ListCreateAPIView):
         if user.is_anonymous:
             return Lid.objects.none()
 
-        # if user.role == "DIRECTOR":
-        #     quer Lid.objects.all()
-
-        # Start with a base queryset
         queryset = Lid.objects.all()
 
+        # ✅ Archive filter
         is_archived = self.request.query_params.get("is_archived")
         if is_archived == "True":
             queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
 
-        if user.role == "CALL_OPERATOR" or user.is_call_center == True:
+        # ✅ Filial filtering logic: Include lids with user's filial OR no filial
+        user_filials = user.filial.all()
+
+        if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
                 Q(call_operator=user) | Q(call_operator__isnull=True),
-                Q(filial__in=user.filial.all()) | Q(filial__isnull=True)
+                Q(filial__in=user_filials) | Q(filial__isnull=True)  # ✅ Ensures lids appear with or without a filial
+            )
+        else:
+            queryset = queryset.filter(
+                Q(filial__in=user_filials) | Q(filial__isnull=True)
+                # ✅ Ensures non-call center users also see lids without a filial
             )
 
-        else:
-            queryset = queryset.filter(Q(filial__in=user.filial.all()) | Q(filial__isnull=True))
-
-        # Debugging search_term
+        # ✅ Apply filters based on query parameters
         search_term = self.request.query_params.get("search", "")
-        course_id = self.request.query_params.get('course')
-        call_operator_id = self.request.query_params.get('call_operator')
-        service_manager = self.request.query_params.get('service_manager')
-        sales_manager = self.request.query_params.get('sales_manager')
-        teacher = self.request.query_params.get('teacher')
-        channel = self.request.query_params.get('channel')
-        subject = self.request.query_params.get('subject')
-        is_student = self.request.query_params.get('is_student')
+        course_id = self.request.query_params.get("course")
+        call_operator_id = self.request.query_params.get("call_operator")
+        service_manager = self.request.query_params.get("service_manager")
+        sales_manager = self.request.query_params.get("sales_manager")
+        teacher = self.request.query_params.get("teacher")
+        channel = self.request.query_params.get("channel")
+        subject = self.request.query_params.get("subject")
+        is_student = self.request.query_params.get("is_student")
 
         if channel:
-            queryset = queryset.filter(
-                marketing_channel__id = channel
-            )
+            queryset = queryset.filter(marketing_channel__id=channel)
 
         if service_manager:
             queryset = queryset.filter(service_manager_id=service_manager)
@@ -93,12 +91,11 @@ class LidListCreateView(ListCreateAPIView):
 
         if subject:
             queryset = queryset.filter(subject_id=subject)
+
         if is_student == "false":
             queryset = queryset.filter(is_student=False)
 
-        print(call_operator_id)
         if call_operator_id:
-            print(call_operator_id)
             queryset = queryset.filter(call_operator_id=call_operator_id)
 
         if course_id:
@@ -114,7 +111,7 @@ class LidListCreateView(ListCreateAPIView):
             except FieldError as e:
                 print(f"FieldError: {e}")
 
-        # Apply start_date and end_date filters
+        # ✅ Date filtering
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
 
@@ -125,13 +122,13 @@ class LidListCreateView(ListCreateAPIView):
                 start_date = parse_datetime(start_date).date()
                 queryset = queryset.filter(created_at__gte=start_date)
             except ValueError:
-                pass  # Handle invalid date format, if necessary
+                pass  # Handle invalid date format
         elif end_date:
             try:
                 end_date = parse_datetime(end_date).date()
                 queryset = queryset.filter(created_at__lte=end_date)
             except ValueError:
-                pass  # Handle invalid date format, if necessary
+                pass  # Handle invalid date format
 
         return queryset
 
@@ -247,16 +244,16 @@ class ExportLidToExcelAPIView(APIView):
 
         return response
 
+
 class LidStatisticsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Lid.objects.all()
 
     def list(self, request, *args, **kwargs):
         user = request.user
-        queryset = Lid.objects.all()  # ✅ Correct initialization
+        queryset = Lid.objects.all()
 
-        # ✅ Fix: Use `.all()` to get the actual list of objects
-        user_filials = user.filial.all()  # Ensure it's a queryset, not a ManyRelatedManager
+        user_filials = user.filial.all()
 
         if user.role != "CALL_OPERATOR" and user.is_call_center:
             queryset = queryset.filter(filial__in=user_filials)  # ✅ Corrected
@@ -274,16 +271,21 @@ class LidStatisticsView(ListAPIView):
         leads_count = queryset.filter(lid_stage_type="NEW_LID", is_archived=False).count()
         new_leads = queryset.filter(lid_stage_type="NEW_LID", lid_stages="YANGI_LEAD", is_archived=False).count()
         in_progress = queryset.filter(lid_stage_type="NEW_LID", is_archived=False, lid_stages="KUTULMOQDA").count()
-        order_created = queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID").exclude(call_operator__isnull=True).count()
+        order_created = queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID").exclude(
+            call_operator__isnull=True).count()
         archived_new_leads = queryset.filter(is_archived=True, lid_stage_type="NEW_LID").count()
 
         # ✅ Ordered Leads
-        ordered_new = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, ordered_stages="YANGI_BUYURTMA").count()
+        ordered_new = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
+                                      ordered_stages="YANGI_BUYURTMA").count()
         ordered_leads_count = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False).count()
-        ordered_waiting_leads = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, ordered_stages="KUTULMOQDA").count()
+        ordered_waiting_leads = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
+                                                ordered_stages="KUTULMOQDA").count()
         ordered_archived = queryset.filter(is_archived=True, is_student=False, lid_stage_type="ORDERED_LID").count()
-        first_lesson = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        first_lesson_not = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, ordered_stages="BIRINCHI_DARSGA_KELMAGAN").count()
+        first_lesson = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
+                                       ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_not = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
+                                           ordered_stages="BIRINCHI_DARSGA_KELMAGAN").count()
 
         # ✅ Archived Leads
         all_archived = queryset.filter(is_archived=True, is_student=False).count()
