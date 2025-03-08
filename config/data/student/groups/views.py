@@ -213,8 +213,6 @@ class CheckRoomLessonScheduleView(APIView):
 
         return Response({'available': True})
 
-
-
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Room.objects.all()
     permission_classes = [IsAuthenticated]
