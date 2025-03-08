@@ -102,7 +102,7 @@ class Finance(TimeStampModel):
     is_first = models.BooleanField(default=False,null=True,blank=True)
 
     def __str__(self):
-        return f'{self.amount} {self.kind.name} {self.action}'
+        return f'{self.amount}  {self.action}'
 
 class Handover(TimeStampModel):
     casher : "Casher" = models.ForeignKey(
