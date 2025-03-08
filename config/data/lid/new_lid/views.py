@@ -61,7 +61,6 @@ class LidListCreateView(ListCreateAPIView):
         if is_archived == "True":
             queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
 
-
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
                 Q(call_operator=user) | Q(call_operator__isnull=True),
@@ -71,7 +70,6 @@ class LidListCreateView(ListCreateAPIView):
             queryset = queryset.filter(
                 Q(filial__id=filial) | Q(filial__isnull=True)
             )
-
 
         if channel:
             queryset = queryset.filter(marketing_channel__id=channel)
@@ -170,19 +168,42 @@ class ExportLidToExcelAPIView(APIView):
         # Get filters from query parameters
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
-        is_student = request.query_params.get("is_student")
-        filial_id = request.query_params.get("filial")
         lid_stage_type = request.query_params.get("lid_stage_type")
+        filial = self.request.query_params.get("filial")
+        is_archived = self.request.query_params.get("is_archived")
+        course_id = self.request.query_params.get("course")
+        call_operator_id = self.request.query_params.get("call_operator")
+        service_manager = self.request.query_params.get("service_manager")
+        sales_manager = self.request.query_params.get("sales_manager")
+        teacher = self.request.query_params.get("teacher")
+        channel = self.request.query_params.get("channel")
+        subject = self.request.query_params.get("subject")
+        is_student = self.request.query_params.get("is_student")
 
-        # Filter queryset
-        queryset = Lid.objects.filter(lid_stage_type="ORDERED_LID")
+        filter = {}
+        if filial:
+            filter["filial__id"] = filial
+        if is_archived:
+            filter["is_archived"] = True
+        if course_id:
+            filter["lids_group__course__id"] = course_id
+        if call_operator_id:
+            filter["call_operator__id"] = call_operator_id
+        if service_manager:
+            filter["service_manager__id"] = service_manager
+        if sales_manager:
+            filter["sales_manager__id"] = sales_manager
+        if teacher:
+            filter["lids_group__teacher__id"] = teacher
+        if channel:
+            filter["subject__id"] = subject
+        if is_student:
+            filter["is_student"] = is_student.capitalize()
+
+        queryset = Lid.objects.filter(**filter)
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
-        if is_student is not None:
-            queryset = queryset.filter(is_student=is_student.lower() == "true")
-        if filial_id:
-            queryset = queryset.filter(filial__id=filial_id)
         if lid_stage_type:
             queryset = queryset.filter(lid_stage_type=lid_stage_type)
 
@@ -278,8 +299,6 @@ class LidStatisticsView(ListAPIView):
         if is_student:
             filter["is_student"] = is_student.capitalize()
 
-
-
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
                 Q(call_operator=user) or Q(call_operator__isnull=True),
@@ -290,25 +309,28 @@ class LidStatisticsView(ListAPIView):
                 Q(filial__id=filial) or Q(filial__isnull=True)
             )
 
-        leads_count = queryset.filter(lid_stage_type="NEW_LID", is_archived=False,**filter).count()
-        new_leads = queryset.filter(lid_stage_type="NEW_LID", lid_stages="YANGI_LEAD", is_archived=False,**filter).count()
-        in_progress = queryset.filter(lid_stage_type="NEW_LID", is_archived=False, lid_stages="KUTULMOQDA",**filter).count()
-        order_created = queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID",**filter).exclude(
+        leads_count = queryset.filter(lid_stage_type="NEW_LID", is_archived=False, **filter).count()
+        new_leads = queryset.filter(lid_stage_type="NEW_LID", lid_stages="YANGI_LEAD", is_archived=False,
+                                    **filter).count()
+        in_progress = queryset.filter(lid_stage_type="NEW_LID", is_archived=False, lid_stages="KUTULMOQDA",
+                                      **filter).count()
+        order_created = queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID", **filter).exclude(
             call_operator__isnull=True).count()
-        archived_new_leads = queryset.filter(is_archived=True, lid_stage_type="NEW_LID",**filter).count()
+        archived_new_leads = queryset.filter(is_archived=True, lid_stage_type="NEW_LID", **filter).count()
 
         ordered_new = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                      ordered_stages="YANGI_BUYURTMA",**filter).count()
-        ordered_leads_count = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,**filter).count()
+                                      ordered_stages="YANGI_BUYURTMA", **filter).count()
+        ordered_leads_count = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, **filter).count()
         ordered_waiting_leads = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                                ordered_stages="KUTULMOQDA",**filter).count()
-        ordered_archived = queryset.filter(is_archived=True, is_student=False, lid_stage_type="ORDERED_LID",**filter).count()
+                                                ordered_stages="KUTULMOQDA", **filter).count()
+        ordered_archived = queryset.filter(is_archived=True, is_student=False, lid_stage_type="ORDERED_LID",
+                                           **filter).count()
         first_lesson = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                       ordered_stages="BIRINCHI_DARS_BELGILANGAN",**filter).count()
+                                       ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filter).count()
         first_lesson_not = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                           ordered_stages="BIRINCHI_DARSGA_KELMAGAN",**filter).count()
-        all_archived = queryset.filter(is_archived=True, is_student=False,**filter).count()
-        archived_lid = queryset.filter(lid_stage_type="NEW_LID", is_student=False, is_archived=True,**filter).count()
+                                           ordered_stages="BIRINCHI_DARSGA_KELMAGAN", **filter).count()
+        all_archived = queryset.filter(is_archived=True, is_student=False, **filter).count()
+        archived_lid = queryset.filter(lid_stage_type="NEW_LID", is_student=False, is_archived=True, **filter).count()
 
         response_data = {
             "new_lid_statistics": {
