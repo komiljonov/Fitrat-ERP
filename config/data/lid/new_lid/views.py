@@ -196,6 +196,8 @@ class ExportLidToExcelAPIView(APIView):
         if teacher:
             filter["lids_group__teacher__id"] = teacher
         if channel:
+            filter["marketing_channel__id"] = channel
+        if subject:
             filter["subject__id"] = subject
         if is_student:
             filter["is_student"] = is_student.capitalize()
