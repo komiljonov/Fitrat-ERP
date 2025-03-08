@@ -19,7 +19,8 @@ class Subject(TimeStampModel):
 
 
 class Level(TimeStampModel):
-    subject : "Subject" = models.ForeignKey("subject.Subject", on_delete=models.CASCADE)
+    subject : "Subject" = models.ForeignKey("subject.Subject",
+                                            on_delete=models.SET_NULL,null=True,blank=True)
     name = models.CharField(max_length=100)
     def __str__(self):
         return self.name
