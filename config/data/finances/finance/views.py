@@ -1,3 +1,5 @@
+import io
+
 import icecream
 import pandas as pd
 from django.db.models import Sum
@@ -21,10 +23,6 @@ from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSeri
     PaymentMethodSerializer, SalesSerializer, SaleStudentSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
-import io
-import pandas as pd
-from django.http import HttpResponse
-from rest_framework.views import APIView
 
 
 class CasherListCreateAPIView(ListCreateAPIView):
@@ -35,12 +33,11 @@ class CasherListCreateAPIView(ListCreateAPIView):
     def get_queryset(self):
         role = self.request.query_params.get('role', None)
 
-        filter={}
+        filter = {}
         if role:
             filter['role'] = role
 
-        return Casher.objects.filter(filial=self.request.user.filial.first(),**filter)
-
+        return Casher.objects.filter(filial=self.request.user.filial.first(), **filter)
 
 
 class CasherRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -54,7 +51,6 @@ class CasherNoPg(ListAPIView):
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
 
-
     def get_queryset(self):
         role = self.request.query_params.get('role', None)
 
@@ -63,7 +59,6 @@ class CasherNoPg(ListAPIView):
             filter['role'] = role
 
         return Casher.objects.filter(filial=self.request.user.filial.first(), **filter)
-
 
     def get_paginated_response(self, data):
         return Response(data)
@@ -247,6 +242,14 @@ class CasherHandoverAPIView(CreateAPIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
+from django.db.models import Sum
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from .models import Finance, Kind
+from icecream import ic
+
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -254,25 +257,46 @@ class FinanceStatisticsAPIView(APIView):
         kind = self.request.query_params.get('kind', None)
         filial = self.request.query_params.get('filial', None)
 
+        # ✅ Initialize filters correctly
         filters = {}
 
+        # ✅ Correct filtering for `kind`
         if kind:
-            try:
-                filters["kind__id"] = kind
-            except Kind.DoesNotExist:
-                return Response({"error": "Invalid kind ID"}, status=400)
+            filters["kind_id"] = kind  # Directly filter by `id`, no need for `.get()`
 
+        # ✅ Add filtering for `filial`
+        if filial:
+            filters["filial_id"] = filial  # Ensure filtering by Filial ID
 
         def get_balance(role):
-            income = Finance.objects.filter(casher__role=role, action="INCOME", **filters).aggregate(Sum("amount"))["amount__sum"] or 0
-            outcome = Finance.objects.filter(casher__role=role, action="OUTCOME", **filters).aggregate(Sum("amount"))["amount__sum"] or 0
-            return income - outcome
+            """
+            Retrieves the balance for a given role in the cash system.
+            """
+            income = Finance.objects.filter(casher__role=role, action="INCOME", **filters).aggregate(
+                total=Sum("amount")
+            )["total"]
 
-        return Response({
+            outcome = Finance.objects.filter(casher__role=role, action="EXPENSE", **filters).aggregate(
+                total=Sum("amount")
+            )["total"]
+
+            # ✅ Ensure `None` is treated as `0`
+            income = income if income is not None else 0
+            outcome = outcome if outcome is not None else 0
+
+            balance = income - outcome  # ✅ Now correctly allows negative balances
+
+            ic(role, income, outcome, balance)  # Debugging output
+            return balance  # ✅ Returns correct balance, even if negative
+
+        response_data = {
             "main_casher": get_balance("WEALTH"),
             "admin_casher": get_balance("ADMINISTRATOR"),
             "accounting_casher": get_balance("ACCOUNTANT"),
-        })
+        }
+
+        return Response(response_data)
+
 
 
 class CasherHandoverHistory(ListAPIView):
@@ -675,8 +699,8 @@ class PaymentStatisticsByKind(APIView):
         # Function to get total amount for a given kind and action type
         def get_total_amount(kind, action_type):
             return (
-                Finance.objects.filter(kind=kind, action=action_type, **filters)
-                .aggregate(total=Sum('amount'))['total'] or 0
+                    Finance.objects.filter(kind=kind, action=action_type, **filters)
+                    .aggregate(total=Sum('amount'))['total'] or 0
             )
 
         data = {}
