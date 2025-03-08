@@ -147,7 +147,7 @@ class StuffRolesView(ListAPIView):
         role = self.request.query_params.get('role', None)
         queryset = CustomUser.objects.all().order_by('-created_at')
         if filial:
-            queryset = CustomUser.objects.filter(filil__id=filial)
+            queryset = CustomUser.objects.filter(filial__id=filial)
         if role:
             queryset = queryset.filter(role=role)
         return queryset
