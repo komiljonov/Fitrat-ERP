@@ -233,7 +233,7 @@ class ExportLidToExcelAPIView(APIView):
                 "Maktab" if lid.edu_class == "SCHOOL" else "Universitet" if lid.edu_class == "UNIVERSITY" else "Abutirent" if lid.edu_class else "",
                 lid.subject.name if lid.subject else "",
                 lid.ball,
-                ", ".join([filial.name for filial in lid.filial.all()]) if lid.filial.exists() else "",
+                ", ".join([filial.name for filial in lid.filial.all()]) if lid.filial else "",
                 lid.marketing_channel.name if lid.marketing_channel else "",
                 "Buyurtma yaratilgan" if lid.lid_stage_type == "ORDERED_LID" else "Yangi lead",
                 lid.lid_stages if lid.lid_stages else "",
