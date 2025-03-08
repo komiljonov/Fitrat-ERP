@@ -2,6 +2,7 @@ import datetime
 import locale
 from collections import defaultdict
 
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
@@ -154,6 +155,64 @@ class RoomFilterView(ListAPIView):
     search_fields = ('room_number', 'room_filling')
     ordering_fields = ('room_number', 'room_filling')
     filterset_fields = ('room_number', 'room_filling')
+
+
+class CheckRoomLessonScheduleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        filial = request.query_params.get('filial', None)
+        room_id = request.query_params.get('room', None)
+        date_str = request.query_params.get('date', None)
+        started_at_str = request.query_params.get('started_at', None)
+        ended_at_str = request.query_params.get('ended_at', None)
+
+        if not (room_id and date_str and started_at_str and ended_at_str):
+            return Response({'error': 'Missing required parameters'}, status=400)
+
+        try:
+            # Convert input strings to datetime objects
+            date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+            started_at = datetime.datetime.strptime(started_at_str, "%H:%M").time()
+            ended_at = datetime.datetime.strptime(ended_at_str, "%H:%M").time()
+
+            # Get the weekday name in Uzbek
+            weekday_name = date.strftime("%A")
+            uzbek_weekdays = {
+                "Monday": "Dushanba",
+                "Tuesday": "Seshanba",
+                "Wednesday": "Chorshanba",
+                "Thursday": "Payshanba",
+                "Friday": "Juma",
+                "Saturday": "Shanba",
+                "Sunday": "Yakshanba",
+            }
+            weekday_name = uzbek_weekdays.get(weekday_name, weekday_name)
+
+            try:
+                day = Day.objects.get(name=weekday_name.capitalize())
+            except Day.DoesNotExist:
+                return Response({'error': f'Day "{weekday_name}" not found in the database'}, status=400)
+
+        except ValueError:
+            return Response({'error': 'Invalid date or time format'}, status=400)
+        ic(date, started_at, ended_at,day)
+
+        conflicting_groups = Group.objects.filter(
+            room_number__id=room_id,
+            start_date__lte=date,
+            finish_date__gte=date,
+            scheduled_day_type=day
+        ).filter(
+            Q(started_at__lt=ended_at, ended_at__gt=started_at)
+        )
+        ic(conflicting_groups)
+
+        if conflicting_groups.exists():
+            return Response({'available': False, 'conflicts': GroupLessonSerializer(conflicting_groups, many=True).data})
+
+        return Response({'available': True})
+
 
 
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
