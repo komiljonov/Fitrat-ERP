@@ -152,7 +152,7 @@ class UserListSerializer(ModelSerializer):
         model = CustomUser
         fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role',
                   "salary", "pages", "files","is_archived",
-                  "photo", "filial", "bonus", "compensation", ]
+                  "photo", "filial", "bonus", "compensation","created_at" ]
 
     def get_bonus(self, obj):
         bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
