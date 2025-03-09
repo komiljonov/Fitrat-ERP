@@ -184,19 +184,19 @@ class RoomsSerializer(serializers.ModelSerializer):
         return room
 
 class RoomFilterSerializer(serializers.ModelSerializer):
-    lessons_start_time = serializers.StringRelatedField()
-    lessons_end_time = serializers.StringRelatedField()
-    average_lesson_hours = serializers.StringRelatedField()
+    # lessons_start_time = serializers.StringRelatedField()
+    # lessons_end_time = serializers.StringRelatedField()
+    # average_lesson_hours = serializers.StringRelatedField()
     class Meta:
         model = Room
         fields = [
             'id',
             'room_number',
             'room_filling',
-            'lessons_start_time',
-            'lessons_end_time',
-            'average_lesson_hours',
-            'average_students_filling',
+            # 'lessons_start_time',
+            # 'lessons_end_time',
+            # 'average_lesson_hours',
+            # 'average_students_filling',
             'created_at',
             'updated_at',
         ]
