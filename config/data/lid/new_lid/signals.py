@@ -127,7 +127,7 @@ def on_expired_delete(sender, instance: Lid, created, **kwargs):
             instance.save()
 
     if created:
-        if instance.lid_stage_type == None:
+        if instance.lid_stage_type == None or instance.lid_stages == None:
             instance.lid_stage_type = "NEW_LID"
             instance.lid_stages = "YANGI_LEAD"
             instance.save()
