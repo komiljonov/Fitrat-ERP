@@ -29,6 +29,6 @@ class AsosAdmin(admin.ModelAdmin):
 
 @admin.register(Monitoring)
 class MonitoringAdmin(admin.ModelAdmin):
-    list_display = ("user__full_name", 'asos',"ball")
+    list_display = ("user__full_name", 'asos__max_ball',"ball")
     search_fields = ("name","user__full_name")
     list_filter = ('user__full_name',"ball")
