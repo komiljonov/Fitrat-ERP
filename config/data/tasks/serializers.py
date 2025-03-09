@@ -43,8 +43,20 @@ class TaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context['request']
 
-        if validated_data['filial'] is None:
-            validated_data['filial'] = CustomUser.objects.get(id=validated_data['performer']).filial.id
+        # ✅ Use .get() to avoid KeyError
+        filial = validated_data.get('filial')
+
+        # ✅ If 'filial' is None or missing, fetch from performer's filial
+        if filial is None:
+            performer_id = validated_data.get('performer')
+            if performer_id:
+                performer = CustomUser.objects.filter(id=performer_id).first()
+                if performer and performer.filial:
+                    validated_data['filial'] = performer.filial.id
+                else:
+                    raise serializers.ValidationError({"filial": "Filial is required but cannot be determined."})
+            else:
+                raise serializers.ValidationError({"filial": "Filial is required but missing."})
 
         validated_data['creator'] = request.user
         return super().create(validated_data)
