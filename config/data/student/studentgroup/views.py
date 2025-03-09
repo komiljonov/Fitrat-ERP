@@ -266,11 +266,11 @@ class GroupAttendedStudents(ListAPIView):
 
         ic(reason)
 
-        if reason and reason == 1:
+        if reason and reason == "1":
             queryset = queryset.filter(
                 reason = "IS_PRESENT"
             )
-        if reason and reason == 0:
+        if reason and reason == "0":
             queryset = queryset.filter(
                 reason__in = [
                     "REASONED","UNREASONED"
