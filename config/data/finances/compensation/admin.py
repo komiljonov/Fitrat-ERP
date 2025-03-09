@@ -24,11 +24,11 @@ class PageAdmin(admin.ModelAdmin):
 
 @admin.register(Asos)
 class AsosAdmin(admin.ModelAdmin):
-    list_display = ("name", 'ball',"created_at")
+    list_display = ("name", 'max_ball',"created_at")
     search_fields = ("name",)
 
 @admin.register(Monitoring)
 class MonitoringAdmin(admin.ModelAdmin):
-    list_display = ("user__full_name", 'asos__name',"ball")
+    list_display = ("user__full_name", 'asos',"ball")
     search_fields = ("name","user__full_name")
     list_filter = ('user__full_name',"ball")
