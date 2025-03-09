@@ -377,3 +377,110 @@ class BulkUpdate(APIView):
                             status=status.HTTP_200_OK)
         except ValidationError as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LidStatistics(ListAPIView):
+    serializer_class = LidSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+
+    search_fields = ["first_name", "last_name", "phone_number", ]
+    filterset_fields = [
+        "student_type",
+        "education_lang",
+        "filial",
+        "marketing_channel",
+        "lid_stage_type",
+        "lid_stages",
+        "ordered_stages",
+        "is_dubl",
+        "is_archived",
+    ]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_anonymous:
+            return Lid.objects.none()
+
+        queryset = Lid.objects.all()
+
+        is_archived = self.request.query_params.get("is_archived")
+        search_term = self.request.query_params.get("search", "")
+        course_id = self.request.query_params.get("course")
+        call_operator_id = self.request.query_params.get("call_operator")
+        service_manager = self.request.query_params.get("service_manager")
+        sales_manager = self.request.query_params.get("sales_manager")
+        teacher = self.request.query_params.get("teacher")
+        channel = self.request.query_params.get("channel")
+        subject = self.request.query_params.get("subject")
+        is_student = self.request.query_params.get("is_student")
+        filial = self.request.query_params.get("filial")
+
+        if is_archived == "True":
+            queryset = queryset.filter(is_archived=(is_archived.lower() == "true"))
+
+        if user.role == "CALL_OPERATOR" or user.is_call_center:
+            queryset = queryset.filter(
+                Q(call_operator=user) | Q(call_operator__isnull=True),
+                Q(filial__id=filial) | Q(filial__isnull=True)
+            )
+        else:
+            queryset = queryset.filter(
+                Q(filial__id=filial) | Q(filial__isnull=True)
+            )
+
+        if channel:
+            queryset = queryset.filter(marketing_channel__id=channel)
+
+        if service_manager:
+            queryset = queryset.filter(service_manager_id=service_manager)
+
+        if sales_manager:
+            queryset = queryset.filter(sales_manager_id=sales_manager)
+
+        if teacher:
+            queryset = queryset.filter(lids_group__group__teacher_id=teacher)
+
+        if subject:
+            queryset = queryset.filter(subject_id=subject)
+
+        if is_student == "false":
+            queryset = queryset.filter(is_student=False)
+
+        if call_operator_id:
+            queryset = queryset.filter(call_operator_id=call_operator_id)
+
+        if course_id:
+            queryset = queryset.filter(lids_group__group__course_id=course_id)
+
+        if search_term:
+            try:
+                queryset = queryset.filter(
+                    Q(first_name__icontains=search_term) |
+                    Q(last_name__icontains=search_term) |
+                    Q(phone_number__icontains=search_term)
+                )
+            except FieldError as e:
+                print(f"FieldError: {e}")
+
+        # ✅ Date filtering
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+
+        if start_date and end_date:
+            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+        elif start_date:
+            try:
+                start_date = parse_datetime(start_date).date()
+                queryset = queryset.filter(created_at__gte=start_date)
+            except ValueError:
+                pass
+        elif end_date:
+            try:
+                end_date = parse_datetime(end_date).date()
+                queryset = queryset.filter(created_at__lte=end_date)
+            except ValueError:
+                pass
+
+        return queryset
