@@ -50,7 +50,7 @@ class LidListCreateView(ListCreateAPIView):
         # ✅ Apply correct filtering for CALL_OPERATOR or is_call_center
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
-                Q(filial=user.filial) or Q(filial__isnull=True),
+                Q(filial__in=user.filial.first()) or Q(filial__isnull=True),
                 Q(call_operator=user) or Q(call_operator__isnull=True)
             )
         else:
