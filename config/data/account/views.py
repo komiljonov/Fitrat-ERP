@@ -1,6 +1,12 @@
 # Create your views here.
+import re
+import urllib
+
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from icecream import ic
 from passlib.context import CryptContext
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotFound
@@ -14,7 +20,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import CustomUser
-from .serializers import UserCreateSerializer, UserUpdateSerializer
+from .serializers import UserCreateSerializer, UserUpdateSerializer, CheckNumberSerializer
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
@@ -102,6 +108,28 @@ class UserUpdateAPIView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = CustomUser.objects.all()
     serializer_class = UserUpdateSerializer
+
+class CheckNumberApi(APIView):
+    """
+    API to check if a phone number exists in the database.
+    Accepts phone number from request body.
+    """
+
+
+    @swagger_auto_schema(
+        request_body=CheckNumberSerializer,  # ✅ Adds request body documentation in Swagger
+        responses={200: openapi.Response("Returns if phone exists", CheckNumberSerializer)}
+    )
+    def post(self, request):
+        serializer = CheckNumberSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        phone = serializer.validated_data.get("phone")
+        ic(phone)
+        exists = CustomUser.objects.filter(phone=phone).exists()
+
+        return Response({"exists": exists}, status=status.HTTP_200_OK)
 
 
 

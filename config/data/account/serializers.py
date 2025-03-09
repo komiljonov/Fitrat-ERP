@@ -217,3 +217,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = CustomUser.objects.create(**validated_data)
         return user
+
+class CheckNumberSerializer(serializers.Serializer):
+    phone = serializers.CharField()
+
