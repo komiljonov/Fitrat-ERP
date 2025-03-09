@@ -2,7 +2,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainSlidingView, TokenRefreshSlidingView
 
-from .views import StuffRolesView, StuffList
+from .views import StuffRolesView, StuffList, CheckNumberApi
 from ..account.views import (
                                 CustomAuthToken,
                                 UserUpdateAPIView,
@@ -25,7 +25,8 @@ urlpatterns = [
     path('logout', LogoutAPIView.as_view(), name='logout'),
     path('me/',UserInfo.as_view(), name='user-info'),
 
-    path('roles/',StuffRolesView.as_view(), name='stuff-roles')
+    path('roles/',StuffRolesView.as_view(), name='stuff-roles'),
+    path("check-number/",CheckNumberApi.as_view(), name='check-number'),
 ]
 
 # urlpatterns += [
