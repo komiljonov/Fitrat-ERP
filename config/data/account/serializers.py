@@ -162,7 +162,7 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role',
+        fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role',"balance",
                   "salary", "pages", "files","is_archived","extra_number",
                   "photo", "filial", "bonus", "compensation","created_at" ]
 
