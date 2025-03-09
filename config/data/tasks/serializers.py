@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from icecream import ic
 from rest_framework import serializers
 
 from ..account.models import CustomUser
@@ -43,16 +44,19 @@ class TaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context['request']
 
-        # ✅ Use .get() to avoid KeyError
+        # ✅ Get 'filial' from validated_data
         filial = validated_data.get('filial')
 
-        # ✅ If 'filial' is None or missing, fetch from performer's filial
+        # ✅ If 'filial' is None, try to get from performer's filial (ManyToManyField)
         if filial is None:
-            performer_id = validated_data.get('performer')
-            if performer_id:
-                performer = CustomUser.objects.filter(id=performer_id).first()
-                if performer and performer.filial:
-                    validated_data['filial'] = performer.filial.id
+            performer = validated_data.get('performer')  # Get performer instance
+
+            if performer:
+                performer_filials = performer.filial.all()  # Get all related filials
+                ic(performer_filials)
+
+                if performer_filials.exists():
+                    validated_data['filial'] = performer_filials.first()  # ✅ Assign Filial instance, not ID
                 else:
                     raise serializers.ValidationError({"filial": "Filial is required but cannot be determined."})
             else:
