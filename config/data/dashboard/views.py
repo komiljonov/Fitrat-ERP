@@ -72,7 +72,7 @@ class DashboardView(APIView):
                        .filter(Q(lids_group__group__course_id=course) |
                                Q(lids_group__group__teacher_id=teacher)).count())
 
-                orders = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID", **filters)
+                orders = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",is_archived=False, **filters)
                           .filter(Q(lids_group__group__course_id=course) |
                                   Q(lids_group__group__teacher_id=teacher)).count())
                 orders_archived = (Lid.objects.filter(dynamic_filter, lid_stage_type="ORDERED_LID",
