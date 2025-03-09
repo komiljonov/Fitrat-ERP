@@ -54,7 +54,7 @@ class LidListCreateView(ListCreateAPIView):
             )
         else:
             queryset = queryset.filter(
-                Q(filial_id=filial) | Q(filial__isnull=True)
+                Q(filial__in=user.filial.all()) | Q(filial__isnull=True)
             )
 
         # ✅ Additional Filters
