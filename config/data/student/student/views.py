@@ -292,9 +292,13 @@ class ExportLidToExcelAPIView(APIView):
         group_id = self.request.query_params.get("group")
         subject_id = self.request.query_params.get("subject")
         filial_id = self.request.query_params.get("filial")
+        is_archived = self.request.query_params.get("is_archived")
 
 
         queryset = Student.objects.all()
+
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id)
