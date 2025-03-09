@@ -201,23 +201,23 @@ class RoomFilterSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
-    def calculate(self, validated_data):
-        lessons_start_time = validated_data.pop("lessons_start_time", None)
-        lessons_end_time = validated_data.pop("lessons_end_time", None)
-        average_lesson_hours = validated_data.pop("average_lesson_hours", 2)
-
-        lessons_start_time = lessons_start_time.strftime("%H:%M") if lessons_start_time else "08:00"
-        lessons_end_time = lessons_end_time.strftime("%H:%M") if lessons_end_time else "20:00"
-
-
-        average_students_filling = calculate_room_filling_statistics(
-            room_id=validated_data.get("id"),
-            lessons_start_time=lessons_start_time,
-            lessons_end_time=lessons_end_time,
-            lesson_duration=average_lesson_hours,
-        )
-
-        return average_students_filling
+    # def calculate(self, validated_data):
+    #     lessons_start_time = validated_data.pop("lessons_start_time", None)
+    #     lessons_end_time = validated_data.pop("lessons_end_time", None)
+    #     average_lesson_hours = validated_data.pop("average_lesson_hours", 2)
+    #
+    #     lessons_start_time = lessons_start_time.strftime("%H:%M") if lessons_start_time else "08:00"
+    #     lessons_end_time = lessons_end_time.strftime("%H:%M") if lessons_end_time else "20:00"
+    #
+    #
+    #     average_students_filling = calculate_room_filling_statistics(
+    #         room_id=validated_data.get("id"),
+    #         lessons_start_time=lessons_start_time,
+    #         lessons_end_time=lessons_end_time,
+    #         lesson_duration=average_lesson_hours,
+    #     )
+    #
+    #     return average_students_filling
 
 
 class SecondaryGroupSerializer(serializers.ModelSerializer):
