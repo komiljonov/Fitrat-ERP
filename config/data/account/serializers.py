@@ -18,7 +18,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "phone", "role", "password", "salary",
-            "photo", "filial", "balance", "ball", "files",
+            "photo", "filial", "balance", "ball", "files","extra_number",
             "enter", "leave", "date_of_birth",
         )
         # We don't need to add extra_kwargs for password
@@ -96,7 +96,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ["id", "phone", "full_name", "first_name", "last_name", "password","is_archived",
-                  "role", "photo", "salary", "enter", "leave", "files","filial",
+                  "role", "photo", "salary", "enter", "leave", "files","filial","extra_number",
                   "date_of_birth"]
 
     def update(self, instance, validated_data):
@@ -151,7 +151,7 @@ class UserListSerializer(ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role',
-                  "salary", "pages", "files","is_archived",
+                  "salary", "pages", "files","is_archived","extra_number",
                   "photo", "filial", "bonus", "compensation","created_at" ]
 
     def get_bonus(self, obj):
@@ -184,7 +184,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "phone", "role", "pages", "files",
-            "photo", "filial", "balance", "ball", "salary",
+            "photo", "filial", "balance", "ball", "salary","extra_number",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation",
             "updated_at","is_archived"
         )
