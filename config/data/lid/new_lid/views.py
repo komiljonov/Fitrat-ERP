@@ -309,7 +309,7 @@ class LidStatisticsView(ListAPIView):
             )
         else:
             queryset = queryset.filter(
-                Q(filial_id=filial) | Q(filial__isnull=True)
+                Q(filial__in=user.filial.all()) | Q(filial__isnull=True)
             )
 
         leads_count = queryset.filter(lid_stage_type="NEW_LID", is_archived=False, **filter).count()
