@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import Bonus, Compensation, Page
+from .models import Bonus, Compensation, Page, Asos, Monitoring
+from ...account.serializers import UserSerializer
 
 
 class BonusSerializer(serializers.ModelSerializer):
@@ -38,5 +39,27 @@ class PagesSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class AsosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Asos
+        fields = ['id', 'name', 'max_ball']
 
+
+class MonitoringSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Monitoring
+        fields = [
+            "id",
+            "user",
+            "asos",
+            "ball",
+            "created_at",
+        ]
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        rep["user"] = UserSerializer(instance.user).data
+        rep["asos"] = AsosSerializer(instance.asos).data
+
+        return rep
 

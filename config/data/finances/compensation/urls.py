@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .views import (BonusList, BonusDetail, BonusNoPG
-, CompensationList, CompensationDetail, CompensationNoPG, PageCreateView, PageBulkUpdateView)
+, CompensationList, CompensationDetail, CompensationNoPG, PageCreateView, PageBulkUpdateView, AsosListCreateView,
+                    AsosListRetrieveView, AsosNoPGListView, MonitoringBulkCreateView, MonitoringRetrieveView)
 
 urlpatterns = [
     path('bonus/', BonusList.as_view()),
@@ -14,4 +15,12 @@ urlpatterns = [
 
     path('pages/', PageCreateView.as_view()),
     path("pages/update/",PageBulkUpdateView.as_view()),
+
+    path("asos/",AsosListCreateView.as_view()),
+    path("asos/<uuid:pk>/",AsosListRetrieveView.as_view()),
+    path("asos/no-pg/",AsosNoPGListView.as_view()),
+
+    path("monitoring/", MonitoringBulkCreateView.as_view()),
+    path("monitoring/<uuid:pk>/",MonitoringRetrieveView.as_view()),
+
 ]

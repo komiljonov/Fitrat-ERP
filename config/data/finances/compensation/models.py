@@ -37,10 +37,17 @@ class Page(TimeStampModel):
         return f"{self.name, self.is_editable, self.is_readable, self.is_parent}"
 
 class Asos(TimeStampModel):
-    asos1 = models.DecimalField(decimal_places=2, max_digits=10,verbose_name="1 chi asos buyicha beriladigan ball")
-    asos2 = models.DecimalField(decimal_places=2, max_digits=10,verbose_name="2 chi asos buyicha beriladigan ball")
-    asos3 = models.DecimalField(decimal_places=2, max_digits=10,verbose_name="3 chi asos buyicha beriladigan ball")
-    asos4 = models.DecimalField(decimal_places=2, max_digits=10,verbose_name="4 chi asos buyicha beriladigan ball")
-    asos5 = models.DecimalField(decimal_places=2, max_digits=10,verbose_name="5 chi asos buyicha beriladigan ball")
+    name = models.CharField(max_length=256)
+    max_ball = models.DecimalField(decimal_places=2, max_digits=10)
 
+    def __str__(self):
+        return f"{self.name}  {self.max_ball}"
+
+class Monitoring(TimeStampModel):
+    user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE,related_name='user_monitoring')
+    asos : "Asos" = models.ForeignKey('Compensation.Asos', on_delete=models.CASCADE,related_name='asos_monitoring')
+    ball = models.DecimalField(decimal_places=2, max_digits=10, help_text="This ball can not be higher than asos's max_ball !!!")
+
+    def __str__(self):
+        return f"{self.user.full_name}  {self.asos.name}  {self.ball} / {self.asos.max_ball}"
 

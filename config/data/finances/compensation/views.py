@@ -1,13 +1,13 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveAPIView, \
+    CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from .models import Bonus, Compensation, Page
-from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer
-
+from .models import Bonus, Compensation, Page, Asos, Monitoring
+from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer
 
 import json
 from rest_framework.generics import ListAPIView
@@ -192,3 +192,70 @@ class FilterJSONData(ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         return Response(queryset)
+
+
+class AsosListCreateView(ListCreateAPIView):
+    queryset = Asos.objects.all()
+    serializer_class = AsosSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        filial = self.request.query_params.get("filial")
+        queryset = Asos.objects.all()
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        return queryset
+
+class AsosListRetrieveView(RetrieveUpdateDestroyAPIView):
+    queryset = Asos.objects.all()
+    serializer_class = AsosSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class AsosNoPGListView(ListAPIView):
+    queryset = Asos.objects.all()
+    serializer_class = AsosSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        filial = self.request.query_params.get("filial")
+        queryset = Asos.objects.all()
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        return queryset
+
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
+class MonitoringListCreateView(ListCreateAPIView):
+    queryset = Monitoring.objects.all()
+    serializer_class = MonitoringSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        filial = self.request.query_params.get("filial")
+        queryset = Monitoring.objects.all()
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        return queryset
+
+
+class MonitoringRetrieveView(RetrieveUpdateDestroyAPIView):
+    queryset = Monitoring.objects.all()
+    serializer_class = MonitoringSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class MonitoringBulkCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = MonitoringSerializer(data=request.data, many=True,
+                        context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        instances = serializer.save()
+
+        return Response(MonitoringSerializer(instances, many=True).data,
+                        status=status.HTTP_201_CREATED)
+
+
