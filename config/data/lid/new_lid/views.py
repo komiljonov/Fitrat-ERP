@@ -304,12 +304,12 @@ class LidStatisticsView(ListAPIView):
 
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
-                Q(call_operator=user) or Q(call_operator__isnull=True),
-                Q(filial__id=filial) or Q(filial__isnull=True)
+                Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
+                Q(call_operator=user) | Q(call_operator__isnull=True)
             )
         else:
             queryset = queryset.filter(
-                Q(filial__id=filial) or Q(filial__isnull=True)
+                Q(filial_id=filial) | Q(filial__isnull=True)
             )
 
         leads_count = queryset.filter(lid_stage_type="NEW_LID", is_archived=False, **filter).count()
@@ -407,18 +407,16 @@ class LidStatistics(ListAPIView):
         queryset = Lid.objects.all()
         filial = self.request.query_params.get("filial")
 
-        # ✅ Apply correct filtering for CALL_OPERATOR or is_call_center
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
-                Q(filial=user.filial) or Q(filial__isnull=True),
-                Q(call_operator=user) or Q(call_operator__isnull=True)
+                Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
+                Q(call_operator=user) | Q(call_operator__isnull=True)
             )
         else:
             queryset = queryset.filter(
-                Q(filial__id=filial) or Q(filial__isnull=True)
+                Q(filial_id=filial) | Q(filial__isnull=True)
             )
 
-        # ✅ Additional Filters
         is_archived = self.request.query_params.get("is_archived")
         search_term = self.request.query_params.get("search", "")
         course_id = self.request.query_params.get("course")
