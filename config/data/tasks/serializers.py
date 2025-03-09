@@ -25,6 +25,7 @@ class TaskSerializer(serializers.ModelSerializer):
             'lid',
             'student',
             'performer',
+            "filial",
             "task",
             "comment",
             "date_of_expired",
