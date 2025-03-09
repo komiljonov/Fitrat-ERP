@@ -286,6 +286,7 @@ class ExportLidToExcelAPIView(APIView):
         from_price = self.request.query_params.get('from_price')
         edu_langauge = self.request.query_params.get('language')
         to_price = self.request.query_params.get('to_price')
+        balance_status = self.request.query_params.get('balance_status')
         course_id = self.request.query_params.get('course')
         teacher_id = self.request.query_params.get('teacher')
         service_manager = self.request.query_params.get('service_manager')
@@ -296,6 +297,9 @@ class ExportLidToExcelAPIView(APIView):
 
 
         queryset = Student.objects.all()
+
+        if balance_status:
+            queryset = queryset.filter(balance_status=balance_status)
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
