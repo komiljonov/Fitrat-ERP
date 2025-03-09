@@ -41,6 +41,10 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context['request']
+
+        if validated_data['filial'] is None:
+            validated_data['filial'] = CustomUser.objects.get(id=validated_data['performer']).filial.id
+
         validated_data['creator'] = request.user
         return super().create(validated_data)
 
