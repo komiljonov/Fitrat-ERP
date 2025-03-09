@@ -54,7 +54,7 @@ class GroupSerializer(serializers.ModelSerializer):
         ]
 
     def get_subject(self, obj):
-        return Group.objects.filter(pk=obj.pk).values_list("course__subject", flat=True).first()
+        return Group.objects.filter(pk=obj.pk).values("course__subject","course__subject__name").first()
 
     def get_level(self, obj):
         return Group.objects.filter(pk=obj.pk).values_list("course__level", flat=True).first()
