@@ -154,7 +154,7 @@ class RoomFilterView(ListAPIView):
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial', None)
-        queryset = Room.objects.filter(filial=filial)
+        queryset = Room.objects.filter(filial__id=filial)
         return queryset
 
 

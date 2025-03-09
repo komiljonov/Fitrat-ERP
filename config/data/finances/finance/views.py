@@ -177,7 +177,7 @@ class StuffFinanceListAPIView(ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self, **kwargs):
-        stuff = CustomUser.objects.get(id=self.kwargs['pk'])
+        stuff = CustomUser.objects.get(id=self.kwargs.get('pk'))
 
         if stuff:
             return Finance.objects.filter(stuff=stuff)

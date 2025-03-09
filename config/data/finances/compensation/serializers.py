@@ -3,8 +3,11 @@ from rest_framework import serializers
 from .models import Bonus, Compensation, Asos, Monitoring, Page
 
 from typing import TYPE_CHECKING
+
+from ...account.models import CustomUser
+
 if TYPE_CHECKING:
-    from ...account.serializers import UserSerializer
+    from ...account.serializers import UserSerializer, UserListSerializer
 
 
 class BonusSerializer(serializers.ModelSerializer):
@@ -47,6 +50,8 @@ class AsosSerializer(serializers.ModelSerializer):
 
 
 class MonitoringSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
     class Meta:
         model = Monitoring
         fields = [
@@ -57,9 +62,12 @@ class MonitoringSerializer(serializers.ModelSerializer):
             "created_at",
         ]
     def to_representation(self, instance):
+
+        from ...account.serializers import UserListSerializer
+
         rep = super().to_representation(instance)
 
-        rep["user"] = UserSerializer(instance.user).data
+        rep["user"] = UserListSerializer(instance.user).data
         rep["asos"] = AsosSerializer(instance.asos).data
 
         return rep
