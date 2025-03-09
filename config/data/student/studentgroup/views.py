@@ -252,12 +252,20 @@ class GroupAttendedStudents(ListAPIView):
 
     def get_queryset(self):
         group_id = self.kwargs.get('pk')
+
         group = Group.objects.get(id=group_id)
+
         reason = self.request.query_params.get("reason")
+        filial = self.request.query_params.get("filial")
+
+
         queryset =  Attendance.objects.filter(
             group=group,
             created_at__gte=datetime.date.today()
         )
+
+        ic(reason)
+
         if reason and reason == 1:
             queryset = queryset.filter(
                 reason = "IS_PRESENT"
