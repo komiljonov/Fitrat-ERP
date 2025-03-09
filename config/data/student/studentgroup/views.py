@@ -253,11 +253,23 @@ class GroupAttendedStudents(ListAPIView):
     def get_queryset(self):
         group_id = self.kwargs.get('pk')
         group = Group.objects.get(id=group_id)
-
-        return Attendance.objects.filter(
+        reason = self.request.query_params.get("reason")
+        queryset =  Attendance.objects.filter(
             group=group,
             created_at__gte=datetime.date.today()
         )
+        if reason and reason == 1:
+            queryset = queryset.filter(
+                reason = "IS_PRESENT"
+            )
+        if reason and reason == 0:
+            queryset = queryset.filter(
+                reason__in = [
+                    "REASONED","UNREASONED"
+                ]
+            )
+        return queryset
+
 
     def get_paginated_response(self, data):
         return Response(data)
