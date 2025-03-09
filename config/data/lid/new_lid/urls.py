@@ -2,7 +2,7 @@ from django.urls import path
 
 from .pdf_generater import ContractGenerateAPIView
 from .views import LidListCreateView, LidRetrieveUpdateDestroyView, LidListNoPG, ExportLidToExcelAPIView, \
-    LidStatisticsView, BulkUpdate
+    LidStatisticsView, BulkUpdate, LidStatistics
 
 urlpatterns = [
     path('', LidListCreateView.as_view(), name='lid_list_create'),
@@ -17,4 +17,6 @@ urlpatterns = [
     path('bulk-update/',BulkUpdate.as_view(), name='bulk_update'),
 
     path("document/",ContractGenerateAPIView.as_view(), name="contract_generate"),
+
+    path("stats/",LidStatistics.as_view(), name="lid_statistic"),
 ]

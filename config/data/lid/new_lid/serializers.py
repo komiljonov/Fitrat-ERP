@@ -161,6 +161,17 @@ class LidSerializer(serializers.ModelSerializer):
         return instance
 
 
+class LidStatisticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lid
+        fields = [
+            "id","first_name", "last_name", "middle_name",
+            "phone_number",  "education_lang", "student_type", "subject","filial",
+            "marketing_channel", "lid_stage_type", "ordered_stages",
+            "lid_stages", "is_archived", "course", "group", "service_manager",'is_student',
+            "call_operator", "created_at","sales_manager",
+        ]
+
 class LidAppSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lid
