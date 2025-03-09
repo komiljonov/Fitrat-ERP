@@ -185,7 +185,7 @@ class ExportLidToExcelAPIView(APIView):
         if filial:
             filter["filial__id"] = filial
         if is_archived:
-            filter["is_archived"] = True
+            filter["is_archived"] = is_archived.capitalize()
         if course_id:
             filter["lids_group__course__id"] = course_id
         if call_operator_id:
