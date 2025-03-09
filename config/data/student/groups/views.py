@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 
 from .models import Group, Room, SecondaryGroup, Day
 from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer, \
-    DaySerializer
+    DaySerializer, RoomFilterSerializer
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
 
@@ -149,12 +149,13 @@ class RoomListAPIView(ListCreateAPIView):
 
 class RoomFilterView(ListAPIView):
     queryset = Room.objects.all()
-    serializer_class = RoomsSerializer
+    serializer_class = RoomFilterSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
-    search_fields = ('room_number', 'room_filling')
-    ordering_fields = ('room_number', 'room_filling')
-    filterset_fields = ('room_number', 'room_filling')
+
+    def get_queryset(self):
+        filial = self.request.query_params.get('filial', None)
+        queryset = Room.objects.filter(filial=filial)
+        return queryset
 
 
 class CheckRoomLessonScheduleView(APIView):
