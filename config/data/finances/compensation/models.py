@@ -45,7 +45,7 @@ class Asos(TimeStampModel):
 
 class Monitoring(TimeStampModel):
     user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE,related_name='user_monitoring')
-    asos : "Asos" = models.ForeignKey('Compensation.Asos', on_delete=models.CASCADE,related_name='asos_monitoring')
+    asos : "Asos" = models.ForeignKey('compensation.Asos', on_delete=models.CASCADE,related_name='asos_monitoring')
     ball = models.DecimalField(decimal_places=2, max_digits=10, help_text="This ball can not be higher than asos's max_ball !!!")
 
     def __str__(self):
