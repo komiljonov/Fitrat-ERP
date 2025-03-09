@@ -110,7 +110,7 @@ class LidSerializer(serializers.ModelSerializer):
         request = self.context['request']
 
         # Ensure call_operator is updated properly
-        if instance.lid_stage_type == "NEW_LID" and request.user.role == 'CALL_OPERATOR' or request.user.is_call_operator == True:
+        if instance.lid_stage_type == "NEW_LID" and request.user.role == 'CALL_OPERATOR' or request.user.is_call_center == True:
             instance.call_operator = request.user
 
         if instance.lid_stage_type == "ORDERED_LID" and request.user.role == 'ADMINISTRATOR':
