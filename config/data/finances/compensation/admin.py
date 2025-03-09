@@ -3,7 +3,7 @@ from django.contrib import admin
 from data.finances.compensation.models import Compensation, Bonus, Page, Asos
 
 
-# Register your models here.
+
 @admin.register(Compensation)
 class CompensationAdmin(admin.ModelAdmin):
     list_display = ("name", 'amount')
