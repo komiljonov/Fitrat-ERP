@@ -61,8 +61,14 @@ class UserList(ListAPIView):
 
         role = self.request.query_params.get('role', None)
 
+        is_archived = self.request.query_params.get('is_archived', None)
+
         subject = self.request.query_params.get('subject', None)
         queryset = CustomUser.objects.all()
+
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
+
         if filial:
             queryset = queryset.filter(filial__id=filial)
 
