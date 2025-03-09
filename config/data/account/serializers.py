@@ -63,6 +63,12 @@ class UserLoginSerializer(serializers.Serializer):
         phone = attrs.get('phone')
         password = attrs.get('password')
 
+        if phone:
+            user = CustomUser.objects.get(phone=phone)
+            if user.is_archived ==True:
+                raise serializers.ValidationError({"permission denied": "Sizning faoliyatingiz cheklangan!"},
+                                                  code='permission_denied')
+
         if phone and password:
             backend = PhoneAuthBackend()
             user = backend.authenticate(
