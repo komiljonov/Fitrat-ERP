@@ -29,9 +29,9 @@ class TaskListCreateView(ListCreateAPIView):
         filial = self.request.query_params.get("filial")
         queryset = Task.objects.all()
         if filial:
-            queryset = queryset.objects.filter(filial__id=filial)
+            queryset = queryset.filter(filial__id=filial)
 
-        queryset = queryset.objects.filter(creator=self.request.user).order_by("-date_of_expired")
+        queryset = queryset.filter(creator=self.request.user).order_by("-date_of_expired")
         return queryset
 
 
@@ -49,8 +49,8 @@ class TaskListNoPGView(ListAPIView):
         filial = self.request.query_params.get("filial")
         queryset = Task.objects.all()
         if filial:
-            queryset = queryset.objects.filter(filial__id=filial)
-        queryset = queryset.objects.filter(creator=self.request.user).order_by("-date_of_expired")
+            queryset = queryset.filter(filial__id=filial)
+        queryset = queryset.filter(creator=self.request.user).order_by("-date_of_expired")
         return queryset
 
     def get_paginated_response(self, data):
