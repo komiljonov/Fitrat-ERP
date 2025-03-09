@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from data.finances.compensation.models import Compensation, Bonus, Page, Asos
-
+from data.finances.compensation.models import Compensation, Bonus, Page, Asos, Monitoring
 
 
 @admin.register(Compensation)
@@ -25,5 +24,11 @@ class PageAdmin(admin.ModelAdmin):
 
 @admin.register(Asos)
 class AsosAdmin(admin.ModelAdmin):
-    list_display = ("asos1", 'asos2','asos3','asos4','asos5')
-    search_fields = ("asos1", 'asos2','asos3','asos4','asos5')
+    list_display = ("name", 'ball',"created_at")
+    search_fields = ("name",)
+
+@admin.register(Monitoring)
+class MonitoringAdmin(admin.ModelAdmin):
+    list_display = ("user__full_name", 'asos__name',"ball")
+    search_fields = ("name","user__full_name")
+    list_filter = ('user__full_name',"ball")

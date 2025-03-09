@@ -1,7 +1,10 @@
 from rest_framework import serializers
 
-from .models import Bonus, Compensation, Page, Asos, Monitoring
-from ...account.serializers import UserSerializer
+from .models import Bonus, Compensation, Asos, Monitoring, Page
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...account.serializers import UserSerializer
 
 
 class BonusSerializer(serializers.ModelSerializer):
@@ -25,8 +28,6 @@ class CompensationSerializer(serializers.ModelSerializer):
             return Compensation.objects.bulk_create([Compensation(**data) for data in validated_data])
         return super().create(validated_data)
 
-from rest_framework import serializers
-from .models import Page
 
 class PagesSerializer(serializers.ModelSerializer):
     class Meta:
