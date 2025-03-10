@@ -234,8 +234,20 @@ class PointListCreateView(ListCreateAPIView):
     serializer_class = PointSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def create(self, request, *args, **kwargs):
+        user = request.user  # Get the authenticated user
+        user_filial = getattr(user, "filial", None)  # Get user's filial (if available)
 
+        data = request.data.copy()  # Copy request data to modify it
+        if "filial" not in data:  # If filial is not provided, use user's filial
+            data["filial"] = user_filial.first().id if user_filial else None
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get_queryset(self):
         asos = self.request.query_params.get("asos")
         filial = self.request.query_params.get("filial")
 

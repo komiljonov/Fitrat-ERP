@@ -53,7 +53,8 @@ class PointSerializer(serializers.ModelSerializer):
     average_point = serializers.SerializerMethodField()
     class Meta:
         model = Point
-        fields = ['id', 'name','asos', 'max_ball',"average_point","created_at", "updated_at"]
+        fields = ['id', 'name','asos', "filial",'max_ball',"average_point","created_at", "updated_at"]
+
 
     def get_average_point(self, obj):
         # Filter Monitoring objects related to the same `asos`
@@ -80,6 +81,8 @@ class MonitoringSerializer(serializers.ModelSerializer):
             "ball",
             "created_at",
         ]
+
+
     def to_representation(self, instance):
 
         from ...account.serializers import UserListSerializer
