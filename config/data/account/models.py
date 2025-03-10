@@ -2,7 +2,6 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils.timezone import now
 
 from data.department.filial.models import Filial
 from ..account.managers import UserManager
@@ -53,8 +52,8 @@ class CustomUser(AbstractUser):
     enter = models.TimeField(null=True,blank=True)
     leave = models.TimeField(null=True,blank=True)
 
-    created_at = models.DateTimeField(default=now)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     filial : 'Filial' = models.ManyToManyField('filial.Filial',)
 
