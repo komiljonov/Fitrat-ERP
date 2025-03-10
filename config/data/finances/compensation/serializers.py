@@ -50,9 +50,22 @@ class AsosSerializer(serializers.ModelSerializer):
 
 
 class PointSerializer(serializers.ModelSerializer):
+    average_point = serializers.SerializerMethodField()
     class Meta:
         model = Point
-        fields = ['id', 'name','asos', 'max_ball']
+        fields = ['id', 'name','asos', 'max_ball',"average_point"]
+
+    def get_average_point(self, obj):
+        # Filter Monitoring objects related to the same `asos`
+        monitoring_qs = Monitoring.objects.filter(point__asos=obj.asos)
+
+        # Extract the actual numeric value (not the UUID)
+        points = monitoring_qs.values_list('ball', flat=True)  # Change 'point' to 'point__value'
+
+        if not points:
+            return 0  # Return 0 if there are no points to avoid division by zero
+
+        return sum(points) / len(points)  # Compute the average
 
 
 class MonitoringSerializer(serializers.ModelSerializer):
