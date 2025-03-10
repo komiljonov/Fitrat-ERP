@@ -1,30 +1,32 @@
-from flask import Flask, request, jsonify
+import os
 
-from .models import Lid
-app = Flask(__name__)
+from django.http import HttpResponseForbidden
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-@app.route('/instagram-webhook', methods=['POST'])
-def instagram_webhook():
-    data = request.json  # Get the JSON payload from Albato
-    print(f"data: {data}")
-    if 'entry' in data:
-        for entry in data['entry']:
-            print(f"entry: {entry}")
-            for messaging in entry.get('messaging', []):
-                print(f"messaging: {messaging}")
-                sender_id = messaging['sender']['id']
-                message_text = messaging['message']['text']
-
-                # Process the lead (e.g., save to DB)
-                save_lead(sender_id, message_text)
-
-    return jsonify({"status": "success"}), 200
-
-def save_lead(sender_id, message_text):
-    print(f"New Lead: {sender_id} - {message_text}")
-    new_lid = Lid.objects.get_or_create(sender_id=sender_id, message_text=message_text)
-    return new_lid
+from data.lid.new_lid.models import Lid
 
 
-if __name__ == '__main__':
-    app.run(port=5000)
+class WebhookView(APIView):
+    def post(self, request, *args, **kwargs):
+        secret = request.headers.get("X-Webhook-Secret")
+        expected_secret = os.getenv("WEBHOOK_SECRET")
+
+        if secret != expected_secret:
+            return HttpResponseForbidden("Invalid webhook secret")
+
+        data = request.data
+        if data:
+            lid = Lid.objects.create(
+                phone=data["phone"] or "",
+                first_name=data["first_name"] or "",
+                marketing_channel=data["marketing_channel"] or "",
+                lid_stage_type="NEW_LID",
+                lid_stages="YANGI_LEAD"
+            )
+            if lid:
+                return Response({"id": lid.id},
+                                status=status.HTTP_200_OK)
+
+        return Response({"message": "Webhook received"}, status=status.HTTP_200_OK)

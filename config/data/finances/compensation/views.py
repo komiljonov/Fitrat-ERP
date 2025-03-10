@@ -257,6 +257,18 @@ class PointNoPGListView(ListAPIView):
     serializer_class = PointSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+
+        asos = self.request.query_params.get("asos")
+        filial = self.request.query_params.get("filial")
+
+        queryset = Point.objects.all()
+        if asos:
+            queryset = queryset.filter(asos__id=asos)
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        return queryset
+
 
 
 class MonitoringListCreateView(ListCreateAPIView):
