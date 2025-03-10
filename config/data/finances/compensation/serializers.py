@@ -46,14 +46,14 @@ class PagesSerializer(serializers.ModelSerializer):
 class AsosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asos
-        fields = ['id', 'name']
+        fields = ['id', 'name',"created_at", "updated_at"]
 
 
 class PointSerializer(serializers.ModelSerializer):
     average_point = serializers.SerializerMethodField()
     class Meta:
         model = Point
-        fields = ['id', 'name','asos', 'max_ball',"average_point"]
+        fields = ['id', 'name','asos', 'max_ball',"average_point","created_at", "updated_at"]
 
     def get_average_point(self, obj):
         # Filter Monitoring objects related to the same `asos`
