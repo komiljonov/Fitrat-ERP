@@ -110,8 +110,15 @@ class StudentSerializer(serializers.ModelSerializer):
         groups = StudentGroup.objects.prefetch_related('group__scheduled_day_type').filter(student=obj)
 
         for group in groups:
-            lesson_days_queryset = group.group.scheduled_day_type.all()  # Fetch related lesson days
-            lesson_days = [day.name for day in lesson_days_queryset] if lesson_days_queryset else []
+            if not group.group:  # Ensure group.group is not None
+                continue
+
+            lesson_days_queryset = getattr(group.group, 'scheduled_day_type', None)
+            if lesson_days_queryset is None:
+                continue
+
+            lesson_days = [day.name for day in lesson_days_queryset.all()] if hasattr(lesson_days_queryset,
+                                                                                      'all') else []
 
             if not lesson_days:  # Skip iteration if no lesson days
                 continue
@@ -123,7 +130,6 @@ class StudentSerializer(serializers.ModelSerializer):
             start_date_str = start_date.strftime("%Y-%m-%d")
             finish_date_str = finish_date.strftime("%Y-%m-%d")
 
-
             dates = calculate_lessons(
                 start_date=start_date_str,
                 end_date=finish_date_str,
@@ -131,10 +137,10 @@ class StudentSerializer(serializers.ModelSerializer):
                 holidays=[""],
                 days_off=["Yakshanba"]
             )
-            ic(dates)  # Debugging output
 
             if not dates:
                 continue
+
             first_month = min(dates.keys())  # Get the first available month
             lesson_date = dates[first_month][0]  # Get the first lesson date in that month
 
@@ -142,10 +148,10 @@ class StudentSerializer(serializers.ModelSerializer):
 
             return {
                 "date": lesson_date,
-                "attendance" : attendance.reason if attendance else "",
+                "attendance": attendance.reason if attendance else "",
             }
 
-        return {'is_attendance': None}  # Default return if no group found
+        return {'is_attendance': None}  # Default return if no valid group found
 
     def get_secondary_group(self, obj):
         group = SecondaryStudentGroup.objects.filter(student=obj).annotate(
