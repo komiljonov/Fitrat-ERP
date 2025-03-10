@@ -269,6 +269,8 @@ class PointNoPGListView(ListAPIView):
             queryset = queryset.filter(filial__id=filial)
         return queryset
 
+    def get_paginated_response(self, data):
+        return Response(data)
 
 
 class MonitoringListCreateView(ListCreateAPIView):
