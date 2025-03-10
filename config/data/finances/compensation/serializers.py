@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Bonus, Compensation, Asos, Monitoring, Page
+from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
 
 from typing import TYPE_CHECKING
 
@@ -46,18 +46,24 @@ class PagesSerializer(serializers.ModelSerializer):
 class AsosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asos
-        fields = ['id', 'name', 'max_ball']
+        fields = ['id', 'name']
+
+
+class PointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Point
+        fields = ['id', 'name','asos', 'max_ball']
 
 
 class MonitoringSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
-    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+    point = serializers.PrimaryKeyRelatedField(queryset=Point.objects.all(),allow_null=True)
     class Meta:
         model = Monitoring
         fields = [
             "id",
             "user",
-            "asos",
+            "point",
             "ball",
             "created_at",
         ]
@@ -68,7 +74,7 @@ class MonitoringSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
 
         rep["user"] = UserListSerializer(instance.user).data
-        rep["asos"] = AsosSerializer(instance.asos).data
+        rep["point"] = PointSerializer(instance.point).data
 
         return rep
 

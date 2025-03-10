@@ -2,7 +2,8 @@ from django.urls import path
 
 from .views import (BonusList, BonusDetail, BonusNoPG
 , CompensationList, CompensationDetail, CompensationNoPG, PageCreateView, PageBulkUpdateView, AsosListCreateView,
-                    AsosListRetrieveView, AsosNoPGListView, MonitoringBulkCreateView, MonitoringRetrieveView)
+                    AsosListRetrieveView, AsosNoPGListView, MonitoringBulkCreateView, MonitoringRetrieveView,
+                    PointListCreateView, PointRetrieveView, PointNoPGListView)
 
 urlpatterns = [
     path('bonus/', BonusList.as_view()),
@@ -22,5 +23,10 @@ urlpatterns = [
 
     path("monitoring/", MonitoringBulkCreateView.as_view()),
     path("monitoring/<uuid:pk>/",MonitoringRetrieveView.as_view()),
+
+
+    path("points/", PointListCreateView.as_view()),
+    path("points/<uuid:pk>/",PointRetrieveView.as_view()),
+    path("points/no-pg/", PointNoPGListView.as_view()),
 
 ]
