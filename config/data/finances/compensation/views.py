@@ -6,8 +6,9 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from .models import Bonus, Compensation, Page, Asos, Monitoring
-from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer
+from .models import Bonus, Compensation, Page, Asos, Monitoring, Point
+from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer, \
+    PointSerializer
 
 import json
 from rest_framework.generics import ListAPIView
@@ -226,6 +227,36 @@ class AsosNoPGListView(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class PointListCreateView(ListCreateAPIView):
+    queryset = Point.objects.all()
+    serializer_class = PointSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+
+        asos = self.request.query_params.get("asos")
+        filial = self.request.query_params.get("filial")
+
+        queryset = Point.objects.all()
+        if asos:
+            queryset = queryset.filter(asos__id=asos)
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        return queryset
+
+class PointRetrieveView(RetrieveUpdateDestroyAPIView):
+    queryset = Point.objects.all()
+    serializer_class = PointSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class PointNoPGListView(ListAPIView):
+    queryset = Point.objects.all()
+    serializer_class = PointSerializer
+    permission_classes = [IsAuthenticated]
+
 
 
 class MonitoringListCreateView(ListCreateAPIView):
