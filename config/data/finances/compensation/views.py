@@ -1,4 +1,4 @@
-from django.db.models import Avg, OuterRef, Subquery, Prefetch
+from django.db.models import Avg, OuterRef, Subquery, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -318,20 +318,31 @@ class MonitoringListCreateView(ListAPIView):
     queryset = Monitoring.objects.all()
     serializer_class = MonitoringSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         filial = self.request.query_params.get("filial")
         point = self.request.query_params.get("point")
         user = self.request.query_params.get("user")
+
         queryset = Monitoring.objects.all()
+
+        # Debugging: Print the incoming values
+        print(f"Filtering with - Filial: {filial}, Point: {point}, User: {user}")
+
+        filters = Q()
         if user:
-            queryset = queryset.filter(user__id=user)
+            filters &= Q(user_id=user)  # Ensure this matches your model field
         if point:
-            queryset = queryset.filter(point__id=point)
+            filters &= Q(point_id=point)  # Ensure this matches your model field
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            filters &= Q(point__filial_id=filial)  # If Filial is linked via Point
+
+        queryset = queryset.filter(filters)
+
+        # Debugging: Print query results
+        print(f"Filtered Queryset Count: {queryset.count()}")
 
         return queryset
-
 
 class MonitoringRetrieveView(RetrieveUpdateDestroyAPIView):
     queryset = Monitoring.objects.all()
