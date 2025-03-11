@@ -490,10 +490,10 @@ class MonitoringExcelDownloadView(APIView):
                 results = Results.objects.filter(teacher=teacher).count()
 
             # Format subjects as a string for Excel
-            subject_names = ", ".join([subject["subject_name"] for subject in subjects])
+            subject_names = ", ".join([subject["name"] for subject in subjects])
 
             teacher_data.append({
-                "Full Name": teacher.name,
+                "O'qituvchi F.I.O": teacher.full_name,
                 "Overall Point": teacher.overall_point,
                 "Subjects": subject_names,
                 "Results": results,
@@ -885,7 +885,7 @@ class ExportDashboardToExcelAPIView(APIView):
         # ✅ Create Sales Sheet
         sales_sheet = workbook.active
         sales_sheet.title = "Sales Data"
-        sales_headers = ["Creator", "Total Students", "Voucher Sales", "Sale Discount", "Total Sales"]
+        sales_headers = ["Yaratuvchi xodim", "Jami Studentlar", "Voucher Sales", "Sale Discount", "Total Sales"]
         sales_sheet.append(sales_headers)
 
         for entry in student_count:
