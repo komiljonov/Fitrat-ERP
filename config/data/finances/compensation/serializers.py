@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Avg
+from django.db.models import Avg, Max
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
@@ -76,6 +76,9 @@ class MonitoringSerializer(serializers.ModelSerializer):
         return rep
 
 
+from django.db.models import Avg
+from datetime import datetime, timezone, timedelta
+
 class PointSerializer(serializers.ModelSerializer):
     average_point = serializers.SerializerMethodField()
     monitoring = serializers.SerializerMethodField()
@@ -86,12 +89,16 @@ class PointSerializer(serializers.ModelSerializer):
 
     def get_average_point(self, obj):
         """
-        Calculates the average ball for the given point within the same month and year.
+        Calculates the average ball for only the given Point within its created month.
         """
+        start_of_month = obj.created_at.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        next_month = start_of_month + timedelta(days=32)
+        end_of_month = next_month.replace(day=1) - timedelta(seconds=1)  # Last second of the current month
+
         monitoring_qs = Monitoring.objects.filter(
             point=obj,
-            created_at__year=obj.created_at.year,
-            created_at__month=obj.created_at.month
+            created_at__gte=start_of_month,
+            created_at__lte=end_of_month
         )
 
         points = monitoring_qs.values_list('ball', flat=True)
@@ -103,18 +110,24 @@ class PointSerializer(serializers.ModelSerializer):
 
     def get_monitoring(self, obj):
         """
-        Groups monitoring results by user and calculates the average ball per user within the same month.
+        Retrieves all monitoring records for the given Point within its created month.
+        Groups by user and calculates the user's average ball.
         """
+        start_of_month = obj.created_at.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        next_month = start_of_month + timedelta(days=32)
+        end_of_month = next_month.replace(day=1) - timedelta(seconds=1)  # Last second of the month
+
         monitoring_qs = Monitoring.objects.filter(
             point=obj,
-            created_at__year=obj.created_at.year,
-            created_at__month=obj.created_at.month
+            created_at__gte=start_of_month,
+            created_at__lte=end_of_month
         ).values("user").annotate(
             avg_ball=Avg("ball"),
-            latest_created_at=models.Max("created_at")  # Get latest monitoring date per user
+            latest_created_at=Max("created_at")  # Get the latest monitoring record for each user
         )
 
         return list(monitoring_qs)
+
 
 
 
