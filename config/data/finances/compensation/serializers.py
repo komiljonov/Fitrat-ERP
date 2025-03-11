@@ -103,7 +103,6 @@ class PointSerializer(serializers.ModelSerializer):
             avg_ball=Avg("ball")
         )
 
-        # Convert QuerySet to dictionary {user_id: avg_ball}
         return {entry["user"]: entry["avg_ball"] for entry in monitoring_qs}
 
     def get_monitoring(self, obj):
