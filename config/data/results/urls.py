@@ -19,4 +19,6 @@ urlpatterns = [
 
     path('',ResultsView.as_view()),
     path('<uuid:pk>/',ResultsRetrieveAPIView.as_view()),
+
+    path("student/",ResultStudentListAPIView.as_view()),
 ]

@@ -170,3 +170,28 @@ class NationalSertificateApi(ListCreateAPIView):
         if type:
             queryset = queryset.filter(results=type)
         return queryset
+
+
+class ResultStudentListAPIView(ListAPIView):
+    queryset = Results.objects.all()
+    serializer_class = StudentResultsSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+
+        student = self.request.query_params.get('id')
+        status = self.request.query_params.get('status')
+        type = self.request.query_params.get('type')
+        filial = self.request.query_params.get('filial')
+
+        queryset = Results.objects.all()
+
+        if filial:
+            queryset = Results.objects.filter(filial__id=filial)
+        if student:
+            queryset = queryset.filter(student__id=student)
+
+        if status:
+            queryset = queryset.filter(status=status)
+        if type:
+            queryset = queryset.filter(results=type)
+        return queryset
