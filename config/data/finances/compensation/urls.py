@@ -23,7 +23,7 @@ urlpatterns = [
     path("asos/no-pg/",AsosNoPGListView.as_view()),
 
     path("monitoring/", MonitoringBulkCreateView.as_view()),
-    path("monitoring/",MonitoringListCreateView.as_view()),
+    path("monitoring/list/",MonitoringListCreateView.as_view()),
     path("monitoring/<uuid:pk>/",MonitoringRetrieveView.as_view()),
 
 
