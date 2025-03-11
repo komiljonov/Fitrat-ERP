@@ -320,7 +320,10 @@ class MonitoringListCreateView(ListAPIView):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         filial = self.request.query_params.get("filial")
+        point = self.request.query_params.get("point")
         queryset = Monitoring.objects.all()
+        if point:
+            queryset = queryset.filter(point__id=point)
         if filial:
             queryset = queryset.filter(filial__id=filial)
 
