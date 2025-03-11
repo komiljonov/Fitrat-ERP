@@ -277,15 +277,16 @@ class PointNoPGListView(ListAPIView):
 
         queryset = Point.objects.all()
 
-        if user:
-            queryset = queryset.filter(point_monitoring__user_id=user)
         if asos:
             queryset = queryset.filter(asos__id=asos)
         if filial:
             queryset = queryset.filter(filial__id=filial)
 
-        # Annotate the queryset with the average ball score for the given user
+        # Only filter by user if provided
         if user:
+            queryset = queryset.filter(point_monitoring__user_id=user)
+
+            # Subquery to get the user's average `ball` for each point
             monitoring_avg_subquery = Monitoring.objects.filter(
                 point=OuterRef('id'),
                 user_id=user
@@ -293,7 +294,7 @@ class PointNoPGListView(ListAPIView):
 
             queryset = queryset.annotate(user_avg_ball=Subquery(monitoring_avg_subquery))
 
-            # Prefetch the user's monitoring records for this point
+            # Prefetch only the monitoring records related to this user for each point
             user_monitoring_qs = Monitoring.objects.filter(user_id=user)
             queryset = queryset.prefetch_related(
                 Prefetch("point_monitoring", queryset=user_monitoring_qs, to_attr="user_monitorings")
