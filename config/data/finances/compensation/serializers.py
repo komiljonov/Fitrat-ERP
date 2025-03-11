@@ -1,16 +1,7 @@
 from datetime import timedelta
-
-from django.db.models import Max, Avg
-from rest_framework import serializers
-
-from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
-
 from typing import TYPE_CHECKING
 
-from ...account.models import CustomUser
-from typing import TYPE_CHECKING
-
-from django.db.models import Max
+from django.db.models import Avg
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
@@ -57,6 +48,7 @@ class AsosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asos
         fields = ['id', 'name',"created_at", "updated_at"]
+
 
 class MonitoringSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
