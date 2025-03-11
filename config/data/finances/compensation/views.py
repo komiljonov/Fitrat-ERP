@@ -273,8 +273,11 @@ class PointNoPGListView(ListAPIView):
 
         asos = self.request.query_params.get("asos")
         filial = self.request.query_params.get("filial")
+        user = self.request.query_params.get("user")
 
         queryset = Point.objects.all()
+        if user:
+            queryset = queryset.filter(point_monitoring__user_id=user)
         if asos:
             queryset = queryset.filter(asos__id=asos)
         if filial:
