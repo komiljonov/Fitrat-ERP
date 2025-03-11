@@ -1,4 +1,4 @@
-from django.db.models import Avg
+from django.db.models import Avg, OuterRef, Subquery, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -265,10 +265,6 @@ class PointRetrieveView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-from django.db.models import Avg
-from rest_framework.generics import ListAPIView
-from django.db.models import OuterRef, Subquery
-
 class PointNoPGListView(ListAPIView):
     queryset = Point.objects.all()
     serializer_class = PointSerializer
@@ -288,6 +284,7 @@ class PointNoPGListView(ListAPIView):
         if filial:
             queryset = queryset.filter(filial__id=filial)
 
+        # Annotate the queryset with the average ball score for the given user
         if user:
             monitoring_avg_subquery = Monitoring.objects.filter(
                 point=OuterRef('id'),
@@ -296,11 +293,17 @@ class PointNoPGListView(ListAPIView):
 
             queryset = queryset.annotate(user_avg_ball=Subquery(monitoring_avg_subquery))
 
-        return queryset
+            # Prefetch the user's monitoring records for this point
+            user_monitoring_qs = Monitoring.objects.filter(user_id=user)
+            queryset = queryset.prefetch_related(
+                Prefetch("point_monitoring", queryset=user_monitoring_qs, to_attr="user_monitorings")
+            )
 
+        return queryset
 
     def get_paginated_response(self, data):
         return Response(data)
+
 
 
 class MonitoringListCreateView(ListAPIView):

@@ -81,59 +81,9 @@ class MonitoringSerializer(serializers.ModelSerializer):
 
         return rep
 
-
-from django.db.models import Avg
-from datetime import timedelta
-
 class PointSerializer(serializers.ModelSerializer):
-    average_point = serializers.SerializerMethodField()
-    monitoring = serializers.SerializerMethodField()
 
     class Meta:
         model = Point
-        fields = ['id', 'name', 'asos', "filial", 'max_ball', "average_point", "monitoring", "created_at", "updated_at"]
-
-    def get_average_point(self, obj):
-        """
-        Calculates the average ball for only the given Point within its created month.
-        """
-        start_of_month = obj.created_at.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        next_month = start_of_month + timedelta(days=32)
-        end_of_month = next_month.replace(day=1) - timedelta(seconds=1)  # Last second of the current month
-
-        monitoring_qs = Monitoring.objects.filter(
-            point=obj,
-            created_at__gte=start_of_month,
-            created_at__lte=end_of_month
-        )
-
-        points = monitoring_qs.values_list('ball', flat=True)
-
-        if not points:
-            return 0
-
-        return sum(points) / len(points)
-
-    def get_monitoring(self, obj):
-        """
-        Retrieves all monitoring records for the given Point within its created month.
-        Groups by user and calculates the user's average ball.
-        """
-        start_of_month = obj.created_at.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        next_month = start_of_month + timedelta(days=32)
-        end_of_month = next_month.replace(day=1) - timedelta(seconds=1)  # Last second of the month
-
-        monitoring_qs = Monitoring.objects.filter(
-            point=obj,
-            created_at__gte=start_of_month,
-            created_at__lte=end_of_month
-        ).values("user").annotate(
-            avg_ball=Avg("ball"),
-            latest_created_at=Max("created_at")  # Get the latest monitoring record for each user
-        )
-
-        return list(monitoring_qs)
-
-
-
+        fields = ['id', 'name', 'asos', "filial", 'max_ball', "created_at", "updated_at"]
 
