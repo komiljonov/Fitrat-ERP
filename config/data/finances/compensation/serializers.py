@@ -48,27 +48,6 @@ class AsosSerializer(serializers.ModelSerializer):
         model = Asos
         fields = ['id', 'name',"created_at", "updated_at"]
 
-
-class PointSerializer(serializers.ModelSerializer):
-    average_point = serializers.SerializerMethodField()
-    class Meta:
-        model = Point
-        fields = ['id', 'name','asos', "filial",'max_ball',"average_point","created_at", "updated_at"]
-
-
-    def get_average_point(self, obj):
-        # Filter Monitoring objects related to the same `asos`
-        monitoring_qs = Monitoring.objects.filter(point__asos=obj.asos)
-
-        # Extract the actual numeric value (not the UUID)
-        points = monitoring_qs.values_list('ball', flat=True)  # Change 'point' to 'point__value'
-
-        if not points:
-            return 0  # Return 0 if there are no points to avoid division by zero
-
-        return sum(points) / len(points)  # Compute the average
-
-
 class MonitoringSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     point = serializers.PrimaryKeyRelatedField(queryset=Point.objects.all(),allow_null=True)
@@ -93,4 +72,28 @@ class MonitoringSerializer(serializers.ModelSerializer):
         rep["point"] = PointSerializer(instance.point).data
 
         return rep
+
+
+
+class PointSerializer(serializers.ModelSerializer):
+    average_point = serializers.SerializerMethodField()
+    monitoring = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Point
+        fields = ['id', 'name', 'asos', "filial", 'max_ball', "average_point", "monitoring", "created_at", "updated_at"]
+
+    def get_average_point(self, obj):
+        monitoring_qs = Monitoring.objects.filter(point__asos=obj.asos)
+        points = monitoring_qs.values_list('ball', flat=True)
+
+        if not points:
+            return 0
+
+        return sum(points) / len(points)
+
+    def get_monitoring(self, obj):
+        monitoring_qs = Monitoring.objects.filter(point=obj)
+        return list(monitoring_qs.values("user",'ball',"created_at",))
+
 
