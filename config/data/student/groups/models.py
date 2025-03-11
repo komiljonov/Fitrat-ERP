@@ -12,7 +12,7 @@ from ...account.models import CustomUser
 
 
 class Room(TimeStampModel):
-    room_number = models.CharField(max_length=100, unique=True)
+    room_number = models.CharField(max_length=100,)
     room_filling = models.FloatField(default=10, null=True, blank=True)
 
     def __str__(self):

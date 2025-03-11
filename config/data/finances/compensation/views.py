@@ -259,6 +259,7 @@ class PointListCreateView(ListCreateAPIView):
             queryset = queryset.filter(filial__id=filial)
         return queryset
 
+
 class PointRetrieveView(RetrieveUpdateDestroyAPIView):
     queryset = Point.objects.all()
     serializer_class = PointSerializer
@@ -275,8 +276,14 @@ class PointNoPGListView(ListAPIView):
         filial = self.request.query_params.get("filial")
         user = self.request.query_params.get("user")
 
-        queryset = Point.objects.all()
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
 
+        queryset = Point.objects.all()
+        if start_date:
+            queryset = queryset.filter(craeted_at__gte=start_date)
+        if start_date and end_date:
+            queryset = queryset.filter(craeted_at__gte=start_date, craeted_at__lte=end_date)
         if asos:
             queryset = queryset.filter(asos__id=asos)
         if filial:
@@ -297,14 +304,14 @@ class PointNoPGListView(ListAPIView):
             # Prefetch only the monitoring records related to this user for each point
             user_monitoring_qs = Monitoring.objects.filter(user_id=user)
             queryset = queryset.prefetch_related(
-                Prefetch("point_monitoring", queryset=user_monitoring_qs, to_attr="user_monitorings")
+                Prefetch("point_monitoring", queryset=user_monitoring_qs,
+                         to_attr="user_monitorings")
             )
 
         return queryset
 
     def get_paginated_response(self, data):
         return Response(data)
-
 
 
 class MonitoringListCreateView(ListAPIView):
@@ -318,8 +325,6 @@ class MonitoringListCreateView(ListAPIView):
             queryset = queryset.filter(filial__id=filial)
 
         return queryset
-
-
 
 
 class MonitoringRetrieveView(RetrieveUpdateDestroyAPIView):
