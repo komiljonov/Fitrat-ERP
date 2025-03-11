@@ -182,9 +182,16 @@ class ResultStudentListAPIView(ListAPIView):
         status = self.request.query_params.get('status')
         type = self.request.query_params.get('type')
         filial = self.request.query_params.get('filial')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
 
         queryset = Results.objects.all()
 
+
+        if start_date:
+            queryset = queryset.filter(created_at__gte=start_date)
+        if start_date and end_date:
+            queryset = queryset.filter(created_at__gte=start_date,created_at__lte=end_date)
         if filial:
             queryset = Results.objects.filter(filial__id=filial)
         if student:
