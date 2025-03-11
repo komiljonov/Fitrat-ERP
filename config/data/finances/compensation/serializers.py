@@ -84,7 +84,7 @@ class PointSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'asos', "filial", 'max_ball', "average_point", "monitoring", "created_at", "updated_at"]
 
     def get_average_point(self, obj):
-        monitoring_qs = Monitoring.objects.filter(point__asos=obj.asos)
+        monitoring_qs = Monitoring.objects.filter(point=obj)
         points = monitoring_qs.values_list('ball', flat=True)
 
         if not points:
