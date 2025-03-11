@@ -122,6 +122,7 @@ class PointSerializer(serializers.ModelSerializer):
         """
         user_monitorings = getattr(obj, "user_monitorings", [])
         return [
-            {"id": mon.id,"user":mon.user.full_name ,"ball": mon.ball, "created_at": mon.created_at}
+            {"id": mon.id,"user":mon.user.full_name ,
+             "ball": mon.ball, "created_at": mon.created_at}
             for mon in user_monitorings
         ]
