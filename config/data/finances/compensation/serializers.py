@@ -89,7 +89,7 @@ class PointSerializer(serializers.ModelSerializer):
 
     def get_average_point(self, obj):
         """
-        Calculates the average ball for only the given Point within its created month.
+        Calculates the average ball per user for the given Point within its created month.
         """
         start_of_month = obj.created_at.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         next_month = start_of_month + timedelta(days=32)
@@ -99,14 +99,12 @@ class PointSerializer(serializers.ModelSerializer):
             point=obj,
             created_at__gte=start_of_month,
             created_at__lte=end_of_month
+        ).values("user").annotate(
+            avg_ball=Avg("ball")
         )
 
-        points = monitoring_qs.values_list('ball', flat=True)
-
-        if not points:
-            return 0
-
-        return sum(points) / len(points)
+        # Convert QuerySet to dictionary {user_id: avg_ball}
+        return {entry["user"]: entry["avg_ball"] for entry in monitoring_qs}
 
     def get_monitoring(self, obj):
         """
