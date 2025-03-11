@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db.models import Max
+from django.db.models import Max, Avg
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
@@ -83,8 +83,6 @@ class MonitoringSerializer(serializers.ModelSerializer):
 
         return rep
 
-from django.db.models import Avg
-from rest_framework import serializers
 
 class PointSerializer(serializers.ModelSerializer):
     average_point = serializers.SerializerMethodField()
@@ -115,7 +113,6 @@ class PointSerializer(serializers.ModelSerializer):
             avg_ball=Avg("ball")
         )
 
-        # Convert QuerySet to dictionary {user_id: avg_ball}
         return {str(entry["user"]): entry["avg_ball"] for entry in monitoring_qs}
 
     def get_monitoring(self, obj):
@@ -125,6 +122,6 @@ class PointSerializer(serializers.ModelSerializer):
         """
         user_monitorings = getattr(obj, "user_monitorings", [])
         return [
-            {"id": mon.id, "ball": mon.ball, "created_at": mon.created_at}
+            {"id": mon.id,"user":mon.user.full_name ,"ball": mon.ball, "created_at": mon.created_at}
             for mon in user_monitorings
         ]
