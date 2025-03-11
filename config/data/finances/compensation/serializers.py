@@ -1,3 +1,5 @@
+from django.db import models
+from django.db.models import Avg
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
@@ -74,7 +76,6 @@ class MonitoringSerializer(serializers.ModelSerializer):
         return rep
 
 
-
 class PointSerializer(serializers.ModelSerializer):
     average_point = serializers.SerializerMethodField()
     monitoring = serializers.SerializerMethodField()
@@ -84,7 +85,15 @@ class PointSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'asos', "filial", 'max_ball', "average_point", "monitoring", "created_at", "updated_at"]
 
     def get_average_point(self, obj):
-        monitoring_qs = Monitoring.objects.filter(point=obj)
+        """
+        Calculates the average ball for the given point within the same month and year.
+        """
+        monitoring_qs = Monitoring.objects.filter(
+            point=obj,
+            created_at__year=obj.created_at.year,
+            created_at__month=obj.created_at.month
+        )
+
         points = monitoring_qs.values_list('ball', flat=True)
 
         if not points:
@@ -93,7 +102,19 @@ class PointSerializer(serializers.ModelSerializer):
         return sum(points) / len(points)
 
     def get_monitoring(self, obj):
-        monitoring_qs = Monitoring.objects.filter(point=obj)
-        return list(monitoring_qs.values("user",'ball',"created_at",))
+        """
+        Groups monitoring results by user and calculates the average ball per user within the same month.
+        """
+        monitoring_qs = Monitoring.objects.filter(
+            point=obj,
+            created_at__year=obj.created_at.year,
+            created_at__month=obj.created_at.month
+        ).values("user").annotate(
+            avg_ball=Avg("ball"),
+            latest_created_at=models.Max("created_at")  # Get latest monitoring date per user
+        )
+
+        return list(monitoring_qs)
+
 
 
