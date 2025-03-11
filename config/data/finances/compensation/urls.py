@@ -3,7 +3,8 @@ from django.urls import path
 from .views import (BonusList, BonusDetail, BonusNoPG
 , CompensationList, CompensationDetail, CompensationNoPG, PageCreateView, PageBulkUpdateView, AsosListCreateView,
                     AsosListRetrieveView, AsosNoPGListView, MonitoringBulkCreateView, MonitoringRetrieveView,
-                    PointListCreateView, PointRetrieveView, PointNoPGListView)
+                    PointListCreateView, PointRetrieveView, PointNoPGListView, MonitoringListCreateView)
+from ...student.mastering.views import MasteringList
 
 urlpatterns = [
     path('bonus/', BonusList.as_view()),
@@ -22,6 +23,7 @@ urlpatterns = [
     path("asos/no-pg/",AsosNoPGListView.as_view()),
 
     path("monitoring/", MonitoringBulkCreateView.as_view()),
+    path("monitoring/",MonitoringListCreateView.as_view()),
     path("monitoring/<uuid:pk>/",MonitoringRetrieveView.as_view()),
 
 

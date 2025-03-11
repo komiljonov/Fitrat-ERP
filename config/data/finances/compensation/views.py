@@ -288,7 +288,7 @@ class PointNoPGListView(ListAPIView):
         return Response(data)
 
 
-class MonitoringListCreateView(ListCreateAPIView):
+class MonitoringListCreateView(ListAPIView):
     queryset = Monitoring.objects.all()
     serializer_class = MonitoringSerializer
     permission_classes = [IsAuthenticated]
