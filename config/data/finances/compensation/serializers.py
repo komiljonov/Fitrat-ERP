@@ -103,7 +103,8 @@ class PointSerializer(serializers.ModelSerializer):
             avg_ball=Avg("ball")
         )
 
-        return {entry["user"]: entry["avg_ball"] for entry in monitoring_qs}
+        # Convert UUID keys to strings for JSON serialization
+        return {str(entry["user"]): entry["avg_ball"] for entry in monitoring_qs}
 
     def get_monitoring(self, obj):
         """
