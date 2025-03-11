@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -264,25 +265,39 @@ class PointRetrieveView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
+from django.db.models import Avg
+from rest_framework.generics import ListAPIView
+from django.db.models import OuterRef, Subquery
+
 class PointNoPGListView(ListAPIView):
     queryset = Point.objects.all()
     serializer_class = PointSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-
         asos = self.request.query_params.get("asos")
         filial = self.request.query_params.get("filial")
         user = self.request.query_params.get("user")
 
         queryset = Point.objects.all()
+
         if user:
             queryset = queryset.filter(point_monitoring__user_id=user)
         if asos:
             queryset = queryset.filter(asos__id=asos)
         if filial:
             queryset = queryset.filter(filial__id=filial)
+
+        if user:
+            monitoring_avg_subquery = Monitoring.objects.filter(
+                point=OuterRef('id'),
+                user_id=user
+            ).values("point").annotate(avg_ball=Avg("ball")).values("avg_ball")
+
+            queryset = queryset.annotate(user_avg_ball=Subquery(monitoring_avg_subquery))
+
         return queryset
+
 
     def get_paginated_response(self, data):
         return Response(data)
@@ -297,7 +312,10 @@ class MonitoringListCreateView(ListAPIView):
         queryset = Monitoring.objects.all()
         if filial:
             queryset = queryset.filter(filial__id=filial)
+
         return queryset
+
+
 
 
 class MonitoringRetrieveView(RetrieveUpdateDestroyAPIView):

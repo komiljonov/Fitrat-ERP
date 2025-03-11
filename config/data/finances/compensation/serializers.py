@@ -1,5 +1,4 @@
-from django.db import models
-from django.db.models import Avg, Max
+from django.db.models import Max
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
@@ -7,9 +6,16 @@ from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
 from typing import TYPE_CHECKING
 
 from ...account.models import CustomUser
+from typing import TYPE_CHECKING
+
+from django.db.models import Max
+from rest_framework import serializers
+
+from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
+from ...account.models import CustomUser
 
 if TYPE_CHECKING:
-    from ...account.serializers import UserSerializer, UserListSerializer
+    pass
 
 
 class BonusSerializer(serializers.ModelSerializer):
@@ -77,7 +83,7 @@ class MonitoringSerializer(serializers.ModelSerializer):
 
 
 from django.db.models import Avg
-from datetime import datetime, timezone, timedelta
+from datetime import timedelta
 
 class PointSerializer(serializers.ModelSerializer):
     average_point = serializers.SerializerMethodField()
