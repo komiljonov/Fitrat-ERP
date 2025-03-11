@@ -321,7 +321,10 @@ class MonitoringListCreateView(ListAPIView):
     def get_queryset(self):
         filial = self.request.query_params.get("filial")
         point = self.request.query_params.get("point")
+        user = self.request.query_params.get("user")
         queryset = Monitoring.objects.all()
+        if user:
+            queryset = queryset.filter(user__id=filial)
         if point:
             queryset = queryset.filter(point__id=point)
         if filial:
