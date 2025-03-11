@@ -219,11 +219,11 @@ class RoomFilterSerializer(serializers.ModelSerializer):
         return average_students_filling
 
 
-
 class SecondaryGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student_count = serializers.SerializerMethodField()
+
     class Meta:
         model = SecondaryGroup
         fields = [
@@ -231,42 +231,66 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
             'name',
             'group',
             'teacher',
-            'scheduled_day_type',
+            'scheduled_day_type',  # This is a ManyToManyField
             'status',
             'student_count',
-
             'started_at',
             'ended_at',
-
             'start_date',
             'finish_date',
-
             'created_at',
             'updated_at',
         ]
+
     def get_student_count(self, obj):
-        student_count = SecondaryStudentGroup.objects.filter(group=obj).count()
-        return student_count
+        return SecondaryStudentGroup.objects.filter(group=obj).count()
 
     def create(self, validated_data):
+        """
+        Handles M2M relation (scheduled_day_type) separately using set().
+        """
+        scheduled_day_types = validated_data.pop("scheduled_day_type", [])  # Extract M2M field
         filial = validated_data.pop("filial", None)
+
+        # Determine filial from request if not provided
         if not filial:
-            request = self.context.get("request")  #
+            request = self.context.get("request")
             if request and hasattr(request.user, "filial"):
                 filial = request.user.filial.first()
 
         if not filial:
             raise serializers.ValidationError({"filial": "Filial could not be determined."})
 
+        # Create the SecondaryGroup instance without M2M
         group = SecondaryGroup.objects.create(filial=filial, **validated_data)
+
+        # Set the ManyToMany field properly
+        if scheduled_day_types:
+            group.scheduled_day_type.set(scheduled_day_types)  # Correct M2M assignment
+
         return group
 
+    def update(self, instance, validated_data):
+        """
+        Handles M2M relation (scheduled_day_type) separately during update.
+        """
+        scheduled_day_types = validated_data.pop("scheduled_day_type", None)  # Extract M2M field
+
+        # Update other fields normally
+        instance = super().update(instance, validated_data)
+
+        # Update ManyToMany relation only if provided
+        if scheduled_day_types is not None:
+            instance.scheduled_day_type.set(scheduled_day_types)  # Correct M2M update
+
+        return instance
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['teacher'] = UserSerializer(instance.teacher).data
         rep['group'] = GroupSerializer(instance.group).data
         return rep
+
 
 class SecondarygroupModelSerializer(serializers.ModelSerializer):
     class Meta:
