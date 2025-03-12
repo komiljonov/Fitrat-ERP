@@ -78,15 +78,8 @@ class FinanceListAPIView(ListCreateAPIView):
 
         queryset = Finance.objects.all()
 
-        if action and kind :
-            try:
-                kind_obj = Kind.objects.get(id=kind)
-                queryset = queryset.filter(kind=kind_obj)
-
-                queryset = queryset.filter(kind__action=action)
-            except Kind.DoesNotExist:
-                return Finance.objects.none()
-
+        if action :
+            queryset = queryset.filter(action=action)
 
         if casher_id:
             queryset = queryset.filter(casher__id=casher_id)
