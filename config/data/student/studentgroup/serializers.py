@@ -7,6 +7,7 @@ from ..groups.models import Group, SecondaryGroup
 from ..groups.serializers import SecondaryGroupSerializer
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
+from ...account.models import CustomUser
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
 
@@ -121,10 +122,11 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=SecondaryGroup.objects.all(), required=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+    main_teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
 
     class Meta:
         model = SecondaryStudentGroup
-        fields = ['id', 'group', 'lid', 'student']
+        fields = ['id', 'group', 'lid',"main_teacher" ,'student']
 
 
     def create(self, validated_data):
@@ -139,6 +141,9 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
 
         room = SecondaryStudentGroup.objects.create(filial=filial, **validated_data)
         return room
+    def get_main_teacher(self, instance):
+        return Group.objects.get(id=instance.group.id).teacher
+
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
