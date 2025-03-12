@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 class Task(TimeStampModel):
     creator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name='task_performer')
 
-    lid: "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.CASCADE, null=True, blank=True)
-    student: "Student" = models.ForeignKey("student.Student", on_delete=models.CASCADE, null=True, blank=True)
+    lid: "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True)
+    student: "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True)
 
     task = models.TextField()
 
