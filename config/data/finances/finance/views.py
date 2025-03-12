@@ -71,11 +71,22 @@ class FinanceListAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         kind = self.request.query_params.get('kind', None)
+        action = self.request.query_params.get('action', None)
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
         casher_id = self.request.query_params.get('casher_id', None)
 
         queryset = Finance.objects.all()
+
+        if action and kind :
+            try:
+                kind_obj = Kind.objects.get(id=kind)
+                queryset = queryset.filter(kind=kind_obj)
+
+                queryset = queryset.filter(kind__action=action)
+            except Kind.DoesNotExist:
+                return Finance.objects.none()
+
 
         if casher_id:
             queryset = queryset.filter(casher__id=casher_id)
