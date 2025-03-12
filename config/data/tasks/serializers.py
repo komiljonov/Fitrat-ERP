@@ -44,26 +44,33 @@ class TaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context['request']
 
-        # ✅ Get 'filial' from validated_data
-        filial = validated_data.get('filial')
+        # Extract and remove ManyToManyField before calling create()
+        filial = validated_data.pop('filial', None)  # Remove `filial` from validated_data
 
-        # ✅ If 'filial' is None, try to get from performer's filial (ManyToManyField)
+        # Ensure `performer` is present and fetch its `filial` if needed
+        performer = validated_data.get('performer')
+
         if filial is None:
-            performer = validated_data.get('performer')  # Get performer instance
-
             if performer:
                 performer_filials = performer.filial.all()  # Get all related filials
                 ic(performer_filials)
 
                 if performer_filials.exists():
-                    validated_data['filial'] = performer_filials.first()  # ✅ Assign Filial instance, not ID
+                    filial = performer_filials.first()  # Assign the first filial
                 else:
                     raise serializers.ValidationError({"filial": "Filial is required but cannot be determined."})
             else:
                 raise serializers.ValidationError({"filial": "Filial is required but missing."})
 
+        # Create Task instance without `filial`
         validated_data['creator'] = request.user
-        return super().create(validated_data)
+        task = super().create(validated_data)
+
+        # Assign ManyToManyField using `.set()`
+        if filial:
+            task.filial.set([filial])  # Use `.set()` for ManyToManyField
+
+        return task
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
