@@ -138,6 +138,21 @@ class LidListNoPG(ListAPIView):
     queryset = Lid.objects.all()
     serializer_class = LidSerializer
 
+    def get_queryset(self):
+        filial = self.request.query_params.get("filial")
+        is_archived = self.request.query_params.get("is_archived")
+        is_student = self.request.query_params.get("is_student")
+        queryset = Lid.objects.all()
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
+
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+
+        if is_student:
+            queryset = queryset.filter(is_student=is_student.capitalize())
+        return queryset
+
     def get_paginated_response(self, data):
         return Response(data)
 
