@@ -44,31 +44,41 @@ class TaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context['request']
 
-        # Extract and remove ManyToManyField before calling create()
-        filial = validated_data.pop('filial', None)  # Remove `filial` from validated_data
+        # ✅ Extract ManyToManyField before calling create()
+        filial = validated_data.pop('filial', None)  # Remove from validated_data
 
-        # Ensure `performer` is present and fetch its `filial` if needed
+        # ✅ Ensure ForeignKey fields get instances, not IDs
         performer = validated_data.get('performer')
+        lid = validated_data.get('lid')
+        student = validated_data.get('student')
 
-        if filial is None:
-            if performer:
-                performer_filials = performer.filial.all()  # Get all related filials
-                ic(performer_filials)
+        if isinstance(performer, int):  # Convert ID to instance
+            performer = CustomUser.objects.filter(id=performer).first()
+            validated_data['performer'] = performer
 
-                if performer_filials.exists():
-                    filial = performer_filials.first()  # Assign the first filial
-                else:
-                    raise serializers.ValidationError({"filial": "Filial is required but cannot be determined."})
+        if isinstance(lid, int):
+            lid = Lid.objects.filter(id=lid).first()
+            validated_data['lid'] = lid
+
+        if isinstance(student, int):
+            student = Student.objects.filter(id=student).first()
+            validated_data['student'] = student
+
+        # ✅ Assign `filial` dynamically if missing
+        if filial is None and performer:
+            performer_filials = performer.filial.all()
+            if performer_filials.exists():
+                filial = performer_filials.first()
             else:
-                raise serializers.ValidationError({"filial": "Filial is required but missing."})
+                raise serializers.ValidationError({"filial": "Filial is required but cannot be determined."})
 
-        # Create Task instance without `filial`
+        # ✅ Create Task instance **without `filial`**
         validated_data['creator'] = request.user
         task = super().create(validated_data)
 
-        # Assign ManyToManyField using `.set()`
+        # ✅ Set ManyToManyField after creation
         if filial:
-            task.filial.set([filial])  # Use `.set()` for ManyToManyField
+            task.filial.set([filial])
 
         return task
 
