@@ -169,9 +169,11 @@ class StudentGroupDelete(APIView):
             filters |= Q(lid__id=student_id)
 
         student = StudentGroup.objects.filter(group__id=group_id).filter(filters).first()
+        attendance = Attendance.objects.filter(group__id=group_id).filter(filters).first()
         ic(student)
 
         if student:
+            attendance.delete()
             student.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -268,7 +270,7 @@ class GroupAttendedStudents(ListAPIView):
 
         if reason and reason == "1":
             queryset = queryset.filter(
-                reason = "IS_PRESENT"
+                reason="IS_PRESENT"
             )
         if reason and reason == "0":
             queryset = queryset.filter(
