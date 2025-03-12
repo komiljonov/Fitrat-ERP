@@ -701,13 +701,11 @@ class SalesApiView(APIView):
 
         return Response({"chart_data": chart_data})
 
-
 class FinanceStatisticsApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         kind_id = self.request.query_params.get('kind')  # Filter by Kind
-        action = self.request.query_params.get('action')  # INCOME or EXPENSE
         creator = self.request.query_params.get('creator')
         student = self.request.query_params.get('student')
         stuff = self.request.query_params.get('stuff')
@@ -720,8 +718,6 @@ class FinanceStatisticsApiView(APIView):
             filters['filial'] = filial
         if kind_id:
             filters['kind__id'] = kind_id
-        if action:
-            filters['action'] = action  # Filter by INCOME or EXPENSE
         if creator:
             filters['creator__id'] = creator
         if student:
@@ -733,29 +729,36 @@ class FinanceStatisticsApiView(APIView):
         if payment_method:
             filters['payment_method'] = payment_method
 
-        # Group by kind and calculate sum of amounts
-        finance_stats = Finance.objects.filter(**filters).values('kind__id', 'kind__name', 'action').annotate(
-            total_amount=Sum('amount')
-        ).order_by('kind__name')
+        # ✅ Group by `kind__action` instead of `Finance.action`
+        finance_stats = (
+            Finance.objects.filter(**filters)
+            .values("kind__id", "kind__name", "kind__action")  # Using kind__action
+            .annotate(total_amount=Sum("amount"))
+            .order_by("kind__name")
+        )
 
-        # Organizing INCOME and EXPENSE separately
+        # ✅ Organizing INCOME and EXPENSE based on `kind__action`
         income_stats = []
         expense_stats = []
         for entry in finance_stats:
             stat_entry = {
-                "kind_id": entry['kind__id'],
-                "kind_name": entry['kind__name'],
-                "total_amount": entry['total_amount'],
+                "kind_id": entry["kind__id"],
+                "kind_name": entry["kind__name"],
+                "action": entry["kind__action"],
+                "total_amount": entry["total_amount"],
             }
-            if entry["action"] == "INCOME":
+            if entry["kind__action"] == "INCOME":  # ✅ Use `kind__action`
                 income_stats.append(stat_entry)
             else:
                 expense_stats.append(stat_entry)
 
-        return Response({
-            "income": income_stats,
-            "expenses": expense_stats
-        })
+        return Response(
+            {
+                "income": income_stats,
+                "expenses": expense_stats,
+            }
+        )
+
 
 
 class StudentLanguage(APIView):
