@@ -43,16 +43,13 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context['request']
+        filial = validated_data.pop('filial', None)
 
-        # ✅ Extract ManyToManyField before calling create()
-        filial = validated_data.pop('filial', None)  # Remove from validated_data
-
-        # ✅ Ensure ForeignKey fields get instances, not IDs
         performer = validated_data.get('performer')
         lid = validated_data.get('lid')
         student = validated_data.get('student')
 
-        if isinstance(performer, int):  # Convert ID to instance
+        if isinstance(performer, int):
             performer = CustomUser.objects.filter(id=performer).first()
             validated_data['performer'] = performer
 
@@ -64,7 +61,6 @@ class TaskSerializer(serializers.ModelSerializer):
             student = Student.objects.filter(id=student).first()
             validated_data['student'] = student
 
-        # ✅ Assign `filial` dynamically if missing
         if filial is None and performer:
             performer_filials = performer.filial.all()
             if performer_filials.exists():
@@ -72,11 +68,12 @@ class TaskSerializer(serializers.ModelSerializer):
             else:
                 raise serializers.ValidationError({"filial": "Filial is required but cannot be determined."})
 
-        # ✅ Create Task instance **without `filial`**
+        valid_task_fields = {field.name for field in Task._meta.fields}
+        validated_data = {key: value for key, value in validated_data.items() if key in valid_task_fields}
+
         validated_data['creator'] = request.user
         task = super().create(validated_data)
 
-        # ✅ Set ManyToManyField after creation
         if filial:
             task.filial.set([filial])
 
