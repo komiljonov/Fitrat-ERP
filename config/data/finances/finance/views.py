@@ -669,7 +669,7 @@ class SalesStudentList(ListCreateAPIView):
         filial = self.request.query_params.get('filial')
 
         if filial:
-            return SaleStudent.objects.filter(filial=filial)  # ✅ Correct model
+            return SaleStudent.objects.filter(filial__id=filial)  # ✅ Correct model
 
         return SaleStudent.objects.all()  # ✅ Ensures QuerySet is never None
 
