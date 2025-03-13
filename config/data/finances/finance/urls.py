@@ -6,7 +6,7 @@ from .views import FinanceListAPIView, FinanceDetailAPIView, FinanceNoPGList, St
     FinanceStatisticsAPIView, CasherNoPg, CasherHandoverHistory, CasherStatisticsAPIView, \
     TeacherGroupFinanceAPIView, FinanceTeacher, FinanceExcel, KindRetrive, KindList, PaymentMethodsRetrive, \
     PaymentMethodsList, PaymentStatistics, PaymentCasherStatistics, SalesList, SalesStudentList, SalesStudentsRetrive, \
-    PaymentStatisticsByKind
+    PaymentStatisticsByKind, SalesStudentNoPG
 
 urlpatterns = [
     path('', FinanceListAPIView.as_view(), name='finance_list'),
@@ -42,6 +42,7 @@ urlpatterns = [
     path('sale/',SalesList.as_view(), name='sale'),
 
     path('sale-student/',SalesStudentList.as_view(), name='sale_student'),
+    path("sale-student/no-pg/",SalesStudentNoPG.as_view(), name="sale_student"),
     path("sale-student/<uuid:pk>/",SalesStudentsRetrive.as_view(), name="sale_student"),
 
     path("payment-reason/",PaymentStatisticsByKind.as_view(), name="payment_kind"),
