@@ -28,6 +28,6 @@ urlpatterns = [
 
     path("delete/<uuid:pk>", StudentGroupDelete.as_view()),
 
-    path("statistics/", StudentGroupStatistics.as_view()),
+    path("stats/", StudentGroupStatistics.as_view()),
 
 ]
