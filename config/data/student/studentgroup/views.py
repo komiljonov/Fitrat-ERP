@@ -324,7 +324,7 @@ class SecondaryGroupList(ListAPIView):
 
 class StudentGroupStatistics(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request, pk, **kwargs):
+    def get(self, request, **kwargs):
         filial = self.request.query_params.get("filial")
         course = self.request.query_params.get("course")
         teacher = self.request.query_params.get("teacher")
