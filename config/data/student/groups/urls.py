@@ -3,7 +3,7 @@ from django.urls import path
 from .views import StudentGroupsView, StudentRetrieveUpdateDestroyAPIView, StudentListAPIView, TeachersGroupsView, \
     RoomListAPIView, RoomRetrieveUpdateDestroyAPIView, RoomNoPG, SecondaryGroupsView, \
     SecondaryGroupRetrieveUpdateDestroyAPIView, SecondaryNoPG, DaysNoPG, DaysAPIView, LessonScheduleListApi, \
-    GroupLessonScheduleView, LessonScheduleWebListApi, CheckRoomLessonScheduleView, RoomFilterView
+    GroupLessonScheduleView, LessonScheduleWebListApi, RoomFilterView, CheckRoomLessonScheduleView
 from ..lesson.views import ExtraLessonScheduleView
 
 urlpatterns = [
