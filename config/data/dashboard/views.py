@@ -619,14 +619,14 @@ class SalesApiView(APIView):
         chart_data=[]
 
         total_students = SaleStudent.objects.filter(**filters)
-        total_voucher_amount = SaleStudent.objects.filter(sale__type="VOUCHER",**filters).aggregate(Sum('sales__amount'))
-        total_sale_discount = SaleStudent.objects.filter(sale__type="SALE",**filters).aggregate(Sum('sales__amount'))
+        total_voucher_amount = SaleStudent.objects.filter(sale__type="VOUCHER",**filters).aggregate(Sum('sale__amount'))
+        total_sale_discount = SaleStudent.objects.filter(sale__type="SALE",**filters).aggregate(Sum('sale__amount'))
         total_debt = Student.objects.filter(balance__lt=0,**filters).aggregate(Sum('balance'))
         total_income = Student.objects.filter(balance__status="ACTIVE",**filters).aggregate(Sum('balance'))
 
 
         chart_data.append({
-            "total_students": total_students,
+            "total_students": total_students.count(),
             "total_voucher_amount": total_voucher_amount,
             "total_sales_amount": total_sale_discount,
             "total_debt": total_debt,
