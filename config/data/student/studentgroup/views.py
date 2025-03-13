@@ -320,3 +320,31 @@ class SecondaryGroupList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class StudentGroupStatistics(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk, **kwargs):
+        filial = self.request.query_params.get("filial")
+        course = self.request.query_params.get("course")
+        teacher = self.request.query_params.get("teacher")
+
+        all = StudentGroup.objects.filter(filial__id=filial)
+        orders = StudentGroup.objects.filter(filial__id=filial, lid__lid_stage_type="ORDERED_LID")
+        students = StudentGroup.objects.filter(filial__id=filial, student__isnull=False)
+
+        if course:
+            all = all.filter(group__course__id=course)
+            orders = orders.filter(group__course__id=course)
+            students = students.filter(group__course__id=course)
+
+        if teacher:
+            all = all.filter(group__teacher__id=teacher)
+            orders = orders.filter(group__teacher__id=teacher)
+            students = students.filter(group__teacher__id=teacher)
+
+        return Response({
+            "all" : all,
+            "students" : students,
+            "orders" : orders,
+        })
