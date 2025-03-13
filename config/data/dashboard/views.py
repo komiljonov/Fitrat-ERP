@@ -26,7 +26,6 @@ from ..student.attendance.models import Attendance
 from ..student.student.models import Student
 from ..upload.serializers import FileUploadSerializer
 
-
 class DashboardView(APIView):
     def get(self, request, *args, **kwargs):
         start_date = request.query_params.get('start_date')
@@ -40,146 +39,124 @@ class DashboardView(APIView):
         course = request.query_params.get('course')
         teacher = request.query_params.get('teacher')
 
-
         filters = {}
-        ic(start_date,end_date)
         if start_date:
             filters["created_at__gte"] = start_date
-
         if end_date:
             filters["created_at__lte"] = end_date
-
         if filial:
             filters["filial"] = filial
 
+        lid = Lid.objects.filter(lid_stage_type="NEW_LID", **filters)
+        orders = Lid.objects.filter(lid_stage_type="ORDERED_LID", **filters)
+        orders_archived = orders
+        first_lesson = orders.filter(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
 
-        lid = Lid.objects.filter(lid_stage_type="NEW_LID", **filters).count()
-
-        orders = Lid.objects.filter(lid_stage_type="ORDERED_LID", **filters).count()
-        orders_archived = Lid.objects.filter(lid_stage_type="ORDERED_LID",**filters).count()
-        first_lesson = Lid.objects.filter(lid_stage_type="ORDERED_LID",
-                                          ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filters).count()
-
-        # Get students with exactly one attendance record
         students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
             count=1, **filters).values_list("student", flat=True)
 
-        first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters).count()
-        first_lesson_come_archived = Student.objects.filter(id__in=students_with_one_attendance, **filters).count()
+        first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters)
+        first_lesson_come_archived = first_lesson_come
 
-        # Get students who made their first course payment
         payment_students = Finance.objects.filter(
-            student__isnull=False,
-            kind__name="COURSE_PAYMENT",
-            **filters
+            student__isnull=False, kind__name="COURSE_PAYMENT", **filters
         ).values_list("student", flat=True)
 
-        first_course_payment = Student.objects.filter(id__in=payment_students, **filters).count()
-        first_course_payment_archived = Student.objects.filter(id__in=payment_students, **filters).count()
+        first_course_payment = Student.objects.filter(id__in=payment_students, **filters)
+        first_course_payment_archived = first_course_payment
 
-        active_student = StudentGroup.objects.filter(group__status="ACTIVE", **filters).count()
-        course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters).count()
+        active_student = StudentGroup.objects.filter(group__status="ACTIVE", **filters)
+        course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
 
+        # Apply additional filters
         if channel_id:
             channel = MarketingChannel.objects.get(id=channel_id)
-
-            lid = lid.filter(marketing_channel=channel).count()
-            orders = orders.filter(marketing_channel=channel).count()
-            orders_archived = orders.filter(marketing_channel=channel).count()
-            first_lesson = first_lesson.filter(marketing_channel=channel).count()
-            first_lesson_come = first_lesson_come.filter(marketing_channel=channel).count()
-            first_lesson_come_archived = first_lesson_come_archived.filter(marketing_channel=channel).count()
-            first_course_payment = first_course_payment.filter(marketing_channel=channel).count()
-            first_course_payment_archived = first_course_payment_archived.filter(marketing_channel=channel).count()
-            active_student = active_student.filter(student__marketing_channel=channel).count()
-            course_ended = course_ended.filter(student__marketing_channel=channel).count()
+            lid = lid.filter(marketing_channel=channel)
+            orders = orders.filter(marketing_channel=channel)
+            orders_archived = orders_archived.filter(marketing_channel=channel)
+            first_lesson = first_lesson.filter(marketing_channel=channel)
+            first_lesson_come = first_lesson_come.filter(marketing_channel=channel)
+            first_lesson_come_archived = first_lesson_come_archived.filter(marketing_channel=channel)
+            first_course_payment = first_course_payment.filter(marketing_channel=channel)
+            first_course_payment_archived = first_course_payment_archived.filter(marketing_channel=channel)
+            active_student = active_student.filter(student__marketing_channel=channel)
+            course_ended = course_ended.filter(student__marketing_channel=channel)
 
         if service_manager:
-            lid = lid.filter(service_manager__id=service_manager).count()
-            orders = orders.filter(service_manager__id=service_manager).count()
-            orders_archived = orders.filter(service_manager__id=service_manager).count()
-            first_lesson = first_lesson.filter(service_manager__id=service_manager).count()
-            first_lesson_come = first_lesson_come.filter(service_manager__id=service_manager).count()
-            first_lesson_come_archived = first_lesson_come_archived.filter(service_manager__id=service_manager).count()
-            first_course_payment = first_course_payment.filter(service_manager__id=service_manager).count()
-            first_course_payment_archived = first_course_payment_archived.filter(service_manager__id=service_manager).count()
-            active_student = active_student.filter(student__service_manager__id=service_manager).count()
-            course_ended = course_ended.filter(student__service_manager__id=service_manager).count()
+            lid = lid.filter(service_manager__id=service_manager)
+            orders = orders.filter(service_manager__id=service_manager)
+            orders_archived = orders_archived.filter(service_manager__id=service_manager)
+            first_lesson = first_lesson.filter(service_manager__id=service_manager)
+            first_lesson_come = first_lesson_come.filter(service_manager__id=service_manager)
+            first_lesson_come_archived = first_lesson_come_archived.filter(service_manager__id=service_manager)
+            first_course_payment = first_course_payment.filter(service_manager__id=service_manager)
+            first_course_payment_archived = first_course_payment_archived.filter(service_manager__id=service_manager)
+            active_student = active_student.filter(student__service_manager__id=service_manager)
+            course_ended = course_ended.filter(student__service_manager__id=service_manager)
 
         if sales_manager:
-            lid = lid.filter(sales_manager__id=sales_manager).count()
-            orders = orders.filter(sales_manager__id=sales_manager).count()
-            orders_archived = orders.filter(sales_manager__id=sales_manager).count()
-            first_lesson = first_lesson.filter(sales_manager__id=sales_manager).count()
-            first_lesson_come = first_lesson_come.filter(sales_manager__id=sales_manager).count()
-            first_lesson_come_archived = first_lesson_come_archived.filter(sales_manager__id=sales_manager).count()
-            first_course_payment = first_course_payment.filter(sales_manager__id=sales_manager).count()
-            first_course_payment_archived = first_course_payment_archived.filter(sales_manager__id=sales_manager).count()
-            active_student = active_student.filter(student__sales_manager__id=sales_manager).count()
-            course_ended = course_ended.filter(student__sales_manager__id=sales_manager).count()
+            lid = lid.filter(sales_manager__id=sales_manager)
+            orders = orders.filter(sales_manager__id=sales_manager)
+            orders_archived = orders_archived.filter(sales_manager__id=sales_manager)
+            first_lesson = first_lesson.filter(sales_manager__id=sales_manager)
+            first_lesson_come = first_lesson_come.filter(sales_manager__id=sales_manager)
+            first_lesson_come_archived = first_lesson_come_archived.filter(sales_manager__id=sales_manager)
+            first_course_payment = first_course_payment.filter(sales_manager__id=sales_manager)
+            first_course_payment_archived = first_course_payment_archived.filter(sales_manager__id=sales_manager)
+            active_student = active_student.filter(student__sales_manager__id=sales_manager)
+            course_ended = course_ended.filter(student__sales_manager__id=sales_manager)
 
         if call_operator:
-            lid = lid.filter(call_operator__id=call_operator).count()
-            orders = orders.filter(call_operator__id=call_operator).count()
-            orders_archived = orders.filter(call_operator__id=call_operator).count()
-            first_lesson = first_lesson.filter(call_operator__id=call_operator).count()
-            first_lesson_come = first_lesson_come.filter(call_operator__id=call_operator).count()
-            first_lesson_come_archived = first_lesson_come_archived.filter(call_operator__id=call_operator).count()
-            first_course_payment = first_course_payment.filter(call_operator__id=call_operator).count()
-            first_course_payment_archived = first_course_payment_archived.filter(call_operator__id=call_operator).count()
-            active_student = active_student.filter(student__call_operator__id=call_operator).count()
-            course_ended = course_ended.filter(student__call_operator__id=call_operator).count()
+            lid = lid.filter(call_operator__id=call_operator)
+            orders = orders.filter(call_operator__id=call_operator)
+            orders_archived = orders_archived.filter(call_operator__id=call_operator)
+            first_lesson = first_lesson.filter(call_operator__id=call_operator)
+            first_lesson_come = first_lesson_come.filter(call_operator__id=call_operator)
+            first_lesson_come_archived = first_lesson_come_archived.filter(call_operator__id=call_operator)
+            first_course_payment = first_course_payment.filter(call_operator__id=call_operator)
+            first_course_payment_archived = first_course_payment_archived.filter(call_operator__id=call_operator)
+            active_student = active_student.filter(student__call_operator__id=call_operator)
+            course_ended = course_ended.filter(student__call_operator__id=call_operator)
 
         if subjects:
-            lid = lid.filter(subjects__id=subjects).count()
-            orders = orders.filter(subjects__id=subjects).count()
-            orders_archived = orders.filter(subjects__id=subjects).count()
-            first_lesson = first_lesson.filter(subjects__id=subjects).count()
-            first_lesson_come = first_lesson_come.filter(subjects__id=subjects).count()
-            first_lesson_come_archived = first_lesson_come_archived.filter(subjects__id=subjects).count()
-            first_course_payment = first_course_payment.filter(subjects__id=subjects).count()
-            first_course_payment_archived = first_course_payment_archived.filter(subjects__id=subjects).count()
-            active_student = active_student.filter(student__subjects__id=subjects).count()
-            course_ended = course_ended.filter(student__subjects__id=subjects).count()
-
-        if course:
-            lid = lid.filter(subjects__id=subjects).count()
-            orders = orders.filter(subjects__id=subjects).count()
-            orders_archived = orders.filter(subjects__id=subjects).count()
-            first_lesson = first_lesson.filter(subjects__id=subjects).count()
-            first_lesson_come = first_lesson_come.filter(subjects__id=subjects).count()
-            first_lesson_come_archived = first_lesson_come_archived.filter(subjects__id=subjects).count()
-            first_course_payment = first_course_payment.filter(subjects__id=subjects).count()
-            first_course_payment_archived = first_course_payment_archived.filter(subjects__id=subjects).count()
-            active_student = active_student.filter(student__subjects__id=subjects).count()
-            course_ended = course_ended.filter(student__subjects__id=subjects).count()
+            lid = lid.filter(subjects__id=subjects)
+            orders = orders.filter(subjects__id=subjects)
+            orders_archived = orders_archived.filter(subjects__id=subjects)
+            first_lesson = first_lesson.filter(subjects__id=subjects)
+            first_lesson_come = first_lesson_come.filter(subjects__id=subjects)
+            first_lesson_come_archived = first_lesson_come_archived.filter(subjects__id=subjects)
+            first_course_payment = first_course_payment.filter(subjects__id=subjects)
+            first_course_payment_archived = first_course_payment_archived.filter(subjects__id=subjects)
+            active_student = active_student.filter(student__subjects__id=subjects)
+            course_ended = course_ended.filter(student__subjects__id=subjects)
 
         if teacher:
-            lid = lid.filter(lids_group__group__teacher__id=teacher).count()
-            orders = orders.filter(lids_group__group__teacher__id=teacher).count()
-            orders_archived = orders.filter(lids_group__group__teacher__id=teacher).count()
-            first_lesson = first_lesson.filter(students_group__group__teacher__id=teacher).count()
-            first_lesson_come = first_lesson_come.filter(students_group__group__teacher__id=teacher).count()
-            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__teacher__id=teacher).count()
-            first_course_payment = first_course_payment.filter(students_group__group__teacher__id=teacher).count()
-            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__teacher__id=teacher).count()
-            active_student = active_student.filter(group__teacher__id=subjects).count()
-            course_ended = course_ended.filter(group__teacher__id=subjects).count()
+            lid = lid.filter(lids_group__group__teacher__id=teacher)
+            orders = orders.filter(lids_group__group__teacher__id=teacher)
+            orders_archived = orders_archived.filter(lids_group__group__teacher__id=teacher)
+            first_lesson = first_lesson.filter(students_group__group__teacher__id=teacher)
+            first_lesson_come = first_lesson_come.filter(students_group__group__teacher__id=teacher)
+            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__teacher__id=teacher)
+            first_course_payment = first_course_payment.filter(students_group__group__teacher__id=teacher)
+            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__teacher__id=teacher)
+            active_student = active_student.filter(group__teacher__id=teacher)
+            course_ended = course_ended.filter(group__teacher__id=teacher)
 
         data = {
-            "lids": lid,
-            "orders": orders,
-            "orders_archived": orders_archived,
-            "first_lesson": first_lesson,
-            "first_lesson_come": first_lesson_come,
-            "first_lesson_come_archived": first_lesson_come_archived,
-            "first_course_payment": first_course_payment,
-            "active_student": active_student,
-            "first_course_payment_archived": first_course_payment_archived,
-            "course_ended": course_ended,
+            "lids": lid.count(),
+            "orders": orders.count(),
+            "orders_archived": orders_archived.count(),
+            "first_lesson": first_lesson.count(),
+            "first_lesson_come": first_lesson_come.count(),
+            "first_lesson_come_archived": first_lesson_come_archived.count(),
+            "first_course_payment": first_course_payment.count(),
+            "active_student": active_student.count(),
+            "first_course_payment_archived": first_course_payment_archived.count(),
+            "course_ended": course_ended.count(),
         }
 
         return Response(data)
+
 
 
 class MarketingChannels(APIView):
