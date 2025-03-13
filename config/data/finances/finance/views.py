@@ -667,11 +667,16 @@ class SalesStudentList(ListCreateAPIView):
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
+        type = self.request.query_params.get('type')
+
+        queryset = SaleStudent.objects.all()
 
         if filial:
-            return SaleStudent.objects.filter(filial__id=filial)  # ✅ Correct model
+            queryset = queryset.filter(filial__id=filial)
+        if type:
+            queryset = queryset.filter(sale__type=type)
 
-        return SaleStudent.objects.all()  # ✅ Ensures QuerySet is never None
+        return queryset
 
 
 class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
