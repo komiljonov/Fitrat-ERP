@@ -142,6 +142,18 @@ class DashboardView(APIView):
             active_student = active_student.filter(group__teacher__id=teacher)
             course_ended = course_ended.filter(group__teacher__id=teacher)
 
+        if course:
+            lid = lid.filter(lids_group__group__course__id=course)
+            orders = orders.filter(lids_group__group__course__id=course)
+            orders_archived = orders_archived.filter(lids_group__group__course__id=course)
+            first_lesson = first_lesson.filter(students_group__group__course__id=course)
+            first_lesson_come = first_lesson_come.filter(students_group__group__course__id=course)
+            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__course__id=course)
+            first_course_payment = first_course_payment.filter(students_group__group__course__id=course)
+            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__course__id=course)
+            active_student = active_student.filter(group__course__id=course)
+            course_ended = course_ended.filter(group__course__id=course)
+
         data = {
             "lids": lid.count(),
             "orders": orders.count(),
