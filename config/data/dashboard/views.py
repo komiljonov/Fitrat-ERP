@@ -283,6 +283,15 @@ class CheckRoomFillingView(APIView):
         filial_filling_sum = Room.objects.filter(filial_id=filial).aggregate(total=Sum("room_filling"))["total"] or 0
         filial_total_student_filling = total_free_lesson_hours * filial_filling_sum
 
+        new_student = StudentGroup.objects.filter(
+            student__student_stage_type="NEW_STUDENT"
+        )
+
+        active_student = StudentGroup.objects.filter(
+            student__student_stage_type="ACTIVE_STUDENT"
+        )
+
+
         return Response({
             'total_free_time': total_free_time,
             'free_slots_count': free_slots_count,
@@ -291,6 +300,8 @@ class CheckRoomFillingView(APIView):
             'total_free_lesson_hours': total_free_lesson_hours,
             'total_student_filling': total_student_filling,  # ✅ Specific room filling
             'filial_total_student_filling': filial_total_student_filling  # ✅ Filial-wide filling
+            "new_student": new_student,
+            "active_student": active_student,
         })
 
 
