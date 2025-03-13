@@ -344,7 +344,7 @@ class StudentGroupStatistics(APIView):
             students = students.filter(group__teacher__id=teacher)
 
         return Response({
-            "all" : all,
-            "students" : students,
-            "orders" : orders,
+            "all" : all.count(),
+            "students" : students.count(),
+            "orders" : orders.count(),
         })
