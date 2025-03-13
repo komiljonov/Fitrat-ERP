@@ -321,6 +321,8 @@ class SalesSerializer(serializers.ModelSerializer):
 class SaleStudentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    sale = serializers.PrimaryKeyRelatedField(queryset=Sale.objects.all(), allow_null=True)
+
     class Meta:
         model = SaleStudent
         fields = [
@@ -335,6 +337,8 @@ class SaleStudentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+
+        data["sale"] = SalesSerializer(instance.sale).data
         data['creator'] = UserListSerializer(instance.creator).data
         data['student'] = StudentSerializer(instance.student).data
         return data
