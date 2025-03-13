@@ -601,32 +601,35 @@ class SalesApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        creator = self.request.query_params.get('creator')
-        sale = self.request.query_params.get('sale')
-        student = self.request.query_params.get('student')
-        filial = self.request.query_params.get('filial')
+        creator = request.query_params.get('creator')
+        sale = request.query_params.get('sale')
+        student = request.query_params.get('student')
+        filial = request.query_params.get('filial')
 
         filters = {}
         if creator:
-            filters['creator__id'] = creator
+            filters['creator_id'] = creator  # Use `_id` for ForeignKeys
         if sale:
-            filters['sale__id'] = sale
+            filters['sale_id'] = sale
         if student:
-            filters['student__id'] = student
-
+            filters['student_id'] = student
         if filial:
-            filters['filial__id'] = filial
-        chart_data=[]
+            filters['filial_id'] = filial
 
-        total_students = SaleStudent.objects.filter(**filters)
-        total_voucher_amount = SaleStudent.objects.filter(sale__type="VOUCHER",**filters).aggregate(Sum('sale__amount'))
-        total_sale_discount = SaleStudent.objects.filter(sale__type="SALE",**filters).aggregate(Sum('sale__amount'))
-        total_debt = Student.objects.filter(balance__lt=0,**filters).aggregate(Sum('balance'))
-        total_income = Student.objects.filter(balance__status="ACTIVE",**filters).aggregate(Sum('balance'))
+        chart_data = []
 
+        total_students = SaleStudent.objects.filter(**filters).count()
+        total_voucher_amount = \
+        SaleStudent.objects.filter(sale__type="VOUCHER", **filters).aggregate(total=Sum('sale__amount'))['total'] or 0
+        total_sale_discount = \
+        SaleStudent.objects.filter(sale__type="SALE", **filters).aggregate(total=Sum('sale__amount'))['total'] or 0
+        total_debt = Student.objects.filter(balance__lt=0, **filters).aggregate(total=Sum('balance'))['total'] or 0
+
+        # FIX: Removed incorrect `balance__status` lookup
+        total_income = Student.objects.filter(**filters).aggregate(total=Sum('balance'))['total'] or 0
 
         chart_data.append({
-            "total_students": total_students.count(),
+            "total_students": total_students,
             "total_voucher_amount": total_voucher_amount,
             "total_sales_amount": total_sale_discount,
             "total_debt": total_debt,
