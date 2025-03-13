@@ -685,9 +685,9 @@ class PaymentStatisticsByKind(APIView):
 
     def get(self, request):
         # Parse and validate dates
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-        filial = self.request.query_params.get('filial')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        filial = request.query_params.get('filial')
 
         filters = {}
         if start_date:
@@ -698,13 +698,22 @@ class PaymentStatisticsByKind(APIView):
             filters['created_at__lte'] = end_date
         if filial:
             filters['filial_id'] = filial
+
         kinds = Kind.objects.all()
 
         # Function to get total amount for a given kind and action type
         def get_total_amount(kind, action_type):
             return (
-                    Finance.objects.filter(kind=kind, action=action_type, **filters)
-                    .aggregate(total=Sum('amount'))['total'] or 0
+                Finance.objects.filter(kind=kind, action=action_type, **filters)
+                .aggregate(total=Sum('amount'))['total'] or 0
+            )
+
+        # Function to get distinct actions for a given kind
+        def get_kind_actions(kind):
+            return list(
+                Finance.objects.filter(kind=kind, **filters)
+                .values_list("action", flat=True)
+                .distinct()
             )
 
         data = {}
@@ -713,7 +722,8 @@ class PaymentStatisticsByKind(APIView):
             kind_name = kind.name.lower().replace(" ", "_")
             data[kind_name] = {
                 "income": get_total_amount(kind, "INCOME"),
-                "expense": get_total_amount(kind, "EXPENSE")
+                "expense": get_total_amount(kind, "EXPENSE"),
+                "action": get_kind_actions(kind)
             }
 
         # Compute total income and expense **only from kinds**, excluding any integers in data
