@@ -678,6 +678,27 @@ class SalesStudentList(ListCreateAPIView):
 
         return queryset
 
+class SalesStudentNoPG(ListAPIView):
+    serializer_class = SaleStudentSerializer
+    queryset = SaleStudent.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        filial = self.request.query_params.get('filial')
+        type = self.request.query_params.get('type')
+
+        queryset = SaleStudent.objects.all()
+
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+        if type:
+            queryset = queryset.filter(sale__type=type)
+
+        return queryset
+
+    def get_paginated_response(self, data):
+        return Response(data)
+
 
 class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = SaleStudentSerializer
