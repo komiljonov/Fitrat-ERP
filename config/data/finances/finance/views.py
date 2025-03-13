@@ -662,7 +662,7 @@ class SalesList(ListCreateAPIView):
 
 class SalesStudentList(ListCreateAPIView):
     serializer_class = SaleStudentSerializer
-    queryset = SaleStudent.objects.all()  # ✅ Default QuerySet
+    queryset = SaleStudent.objects.all()
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
