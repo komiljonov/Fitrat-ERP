@@ -42,7 +42,7 @@ urlpatterns = [
     path('sale/',SalesList.as_view(), name='sale'),
 
     path('sale-student/',SalesStudentList.as_view(), name='sale_student'),
-    path("sale-student/no-pg/",SalesStudentNoPG.as_view(), name="sale_student"),
+    path("sale/no-pg/",SalesStudentNoPG.as_view(), name="sale_student"),
     path("sale-student/<uuid:pk>/",SalesStudentsRetrive.as_view(), name="sale_student"),
 
     path("payment-reason/",PaymentStatisticsByKind.as_view(), name="payment_kind"),
