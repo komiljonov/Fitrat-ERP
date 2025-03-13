@@ -191,48 +191,48 @@ class MarketingChannels(APIView):
 
         return Response(channel_counts)
 
+# bunda birinchi room berildimi yuqmi shunga tekshiraman, agar room kelmagan bulsa filial buyicha full room lar buyicha chiqadi
+# agar room bulsa usha xona, lesson_hours,start_end times buyicha filter, va check if lesson hours more than 90 min ,
+# and not any lessons get the time and till end_date count all hourse then count room filing for this hourse and then + next count
+# sum(group__room__filings - excested lessons StudentGroup.count()) then sum of both experession
 
-class Room_place(APIView):
+
+
+
+class CheckRoomFillingView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-        filial = self.request.query_params.get('filial')
-        lesson_hours = self.request.query_params.get('lesson_hours')
-        start_time = self.request.query_params.get('start_time')
-        end_time = self.request.query_params.get('end_time')
+        filial = request.query_params.get('filial', None)
+        room_id = request.query_params.get('room', None)
+        date_str = request.query_params.get('date', None)
 
+        if not filial or not date_str:
+            return Response({'error': 'Missing required parameters'}, status=400)
 
-        filters = {}
-        if start_date:
-            filters['created_at__gte'] = start_date
-        if end_date:
-            filters['created_at__lte'] = end_date
-        if filial:
-            filters['filial'] = filial
+        try:
+            date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({'error': 'Invalid date format'}, status=400)
 
+        # If no `room_id` provided, get all rooms in the filial
+        if not room_id:
+            rooms = Room.objects.filter(filial_id=filial).values_list("id", flat=True)
+            room_ids = list(rooms)
+        else:
+            room_ids = [room_id]
 
-        rooms = Room.objects.filter(**filters)
-        all_places = 0
-        for room in rooms:
-            all_places += room.room_filling
+        # Get total room filing based on scheduled lessons
+        total_filing = Group.objects.filter(
+            room_number_id__in=room_ids,
+            start_date__lte=date,
+            finish_date__gte=date
+        ).aggregate(
+            total_filing=Sum('room__filings') - Count('students')
+        )['total_filing'] or 0
 
-        is_used = StudentGroup.objects.filter(
-            group__status="ACTIVE",
-            **filters,
-        ).count()
-        is_free = all_places - is_used
+        return Response({'room_filling': total_filing * 2})
 
-        is_used_percent = all_places / 100 * is_used
-        is_free_percent = 100 - is_used_percent
-
-        response = {
-            "all_places": all_places,
-            "is_used": is_used,
-            "is_free": is_free,
-            "is_used_percent": is_used_percent,
-            "is_free_percent": is_free_percent,
-        }
-        return Response(response)
 
 
 class DashboardLineGraphAPIView(APIView):
@@ -614,61 +614,27 @@ class SalesApiView(APIView):
         if student:
             filters['student__id'] = student
 
-        # Count total students per creator
-        student_count = SaleStudent.objects.filter(**filters).values('creator').annotate(
-            total_students=Count('student', distinct=True)
-        )
+        if filial:
+            filters['filial__id'] = filial
+        chart_data=[]
 
-        # Sum up VOUCHER sales
-        voucher_sales = SaleStudent.objects.filter(sale__type="VOUCHER", **filters).values('creator').annotate(
-            total_voucher_amount=Sum('sale__amount')
-        )
+        total_students = SaleStudent.objects.filter(**filters)
+        total_voucher_amount = SaleStudent.objects.filter(sale__type="VOUCHER",**filters).aggregate(Sum('sales__amount'))
+        total_sale_discount = SaleStudent.objects.filter(sale__type="SALE",**filters).aggregate(Sum('sales__amount'))
+        total_debt = Student.objects.filter(balance__lt=0,**filters).aggregate(Sum('balance'))
+        total_income = Student.objects.filter(balance__status="ACTIVE",**filters).aggregate(Sum('balance'))
 
-        # Calculate SALES with monthly group pricing discount
-        sale_data = SaleStudent.objects.filter(sale__type="SALE", **filters).values('creator').annotate(
-            total_sale_discount=Sum(
-                Case(
-                    When(
-                        student__students_group__group__price_type="monthly",
-                        then=F('student__students_group__group__price') * F('sale__amount') / Value(100)
-                    ),
-                    default=Value(0),
-                    output_field=DecimalField()
-                )
-            )
-        )
 
-        # Sum of all sales (regardless of type)
-        total_sales = SaleStudent.objects.filter(**filters).values('creator').annotate(
-            total_sales_amount=Sum('sale__amount')
-        )
-
-        total_income = \
-            Student.objects.filter(is_archived=False, student_stage_type="ACTIVE_STUDENT",
-                                   balance__gt=0).aggregate(total_income=Sum('balance'))['total_income'] or 0
-        student_total_debt = \
-            Student.objects.filter(is_archived=False, student_stage_type="ACTIVE_STUDENT",
-                                   balance__lt=0).aggregate(
-                total_debt=Sum('balance'))['total_debt'] or 0
-
-        # Combine data
-        chart_data = []
-        for entry in student_count:
-            creator_id = entry['creator']
-            voucher_entry = next((v for v in voucher_sales if v['creator'] == creator_id), {'total_voucher_amount': 0})
-            sale_entry = next((s for s in sale_data if s['creator'] == creator_id), {'total_sale_discount': 0})
-            total_sales_entry = next((t for t in total_sales if t['creator'] == creator_id), {'total_sales_amount': 0})
-
-            chart_data.append({
-                "total_students": entry['total_students'],
-                "total_voucher_amount": voucher_entry['total_voucher_amount'],
-                "total_sale_discount": sale_entry['total_sale_discount'],
-                "total_sales_amount": total_sales_entry['total_sales_amount'],
-                "total_debt": student_total_debt,  # Qarzdorlar
-                "active_students_balance": total_income,  # Active Students
-            })
+        chart_data.append({
+            "total_students": total_students,
+            "total_voucher_amount": total_voucher_amount,
+            "total_sales_amount": total_sale_discount,
+            "total_debt": total_debt,
+            "active_students_balance": total_income,  # Active Students
+        })
 
         return Response({"chart_data": chart_data})
+
 
 class FinanceStatisticsApiView(APIView):
     permission_classes = [IsAuthenticated]
@@ -727,7 +693,6 @@ class FinanceStatisticsApiView(APIView):
                 "expenses": expense_stats,
             }
         )
-
 
 
 class StudentLanguage(APIView):
