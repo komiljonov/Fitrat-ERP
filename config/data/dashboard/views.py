@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 from data.department.marketing_channel.models import MarketingChannel
 from data.finances.finance.models import Finance, Casher, Kind, SaleStudent
 from data.lid.new_lid.models import Lid
-from data.student.groups.models import Room, Group
+from data.student.groups.models import Room, Group, Day
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
 from ..results.models import Results
@@ -196,43 +196,102 @@ class MarketingChannels(APIView):
 # and not any lessons get the time and till end_date count all hourse then count room filing for this hourse and then + next count
 # sum(group__room__filings - excested lessons StudentGroup.count()) then sum of both experession
 
-
-
-
 class CheckRoomFillingView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         filial = request.query_params.get('filial', None)
         room_id = request.query_params.get('room', None)
-        date_str = request.query_params.get('date', None)
+        lesson_type = request.query_params.get('lesson_type', None)
+        start_time = request.query_params.get('start_time', None)
+        end_time = request.query_params.get('end_time', None)
+        lesson_duration = request.query_params.get('lesson_duration', "90")  # Default to 90 min
 
-        if not filial or not date_str:
+        if not filial or not start_time or not end_time or not lesson_type:
             return Response({'error': 'Missing required parameters'}, status=400)
 
         try:
-            date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+            start_time = datetime.strptime(start_time, "%H:%M").time()
+            end_time = datetime.strptime(end_time, "%H:%M").time()
+            lesson_duration = int(lesson_duration)  # Convert to integer
         except ValueError:
-            return Response({'error': 'Invalid date format'}, status=400)
+            return Response({'error': 'Invalid input format'}, status=400)
 
-        # If no `room_id` provided, get all rooms in the filial
+        # Get all rooms if no specific room is given
         if not room_id:
-            rooms = Room.objects.filter(filial_id=filial).values_list("id", flat=True)
-            room_ids = list(rooms)
+            room_ids = list(Room.objects.filter(filial_id=filial).values_list("id", flat=True))
         else:
             room_ids = [room_id]
 
-        # Get total room filing based on scheduled lessons
-        total_filing = Group.objects.filter(
+        # Define lesson days
+        lesson_days = []
+        if lesson_type == "0":
+            lesson_days += ["Seshanba", "Payshanba", "Shanba"]
+        elif lesson_type == "1":
+            lesson_days += ["Dushanba", "Chorshanba", "Juma"]
+
+        lesson_days_ids = Day.objects.filter(name__in=lesson_days).values_list("id", flat=True)
+
+        # Retrieve all active lessons
+        active_lessons = Group.objects.filter(
             room_number_id__in=room_ids,
-            start_date__lte=date,
-            finish_date__gte=date
-        ).aggregate(
-            total_filing=Sum('room__filings') - Count('students')
-        )['total_filing'] or 0
+            scheduled_day_type__id__in=lesson_days_ids,
+            started_at__lt=end_time,
+            ended_at__gt=start_time
+        ).order_by("started_at")
 
-        return Response({'room_filling': total_filing * 2})
+        free_periods = []
+        busy_periods = []
+        free_time_slots = []
+        last_end_time = start_time
 
+        for lesson in active_lessons:
+            if last_end_time < lesson.started_at:
+                free_start = last_end_time
+                free_end = lesson.started_at
+                free_time = (datetime.combine(datetime.today(), free_end) -
+                             datetime.combine(datetime.today(), free_start)).seconds // 60
+
+                if free_time >= lesson_duration:
+                    free_periods.append(free_time)
+                    free_time_slots.append(f"{free_start.strftime('%H:%M')} - {free_end.strftime('%H:%M')}")
+
+            busy_periods.append(f"{lesson.started_at.strftime('%H:%M')} - {lesson.ended_at.strftime('%H:%M')}")
+            last_end_time = max(last_end_time, lesson.ended_at)
+
+        if last_end_time < end_time:
+            free_start = last_end_time
+            free_end = end_time
+            free_time = (datetime.combine(datetime.today(), free_end) -
+                         datetime.combine(datetime.today(), free_start)).seconds // 60
+
+            if free_time >= lesson_duration:
+                free_periods.append(free_time)
+                free_time_slots.append(f"{free_start.strftime('%H:%M')} - {free_end.strftime('%H:%M')}")
+
+        total_free_time = sum(free_periods)
+        free_slots_count = len(free_periods)
+
+        # **New Calculation: Count Available Lesson Hours**
+        total_free_lesson_hours = total_free_time // lesson_duration  # Converts minutes to lesson count
+
+        # Get student filling for a specific room
+        room_filling = Room.objects.filter(id=room_id).values_list("room_filling", flat=True).first() or 0
+        total_student_filling = total_free_lesson_hours * room_filling
+
+        # **Filial-wide calculation**: Get all room fillings in the filial
+        filial_filling_sum = Room.objects.filter(filial_id=filial).aggregate(total=Sum("room_filling"))["total"] or 0
+        filial_total_student_filling = total_free_lesson_hours * filial_filling_sum
+
+        return Response({
+            'total_free_time': total_free_time,
+            'free_slots_count': free_slots_count,
+            'free_time_slots': free_time_slots,
+            'busy_time_slots': busy_periods,
+            'total_free_lesson_hours': total_free_lesson_hours,
+            'total_student_filling': total_student_filling,  # ✅ Specific room filling
+            'filial_total_student_filling': filial_total_student_filling  # ✅ Filial-wide filling
+        })
 
 
 class DashboardLineGraphAPIView(APIView):
