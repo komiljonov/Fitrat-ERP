@@ -63,7 +63,7 @@ class DashboardView(APIView):
         ).values_list("student", flat=True)
 
         first_course_payment = Student.objects.filter(id__in=payment_students, **filters)
-        first_course_payment_archived = first_course_payment
+        first_course_payment_archived = first_course_payment.filter(is_archived=True)
 
         active_student = StudentGroup.objects.filter(group__status="ACTIVE", **filters)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
@@ -138,7 +138,7 @@ class DashboardView(APIView):
             first_lesson_come = first_lesson_come.filter(students_group__group__teacher__id=teacher)
             first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__teacher__id=teacher)
             first_course_payment = first_course_payment.filter(students_group__group__teacher__id=teacher)
-            first_course_payment_archived = first_course_payment_archived.filter(students_groupp__group__teacher__id=teacher)
+            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__teacher__id=teacher)
             active_student = active_student.filter(group__teacher__id=teacher)
             course_ended = course_ended.filter(group__teacher__id=teacher)
 
