@@ -723,7 +723,8 @@ class PaymentStatisticsByKind(APIView):
             data[kind_name] = {
                 "income": get_total_amount(kind, "INCOME"),
                 "expense": get_total_amount(kind, "EXPENSE"),
-                "action": kind.action
+                "action": kind.action,
+                "color":kind.color
             }
 
         # Compute total income and expense **only from kinds**, excluding any integers in data
