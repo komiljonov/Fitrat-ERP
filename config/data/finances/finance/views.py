@@ -660,6 +660,20 @@ class SalesList(ListCreateAPIView):
         return Sale.objects.filter(filial__in=self.request.user.filial.all())
 
 
+class SalesStudentNoPG(ListAPIView):
+    serializer_class = SalesSerializer
+    queryset = Sale.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        filial = self.request.query_params.get('filial')
+        if filial:
+            return Sale.objects.filter(filial__in=filial)
+        return Sale.objects.filter(filial__in=self.request.user.filial.all())
+
+    def get_paginated_response(self, data):
+        return Response(data)
+
 class SalesStudentList(ListCreateAPIView):
     serializer_class = SaleStudentSerializer
     queryset = SaleStudent.objects.all()
@@ -678,26 +692,7 @@ class SalesStudentList(ListCreateAPIView):
 
         return queryset
 
-class SalesStudentNoPG(ListAPIView):
-    serializer_class = SaleStudentSerializer
-    queryset = SaleStudent.objects.all()
-    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        filial = self.request.query_params.get('filial')
-        type = self.request.query_params.get('type')
-
-        queryset = SaleStudent.objects.all()
-
-        if filial:
-            queryset = queryset.filter(filial__id=filial)
-        if type:
-            queryset = queryset.filter(sale__type=type)
-
-        return queryset
-
-    def get_paginated_response(self, data):
-        return Response(data)
 
 
 class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
