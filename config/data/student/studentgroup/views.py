@@ -329,9 +329,22 @@ class StudentGroupStatistics(APIView):
         course = self.request.query_params.get("course")
         teacher = self.request.query_params.get("teacher")
 
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+
         all = StudentGroup.objects.filter(filial__id=filial)
         orders = StudentGroup.objects.filter(filial__id=filial, lid__lid_stage_type="ORDERED_LID")
         students = StudentGroup.objects.filter(filial__id=filial, student__isnull=False)
+
+        if start_date and end_date:
+            all = all.filter(created_at__gte=start_date,created_at__lte=end_date)
+            orders = orders.filter(created_at__gte=start_date,created_at__lte=end_date)
+            students = students.filter(created_at__gte=start_date,created_at__lte=end_date)
+
+        if start_date:
+            all = all.filter(created_at__gte=start_date)
+            orders = orders.filter(created_at__gte=start_date)
+            students = students.filter(created_at__gte=start_date)
 
         if course:
             all = all.filter(group__course__id=course)
