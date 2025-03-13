@@ -283,14 +283,23 @@ class CheckRoomFillingView(APIView):
         filial_filling_sum = Room.objects.filter(filial_id=filial).aggregate(total=Sum("room_filling"))["total"] or 0
         filial_total_student_filling = total_free_lesson_hours * filial_filling_sum
 
-        new_student = StudentGroup.objects.filter(
-            student__student_stage_type="NEW_STUDENT"
-        )
+        # Get free places in groups where student count < room capacity
+        group_free_places = StudentGroup.objects.filter(
+            group__room_number__filial_id=filial
+        ).annotate(
+            room_capacity=F("group__room_number__room_filling"),
+            student_count=Count("student_id")
+        ).aggregate(
+            total_free_places=Sum(F("room_capacity") - F("student_count"))
+        )["total_free_places"] or 0  # Default to 0 if no data
 
-        active_student = StudentGroup.objects.filter(
-            student__student_stage_type="ACTIVE_STUDENT"
-        )
+        # Add free places to total student filling
+        total_student_filling += group_free_places
+        filial_total_student_filling += group_free_places
 
+        # New and active student stats
+        new_student = StudentGroup.objects.filter(student__student_stage_type="NEW_STUDENT").count()
+        active_student = StudentGroup.objects.filter(student__student_stage_type="ACTIVE_STUDENT").count()
 
         return Response({
             'total_free_time': total_free_time,
@@ -298,10 +307,11 @@ class CheckRoomFillingView(APIView):
             'free_time_slots': free_time_slots,
             'busy_time_slots': busy_periods,
             'total_free_lesson_hours': total_free_lesson_hours,
-            'total_student_filling': total_student_filling,  # ✅ Specific room filling
-            'filial_total_student_filling': filial_total_student_filling,  # ✅ Filial-wide filling
+            'total_student_filling': total_student_filling,  # ✅ Includes free group places
+            'filial_total_student_filling': filial_total_student_filling,  # ✅ Includes free group places
             "new_student": new_student,
             "active_student": active_student,
+            "group_free_places": group_free_places,  # ✅ New field for total group free places
         })
 
 
