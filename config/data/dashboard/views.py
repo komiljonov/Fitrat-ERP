@@ -62,7 +62,7 @@ class DashboardView(APIView):
             count=1, **filters).values_list("student", flat=True)
 
         first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters)
-        first_lesson_come_archived = first_lesson_come
+        first_lesson_come_archived = first_lesson_come.filter(is_archived=True)
 
         # First Course Payment Students
         payment_students = Finance.objects.filter(
@@ -128,18 +128,18 @@ class DashboardView(APIView):
             orders = orders.filter(lids_group__group__teacher_id=teacher)
             orders_archived = orders_archived.filter(lids_group__group__teacher_id=teacher)
             first_lesson = first_lesson.filter(group__teacher_id=teacher)
-            first_lesson_come = first_lesson_come.filter(student_groups__group__teacher_id=teacher)
-            first_course_payment = first_course_payment.filter(student_groups__group__teacher_id=teacher)
-            first_course_payment_archived = first_course_payment_archived.filter(student_groups__group__teacher_id=teacher)
+            first_lesson_come = first_lesson_come.filter(students_group__group__teacher_id=teacher)
+            first_course_payment = first_course_payment.filter(students_group__group__teacher_id=teacher)
+            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__teacher_id=teacher)
 
         if course:
             lid = lid.filter(lids_group__group__course_id=course)
             orders = orders.filter(lids_group__group__course_id=course)
             orders_archived = orders_archived.filter(lids_group__group__course_id=course)
             first_lesson = first_lesson.filter(group__course_id=course)
-            first_lesson_come = first_lesson_come.filter(student_groups__group__course_id=course)
-            first_course_payment = first_course_payment.filter(student_groups__group__course_id=course)
-            first_course_payment_archived = first_course_payment_archived.filter(student_groups__group__course_id=course)
+            first_lesson_come = first_lesson_come.filter(students_group__group__course_id=course)
+            first_course_payment = first_course_payment.filter(students_group__group__course_id=course)
+            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__course_id=course)
 
         # Final Data Output
         data = {
