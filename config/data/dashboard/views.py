@@ -299,7 +299,7 @@ class CheckRoomFillingView(APIView):
             'busy_time_slots': busy_periods,
             'total_free_lesson_hours': total_free_lesson_hours,
             'total_student_filling': total_student_filling,  # ✅ Specific room filling
-            'filial_total_student_filling': filial_total_student_filling  # ✅ Filial-wide filling
+            'filial_total_student_filling': filial_total_student_filling,  # ✅ Filial-wide filling
             "new_student": new_student,
             "active_student": active_student,
         })
