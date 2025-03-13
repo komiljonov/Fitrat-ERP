@@ -155,16 +155,16 @@ class DashboardView(APIView):
             course_ended = course_ended.filter(student__subjects__id=subjects).count()
 
         if teacher:
-            lid = lid.filter(subjects__id=subjects).count()
-            orders = orders.filter(subjects__id=subjects).count()
-            orders_archived = orders.filter(subjects__id=subjects).count()
-            first_lesson = first_lesson.filter(subjects__id=subjects).count()
-            first_lesson_come = first_lesson_come.filter(subjects__id=subjects).count()
-            first_lesson_come_archived = first_lesson_come_archived.filter(subjects__id=subjects).count()
-            first_course_payment = first_course_payment.filter(subjects__id=subjects).count()
-            first_course_payment_archived = first_course_payment_archived.filter(subjects__id=subjects).count()
-            active_student = active_student.filter(student__subjects__id=subjects).count()
-            course_ended = course_ended.filter(student__subjects__id=subjects).count()
+            lid = lid.filter(lids_group__group__teacher__id=teacher).count()
+            orders = orders.filter(lids_group__group__teacher__id=teacher).count()
+            orders_archived = orders.filter(lids_group__group__teacher__id=teacher).count()
+            first_lesson = first_lesson.filter(students_group__group__teacher__id=teacher).count()
+            first_lesson_come = first_lesson_come.filter(students_group__group__teacher__id=teacher).count()
+            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__teacher__id=teacher).count()
+            first_course_payment = first_course_payment.filter(students_group__group__teacher__id=teacher).count()
+            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__teacher__id=teacher).count()
+            active_student = active_student.filter(group__teacher__id=subjects).count()
+            course_ended = course_ended.filter(group__teacher__id=subjects).count()
 
         data = {
             "lids": lid,
