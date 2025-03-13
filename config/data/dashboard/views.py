@@ -119,16 +119,16 @@ class DashboardView(APIView):
             course_ended = course_ended.filter(student__call_operator__id=call_operator)
 
         if subjects:
-            lid = lid.filter(subjects__id=subjects)
-            orders = orders.filter(subjects__id=subjects)
-            orders_archived = orders_archived.filter(subjects__id=subjects)
-            first_lesson = first_lesson.filter(subjects__id=subjects)
-            first_lesson_come = first_lesson_come.filter(subjects__id=subjects)
-            first_lesson_come_archived = first_lesson_come_archived.filter(subjects__id=subjects)
-            first_course_payment = first_course_payment.filter(subjects__id=subjects)
-            first_course_payment_archived = first_course_payment_archived.filter(subjects__id=subjects)
-            active_student = active_student.filter(student__subjects__id=subjects)
-            course_ended = course_ended.filter(student__subjects__id=subjects)
+            lid = lid.filter(subject__id=subjects)
+            orders = orders.filter(subject__id=subjects)
+            orders_archived = orders_archived.filter(subject__id=subjects)
+            first_lesson = first_lesson.filter(subject__id=subjects)
+            first_lesson_come = first_lesson_come.filter(subject__id=subjects)
+            first_lesson_come_archived = first_lesson_come_archived.filter(subject__id=subjects)
+            first_course_payment = first_course_payment.filter(subject__id=subjects)
+            first_course_payment_archived = first_course_payment_archived.filter(subject__id=subjects)
+            active_student = active_student.filter(student__subject__id=subjects)
+            course_ended = course_ended.filter(student__subject__id=subjects)
 
         if teacher:
             lid = lid.filter(lids_group__group__teacher__id=teacher)
