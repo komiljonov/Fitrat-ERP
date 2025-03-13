@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import StudentGroupDetail, StudentGroupNopg, StudentsGroupList, GroupStudentList, GroupStudentDetail, \
     SecondaryStudentList, SecondaryGroupList, GroupStudentStatistics, GroupAttendedStudents, StudentGroupDelete, \
-    SecondaryGroupStudentList, SecondaryStudentGroupDelete
+    SecondaryGroupStudentList, SecondaryStudentGroupDelete, StudentGroupStatistics
 from ...teachers.teacher.views import Teacher_StudentsView
 
 urlpatterns = [
@@ -27,5 +27,7 @@ urlpatterns = [
     path('statistics/<uuid:pk>', GroupStudentStatistics.as_view()),
 
     path("delete/<uuid:pk>", StudentGroupDelete.as_view()),
+
+    path("statistics/", StudentGroupStatistics.as_view()),
 
 ]
