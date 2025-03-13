@@ -47,7 +47,7 @@ class DashboardView(APIView):
         if filial:
             filters["filial"] = filial
 
-        lid = Lid.objects.filter(lid_stage_type="NEW_LID", **filters)
+        lid = Lid.objects.filter(**filters)
         orders = Lid.objects.filter(lid_stage_type="ORDERED_LID", **filters)
         orders_archived = orders
         first_lesson = orders.filter(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
@@ -68,7 +68,7 @@ class DashboardView(APIView):
         active_student = StudentGroup.objects.filter(group__status="ACTIVE", **filters)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
 
-        # Apply additional filters
+
         if channel_id:
             channel = MarketingChannel.objects.get(id=channel_id)
             lid = lid.filter(marketing_channel=channel)
