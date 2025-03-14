@@ -441,7 +441,7 @@ class CheckRoomFillingView(APIView):
         total_available_time = (datetime.combine(datetime.today(), end_time) -
                                 datetime.combine(datetime.today(), start_time)).seconds // 60
         ic(total_available_time)
-        total_available_lesson_hours = (total_available_time // lesson_duration) * (2 if lesson_type == "." else 1)
+        total_available_lesson_hours = (total_available_time // lesson_duration)
 
         # **Count occupied lesson hours**
         occupied_lesson_hours = sum(
