@@ -395,6 +395,7 @@ class MarketingChannels(APIView):
 # and not any lessons get the time and till end_date count all hourse then count room filing for this hourse and then + next count
 # sum(group__room__filings - excested lessons StudentGroup.count()) then sum of both experession
 
+
 class CheckRoomFillingView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -404,7 +405,7 @@ class CheckRoomFillingView(APIView):
         lesson_type = request.query_params.get('lesson_type', None)
         start_time = request.query_params.get('start_time', None)
         end_time = request.query_params.get('end_time', None)
-        lesson_duration = request.query_params.get('lesson_duration', "90")  # Default to 90 min
+        lesson_duration = request.query_params.get('lesson_duration', "90")  # Default 90 min
 
         if not filial or not start_time or not end_time or not lesson_type:
             return Response({'error': 'Missing required parameters'}, status=400)
@@ -412,39 +413,36 @@ class CheckRoomFillingView(APIView):
         try:
             start_time = datetime.strptime(start_time, "%H:%M").time()
             end_time = datetime.strptime(end_time, "%H:%M").time()
-            lesson_duration = int(lesson_duration)  # Convert to integer
+            lesson_duration = int(lesson_duration)
         except ValueError:
             return Response({'error': 'Invalid input format'}, status=400)
 
-        # Get all rooms if no specific room is given
+        # Fetch room IDs in the filial if not specified
         if not room_id:
             room_ids = list(Room.objects.filter(filial_id=filial).values_list("id", flat=True))
         else:
             room_ids = [room_id]
 
         # Define lesson days
-        lesson_days = []
-        if lesson_type == "0":
-            lesson_days += ["Seshanba", "Payshanba", "Shanba"]
-        elif lesson_type == "1":
-            lesson_days += ["Dushanba", "Chorshanba", "Juma"]
-        else:
-            lesson_days += ["Dushanba","Seshanba", "Chorshanba","Payshanba", "Juma", "Shanba"]
+        lesson_days_map = {
+            "0": ["Seshanba", "Payshanba", "Shanba"],
+            "1": ["Dushanba", "Chorshanba", "Juma"],
+            "2": ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"]
+        }
+        lesson_days = lesson_days_map.get(lesson_type, [])
 
-        lesson_days_ids = Day.objects.filter(name__in=lesson_days).values_list("id", flat=True)
+        lesson_days_ids = list(Day.objects.filter(name__in=lesson_days).values_list("id", flat=True))
 
-        # Retrieve all active lessons
+        # Filter active groups that operate on selected days
         active_lessons = Group.objects.filter(
             room_number_id__in=room_ids,
-            scheduled_day_type__id__in=lesson_days_ids,
+            scheduled_day_type__id__in=lesson_days_ids,  # Ensure group days match lesson days
             started_at__lt=end_time,
             ended_at__gt=start_time
-        ).order_by("started_at")
+        ).distinct()  # Prevent duplicate groups appearing for multiple days
 
-        ic(active_lessons.count())
-
-        free_periods = []
         busy_periods = []
+        free_periods = []
         free_time_slots = []
         last_end_time = start_time
 
@@ -454,7 +452,6 @@ class CheckRoomFillingView(APIView):
                 free_end = lesson.started_at
                 free_time = (datetime.combine(datetime.today(), free_end) -
                              datetime.combine(datetime.today(), free_start)).seconds // 60
-
                 if free_time >= lesson_duration:
                     free_periods.append(free_time)
                     free_time_slots.append(f"{free_start.strftime('%H:%M')} - {free_end.strftime('%H:%M')}")
@@ -467,7 +464,6 @@ class CheckRoomFillingView(APIView):
             free_end = end_time
             free_time = (datetime.combine(datetime.today(), free_end) -
                          datetime.combine(datetime.today(), free_start)).seconds // 60
-
             if free_time >= lesson_duration:
                 free_periods.append(free_time)
                 free_time_slots.append(f"{free_start.strftime('%H:%M')} - {free_end.strftime('%H:%M')}")
@@ -475,10 +471,19 @@ class CheckRoomFillingView(APIView):
         total_free_time = sum(free_periods)
         free_slots_count = len(free_periods)
 
-        # **New Calculation: Count Available Lesson Hours**
-        total_free_lesson_hours = total_free_time // lesson_duration
+        # **Fixed Calculation for `total_free_lesson_hours`**
+        total_free_lesson_hours = (total_free_time // lesson_duration)
 
-        # Get student filling for a specific room
+        # **Fix: Account for the number of days the group meets**
+        if active_lessons.exists():
+            days_per_group = active_lessons.annotate(day_count=Count("scheduled_day_type")).aggregate(
+                avg_days=Sum("day_count")
+            )["avg_days"] or 0  # Get the average days a group is scheduled
+
+            if days_per_group > 0:
+                total_free_lesson_hours *= days_per_group / len(lesson_days)  # Scale based on how often the group meets
+
+        # Fetch room filling data
         room_filling = Room.objects.filter(id=room_id).values_list("room_filling", flat=True).first() or 0
         total_student_filling = total_free_lesson_hours * room_filling
 
@@ -506,11 +511,11 @@ class CheckRoomFillingView(APIView):
 
         return Response({
             'total_free_time': total_free_time,
-            "groups" : active_lessons.count() / 3,
+            "groups": active_lessons.count(),
             'free_slots_count': free_slots_count,
             'free_time_slots': free_time_slots,
             'busy_time_slots': busy_periods,
-            'total_free_lesson_hours': total_free_lesson_hours,
+            'total_free_lesson_hours': round(total_free_lesson_hours),  # Now correctly accounts for group meeting days
             'total_student_filling': total_student_filling,
             'filial_total_student_filling': filial_total_student_filling,
             "new_student": new_student,
