@@ -979,40 +979,58 @@ class AdminLineGraph(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        queryset = Lid.objects.all()
-
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         call_operator = request.query_params.get('call_operator')
         lid_type = request.query_params.get('type')
 
+        # Parse date strings into actual date objects
+        start_date = parse_date(start_date) if start_date else None
+        end_date = parse_date(end_date) if end_date else None
+
+        # Base filters
+        lid_filter = {}
+        student_filter = {}
+
         if start_date:
-            start_date = parse_date(start_date)
-            queryset = queryset.filter(created_at__gte=start_date)
+            lid_filter['created_at__gte'] = start_date
+            student_filter['created_at__gte'] = start_date
         if end_date:
-            end_date = parse_date(end_date)
-            queryset = queryset.filter(created_at__lte=end_date)
+            lid_filter['created_at__lte'] = end_date
+            student_filter['created_at__lte'] = end_date
         if call_operator:
-            queryset = queryset.filter(call_operator=call_operator)
+            lid_filter['call_operator'] = call_operator
         if lid_type:
-            queryset = queryset.filter(type=lid_type)
+            lid_filter['type'] = lid_type
 
-        # Aggregate data by date
-        lid_counts = queryset.values("created_at__date").annotate(count=Count("id"))
+        # Query for each type
+        lid_new = Lid.objects.filter(lid_stage_type="NEW_LID", **lid_filter)
+        lid_ordered = Lid.objects.filter(lid_stage_type="ORDERED_LID", **lid_filter)
+        student_new = Student.objects.filter(student_stage_type="NEW_STUDENT", **student_filter)
+        student_active = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", **student_filter)
 
-        # Ensure missing dates are filled with zero values
-        date_counts = defaultdict(int)
-        if start_date and end_date:
-            current_date = start_date
-            while current_date <= end_date:
-                date_counts[current_date] = 0
-                current_date += timedelta(days=1)
+        # Function to process data and fill missing dates
+        def get_counts(queryset, date_field="created_at"):
+            counts = queryset.values(f"{date_field}__date").annotate(count=Count("id"))
+            date_counts = defaultdict(int)
 
-        # Populate actual counts
-        for entry in lid_counts:
-            date_counts[entry["created_at__date"]] = entry["count"]
+            if start_date and end_date:
+                current_date = start_date
+                while current_date <= end_date:
+                    date_counts[current_date] = 0
+                    current_date += timedelta(days=1)
 
-        # Convert to a sorted list
-        result = [{"date": date.strftime("%Y-%m-%d"), "count": count} for date, count in sorted(date_counts.items())]
+            for entry in counts:
+                date_counts[entry[f"{date_field}__date"]] = entry["count"]
 
-        return Response(result)
+            return [{"date": date.strftime("%Y-%m-%d"), "count": count} for date, count in sorted(date_counts.items())]
+
+        # Construct the response
+        response_data = {
+            "new_lid": get_counts(lid_new),
+            "ordered_lid": get_counts(lid_ordered),
+            "new_student": get_counts(student_new),
+            "active_student": get_counts(student_active),
+        }
+
+        return Response(response_data)
