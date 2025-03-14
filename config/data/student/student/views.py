@@ -141,7 +141,7 @@ class StudentListNoPG(FilialRestrictedQuerySetMixin, ListAPIView):
         filial_id = self.request.query_params.get('filial')
         queryset = Student.objects.all()
         if filial_id:
-            queryset = queryset.filter(filial__id=filial_id)
+            queryset = queryset.filter(filial__id=filial_id, is_active=False)
 
         return queryset
 
