@@ -1,4 +1,5 @@
-from datetime import datetime
+from collections import defaultdict
+from datetime import datetime, timedelta
 from io import BytesIO
 
 import pandas as pd
@@ -7,11 +8,12 @@ from django.db.models import Count, Q
 from django.db.models import Sum, F, DecimalField, Value
 from django.db.models.functions import ExtractWeekDay, Concat
 from django.http import HttpResponse
+from django.utils.dateparse import parse_date
 from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -167,10 +169,10 @@ class DashboardView(APIView):
             "orders_archived": orders_archived.count(),
             "first_lesson": first_lesson.count(),
             "first_lesson_come": first_lesson_come.count(),
-            "first_lesson_come_archived": first_lesson_come_archived.count(),
+            "first_lesson_come_archived": first_lesson_come_archived.count() or 0,
             "first_course_payment": first_course_payment.count(),
             "active_student": active_student.count(),
-            "first_course_payment_archived": first_course_payment_archived.count(),
+            "first_course_payment_archived": first_course_payment_archived.count() or 0,
             "course_ended": course_ended.count(),
         }
 
@@ -971,3 +973,46 @@ class ExportDashboardToExcelAPIView(APIView):
         workbook.save(response)
 
         return response
+
+
+class AdminLineGraph(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        queryset = Lid.objects.all()
+
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        call_operator = request.query_params.get('call_operator')
+        lid_type = request.query_params.get('type')
+
+        if start_date:
+            start_date = parse_date(start_date)
+            queryset = queryset.filter(created_at__gte=start_date)
+        if end_date:
+            end_date = parse_date(end_date)
+            queryset = queryset.filter(created_at__lte=end_date)
+        if call_operator:
+            queryset = queryset.filter(call_operator=call_operator)
+        if lid_type:
+            queryset = queryset.filter(type=lid_type)
+
+        # Aggregate data by date
+        lid_counts = queryset.values("created_at__date").annotate(count=Count("id"))
+
+        # Ensure missing dates are filled with zero values
+        date_counts = defaultdict(int)
+        if start_date and end_date:
+            current_date = start_date
+            while current_date <= end_date:
+                date_counts[current_date] = 0
+                current_date += timedelta(days=1)
+
+        # Populate actual counts
+        for entry in lid_counts:
+            date_counts[entry["created_at__date"]] = entry["count"]
+
+        # Convert to a sorted list
+        result = [{"date": date.strftime("%Y-%m-%d"), "count": count} for date, count in sorted(date_counts.items())]
+
+        return Response(result)
