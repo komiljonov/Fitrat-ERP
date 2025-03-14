@@ -465,11 +465,10 @@ class CheckRoomFillingView(APIView):
         )
         if lesson_type == "1":
             groups_students = StudentGroup.objects.filter(filial_id=filial,
-                                                          group__scheduled_day_type__name__in=["Seshanba"])
-
+                                                          group__scheduled_day_type__name__in=["Dushanba"])
         elif lesson_type == "0":
             groups_students = StudentGroup.objects.filter(filial_id=filial,
-                                                          group__scheduled_day_type__name__in=["Dushanba"])
+                                                          group__scheduled_day_type__name__in=["Seshanba"])
         else :
             groups_students = StudentGroup.objects.filter(filial_id=filial)
 
