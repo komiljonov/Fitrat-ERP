@@ -472,9 +472,14 @@ class CheckRoomFillingView(APIView):
         else :
             groups_students = StudentGroup.objects.filter(filial_id=filial)
 
-
-        new_students = StudentGroup.objects.filter(filial_id=filial,student__student_stage_type="NEW_STUDENT")
-
+        if lesson_type == "1":
+            new_students = StudentGroup.objects.filter(filial_id=filial,student__student_stage_type="NEW_STUDENT",
+                                                          group__scheduled_day_type__name__in=["Dushanba"])
+        elif lesson_type == "0":
+            new_students = StudentGroup.objects.filter(filial_id=filial,student__student_stage_type="NEW_STUDENT",
+                                                          group__scheduled_day_type__name__in=["Seshanba"])
+        else :
+            new_students = StudentGroup.objects.filter(filial_id=filial,student__student_stage_type="NEW_STUDENT",)
 
         # **Generate final statistics response**
         return Response({
