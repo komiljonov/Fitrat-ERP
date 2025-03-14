@@ -76,6 +76,7 @@ class DashboardView(APIView):
         first_course_payment_archived = first_course_payment.filter(is_archived=True)
 
         # Active and Ended Courses
+        new_student = StudentGroup.objects.filter(student__status="NEW_STUDENT", **filters)
         active_student = StudentGroup.objects.filter(group__status="ACTIVE", **filters)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
 
@@ -91,6 +92,7 @@ class DashboardView(APIView):
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 
             # Fix: Assign empty QuerySet instead of a list
+            new_student = new_student.filter(is_student=is_student_value, is_archived=False)
             first_lesson_come_archived = first_lesson_come.filter(
                 is_archived=True) if first_lesson_come.exists() else None
             first_course_payment = first_course_payment.filter(is_archived=is_student_value)
@@ -177,6 +179,7 @@ class DashboardView(APIView):
             "first_lesson_come": first_lesson_come.count(),
             "first_lesson_come_archived": first_lesson_come_archived.count() if first_lesson_come_archived else 0,
             "first_course_payment": first_course_payment.count(),
+            "new_student": new_student.count(),
             "active_student": active_student.count(),
             "first_course_payment_archived": first_course_payment_archived.count() if first_course_payment_archived else 0,
             "course_ended": course_ended.count(),
