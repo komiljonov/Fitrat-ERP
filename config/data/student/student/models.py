@@ -45,10 +45,10 @@ class Student(TimeStampModel):
                                                               help_text="Marketing channel for this student")
 
     student_stage_type = models.CharField(
-        choices=(
+        choices=[
             ('NEW_STUDENT', 'NEW_STUDENT'),
             ('ACTIVE_STUDENT', 'ACTIVE_STUDENT'),
-        ),
+        ],
         default="NEW_STUDENT",
         max_length=100,
         help_text="Student stage type",
