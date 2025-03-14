@@ -84,10 +84,10 @@ class DashboardView(APIView):
         if is_student:
             is_student_value = is_student.capitalize()
 
-            lid = lid.filter(is_student=is_student_value)
-            orders = orders.filter(is_student=is_student_value)
+            lid = lid.filter(is_student=is_student_value, is_archived=False)
+            orders = orders.filter(is_student=is_student_value,is_archived=False)
             orders_archived = orders_archived.filter(is_student=is_student_value)
-            first_lesson = first_lesson.filter(lid__is_student=is_student_value)
+            first_lesson = first_lesson.filter(lid__is_student=is_student_value, lid__is_archived=False)
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 
             # Fix: Assign empty QuerySet instead of a list
@@ -310,7 +310,7 @@ class CheckRoomFillingView(APIView):
             student_count=Count("student_id")
         ).aggregate(
             total_free_places=Sum(F("room_capacity") - F("student_count"))
-        )["total_free_places"] or 0  # Default to 0 if no data
+        )["total_free_places"] or 0
 
         # Add free places to total student filling
         total_student_filling += group_free_places
@@ -326,11 +326,11 @@ class CheckRoomFillingView(APIView):
             'free_time_slots': free_time_slots,
             'busy_time_slots': busy_periods,
             'total_free_lesson_hours': total_free_lesson_hours,
-            'total_student_filling': total_student_filling,  # ✅ Includes free group places
-            'filial_total_student_filling': filial_total_student_filling,  # ✅ Includes free group places
+            'total_student_filling': total_student_filling,
+            'filial_total_student_filling': filial_total_student_filling,
             "new_student": new_student,
             "active_student": active_student,
-            "group_free_places": group_free_places,  # ✅ New field for total group free places
+            "group_free_places": group_free_places,
         })
 
 
