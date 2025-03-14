@@ -622,8 +622,10 @@ class PaymentCasherStatistics(ListAPIView):
 
         # Define valid payment methods
         valid_payment_methods = [
-            'Click', 'Payme', 'Naqt pul', 'Card', "Pul o'tkazish"
+            'Click', 'Payme', 'Cash', 'Card', "Money_send"
         ]
+
+
 
         # Function to calculate totals
         def get_total_amount(payment, action_type):
@@ -634,8 +636,11 @@ class PaymentCasherStatistics(ListAPIView):
         data = {}
         for payment in valid_payment_methods:
             formatted_name = payment.lower().replace(" ", "_")
+
             data[f"{formatted_name}_income"] = get_total_amount(payment, "INCOME")
+
             data[f"{formatted_name}_expense"] = get_total_amount(payment, "EXPENSE")
+
 
         # Compute total income and expense
         data["total_income"] = sum(data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods)

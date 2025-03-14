@@ -16,7 +16,7 @@ urlpatterns = [
     path('student/<uuid:pk>/',StudentFinanceListAPIView.as_view(), name='finance_student'),
     path('stuff/<uuid:pk>/',StuffFinanceListAPIView.as_view(), name='finance_stuff'),
 
-    path('casher',CasherListCreateAPIView.as_view(), name='finance_casher'),
+    path('casher/',CasherListCreateAPIView.as_view(), name='finance_casher'),
     path('casher/<uuid:pk>/',CasherRetrieveUpdateDestroyAPIView.as_view(), name='finance_casher'),
     path('casher/no-pg/',CasherNoPg.as_view(), name='finance_casher_no-pg'),
     path('casher/stats/<uuid:pk>/',CasherStatisticsAPIView.as_view(), name='finance_casher_stats'),

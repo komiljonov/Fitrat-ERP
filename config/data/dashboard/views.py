@@ -177,7 +177,6 @@ class DashboardView(APIView):
         return Response(data)
 
 
-
 class MarketingChannels(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
