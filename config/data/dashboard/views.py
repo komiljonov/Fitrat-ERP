@@ -87,9 +87,9 @@ class DashboardView(APIView):
             orders_archived = orders_archived.filter(is_student=is_student.capitalize())
             first_lesson = first_lesson.filter(lid__is_student=is_student.capitalize())
             first_lesson_come = first_lesson_come.filter(is_archived=False)
-            first_lesson_come_archived = 0
+            first_lesson_come_archived = []
             first_course_payment = first_course_payment.filter(is_archived=is_student.capitalize())
-            first_course_payment_archived = 0
+            first_course_payment_archived = []
 
         if channel_id:
             channel = MarketingChannel.objects.get(id=channel_id)
