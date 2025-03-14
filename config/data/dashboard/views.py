@@ -222,7 +222,7 @@ class DashboardSecondView(APIView):
             filters["filial"] = filial
 
         # Initial QuerySets
-        lid = Lid.objects.filter(lid_stages="YANGI_LEAD",**filters).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
+        lid = Lid.objects.filter(lid_stage_type="NEW_LID",**filters).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
         archived_lid = lid.filter(lid_stage_type="NEW_LID",is_archived=True,)
         orders = lid.filter(lid_stage_type="ORDERED_LID")
         orders_archived = orders.filter(is_archived=True)
