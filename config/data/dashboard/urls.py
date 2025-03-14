@@ -2,7 +2,7 @@ from django.urls import include, path
 
 from data.dashboard.views import DashboardView, MarketingChannels, CheckRoomFillingView, DashboardLineGraphAPIView, \
     MonitoringView, DashboardWeeklyFinanceAPIView, ArchivedView, MonitoringExcelDownloadView, SalesApiView, \
-    FinanceStatisticsApiView, StudentLanguage, ExportDashboardToExcelAPIView
+    FinanceStatisticsApiView, StudentLanguage, ExportDashboardToExcelAPIView, AdminLineGraph
 
 urlpatterns = [
     path('admin/',DashboardView.as_view(), name='dashboard'),
@@ -25,4 +25,6 @@ urlpatterns = [
     path("student-lang/",StudentLanguage.as_view(), name='student-lang'),
 
     path("finance-excel/",ExportDashboardToExcelAPIView.as_view(), name='finance-excel'),
+
+    path("admin-linegraph/",AdminLineGraph.as_view(), name='admin-linegraph'),
 ]
