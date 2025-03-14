@@ -439,6 +439,8 @@ class CheckRoomFillingView(APIView):
             ended_at__gt=start_time
         ).order_by("started_at")
 
+        ic(active_lessons.count())
+
         free_periods = []
         busy_periods = []
         free_time_slots = []
@@ -472,7 +474,7 @@ class CheckRoomFillingView(APIView):
         free_slots_count = len(free_periods)
 
         # **New Calculation: Count Available Lesson Hours**
-        total_free_lesson_hours = total_free_time // lesson_duration  # Converts minutes to lesson count
+        total_free_lesson_hours = total_free_time // lesson_duration
 
         # Get student filling for a specific room
         room_filling = Room.objects.filter(id=room_id).values_list("room_filling", flat=True).first() or 0
