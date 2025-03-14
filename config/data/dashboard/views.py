@@ -23,6 +23,7 @@ from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group, Day
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
+from ..lid.new_lid.serializers import LidSerializer
 from ..results.models import Results
 from ..student.attendance.models import Attendance
 from ..student.lesson.models import FirstLLesson
@@ -347,7 +348,7 @@ class DashboardSecondView(APIView):
         data = {
             "lids": lid.count(),
             "archived_lid": archived_lid.count(),
-            "archive_lid_res" : lid,
+            "archive_lid_res" : LidSerializer(lid, many=True).data,
             "orders": orders.count(),
             "orders_archived": orders_archived.count(),
             "first_lesson": first_lesson.count(),
