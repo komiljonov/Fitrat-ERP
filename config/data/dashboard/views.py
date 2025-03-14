@@ -504,6 +504,7 @@ class CheckRoomFillingView(APIView):
 
         return Response({
             'total_free_time': total_free_time,
+            "groups" : active_lessons.count(),
             'free_slots_count': free_slots_count,
             'free_time_slots': free_time_slots,
             'busy_time_slots': busy_periods,
