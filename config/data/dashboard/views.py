@@ -76,7 +76,7 @@ class DashboardView(APIView):
         first_course_payment_archived = first_course_payment.filter(is_archived=True)
 
         # Active and Ended Courses
-        new_student = StudentGroup.objects.filter(student__status="NEW_STUDENT", **filters)
+        new_student = StudentGroup.objects.filter(student__student_stage_type="NEW_STUDENT", **filters)
         active_student = StudentGroup.objects.filter(group__status="ACTIVE", **filters)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
 
