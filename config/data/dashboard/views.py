@@ -82,14 +82,20 @@ class DashboardView(APIView):
         # **Filtering Based on Dynamic Conditions**
 
         if is_student:
-            lid = lid.filter(is_student=is_student.capitalize())
-            orders = orders.filter(is_student=is_student.capitalize())
-            orders_archived = orders_archived.filter(is_student=is_student.capitalize())
-            first_lesson = first_lesson.filter(lid__is_student=is_student.capitalize())
+            is_student_value = is_student.capitalize()
+
+            lid = lid.filter(is_student=is_student_value)
+            orders = orders.filter(is_student=is_student_value)
+            orders_archived = orders_archived.filter(is_student=is_student_value)
+            first_lesson = first_lesson.filter(lid__is_student=is_student_value)
             first_lesson_come = first_lesson_come.filter(is_archived=False)
-            first_lesson_come_archived = []
-            first_course_payment = first_course_payment.filter(is_archived=is_student.capitalize())
-            first_course_payment_archived = []
+
+            # Fix: Assign empty QuerySet instead of a list
+            first_lesson_come_archived = first_lesson_come.filter(
+                is_archived=True) if first_lesson_come.exists() else None
+            first_course_payment = first_course_payment.filter(is_archived=is_student_value)
+            first_course_payment_archived = first_course_payment.filter(
+                is_archived=True) if first_course_payment.exists() else None
 
         if channel_id:
             channel = MarketingChannel.objects.get(id=channel_id)
@@ -1027,7 +1033,7 @@ class AdminLineGraph(APIView):
 
         # Construct the response
         response_data = {
-            "new_lid": get_counts(lid_new),
+            "new_lid": (get_counts(lid_new)),
             "ordered_lid": get_counts(lid_ordered),
             "new_student": get_counts(student_new),
             "active_student": get_counts(student_active),
