@@ -56,7 +56,7 @@ class DashboardView(APIView):
 
         # Initial QuerySets
         lid = Lid.objects.filter(**filters)
-        archived_lid = Lid.objects.filter(archived=True,**filters)
+        archived_lid = Lid.objects.filter(is_archived=True,**filters)
         orders = lid.filter(lid_stage_type="ORDERED_LID")
         orders_archived = orders.filter(is_archived=True)
         first_lesson = FirstLLesson.objects.filter(**filters)
