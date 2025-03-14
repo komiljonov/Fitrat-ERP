@@ -91,8 +91,6 @@ class DashboardView(APIView):
             first_lesson = first_lesson.filter(lid__is_student=is_student_value, lid__is_archived=False)
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 
-            # Fix: Assign empty QuerySet instead of a list
-            new_student = new_student.filter(is_archived=False)
             first_lesson_come_archived = first_lesson_come.filter(
                 is_archived=True) if first_lesson_come.exists() else None
             first_course_payment = first_course_payment.filter(is_archived=is_student_value)
