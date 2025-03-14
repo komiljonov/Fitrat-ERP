@@ -177,9 +177,16 @@ class StuffRolesView(ListAPIView):
     filterset_fields = ('role','first_name','last_name')
 
     def get_queryset(self):
+
+        subject = self.request.query_params.get('subject', None)
+
         filial = self.request.query_params.get('filial', None)
         role = self.request.query_params.get('role', None)
         queryset = CustomUser.objects.all().order_by('-created_at')
+
+        if subject:
+            queryset = queryset.filter(teachers_groups__course__subject_id=subject)
+
         if filial:
             queryset = CustomUser.objects.filter(filial__id=filial)
         if role:
