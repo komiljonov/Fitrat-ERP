@@ -484,11 +484,10 @@ class CheckRoomFillingView(APIView):
             "free_lesson_hours": free_lesson_hours,
             "lesson_hour_pairs": lesson_hour_pairs,
             "total_groups": total_groups,
-            "total_students_capacity": total_students_capacity - groups_students.count()  # Corrected calculation
+            "total_students_capacity": total_students_capacity - groups_students.count()
+            "all_places":total_students_capacity,
+
         })
-
-
-
 
 
 class DashboardLineGraphAPIView(APIView):
