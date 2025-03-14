@@ -390,10 +390,6 @@ class MarketingChannels(APIView):
 
         return Response(channel_counts)
 
-# bunda birinchi room berildimi yuqmi shunga tekshiraman, agar room kelmagan bulsa filial buyicha full room lar buyicha chiqadi
-# agar room bulsa usha xona, lesson_hours,start_end times buyicha filter, va check if lesson hours more than 90 min ,
-# and not any lessons get the time and till end_date count all hourse then count room filing for this hourse and then + next count
-# sum(group__room__filings - excested lessons StudentGroup.count()) then sum of both experession
 
 class CheckRoomFillingView(APIView):
     permission_classes = [IsAuthenticated]
@@ -404,7 +400,7 @@ class CheckRoomFillingView(APIView):
         lesson_type = request.query_params.get('lesson_type', None)
         start_time = request.query_params.get('start_time', None)
         end_time = request.query_params.get('end_time', None)
-        lesson_duration = request.query_params.get('lesson_duration', "90")  # Default to 90 min
+        lesson_duration = request.query_params.get('lesson_duration', "90")  # Default 90 min
 
         if not filial or not start_time or not end_time or not lesson_type:
             return Response({'error': 'Missing required parameters'}, status=400)
@@ -412,109 +408,87 @@ class CheckRoomFillingView(APIView):
         try:
             start_time = datetime.strptime(start_time, "%H:%M").time()
             end_time = datetime.strptime(end_time, "%H:%M").time()
-            lesson_duration = int(lesson_duration)  # Convert to integer
+            lesson_duration = int(lesson_duration)
         except ValueError:
             return Response({'error': 'Invalid input format'}, status=400)
 
-        # Get all rooms if no specific room is given
+        # Get all rooms in the filial if no specific room is given
         if not room_id:
             room_ids = list(Room.objects.filter(filial_id=filial).values_list("id", flat=True))
         else:
             room_ids = [room_id]
 
-        # Define lesson days
-        lesson_days = []
-        if lesson_type == "0":
-            lesson_days += ["Seshanba", "Payshanba", "Shanba"]
-        elif lesson_type == "1":
-            lesson_days += ["Dushanba", "Chorshanba", "Juma"]
-        else:
-            lesson_days += ["Dushanba","Seshanba", "Chorshanba","Payshanba", "Juma", "Shanba"]
+        # Map lesson_type to days
+        lesson_days_map = {
+            "1": ["Dushanba"],
+            "0": ["Seshanba"],
+            ".": ["Dushanba", "Seshanba"]
+        }
+        lesson_days = lesson_days_map.get(lesson_type, [])
 
+        # Get lesson days IDs
         lesson_days_ids = Day.objects.filter(name__in=lesson_days).values_list("id", flat=True)
 
-        # Retrieve all active lessons
+        # Fetch all active lessons within the specified rooms and lesson days
         active_lessons = Group.objects.filter(
             room_number_id__in=room_ids,
             scheduled_day_type__id__in=lesson_days_ids,
             started_at__lt=end_time,
             ended_at__gt=start_time
-        ).order_by("started_at")
+        ).order_by("started_at").distinct()
 
-        ic(active_lessons.count())
+        # **Statistics Calculation**
+        total_available_time = (datetime.combine(datetime.today(), end_time) -
+                                datetime.combine(datetime.today(), start_time)).seconds // 60
+        ic(total_available_time)
+        total_available_lesson_hours = (total_available_time // lesson_duration) * (2 if lesson_type == "." else 1)
 
-        free_periods = []
-        busy_periods = []
-        free_time_slots = []
-        last_end_time = start_time
+        # **Count occupied lesson hours**
+        occupied_lesson_hours = sum(
+            (lesson.ended_at.hour * 60 + lesson.ended_at.minute) -
+            (lesson.started_at.hour * 60 + lesson.started_at.minute)
+            for lesson in active_lessons
+        ) // lesson_duration
 
-        for lesson in active_lessons:
-            if last_end_time < lesson.started_at:
-                free_start = last_end_time
-                free_end = lesson.started_at
-                free_time = (datetime.combine(datetime.today(), free_end) -
-                             datetime.combine(datetime.today(), free_start)).seconds // 60
+        free_lesson_hours = total_available_lesson_hours - occupied_lesson_hours
 
-                if free_time >= lesson_duration:
-                    free_periods.append(free_time)
-                    free_time_slots.append(f"{free_start.strftime('%H:%M')} - {free_end.strftime('%H:%M')}")
+        # **Count number of lesson hour pairs**
+        lesson_hour_pairs = occupied_lesson_hours // 2
 
-            busy_periods.append(f"{lesson.started_at.strftime('%H:%M')} - {lesson.ended_at.strftime('%H:%M')}")
-            last_end_time = max(last_end_time, lesson.ended_at)
+        # **Count unique groups running in this period**
+        total_groups = active_lessons.count()
 
-        if last_end_time < end_time:
-            free_start = last_end_time
-            free_end = end_time
-            free_time = (datetime.combine(datetime.today(), free_end) -
-                         datetime.combine(datetime.today(), free_start)).seconds // 60
+        # **Fix: Access `room_number.room_filling` Properly**
+        total_students_capacity = sum(
+            (total_available_lesson_hours + total_groups) * (i.room_number.room_filling if i.room_number else 0)
+            for i in active_lessons
+        )
 
-            if free_time >= lesson_duration:
-                free_periods.append(free_time)
-                free_time_slots.append(f"{free_start.strftime('%H:%M')} - {free_end.strftime('%H:%M')}")
 
-        total_free_time = sum(free_periods)
-        free_slots_count = len(free_periods)
+        if lesson_type == ".":
+            groups_students = StudentGroup.objects.filter(filial_id=filial)
+        elif lesson_type == "0":
+            groups_students = StudentGroup.objects.filter(filial_id=filial,group__scheduled_day_type__name__in="Seshanba")
+        else :
+            groups_students = StudentGroup.objects.filter(filial_id=filial,group__scheduled_day_type__name__in="Dushanba")
 
-        # **New Calculation: Count Available Lesson Hours**
-        total_free_lesson_hours = total_free_time // lesson_duration
+        new_students = StudentGroup.objects.filter(filial_id=filial,student__student_stage_type="NEW_STUDENT")
 
-        # Get student filling for a specific room
-        room_filling = Room.objects.filter(id=room_id).values_list("room_filling", flat=True).first() or 0
-        total_student_filling = total_free_lesson_hours * room_filling
 
-        # **Filial-wide calculation**: Get all room fillings in the filial
-        filial_filling_sum = Room.objects.filter(filial_id=filial).aggregate(total=Sum("room_filling"))["total"] or 0
-        filial_total_student_filling = total_free_lesson_hours * filial_filling_sum
-
-        # Get free places in groups where student count < room capacity
-        group_free_places = StudentGroup.objects.filter(
-            group__room_number__filial_id=filial
-        ).annotate(
-            room_capacity=F("group__room_number__room_filling"),
-            student_count=Count("student_id")
-        ).aggregate(
-            total_free_places=Sum(F("room_capacity") - F("student_count"))
-        )["total_free_places"] or 0
-
-        total_student_filling += group_free_places
-        filial_total_student_filling += group_free_places
-
-        new_student = StudentGroup.objects.filter(student__student_stage_type="NEW_STUDENT").count()
-        active_student = StudentGroup.objects.filter(student__student_stage_type="ACTIVE_STUDENT").count()
-
+        # **Generate final statistics response**
         return Response({
-            'total_free_time': total_free_time,
-            "groups" : active_lessons.count() / 3,
-            'free_slots_count': free_slots_count,
-            'free_time_slots': free_time_slots,
-            'busy_time_slots': busy_periods,
-            'total_free_lesson_hours': total_free_lesson_hours,
-            'total_student_filling': total_student_filling,
-            'filial_total_student_filling': filial_total_student_filling,
-            "new_student": new_student,
-            "active_student": active_student,
-            "group_free_places": group_free_places,
+            "groups_students": groups_students.count(),
+            "new_students": new_students.count(),
+            "total_available_lesson_hours": total_available_lesson_hours,
+            "occupied_lesson_hours": occupied_lesson_hours,
+            "free_lesson_hours": free_lesson_hours,
+            "lesson_hour_pairs": lesson_hour_pairs,
+            "total_groups": total_groups,
+            "total_students_capacity": total_students_capacity - groups_students.count()  # Corrected calculation
         })
+
+
+
 
 
 class DashboardLineGraphAPIView(APIView):
