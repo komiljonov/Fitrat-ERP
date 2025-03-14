@@ -463,16 +463,12 @@ class CheckRoomFillingView(APIView):
             (total_available_lesson_hours + total_groups) * (i.room_number.room_filling if i.room_number else 0)
             for i in active_lessons
         )
-
-
         if lesson_type == "1":
             groups_students = StudentGroup.objects.filter(filial_id=filial,
-                                                          group__scheduled_day_type__name__in="Dushanba")
-
-
+                                                          group__scheduled_day_type__name__in=["Dushanba"])
         elif lesson_type == "0":
             groups_students = StudentGroup.objects.filter(filial_id=filial,
-                                                          group__scheduled_day_type__name__in="Seshanba")
+                                                          group__scheduled_day_type__name__in=["Seshanba"])
         else :
             groups_students = StudentGroup.objects.filter(filial_id=filial)
 
