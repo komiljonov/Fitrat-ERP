@@ -16,7 +16,7 @@ class StudentGroup(TimeStampModel):
                                    related_name="lids_group")
 
     def __str__(self):
-        return self.group.name
+        return self.group.name if self.group else ""
 
 
 class SecondaryStudentGroup(TimeStampModel):
