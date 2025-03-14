@@ -41,6 +41,7 @@ class DashboardView(APIView):
         subjects = request.query_params.get('subject')
         course = request.query_params.get('course')
         teacher = request.query_params.get('teacher')
+        is_student = request.query_params.get('is_student')
 
         # Common Filters
         filters = {}
@@ -77,6 +78,17 @@ class DashboardView(APIView):
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
 
         # **Filtering Based on Dynamic Conditions**
+
+        if is_student:
+            lid = lid.filter(is_student=is_student.capitalize())
+            orders = orders.filter(is_student=is_student.capitalize())
+            orders_archived = orders_archived.filter(is_student=is_student.capitalize())
+            first_lesson = first_lesson.filter(lid__is_student=is_student.capitalize())
+            first_lesson_come = first_lesson_come.filter(is_archived=False)
+            first_lesson_come_archived = 0
+            first_course_payment = first_course_payment.filter(is_archived=is_student.capitalize())
+            first_course_payment_archived = 0
+
         if channel_id:
             channel = MarketingChannel.objects.get(id=channel_id)
             lid = lid.filter(marketing_channel=channel)
