@@ -428,6 +428,8 @@ class CheckRoomFillingView(APIView):
             lesson_days += ["Seshanba", "Payshanba", "Shanba"]
         elif lesson_type == "1":
             lesson_days += ["Dushanba", "Chorshanba", "Juma"]
+        else:
+            lesson_days += ["Dushanba","Seshanba", "Chorshanba","Payshanba", "Juma", "Shanba"]
 
         lesson_days_ids = Day.objects.filter(name__in=lesson_days).values_list("id", flat=True)
 
