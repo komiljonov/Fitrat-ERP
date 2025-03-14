@@ -175,10 +175,10 @@ class DashboardView(APIView):
             "orders_archived": orders_archived.count(),
             "first_lesson": first_lesson.count(),
             "first_lesson_come": first_lesson_come.count(),
-            "first_lesson_come_archived": first_lesson_come_archived.count() or 0,
+            "first_lesson_come_archived": first_lesson_come_archived.count() if first_lesson_come_archived else 0,
             "first_course_payment": first_course_payment.count(),
             "active_student": active_student.count(),
-            "first_course_payment_archived": first_course_payment_archived.count() or 0,
+            "first_course_payment_archived": first_course_payment_archived.count() if first_course_payment_archived else 0,
             "course_ended": course_ended.count(),
         }
 
