@@ -56,14 +56,14 @@ class DashboardView(APIView):
 
         # Initial QuerySets
         lid = Lid.objects.filter(**filters)
-        archived_lid = Lid.objects.filter(lid_stage_type="NEW_LID",is_archived=True,**filters)
+        archived_lid = lid.filter(lid_stage_type="NEW_LID",is_archived=True)
         orders = lid.filter(lid_stage_type="ORDERED_LID")
         orders_archived = orders.filter(is_archived=True)
         first_lesson = FirstLLesson.objects.filter(**filters)
 
         # Students with One Attendance
-        students_with_one_attendance = Attendance.objects.values("student").annotate(count=Count("id")).filter(
-            count=1, **filters).values_list("student", flat=True)
+        students_with_one_attendance = Attendance.objects.values("student").annotate(
+            count=Count("id")).filter(count=1, **filters).values_list("student", flat=True)
 
         first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters)
         first_lesson_come_archived = first_lesson_come.filter(is_archived=True)
@@ -194,6 +194,173 @@ class DashboardView(APIView):
         }
 
         return Response(data)
+
+
+class DashboardSecondView(APIView):
+    def get(self, request, *args, **kwargs):
+        # Get Query Parameters
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        channel_id = request.query_params.get('marketing_channel')
+        service_manager = request.query_params.get('service_manager')
+        call_operator = request.query_params.get('call_operator')
+        sales_manager = request.query_params.get('sales_manager')
+        filial = request.query_params.get('filial')
+        subjects = request.query_params.get('subject')
+        course = request.query_params.get('course')
+        teacher = request.query_params.get('teacher')
+        is_student = request.query_params.get('is_student')
+
+        # Common Filters
+        filters = {}
+        if start_date:
+            filters["created_at__gte"] = start_date
+        if end_date:
+            filters["created_at__lte"] = end_date
+        if filial:
+            filters["filial"] = filial
+
+        # Initial QuerySets
+        lid = Lid.objects.filter(**filters).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
+        archived_lid = lid.filter(lid_stage_type="NEW_LID",is_archived=True)
+        orders = lid.filter(lid_stage_type="ORDERED_LID")
+        orders_archived = orders.filter(is_archived=True)
+        first_lesson = FirstLLesson.objects.filter(**filters)
+
+        # Students with One Attendance
+        students_with_one_attendance = Attendance.objects.values("student").annotate(
+            count=Count("id")).filter(count=1, **filters).values_list("student", flat=True)
+
+        first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters)
+        first_lesson_come_archived = first_lesson_come.filter(is_archived=True)
+
+        # First Course Payment Students
+        payment_students = Finance.objects.filter(
+            student__isnull=False, kind__name="COURSE_PAYMENT", **filters
+        ).values_list("student", flat=True)
+
+        first_course_payment = Student.objects.filter(id__in=payment_students, **filters)
+        first_course_payment_archived = first_course_payment.filter(is_archived=True)
+
+        # Active and Ended Courses
+        new_student = StudentGroup.objects.filter(student__student_stage_type="NEW_STUDENT", **filters)
+        active_student = StudentGroup.objects.filter(student__student_stage_type="ACTIVE_STUDENT",group__status="ACTIVE", **filters)
+        course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
+
+        # **Filtering Based on Dynamic Conditions**
+
+        if is_student:
+            is_student_value = is_student.capitalize()
+
+            lid = lid.filter(is_student=is_student_value, is_archived=False)
+            archived_lid = archived_lid.filter(is_student=is_student_value)
+            orders = orders.filter(is_student=is_student_value,is_archived=False)
+            orders_archived = orders_archived.filter(is_student=is_student_value)
+            first_lesson = first_lesson.filter(lid__is_student=is_student_value, lid__is_archived=False)
+            first_lesson_come = first_lesson_come.filter(is_archived=False)
+
+            first_lesson_come_archived = first_lesson_come.filter(
+                is_archived=True) if first_lesson_come.exists() else None
+            first_course_payment = first_course_payment.filter(is_archived=is_student_value)
+            first_course_payment_archived = first_course_payment.filter(
+                is_archived=True) if first_course_payment.exists() else None
+
+        if channel_id:
+            channel = MarketingChannel.objects.get(id=channel_id)
+            lid = lid.filter(marketing_channel=channel)
+            archived_lid = archived_lid.filter(marketing_channel=channel)
+            orders = orders.filter(marketing_channel=channel)
+            orders_archived = orders_archived.filter(marketing_channel=channel)
+            first_lesson = first_lesson.filter(lid__marketing_channel=channel)
+            first_lesson_come = first_lesson_come.filter(marketing_channel=channel)
+            first_lesson_come_archived = first_lesson_come_archived.filter(marketing_channel=channel)
+            first_course_payment = first_course_payment.filter(marketing_channel=channel)
+            first_course_payment_archived = first_course_payment_archived.filter(marketing_channel=channel)
+
+        if service_manager:
+            lid = lid.filter(service_manager_id=service_manager)
+            archived_lid = archived_lid.filter(service_manager_id=service_manager)
+            orders = orders.filter(service_manager_id=service_manager)
+            orders_archived = orders_archived.filter(service_manager_id=service_manager)
+            first_lesson = first_lesson.filter(lid__service_manager_id=service_manager)
+            first_lesson_come = first_lesson_come.filter(service_manager_id=service_manager)
+            first_lesson_come_archived = first_lesson_come_archived.filter(service_manager_id=service_manager)
+            first_course_payment = first_course_payment.filter(service_manager_id=service_manager)
+            first_course_payment_archived = first_course_payment_archived.filter(service_manager_id=service_manager)
+
+        if sales_manager:
+            lid = lid.filter(sales_manager_id=sales_manager)
+            archived_lid = archived_lid.filter(sales_manager_id=sales_manager)
+            orders = orders.filter(sales_manager_id=sales_manager)
+            orders_archived = orders_archived.filter(sales_manager_id=sales_manager)
+            first_lesson = first_lesson.filter(lid__sales_manager_id=sales_manager)
+            first_lesson_come = first_lesson_come.filter(sales_manager_id=sales_manager)
+            first_lesson_come_archived = first_lesson_come_archived.filter(sales_manager_id=sales_manager)
+            first_course_payment = first_course_payment.filter(sales_manager_id=sales_manager)
+            first_course_payment_archived = first_course_payment_archived.filter(sales_manager_id=sales_manager)
+
+        if call_operator:
+            lid = lid.filter(call_operator_id=call_operator)
+            archived_lid = archived_lid.filter(call_operator_id=call_operator)
+            orders = orders.filter(call_operator_id=call_operator)
+            orders_archived = orders_archived.filter(call_operator_id=call_operator)
+            first_lesson = first_lesson.filter(lid__call_operator_id=call_operator)
+            first_lesson_come = first_lesson_come.filter(call_operator_id=call_operator)
+            first_lesson_come_archived = first_lesson_come_archived.filter(call_operator_id=call_operator)
+            first_course_payment = first_course_payment.filter(call_operator_id=call_operator)
+            first_course_payment_archived = first_course_payment_archived.filter(call_operator_id=call_operator)
+
+        if subjects:
+            lid = lid.filter(subject_id=subjects)
+            archived_lid = archived_lid.filter(subject_id=subjects)
+            orders = orders.filter(subject_id=subjects)
+            orders_archived = orders_archived.filter(subject_id=subjects)
+            first_lesson = first_lesson.filter(lid__subject_id=subjects)
+            first_lesson_come = first_lesson_come.filter(subject_id=subjects)
+            first_lesson_come_archived = first_lesson_come_archived.filter(subject_id=subjects)
+            first_course_payment = first_course_payment.filter(subject_id=subjects)
+            first_course_payment_archived = first_course_payment_archived.filter(subject_id=subjects)
+
+        if teacher:
+            lid = lid.filter(lids_group__group__teacher_id=teacher)
+            archived_lid = archived_lid.filter(lids_group__group__teacher_id=teacher)
+            orders = orders.filter(lids_group__group__teacher_id=teacher)
+            orders_archived = orders_archived.filter(lids_group__group__teacher_id=teacher)
+            first_lesson = first_lesson.filter(group__teacher_id=teacher)
+            first_lesson_come = first_lesson_come.filter(students_group__group__teacher_id=teacher)
+            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group_id=teacher)
+            first_course_payment = first_course_payment.filter(students_group__group__teacher_id=teacher)
+            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__teacher_id=teacher)
+
+        if course:
+            lid = lid.filter(lids_group__group__course_id=course)
+            archived_lid = archived_lid.filter(lids_group__group__course_id=course)
+            orders = orders.filter(lids_group__group__course_id=course)
+            orders_archived = orders_archived.filter(lids_group__group__course_id=course)
+            first_lesson = first_lesson.filter(group__course_id=course)
+            first_lesson_come = first_lesson_come.filter(students_group__group__course_id=course)
+            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__course_id=course)
+            first_course_payment = first_course_payment.filter(students_group__group__course_id=course)
+            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__course_id=course)
+
+        # Final Data Output
+        data = {
+            "lids": lid.count(),
+            "archived_lid": archived_lid.count(),
+            "orders": orders.count(),
+            "orders_archived": orders_archived.count(),
+            "first_lesson": first_lesson.count(),
+            "first_lesson_come": first_lesson_come.count(),
+            "first_lesson_come_archived": first_lesson_come_archived.count() if first_lesson_come_archived else 0,
+            "first_course_payment": first_course_payment.count(),
+            "new_student": new_student.count(),
+            "active_student": active_student.count(),
+            "first_course_payment_archived": first_course_payment_archived.count() if first_course_payment_archived else 0,
+            "course_ended": course_ended.count(),
+        }
+
+        return Response(data)
+
 
 
 class MarketingChannels(APIView):
