@@ -172,7 +172,11 @@ class Sale(TimeStampModel):
         choices=[
             ("ACTIVE", "ACTIVE"),
             ("EXPIRED", "EXPIRED"),
-        ]
+        ],
+        max_length=20,
+        null=True,
+        blank=True,
+        default='ACTIVE',
     )
     amount = models.FloatField(default=0)
 
