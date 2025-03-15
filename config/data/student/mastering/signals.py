@@ -38,11 +38,11 @@ def bonus_call_operator(sender, instance: FirstLLesson, created, **kwargs):
         if instance.lid.lid_stage_type == "ORDERED_LID":
             bonus = Bonus.objects.filter(user=instance.lid.call_operator,
                                          name="Markazga kelgan oq’uvchi uchun bonus").first()
-            if bonus:
+            if bonus and instance.lid.call_operator:
                 KpiFinance.objects.create(
                     user=instance.lid.call_operator,
                     reason="Markazga kelgan oq’uvchi uchun bonus",
-                    amount=bonus.amount,
+                    amount=bonus.amount if bonus.amount else 0,
                     type="INCOME",
                     lid=instance,
                     student=None
@@ -71,7 +71,7 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
                 student=None,
                 reason=f"{instance.first_name} {instance.last_name} "
                        f"ning buyurtma sifatifa yaratilganligi uchun bonus !",
-                amount=bonus.amount,
+                amount=bonus.amount if bonus.amount else 0,
                 type="INCOME",
             )
 
@@ -105,11 +105,11 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
         amount = Bonus.objects.filter(user=instance.student.sales_manager,
                                       name="Aktiv o'quvchiga aylangan yangi o’quvchi uchun bonus ")
 
-        if count == 1 and instance.student.balance_status=="ACTIVE":
+        if count == 1 and instance.student.balance_status=="ACTIVE" and instance.student.sales_manager:
             KpiFinance.objects.create(
                 user=instance.student.sales_manager,
                 student=instance.student,
-                amount=amount.amount,
+                amount=amount.amount if amount.amount else 0,
                 type="INCOME",
                 reason=f"{instance.student.first_name} {instance.student.last_name} ning active o'quvchiga o'tganligi uchun bonus ",
             )
@@ -127,7 +127,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
             KpiFinance.objects.create(
                 user=instance.student.sales_manager,
                 student=instance.student,
-                amount=amount.amount,
+                amount=amount.amount if amount.amount else 0,
                 type="EXPENSE",
                 reason=f"{instance.student.first_name} {instance.student.last_name}"
                        f" ning birinchi darsga kelmaganligi uchun jarima "
@@ -146,7 +146,7 @@ def new_created_order(sender, instance: Student, created, **kwargs):
             KpiFinance.objects.create(
                 user=instance.service_manager,
                 student=instance,
-                amount=amount.amount,
+                amount=amount.amount if amount.amount else 0,
                 type="INCOME",
                 reason=f"Hizmat ko'rsatgan {instance.first_name} {instance.last_name} o'quvchi uchun bonus ",
             )
@@ -158,13 +158,13 @@ def new_created_order(sender, instance: Student, created, **kwargs):
 def new_created_order(sender, instance: Student, created, **kwargs):
     if not created and instance.is_archived == True:
         att = Attendance.objects.filter(student=instance,reason="UNREASONED").count()
-        if att > 2 :
+        if att > 2 and instance.service_manager:
             amount = Bonus.objects.filter(user=instance.service_manager,
                                           name="Agar o’quvchi ketib qolsa jarima yoziladi (Jarima)")
             KpiFinance.objects.create(
                 user=instance.service_manager,
                 student=instance,
-                amount=amount.amount,
+                amount=amount.amount if amount.amount else 0,
                 type="EXPENSE",
                 reason=f"{instance.first_name} {instance.last_name} ning o'quv jarayonini tuxtatganligi uchun jarima!"
             )
