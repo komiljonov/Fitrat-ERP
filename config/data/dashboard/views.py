@@ -1176,9 +1176,14 @@ class AdminLineGraph(APIView):
         start_date = parse_date(start_date) if start_date else None
         end_date = parse_date(end_date) if end_date else None
 
+        filial = request.query_params.get('filial')
+
         # Base filters
         lid_filter = {}
         student_filter = {}
+        if filial:
+            lid_filter['filial_id'] = filial
+            student_filter['filial_id'] = filial
 
         if start_date:
             lid_filter['created_at__gte'] = start_date
