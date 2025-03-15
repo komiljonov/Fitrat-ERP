@@ -467,7 +467,7 @@ class CheckRoomFillingView(APIView):
 
 
         total_students_capacity = sum(
-            (total_available_lesson_hours) * (i.room_number.room_filling if i.room_number else 0)
+            (free_lesson_hours) * (i.room_number.room_filling if i.room_number else 0)
             for i in active_lessons
         )
 
