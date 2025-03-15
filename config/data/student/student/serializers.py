@@ -85,7 +85,8 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def get_sales(self, obj):
         sales = SaleStudent.objects.filter(student__id=obj.id)
-        return [{"id": sale.sale.id, "amount": sale.sale.amount,"sale_status":sale.sale.status, "date": sale.expire_date.strftime('%Y-%m-%d')
+        return [{"id": sale.sale.id, "amount": sale.sale.amount,
+                 "sale_status":sale.sale.status, "date": sale.expire_date.strftime('%Y-%m-%d')
         if sale.expire_date else "Unlimited"} for sale in sales]
 
     def get_teacher(self, obj):
