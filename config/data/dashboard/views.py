@@ -466,7 +466,7 @@ class CheckRoomFillingView(APIView):
         ic(total_groups)
 
 
-        rooms = Room.objects.all()
+        rooms = Room.objects.filter(filial_id=self.request.user.filial.first())
 
 
         total_students_capacity = sum(
