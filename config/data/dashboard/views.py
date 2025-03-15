@@ -435,7 +435,7 @@ class CheckRoomFillingView(APIView):
             scheduled_day_type__id__in=lesson_days_ids,
             started_at__lt=end_time,
             ended_at__gt=start_time,
-            status="ACTIVE",
+            status="ACTIVE"
         ).order_by("started_at").distinct()
 
         # **Statistics Calculation**
@@ -466,10 +466,25 @@ class CheckRoomFillingView(APIView):
         ic(total_groups)
 
 
+        rooms = Room.objects.all()
+
+
         total_students_capacity = sum(
-            (free_lesson_hours) * (i.room_number.room_filling if i.room_number else 0)
-            for i in active_lessons
+            [room.room_filling * total_available_lesson_hours for room in rooms]
         )
+
+        for room in rooms:
+            print(room.room_filling, total_available_lesson_hours)
+
+
+
+
+
+
+        # total_students_capacity = sum(
+        #     (total_available_lesson_hours) * (i.room_number.room_filling if i.room_number else 0)
+        #     for i in active_lessons
+        # )
 
 
         ic(total_students_capacity)
@@ -502,7 +517,8 @@ class CheckRoomFillingView(APIView):
             "total_groups": total_groups,
             "total_students_capacity": total_students_capacity - groups_students.count(),
             "all_places":total_students_capacity,
-
+            "weeks_capacity": total_students_capacity *( 3 if lesson_type in ["1", "0"] else 6) ,
+            "AAAAAAAAAAAA": lesson_type in ["1", "0"]
         })
 
 
