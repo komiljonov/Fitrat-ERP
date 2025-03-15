@@ -483,7 +483,8 @@ class CheckRoomFillingView(APIView):
 
         ic(total_students_capacity)
 
-        total_students_capacity -= [occupied_lesson_hours * room.room_filling for room in rooms]
+        total_students_capacity -= sum(occupied_lesson_hours * room.room_filling for room in rooms)  # ✅ Fixed
+
         ic(total_students_capacity)
         if lesson_type == "1":
             groups_students = StudentGroup.objects.filter(filial_id=filial,
