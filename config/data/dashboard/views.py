@@ -442,6 +442,7 @@ class CheckRoomFillingView(APIView):
                                 datetime.combine(datetime.today(), start_time)).seconds // 60
         ic(total_available_time)
         total_available_lesson_hours = (total_available_time // lesson_duration)
+        ic(total_available_lesson_hours)
 
         # **Count occupied lesson hours**
         occupied_lesson_hours = sum(
@@ -450,19 +451,27 @@ class CheckRoomFillingView(APIView):
             for lesson in active_lessons
         ) // lesson_duration
 
+        ic(occupied_lesson_hours)
+
         free_lesson_hours = total_available_lesson_hours - occupied_lesson_hours
+        ic(free_lesson_hours)
 
         # **Count number of lesson hour pairs**
         lesson_hour_pairs = occupied_lesson_hours // 2
+        ic(lesson_hour_pairs,occupied_lesson_hours)
 
         # **Count unique groups running in this period**
         total_groups = active_lessons.count()
+        ic(total_groups)
 
-        # **Fix: Access `room_number.room_filling` Properly**
+
         total_students_capacity = sum(
             (total_available_lesson_hours) * (i.room_number.room_filling if i.room_number else 0)
             for i in active_lessons
         )
+
+
+        ic(total_students_capacity)
         if lesson_type == "1":
             groups_students = StudentGroup.objects.filter(filial_id=filial,
                                                           group__scheduled_day_type__name__in=["Dushanba"])

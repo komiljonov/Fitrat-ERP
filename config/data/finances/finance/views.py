@@ -5,7 +5,10 @@ import pandas as pd
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime, parse_date
+from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from icecream import ic
 from pandas import io
 from rest_framework import status
@@ -18,7 +21,7 @@ from rest_framework.views import APIView
 
 from data.account.models import CustomUser
 from data.student.student.models import Student
-from .models import Finance, Casher, Handover, Kind, PaymentMethod, Sale, SaleStudent
+from .models import Finance, Casher, Handover, PaymentMethod, Sale, SaleStudent, Kind
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, KindSerializer, \
     PaymentMethodSerializer, SalesSerializer, SaleStudentSerializer
 from ...lid.new_lid.models import Lid
@@ -247,13 +250,6 @@ class CasherHandoverAPIView(CreateAPIView):
         )
 
 
-from django.db.models import Sum
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from .models import Finance, Kind
-from icecream import ic
-
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -481,6 +477,8 @@ class FinanceExcel(APIView):
         # Apply kind filter if provided
         if kind:
             finance_queryset = finance_queryset.filter(kind=kind.upper())
+
+        # Apply filial filter if provided
         if filial:
             finance_queryset = finance_queryset.filter(filial=filial)
 
@@ -495,7 +493,6 @@ class FinanceExcel(APIView):
         # Convert to DataFrame
         df = pd.DataFrame(finance_data)
 
-        # Rename columns for readability
         df.rename(columns={
             'casher__user__phone': 'Kassa egasi raqami',
             'action': 'Action turi',
@@ -509,18 +506,18 @@ class FinanceExcel(APIView):
             'created_at': 'Yaratilgan vaqti',
         }, inplace=True)
 
-        # Convert DataFrame to Excel
-        excel_buffer = io.BytesIO()  # <-- Ensure `io.BytesIO()` is used, NOT `pandas.io.BytesIO()`
+        excel_buffer = io.BytesIO()
+
         with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Finance Data')
 
-        # Prepare response
         response = HttpResponse(
             excel_buffer.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = 'attachment; filename="finance_data.xlsx"'
         return response
+
 
 
 class KindList(ListCreateAPIView):
@@ -761,3 +758,62 @@ class PaymentStatisticsByKind(APIView):
         data["total_expense"] = total_expense
 
         return Response(data)
+
+
+class GeneratePaymentExcelAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('casher_id', openapi.IN_QUERY, description="Casher ID (Required)", type=openapi.FORMAT_UUID, required=True),
+            openapi.Parameter('start_date', openapi.IN_QUERY, description="Start date (Optional, format: YYYY-MM-DD)", type=openapi.TYPE_STRING),
+            openapi.Parameter('end_date', openapi.IN_QUERY, description="End date (Optional, format: YYYY-MM-DD)", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: "Excel file containing payment statistics",
+            400: "Bad Request - Missing required parameters",
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        casher_id = request.query_params.get('casher_id')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        if not casher_id:
+            return Response({'error': 'Casher ID is required'}, status=400)
+
+        # Base filter
+        filters = {"casher_id": casher_id}
+        if start_date:
+            filters["created_at__gte"] = start_date
+        if end_date:
+            filters["created_at__lte"] = end_date
+
+        # Payment methods
+        payment_methods = ['Click', 'Payme', 'Cash', 'Card', 'Money_send']
+
+        # Aggregating income and expense per payment method
+        data = {"Casher ID": casher_id}
+
+        for method in payment_methods:
+            income = Finance.objects.filter(payment_method=method, action='INCOME', **filters).aggregate(total=Sum('amount'))['total'] or 0
+            expense = Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).aggregate(total=Sum('amount'))['total'] or 0
+            data[f"{method}_Income"] = income
+            data[f"{method}_Expense"] = expense
+
+        # Compute total income and expense
+        data["Total_Income"] = sum(data[f"{p}_Income"] for p in payment_methods)
+        data["Total_Expense"] = sum(data[f"{p}_Expense"] for p in payment_methods)
+
+        # Create DataFrame
+        df = pd.DataFrame([data])
+
+        # Generate Excel file
+        file_name = f"payment_casher_statistics_{now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename={file_name}'
+
+        with pd.ExcelWriter(response, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name='Payment Statistics')
+
+        return response
