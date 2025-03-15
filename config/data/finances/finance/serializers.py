@@ -6,6 +6,7 @@ from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
 from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance, Sale, SaleStudent
 from ...lid.new_lid.models import Lid
+from ...lid.new_lid.serializers import LidSerializer
 from ...student.attendance.models import Attendance
 from ...student.student.serializers import StudentSerializer
 
@@ -322,7 +323,7 @@ class SaleStudentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     sale = serializers.PrimaryKeyRelatedField(queryset=Sale.objects.all(), allow_null=True)
-
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
     class Meta:
         model = SaleStudent
         fields = [
@@ -331,6 +332,8 @@ class SaleStudentSerializer(serializers.ModelSerializer):
             "sale",
             "filial",
             "student",
+            "lid",
+            "expire_date",
             "comment",
             "created_at",
         ]
@@ -340,5 +343,9 @@ class SaleStudentSerializer(serializers.ModelSerializer):
 
         data["sale"] = SalesSerializer(instance.sale).data
         data['creator'] = UserListSerializer(instance.creator).data
-        data['student'] = StudentSerializer(instance.student).data
+        if instance.student:
+            data['student'] = StudentSerializer(instance.student).data
+        if instance.lid:
+            data['lid'] = LidSerializer(instance.lid).data
+
         return data

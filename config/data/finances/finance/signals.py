@@ -1,7 +1,8 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import Finance
+from .models import Finance, SaleStudent
+
 
 @receiver(post_save, sender=Finance)
 def on_create(sender, instance: Finance, created, **kwargs):

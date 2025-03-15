@@ -18,6 +18,7 @@ from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
+from ...finances.finance.models import SaleStudent
 from ...parents.models import Relatives
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
@@ -38,6 +39,7 @@ class StudentSerializer(serializers.ModelSerializer):
     secondary_teacher = serializers.SerializerMethodField()
     learning = serializers.SerializerMethodField()
     teacher = serializers.SerializerMethodField()
+    sales = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
@@ -56,6 +58,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "student_type",
             "edu_class",
             "subject",
+            "sales",
             "ball",
             "filial",
             "marketing_channel",
@@ -78,6 +81,12 @@ class StudentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+    def get_sales(self, obj):
+        sales = SaleStudent.objects.filter(student__id=obj.id)
+        return [{"id": sale.sale.id, "amount": sale.sale.amount,"sale_status":sale.sale.status, "date": sale.expire_date.strftime('%Y-%m-%d')
+        if sale.expire_date else "Unlimited"} for sale in sales]
 
     def get_teacher(self, obj):
         teachers = StudentGroup.objects.filter(student=obj).values_list("group__teacher__id", flat=True)
