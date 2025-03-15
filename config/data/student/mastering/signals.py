@@ -83,13 +83,13 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
         attendances_count = Attendance.objects.filter(student=instance.student,reason="IS_PRESENT").count()
         amount = Bonus.objects.filter(user=instance.student.sales_manager,
                                       name="Sinov darsiga kelgani uchun bonus ")
-        if attendances_count == 1:
+        if attendances_count == 1 and instance.student.sales_manager:
             KpiFinance.objects.create(
                 lid=None,
                 user=instance.student.sales_manager,
                 student=instance.student,
                 reason=f"{instance.student.first_name} {instance.student.last_name} ning birinchi darsga kelganligi uchun!",
-                amount=amount.amount,
+                amount=amount.amount if amount.amount else 0,
                 type="INCOME",
             )
 
@@ -120,16 +120,16 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
 @receiver(post_save, sender=Attendance)
 def new_created_order(sender, instance: Attendance, created, **kwargs):
     if created:
-        attendances_count = Attendance.objects.filter(lid=instance.lid,reason=["UNREASONED"]).count()
-        amount = Bonus.objects.filter(user=instance.lid.sales_manager,
+        attendances_count = Attendance.objects.filter(student=instance.student,reason=["UNREASONED"]).count()
+        amount = Bonus.objects.filter(user=instance.student.sales_manager,
                                       name="Sinov darsiga yozilb kemaganlar uchun jarima (Jarima)")
-        if attendances_count == 1:
+        if attendances_count == 1 and instance.student.sales_manager:
             KpiFinance.objects.create(
-                user=instance.lid.sales_manager,
-                student=instance.lid,
+                user=instance.student.sales_manager,
+                student=instance.student,
                 amount=amount.amount,
                 type="EXPENSE",
-                reason=f"{instance.lid.first_name} {instance.lid.last_name}"
+                reason=f"{instance.student.first_name} {instance.student.last_name}"
                        f" ning birinchi darsga kelmaganligi uchun jarima "
             )
 
