@@ -510,9 +510,9 @@ class CheckRoomFillingView(APIView):
             "free_lesson_hours": free_lesson_hours,
             "lesson_hour_pairs": lesson_hour_pairs,
             "total_groups": total_groups,
-            "total_students_capacity": (free_lesson_hours *( 1 if lesson_type in ["1", "0"] else 2)) - groups_students.count(),
+            "total_students_capacity": (total_students_capacity *( 1 if lesson_type in ["1", "0"] else 3)) - groups_students.count(),
             "all_places":total_students_capacity,
-            "weeks_capacity": free_lesson_hours *( 1 if lesson_type in ["1", "0"] else 2) ,
+            "weeks_capacity": total_students_capacity *( 1 if lesson_type in ["1", "0"] else 3) ,
             "AAAAAAAAAAAA": lesson_type in ["1", "0"]
         })
 
