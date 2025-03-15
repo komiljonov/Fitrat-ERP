@@ -240,7 +240,16 @@ class ExportLidToExcelAPIView(APIView):
         ]
         sheet.append(headers)
 
-        # Populate Excel rows
+        ORDERED_STAGE_LABELS = {
+            "KUTULMOQDA": "Jarayonda",
+            "BIRINCHI_DARSGA_KELMAGAN": "Sinov darsiga kelmagan",
+            "BIRINCHI_DARS_BELGILANGAN": "Sinov darsi belgilangan",
+            "YANGI_BUYURTMA": "Yangi buyurtma",
+        }
+        Lid_STAGE_LABELS = {
+            "YANGI_LEAD": "Yangi lead",
+            "KUTULMOQDA": "Jarayonda",
+        }
         for lid in queryset:
             sheet.append([
                 lid.first_name,
@@ -254,8 +263,8 @@ class ExportLidToExcelAPIView(APIView):
                 lid.filial.name if lid.filial else "",
                 lid.marketing_channel.name if lid.marketing_channel else "",
                 "Buyurtma yaratilgan" if lid.lid_stage_type == "ORDERED_LID" else "Yangi lead",
-                lid.lid_stages if lid.lid_stages else "",
-                lid.ordered_stages if lid.ordered_stages else "",
+                Lid_STAGE_LABELS.get(lid.lid_stages, ""),
+                ORDERED_STAGE_LABELS.get(lid.ordered_stages, ""),
                 "Ha" if lid.is_archived else "Yo'q",
                 lid.call_operator.full_name if lid.call_operator else "",
                 lid.sales_manager.full_name if lid.sales_manager else "",
