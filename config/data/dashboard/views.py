@@ -434,7 +434,8 @@ class CheckRoomFillingView(APIView):
             room_number_id__in=room_ids,
             scheduled_day_type__id__in=lesson_days_ids,
             started_at__lt=end_time,
-            ended_at__gt=start_time
+            ended_at__gt=start_time,
+            status="ACTIVE",
         ).order_by("started_at").distinct()
 
         # **Statistics Calculation**
