@@ -48,8 +48,8 @@ class DashboardView(APIView):
 
         # Common Filters
         filters = {}
-        if start_date:
-            filters["created_at__gte"] = start_date
+        if start_date and end_date is None:
+            filters["created_at__date"] = start_date
         if start_date and end_date:
             filters["created_at__gte","created_at__lte"] = start_date,end_date
         if filial:
