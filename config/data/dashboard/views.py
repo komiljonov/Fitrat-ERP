@@ -476,16 +476,10 @@ class CheckRoomFillingView(APIView):
         for room in rooms:
             print(room.room_filling, total_available_lesson_hours)
 
-
-
-
-
-
         # total_students_capacity = sum(
         #     (total_available_lesson_hours) * (i.room_number.room_filling if i.room_number else 0)
         #     for i in active_lessons
         # )
-
 
         ic(total_students_capacity)
         if lesson_type == "1":
