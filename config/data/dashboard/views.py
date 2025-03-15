@@ -50,8 +50,8 @@ class DashboardView(APIView):
         filters = {}
         if start_date:
             filters["created_at__gte"] = start_date
-        if end_date:
-            filters["created_at__lte"] = end_date
+        if start_date and end_date:
+            filters["created_at__gte","created_at__lte"] = start_date,end_date
         if filial:
             filters["filial"] = filial
 
