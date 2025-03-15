@@ -57,7 +57,7 @@ class FirstLLesson(TimeStampModel):
         'new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True
     )
 
-    group: 'Group' = models.ForeignKey(
+    group: 'Group | None' = models.ForeignKey(
         'groups.Group', on_delete=models.SET_NULL, null=True,
         blank=True, related_name="groups_first_lessons"
     )
@@ -72,7 +72,7 @@ class FirstLLesson(TimeStampModel):
     )
 
     def __str__(self):
-        return f"{self.lid.first_name}      {self.group.name}     {self.date}     {self.time}"
+        return f"{self.lid.first_name}   {self.group.name if self.group else ""}     {self.date}     {self.time}"
 
 
 class ExtraLessonGroup(TimeStampModel):
