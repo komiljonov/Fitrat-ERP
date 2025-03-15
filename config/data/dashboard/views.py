@@ -219,7 +219,7 @@ class DashboardSecondView(APIView):
         if end_date:
             filters["created_at__lte"] = end_date
         if filial:
-            filters["filial"] = filial
+            filters["filial_id"] = filial
 
         # Initial QuerySets
         lid = Lid.objects.filter(lid_stage_type="NEW_LID",**filters).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
