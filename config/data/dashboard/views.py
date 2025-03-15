@@ -491,6 +491,7 @@ class CheckRoomFillingView(APIView):
         else :
             groups_students = StudentGroup.objects.filter(filial_id=filial)
 
+
         if lesson_type == "1":
             new_students = StudentGroup.objects.filter(filial_id=filial,student__student_stage_type="NEW_STUDENT",
                                                           group__scheduled_day_type__name__in=["Dushanba"])
@@ -509,7 +510,7 @@ class CheckRoomFillingView(APIView):
             "free_lesson_hours": free_lesson_hours,
             "lesson_hour_pairs": lesson_hour_pairs,
             "total_groups": total_groups,
-            "total_students_capacity": total_students_capacity - groups_students.count(),
+            "total_students_capacity": (total_students_capacity *( 3 if lesson_type in ["1", "0"] else 6)) - groups_students.count(),
             "all_places":total_students_capacity,
             "weeks_capacity": total_students_capacity *( 3 if lesson_type in ["1", "0"] else 6) ,
             "AAAAAAAAAAAA": lesson_type in ["1", "0"]
