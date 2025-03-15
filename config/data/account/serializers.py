@@ -1,4 +1,3 @@
-import icecream
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
@@ -6,7 +5,6 @@ from .models import CustomUser
 from ..account.permission import PhoneAuthBackend
 from ..department.filial.models import Filial
 from ..finances.compensation.models import Compensation, Bonus, Page
-from ..finances.compensation.serializers import CompensationSerializer, BonusSerializer, PagesSerializer
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
