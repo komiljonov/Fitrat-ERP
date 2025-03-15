@@ -188,7 +188,7 @@ class StuffRolesView(ListAPIView):
             queryset = queryset.filter(teachers_groups__course__subject_id=subject)
 
         if filial:
-            queryset = CustomUser.objects.filter(filial__id=filial)
+            queryset = queryset.objects.filter(filial__id=filial)
         if role:
             queryset = queryset.filter(role=role)
         return queryset
