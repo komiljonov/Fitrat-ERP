@@ -16,7 +16,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "phone", "role", "password", "salary",
-            "photo", "filial", "balance", "ball", "files","extra_number",
+            "photo", "filial", "balance", "ball", "files","extra_number","is_call_center",
             "enter", "leave", "date_of_birth",
         )
         # We don't need to add extra_kwargs for password
@@ -106,7 +106,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ["id", "phone", "full_name", "first_name", "last_name", "password","is_archived",
-                  "role", "photo", "salary", "enter", "leave", "files","filial","extra_number",
+                  "role", "photo", "salary", "enter", "leave", "files","filial","extra_number","is_call_center",
                   "date_of_birth"]
 
     def update(self, instance, validated_data):
