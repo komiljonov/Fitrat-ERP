@@ -4,7 +4,7 @@ from io import BytesIO
 
 import pandas as pd
 from django.db.models import Case, When
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.db.models import Sum, F, DecimalField, Value
 from django.db.models.functions import ExtractWeekDay, Concat
 from django.http import HttpResponse
@@ -13,7 +13,7 @@ from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -483,7 +483,7 @@ class CheckRoomFillingView(APIView):
 
         ic(total_students_capacity)
 
-        total_students_capacity -= sum(occupied_lesson_hours * room.room_filling for room in rooms)  # ✅ Fixed
+        # total_students_capacity -= sum(occupied_lesson_hours * room.room_filling for room in rooms)
 
         ic(total_students_capacity)
         if lesson_type == "1":
@@ -516,7 +516,7 @@ class CheckRoomFillingView(APIView):
             "total_groups": total_groups,
             "total_students_capacity": (total_students_capacity *( 1 if lesson_type in ["1", "0"] else 3)) - groups_students.count(),
             "all_places":total_students_capacity,
-            "weeks_capacity": total_students_capacity *( 1 if lesson_type in ["1", "0"] else 3) ,
+            "weeks_capacity": total_students_capacity *(1 if lesson_type in ["1", "0"] else 3) ,
             "AAAAAAAAAAAA": lesson_type in ["1", "0"]
         })
 
