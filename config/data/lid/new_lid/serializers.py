@@ -9,6 +9,7 @@ from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
+from ...finances.finance.models import SaleStudent
 from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.lesson.models import FirstLLesson
@@ -34,11 +35,13 @@ class LidSerializer(serializers.ModelSerializer):
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     is_attendance = serializers.SerializerMethodField()
 
+    sales = serializers.SerializerMethodField()
+
     class Meta:
         model = Lid
         fields = [
             "id", "sender_id", "message_text", "photo" ,"first_name", "last_name", "middle_name",
-            "phone_number", "date_of_birth", "education_lang", "student_type",
+            "phone_number", "date_of_birth", "education_lang", "student_type","sales",
             "edu_class", "edu_level", "subject", "ball", "filial","is_frozen","is_attendance",
             "marketing_channel", "lid_stage_type", "ordered_stages","extra_number",
             "lid_stages", "is_archived", "course", "group", "service_manager",'is_student',
@@ -52,6 +55,11 @@ class LidSerializer(serializers.ModelSerializer):
         if fields_to_remove:
             for field in fields_to_remove:
                 self.fields.pop(field, None)
+
+    def get_sales(self, obj):
+        sales = SaleStudent.objects.filter(lid__id=obj.id)
+        return [{"id": sale.sale.id, "amount": sale.sale.amount, "sale_status":sale.sale.status ,"date": sale.expire_date.strftime('%Y-%m-%d')
+        if sale.expire_date else "Unlimited"} for sale in sales]
 
     def get_filtered_queryset(self):
         request = self.context.get('request')
@@ -71,7 +79,6 @@ class LidSerializer(serializers.ModelSerializer):
         if user.role == 'CALL_OPERATOR':
             queryset = queryset.filter(Q(call_operator=user) | Q(call_operator=None), filial=None)
         return queryset
-
 
     def get_is_attendance(self, obj):
         first_lesson = FirstLLesson.objects.filter(lid=obj).first()

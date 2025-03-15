@@ -168,6 +168,12 @@ class Sale(TimeStampModel):
         null=True,
         blank=True,
     )
+    status = models.CharField(
+        choices=[
+            ("ACTIVE", "ACTIVE"),
+            ("EXPIRED", "EXPIRED"),
+        ]
+    )
     amount = models.FloatField(default=0)
 
     def __str__(self):
@@ -186,11 +192,21 @@ class SaleStudent(TimeStampModel):
     )
     student : "Student" = models.ForeignKey(
         'student.Student',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='finances_student_sale',
+        null=True,
+        blank=True,
     )
+    lid : "Lid" = models.ForeignKey(
+        'new_lid.Lid',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    expire_date = models.DateField(null=True,blank=True)
     comment = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.creator.phone} {self.sale.amount} to {self.student.phone}"
+        return f"{self.creator.phone} {self.sale.amount} to {self.student.phone if self.student else self.lid.phone_number}"
     

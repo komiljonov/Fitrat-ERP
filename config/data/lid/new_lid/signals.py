@@ -5,6 +5,7 @@ from django.dispatch import receiver
 
 from ..new_lid.models import Lid
 from ...account.models import CustomUser
+from ...finances.finance.models import SaleStudent
 from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.student.models import Student
@@ -102,6 +103,8 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
 
             # Update attendance records
             Attendance.objects.filter(lid=instance).update(student=student, lid=None)
+
+            SaleStudent.objects.filter(lid=instance).update(student=student, lid=None)
 
             Relatives.objects.filter(lid=instance).update(student=student)
             # Archive the Lid
