@@ -32,14 +32,17 @@ class StudentsGroupList(ListCreateAPIView):
     filter_fields = filterset_fields = search_fields
 
     def get_queryset(self):
+        status = self.request.query_params.get('status')
         today = datetime.date.today()
         user = self.request.user
+
 
         if user.role == 'TEACHER':
             queryset = StudentGroup.objects.filter(group__teacher__id=user.id)
         else:
             queryset = StudentGroup.objects.filter(group__filial__in=user.filial.all())
-
+        if status:
+            queryset = queryset.filter(group__status=status)
         # **Exclude students who have attended today**
         attended_today = Attendance.objects.filter(
             student=OuterRef("student"),  # Ensure this matches your Attendance model field
