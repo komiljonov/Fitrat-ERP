@@ -6,7 +6,7 @@ from .models import Lid
 # Register your models here.
 @admin.register(Lid)
 class LidAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'phone_number', 'filial','call_operator','lid_stage_type')
+    list_display = ('first_name', 'phone_number', 'filial','call_operator','lid_stage_type',"created_at")
     search_fields = ('first_name', 'phone_number', 'filial','call_operator')
-    list_filter = ('lid_stage_type','is_dubl','is_student','is_archived')
+    list_filter = ('lid_stage_type','is_dubl','is_student','is_archived',"created_at")
 
