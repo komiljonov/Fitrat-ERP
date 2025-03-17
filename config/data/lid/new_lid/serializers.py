@@ -121,6 +121,7 @@ class LidSerializer(serializers.ModelSerializer):
             instance.call_operator = request.user
 
         if instance.lid_stage_type == "ORDERED_LID" and request.user.role == 'ADMINISTRATOR':
+            # instance.
             instance.sales_manager = request.user
             instance.filial = request.user.filial.first()
 

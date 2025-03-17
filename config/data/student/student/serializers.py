@@ -283,3 +283,4 @@ class StudentAppSerializer(serializers.ModelSerializer):
         AttendanceSerializer = import_string(
             'data.student.attendance.serializers.AttendanceSerializer')
         return AttendanceSerializer(attendance, many=True).data
+

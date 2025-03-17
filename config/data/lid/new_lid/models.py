@@ -1,4 +1,7 @@
+from xmlrpc.client import DateTime
+
 from django.db import models
+from django.db.models import DateTimeField
 from django.utils import timezone
 
 from ...account.models import CustomUser
@@ -107,6 +110,9 @@ class Lid(TimeStampModel):
 
     file: "File" = models.ManyToManyField("upload.File",
                                           related_name="lid_file", null=True, blank=True)
+
+    ordered_date = models.DateTimeField(null=True, blank=True)
+
 
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"

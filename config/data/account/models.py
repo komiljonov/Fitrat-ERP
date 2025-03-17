@@ -18,6 +18,7 @@ class CustomUser(AbstractUser):
     last_name = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=255, unique=True, blank=True, null=True)
     extra_number = models.CharField(max_length=255, blank=True, null=True)
+    chat_id = models.CharField(max_length=255, blank=True, null=True)
 
     photo : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, blank=True, null=True)
 
