@@ -27,6 +27,20 @@ services:
 ##        - postgres
 
 
+    bot:
+      build:
+          context: ./config
+      container_name: tg_bot
+      env_file:
+          - .env
+      depends_on:
+        - redis
+      volumes: &shared_volumes
+        - ./config:/usr/src/app
+
+      command: python manage.py bot
+
+
     django:
         container_name: django_f
         build:

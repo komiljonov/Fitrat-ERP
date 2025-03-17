@@ -146,7 +146,7 @@ def new_created_order(sender, instance: Student, created, **kwargs):
             KpiFinance.objects.create(
                 user=instance.service_manager,
                 student=instance,
-                amount=amount.amount if amount.amount else 0,
+                amount=amount.amount if amount else 0,
                 type="INCOME",
                 reason=f"Hizmat ko'rsatgan {instance.first_name} {instance.last_name} o'quvchi uchun bonus ",
             )

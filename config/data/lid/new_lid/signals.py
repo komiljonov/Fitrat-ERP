@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import transaction
 from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
@@ -48,6 +50,8 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             if instance.lid_stages == "YANGI_LEAD":
                 instance.lid_stages = "KUTULMOQDA"
         if instance.lid_stage_type == "ORDERED_LID":
+            if instance.ordered_date == None:
+                instance.ordered_date = datetime.now()
             if instance.ordered_stages == "YANGI_BUYURTMA":
                 instance.ordered_stages = "KUTULMOQDA"
 

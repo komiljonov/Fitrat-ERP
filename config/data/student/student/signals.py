@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Student
@@ -16,6 +18,11 @@ def on_create(sender, instance: Student, created, **kwargs):
     if not created:
         try:
             _signal_active = True  #Set the flag to prevent recursion
+            if instance.new_student_date == None and instance.student_stage_type == "NEW_STUDENT":
+                instance.new_student_date = datetime.now()
+
+            if instance.active_date == None and instance.student_stage_type == "ACTIVE_STUDENT":
+                instance.active_date = datetime.now()
 
             if instance.balance <= 0:
                 Notification.objects.create(

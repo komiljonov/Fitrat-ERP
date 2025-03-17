@@ -92,5 +92,8 @@ class Student(TimeStampModel):
     call_operator: 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,
                                                     null=True, blank=True, help_text="Call operator",
                                                     related_name="student_call_operator")
+    new_student_date = models.DateTimeField(null=True, blank=True)
+    active_date = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
