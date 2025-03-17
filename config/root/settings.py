@@ -56,8 +56,6 @@ INSTALLED_APPS = [
     # Installed apps
     'data.account',
 
-    "bot",
-
     'data.stages',
     'data.tasks',
     'data.finances.finance',
