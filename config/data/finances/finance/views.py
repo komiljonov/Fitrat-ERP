@@ -1,8 +1,9 @@
 import io
 
 import icecream
+import openpyxl
 import pandas as pd
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime, parse_date
 from django.utils.timezone import now
@@ -10,7 +11,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from icecream import ic
-from pandas import io
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
@@ -449,68 +449,56 @@ class FinanceTeacher(ListAPIView):
 
 
 class FinanceExcel(APIView):
+
     def get(self, request, *args, **kwargs):
-        casher_id = request.query_params.get('casher')
-        action = request.query_params.get('action')  # INCOME / EXPENSE
-        kind = request.query_params.get('kind')  # COURSE_PAYMENT, LESSON_PAYMENT, etc.
-        filial = self.request.query_params.get('filial')
+        filial = request.GET.get('filial')
+        casher_id = request.GET.get('casher')
+        casher_role = request.GET.get('casher_role')
+        kind_id = request.GET.get('kind')
+        action = request.GET.get('action')
 
-        # Base queryset
-        finance_queryset = Finance.objects.all()
-
-        # Apply casher filter if provided
-        if casher_id:
-            finance_queryset = finance_queryset.filter(casher_id=casher_id)
-
-        # Apply action filter if provided
-        if action:
-            finance_queryset = finance_queryset.filter(action=action.upper())
-
-        # Apply kind filter if provided
-        if kind:
-            finance_queryset = finance_queryset.filter(kind=kind.upper())
-
-        # Apply filial filter if provided
+        filters = Q()
         if filial:
-            finance_queryset = finance_queryset.filter(filial=filial)
+            filters &= Q(casher__user__filial=filial)
+        if casher_id:
+            filters &= Q(casher__id=casher_id)
+        if casher_role:
+            filters &= Q(casher__role=casher_role)
+        if kind_id:
+            filters &= Q(kind__id=kind_id)
+        if action:
+            filters &= Q(action=action)
 
-        # Convert queryset to a list of dictionaries
-        finance_data = list(finance_queryset.values(
-            'casher__user__phone', 'action', 'amount', 'kind',
-            'student__first_name', 'student__last_name',
-            'stuff__phone', 'creator__phone',
-            'comment', 'created_at',
-        ))
+        finances = Finance.objects.filter(filters)
 
-        # Convert to DataFrame
-        df = pd.DataFrame(finance_data)
+        # Create an Excel workbook
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Finance Report"
 
-        df.rename(columns={
-            'casher__user__phone': 'Kassa egasi raqami',
-            'action': 'Action turi',
-            'amount': 'Qiymat',
-            'kind': "To'lov turi",
-            'student__first_name': "O'quvchining ismi",
-            'student__last_name': "O'quvchining familiyasi",
-            'stuff__phone': 'Xodim raqami',
-            'creator__phone': "To'lov qabul qiluvchining raqami",
-            'comment': 'Comment',
-            'created_at': 'Yaratilgan vaqti',
-        }, inplace=True)
+        # Add headers
+        headers = ["Cassa egasi", "Role", "To'lov turi", "Action", "Miqdor", "To'lov metodi", "Comment", "Yaratilgan vaqti"]
+        sheet.append(headers)
 
-        excel_buffer = io.BytesIO()
+        # Add data
+        for finance in finances:
+            sheet.append([
+                finance.casher.name if finance.casher else "-",
+                finance.casher.role if finance.casher else "-",
+                finance.kind.name if finance.kind else "-",
+                "Kirim" if finance.action == "INCOME" else "Xarajat",
+                finance.amount,
+                "Naqt pul" if finance.payment_method =="Cash" else "Pul kuchirish"
+                if finance.payment_method =="Money_send" else "Karta orqali" if finance.payment_method =="Card"
+                else "Payme" if finance.payment_method=="Payme" else "Click",
+                finance.comment or "-",
+                finance.created_at.strftime("%d-%m-%Y %H:%M:%S"),
+            ])
 
-        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Finance Data')
-
-        response = HttpResponse(
-            excel_buffer.getvalue(),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename="finance_data.xlsx"'
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="finance_report.xlsx"'
+        workbook.save(response)
         return response
-
-
 
 class KindList(ListCreateAPIView):
     serializer_class = KindSerializer
