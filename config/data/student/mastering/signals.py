@@ -1,6 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.context_processors import request
+from icecream import ic
 
 from .models import MasteringTeachers
 from ..attendance.models import Attendance
@@ -36,8 +37,10 @@ def on_create(sender, instance: MasteringTeachers, created, **kwargs):
 def bonus_call_operator(sender, instance: FirstLLesson, created, **kwargs):
     if not created:
         if instance.lid.lid_stage_type == "ORDERED_LID":
+            ic("-----------")
             bonus = Bonus.objects.filter(user=instance.lid.call_operator,
                                          name="Markazga kelgan oq’uvchi uchun bonus").first()
+            ic(bonus)
             if bonus and instance.lid.call_operator:
                 KpiFinance.objects.create(
                     user=instance.lid.call_operator,
