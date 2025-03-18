@@ -250,6 +250,14 @@ class CasherHandoverAPIView(CreateAPIView):
         )
 
 
+from django.db.models import Sum
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from icecream import ic  # Debugging tool
+
+from data.finance.models import Finance
+
 
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -258,19 +266,13 @@ class FinanceStatisticsAPIView(APIView):
         kind = self.request.query_params.get("kind", None)
         filial = self.request.query_params.get("filial", None)
 
-        # ✅ Correct filtering setup
         filters = {}
         if kind:
             filters["kind_id"] = kind
         if filial:
             filters["filial_id"] = filial
 
-        def get_balance(role):
-            """
-            Calculates the total balance by summing incomes and subtracting outcomes
-            for all cashers with the given role.
-            """
-
+        def get_sums(role):
             total_income = (
                 Finance.objects.filter(casher__role=role, action="INCOME", **filters)
                 .aggregate(total_income=Sum("amount"))["total_income"] or 0
@@ -281,15 +283,19 @@ class FinanceStatisticsAPIView(APIView):
                 .aggregate(total_outcome=Sum("amount"))["total_outcome"] or 0
             )
 
-            balance = total_income - total_outcome  # ✅ Handles negative balances correctly
+            balance = total_income - total_outcome
 
-            ic(role, total_income, total_outcome, balance)  # Debugging output
-            return balance
+            ic(role, total_income, total_outcome, balance)
+            return {
+                "income": total_income,
+                "expense": total_outcome,
+                "balance": balance,
+            }
 
         response_data = {
-            "main_casher": get_balance("WEALTH"),  # ✅ Correctly aggregates all cashers under 'WEALTH'
-            "admin_casher": get_balance("ADMINISTRATOR"),
-            "accounting_casher": get_balance("ACCOUNTANT"),
+            "main_casher": get_sums("WEALTH"),
+            "admin_casher": get_sums("ADMINISTRATOR"),
+            "accounting_casher": get_sums("ACCOUNTANT"),
         }
 
         return Response(response_data)
