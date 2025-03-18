@@ -65,6 +65,7 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
         is_bonused = KpiFinance.objects.filter(
             lid=instance,
         ).count()
+        ic(bonus,is_bonused)
 
         if (instance.lid_stage_type == "ORDERED_LID" and instance.filial is not
                 None and is_bonused == 0 and instance.sales_manager):
@@ -74,9 +75,10 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
                 student=None,
                 reason=f"{instance.first_name} {instance.last_name} "
                        f"ning buyurtma sifatifa yaratilganligi uchun bonus !",
-                amount=bonus.amount if bonus.amount else 0,
+                amount=bonus.amount if bonus else 0,
                 type="INCOME",
             )
+
 
 
 
