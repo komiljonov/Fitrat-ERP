@@ -250,14 +250,6 @@ class CasherHandoverAPIView(CreateAPIView):
         )
 
 
-from django.db.models import Sum
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from icecream import ic  # Debugging tool
-
-from data.finance.models import Finance
-
 
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
