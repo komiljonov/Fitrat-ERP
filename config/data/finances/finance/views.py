@@ -254,8 +254,8 @@ class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        kind = self.request.query_params.get('kind', None)
-        filial = self.request.query_params.get('filial', None)
+        kind = self.request.query_params.get("kind", None)
+        filial = self.request.query_params.get("filial", None)
 
         # ✅ Initialize filters correctly
         filters = {}
@@ -272,21 +272,27 @@ class FinanceStatisticsAPIView(APIView):
             """
             Retrieves the balance for a given role in the cash system.
             """
-            income = Finance.objects.filter(casher__role=role, action="INCOME", **filters).aggregate(
-                total=Sum("amount")
-            )["total"]
 
-            outcome = Finance.objects.filter(casher__role=role, action="EXPENSE", **filters).aggregate(
-                total=Sum("amount")
-            )["total"]
+            # ✅ Group by `casher` and sum amounts separately for each casher
+            income_by_casher = (
+                Finance.objects.filter(casher__role=role, action="INCOME", **filters)
+                .values("casher")
+                .annotate(total=Sum("amount"))
+            )
 
-            # ✅ Ensure `None` is treated as `0`
-            income = income if income is not None else 0
-            outcome = outcome if outcome is not None else 0
+            outcome_by_casher = (
+                Finance.objects.filter(casher__role=role, action="EXPENSE", **filters)
+                .values("casher")
+                .annotate(total=Sum("amount"))
+            )
 
-            balance = income - outcome  # ✅ Now correctly allows negative balances
+            # ✅ Sum up all cashers' incomes and outcomes
+            total_income = sum(entry["total"] for entry in income_by_casher if entry["total"] is not None)
+            total_outcome = sum(entry["total"] for entry in outcome_by_casher if entry["total"] is not None)
 
-            ic(role, income, outcome, balance)  # Debugging output
+            balance = total_income - total_outcome  # ✅ Now correctly allows negative balances
+
+            ic(role, total_income, total_outcome, balance)  # Debugging output
             return balance  # ✅ Returns correct balance, even if negative
 
         response_data = {
@@ -296,6 +302,7 @@ class FinanceStatisticsAPIView(APIView):
         }
 
         return Response(response_data)
+
 
 
 
