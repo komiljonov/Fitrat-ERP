@@ -485,7 +485,11 @@ class FinanceExcel(APIView):
             sheet.append([
                 finance.casher.name if finance.casher else "-",
                 finance.casher.role if finance.casher else "-",
-                finance.kind.name if finance.kind else "-",
+                "Kassa qabul qilish" if finance.kind == "CASHIER_ACCEPTANCE"  else "Kassa topshirish"
+                if finance.kind == "CASHIER_HANDOVER" else "Oylik maosh" if finance.kind=="Salary"
+                else "Kurs to'lovi" if finance.kind=="Course payment" else "1 dars uchun to'lov"
+                if finance.kind == "Lesson payment" else "Pul qaytarish" if finance.kind == "Money back"
+                else finance.kind.name,
                 "Kirim" if finance.action == "INCOME" else "Xarajat",
                 finance.amount,
                 "Naqt pul" if finance.payment_method =="Cash" else "Pul kuchirish"
