@@ -92,7 +92,7 @@ class Lid(TimeStampModel):
                                                     null=True, blank=True,
                                                     help_text="CallOperator for this lid",
                                                     related_name="call_operator", limit_choices_to={
-            "is_call_center": True,
+            "is_call_center": True,"role":"CALL_OPERATOR"
         })
 
     is_student = models.BooleanField(default=False, help_text="Is this student or not")

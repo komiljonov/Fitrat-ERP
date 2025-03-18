@@ -74,7 +74,7 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
                 lid=instance,
                 student=None,
                 reason=f"{instance.first_name} {instance.last_name} "
-                       f"ning buyurtma sifatifa yaratilganligi uchun bonus !",
+                       f"ning buyurtma sifatida yaratilganligi uchun bonus !",
                 amount=bonus.amount if bonus else 0,
                 type="INCOME",
             )
