@@ -252,7 +252,7 @@ class CasherHandoverAPIView(CreateAPIView):
 
 
 class FinanceStatisticsAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request):
         kind = self.request.query_params.get("kind", None)
@@ -286,6 +286,7 @@ class FinanceStatisticsAPIView(APIView):
             "admin_casher": get_balance("ADMINISTRATOR"),
             "accounting_casher": get_balance("ACCOUNTANT"),
         }
+
 
         return Response(response_data)
 
