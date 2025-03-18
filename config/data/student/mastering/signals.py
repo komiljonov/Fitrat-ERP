@@ -169,12 +169,7 @@ def new_created_order(sender, instance: Student, created, **kwargs):
                 reason=f"{instance.first_name} {instance.last_name} ning o'quv jarayonini tuxtatganligi uchun jarima!"
             )
 
-# Moliya menejeri ----   Har bir qarzdor bo’lmagan va active o’quvchi uchun bonus #
 
-@receiver(post_save, sender=Student)
-def new_created_order(sender, instance: Student, created, **kwargs):
-    if not created:
-        pass
 
 
 
