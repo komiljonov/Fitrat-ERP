@@ -264,7 +264,8 @@ class FinanceStatisticsAPIView(APIView):
         if filial:
             filters["filial_id"] = filial
 
-        def get_sums(role):
+        def get_balance(role):
+
             total_income = (
                 Finance.objects.filter(casher__role=role, action="INCOME", **filters)
                 .aggregate(total_income=Sum("amount"))["total_income"] or 0
@@ -278,16 +279,12 @@ class FinanceStatisticsAPIView(APIView):
             balance = total_income - total_outcome
 
             ic(role, total_income, total_outcome, balance)
-            return {
-                "income": total_income,
-                "expense": total_outcome,
-                "balance": balance,
-            }
+            return balance
 
         response_data = {
-            "main_casher": get_sums("WEALTH"),
-            "admin_casher": get_sums("ADMINISTRATOR"),
-            "accounting_casher": get_sums("ACCOUNTANT"),
+            "main_casher": get_balance("WEALTH"),
+            "admin_casher": get_balance("ADMINISTRATOR"),
+            "accounting_casher": get_balance("ACCOUNTANT"),
         }
 
         return Response(response_data)
