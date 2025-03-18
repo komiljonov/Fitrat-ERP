@@ -85,7 +85,6 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 },
             )
 
-            # If the Student already exists, update their information
             if not student_created:
                 student.first_name = instance.first_name
                 student.last_name = instance.last_name
