@@ -485,16 +485,19 @@ class FinanceExcel(APIView):
             sheet.append([
                 finance.casher.name if finance.casher else "-",
                 finance.casher.role if finance.casher else "-",
-                "Kassa qabul qilish" if finance.kind == "CASHIER_ACCEPTANCE"  else "Kassa topshirish"
-                if finance.kind == "CASHIER_HANDOVER" else "Oylik maosh" if finance.kind=="Salary"
-                else "Kurs to'lovi" if finance.kind=="Course payment" else "1 dars uchun to'lov"
-                if finance.kind == "Lesson payment" else "Pul qaytarish" if finance.kind == "Money back"
-                else finance.kind.name,
+                "Kassa qabul qilish" if finance.kind.name == "CASHIER_ACCEPTANCE" else
+                "Kassa topshirish" if finance.kind.name == "CASHIER_HANDOVER" else
+                "Oylik maosh" if finance.kind.name == "Salary" else
+                "Kurs to'lovi" if finance.kind.name == "Course payment" else
+                "1 dars uchun to'lov" if finance.kind.name == "Lesson payment" else
+                "Pul qaytarish" if finance.kind.name == "Money back" else
+                finance.kind.name if hasattr(finance.kind, "name") else str(finance.kind),  # ✅ Fix applied here
                 "Kirim" if finance.action == "INCOME" else "Xarajat",
                 finance.amount,
-                "Naqt pul" if finance.payment_method =="Cash" else "Pul kuchirish"
-                if finance.payment_method =="Money_send" else "Karta orqali" if finance.payment_method =="Card"
-                else "Payme" if finance.payment_method=="Payme" else "Click",
+                "Naqt pul" if finance.payment_method == "Cash" else
+                "Pul kuchirish" if finance.payment_method == "Money_send" else
+                "Karta orqali" if finance.payment_method == "Card" else
+                "Payme" if finance.payment_method == "Payme" else "Click",
                 finance.comment or "-",
                 finance.created_at.strftime("%d-%m-%Y %H:%M:%S"),
             ])
