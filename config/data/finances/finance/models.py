@@ -70,7 +70,7 @@ class Finance(TimeStampModel):
 
     amount = models.FloatField(default=0)
 
-    kind = models.ForeignKey(
+    kind : "Kind"= models.ForeignKey(
         "finance.Kind",on_delete=models.SET_NULL,
         related_name='finances_kind',
         null=True,blank=True
