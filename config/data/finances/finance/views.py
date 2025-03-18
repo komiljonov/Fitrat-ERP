@@ -459,7 +459,7 @@ class FinanceExcel(APIView):
 
         filters = Q()
         if filial:
-            filters &= Q(casher__user__filial=filial)
+            filters &= Q(casher__user__filial_id=filial)
         if casher_id:
             filters &= Q(casher__id=casher_id)
         if casher_role:
@@ -508,6 +508,7 @@ class FinanceExcel(APIView):
         response['Content-Disposition'] = 'attachment; filename="finance_report.xlsx"'
         workbook.save(response)
         return response
+
 
 class KindList(ListCreateAPIView):
     serializer_class = KindSerializer
@@ -665,6 +666,7 @@ class SalesStudentNoPG(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 class SalesStudentList(ListCreateAPIView):
     serializer_class = SaleStudentSerializer
     queryset = SaleStudent.objects.all()
@@ -682,8 +684,6 @@ class SalesStudentList(ListCreateAPIView):
             queryset = queryset.filter(sale__type=type)
 
         return queryset
-
-
 
 
 class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
