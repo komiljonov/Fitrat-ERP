@@ -250,6 +250,7 @@ class CasherHandoverAPIView(CreateAPIView):
         )
 
 
+
 class FinanceStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -257,52 +258,41 @@ class FinanceStatisticsAPIView(APIView):
         kind = self.request.query_params.get("kind", None)
         filial = self.request.query_params.get("filial", None)
 
-        # ✅ Initialize filters correctly
+        # ✅ Correct filtering setup
         filters = {}
-
-        # ✅ Correct filtering for `kind`
         if kind:
-            filters["kind_id"] = kind  # Directly filter by `id`, no need for `.get()`
-
-        # ✅ Add filtering for `filial`
+            filters["kind_id"] = kind
         if filial:
-            filters["filial_id"] = filial  # Ensure filtering by Filial ID
+            filters["filial_id"] = filial
 
         def get_balance(role):
             """
-            Retrieves the balance for a given role in the cash system.
+            Calculates the total balance by summing incomes and subtracting outcomes
+            for all cashers with the given role.
             """
 
-            # ✅ Group by `casher` and sum amounts separately for each casher
-            income_by_casher = (
+            total_income = (
                 Finance.objects.filter(casher__role=role, action="INCOME", **filters)
-                .values("casher")
-                .annotate(total=Sum("amount"))
+                .aggregate(total_income=Sum("amount"))["total_income"] or 0
             )
 
-            outcome_by_casher = (
+            total_outcome = (
                 Finance.objects.filter(casher__role=role, action="EXPENSE", **filters)
-                .values("casher")
-                .annotate(total=Sum("amount"))
+                .aggregate(total_outcome=Sum("amount"))["total_outcome"] or 0
             )
 
-            # ✅ Sum up all cashers' incomes and outcomes
-            total_income = sum(entry["total"] for entry in income_by_casher if entry["total"] is not None)
-            total_outcome = sum(entry["total"] for entry in outcome_by_casher if entry["total"] is not None)
-
-            balance = total_income - total_outcome  # ✅ Now correctly allows negative balances
+            balance = total_income - total_outcome  # ✅ Handles negative balances correctly
 
             ic(role, total_income, total_outcome, balance)  # Debugging output
-            return balance  # ✅ Returns correct balance, even if negative
+            return balance
 
         response_data = {
-            "main_casher": get_balance("WEALTH"),
+            "main_casher": get_balance("WEALTH"),  # ✅ Correctly aggregates all cashers under 'WEALTH'
             "admin_casher": get_balance("ADMINISTRATOR"),
             "accounting_casher": get_balance("ACCOUNTANT"),
         }
 
         return Response(response_data)
-
 
 
 
