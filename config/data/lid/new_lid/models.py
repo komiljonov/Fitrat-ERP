@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import DateTimeField
 from django.utils import timezone
 
+from data.student.student.models import Student
 from ...account.models import CustomUser
 from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
@@ -104,12 +105,15 @@ class Lid(TimeStampModel):
     ordered_stages: models.QuerySet['NewOredersStages']
 
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser',
-                                                    on_delete=models.CASCADE, null=True,blank=True, related_name="sales_manager")
+        on_delete=models.CASCADE, null=True,blank=True, related_name="sales_manager")
 
     file: "File" = models.ManyToManyField("upload.File",
                                           related_name="lid_file", null=True, blank=True)
 
     ordered_date = models.DateTimeField(null=True, blank=True)
+
+    student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL,
+                                            null=True,blank=True,)
 
 
     def __str__(self):

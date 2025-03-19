@@ -13,6 +13,7 @@ from ...finances.finance.models import SaleStudent
 from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.lesson.models import FirstLLesson
+from ...student.student.models import Student
 from ...student.studentgroup.models import StudentGroup
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
@@ -34,7 +35,7 @@ class LidSerializer(serializers.ModelSerializer):
     relatives = serializers.SerializerMethodField()
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     is_attendance = serializers.SerializerMethodField()
-
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     sales = serializers.SerializerMethodField()
 
     class Meta:
@@ -43,7 +44,7 @@ class LidSerializer(serializers.ModelSerializer):
             "id", "sender_id", "message_text", "photo" ,"first_name", "last_name", "middle_name",
             "phone_number", "date_of_birth", "education_lang", "student_type","sales",
             "edu_class", "edu_level", "subject", "ball", "filial","is_frozen","is_attendance",
-            "marketing_channel", "lid_stage_type", "ordered_stages","extra_number",
+            "marketing_channel", "lid_stage_type", "ordered_stages","extra_number","student",
             "lid_stages", "is_archived", "course", "group", "service_manager",'is_student',
             "call_operator", "relatives", "lessons_count", "created_at","sales_manager","is_expired","file"
         ]
