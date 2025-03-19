@@ -78,6 +78,8 @@ class StudentSerializer(serializers.ModelSerializer):
             'file',
             'secondary_group',
             'secondary_teacher',
+            "new_student_date",
+            "active_date",
             "created_at",
             "updated_at",
         ]
