@@ -13,7 +13,8 @@ from drf_yasg.utils import swagger_auto_schema
 from icecream import ic
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, \
+    RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -686,6 +687,17 @@ class SalesStudentList(ListCreateAPIView):
 
         return queryset
 
+
+class SaleStudentRetrieve(ListAPIView):
+    serializer_class = SaleStudentSerializer
+    queryset = SaleStudent.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.kwargs.get('pk')
+        if id:
+            return SaleStudent.objects.filter(Q(lid__id=id) | Q(student__id=id))
+        return SaleStudent.objects.none()
 
 class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = SaleStudentSerializer
