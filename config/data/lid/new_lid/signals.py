@@ -83,6 +83,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                     "marketing_channel": instance.marketing_channel,
                     "call_operator": instance.call_operator,
                     "service_manager": instance.service_manager,
+                    "new_student_date":datetime.now(),
                 },
             )
 
@@ -105,6 +106,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.service_manager = instance.service_manager
                 student.save()
 
+            StudentGroup.objects.filter(lid=instance).update(student=student,lid=None)
 
             Attendance.objects.filter(lid=instance).update(student=student, lid=None)
 
