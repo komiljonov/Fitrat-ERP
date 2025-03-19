@@ -248,6 +248,7 @@ class DashboardSecondView(APIView):
         new_student = Student.objects.filter(student_stage_type="NEW_STUDENT", **filters)
         active_student = StudentGroup.objects.filter(group__status="ACTIVE", **filters)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
+        all_students = Student.objects.filter(is_archived=False)
 
         # **Filtering Based on Dynamic Conditions**
 
@@ -360,6 +361,7 @@ class DashboardSecondView(APIView):
             "active_student": active_student.count(),
             "first_course_payment_archived": first_course_payment_archived.count() if first_course_payment_archived else 0,
             "course_ended": course_ended.count(),
+            "all_students": all_students.count(),
         }
 
         return Response(data)
