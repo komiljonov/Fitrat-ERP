@@ -57,6 +57,7 @@ class Student(TimeStampModel):
     new_student_stages = models.CharField(
         choices=[
             ('BIRINCHI_DARS', 'BIRNCHI_DARS'),
+            ("BIRINCHI_DARSGA_KELMAGAN", "BIRINCHI_DARSGA_KELMAGAN"),
             ("GURUH_O'ZGARTIRGAN", "GURUH_O'ZGARTIRGAN"),
             ("QARIZDOR", "QARIZDOR"),
         ],
