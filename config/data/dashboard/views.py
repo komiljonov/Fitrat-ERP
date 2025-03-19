@@ -13,6 +13,7 @@ from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from rest_framework import status
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -364,7 +365,6 @@ class DashboardSecondView(APIView):
         return Response(data)
 
 
-
 class MarketingChannels(APIView):
     def get(self, request, *args, **kwargs):
         start_date = self.request.query_params.get('start_date')
@@ -692,7 +692,6 @@ class MonitoringView(APIView):
             })
 
         return Response(teacher_data)
-
 
 
 class MonitoringExcelDownloadView(APIView):

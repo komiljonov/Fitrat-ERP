@@ -75,7 +75,8 @@ class TaskSerializer(serializers.ModelSerializer):
         task = super().create(validated_data)
 
         if filial:
-            task.filial.set([filial])
+            task.filial = filial
+            task.save()
 
         return task
 

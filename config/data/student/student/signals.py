@@ -40,4 +40,4 @@ def on_create(sender, instance: Student, created, **kwargs):
                 instance.save(update_fields=["balance_status","student_stage_type","new_student_stages","active_date"])  # Save only the specific field
 
         finally:
-            _signal_active = False  # Reset the flag after processing
+            _signal_active = False
