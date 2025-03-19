@@ -21,9 +21,6 @@ def on_create(sender, instance: Student, created, **kwargs):
             if instance.new_student_date == None and instance.student_stage_type == "NEW_STUDENT":
                 instance.new_student_date = datetime.now()
 
-            if instance.active_date == None and instance.student_stage_type == "ACTIVE_STUDENT":
-                instance.active_date = datetime.now()
-
             if instance.balance <= 0:
                 Notification.objects.create(
                     user=instance.call_operator,
@@ -40,7 +37,7 @@ def on_create(sender, instance: Student, created, **kwargs):
                 instance.student_stage_type = "ACTIVE_STUDENT"
                 instance.active_date = datetime.now()
                 instance.new_student_stages = None
-                instance.save(update_fields=["balance_status","student_stage_type","new_student_stages"])  # Save only the specific field
+                instance.save(update_fields=["balance_status","student_stage_type","new_student_stages","active_date"])  # Save only the specific field
 
         finally:
             _signal_active = False  # Reset the flag after processing
