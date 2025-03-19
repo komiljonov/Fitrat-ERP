@@ -275,7 +275,6 @@ class FinanceStatisticsAPIView(APIView):
                 Finance.objects.filter(casher__role=role, action="EXPENSE", **filters)
                 .aggregate(total_outcome=Sum("amount"))["total_outcome"] or 0
             )
-            ic(Finance.objects.filter(kind_id__in=["CASHIER_HANDOVER", "CASHIER_ACCEPTANCE"]).values("id", "amount"))
 
             balance = total_income - total_outcome
 
