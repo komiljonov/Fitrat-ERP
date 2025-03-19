@@ -460,7 +460,7 @@ class FinanceExcel(APIView):
 
         filters = Q()
         if filial:
-            filters &= Q(casher__user__filial_id=filial)
+            filters &= Q(casher__user__filial__id=filial)
         if casher_id:
             filters &= Q(casher__id=casher_id)
         if casher_role:

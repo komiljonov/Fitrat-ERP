@@ -11,6 +11,7 @@ from ...finances.finance.models import SaleStudent
 from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.student.models import Student
+from ...student.studentgroup.models import StudentGroup
 
 
 @receiver(pre_save, sender=Lid)
@@ -59,7 +60,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             instance.is_expired = False
             instance.save()
 
-        if instance.is_student and instance.filial:
+        if instance.is_student and instance.filial :
             import hashlib
             password_hash = hashlib.sha256("1".encode()).hexdigest()
 
@@ -104,7 +105,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.service_manager = instance.service_manager
                 student.save()
 
-            # Update attendance records
+
             Attendance.objects.filter(lid=instance).update(student=student, lid=None)
 
             SaleStudent.objects.filter(lid=instance).update(student=student, lid=None)
