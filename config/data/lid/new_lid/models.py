@@ -74,7 +74,6 @@ class Lid(TimeStampModel):
     ordered_stages = models.CharField(
         choices=[
             ("KUTULMOQDA", "KUTULMOQDA"),
-            ("BIRINCHI_DARSGA_KELMAGAN", "BIRINCHI_DARSGA_KELMAGAN"),
             ("BIRINCHI_DARS_BELGILANGAN", "BIRINCHI_DARS_BELGILANGAN"),
             ("YANGI_BUYURTMA", "YANGI_BUYURTMA"),
         ],

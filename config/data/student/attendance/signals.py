@@ -23,26 +23,24 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 instance.lid.is_student = True
                 instance.lid.save()
 
-
             else:
+                instance.lid.is_student = True
+                instance.lid.save()
                 stage_name = f"{attendances_count} darsga qatnashmagan"
                 Notification.objects.create(
                     user=instance.lid.call_operator,
                     comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {stage_name} !",
                     come_from=instance.lid,
                 )
-                instance.lid.ordered_stages = "BIRINCHI_DARSGA_KELMAGAN"
-                instance.lid.save()
 
-        elif attendances_count > 1 and instance.reason == "UNREASONED":
-
-            Notification.objects.create(
-                user=instance.lid.moderator,
-                comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan!",
-                come_from=instance.lid,
-            )
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
+
+        if attendances_count == 1:
+            if instance.reason in ["UNREASONED","REASONED"]:
+                instance.student.new_student_stages = "BIRINCHI_DARSGA_KELMAGAN"
+                instance.student.save()
+
         if attendances_count > 1 and instance.reason == "IS_PRESENT":
 
             if instance.student.balance_status =="INACTIVE":
@@ -71,7 +69,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 if instance.student:
                     instance.student.balance -= instance.group.price
                     instance.student.save()
-                    is_first = True if Attendance.objects.filter(student=instance.student).count() ==2 else False
+                    is_first = True if Attendance.objects.filter(student=instance.student).count() == 2 else False
                     kind = Kind.objects.get(name="Lesson payment")
                     Finance.objects.create(
                         action="INCOME",
