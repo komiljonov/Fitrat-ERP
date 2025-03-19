@@ -699,6 +699,9 @@ class SaleStudentRetrieve(ListAPIView):
             return SaleStudent.objects.filter(Q(lid__id=id) | Q(student__id=id))
         return SaleStudent.objects.none()
 
+    def get_paginated_response(self, data):
+        return Response(data)
+
 class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = SaleStudentSerializer
     queryset = SaleStudent.objects.all()
