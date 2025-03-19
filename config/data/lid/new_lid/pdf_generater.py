@@ -8,7 +8,7 @@ from drf_yasg import openapi
 from docx import Document
 from docx.shared import Inches
 
-# ✅ Absolute paths for image files
+
 SIGNATURE_PATH = os.path.abspath("data/lid/new_lid/sign.png")
 STAMP_PATH = os.path.abspath("data/lid/new_lid/pechate.png")
 TEMPLATE_PATH = os.path.abspath("data/lid/new_lid/Shartnoma.docx")

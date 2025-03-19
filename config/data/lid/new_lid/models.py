@@ -1,7 +1,4 @@
-from xmlrpc.client import DateTime
-
 from django.db import models
-from django.db.models import DateTimeField
 from django.utils import timezone
 
 from data.student.student.models import Student

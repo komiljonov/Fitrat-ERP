@@ -174,7 +174,6 @@ class LidSerializer(serializers.ModelSerializer):
 
         return instance
 
-
 class LidStatisticsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lid
@@ -194,7 +193,6 @@ class LidAppSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
         ]
-
 
 class LidBulkUpdateSerializer(serializers.ModelSerializer):
     class Meta:
