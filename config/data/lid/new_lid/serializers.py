@@ -42,7 +42,7 @@ class LidSerializer(serializers.ModelSerializer):
         model = Lid
         fields = [
             "id", "sender_id", "message_text", "photo" ,"first_name", "last_name", "middle_name",
-            "phone_number", "date_of_birth", "education_lang", "student_type","sales",
+            "phone_number", "date_of_birth", "education_lang", "student_type","sales","ordered_date",
             "edu_class", "edu_level", "subject", "ball", "filial","is_frozen","is_attendance",
             "marketing_channel", "lid_stage_type", "ordered_stages","extra_number","student",
             "lid_stages", "is_archived", "course", "group", "service_manager",'is_student',
