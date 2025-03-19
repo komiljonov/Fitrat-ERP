@@ -212,5 +212,5 @@ class SaleStudent(TimeStampModel):
     comment = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.creator.phone} {self.sale.amount} to {self.student.phone if self.student else self.lid.phone_number}"
+        return f"{self.creator.phone} {self.sale.amount} to {self.student.phone if self.student else self.lid.phone_number if self.lid else None}"
     
