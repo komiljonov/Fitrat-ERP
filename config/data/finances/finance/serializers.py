@@ -338,6 +338,7 @@ class SaleStudentSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
