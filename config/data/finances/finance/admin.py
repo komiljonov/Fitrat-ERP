@@ -14,6 +14,6 @@ class FinansAdmin(admin.ModelAdmin):
 
 @admin.register(SaleStudent)
 class SaleStudentAdmin(admin.ModelAdmin):
-    list_display = ("creator__full_name","sale__name","sale__amount","expired_date", "comment", "created_at")
+    list_display = ("creator__full_name","sale__name","sale__amount","expire_date", "comment", "created_at")
     search_fields = ("sale__name","sale__amount")
     list_filter = ("sale__amount",)
