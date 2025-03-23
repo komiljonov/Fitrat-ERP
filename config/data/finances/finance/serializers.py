@@ -4,7 +4,8 @@ from rest_framework import serializers
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
-from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance, Sale, SaleStudent
+from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance, Sale, SaleStudent, Voucher, \
+    VoucherStudent
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
 from ...student.attendance.models import Attendance
@@ -298,6 +299,44 @@ class KpiFinanceSerializer(serializers.ModelSerializer):
         return data
 
 
+class VoucherSerializer(serializers.ModelSerializer):
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    class Meta:
+        model = Voucher
+        fields = [
+            "id",
+            "amount",
+            "is_expired",
+            "lid",
+            "student",
+            "filial",
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['creator'] = UserListSerializer(instance.creator).data
+        return data
+
+class VoucherStudentSerializer(serializers.ModelSerializer):
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+
+    class Meta:
+        model = VoucherStudent
+        fields = [
+            "id",
+            "creator",
+            "voucher",
+            "lid",
+            "student",
+            "filial",
+            "comment"
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['creator'] = UserListSerializer(instance.creator).data
+        return data
+
 class SalesSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
 
@@ -309,13 +348,16 @@ class SalesSerializer(serializers.ModelSerializer):
             "name",
             "filial",
             "amount",
-            "type",
             "created_at",
         ]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['creator'] = UserListSerializer(instance.creator).data
+        if instance.student:
+            data['student'] = StudentSerializer(instance.student).data
+        if instance.lid:
+            data['lid'] = LidSerializer(instance.lid).data
         return data
 
 

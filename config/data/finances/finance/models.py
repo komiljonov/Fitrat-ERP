@@ -148,6 +148,39 @@ class KpiFinance(TimeStampModel):
     def __str__(self):
         return f"{self.user.phone} {self.type} {self.amount}"
 
+class Voucher(TimeStampModel):
+    creator: "CustomUser" = models.ForeignKey(
+        'account.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='finances_voucher_creator',
+    )
+    name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+    )
+    amount = models.FloatField(default=0, max_length=100)
+    is_expired = models.BooleanField(default=False)
+    lid : "Lid" = models.ForeignKey(
+        'new_lid.Lid',
+        on_delete=models.SET_NULL,
+        related_name='finances_voucher_lid',
+        null=True,
+        blank=True,
+    )
+    student : "Student" = models.ForeignKey(
+        'student.Student',
+        on_delete=models.SET_NULL,
+        related_name='finances_voucher_student',
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return f"{self.creator} {self.amount} {self.is_expired}"
+
+
+
 class Sale(TimeStampModel):
     creator : "CustomUser" = models.ForeignKey(
         'account.CustomUser',
@@ -156,15 +189,6 @@ class Sale(TimeStampModel):
     )
     name = models.CharField(
         max_length=100,
-        null=True,
-        blank=True,
-    )
-    type = models.CharField(
-        choices=[
-            ("VOUCHER", "VOUCHER"),
-            ("SALE", "SALE"),
-        ],
-        max_length=20,
         null=True,
         blank=True,
     )
@@ -181,7 +205,7 @@ class Sale(TimeStampModel):
     amount = models.FloatField(default=0)
 
     def __str__(self):
-        return f"{self.creator.phone} {self.type} {self.amount}"
+        return f"{self.creator.phone}  {self.status} {self.amount}"
 
 class SaleStudent(TimeStampModel):
     creator : "CustomUser" = models.ForeignKey(
@@ -213,4 +237,33 @@ class SaleStudent(TimeStampModel):
 
     def __str__(self):
         return f"{self.creator.phone} {self.sale.amount} to {self.student.phone if self.student else self.lid.phone_number if self.lid else None}"
-    
+
+class VoucherStudent(TimeStampModel):
+    creator : "CustomUser" = models.ForeignKey(
+        'account.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='finances_creator_student_voucher',
+    )
+    voucher : "Voucher" = models.ForeignKey(
+        'voucher.Voucher',
+        on_delete=models.CASCADE,
+        related_name='finances_voucher_voucher',
+    )
+    student : "Student" = models.ForeignKey(
+        'student.Student',
+        on_delete=models.SET_NULL,
+        related_name='finances_student_voucher',
+        null=True,
+        blank=True,
+    )
+    lid : "Lid" = models.ForeignKey(
+        'new_lid.Lid',
+        on_delete=models.SET_NULL,
+        related_name='finances_lid_voucher',
+        null=True,
+        blank=True,
+    )
+    comment = models.TextField(null=True, blank=True)
+    def __str__(self):
+        return (f"{self.student.phone if self.student else self.lid.phone_number}"
+                f"{self.voucher.name} {self.created_at}")

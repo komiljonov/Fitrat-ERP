@@ -9,7 +9,7 @@ from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
-from ...finances.finance.models import SaleStudent
+from ...finances.finance.models import SaleStudent, Voucher, VoucherStudent
 from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.lesson.models import FirstLLesson
@@ -37,14 +37,15 @@ class LidSerializer(serializers.ModelSerializer):
     is_attendance = serializers.SerializerMethodField()
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     sales = serializers.SerializerMethodField()
+    voucher = serializers.SerializerMethodField()
 
     class Meta:
         model = Lid
         fields = [
             "id", "sender_id", "message_text", "photo" ,"first_name", "last_name", "middle_name",
-            "phone_number", "date_of_birth", "education_lang", "student_type","sales","ordered_date",
+            "phone_number", "date_of_birth", "education_lang", "student_type","sales","voucher","ordered_date",
             "edu_class", "edu_level", "subject", "ball", "filial","is_frozen","is_attendance",
-            "marketing_channel", "lid_stage_type", "ordered_stages","extra_number","student",
+            "marketing_channel", "lid_stage_type", "ordered_stages","extra_number","student","balance",
             "lid_stages", "is_archived", "course", "group", "service_manager",'is_student',
             "call_operator", "relatives", "lessons_count", "created_at","sales_manager","is_expired","file"
         ]
@@ -57,13 +58,24 @@ class LidSerializer(serializers.ModelSerializer):
             for field in fields_to_remove:
                 self.fields.pop(field, None)
 
+
+
+    def get_voucher(self, obj):
+        voucher = VoucherStudent.objects.filter(lid=obj).first()
+        if voucher:
+            return voucher[{
+                "id":voucher.voucher.id,
+                "amount":voucher.voucher.amount,
+                "is_expired":voucher.voucher.is_expired,
+                "created_at": voucher.created_at,
+            }]
+
     def get_sales(self, obj):
         sales = SaleStudent.objects.filter(lid__id=obj.id)
         return [{
             "id": sale.sale.id,
             "amount": sale.sale.amount,
             "sale_status":sale.sale.status ,
-            "type" : sale.sale.type,
             "date": sale.expire_date.strftime('%Y-%m-%d')
         if sale.expire_date else "Unlimited"} for sale in sales]
 
