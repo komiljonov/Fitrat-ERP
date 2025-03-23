@@ -792,12 +792,20 @@ class VoucherNoPG(ListAPIView):
         if is_expired:
             queryset = queryset.filter(is_expired=is_expired.capitalize())
         return queryset
+    def get_paginated_response(self, data):
+        return Response(data)
 
 class VoucherStudentList(ListCreateAPIView):
     serializer_class = VoucherStudentSerializer
     queryset = VoucherStudent.objects.all()
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        id = self.request.query_params.get('id')
+        if id:
+            return VoucherStudent.objects.filter(Q(lid__id=id) | Q(student__id=id))
+        else:
+            return VoucherStudent.objects.all()
 class VoucherStudentRetrieve(RetrieveUpdateDestroyAPIView):
     serializer_class = VoucherStudentSerializer
     queryset = VoucherStudent.objects.all()
