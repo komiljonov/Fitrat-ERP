@@ -6,6 +6,7 @@ from icecream import ic
 
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
+from ...finances.compensation.models import Bonus
 from ...finances.finance.models import Finance, Kind
 from ...notifications.models import Notification
 
@@ -67,19 +68,38 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         if instance.reason in ["IS_PRESENT", "UNREASONED", "REASONED"] and instance.group:
             if instance.group.price_type == "DAILY":
                 if instance.student:
-                    instance.student.balance -= instance.group.price
-                    instance.student.save()
-                    is_first = True if Attendance.objects.filter(student=instance.student).count() == 2 else False
+
+                    is_first = True if Finance.objects.filter(action="INCOME").count() == 1 else False
                     kind = Kind.objects.get(name="Lesson payment")
-                    Finance.objects.create(
-                        action="INCOME",
-                        amount=instance.group.price * 0.7,
-                        kind=kind,
-                        attendance=instance,
-                        student=instance.student,
-                        is_first=is_first,
-                        comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
-                    )
+
+                    teacher_bonus = Bonus.objects.filter(user=instance.group.teacher, name="O’quvchi to’lagan summadan foiz beriladi")
+                    if teacher_bonus:
+                        bonus = teacher_bonus.get("amount")
+                        ic(bonus)
+                        Finance.objects.create(
+                            action="EXPENSE",
+                            amount=instance.group.price * (bonus/100),
+                            kind=kind,
+                            attendance=instance,
+                            student=instance.student,
+                            is_first=is_first,
+                            comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
+                        )
+                        instance.group.teacher.balance += instance.group.price * (bonus/100)
+                        instance.group.teacher.save()
+
+
+                        Finance.objects.create(
+                            action="INCOME",
+                            amount=instance.group.price * (1-bonus/100),
+                            kind=kind,
+                            attendance=instance,
+                            student=instance.student,
+                            is_first=is_first,
+                            comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
+                        )
+                        instance.student.balance -= instance.group.price
+                        instance.student.save()
                 else:
                     print("Attendance does not have a related student.")
 
@@ -116,9 +136,23 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                         instance.student.balance -= price_per_lesson
                         instance.student.save()
 
-                        # 30 % for every lesson payment
+                        teacher_bonus = Bonus.objects.filter(user=instance.group.teacher,
+                                                             name="O’quvchi to’lagan summadan foiz beriladi")
+                        if teacher_bonus:
+                            bonus = teacher_bonus.get("amount")
 
-                        instance.group.teacher.balance += price_per_lesson * 0.3
+                            instance.group.teacher.balance += price_per_lesson * (bonus / 100)
+                            kind = Kind.objects.get(name="Lesson payment")
+                            is_first = True if Finance.objects.filter(action="INCOME").count() == 1 else False
+                            Finance.objects.create(
+                                action="INCOME",
+                                amount=instance.group.price * (1-bonus/100),
+                                kind=kind,
+                                attendance=instance,
+                                student=instance.student,
+                                is_first=is_first,
+                                comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
+                            )
 
                     else:
                         print(f"No lessons scheduled for {current_month_start}, skipping balance deduction.")
