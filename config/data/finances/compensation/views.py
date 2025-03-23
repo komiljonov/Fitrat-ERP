@@ -38,10 +38,12 @@ class BonusList(ListCreateAPIView):
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
 class BonusDetail(RetrieveUpdateDestroyAPIView):
     queryset = Bonus.objects.all()
     serializer_class = BonusSerializer
     permission_classes = [IsAuthenticated]
+
 
 class BonusNoPG(ListAPIView):
     queryset = Bonus.objects.all()
@@ -77,9 +79,11 @@ class CompensationList(ListCreateAPIView):
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
 class CompensationDetail(RetrieveUpdateDestroyAPIView):
     queryset = Compensation.objects.all()
     serializer_class = CompensationSerializer
+
 
 class CompensationNoPG(ListAPIView):
     queryset = Compensation.objects.all()
@@ -301,6 +305,7 @@ class MonitoringListCreateView(ListAPIView):
         print(f"Filtered Queryset Count: {queryset.count()}")
 
         return queryset
+
 
 class MonitoringRetrieveView(RetrieveUpdateDestroyAPIView):
     queryset = Monitoring.objects.all()
