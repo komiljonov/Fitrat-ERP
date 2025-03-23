@@ -319,6 +319,7 @@ class FistLesson_dataSerializer(serializers.ModelSerializer):
             "teacher",
             "lesson_date",
             "level",
+            "lid",
         ]
 
 
