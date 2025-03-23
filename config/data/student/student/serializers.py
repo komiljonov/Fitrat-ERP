@@ -18,7 +18,7 @@ from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
-from ...finances.finance.models import SaleStudent
+from ...finances.finance.models import SaleStudent, VoucherStudent
 from ...parents.models import Relatives
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
@@ -40,6 +40,7 @@ class StudentSerializer(serializers.ModelSerializer):
     learning = serializers.SerializerMethodField()
     teacher = serializers.SerializerMethodField()
     sales = serializers.SerializerMethodField()
+    voucher = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
@@ -59,6 +60,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "edu_class",
             "subject",
             "sales",
+            "voucher",
             "ball",
             "filial",
             "marketing_channel",
@@ -85,6 +87,16 @@ class StudentSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+
+    def get_voucher(self, obj):
+        voucher = VoucherStudent.objects.filter(student=obj)
+        if voucher:
+            return [{
+                "id" : voucher.voucher.id,
+                "amount" : voucher.voucher.amount,
+                "is_expired" : voucher.voucher.is_expired,
+                "created_at" : voucher.created_at,
+            }]
 
     def get_sales(self, obj):
         sales = SaleStudent.objects.filter(student__id=obj.id)
