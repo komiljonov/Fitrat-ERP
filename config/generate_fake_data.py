@@ -80,7 +80,8 @@ def generate_fake_data():
         Day.objects.create(name=day)
 
     kind_actions = {
-        "Salary": ("EXPENSE", "#FF5733"),  # Bright Red-Orange
+        "Salary": ("EXPENSE", "#FF5733"),  # Bright Red-
+        "Voucher" : ("EXPENSE","#3498DB"),
         "Bonus": ("EXPENSE", "#33FF57"),  # Vibrant Green
         "Course payment": ("INCOME", "#3357FF"),  # Deep Blue
         "Lesson payment": ("INCOME", "#F4A261"),  # Warm Sand
