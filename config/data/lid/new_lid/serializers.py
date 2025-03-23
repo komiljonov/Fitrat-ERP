@@ -58,12 +58,9 @@ class LidSerializer(serializers.ModelSerializer):
             for field in fields_to_remove:
                 self.fields.pop(field, None)
 
-
-
     def get_voucher(self, obj):
-        voucher = VoucherStudent.objects.filter(lid=obj).first()
-        if voucher:
-            return [{
+        voucher = VoucherStudent.objects.filter(lid__id=obj.id)
+        return [{
                 "id":voucher.voucher.id,
                 "amount":voucher.voucher.amount,
                 "is_expired":voucher.voucher.is_expired,

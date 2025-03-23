@@ -38,8 +38,8 @@ def on_create(sender, instance: Finance, created, **kwargs):
 @receiver(post_save, sender=VoucherStudent)
 def on_create(sender, instance: VoucherStudent, created, **kwargs):
     if created:
-        casher = Casher.objects.filter(filial=instance.creator.filial,
-                                       role__in=["ADMINISTRATOR","ACCOUNTANT"]).first()
+        casher = Casher.objects.filter(filial__in=instance.creator.filial.all(),
+                                       role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first()
         if instance.lid:
             finance = Finance.objects.create(
                 casher = casher,
