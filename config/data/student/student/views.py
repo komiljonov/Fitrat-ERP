@@ -430,3 +430,11 @@ class FistLesson_dataList(ListCreateAPIView):
         if id:
             queryset = queryset.filter(lid__id=id)
         return queryset
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
+class FirstLesson_dataListRetrive(RetrieveUpdateDestroyAPIView):
+    queryset = FistLesson_data.objects.all()
+    serializer_class = FistLesson_dataSerializer
+    permission_classes = [IsAuthenticated]
