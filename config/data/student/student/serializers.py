@@ -321,8 +321,4 @@ class FistLesson_dataSerializer(serializers.ModelSerializer):
             "level",
         ]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["group"] = GroupSerializer(instance.group).data
-        data["teacher"] = UserSerializer(instance.teacher).data
-        data["level"] = LevelSerializer(instance.level).data
+
