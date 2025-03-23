@@ -355,10 +355,6 @@ class SalesSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['creator'] = UserListSerializer(instance.creator).data
-        if instance.student:
-            data['student'] = StudentSerializer(instance.student).data
-        if instance.lid:
-            data['lid'] = LidSerializer(instance.lid).data
         return data
 
 
