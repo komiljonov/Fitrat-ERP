@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import StudentListView, StudentDetailView, StudentListNoPG, StudentScheduleView, StudentLoginAPIView, \
-    ExportLidToExcelAPIView, StudentStatistics, StudentAllStatistics
+    ExportLidToExcelAPIView, StudentStatistics, StudentAllStatistics, FistLesson_dataList, FirstLesson_dataListRetrive
 
 urlpatterns = [
     path('', StudentListView.as_view(), name='student-list'),
@@ -18,4 +18,6 @@ urlpatterns = [
 
     path('statistics/all', StudentAllStatistics.as_view(), name='student-statistics'),
 
+    path("first/lesson/data",FistLesson_dataList.as_view(),name="first-lesson-data"),
+    path("first/lesson/data/<uuid:pk>/",FirstLesson_dataListRetrive.as_view(),name="first-lesson-data"),
 ]
