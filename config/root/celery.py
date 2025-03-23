@@ -30,6 +30,10 @@ app.conf.beat_schedule = {
     'send_daily_excel_report': {
         'task': "data.dashboard.tasks.send_daily_excel_report",
         'schedule': crontab(hour=9, minute=0),
+    },
+    "check_accountant_kpi": {
+        "task": "data.student.mastering.tasks.check_accountant_kpi",
+        "schedule": crontab(day_of_month=28, hour=0, minute=0),
     }
 }
 
