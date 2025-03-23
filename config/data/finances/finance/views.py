@@ -22,9 +22,9 @@ from rest_framework.views import APIView
 
 from data.account.models import CustomUser
 from data.student.student.models import Student
-from .models import Finance, Casher, Handover, PaymentMethod, Sale, SaleStudent, Kind
+from .models import Finance, Casher, Handover, PaymentMethod, Sale, SaleStudent, Kind, Voucher, VoucherStudent
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, KindSerializer, \
-    PaymentMethodSerializer, SalesSerializer, SaleStudentSerializer
+    PaymentMethodSerializer, SalesSerializer, SaleStudentSerializer, VoucherSerializer, VoucherStudentSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 
@@ -763,6 +763,45 @@ class PaymentStatisticsByKind(APIView):
         data["total_expense"] = total_expense
 
         return Response(data)
+
+
+class VoucherList(ListCreateAPIView):
+    serializer_class = VoucherSerializer
+    queryset = Voucher.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+class VoucherRetrieve(RetrieveUpdateDestroyAPIView):
+    serializer_class = VoucherSerializer
+    queryset = Voucher.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+class VoucherNoPG(ListAPIView):
+    serializer_class = VoucherSerializer
+    queryset = Voucher.objects.all()
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        is_expired = self.request.query_params.get('is_expired')
+        filial = self.request.query_params.get('filial')
+
+        queryset = Voucher.objects.all()
+        if filial:
+            queryset = queryset.filter(filial_id=filial)
+
+        if is_expired:
+            queryset = queryset.filter(is_expired=is_expired.capitalize())
+        return queryset
+
+class VoucherStudentList(ListCreateAPIView):
+    serializer_class = VoucherStudentSerializer
+    queryset = VoucherStudent.objects.all()
+    permission_classes = [IsAuthenticated]
+
+class VoucherStudentRetrieve(RetrieveUpdateDestroyAPIView):
+    serializer_class = VoucherStudentSerializer
+    queryset = VoucherStudent.objects.all()
+    permission_classes = [IsAuthenticated]
 
 
 class GeneratePaymentExcelAPIView(APIView):
