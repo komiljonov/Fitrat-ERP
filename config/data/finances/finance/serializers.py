@@ -321,6 +321,7 @@ class VoucherStudentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    voucher = serializers.PrimaryKeyRelatedField(queryset=Voucher.objects.all(), allow_null=True)
 
     class Meta:
         model = VoucherStudent
@@ -336,6 +337,7 @@ class VoucherStudentSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['creator'] = UserListSerializer(instance.creator).data
+        data['voucher'] = VoucherSerializer(instance.voucher).data
         return data
 
 class SalesSerializer(serializers.ModelSerializer):
