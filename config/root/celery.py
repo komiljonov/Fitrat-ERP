@@ -15,6 +15,10 @@ app.conf.beat_schedule = {
         'task': 'data.tasks.tasks.check_daily_tasks',
         'schedule': crontab(minute='*/1'),
     },
+    "check_accountant_kpi": {
+        "task": "data.student.mastering.tasks.check_accountant_kpi",
+        "schedule": crontab(minute="*/1"),
+    },
     'check-daily-leads': {
         'task': 'data.lid.new_lid.tasks.check_daily_leads',
         'schedule': crontab(minute='*/1'),
@@ -31,10 +35,6 @@ app.conf.beat_schedule = {
         'task': "data.dashboard.tasks.send_daily_excel_report",
         'schedule': crontab(hour=9, minute=0),
     },
-    "check_accountant_kpi": {
-        "task": "data.student.mastering.tasks.check_accountant_kpi",
-        "schedule": crontab(hour=20, minute=55),
-    }
 }
 
 app.conf.timezone = "Asia/Tashkent"
