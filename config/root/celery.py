@@ -33,7 +33,7 @@ app.conf.beat_schedule = {
     },
     "check_accountant_kpi": {
         "task": "data.student.mastering.tasks.check_accountant_kpi",
-        "schedule": crontab(day_of_month=23, hour=20, minute=52),
+        "schedule": crontab(hour=20, minute=55),
     }
 }
 
