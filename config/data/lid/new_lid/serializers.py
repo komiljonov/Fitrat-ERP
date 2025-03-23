@@ -63,7 +63,7 @@ class LidSerializer(serializers.ModelSerializer):
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(lid=obj).first()
         if voucher:
-            return voucher[{
+            return [{
                 "id":voucher.voucher.id,
                 "amount":voucher.voucher.amount,
                 "is_expired":voucher.voucher.is_expired,
