@@ -84,7 +84,7 @@ class PointSerializer(serializers.ModelSerializer):
     class Meta:
         model = Point
         fields = [
-            'id', 'name', 'asos', "filial", 'max_ball',
+            'id', 'name', 'asos', "filial", 'max_ball',"amount",
             "average_point", "monitoring", "user_avg_ball",
             "created_at", "updated_at"
         ]

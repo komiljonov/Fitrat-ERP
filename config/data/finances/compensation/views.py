@@ -94,7 +94,6 @@ class CompensationNoPG(ListAPIView):
         return Response(data)
 
 
-
 class PageCreateView(ListCreateAPIView):
     queryset = Page.objects.all()
     serializer_class = PagesSerializer
@@ -154,48 +153,6 @@ class PageBulkUpdateView(APIView):
         return Response({"detail": "Expected a list of pages for update."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class FilterJSONData(ListAPIView):
-    permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        # Load JSON data from file
-        with open("your_file.json", "r", encoding="utf-8") as file:
-            json_data = json.load(file)
-
-        # Get filtering parameters from request
-        is_editable = self.request.query_params.get("is_editable")
-        is_readable = self.request.query_params.get("is_readable")
-
-        def filter_json(data):
-            """Recursively filter nested JSON data."""
-            filtered_data = {}
-
-            for key, value in data.items():
-                if isinstance(value, dict):
-                    if "is_editable" in value and "is_readable" in value:
-                        conditions_met = True
-                        if is_editable is not None:
-                            conditions_met &= value["is_editable"] == (is_editable.lower() == "true")
-                        if is_readable is not None:
-                            conditions_met &= value["is_readable"] == (is_readable.lower() == "true")
-
-                        if conditions_met:
-                            filtered_data[key] = value
-                    else:
-                        nested_result = filter_json(value)
-                        if nested_result:
-                            filtered_data[key] = nested_result
-
-            return filtered_data
-
-        filtered_result = filter_json(json_data)
-        return filtered_result
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        return Response(queryset)
-
-
 class AsosListCreateView(ListCreateAPIView):
     queryset = Asos.objects.all()
     serializer_class = AsosSerializer
@@ -207,6 +164,7 @@ class AsosListCreateView(ListCreateAPIView):
         if filial:
             queryset = queryset.filter(filial__id=filial)
         return queryset
+
 
 class AsosListRetrieveView(RetrieveUpdateDestroyAPIView):
     queryset = Asos.objects.all()
