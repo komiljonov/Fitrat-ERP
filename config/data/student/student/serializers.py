@@ -96,7 +96,7 @@ class StudentSerializer(serializers.ModelSerializer):
                 "amount" : voucher.voucher.amount,
                 "is_expired" : voucher.voucher.is_expired,
                 "created_at" : voucher.created_at,
-            }]
+            } for voucher in voucher]
 
     def get_sales(self, obj):
         sales = SaleStudent.objects.filter(student__id=obj.id)
