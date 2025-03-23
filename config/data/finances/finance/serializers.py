@@ -311,6 +311,7 @@ class VoucherSerializer(serializers.ModelSerializer):
             "lid",
             "student",
             "filial",
+            "created_at"
         ]
     def to_representation(self, instance):
         data = super().to_representation(instance)
