@@ -52,6 +52,7 @@ class GroupSerializer(serializers.ModelSerializer):
             'finish_date',
             'is_secondary',
             'current_theme',
+            "created_at",
         ]
 
     def get_subject(self, obj):
