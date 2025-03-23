@@ -14,8 +14,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Student
-from .serializers import StudentSerializer, StudentTokenObtainPairSerializer
+from .models import Student, FistLesson_data
+from .serializers import StudentSerializer, StudentTokenObtainPairSerializer, FistLesson_dataSerializer
 from ..lesson.models import Lesson
 from ..lesson.serializers import LessonSerializer
 from ..studentgroup.models import StudentGroup
@@ -417,3 +417,16 @@ class ExportLidToExcelAPIView(APIView):
         workbook.save(response)
 
         return response
+
+
+class FistLesson_dataList(ListCreateAPIView):
+    queryset = FistLesson_data.objects.all()
+    serializer_class = FistLesson_dataSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = FistLesson_data.objects.all()
+        id = self.request.query_params.get('id')
+        if id:
+            queryset = queryset.filter(lid__id=id)
+        return queryset

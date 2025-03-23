@@ -8,7 +8,9 @@ from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...upload.models import File
-
+from ..course.models import Level
+from ..groups.models import Group
+from ...lid.new_lid.models import Lid
 
 class Student(TimeStampModel):
     photo = models.ForeignKey('upload.File', on_delete=models.SET_NULL,null=True,blank=True,related_name='students_photo')
@@ -98,3 +100,14 @@ class Student(TimeStampModel):
 
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
+
+
+class FistLesson_data(TimeStampModel):
+    teacher : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True,blank=True)
+    group : "Group" = models.ForeignKey('groups.Group', on_delete=models.SET_NULL, null=True,blank=True)
+    lesson_date = models.DateTimeField(null=True, blank=True)
+    level : "Level" = models.ForeignKey("groups.Level", on_delete=models.SET_NULL, null=True,blank=True)
+    lid : "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True,blank=True)
+
+    def __str__(self):
+        return f"{self.teacher.full_name} {self.group} {self.lesson_date}"

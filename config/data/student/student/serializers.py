@@ -4,14 +4,19 @@ import hashlib
 from django.db.models import F, Avg
 from django.utils.module_loading import import_string
 from icecream import ic
+from openpyxl.chart.data_source import Level
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from tutorial.quickstart.serializers import GroupSerializer
 
-from .models import Student
+from .models import Student, FistLesson_data
 from ..attendance.models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
+from ..groups.models import Group
 from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
+from ..subject.serializers import LevelSerializer
+from ...account.models import CustomUser
 from ...account.permission import PhoneAuthBackend
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
@@ -302,3 +307,22 @@ class StudentAppSerializer(serializers.ModelSerializer):
             'data.student.attendance.serializers.AttendanceSerializer')
         return AttendanceSerializer(attendance, many=True).data
 
+class FistLesson_dataSerializer(serializers.ModelSerializer):
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(),allow_null=True)
+    teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all(),allow_null=True)
+    class Meta:
+        model= FistLesson_data
+        fields = [
+            'id',
+            'group',
+            "teacher",
+            "lesson_date",
+            "level",
+        ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["group"] = GroupSerializer(instance.group).data
+        data["teacher"] = UserSerializer(instance.teacher).data
+        data["level"] = LevelSerializer(instance.level).data
