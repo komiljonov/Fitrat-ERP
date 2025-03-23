@@ -1,16 +1,17 @@
 import hashlib
+from typing import TYPE_CHECKING
 
 from django.db import models
 from django.utils import timezone
 
+from ..groups.models import Group
+from ..subject.models import Level
 from ...account.models import CustomUser
 from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...upload.models import File
-from ..subject.models import Level
-from ..groups.models import Group
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ...lid.new_lid.models import Lid
 
