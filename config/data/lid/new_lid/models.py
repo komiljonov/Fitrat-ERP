@@ -111,7 +111,7 @@ class Lid(TimeStampModel):
     student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL,
                                             null=True,blank=True,)
 
-    balance = models.CharField(max_length=100, null=True, blank=True)
+    balance = models.FloatField(default=0)
 
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"
