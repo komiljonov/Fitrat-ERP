@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     # Installed apps
     'data.account',
 
-    'data.stages',
     'data.tasks',
     'data.finances.finance',
     'data.finances.compensation',
