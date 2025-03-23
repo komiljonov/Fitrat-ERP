@@ -245,7 +245,7 @@ class VoucherStudent(TimeStampModel):
         related_name='finances_creator_student_voucher',
     )
     voucher : "Voucher" = models.ForeignKey(
-        'voucher.Voucher',
+        'finance.Voucher',
         on_delete=models.CASCADE,
         related_name='finances_voucher_voucher',
     )
