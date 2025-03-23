@@ -1,11 +1,8 @@
 from django.contrib.auth.backends import BaseBackend
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 
 from .models import CustomUser
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
 
 
 class PhoneAuthBackend(BaseBackend):
@@ -17,7 +14,7 @@ class PhoneAuthBackend(BaseBackend):
                 print("Authentication successful")
                 return user
             elif user.is_archived:
-                return Response({"Xodim arxivlangani sababli tizimga kirishi taqiqlanadi!"})
+                return Response({"Xodim arxivlanganligi sababli tizimga kirishi taqiqlanadi!"})
 
             else:
                 print("Invalid password")

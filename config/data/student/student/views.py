@@ -63,7 +63,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         subject_id = self.request.query_params.get("subject")
         filial_id = self.request.query_params.get("filial")
         sttudent_stage_type = self.request.query_params.get("stt")
-        first_lesson_come = self.request.query_params.get("first_lesson_come")
 
         if sttudent_stage_type:
             queryset = queryset.filter(new_student_stages=sttudent_stage_type)
