@@ -806,6 +806,7 @@ class VoucherStudentList(ListCreateAPIView):
             return VoucherStudent.objects.filter(Q(lid__id=id) | Q(student__id=id))
         else:
             return VoucherStudent.objects.all()
+
 class VoucherStudentRetrieve(RetrieveUpdateDestroyAPIView):
     serializer_class = VoucherStudentSerializer
     queryset = VoucherStudent.objects.all()
