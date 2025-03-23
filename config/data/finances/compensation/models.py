@@ -46,6 +46,7 @@ class Asos(TimeStampModel):
 class Point(TimeStampModel):
     name = models.CharField(max_length=256)
     asos : "Asos" = models.ForeignKey('compensation.Asos', on_delete=models.CASCADE)
+    amount = models.FloatField(default=0,null=True,blank=True)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
 
 

@@ -6,6 +6,8 @@ from data.lid.new_lid.models import Lid
 from data.student.attendance.models import Attendance
 from data.student.student.models import Student
 
+
+
 class Casher(TimeStampModel):
     name = models.CharField(max_length=100)
     user: "CustomUser" = models.ForeignKey(
@@ -48,6 +50,8 @@ class PaymentMethod(TimeStampModel):
     name = models.CharField(max_length=100)
     def __str__(self):
         return f"{self.name}"
+
+
 
 class Finance(TimeStampModel):
 
@@ -104,6 +108,8 @@ class Finance(TimeStampModel):
     def __str__(self):
         return f'{self.amount}  {self.action}'
 
+
+
 class Handover(TimeStampModel):
     casher : "Casher" = models.ForeignKey(
         'finance.Casher',
@@ -148,6 +154,8 @@ class KpiFinance(TimeStampModel):
     def __str__(self):
         return f"{self.user.phone} {self.type} {self.amount}"
 
+
+
 class Voucher(TimeStampModel):
     creator: "CustomUser" = models.ForeignKey(
         'account.CustomUser',
@@ -178,8 +186,6 @@ class Voucher(TimeStampModel):
 
     def __str__(self):
         return f"{self.creator} {self.amount} {self.is_expired}"
-
-
 
 class Sale(TimeStampModel):
     creator : "CustomUser" = models.ForeignKey(
