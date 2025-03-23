@@ -292,7 +292,6 @@ class FinanceStatisticsAPIView(APIView):
         return Response(response_data)
 
 
-
 class CasherHandoverHistory(ListAPIView):
     serializer_class = CasherHandoverSerializer
     permission_classes = [IsAuthenticated]
@@ -702,6 +701,7 @@ class SaleStudentRetrieve(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
     serializer_class = SaleStudentSerializer
     queryset = SaleStudent.objects.all()
@@ -795,6 +795,7 @@ class VoucherNoPG(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 class VoucherStudentList(ListCreateAPIView):
     serializer_class = VoucherStudentSerializer
     queryset = VoucherStudent.objects.all()
@@ -806,6 +807,7 @@ class VoucherStudentList(ListCreateAPIView):
             return VoucherStudent.objects.filter(Q(lid__id=id) | Q(student__id=id))
         else:
             return VoucherStudent.objects.all()
+
 
 class VoucherStudentRetrieve(RetrieveUpdateDestroyAPIView):
     serializer_class = VoucherStudentSerializer

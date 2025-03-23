@@ -42,6 +42,10 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 instance.student.new_student_stages = "BIRINCHI_DARSGA_KELMAGAN"
                 instance.student.save()
 
+            if instance.reason == "IS_PRESENT":
+                instance.student.new_student_stages = "BIRINCHI_DARS"
+                instance.student.save()
+
         if attendances_count > 1 and instance.reason == "IS_PRESENT":
 
             if instance.student.balance_status =="INACTIVE":
