@@ -6,7 +6,6 @@ from ...account.models import CustomUser
 from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
-from ...stages.models import NewLidStages, NewOredersStages
 from ...upload.models import File
 
 
@@ -97,8 +96,6 @@ class Lid(TimeStampModel):
                                                       null=True, blank=True,
                                                       related_name='service_manager')
 
-    lid_stages: models.QuerySet['NewLidStages']
-    ordered_stages: models.QuerySet['NewOredersStages']
 
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser',
         on_delete=models.CASCADE, null=True,blank=True, related_name="sales_manager")

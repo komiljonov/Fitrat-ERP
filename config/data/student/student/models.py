@@ -15,15 +15,17 @@ from ...upload.models import File
 if TYPE_CHECKING:
     from ...lid.new_lid.models import Lid
 
+
 class Student(TimeStampModel):
-    photo = models.ForeignKey('upload.File', on_delete=models.SET_NULL,null=True,blank=True,related_name='students_photo')
+    photo = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='students_photo')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     middle_name = models.CharField(max_length=100, null=True, blank=True)
     phone = models.CharField(max_length=100)
     date_of_birth = models.DateField(default=timezone.now())
 
-    password = models.CharField(max_length=100,null=True,blank=True,default=hashlib.sha256("1".encode()).hexdigest())
+    password = models.CharField(max_length=100, null=True, blank=True, default=hashlib.sha256("1".encode()).hexdigest())
 
     language_choice = (("ENG", "ENG"),
                        ("RU", "RU"),
@@ -85,15 +87,15 @@ class Student(TimeStampModel):
     )
 
     service_manager: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,
-                                                blank=True, help_text="service_manager for this student",
-                                                related_name="student_service_manager")
+                                                      blank=True, help_text="service_manager for this student",
+                                                      related_name="student_service_manager")
 
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True, )
     is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
     is_frozen = models.BooleanField(default=False, help_text="Is this student frozen or not")
 
-    file : "File" = models.ManyToManyField('upload.File', blank=True,
-                related_name="student_files", help_text="File for this student")
+    file: "File" = models.ManyToManyField('upload.File', blank=True,
+                                          related_name="student_files", help_text="File for this student")
 
     call_operator: 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,
                                                     null=True, blank=True, help_text="Call operator",
@@ -106,11 +108,11 @@ class Student(TimeStampModel):
 
 
 class FistLesson_data(TimeStampModel):
-    teacher : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True,blank=True)
-    group : "Group" = models.ForeignKey('groups.Group', on_delete=models.SET_NULL, null=True,blank=True)
+    teacher: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True)
+    group: "Group" = models.ForeignKey('groups.Group', on_delete=models.SET_NULL, null=True, blank=True)
     lesson_date = models.DateTimeField(null=True, blank=True)
-    level : "Level" = models.ForeignKey("subject.Level", on_delete=models.SET_NULL, null=True,blank=True)
-    lid : "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True,blank=True)
+    level: "Level" = models.ForeignKey("subject.Level", on_delete=models.SET_NULL, null=True, blank=True)
+    lid: "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.teacher.full_name} {self.group} {self.lesson_date}"

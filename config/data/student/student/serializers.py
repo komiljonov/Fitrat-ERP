@@ -3,10 +3,8 @@ import hashlib
 
 from django.db.models import F, Avg
 from django.utils.module_loading import import_string
-from icecream import ic
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from tutorial.quickstart.serializers import GroupSerializer
 
 from .models import Student, FistLesson_data
 from ..attendance.models import Attendance
@@ -15,7 +13,6 @@ from ..groups.models import Group
 from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Level
-from ..subject.serializers import LevelSerializer
 from ...account.models import CustomUser
 from ...account.permission import PhoneAuthBackend
 from ...account.serializers import UserSerializer
@@ -30,13 +27,13 @@ from ...upload.serializers import FileUploadSerializer
 
 
 class StudentSerializer(serializers.ModelSerializer):
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True,allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
     is_attendance = serializers.SerializerMethodField()
@@ -92,15 +89,14 @@ class StudentSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(student=obj)
         if voucher:
             return [{
-                "id" : voucher.voucher.id,
-                "amount" : voucher.voucher.amount,
-                "is_expired" : voucher.voucher.is_expired,
-                "created_at" : voucher.created_at,
+                "id": voucher.voucher.id,
+                "amount": voucher.voucher.amount,
+                "is_expired": voucher.voucher.is_expired,
+                "created_at": voucher.created_at,
             } for voucher in voucher]
 
     def get_sales(self, obj):
@@ -217,9 +213,10 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def get_group(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
-                   .values(
-                       "group__name", "group__status", "group__started_at", "group__ended_at", "group__teacher__first_name", "group__teacher__last_name"
-                   ))
+        .values(
+            "group__name", "group__status", "group__started_at", "group__ended_at", "group__teacher__first_name",
+            "group__teacher__last_name"
+        ))
         return list(courses)
 
     def get_relatives(self, obj):
@@ -252,16 +249,19 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['photo'] = FileUploadSerializer(instance.photo,context=self.context).data
+        representation['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(
             instance.marketing_channel).data if instance.marketing_channel else None
 
-        representation['sales_manager'] = UserSerializer(instance.sales_manager).data if instance.sales_manager else None
+        representation['sales_manager'] = UserSerializer(
+            instance.sales_manager).data if instance.sales_manager else None
 
-        representation['service_manager'] = UserSerializer(instance.service_manager).data if instance.service_manager else None
+        representation['service_manager'] = UserSerializer(
+            instance.service_manager).data if instance.service_manager else None
         representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
         return representation
+
 
 class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
     phone = serializers.CharField()
@@ -293,6 +293,7 @@ class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
         attrs['user'] = user
         return attrs
 
+
 class StudentAppSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
@@ -301,18 +302,21 @@ class StudentAppSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
         ]
+
     def get_attendance(self, obj):
         attendance = Attendance.objects.filter(lesson=obj)
         AttendanceSerializer = import_string(
             'data.student.attendance.serializers.AttendanceSerializer')
         return AttendanceSerializer(attendance, many=True).data
 
+
 class FistLesson_dataSerializer(serializers.ModelSerializer):
-    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(),allow_null=True)
-    teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
-    level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all(),allow_null=True)
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), allow_null=True)
+    teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+    level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all(), allow_null=True)
+
     class Meta:
-        model= FistLesson_data
+        model = FistLesson_data
         fields = [
             'id',
             'group',
@@ -321,5 +325,3 @@ class FistLesson_dataSerializer(serializers.ModelSerializer):
             "level",
             "lid",
         ]
-
-

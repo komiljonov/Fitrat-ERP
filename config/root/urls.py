@@ -64,9 +64,7 @@ urlpatterns = [
 
     path('parents/', include('data.parents.urls')),
 
-    path('stages/',include("data.stages.urls")),
 
-    # path('moderator/', include('data.moderator.urls')),
 
     path('teacher/', include('data.teachers.teacher.urls')),
 
