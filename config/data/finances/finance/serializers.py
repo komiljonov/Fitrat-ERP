@@ -318,6 +318,8 @@ class VoucherSerializer(serializers.ModelSerializer):
         data['creator'] = UserListSerializer(instance.creator).data
         return data
 
+
+
 class VoucherStudentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)

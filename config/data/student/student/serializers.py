@@ -104,7 +104,6 @@ class StudentSerializer(serializers.ModelSerializer):
             "id": sale.sale.id,
             "amount": sale.sale.amount,
             "sale_status": sale.sale.status,
-            "type": sale.sale.type,
             "date": sale.expire_date.strftime('%Y-%m-%d')
             if sale.expire_date else "Unlimited"} for sale in sales]
 
