@@ -133,11 +133,10 @@ class FilialRestrictedQuerySetMixin:
         if user.role == "DIRECTOR":
             return queryset
 
-        # Ensure only data for the user's filial is accessible
-        if not user_filial:
-            return queryset.none()  # No data if the user has no filial assigned
 
-        # Filter the queryset by filial
+        if not user_filial:
+            return queryset.none()
+
         queryset = queryset.filter(filial__in=user_filial.all())
 
         return queryset
