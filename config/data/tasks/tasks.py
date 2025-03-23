@@ -1,10 +1,7 @@
-import os
 import logging
 from datetime import datetime
 
 from celery import shared_task
-from root.celery import app
-
 
 from .models import Task
 from ..notifications.models import Notification
