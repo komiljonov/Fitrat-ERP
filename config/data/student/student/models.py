@@ -8,9 +8,11 @@ from ...command.models import TimeStampModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...upload.models import File
-from ..course.models import Level
+from ..subject.models import Level
 from ..groups.models import Group
-from ...lid.new_lid.models import Lid
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...lid.new_lid.models import Lid
 
 class Student(TimeStampModel):
     photo = models.ForeignKey('upload.File', on_delete=models.SET_NULL,null=True,blank=True,related_name='students_photo')
@@ -106,7 +108,7 @@ class FistLesson_data(TimeStampModel):
     teacher : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True,blank=True)
     group : "Group" = models.ForeignKey('groups.Group', on_delete=models.SET_NULL, null=True,blank=True)
     lesson_date = models.DateTimeField(null=True, blank=True)
-    level : "Level" = models.ForeignKey("groups.Level", on_delete=models.SET_NULL, null=True,blank=True)
+    level : "Level" = models.ForeignKey("subject.Level", on_delete=models.SET_NULL, null=True,blank=True)
     lid : "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True,blank=True)
 
     def __str__(self):

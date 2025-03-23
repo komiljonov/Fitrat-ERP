@@ -4,7 +4,6 @@ import hashlib
 from django.db.models import F, Avg
 from django.utils.module_loading import import_string
 from icecream import ic
-from openpyxl.chart.data_source import Level
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from tutorial.quickstart.serializers import GroupSerializer
@@ -15,6 +14,7 @@ from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group
 from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
+from ..subject.models import Level
 from ..subject.serializers import LevelSerializer
 from ...account.models import CustomUser
 from ...account.permission import PhoneAuthBackend
