@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from data.department.marketing_channel.models import MarketingChannel
-from data.finances.finance.models import Finance, Casher, Kind, SaleStudent
+from data.finances.finance.models import Finance, Casher, Kind, SaleStudent, VoucherStudent
 from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group, Day
 from data.student.studentgroup.models import StudentGroup
@@ -915,9 +915,9 @@ class SalesApiView(APIView):
 
         total_students = SaleStudent.objects.filter(**filters).count()
         total_voucher_amount = \
-        SaleStudent.objects.filter(sale__type="VOUCHER", **filters).aggregate(total=Sum('sale__amount'))['total'] or 0
+        VoucherStudent.objects.filter(**filters).aggregate(total=Sum('voucher__amount'))['total'] or 0
         total_sale_discount = \
-        SaleStudent.objects.filter(sale__type="SALE", **filters).aggregate(total=Sum('sale__amount'))['total'] or 0
+        SaleStudent.objects.filter(**filters).aggregate(total=Sum('sale__amount'))['total'] or 0
         total_debt = Student.objects.filter(balance__lt=0, **filters).aggregate(total=Sum('balance'))['total'] or 0
 
         # FIX: Removed incorrect `balance__status` lookup
