@@ -39,7 +39,6 @@ class Page(TimeStampModel):
 class Asos(TimeStampModel):
     name = models.CharField(max_length=256)
 
-
     def __str__(self):
         return f"{self.name} "
 
@@ -51,9 +50,12 @@ class Point(TimeStampModel):
 
 
 class Monitoring(TimeStampModel):
-    user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE,related_name='user_monitoring')
-    point : "Point" = models.ForeignKey('compensation.Point', on_delete=models.CASCADE,related_name='point_monitoring')
-    ball = models.DecimalField(decimal_places=2, max_digits=10, help_text="This ball can not be higher than asos's max_ball !!!")
+    user : "CustomUser" = models.ForeignKey('account.CustomUser',
+                                            on_delete=models.CASCADE,related_name='user_monitoring')
+    point : "Point" = models.ForeignKey('compensation.Point',
+                                        on_delete=models.CASCADE,related_name='point_monitoring')
+    ball = models.DecimalField(decimal_places=2, max_digits=10,
+                               help_text="This ball can not be higher than asos's max_ball !!!")
 
     def __str__(self):
         return f"{self.user.full_name}  {self.point.name}  {self.ball} / {self.point.max_ball}"
