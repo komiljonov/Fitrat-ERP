@@ -22,7 +22,7 @@ from .serializers import LidSerializer
 
 class LidListCreateView(ListCreateAPIView):
     serializer_class = LidSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 
     search_fields = ["first_name", "last_name", "phone_number", ]

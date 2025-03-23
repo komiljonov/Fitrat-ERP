@@ -44,7 +44,7 @@ urlpatterns = [
     path('sale-student/', SalesStudentList.as_view(), name='sale_student'),
     path("sale-student/<uuid:pk>/", SaleStudentRetrieve.as_view(), name="sale_student"),
     path("sale/no-pg/", SalesStudentNoPG.as_view(), name="sale_student"),
-    path("sale-student/<uuid:pk>/", SalesStudentsRetrive.as_view(), name="sale_student"),
+    path("sale/student/<uuid:pk>/", SalesStudentsRetrive.as_view(), name="sale_student"),
 
     path("payment-reason/", PaymentStatisticsByKind.as_view(), name="payment_kind"),
 
@@ -55,6 +55,6 @@ urlpatterns = [
     path("voucher/no-pg/", VoucherNoPG.as_view()),
 
     path("voucher/student/", VoucherStudentList.as_view()),
-    path("voucher/student/<uuid:pk>", VoucherStudentRetrieve.as_view()),
+    path("voucher/student/<uuid:pk>/", VoucherStudentRetrieve.as_view()),
 
 ]
