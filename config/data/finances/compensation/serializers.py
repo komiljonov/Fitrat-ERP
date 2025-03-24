@@ -10,9 +10,6 @@ from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSu
 from ...account.models import CustomUser
 from ...account.serializers import UserListSerializer
 
-if TYPE_CHECKING:
-    pass
-
 
 class BonusSerializer(serializers.ModelSerializer):
     class Meta:
