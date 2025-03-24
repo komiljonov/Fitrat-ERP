@@ -339,6 +339,11 @@ class Asos4ListCreateView(ListCreateAPIView):
         return ResultSubjects.objects.all()
 
 
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
+
 class ResultSubjectRetrieveView(RetrieveUpdateDestroyAPIView):
     queryset = ResultSubjects.objects.all()
     serializer_class = ResultPointsSerializer
@@ -356,6 +361,9 @@ class StudentCountMonitoringListCreateView(ListCreateAPIView):
              return StudentCountMonitoring.objects.filter(asos__id=asos)
         return StudentCountMonitoring.objects.all()
 
+    def get_paginated_response(self, data):
+        return Response(data)
+
 
 class StudentCountRetrieveView(RetrieveUpdateDestroyAPIView):
     queryset = StudentCountMonitoring.objects.all()
@@ -368,3 +376,6 @@ class ResultsNameListCreateView(ListCreateAPIView):
     queryset = ResultName.objects.all()
     serializer_class = ResultsNameSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_paginated_response(self, data):
+        return Response(data)
