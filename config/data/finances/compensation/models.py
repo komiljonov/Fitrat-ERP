@@ -95,10 +95,10 @@ class ResultSubjects(BaseModel):
         return f"{self.name}"
 
 class MonitoringAsos4(BaseModel):
-    asos : "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.SET_NULL)
-    result : "ResultName" = models.ForeignKey('compensation.ResultName',on_delete=models.SET_NULL)
-    user : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL)
-    subject : "ResultSubjects" = models.ForeignKey('compensation.ResultSubjects',on_delete=models.SET_NULL)
+    asos : "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.SET_NULL,null=True,blank=True)
+    result : "ResultName" = models.ForeignKey('compensation.ResultName',on_delete=models.SET_NULL, null=True,blank=True)
+    user : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL, null=True,blank=True)
+    subject : "ResultSubjects" = models.ForeignKey('compensation.ResultSubjects',on_delete=models.SET_NULL, null=True,blank=True)
     ball = models.FloatField(default=0,null=True,blank=True)
 
     def __str__(self):
