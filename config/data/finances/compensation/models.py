@@ -115,6 +115,12 @@ class StudentCountMonitoring(BaseModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
     amount = models.FloatField(default=0,null=True,blank=True)
+
+    type = models.CharField(choices=[
+        ("PENALTY", "PENALTY"),
+        ("BONUS", "BONUS"),
+    ], max_length=20,null=True,blank=True)
+
     from_point = models.CharField(max_length=256, null=True,blank=True)
     to_point = models.CharField(max_length=256, null=True,blank=True)
 
