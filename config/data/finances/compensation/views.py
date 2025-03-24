@@ -289,6 +289,8 @@ class MonitoringListCreateView(ListAPIView):
         asos = self.request.query_params.get("asos")
         point = self.request.query_params.get("point")
         user = self.request.query_params.get("user")
+        counter = self.request.query_params.get("counter")
+
 
         queryset = Monitoring.objects.all()
 
@@ -296,6 +298,10 @@ class MonitoringListCreateView(ListAPIView):
         print(f"Filtering with - Filial: {filial}, Point: {point}, User: {user}")
 
         filters = Q()
+
+
+        if counter:
+            filters &= Q(counter = counter)
         if user:
             filters &= Q(user_id=user)  # Ensure this matches your model field
         if point:
