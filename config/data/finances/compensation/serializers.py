@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING
 from django.db.models import Avg
 from rest_framework import serializers
 
-from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring
+from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring, \
+    StudentCatchingMonitoring
 from ...account.models import CustomUser
 
 if TYPE_CHECKING:
@@ -127,6 +128,7 @@ class ResultPointsSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "asos",
+            "result",
             "name",
             "result_type",
             "point",
@@ -156,6 +158,25 @@ class StudentCountMonitoringSerializer(serializers.ModelSerializer):
             "to_point",
             "created_at",
             "updated_at"
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["asos"] = AsosSerializer(instance.asos).data
+        return data
+
+class StudentCatchupSerializer(serializers.ModelSerializer):
+    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+    class Meta:
+        model = StudentCatchingMonitoring
+        fields = [
+            "id",
+            "name",
+            "asos",
+            "from_student",
+            "to_student",
+            "type",
+            "ball",
+            "created_at",
         ]
     def to_representation(self, instance):
         data = super().to_representation(instance)
