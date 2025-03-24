@@ -285,6 +285,8 @@ class MonitoringListCreateView(ListAPIView):
 
     def get_queryset(self):
         filial = self.request.query_params.get("filial")
+        creator = self.request.query_params.get("creator")
+        asos = self.request.query_params.get("asos")
         point = self.request.query_params.get("point")
         user = self.request.query_params.get("user")
 
@@ -300,6 +302,12 @@ class MonitoringListCreateView(ListAPIView):
             filters &= Q(point_id=point)  # Ensure this matches your model field
         if filial:
             filters &= Q(point__filial_id=filial)  # If Filial is linked via Point
+
+        if asos:
+            filters &= Q(point__asos__id=asos)
+
+        if creator:
+            filters &= Q(point__creator__id=creator)
 
         queryset = queryset.filter(filters)
 
