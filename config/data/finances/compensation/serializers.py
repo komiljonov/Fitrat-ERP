@@ -150,7 +150,6 @@ class StudentCountMonitoringSerializer(serializers.ModelSerializer):
         model = StudentCountMonitoring
         fields = [
             "id",
-            "name",
             "asos",
             "max_ball",
             "amount",

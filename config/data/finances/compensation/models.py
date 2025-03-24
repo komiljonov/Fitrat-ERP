@@ -88,14 +88,13 @@ class ResultSubjects(TimeStampModel):
 
 class StudentCountMonitoring(TimeStampModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
-    name = models.CharField(max_length=256)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
     amount = models.FloatField(default=0,null=True,blank=True)
     from_point = models.CharField(max_length=256, null=True,blank=True)
     to_point = models.CharField(max_length=256, null=True,blank=True)
 
     def __str__(self):
-        return f"{self.name} {self.from_point} - {self.to_point}"
+        return f"{self.from_point} - {self.to_point}"
 
 class StudentCatchingMonitoring(TimeStampModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
