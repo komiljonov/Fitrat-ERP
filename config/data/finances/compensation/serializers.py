@@ -133,7 +133,10 @@ class ResultPointsSerializer(serializers.ModelSerializer):
             "result_type",
             "point",
             "max_ball",
-            "point_type",
+
+            "from_point",
+            "to_point",
+
             "amount",
             "created_at",
             "updated_at"
@@ -170,6 +173,8 @@ class ResultsNameSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "point_type",
+            "type",
         ]
 
 class StudentCatchupSerializer(serializers.ModelSerializer):
