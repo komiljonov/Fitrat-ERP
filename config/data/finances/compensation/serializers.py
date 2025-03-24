@@ -4,7 +4,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring, \
-    StudentCatchingMonitoring, ResultName, MonitoringAsos4
+    StudentCatchingMonitoring, ResultName, MonitoringAsos4, Comments
 from ...account.models import CustomUser
 from ...account.serializers import UserListSerializer
 
@@ -77,6 +77,22 @@ class MonitoringSerializer(serializers.ModelSerializer):
         return rep
 
 
+class CommentsSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    class Meta:
+        model = Comments
+        fields = [
+            "id",
+            "user",
+            "asos",
+            "creator",
+            "comment",
+            "created_at",
+        ]
+
+
 class PointSerializer(serializers.ModelSerializer):
     average_point = serializers.SerializerMethodField()
     monitoring = serializers.SerializerMethodField()
@@ -115,7 +131,7 @@ class PointSerializer(serializers.ModelSerializer):
         """
         user_monitorings = getattr(obj, "user_monitorings", [])
         return [
-            {"id": mon.id,"user":mon.user.full_name ,
+            {"id": mon.id,"user":mon.user.full_name ,"creator" : mon.creator.full_name,
              "ball": mon.ball, "created_at": mon.created_at}
             for mon in user_monitorings
         ]

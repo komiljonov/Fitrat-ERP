@@ -46,6 +46,15 @@ class Asos(BaseModel):
         return f"{self.name} "
 
 
+class Comments(BaseModel):
+    asos : "Asos" = models.ForeignKey('compensation.Asos', on_delete=models.CASCADE)
+    creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
+    user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
+    comment = models.TextField()
+    def __str__(self):
+        return f"{self.comment}"
+
+
 class Point(BaseModel):
     name = models.CharField(max_length=256)
     asos : "Asos" = models.ForeignKey('compensation.Asos', on_delete=models.CASCADE)

@@ -335,9 +335,14 @@ class Asos4ListCreateView(ListCreateAPIView):
 
     def get_queryset(self):
         asos = self.request.query_params.get("asos")
+        name = self.request.query_params.get("name")
+        queryset = ResultSubjects.objects.all()
+        if name:
+            queryset = queryset.filter(result__id=name)
         if asos:
-            return ResultSubjects.objects.filter(asos__id=asos)
-        return ResultSubjects.objects.all()
+            queryset = queryset.filter(asos__id=asos)
+
+        return queryset
 
 
     def get_paginated_response(self, data):
