@@ -153,6 +153,7 @@ class StudentCountMonitoringSerializer(serializers.ModelSerializer):
             "asos",
             "max_ball",
             "amount",
+            "type",
             "from_point",
             "to_point",
             "created_at",
