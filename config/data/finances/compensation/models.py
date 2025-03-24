@@ -54,7 +54,7 @@ class Point(BaseModel):
 
 
 class Monitoring(BaseModel):
-    creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
+    creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True,blank=True)
     user : "CustomUser" = models.ForeignKey('account.CustomUser',
                                             on_delete=models.CASCADE,related_name='user_monitoring')
     point : "Point" = models.ForeignKey('compensation.Point',
