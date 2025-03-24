@@ -1,11 +1,12 @@
 from django.urls import path
 
-from .views import (BonusList, BonusDetail, BonusNoPG
-, CompensationList, CompensationDetail, CompensationNoPG, PageCreateView, PageBulkUpdateView, AsosListCreateView,
-                    AsosListRetrieveView, AsosNoPGListView, MonitoringBulkCreateView, MonitoringRetrieveView,
-                    PointListCreateView, PointRetrieveView, PointNoPGListView, MonitoringListCreateView,
-                    Asos4ListCreateView, ResultSubjectRetrieveView, StudentCountMonitoringListCreateView,
-                    StudentCountRetrieveView, ResultsNameListCreateView)
+from .views import (
+    BonusList, BonusDetail, BonusNoPG, CompensationList, CompensationDetail, CompensationNoPG,
+    PageCreateView, PageBulkUpdateView, AsosListCreateView,StudentCountRetrieveView, ResultsNameListCreateView,
+    AsosListRetrieveView, AsosNoPGListView, MonitoringBulkCreateView, MonitoringRetrieveView,
+    PointListCreateView, PointRetrieveView, PointNoPGListView, MonitoringListCreateView,
+    Asos4ListCreateView, ResultSubjectRetrieveView, StudentCountMonitoringListCreateView,
+                    )
 
 urlpatterns = [
     path('bonus/', BonusList.as_view()),
