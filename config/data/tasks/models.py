@@ -2,14 +2,14 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from rest_framework import request
 from typing import TYPE_CHECKING
-from ..command.models import TimeStampModel
+from ..command.models import BaseModel
 
 if TYPE_CHECKING:
     from ..lid.new_lid.models import Lid
     from ..student.student.models import Student
     from ..account.models import CustomUser
 
-class Task(TimeStampModel):
+class Task(BaseModel):
     creator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name='task_performer')
 
     lid: "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True)

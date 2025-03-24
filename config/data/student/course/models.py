@@ -1,7 +1,7 @@
 from ..subject.models import *
 
 # Create your models here.
-class Course(TimeStampModel):
+class Course(BaseModel):
     name = models.CharField(max_length=100)
 
     subject : Subject = models.ForeignKey('subject.Subject', on_delete=models.CASCADE)

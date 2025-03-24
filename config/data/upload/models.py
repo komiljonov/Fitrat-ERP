@@ -1,12 +1,12 @@
 from django.db import models
 from django.http import HttpRequest
 
-from ..command.models import TimeStampModel
+from ..command.models import BaseModel
 
 
-class File(TimeStampModel):
+class File(BaseModel):
     file = models.FileField(upload_to="files/", null=True, blank=True)
 
 
-class Contract(TimeStampModel):
+class Contract(BaseModel):
     file = models.FileField(upload_to="files/", null=True, blank=True)

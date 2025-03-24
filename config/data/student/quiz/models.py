@@ -1,24 +1,24 @@
 from django.db import models
 
-from data.command.models import TimeStampModel
+from data.command.models import BaseModel
 from data.student.student.models import Student
 
 
-class Quiz(TimeStampModel):
+class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
     def __str__(self):
         return self.title
 
-class Answer(TimeStampModel):
+class Answer(BaseModel):
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
         return self.text
 
-class Question(TimeStampModel):
+class Question(BaseModel):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
     question_text = models.TextField()
     answers = models.ManyToManyField(Answer)

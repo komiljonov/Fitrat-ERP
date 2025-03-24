@@ -9,7 +9,7 @@ from django.contrib import admin
 from data.department.filial.models import Filial
 
 
-class TimeStampModel(models.Model):
+class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
 
     filial : "Filial" = models.ForeignKey('filial.Filial', on_delete=models.SET_NULL, null=True,blank=True)
@@ -21,13 +21,3 @@ class TimeStampModel(models.Model):
     class Meta:
         abstract = True
         ordering = ['-created_at']
-
-
-
-class OrderedTimestampModel(TimeStampModel):
-    order = models.IntegerField(default=0)
-
-    class Meta:
-        abstract = True
-
-        ordering = ["order"]

@@ -3,13 +3,13 @@ from django.utils import timezone
 
 from data.student.student.models import Student
 from ...account.models import CustomUser
-from ...command.models import TimeStampModel
+from ...command.models import BaseModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...upload.models import File
 
 
-class Lid(TimeStampModel):
+class Lid(BaseModel):
     sender_id = models.CharField(max_length=120, null=True, blank=True)
     message_text = models.CharField(max_length=120, null=True, blank=True)
 

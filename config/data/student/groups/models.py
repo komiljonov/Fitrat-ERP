@@ -4,14 +4,14 @@ from django.db import models
 from django.utils import timezone
 from django.utils.timezone import now
 
-from ...command.models import TimeStampModel
+from ...command.models import BaseModel
 
 if TYPE_CHECKING:
     from ..course.models import Course
 from ...account.models import CustomUser
 
 
-class Room(TimeStampModel):
+class Room(BaseModel):
     room_number = models.CharField(max_length=100,)
     room_filling = models.FloatField(default=10, null=True, blank=True)
 
@@ -19,14 +19,14 @@ class Room(TimeStampModel):
         return self.room_number
 
 
-class Day(TimeStampModel):
+class Day(BaseModel):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
 
 
-class Group(TimeStampModel):
+class Group(BaseModel):
     name = models.CharField(max_length=100)
 
     course: 'Course' = models.ForeignKey('course.Course', on_delete=models.CASCADE)
@@ -74,7 +74,7 @@ class Group(TimeStampModel):
         return f"{self.name} - {self.price_type}"
 
 
-class SecondaryGroup(TimeStampModel):
+class SecondaryGroup(BaseModel):
     name = models.CharField(max_length=100, null=True, blank=True)
     group: "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE)
 

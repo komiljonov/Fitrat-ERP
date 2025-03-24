@@ -4,11 +4,11 @@ from django.db import models
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from data.student.course.models import Course
-from ...command.models import TimeStampModel
+from ...command.models import BaseModel
 from ...upload.models import File
 
 
-class Subject(TimeStampModel):
+class Subject(BaseModel):
     name = models.CharField(max_length=100)
     label = models.CharField(max_length=100, blank=True, null=True)
     has_level = models.BooleanField(default=False)
@@ -18,7 +18,7 @@ class Subject(TimeStampModel):
 
 
 
-class Level(TimeStampModel):
+class Level(BaseModel):
     subject : "Subject" = models.ForeignKey("subject.Subject",
                                             on_delete=models.SET_NULL,null=True,blank=True)
     name = models.CharField(max_length=100)
@@ -26,7 +26,7 @@ class Level(TimeStampModel):
         return self.name
 
 
-class Theme(TimeStampModel):
+class Theme(BaseModel):
     subject = models.ForeignKey('subject.Subject', on_delete=models.CASCADE)
 
     title = models.CharField(max_length=100)
