@@ -5,7 +5,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring, \
-    StudentCatchingMonitoring
+    StudentCatchingMonitoring, ResultName
 from ...account.models import CustomUser
 
 if TYPE_CHECKING:
@@ -162,6 +162,15 @@ class StudentCountMonitoringSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["asos"] = AsosSerializer(instance.asos).data
         return data
+
+
+class ResultsNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResultName
+        fields = [
+            "id",
+            "name",
+        ]
 
 class StudentCatchupSerializer(serializers.ModelSerializer):
     asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)

@@ -7,9 +7,10 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from .models import Bonus, Compensation, Page, Asos, Monitoring, Point, ResultSubjects, StudentCountMonitoring
+from .models import Bonus, Compensation, Page, Asos, Monitoring, Point, ResultSubjects, StudentCountMonitoring, \
+    ResultName
 from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer, \
-    PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer
+    PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer, ResultsNameSerializer
 
 import json
 from rest_framework.generics import ListAPIView
@@ -360,3 +361,7 @@ class StudentCountRetrieveView(RetrieveUpdateDestroyAPIView):
     serializer_class = StudentCountMonitoringSerializer
     permission_classes = [IsAuthenticated]
 
+class ResultsNameListCreateView(ListCreateAPIView):
+    queryset = ResultName.objects.all()
+    serializer_class = ResultsNameSerializer
+    permission_classes = [IsAuthenticated]
