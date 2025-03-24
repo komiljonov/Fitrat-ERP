@@ -32,9 +32,9 @@ urlpatterns = [
     path("points/<uuid:pk>/",PointRetrieveView.as_view()),
     path("points/no-pg/", PointNoPGListView.as_view()),
 
-    path("asos4",Asos4ListCreateView.as_view()),
+    path("asos4/",Asos4ListCreateView.as_view()),
     path("asos4/<uuid:pk>/",ResultSubjectRetrieveView.as_view()),
 
-    path("asos5",StudentCountMonitoringListCreateView.as_view()),
+    path("asos5/",StudentCountMonitoringListCreateView.as_view()),
     path("asos5/<uuid:pk>/",StudentCountRetrieveView.as_view()),
 ]
