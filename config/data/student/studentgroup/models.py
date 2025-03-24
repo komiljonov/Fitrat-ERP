@@ -1,13 +1,13 @@
 from django.db import models
 
-from data.command.models import TimeStampModel
+from data.command.models import BaseModel
 from data.student.groups.models import Group , SecondaryGroup
 from data.student.student.models import Student
 from data.lid.new_lid.models import Lid
 
 
 # Create your models here.
-class StudentGroup(TimeStampModel):
+class StudentGroup(BaseModel):
     group: "Group" = models.ForeignKey('groups.Group', on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name="student_groups")
     student: "Student" = models.ForeignKey('student.Student', on_delete=models.SET_NULL, null=True, blank=True,
@@ -19,7 +19,7 @@ class StudentGroup(TimeStampModel):
         return self.group.name if self.group else ""
 
 
-class SecondaryStudentGroup(TimeStampModel):
+class SecondaryStudentGroup(BaseModel):
     group: "SecondaryGroup" = models.ForeignKey('groups.SecondaryGroup',
                                                 on_delete=models.SET_NULL, null=True, blank=True)
     student: "Student" = models.ForeignKey('student.Student', on_delete=models.SET_NULL,

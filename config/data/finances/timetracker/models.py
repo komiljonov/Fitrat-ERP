@@ -2,9 +2,9 @@ from django.db import models
 from django.utils import timezone
 
 from data.account.models import CustomUser
-from ...command.models import TimeStampModel
+from ...command.models import BaseModel
 
-class Employee_attendance(TimeStampModel):
+class Employee_attendance(BaseModel):
     user : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name="employee_attendance")
     action = models.CharField(choices=[
         ("In_office","In_office"),

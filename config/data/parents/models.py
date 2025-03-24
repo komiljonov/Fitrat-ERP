@@ -1,13 +1,13 @@
 from django.db import models
 
-from ..command.models import TimeStampModel
+from ..command.models import BaseModel
 from ..lid.new_lid.models import Lid
 from ..student.student.models import Student
 
 
 # Create your models here.
 
-class Relatives(TimeStampModel):
+class Relatives(BaseModel):
     name = models.CharField(null=True, blank=True, max_length=100)
     phone = models.CharField(null=True, blank=True, max_length=100)
     who = models.CharField(null=True, blank=True, max_length=100)

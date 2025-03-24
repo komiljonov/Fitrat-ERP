@@ -8,12 +8,12 @@ if TYPE_CHECKING:
     from data.student.subject.models import Theme
 from ..groups.models import Group
 from ..subject.models import Subject
-from ...command.models import TimeStampModel
+from ...command.models import BaseModel
 from ...lid.new_lid.models import Lid
 from ...student.student.models import Student
 from ..groups.models import Room
 
-class Lesson(TimeStampModel):
+class Lesson(BaseModel):
     name = models.CharField(max_length=100)
     subject: 'Subject' = models.ForeignKey(
         'subject.Subject', on_delete=models.SET_NULL, null=True, blank=True
@@ -52,7 +52,7 @@ class Lesson(TimeStampModel):
         return f"Lesson {self.name}      {self.group}      Room {self.group.room_number}"
 
 
-class FirstLLesson(TimeStampModel):
+class FirstLLesson(BaseModel):
     lid: 'Lid' = models.ForeignKey(
         'new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -75,7 +75,7 @@ class FirstLLesson(TimeStampModel):
         return f"{self.lid.first_name}   {self.group.name if self.group else ""}     {self.date}     {self.time}"
 
 
-class ExtraLessonGroup(TimeStampModel):
+class ExtraLessonGroup(BaseModel):
     group: "Group" = models.ForeignKey(
         'groups.Group', on_delete=models.SET_NULL, null=True, blank=True, related_name="groups_extra_lesson"
     )
@@ -97,7 +97,7 @@ class ExtraLessonGroup(TimeStampModel):
         return f"{self.group.name}      {self.date}      {self.started_at}      {self.is_payable}      {self.is_attendance}"
 
 
-class ExtraLesson(TimeStampModel):
+class ExtraLesson(BaseModel):
     student: "Student" = models.ForeignKey(
         'student.Student', on_delete=models.SET_NULL, null=True, blank=True, related_name="students_extra_lesson"
     )

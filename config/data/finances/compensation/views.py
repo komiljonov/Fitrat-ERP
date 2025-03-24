@@ -8,9 +8,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from .models import Bonus, Compensation, Page, Asos, Monitoring, Point, ResultSubjects, StudentCountMonitoring, \
-    ResultName
+    ResultName, MonitoringAsos4
 from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer, \
-    PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer, ResultsNameSerializer
+    PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer, ResultsNameSerializer, \
+    MonitoringAsos4Serializer
 
 import json
 from rest_framework.generics import ListAPIView
@@ -376,6 +377,33 @@ class ResultsNameListCreateView(ListCreateAPIView):
     queryset = ResultName.objects.all()
     serializer_class = ResultsNameSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
+class MonitoringAsosListCreateView(ListAPIView):
+    queryset = MonitoringAsos4.objects.all()
+    serializer_class = MonitoringAsos4Serializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        asos = self.request.query_params.get("asos")
+        user = self.request.query_params.get("user")
+        results = self.request.query_params.get("result")
+        subject = self.request.query_params.get("subject")
+
+        queryset = MonitoringAsos4.objects.all()
+        if asos:
+            queryset = queryset.filter(asos__id=asos)
+        if user:
+            queryset = queryset.filter(user_id=user)
+        if results:
+            queryset = queryset.filter(result__id=results)
+        if subject:
+            queryset = queryset.filter(subject__id=subject)
+        return queryset
+
 
     def get_paginated_response(self, data):
         return Response(data)

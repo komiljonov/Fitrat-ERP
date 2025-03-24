@@ -2,12 +2,12 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 
-from data.command.models import TimeStampModel
+from data.command.models import BaseModel
 
 if TYPE_CHECKING:
     from ...account.models import CustomUser
 
-class Compensation(TimeStampModel):
+class Compensation(BaseModel):
     name = models.CharField(max_length=256)
     user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
@@ -16,7 +16,7 @@ class Compensation(TimeStampModel):
         return f"{self.name}  {self.amount}"
 
 
-class Bonus(TimeStampModel):
+class Bonus(BaseModel):
     name = models.CharField(max_length=256)
     user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
@@ -25,7 +25,7 @@ class Bonus(TimeStampModel):
         return f"{self.name}  {self.amount}"
 
 
-class Page(TimeStampModel):
+class Page(BaseModel):
     user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
     is_editable = models.BooleanField(default=False)
@@ -36,20 +36,20 @@ class Page(TimeStampModel):
     def __str__(self):
         return f"{self.name, self.is_editable, self.is_readable, self.is_parent}"
 
-class Asos(TimeStampModel):
+class Asos(BaseModel):
     name = models.CharField(max_length=256)
 
     def __str__(self):
         return f"{self.name} "
 
-class Point(TimeStampModel):
+class Point(BaseModel):
     name = models.CharField(max_length=256)
     asos : "Asos" = models.ForeignKey('compensation.Asos', on_delete=models.CASCADE)
     amount = models.FloatField(default=0,null=True,blank=True)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
 
 
-class Monitoring(TimeStampModel):
+class Monitoring(BaseModel):
     user : "CustomUser" = models.ForeignKey('account.CustomUser',
                                             on_delete=models.CASCADE,related_name='user_monitoring')
     point : "Point" = models.ForeignKey('compensation.Point',
@@ -60,12 +60,12 @@ class Monitoring(TimeStampModel):
     def __str__(self):
         return f"{self.user.full_name}  {self.point.name}  {self.ball} / {self.point.max_ball}"
 
-class ResultName(TimeStampModel):
+class ResultName(BaseModel):
     name = models.CharField(max_length=256)
     point_type = models.CharField(choices=[
         ('Percentage', 'Percentage'),
         ('Ball', 'Ball'),
-        ('Degree', 'Degree'),],
+        ('Degree', 'Degree')],
         max_length=10
     )
     type = models.CharField(choices=[
@@ -76,7 +76,7 @@ class ResultName(TimeStampModel):
         return f"{self.name}"
 
 
-class ResultSubjects(TimeStampModel):
+class ResultSubjects(BaseModel):
     asos : "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
     result : "ResultName" = models.ForeignKey('compensation.ResultName',on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
@@ -94,8 +94,19 @@ class ResultSubjects(TimeStampModel):
     def __str__(self):
         return f"{self.name}"
 
+class MonitoringAsos4(BaseModel):
+    asos : "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.SET_NULL)
+    result : "ResultName" = models.ForeignKey('compensation.ResultName',on_delete=models.SET_NULL)
+    user : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL)
+    subject : "ResultSubjects" = models.ForeignKey('compensation.ResultSubjects',on_delete=models.SET_NULL)
+    ball = models.FloatField(default=0,null=True,blank=True)
 
-class StudentCountMonitoring(TimeStampModel):
+    def __str__(self):
+        return f"{self.user.full_name}  {self.asos.name}  {self.subject.name}"
+
+
+
+class StudentCountMonitoring(BaseModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
     amount = models.FloatField(default=0,null=True,blank=True)
@@ -106,7 +117,7 @@ class StudentCountMonitoring(TimeStampModel):
         return f"{self.from_point} - {self.to_point}"
 
 
-class StudentCatchingMonitoring(TimeStampModel):
+class StudentCatchingMonitoring(BaseModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
     from_student = models.CharField(max_length=256)

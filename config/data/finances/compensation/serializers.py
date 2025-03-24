@@ -1,12 +1,14 @@
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
+from aiogram.types import User
 from django.db.models import Avg
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring, \
-    StudentCatchingMonitoring, ResultName
+    StudentCatchingMonitoring, ResultName, MonitoringAsos4
 from ...account.models import CustomUser
+from ...account.serializers import UserListSerializer
 
 if TYPE_CHECKING:
     pass
@@ -176,6 +178,33 @@ class ResultsNameSerializer(serializers.ModelSerializer):
             "point_type",
             "type",
         ]
+
+class MonitoringAsos4Serializer(serializers.ModelSerializer):
+
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+    result = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
+    subject = serializers.PrimaryKeyRelatedField(queryset=ResultSubjects.objects.all(),allow_null=True)
+    class Meta:
+        model = MonitoringAsos4
+        fields = [
+            "id",
+            "user",
+            "asos",
+            "result",
+            "subject",
+            "ball",
+            "created_at",
+        ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["asos"] = AsosSerializer(instance.asos).data
+        data["result"] = ResultsNameSerializer(instance.result).data
+        data["subject"] = ResultPointsSerializer(instance.subject).data
+        data["user"] = UserListSerializer(instance.user).data
+        return data
+
 
 class StudentCatchupSerializer(serializers.ModelSerializer):
     asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)

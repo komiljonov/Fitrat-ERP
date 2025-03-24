@@ -1,14 +1,14 @@
 from django.db import models
 
 from data.account.models import CustomUser
-from data.command.models import TimeStampModel
+from data.command.models import BaseModel
 from data.lid.new_lid.models import Lid
 from data.student.attendance.models import Attendance
 from data.student.student.models import Student
 
 
 
-class Casher(TimeStampModel):
+class Casher(BaseModel):
     name = models.CharField(max_length=100)
     user: "CustomUser" = models.ForeignKey(
         'account.CustomUser',
@@ -27,7 +27,7 @@ class Casher(TimeStampModel):
     def __str__(self):
         return f"{self.user.phone} {self.role}"
 
-class Kind(TimeStampModel):
+class Kind(BaseModel):
     action = models.CharField(
         choices=[
                 ('INCOME', 'INCOME'),
@@ -46,14 +46,14 @@ class Kind(TimeStampModel):
     def __str__(self):
         return f"{self.action} {self.name}"
 
-class PaymentMethod(TimeStampModel):
+class PaymentMethod(BaseModel):
     name = models.CharField(max_length=100)
     def __str__(self):
         return f"{self.name}"
 
 
 
-class Finance(TimeStampModel):
+class Finance(BaseModel):
 
     casher : "Casher" = models.ForeignKey(
         'finance.Casher',
@@ -110,7 +110,7 @@ class Finance(TimeStampModel):
 
 
 
-class Handover(TimeStampModel):
+class Handover(BaseModel):
     casher : "Casher" = models.ForeignKey(
         'finance.Casher',
         on_delete=models.CASCADE,
@@ -126,7 +126,7 @@ class Handover(TimeStampModel):
     def __str__(self):
         return f'{self.casher} {self.receiver} {self.amount}'
 
-class KpiFinance(TimeStampModel):
+class KpiFinance(BaseModel):
     user: "CustomUser" = models.ForeignKey(
         'account.CustomUser',
         on_delete=models.CASCADE,
@@ -156,7 +156,7 @@ class KpiFinance(TimeStampModel):
 
 
 
-class Voucher(TimeStampModel):
+class Voucher(BaseModel):
     creator: "CustomUser" = models.ForeignKey(
         'account.CustomUser',
         on_delete=models.CASCADE,
@@ -187,7 +187,7 @@ class Voucher(TimeStampModel):
     def __str__(self):
         return f"{self.creator} {self.amount} {self.is_expired}"
 
-class Sale(TimeStampModel):
+class Sale(BaseModel):
     creator : "CustomUser" = models.ForeignKey(
         'account.CustomUser',
         on_delete=models.CASCADE,
@@ -213,7 +213,7 @@ class Sale(TimeStampModel):
     def __str__(self):
         return f"{self.creator.phone}  {self.status} {self.amount}"
 
-class SaleStudent(TimeStampModel):
+class SaleStudent(BaseModel):
     creator : "CustomUser" = models.ForeignKey(
         'account.CustomUser',
         on_delete=models.CASCADE,
@@ -244,7 +244,7 @@ class SaleStudent(TimeStampModel):
     def __str__(self):
         return f"{self.creator.phone} {self.sale.amount} to {self.student.phone if self.student else self.lid.phone_number if self.lid else None}"
 
-class VoucherStudent(TimeStampModel):
+class VoucherStudent(BaseModel):
     creator : "CustomUser" = models.ForeignKey(
         'account.CustomUser',
         on_delete=models.CASCADE,

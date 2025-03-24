@@ -7,7 +7,7 @@ from django.utils import timezone
 from ..groups.models import Group
 from ..subject.models import Level
 from ...account.models import CustomUser
-from ...command.models import TimeStampModel
+from ...command.models import BaseModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...upload.models import File
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from ...lid.new_lid.models import Lid
 
 
-class Student(TimeStampModel):
+class Student(BaseModel):
     photo = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True, blank=True,
                               related_name='students_photo')
     first_name = models.CharField(max_length=100)
@@ -107,7 +107,7 @@ class Student(TimeStampModel):
         return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
 
 
-class FistLesson_data(TimeStampModel):
+class FistLesson_data(BaseModel):
     teacher: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True)
     group: "Group" = models.ForeignKey('groups.Group', on_delete=models.SET_NULL, null=True, blank=True)
     lesson_date = models.DateTimeField(null=True, blank=True)

@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from ..command.models import TimeStampModel
+from ..command.models import BaseModel
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from ..student.student.models import Student
     from ..account.models import CustomUser
 
-class Comment(TimeStampModel):
+class Comment(BaseModel):
 
     creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
     lid : 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.CASCADE, null=True,blank=True)
@@ -23,7 +23,7 @@ class Comment(TimeStampModel):
     class Meta:
         ordering = []
 
-class StuffComments(TimeStampModel):
+class StuffComments(BaseModel):
     comment : str = models.TextField()
     creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE,
                                                related_name='comments_stuff')

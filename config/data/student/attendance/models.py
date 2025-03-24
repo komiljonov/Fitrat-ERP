@@ -2,13 +2,13 @@ from django.db import models
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..subject.models import Theme
-from ...command.models import TimeStampModel
+from ...command.models import BaseModel
 from ...lid.new_lid.models import Lid
 from ...student.student.models import Student
 from ...student.groups.models import Group
 
 
-class Attendance(TimeStampModel):
+class Attendance(BaseModel):
     theme : 'Theme' = models.ManyToManyField('subject.Theme', null=True, blank=True,related_name='attendance_theme')
     group : "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE, null=True, blank=True, related_name='attendance_group')
     repeated = models.BooleanField(default=False)

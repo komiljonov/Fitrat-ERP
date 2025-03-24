@@ -3,12 +3,12 @@ from django.db import models
 from ..quiz.models import Quiz
 from ..student.models import Student
 from ...account.models import CustomUser
-from ...command.models import TimeStampModel
+from ...command.models import BaseModel
 from ...lid.new_lid.models import Lid
 
 
 # Create your models here.
-class Mastering(TimeStampModel):
+class Mastering(BaseModel):
 
     lid : "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL , null=True,blank=True)
     student : "Student" = models.ForeignKey('student.Student', on_delete=models.SET_NULL , null=True,blank=True)
@@ -22,7 +22,7 @@ class Mastering(TimeStampModel):
         return self.lid.first_name if self.lid else self.student.first_name
 
 
-class MasteringTeachers(TimeStampModel):
+class MasteringTeachers(BaseModel):
     teacher : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL ,
                                                null=True,blank=True,
                                                related_name='teacher_mastering')
