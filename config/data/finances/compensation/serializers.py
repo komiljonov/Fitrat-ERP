@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from django.db.models import Avg
 from rest_framework import serializers
 
-from .models import Bonus, Compensation, Asos, Monitoring, Page, Point
+from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring
 from ...account.models import CustomUser
 
 if TYPE_CHECKING:
@@ -118,3 +118,44 @@ class PointSerializer(serializers.ModelSerializer):
              "ball": mon.ball, "created_at": mon.created_at}
             for mon in user_monitorings
         ]
+
+
+class ResultPointsSerializer(serializers.ModelSerializer):
+    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+    class Meta:
+        model = ResultSubjects
+        fields = [
+            "id",
+            "asos",
+            "name",
+            "max_ball",
+            "point_type",
+            "amount",
+            "created_at",
+            "updated_at"
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["asos"] = AsosSerializer(instance.asos).data
+        return data
+
+
+class StudentCountMonitoringSerializer(serializers.ModelSerializer):
+    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+    class Meta:
+        model = StudentCountMonitoring
+        fields = [
+            "id",
+            "name",
+            "asos",
+            "max_ball",
+            "amount",
+            "from_point",
+            "to_point",
+            "created_at",
+            "updated_at"
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["asos"] = AsosSerializer(instance.asos).data
+        return data

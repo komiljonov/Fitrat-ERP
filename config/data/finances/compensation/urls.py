@@ -3,8 +3,9 @@ from django.urls import path
 from .views import (BonusList, BonusDetail, BonusNoPG
 , CompensationList, CompensationDetail, CompensationNoPG, PageCreateView, PageBulkUpdateView, AsosListCreateView,
                     AsosListRetrieveView, AsosNoPGListView, MonitoringBulkCreateView, MonitoringRetrieveView,
-                    PointListCreateView, PointRetrieveView, PointNoPGListView, MonitoringListCreateView)
-from ...student.mastering.views import MasteringList
+                    PointListCreateView, PointRetrieveView, PointNoPGListView, MonitoringListCreateView,
+                    Asos4ListCreateView, ResultSubjectRetrieveView, StudentCountMonitoringListCreateView,
+                    StudentCountRetrieveView)
 
 urlpatterns = [
     path('bonus/', BonusList.as_view()),
@@ -31,4 +32,9 @@ urlpatterns = [
     path("points/<uuid:pk>/",PointRetrieveView.as_view()),
     path("points/no-pg/", PointNoPGListView.as_view()),
 
+    path("asos4",Asos4ListCreateView.as_view()),
+    path("asos4/<uuid:pk>/",ResultSubjectRetrieveView.as_view()),
+
+    path("asos5",StudentCountMonitoringListCreateView.as_view()),
+    path("asos5/<uuid:pk>/",StudentCountRetrieveView.as_view()),
 ]
