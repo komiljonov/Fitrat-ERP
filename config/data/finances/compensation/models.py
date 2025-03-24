@@ -47,9 +47,12 @@ class Asos(BaseModel):
 
 
 class Comments(BaseModel):
-    asos : "Asos" = models.ForeignKey('compensation.Asos', on_delete=models.CASCADE)
-    creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
-    user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
+    asos : "Asos" = models.ForeignKey('compensation.Asos', on_delete=models.CASCADE,
+                                      related_name='asos4_comments')
+    creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE,
+                                               related_name='asos4_creator_comments')
+    user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE,
+                                            related_name='asos4_user_comments')
     comment = models.TextField()
     def __str__(self):
         return f"{self.comment}"
