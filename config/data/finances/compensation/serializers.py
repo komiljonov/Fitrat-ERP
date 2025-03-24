@@ -1,7 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING
 
-from aiogram.types import User
 from django.db.models import Avg
 from rest_framework import serializers
 

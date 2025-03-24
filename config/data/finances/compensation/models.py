@@ -4,8 +4,10 @@ from django.db import models
 
 from data.command.models import BaseModel
 
+
 if TYPE_CHECKING:
     from ...account.models import CustomUser
+
 
 class Compensation(BaseModel):
     name = models.CharField(max_length=256)
