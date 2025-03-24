@@ -120,3 +120,4 @@ class StudentCatchingMonitoring(TimeStampModel):
     def __str__(self):
         return f"{self.name} {self.type}"
 
+
