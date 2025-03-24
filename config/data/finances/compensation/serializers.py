@@ -128,6 +128,8 @@ class ResultPointsSerializer(serializers.ModelSerializer):
             "id",
             "asos",
             "name",
+            "result_type",
+            "point",
             "max_ball",
             "point_type",
             "amount",

@@ -63,6 +63,11 @@ class Monitoring(TimeStampModel):
 class ResultSubjects(TimeStampModel):
     asos : "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
+    result_type = models.CharField(choices=[
+        ("Mine", "Mine"),
+        ("Student", "Student"),
+    ], max_length=256, null=True, blank=True)
+    point = models.CharField(max_length=10, null=True, blank=True)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
     point_type = models.CharField(choices=[
         ('Percentage', 'Percentage'),
