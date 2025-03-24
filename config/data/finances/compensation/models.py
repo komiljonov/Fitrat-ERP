@@ -62,6 +62,16 @@ class Monitoring(TimeStampModel):
 
 class ResultName(TimeStampModel):
     name = models.CharField(max_length=256)
+    point_type = models.CharField(choices=[
+        ('Percentage', 'Percentage'),
+        ('Ball', 'Ball'),
+        ('Degree', 'Degree'),],
+        max_length=10
+    )
+    type = models.CharField(choices=[
+        ("One","One"),
+        ("Two","Two"),
+    ], max_length=10, null=True, blank=True)
     def __str__(self):
         return f"{self.name}"
 
@@ -76,15 +86,14 @@ class ResultSubjects(TimeStampModel):
     ], max_length=256, null=True, blank=True)
     point = models.CharField(max_length=10, null=True, blank=True)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
-    point_type = models.CharField(choices=[
-        ('Percentage', 'Percentage'),
-        ('Ball', 'Ball'),
-        ('Degree', 'Degree'),],
-        max_length=10
-    )
+
+    from_point = models.CharField(max_length=10, null=True, blank=True)
+    to_point = models.CharField(max_length=10, null=True, blank=True)
+
     amount = models.FloatField(default=0,null=True,blank=True)
     def __str__(self):
-        return f"{self.name} {self.point_type}"
+        return f"{self.name}"
+
 
 class StudentCountMonitoring(TimeStampModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
@@ -95,6 +104,7 @@ class StudentCountMonitoring(TimeStampModel):
 
     def __str__(self):
         return f"{self.from_point} - {self.to_point}"
+
 
 class StudentCatchingMonitoring(TimeStampModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
