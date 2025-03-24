@@ -53,6 +53,7 @@ class MonitoringSerializer(serializers.ModelSerializer):
     point = serializers.PrimaryKeyRelatedField(queryset=Point.objects.all(),allow_null=True)
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
 
+
     class Meta:
         model = Monitoring
         fields = [

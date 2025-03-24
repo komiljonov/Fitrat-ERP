@@ -74,6 +74,8 @@ class Monitoring(BaseModel):
     ball = models.DecimalField(decimal_places=2, max_digits=10,
                                help_text="This ball can not be higher than asos's max_ball !!!")
 
+    counter = models.AutoField(default=0)
+
     def __str__(self):
         return f"{self.user.full_name}  {self.point.name}  {self.ball} / {self.point.max_ball}"
 
