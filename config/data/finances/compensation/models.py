@@ -36,11 +36,13 @@ class Page(BaseModel):
     def __str__(self):
         return f"{self.name, self.is_editable, self.is_readable, self.is_parent}"
 
+
 class Asos(BaseModel):
     name = models.CharField(max_length=256)
 
     def __str__(self):
         return f"{self.name} "
+
 
 class Point(BaseModel):
     name = models.CharField(max_length=256)
@@ -59,6 +61,7 @@ class Monitoring(BaseModel):
 
     def __str__(self):
         return f"{self.user.full_name}  {self.point.name}  {self.ball} / {self.point.max_ball}"
+
 
 class ResultName(BaseModel):
     name = models.CharField(max_length=256)
@@ -94,6 +97,7 @@ class ResultSubjects(BaseModel):
     def __str__(self):
         return f"{self.name}"
 
+
 class MonitoringAsos4(BaseModel):
     asos : "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.SET_NULL,null=True,blank=True)
     result : "ResultName" = models.ForeignKey('compensation.ResultName',on_delete=models.SET_NULL, null=True,blank=True)
@@ -103,7 +107,6 @@ class MonitoringAsos4(BaseModel):
 
     def __str__(self):
         return f"{self.user.full_name}  {self.asos.name}  {self.subject.name}"
-
 
 
 class StudentCountMonitoring(BaseModel):

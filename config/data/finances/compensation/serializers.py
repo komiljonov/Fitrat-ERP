@@ -179,6 +179,7 @@ class ResultsNameSerializer(serializers.ModelSerializer):
             "type",
         ]
 
+
 class MonitoringAsos4Serializer(serializers.ModelSerializer):
 
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
