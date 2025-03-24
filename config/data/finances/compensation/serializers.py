@@ -51,11 +51,14 @@ class AsosSerializer(serializers.ModelSerializer):
 class MonitoringSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     point = serializers.PrimaryKeyRelatedField(queryset=Point.objects.all(),allow_null=True)
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+
     class Meta:
         model = Monitoring
         fields = [
             "id",
             "user",
+            "creator",
             "point",
             "ball",
             "created_at",
@@ -67,7 +70,7 @@ class MonitoringSerializer(serializers.ModelSerializer):
         from ...account.serializers import UserListSerializer
 
         rep = super().to_representation(instance)
-
+        rep["creator"] = UserListSerializer(instance.creator).data
         rep["user"] = UserListSerializer(instance.user).data
         rep["point"] = PointSerializer(instance.point).data
 
@@ -221,3 +224,5 @@ class StudentCatchupSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["asos"] = AsosSerializer(instance.asos).data
         return data
+
+
