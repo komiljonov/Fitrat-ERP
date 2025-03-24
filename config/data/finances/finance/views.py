@@ -1,5 +1,3 @@
-import io
-
 import icecream
 import openpyxl
 import pandas as pd
@@ -13,8 +11,7 @@ from drf_yasg.utils import swagger_auto_schema
 from icecream import ic
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, \
-    RetrieveAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -82,7 +79,7 @@ class FinanceListAPIView(ListCreateAPIView):
 
         queryset = Finance.objects.all()
 
-        if action :
+        if action:
             queryset = queryset.filter(action=action)
 
         if casher_id:
@@ -251,7 +248,6 @@ class CasherHandoverAPIView(CreateAPIView):
         )
 
 
-
 class FinanceStatisticsAPIView(APIView):
     # permission_classes = [IsAuthenticated]
 
@@ -268,13 +264,13 @@ class FinanceStatisticsAPIView(APIView):
         def get_balance(role):
 
             total_income = (
-                Finance.objects.filter(casher__role=role, action="INCOME", **filters)
-                .aggregate(total_income=Sum("amount"))["total_income"] or 0
+                    Finance.objects.filter(casher__role=role, action="INCOME", **filters)
+                    .aggregate(total_income=Sum("amount"))["total_income"] or 0
             )
 
             total_outcome = (
-                Finance.objects.filter(casher__role=role, action="EXPENSE", **filters)
-                .aggregate(total_outcome=Sum("amount"))["total_outcome"] or 0
+                    Finance.objects.filter(casher__role=role, action="EXPENSE", **filters)
+                    .aggregate(total_outcome=Sum("amount"))["total_outcome"] or 0
             )
 
             balance = total_income - total_outcome
@@ -287,7 +283,6 @@ class FinanceStatisticsAPIView(APIView):
             "admin_casher": get_balance("ADMINISTRATOR"),
             "accounting_casher": get_balance("ACCOUNTANT"),
         }
-
 
         return Response(response_data)
 
@@ -478,7 +473,8 @@ class FinanceExcel(APIView):
         sheet.title = "Finance Report"
 
         # Add headers
-        headers = ["Cassa egasi", "Role", "To'lov turi", "Action", "Miqdor", "To'lov metodi", "Comment", "Yaratilgan vaqti"]
+        headers = ["Cassa egasi", "Role", "To'lov turi", "Action", "Miqdor", "To'lov metodi", "Comment",
+                   "Yaratilgan vaqti"]
         sheet.append(headers)
 
         # Add data
@@ -613,8 +609,6 @@ class PaymentCasherStatistics(ListAPIView):
             'Click', 'Payme', 'Cash', 'Card', "Money_send"
         ]
 
-
-
         # Function to calculate totals
         def get_total_amount(payment, action_type):
             return Finance.objects.filter(payment_method=payment, action=action_type, **filter).aggregate(
@@ -628,7 +622,6 @@ class PaymentCasherStatistics(ListAPIView):
             data[f"{formatted_name}_income"] = get_total_amount(payment, "INCOME")
 
             data[f"{formatted_name}_expense"] = get_total_amount(payment, "EXPENSE")
-
 
         # Compute total income and expense
         data["total_income"] = sum(data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods)
@@ -732,8 +725,8 @@ class PaymentStatisticsByKind(APIView):
         # Function to get total amount for a given kind and action type
         def get_total_amount(kind, action_type):
             return (
-                Finance.objects.filter(kind=kind, action=action_type, **filters)
-                .aggregate(total=Sum('amount'))['total'] or 0
+                    Finance.objects.filter(kind=kind, action=action_type, **filters)
+                    .aggregate(total=Sum('amount'))['total'] or 0
             )
 
         # Function to get distinct actions for a given kind
@@ -752,7 +745,7 @@ class PaymentStatisticsByKind(APIView):
                 "income": get_total_amount(kind, "INCOME"),
                 "expense": get_total_amount(kind, "EXPENSE"),
                 "action": kind.action,
-                "color":kind.color
+                "color": kind.color
             }
 
         # Compute total income and expense **only from kinds**, excluding any integers in data
@@ -781,6 +774,7 @@ class VoucherNoPG(ListAPIView):
     serializer_class = VoucherSerializer
     queryset = Voucher.objects.all()
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         is_expired = self.request.query_params.get('is_expired')
         filial = self.request.query_params.get('filial')
@@ -792,6 +786,7 @@ class VoucherNoPG(ListAPIView):
         if is_expired:
             queryset = queryset.filter(is_expired=is_expired.capitalize())
         return queryset
+
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -820,9 +815,12 @@ class GeneratePaymentExcelAPIView(APIView):
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter('casher_id', openapi.IN_QUERY, description="Casher ID (Required)", type=openapi.FORMAT_UUID, required=True),
-            openapi.Parameter('start_date', openapi.IN_QUERY, description="Start date (Optional, format: YYYY-MM-DD)", type=openapi.TYPE_STRING),
-            openapi.Parameter('end_date', openapi.IN_QUERY, description="End date (Optional, format: YYYY-MM-DD)", type=openapi.TYPE_STRING),
+            openapi.Parameter('casher_id', openapi.IN_QUERY, description="Casher ID (Required)",
+                              type=openapi.FORMAT_UUID, required=True),
+            openapi.Parameter('start_date', openapi.IN_QUERY, description="Start date (Optional, format: YYYY-MM-DD)",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter('end_date', openapi.IN_QUERY, description="End date (Optional, format: YYYY-MM-DD)",
+                              type=openapi.TYPE_STRING),
         ],
         responses={
             200: "Excel file containing payment statistics",
@@ -851,8 +849,12 @@ class GeneratePaymentExcelAPIView(APIView):
         data = {"Casher ID": casher_id}
 
         for method in payment_methods:
-            income = Finance.objects.filter(payment_method=method, action='INCOME', **filters).aggregate(total=Sum('amount'))['total'] or 0
-            expense = Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).aggregate(total=Sum('amount'))['total'] or 0
+            income = \
+            Finance.objects.filter(payment_method=method, action='INCOME', **filters).aggregate(total=Sum('amount'))[
+                'total'] or 0
+            expense = \
+            Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).aggregate(total=Sum('amount'))[
+                'total'] or 0
             data[f"{method}_Income"] = income
             data[f"{method}_Expense"] = expense
 

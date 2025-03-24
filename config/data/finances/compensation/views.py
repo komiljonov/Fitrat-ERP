@@ -7,9 +7,9 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from .models import Bonus, Compensation, Page, Asos, Monitoring, Point
+from .models import Bonus, Compensation, Page, Asos, Monitoring, Point, ResultSubjects, StudentCountMonitoring
 from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer, \
-    PointSerializer
+    PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer
 
 import json
 from rest_framework.generics import ListAPIView
@@ -325,4 +325,38 @@ class MonitoringBulkCreateView(APIView):
         return Response(MonitoringSerializer(instances, many=True).data,
                         status=status.HTTP_201_CREATED)
 
+
+class Asos4ListCreateView(ListAPIView):
+    queryset = ResultSubjects.objects.all()
+    serializer_class = ResultPointsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        asos = self.request.query_params.get("asos")
+        if asos:
+            return ResultSubjects.objects.filter(asos__id=asos)
+        return ResultSubjects.objects.all()
+
+
+class ResultSubjectRetrieveView(RetrieveUpdateDestroyAPIView):
+    queryset = ResultSubjects.objects.all()
+    serializer_class = ResultPointsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class StudentCountMonitoringListCreateView(ListCreateAPIView):
+    queryset = StudentCountMonitoring.objects.all()
+    serializer_class = StudentCountMonitoringSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        asos = self.request.query_params.get("asos")
+        filial = self.request.query_params.get("filial")
+        if asos:
+             return StudentCountMonitoring.objects.filter(asos__id=asos)
+        return StudentCountMonitoring.objects.all()
+
+class StudentCountRetrieveView(RetrieveUpdateDestroyAPIView):
+    queryset = StudentCountMonitoring.objects.all()
+    serializer_class = StudentCountMonitoringSerializer
+    permission_classes = [IsAuthenticated]
 
