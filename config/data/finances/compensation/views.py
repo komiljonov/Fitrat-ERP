@@ -326,7 +326,7 @@ class MonitoringBulkCreateView(APIView):
                         status=status.HTTP_201_CREATED)
 
 
-class Asos4ListCreateView(ListAPIView):
+class Asos4ListCreateView(ListCreateAPIView):
     queryset = ResultSubjects.objects.all()
     serializer_class = ResultPointsSerializer
     permission_classes = [IsAuthenticated]
