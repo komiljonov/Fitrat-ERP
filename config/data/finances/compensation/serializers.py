@@ -62,6 +62,7 @@ class MonitoringSerializer(serializers.ModelSerializer):
             "creator",
             "point",
             "ball",
+            "counter",
             "created_at",
         ]
 
