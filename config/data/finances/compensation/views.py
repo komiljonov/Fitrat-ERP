@@ -334,8 +334,7 @@ class MonitoringBulkCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        last_counter = Monitoring.objects.aggregate(models.Max('counter'))['counter__max'] or 0
-
+        last_counter = Monitoring.objects.aggregate(max_counter=models.Max('counter'))['max_counter'] or 0
         counter = last_counter + 1
 
         data_with_counter = []
@@ -350,7 +349,6 @@ class MonitoringBulkCreateView(APIView):
         instances = serializer.save()
 
         return Response(MonitoringSerializer(instances, many=True).data, status=status.HTTP_201_CREATED)
-
 
 class Asos4ListCreateView(ListCreateAPIView):
     queryset = ResultSubjects.objects.all()
