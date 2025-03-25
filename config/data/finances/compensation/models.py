@@ -53,6 +53,7 @@ class Comments(BaseModel):
                                                related_name='asos4_creator_comments')
     user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE,
                                             related_name='asos4_user_comments')
+    monitoring : "Monitoring" = models.ForeignKey('compensation.Monitoring', on_delete=models.CASCADE,)
     comment = models.TextField()
     def __str__(self):
         return f"{self.comment}"

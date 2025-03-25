@@ -83,12 +83,14 @@ class CommentsSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    monitoring = serializers.PrimaryKeyRelatedField(queryset=Monitoring.objects.all(),allow_null=True)
     class Meta:
         model = Comments
         fields = [
             "id",
             "user",
             "asos",
+            "monitoring",
             "creator",
             "comment",
             "created_at",
@@ -242,5 +244,4 @@ class StudentCatchupSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["asos"] = AsosSerializer(instance.asos).data
         return data
-
 
