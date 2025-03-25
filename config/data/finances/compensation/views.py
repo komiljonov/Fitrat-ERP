@@ -288,6 +288,9 @@ class MonitoringListCreateView(ListAPIView):
         user = self.request.query_params.get("user")
         counter = self.request.query_params.get("counter")
 
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+
 
         queryset = Monitoring.objects.all()
 
@@ -296,6 +299,8 @@ class MonitoringListCreateView(ListAPIView):
 
         filters = Q()
 
+        if start_date and end_date:
+            filters &= Q(craeted_at__gte=start_date , created_at__lte=end_date)
 
         if counter:
             filters &= Q(counter = counter)
@@ -430,7 +435,15 @@ class MonitoringAsosListCreateView(ListAPIView):
         results = self.request.query_params.get("result")
         subject = self.request.query_params.get("subject")
 
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+
+
         queryset = MonitoringAsos4.objects.all()
+
+        if start_date and end_date:
+            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+
         if asos:
             queryset = queryset.filter(asos__id=asos)
         if user:
@@ -469,7 +482,16 @@ class Monitoring5List(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
         teacher = self.request.query_params.get("teacher")
+
+        queryset = Monitoring5.objects.all()
+
+        if start_date and end_date:
+            queryset = Monitoring5.objects.all(created_at__gte=start_date, created_at__lte=end_date)
+
         if teacher:
-            return Monitoring5.objects.filter(teacher__id=teacher)
-        return Monitoring5.objects.all()
+            queryset = queryset.filter(teacher__id=teacher)
+        return queryset
