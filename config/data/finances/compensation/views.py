@@ -1,25 +1,21 @@
+import json
+
 from django.db.models import Avg, OuterRef, Subquery, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveAPIView, \
-    CreateAPIView
+from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Bonus, Compensation, Page, Asos, Monitoring, Point, ResultSubjects, StudentCountMonitoring, \
-    ResultName, MonitoringAsos4
+    ResultName, MonitoringAsos4,Comments
 from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer, \
     PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer, ResultsNameSerializer, \
-    MonitoringAsos4Serializer
-
-import json
-from rest_framework.generics import ListAPIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
+    MonitoringAsos4Serializer, CommentsSerializer
 from ...account.models import CustomUser
-from ...command.admin import models
 
 
 class BonusList(ListCreateAPIView):
@@ -448,3 +444,17 @@ class MonitoringAsosListCreateView(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class CommentsListCreateView(ListCreateAPIView):
+    queryset = Comments.objects.all()
+    serializer_class = CommentsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+    def get_queryset(self):
+        counter = self.request.query_params.get("counter")
+        queryset = Comments.objects.all()
+        if counter:
+            queryset = queryset.filter(monitoring__counter=counter)
+        return queryset
