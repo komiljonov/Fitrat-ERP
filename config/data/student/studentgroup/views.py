@@ -95,6 +95,8 @@ class GroupStudentList(ListAPIView):
         group_id = self.kwargs.get('pk')
         reason = self.request.query_params.get('reason', None)
 
+        status = self.request.query_params.get('status')
+
         # Get today's date for filtering attendance records
         today = now().date()
         start_of_day = datetime.datetime.combine(today, datetime.time.min)
@@ -102,7 +104,11 @@ class GroupStudentList(ListAPIView):
 
         queryset = StudentGroup.objects.filter(group__id=group_id)
 
-        if reason == "1":  # Students who were present today
+        if status:
+            queryset = queryset.filter(student__student_stage_type=status)
+
+        if reason == "1":
+
             present_attendance = Attendance.objects.filter(
                 group_id=group_id,
                 reason="IS_PRESENT",

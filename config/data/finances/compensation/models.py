@@ -144,6 +144,7 @@ class StudentCountMonitoring(BaseModel):
     def __str__(self):
         return f"{self.from_point} - {self.to_point}"
 
+
 class Monitoring5(BaseModel):
     ball = models.DecimalField(decimal_places=2, max_digits=10)
     student_count = models.CharField(max_length=10, null=True,blank=True)
