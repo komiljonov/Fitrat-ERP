@@ -336,22 +336,22 @@ class MonitoringBulkCreateView(APIView):
     def post(self, request, *args, **kwargs):
         # Get the last counter value
         last_counter = Monitoring.objects.order_by('-counter').values_list('counter', flat=True).first() or 0
-        counter = last_counter + 1  # Increment once for this batch
+        counter = last_counter + 1
 
-        # Ensure request.data is a list
+
         if isinstance(request.data, str):
             try:
                 data = json.loads(request.data)
             except json.JSONDecodeError:
                 return Response({"error": "Invalid JSON format"}, status=400)
         elif isinstance(request.data, dict):
-            data = [request.data]  # Convert to list if it's a single dictionary
+            data = [request.data]
         else:
-            data = request.data  # Already a list
+            data = request.data
 
-        # Assign the same counter to all items
+
         for item in data:
-            if isinstance(item, dict):  # Ensure it's a dictionary
+            if isinstance(item, dict):
                 item['counter'] = counter
             else:
                 return Response({"error": "Each item must be a JSON object"}, status=400)
