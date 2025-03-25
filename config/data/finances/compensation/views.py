@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 from ...account.models import CustomUser
+from ...command.admin import models
 
 
 class BonusList(ListCreateAPIView):
@@ -333,13 +334,22 @@ class MonitoringBulkCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        serializer = MonitoringSerializer(data=request.data, many=True,
-                        context={'request': request})
+        last_counter = Monitoring.objects.aggregate(models.Max('counter'))['counter__max'] or 0
+
+        counter = last_counter + 1
+
+        data_with_counter = []
+        for item in request.data:
+            item['counter'] = counter
+            counter += 1
+            data_with_counter.append(item)
+
+        serializer = MonitoringSerializer(data=data_with_counter, many=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
+
         instances = serializer.save()
 
-        return Response(MonitoringSerializer(instances, many=True).data,
-                        status=status.HTTP_201_CREATED)
+        return Response(MonitoringSerializer(instances, many=True).data, status=status.HTTP_201_CREATED)
 
 
 class Asos4ListCreateView(ListCreateAPIView):
