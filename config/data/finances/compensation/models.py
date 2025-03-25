@@ -131,7 +131,7 @@ class ResultSubjects(BaseModel):
         return f"{self.name}"
 
 
-class MonitoringAsos4(BaseModel):  # Changed name from MonitoringAsos4
+class MonitoringAsos4(BaseModel):
     asos = models.ForeignKey('compensation.Asos', on_delete=models.SET_NULL, null=True, blank=True)
     result_frk = models.ForeignKey('results.Results', on_delete=models.SET_NULL, null=True, blank=True)
     result = models.ForeignKey('compensation.ResultName', on_delete=models.SET_NULL, null=True, blank=True)
