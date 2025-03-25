@@ -337,19 +337,31 @@ class MonitoringBulkCreateView(APIView):
         last_counter = Monitoring.objects.order_by('-counter').values_list('counter', flat=True).first() or 0
         counter = last_counter + 1
 
+        # Ensure request.data is a list
+        if isinstance(request.data, str):
+            try:
+                data = json.loads(request.data)  # Convert string to JSON
+            except json.JSONDecodeError:
+                return Response({"error": "Invalid JSON format"}, status=400)
+        elif isinstance(request.data, dict):
+            data = [request.data]  # Convert single dictionary to a list
+        else:
+            data = request.data  # Already a list
+
         data_with_counter = []
-        for item in request.data:
-            item['counter'] = counter
-            counter += 1
-            data_with_counter.append(item)
+        for item in data:
+            if isinstance(item, dict):  # Ensure item is a dictionary
+                item['counter'] = counter
+                counter += 1
+                data_with_counter.append(item)
+            else:
+                return Response({"error": "Each item must be a JSON object"}, status=400)
 
         serializer = MonitoringSerializer(data=data_with_counter, many=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
-
         instances = serializer.save()
 
-        return Response(MonitoringSerializer(instances, many=True).data, status=status.HTTP_201_CREATED)
-
+        return Response(MonitoringSerializer(instances, many=True).data, status=201)
 
 class Asos4ListCreateView(ListCreateAPIView):
     queryset = ResultSubjects.objects.all()
