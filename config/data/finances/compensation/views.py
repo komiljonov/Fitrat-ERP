@@ -334,7 +334,7 @@ class MonitoringBulkCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        last_counter = Monitoring.objects.aggregate(max_counter=models.Max('counter'))['max_counter'] or 0
+        last_counter = Monitoring.objects.aggregate(max_counter=models.Max('counter')).get('max_counter') or 0
         counter = last_counter + 1
 
         data_with_counter = []
