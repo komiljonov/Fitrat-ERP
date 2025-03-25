@@ -458,3 +458,6 @@ class CommentsListCreateView(ListCreateAPIView):
         if counter:
             queryset = queryset.filter(monitoring__counter=counter)
         return queryset
+
+    def get_paginated_response(self, data):
+        return Response(data)
