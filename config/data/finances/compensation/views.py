@@ -11,10 +11,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Bonus, Compensation, Page, Asos, Monitoring, Point, ResultSubjects, StudentCountMonitoring, \
-    ResultName, MonitoringAsos4,Comments
+    ResultName, MonitoringAsos4, Comments, Monitoring5
 from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer, \
     PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer, ResultsNameSerializer, \
-    MonitoringAsos4Serializer, CommentsSerializer
+    MonitoringAsos4Serializer, CommentsSerializer, Monitoring5Serializer
 from ...account.models import CustomUser
 
 
@@ -461,3 +461,15 @@ class CommentsListCreateView(ListCreateAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class Monitoring5List(ListAPIView):
+    queryset = Monitoring5.objects.all()
+    serializer_class = Monitoring5Serializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        teacher = self.request.query_params.get("teacher")
+        if teacher:
+            return Monitoring5.objects.filter(teacher__id=teacher)
+        return Monitoring5.objects.all()

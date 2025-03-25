@@ -4,7 +4,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring, \
-    StudentCatchingMonitoring, ResultName, MonitoringAsos4, Comments
+    StudentCatchingMonitoring, ResultName, MonitoringAsos4, Comments, Monitoring5
 from ...account.models import CustomUser
 from ...account.serializers import UserListSerializer
 
@@ -245,3 +245,18 @@ class StudentCatchupSerializer(serializers.ModelSerializer):
         data["asos"] = AsosSerializer(instance.asos).data
         return data
 
+
+class Monitoring5Serializer(serializers.ModelSerializer):
+    teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    class Meta:
+        model = Monitoring5
+        fields = [
+            "id",
+            "ball",
+            "teacher",
+            "created_at",
+        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["teacher"] = UserListSerializer(instance.teacher).data
+        return data
