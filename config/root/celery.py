@@ -34,6 +34,10 @@ app.conf.beat_schedule = {
     "check_accountant_kpi": {
         "task": "data.student.mastering.tasks.check_accountant_kpi",
         "schedule": crontab(day_of_month=28, hour=0, minute=0),
+    },
+    "check_monthly_asos5": {
+        "task": "data.finance.compensation.tasks.check_monthly_student_catching_monitoring",
+        "schedule": crontab(day_of_month=28, hour=0, minute=0),
     }
 }
 

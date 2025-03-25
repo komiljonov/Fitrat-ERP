@@ -4,6 +4,7 @@ from django.db import models
 
 from data.command.models import BaseModel
 
+from ...results.models import Results
 
 if TYPE_CHECKING:
     from ...account.models import CustomUser
@@ -115,9 +116,9 @@ class ResultSubjects(BaseModel):
     def __str__(self):
         return f"{self.name}"
 
-
 class MonitoringAsos4(BaseModel):
     asos : "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.SET_NULL,null=True,blank=True)
+    result_frk : "Results" = models.ForeignKey('results.Results',on_delete=models.SET_NULL,null=True,blank=True)
     result : "ResultName" = models.ForeignKey('compensation.ResultName',on_delete=models.SET_NULL, null=True,blank=True)
     user : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL, null=True,blank=True)
     subject : "ResultSubjects" = models.ForeignKey('compensation.ResultSubjects',on_delete=models.SET_NULL, null=True,blank=True)
@@ -142,6 +143,14 @@ class StudentCountMonitoring(BaseModel):
 
     def __str__(self):
         return f"{self.from_point} - {self.to_point}"
+
+class Monitoring5(BaseModel):
+    ball = models.DecimalField(decimal_places=2, max_digits=10)
+    student_count = models.CharField(max_length=10, null=True,blank=True)
+    teacher : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL, null=True,blank=True)
+
+    def __str__(self):
+        return f"{self.teacher.full_name}  {self.student_count} - {self.ball}"
 
 
 class StudentCatchingMonitoring(BaseModel):
