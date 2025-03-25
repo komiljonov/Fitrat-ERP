@@ -78,6 +78,10 @@ class Monitoring(BaseModel):
 
     counter = models.IntegerField()
 
+    class Meta:
+        verbose_name = "Monitoring"
+        verbose_name_plural = "Monitoring 3, 12, 13, 14"
+
     def __str__(self):
         return f"{self.user.full_name}  {self.point.name}  {self.ball} / {self.point.max_ball}"
 
@@ -94,6 +98,11 @@ class ResultName(BaseModel):
         ("One","One"),
         ("Two","Two"),
     ], max_length=10, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Natijalar"
+        verbose_name_plural = "Natijalar monitoringi"
+
     def __str__(self):
         return f"{self.name}"
 
@@ -113,19 +122,29 @@ class ResultSubjects(BaseModel):
     to_point = models.CharField(max_length=10, null=True, blank=True)
 
     amount = models.FloatField(default=0,null=True,blank=True)
+
+    class Meta:
+        verbose_name = "Monitoring"
+        verbose_name_plural = "Natija turi"
+
     def __str__(self):
         return f"{self.name}"
 
-class MonitoringAsos4(BaseModel):
-    asos : "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.SET_NULL,null=True,blank=True)
-    result_frk : "Results" = models.ForeignKey('results.Results',on_delete=models.SET_NULL,null=True,blank=True)
-    result : "ResultName" = models.ForeignKey('compensation.ResultName',on_delete=models.SET_NULL, null=True,blank=True)
-    user : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL, null=True,blank=True)
-    subject : "ResultSubjects" = models.ForeignKey('compensation.ResultSubjects',on_delete=models.SET_NULL, null=True,blank=True)
-    ball = models.FloatField(default=0,null=True,blank=True)
+
+class MonitoringAsos4(BaseModel):  # Changed name from MonitoringAsos4
+    asos = models.ForeignKey('compensation.Asos', on_delete=models.SET_NULL, null=True, blank=True)
+    result_frk = models.ForeignKey('results.Results', on_delete=models.SET_NULL, null=True, blank=True)
+    result = models.ForeignKey('compensation.ResultName', on_delete=models.SET_NULL, null=True, blank=True)
+    user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True)
+    subject = models.ForeignKey('compensation.ResultSubjects', on_delete=models.SET_NULL, null=True, blank=True)
+    ball = models.FloatField(default=0, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Monitoring 4"
+        verbose_name_plural = "Monitoring 4"
 
     def __str__(self):
-        return f"{self.user.full_name}  {self.asos.name}  {self.subject.name}"
+        return f"{self.user.full_name} - {self.asos.name} - {self.subject.name}"
 
 
 class StudentCountMonitoring(BaseModel):
@@ -141,6 +160,10 @@ class StudentCountMonitoring(BaseModel):
     from_point = models.CharField(max_length=256, null=True,blank=True)
     to_point = models.CharField(max_length=256, null=True,blank=True)
 
+    class Meta:
+        verbose_name = "Monitoring"
+        verbose_name_plural = "O'quvchini soni monitoringi"
+
     def __str__(self):
         return f"{self.from_point} - {self.to_point}"
 
@@ -149,6 +172,10 @@ class Monitoring5(BaseModel):
     ball = models.DecimalField(decimal_places=2, max_digits=10)
     student_count = models.CharField(max_length=10, null=True,blank=True)
     teacher : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL, null=True,blank=True)
+
+    class Meta:
+        verbose_name = "Monitoring 5"
+        verbose_name_plural = "Monitoring 5"
 
     def __str__(self):
         return f"{self.teacher.full_name}  {self.student_count} - {self.ball}"
@@ -164,6 +191,10 @@ class StudentCatchingMonitoring(BaseModel):
         ("Compensation","Compensation"),
     ], max_length=256)
     ball = models.FloatField(default=0,null=True,blank=True)
+
+    class Meta:
+        verbose_name = "Monitoring"
+        verbose_name_plural = "O'quvchini olib qolish monitoringi"
 
     def __str__(self):
         return f"{self.name} {self.type}"
