@@ -372,7 +372,7 @@ class TeacherGroupFinanceAPIView(APIView):
 
             # Get distinct students per group
             student_data = []
-            students = Student.objects.filter(attendance__group_id=group_id).distinct()
+            students = Student.objects.filter(attendance_student__group__id=group_id).distinct()
             ic(students)
 
             for student in students:

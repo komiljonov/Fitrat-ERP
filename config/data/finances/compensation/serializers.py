@@ -253,6 +253,7 @@ class Monitoring5Serializer(serializers.ModelSerializer):
         fields = [
             "id",
             "ball",
+            "student_count",
             "teacher",
             "created_at",
         ]
