@@ -330,38 +330,38 @@ class MonitoringRetrieveView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class MonitoringBulkCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+from rest_framework.utils import json
 
-    def post(self, request, *args, **kwargs):
-        last_counter = Monitoring.objects.order_by('-counter').values_list('counter', flat=True).first() or 0
-        counter = last_counter + 1
+def post(self, request, *args, **kwargs):
+    # Get the last counter value
+    last_counter = Monitoring.objects.order_by('-counter').values_list('counter', flat=True).first() or 0
+    counter = last_counter + 1  # Increment once for this batch
 
-        # Ensure request.data is a list
-        if isinstance(request.data, str):
-            try:
-                data = json.loads(request.data)  # Convert string to JSON
-            except json.JSONDecodeError:
-                return Response({"error": "Invalid JSON format"}, status=400)
-        elif isinstance(request.data, dict):
-            data = [request.data]  # Convert single dictionary to a list
+    # Ensure request.data is a list
+    if isinstance(request.data, str):
+        try:
+            data = json.loads(request.data)
+        except json.JSONDecodeError:
+            return Response({"error": "Invalid JSON format"}, status=400)
+    elif isinstance(request.data, dict):
+        data = [request.data]  # Convert to list if it's a single dictionary
+    else:
+        data = request.data  # Already a list
+
+    # Assign the same counter to all items
+    for item in data:
+        if isinstance(item, dict):  # Ensure it's a dictionary
+            item['counter'] = counter
         else:
-            data = request.data  # Already a list
+            return Response({"error": "Each item must be a JSON object"}, status=400)
 
-        data_with_counter = []
-        for item in data:
-            if isinstance(item, dict):  # Ensure item is a dictionary
-                item['counter'] = counter
-                counter += 1
-                data_with_counter.append(item)
-            else:
-                return Response({"error": "Each item must be a JSON object"}, status=400)
+    serializer = MonitoringSerializer(data=data, many=True, context={'request': request})
+    serializer.is_valid(raise_exception=True)
+    instances = serializer.save()
 
-        serializer = MonitoringSerializer(data=data_with_counter, many=True, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        instances = serializer.save()
+    return Response(MonitoringSerializer(instances, many=True).data, status=201)
 
-        return Response(MonitoringSerializer(instances, many=True).data, status=201)
+
 
 class Asos4ListCreateView(ListCreateAPIView):
     queryset = ResultSubjects.objects.all()
