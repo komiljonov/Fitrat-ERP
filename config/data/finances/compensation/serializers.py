@@ -153,7 +153,8 @@ class ResultPointsSerializer(serializers.ModelSerializer):
             "result_type",
             "point",
             "max_ball",
-
+            "level",
+            "university_type",
             "from_point",
             "to_point",
 
