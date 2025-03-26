@@ -68,7 +68,8 @@ class Point(BaseModel):
 
 
 class Monitoring(BaseModel):
-    creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True,blank=True)
+    creator : "CustomUser" = models.ForeignKey('account.CustomUser',
+                                               on_delete=models.SET_NULL, null=True,blank=True, related_name="monitoring_creator")
     user : "CustomUser" = models.ForeignKey('account.CustomUser',
                                             on_delete=models.CASCADE,related_name='user_monitoring')
     point : "Point" = models.ForeignKey('compensation.Point',
@@ -176,7 +177,7 @@ class Monitoring5(BaseModel):
     ball = models.DecimalField(decimal_places=2, max_digits=10)
     student_count = models.CharField(max_length=10, null=True,blank=True)
     teacher : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL,
-                                               null=True,blank=True)
+                                               null=True,blank=True, related_name="Monitoring5_creator_comments")
 
     class Meta:
         verbose_name = "Monitoring 5"
