@@ -637,7 +637,7 @@ class MonitoringView(APIView):
         # Base queryset for teachers
         teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
             name=Concat(F('first_name'), Value(' '), F('last_name')),
-            overall_point=F('ball')
+            overall_point=F('monitoring')
         )
 
         if course_id:

@@ -153,6 +153,8 @@ class StudentCountMonitoring(BaseModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
     amount = models.FloatField(default=0,null=True,blank=True)
+    teacher = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL,
+                                null=True, blank=True, related_name="student_count_monitoring_teacher")
 
     type = models.CharField(choices=[
         ("PENALTY", "PENALTY"),
@@ -173,7 +175,8 @@ class StudentCountMonitoring(BaseModel):
 class Monitoring5(BaseModel):
     ball = models.DecimalField(decimal_places=2, max_digits=10)
     student_count = models.CharField(max_length=10, null=True,blank=True)
-    teacher : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL, null=True,blank=True)
+    teacher : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL,
+                                               null=True,blank=True)
 
     class Meta:
         verbose_name = "Monitoring 5"
@@ -185,6 +188,8 @@ class Monitoring5(BaseModel):
 
 class StudentCatchingMonitoring(BaseModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
+    teacher : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL,
+                                               null=True,blank=True, related_name="StudentCatchingMonitoring_teacher")
     name = models.CharField(max_length=256)
     from_student = models.CharField(max_length=256)
     to_student = models.CharField(max_length=256, null=True,blank=True)
