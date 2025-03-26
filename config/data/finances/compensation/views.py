@@ -300,7 +300,7 @@ class MonitoringListCreateView(ListAPIView):
         filters = Q()
 
         if start_date and end_date:
-            filters &= Q(craeted_at__gte=start_date , created_at__lte=end_date)
+            filters &= Q(created_at__gte=start_date , created_at__lte=end_date)
 
         if counter:
             filters &= Q(counter = counter)
