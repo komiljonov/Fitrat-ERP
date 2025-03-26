@@ -110,7 +110,8 @@ class ResultName(BaseModel):
 
 class ResultSubjects(BaseModel):
     asos : "Asos" = models.ForeignKey('compensation.Asos',on_delete=models.CASCADE)
-    result : "ResultName" = models.ForeignKey('compensation.ResultName',on_delete=models.CASCADE)
+    result : "ResultName" = models.ForeignKey('compensation.ResultName',
+                                              on_delete=models.SET_NULL,null=True,blank=True)
     name = models.CharField(max_length=256)
     result_type = models.CharField(choices=[
         ("Mine", "Mine"),

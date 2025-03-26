@@ -143,6 +143,9 @@ class PointSerializer(serializers.ModelSerializer):
 
 class ResultPointsSerializer(serializers.ModelSerializer):
     asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+
+    result = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
+
     class Meta:
         model = ResultSubjects
         fields = [
