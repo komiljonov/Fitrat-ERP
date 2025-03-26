@@ -6,7 +6,7 @@ from rest_framework import serializers
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring, \
     StudentCatchingMonitoring, ResultName, MonitoringAsos4, Comments, Monitoring5
 from ...account.models import CustomUser
-from ...account.serializers import UserListSerializer
+from ...account.serializers import UserListSerializer, UserSerializer
 
 
 class BonusSerializer(serializers.ModelSerializer):
@@ -204,7 +204,7 @@ class ResultsNameSerializer(serializers.ModelSerializer):
 
 
 class MonitoringAsos4Serializer(serializers.ModelSerializer):
-
+    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
     result = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
@@ -221,6 +221,12 @@ class MonitoringAsos4Serializer(serializers.ModelSerializer):
             "ball",
             "created_at",
         ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["asos"] = AsosSerializer(instance.asos).data
+        data["creator"] = UserSerializer(instance.creator).data
+        data["user"] = UserSerializer(instance.user).data
+        return data
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
