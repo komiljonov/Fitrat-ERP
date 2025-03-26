@@ -74,7 +74,7 @@ class Monitoring(BaseModel):
                                             on_delete=models.CASCADE,related_name='user_monitoring')
     point : "Point" = models.ForeignKey('compensation.Point',
                                         on_delete=models.CASCADE,related_name='point_monitoring')
-    ball = models.DecimalField(decimal_places=2, max_digits=10,
+    ball = models.CharField(max_length=128,null=True,blank=True,
                                help_text="This ball can not be higher than asos's max_ball !!!")
 
     counter = models.IntegerField()
@@ -117,7 +117,7 @@ class ResultSubjects(BaseModel):
         ("Student", "Student"),
     ], max_length=256, null=True, blank=True)
     point = models.CharField(max_length=10, null=True, blank=True)
-    max_ball = models.DecimalField(decimal_places=2, max_digits=10)
+    max_ball = models.CharField(max_length=128, null=True, blank=True)
 
 
     level = models.CharField(choices=[
@@ -133,7 +133,7 @@ class ResultSubjects(BaseModel):
     from_point = models.CharField(max_length=10, null=True, blank=True)
     to_point = models.CharField(max_length=10, null=True, blank=True)
 
-    amount = models.FloatField(default=0,null=True,blank=True)
+    amount = models.CharField(max_length=128,null=True,blank=True)
 
     class Meta:
         verbose_name = "Monitoring"
@@ -151,7 +151,7 @@ class MonitoringAsos4(BaseModel):
     result = models.ForeignKey('compensation.ResultName', on_delete=models.SET_NULL, null=True, blank=True)
     user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True)
     subject = models.ForeignKey('compensation.ResultSubjects', on_delete=models.SET_NULL, null=True, blank=True)
-    ball = models.FloatField(default=0, null=True, blank=True)
+    ball = models.CharField(default=0, null=True, blank=True)
 
     class Meta:
         verbose_name = "Monitoring 4"
