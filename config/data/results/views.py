@@ -1,3 +1,5 @@
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -87,6 +89,8 @@ class ResultsViewSet(ListAPIView):
     queryset = Results.objects.all()
     serializer_class = StudentResultsSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = (DjangoFilterBackend,SearchFilter)
+    search_fields = ["student__fist_name", "student__last_name","teacher__full_name"]
 
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
