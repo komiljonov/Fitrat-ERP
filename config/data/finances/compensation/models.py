@@ -119,6 +119,17 @@ class ResultSubjects(BaseModel):
     point = models.CharField(max_length=10, null=True, blank=True)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
 
+
+    level = models.CharField(choices=[
+        ("Region","Region"),
+        ("Regional","Regional"),
+    ], max_length=256, null=True, blank=True)
+
+    university_type = models.CharField(choices=[
+        ("Personal", "Personal"),
+        ("National", "National"),
+    ], max_length=256, null=True, blank=True)
+
     from_point = models.CharField(max_length=10, null=True, blank=True)
     to_point = models.CharField(max_length=10, null=True, blank=True)
 
