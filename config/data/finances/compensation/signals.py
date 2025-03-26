@@ -8,7 +8,7 @@ from ...account.models import CustomUser
 @receiver(post_save, sender=Monitoring)
 def on_create(sender, instance: Monitoring, created, **kwargs):
     if created:
-        instance.user.monitoring += instance.ball
+        instance.user.monitoring += int(instance.ball)
         instance.user.save()
 
 
@@ -22,19 +22,19 @@ def on_create(sender, instance: MonitoringAsos4, created, **kwargs):
 @receiver(post_save, sender=Monitoring5)
 def on_create(sender, instance: Monitoring5, created, **kwargs):
     if created:
-        instance.teacher.monitoring += instance.ball
+        instance.teacher.monitoring += int(instance.ball)
         instance.teacher.save()
 
 
 @receiver(post_save, sender=StudentCatchingMonitoring)
 def on_create(sender, instance: StudentCatchingMonitoring, created, **kwargs):
     if created:
-        instance.teacher.monitoring += instance.ball
+        instance.teacher.monitoring += int(instance.ball)
         instance.teacher.save()
 
 
 @receiver(post_save, sender=StudentCountMonitoring)
 def on_create(sender, instance: StudentCountMonitoring, created, **kwargs):
     if created:
-        instance.teacher.monitoring += instance.max_ball
+        instance.teacher.monitoring += int(instance.max_ball)
         instance.teacher.save()
