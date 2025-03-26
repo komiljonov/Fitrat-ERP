@@ -50,6 +50,8 @@ class CustomUser(AbstractUser):
 
     ball = models.FloatField(default=0)
 
+    monitoring = models.FloatField(default=0)
+
     enter = models.TimeField(null=True,blank=True)
     leave = models.TimeField(null=True,blank=True)
 
