@@ -209,6 +209,7 @@ class MonitoringAsos4Serializer(serializers.ModelSerializer):
         model = MonitoringAsos4
         fields = [
             "id",
+            "creator",
             "user",
             "asos",
             "result",

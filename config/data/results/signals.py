@@ -7,13 +7,16 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from .models import Results
-from ..finances.compensation.models import MonitoringAsos4, Asos
+from ..finances.compensation.models import MonitoringAsos4, Asos, ResultName
 
 
 @receiver(post_save, sender=Results)
 def on_create(sender, instance: Results, created, **kwargs):
     if not created and instance.status == "Accepted":
         asos = Asos.objects.filter(name__in = "Asos 4").first()
+
+        result_name = ResultName.objects.get(name=instance.name)
+
         monitoring = MonitoringAsos4.objects.create(
             user=instance.teacher,
             asos=asos,
