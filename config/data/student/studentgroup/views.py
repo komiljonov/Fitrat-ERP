@@ -25,7 +25,11 @@ class StudentsGroupList(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     search_fields = (
-        'group__name', 'student__first_name', 'lid__first_name', 'student__last_name', 'lid__last_name',
+        'group__name',
+        'student__first_name',
+        'lid__first_name',
+        'student__last_name',
+        'lid__last_name',
         'group__status',
         'group__teacher__id'
     )
