@@ -18,6 +18,7 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
         model = Results
         fields = [
             'id',
+            "who",
             'results',
             'teacher',
             'student',
@@ -59,9 +60,8 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"filial": "Filial could not be determined."})
 
         room = Results.objects.create(filial=filial, **validated_data)
-        return room
 
-        return certificate
+        return certificate, room
 
 class CertificationResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
@@ -71,6 +71,7 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
         model = Results
         fields = [
             'id',
+            "who",
             'results',
             'teacher',
             'student',
@@ -115,6 +116,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
         model = Results
         fields = [
             'id',
+            "who",
             'results',
             'teacher',
             'student',
@@ -166,6 +168,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
         model = Results
         fields = [
             'id',
+            "who",
             'teacher',
             'student',
             'certificate_type',
@@ -204,6 +207,7 @@ class NationalSerializer(serializers.ModelSerializer):
         model = Results
         fields = [
             'id',
+            "who",
             'results',
             'teacher',
             'student',
@@ -242,6 +246,7 @@ class ResultsSerializer(serializers.ModelSerializer):
         model = Results
         fields = [
             'id',
+            "who",
             'results',
             'teacher',
             'student',

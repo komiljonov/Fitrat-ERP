@@ -7,6 +7,12 @@ from data.upload.models import File
 # Create your models here.
 
 class Results(BaseModel):
+
+    who = models.CharField(choices=[
+        ("Mine","Mine"),
+        ("Student","Student"),
+    ],max_length=20, null=True, blank=True)
+
     results = models.CharField(choices=[
         ("University" , "entering to the university" ),
         ("Certificate", "Geting certificate"),
