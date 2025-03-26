@@ -151,7 +151,7 @@ class MonitoringAsos4(BaseModel):
     result = models.ForeignKey('compensation.ResultName', on_delete=models.SET_NULL, null=True, blank=True)
     user : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True)
     subject = models.ForeignKey('compensation.ResultSubjects', on_delete=models.SET_NULL, null=True, blank=True)
-    ball = models.CharField(default=0, null=True, blank=True)
+    ball = models.CharField(max_length=128, null=True, blank=True)
 
     class Meta:
         verbose_name = "Monitoring 4"
