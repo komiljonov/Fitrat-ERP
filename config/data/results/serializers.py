@@ -112,6 +112,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
 
+
     class Meta:
         model = Results
         fields = [
