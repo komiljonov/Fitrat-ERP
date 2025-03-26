@@ -221,15 +221,10 @@ class MonitoringAsos4Serializer(serializers.ModelSerializer):
             "ball",
             "created_at",
         ]
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["asos"] = AsosSerializer(instance.asos).data
-        data["creator"] = UserSerializer(instance.creator).data
-        data["user"] = UserSerializer(instance.user).data
-        return data
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        data["creator"] = UserSerializer(instance.creator).data
         data["asos"] = AsosSerializer(instance.asos).data
         data["result"] = ResultsNameSerializer(instance.result).data
         data["subject"] = ResultPointsSerializer(instance.subject).data
