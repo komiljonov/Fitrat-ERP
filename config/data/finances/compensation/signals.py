@@ -32,6 +32,7 @@ def on_create(sender, instance: StudentCatchingMonitoring, created, **kwargs):
         instance.teacher.monitoring += instance.ball
         instance.teacher.save()
 
+
 @receiver(post_save, sender=StudentCountMonitoring)
 def on_create(sender, instance: StudentCountMonitoring, created, **kwargs):
     if created:

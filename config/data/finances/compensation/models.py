@@ -192,9 +192,11 @@ class Monitoring5(BaseModel):
     teacher : "CustomUser" = models.ForeignKey('account.CustomUser',on_delete=models.SET_NULL,
                                                null=True,blank=True, related_name="Monitoring5_creator_comments")
 
+
     class Meta:
         verbose_name = "Monitoring 5"
         verbose_name_plural = "Monitoring 5"
+
 
     def __str__(self):
         return f"{self.teacher.full_name}  {self.student_count} - {self.ball}"
