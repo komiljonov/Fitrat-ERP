@@ -43,6 +43,9 @@ class Page(BaseModel):
 class Asos(BaseModel):
     name = models.CharField(max_length=256)
 
+    class Meta:
+        ordering = ('created_at',)
+
     def __str__(self):
         return f"{self.name} "
 
