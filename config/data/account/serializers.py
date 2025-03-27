@@ -61,13 +61,16 @@ class UserLoginSerializer(serializers.Serializer):
         phone = attrs.get('phone')
         password = attrs.get('password')
 
+        user = CustomUser.objects.get(phone=phone)
+
         if phone:
             user = CustomUser.objects.get(phone=phone)
             if user.is_archived ==True:
                 raise serializers.ValidationError({"permission denied": "Sizning faoliyatingiz cheklangan!"},
                                                   code='permission_denied')
-        if phone:
-            user = CustomUser.objects.filter(phone=phone).exclude(role__in=["TEACHER", "ASSISTANT"]).first()
+        if phone and user.role not in ["TEACHER","ASSISTANT"]:
+
+            user = CustomUser.objects.filter(phone=phone).first()
 
             pages = Page.objects.filter(user=user, is_readable=True)
             if not pages.exists():
