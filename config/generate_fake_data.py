@@ -10,7 +10,7 @@ django.setup()
 from data.student.groups.models import Day
 from data.account.models import CustomUser
 from data.department.marketing_channel.models import MarketingChannel
-from data.finances.compensation.models import Page
+from data.finances.compensation.models import Page, Asos
 from data.finances.finance.models import Kind
 fake = Faker()
 
@@ -55,6 +55,27 @@ def generate_fake_data():
             name=i,
             is_readable=True,
             is_editable=True,
+        )
+
+    asos = [
+        "ASOS_1",
+        "ASOS_2",
+        "ASOS_3",
+        "ASOS_4",
+        "ASOS_5",
+        "ASOS_6",
+        "ASOS_7",
+        "ASOS_8",
+        "ASOS_9",
+        "ASOS_10",
+        "ASOS_11",
+        "ASOS_12",
+        "ASOS_13",
+        "ASOS_14",
+    ]
+    for i in asos:
+        Asos.objects.create(
+            name=i,
         )
 
     marketing_channels = {
