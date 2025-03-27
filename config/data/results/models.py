@@ -17,6 +17,7 @@ class Results(BaseModel):
         ("University" , "entering to the university"),
         ("Certificate", "Geting certificate"),
         ("National","Milliy sertificate"),
+        ("Olimpiada", "Olimpiada natijalari")
     ],
     max_length=100,null=True,
     blank=True,
@@ -27,17 +28,9 @@ class Results(BaseModel):
                             on_delete=models.CASCADE,related_name="student_results")
 
 
-    national = models.CharField(choices=[
-        ('English', 'English'),
-        ('Math', 'Math'),
-        ('Mother_tongue','Mother_tongue'),
-        ('Fizika','Fizika'),
-        ('Chemistry','Chemistry'),
-        ('History','History'),
-    ],
-    max_length=100,
-    null=True,
-    blank=True)
+    national = models.ForeignKey("subject.Subject",on_delete=models.SET_NULL,
+                                 null=True,blank=True, related_name="national_results",
+                                 help_text="National sertificate subject")
 
     university_type = models.CharField(choices=[
         ("Official", "Official"),
@@ -63,6 +56,8 @@ class Results(BaseModel):
     ],
     max_length=100,null=True,blank=True
     )
+    result_fk_name = models.ForeignKey("compensation.ResultName",on_delete=models.SET_NULL,
+                                    null=True,blank=True, related_name="monitoring_result_name")
     band_score = models.FloatField(null=True,blank=True)
     reading_score = models.FloatField(null=True,blank=True)
     lessoning_score = models.FloatField(null=True,blank=True)
@@ -86,6 +81,6 @@ class Results(BaseModel):
     )
 
     def __str__(self):
-        return self.results
+        return f"{self.results}"
 
  

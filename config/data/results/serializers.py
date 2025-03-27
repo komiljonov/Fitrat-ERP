@@ -2,9 +2,11 @@ from rest_framework import serializers
 
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
+from data.finances.compensation.models import ResultName
 from data.results.models import Results
 from data.student.student.models import Student
 from data.student.student.serializers import StudentSerializer
+from data.student.subject.models import Subject
 from data.upload.models import File
 from data.upload.serializers import FileUploadSerializer
 
@@ -111,6 +113,10 @@ class StudentResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+
+    national = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
+
+    result_fk_name = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),many=True,allow_null=True)
 
 
     class Meta:
