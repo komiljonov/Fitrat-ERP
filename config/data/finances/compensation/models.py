@@ -44,7 +44,7 @@ class Asos(BaseModel):
     name = models.CharField(max_length=256)
 
     class Meta:
-        ordering = None
+        ordering = "created_at"
 
     def __str__(self):
         return f"{self.name} "
