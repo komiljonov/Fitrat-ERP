@@ -127,6 +127,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
             'results',
             'teacher',
             'student',
+            "result_fk_name",
             'certificate_type',
             'band_score',
             'reading_score',
