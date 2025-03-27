@@ -67,7 +67,8 @@ class UserLoginSerializer(serializers.Serializer):
                 raise serializers.ValidationError({"permission denied": "Sizning faoliyatingiz cheklangan!"},
                                                   code='permission_denied')
         if phone:
-            user = CustomUser.objects.get(phone=phone)
+            user = CustomUser.objects.filter(phone=phone).exclude(role__in=["TEACHER", "ASSISTANT"]).first()
+
             pages = Page.objects.filter(user=user, is_readable=True)
             if not pages.exists():
                 raise serializers.ValidationError({"permission denied": "Siz uchun ruxsat etilgan saxivalar yo'q !"},
