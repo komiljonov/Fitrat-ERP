@@ -14,7 +14,7 @@ class Results(BaseModel):
     ],max_length=20, null=True, blank=True)
 
     results = models.CharField(choices=[
-        ("University" , "entering to the university" ),
+        ("University" , "entering to the university"),
         ("Certificate", "Geting certificate"),
         ("National","Milliy sertificate"),
     ],
@@ -22,8 +22,9 @@ class Results(BaseModel):
     blank=True,
     )
     teacher : "CustomUser" = models.ForeignKey("account.CustomUser",
-                                               on_delete=models.CASCADE,related_name="teacher_results")
-    student : "Student" = models.ForeignKey("student.Student", on_delete=models.CASCADE,related_name="student_results")
+                            on_delete=models.CASCADE,related_name="teacher_results")
+    student : "Student" = models.ForeignKey("student.Student",
+                            on_delete=models.CASCADE,related_name="student_results")
 
 
     national = models.CharField(choices=[

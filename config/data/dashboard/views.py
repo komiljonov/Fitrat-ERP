@@ -999,18 +999,18 @@ class StudentLanguage(APIView):
     def get(self, request, *args, **kwargs):
         filial = self.request.query_params.get('filial')
         if filial:
-            student_uz = Student.objects.filter(education_lang="UZB", student_stage_type = "student_stage_type",
+            student_uz = Student.objects.filter(education_lang="UZB", student_stage_type = "ACTIVE_STUDENT",
                                                 is_archived=False,  is_frozen=False).count()
-            student_eng = Student.objects.filter(education_lang="ENG", student_stage_type = "student_stage_type",
+            student_eng = Student.objects.filter(education_lang="ENG", student_stage_type = "ACTIVE_STUDENT",
                                                  is_archived=False,  is_frozen=False).count()
-            student_ru = Student.objects.filter(education_lang="RU", student_stage_type = "student_stage_type",
+            student_ru = Student.objects.filter(education_lang="RU", student_stage_type = "ACTIVE_STUDENT",
                                                 is_archived=False,  is_frozen=False).count()
         else:
-            student_uz = Student.objects.filter(education_lang="UZB", student_stage_type = "student_stage_type",
+            student_uz = Student.objects.filter(education_lang="UZB", student_stage_type = "ACTIVE_STUDENT",
                                                 is_archived=False,  is_frozen=False).count()
-            student_eng = Student.objects.filter(education_lang="ENG", student_stage_type = "student_stage_type",
+            student_eng = Student.objects.filter(education_lang="ENG", student_stage_type = "ACTIVE_STUDENT",
                                                  is_archived=False,  is_frozen=False).count()
-            student_ru = Student.objects.filter(education_lang="RU", student_stage_type = "student_stage_type",
+            student_ru = Student.objects.filter(education_lang="RU", student_stage_type = "ACTIVE_STUDENT",
                                                 is_archived=False,  is_frozen=False).count()
 
         return Response({
