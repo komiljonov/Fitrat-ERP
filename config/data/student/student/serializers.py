@@ -3,6 +3,7 @@ import hashlib
 
 from django.db.models import F, Avg
 from django.utils.module_loading import import_string
+from icecream import ic
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -271,6 +272,7 @@ class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         phone = attrs.get('phone')
         password = attrs.get('password')
+        ic(password)
 
         if not phone or not password:
             raise serializers.ValidationError(
@@ -284,6 +286,7 @@ class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
             phone=phone,
             password=password,
         )
+        ic(user)
 
         if not user:
             raise serializers.ValidationError(
@@ -299,6 +302,7 @@ class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
             "user_id": user.id,
             "phone": phone
         }
+
 
 
 class StudentAppSerializer(serializers.ModelSerializer):

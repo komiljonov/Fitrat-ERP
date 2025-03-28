@@ -53,6 +53,7 @@ def on_create_user(sender, instance: Student, created, **kwargs):
             phone=instance.phone,
             role="Student",
             password=instance.password if instance.password else "1234",
+            filial=instance.filial,
         )
         if user:
             instance.user = user
