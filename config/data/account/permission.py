@@ -1,5 +1,7 @@
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth.hashers import check_password
+from django.core.exceptions import ObjectDoesNotExist
+from icecream import ic
 from rest_framework.exceptions import PermissionDenied, AuthenticationFailed
 from rest_framework.response import Response
 
@@ -33,30 +35,39 @@ class PhoneAuthBackend(BaseBackend):
 
 class StudentAuthBackend(BaseBackend):
     def authenticate(self, request, phone=None, password=None):
+        ic(password)  # Parolni tekshiramiz
         print(f"Attempting authentication for phone: {phone}")
 
         try:
-            student = Student.objects.get(phone=phone)  # Get student by phone
-            user = student.user  # Assuming a OneToOneField between Student and User
+            student = Student.objects.get(phone=phone)
+            user = getattr(student, 'user', None)
+            if not user:
+                print("Student user mavjud emas!")
+                return None
 
             if student.is_archived:
-                raise AuthenticationFailed("O'quvchi arxivlanganligi tufayli, tizimga kirolmaydi !")
+                raise AuthenticationFailed("O'quvchi arxivlanganligi tufayli, tizimga kirolmaydi!")
 
-            if user and check_password(password, user.password):
+            ic(user.password)  # User passwordni tekshiramiz
+            ic(password,user.password)
+
+            if check_password(password, user.password):
                 print("Authentication successful")
                 return user
             else:
                 print("Invalid password")
                 return None
-        except Student.DoesNotExist:
+        except ObjectDoesNotExist:
             print("User does not exist")
             return None
 
     def get_user(self, user_id):
         try:
             return Student.objects.get(pk=user_id).user  # Return user, not Student
-        except Student.DoesNotExist:
+        except ObjectDoesNotExist:
             return None
+
+
 
 class FilialRestrictedQuerySetMixin:
     """
