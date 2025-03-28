@@ -3,6 +3,7 @@ from rest_framework import serializers
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.finances.compensation.models import ResultName
+from data.finances.compensation.serializers import ResultsNameSerializer
 from data.results.models import Results
 from data.student.student.models import Student
 from data.student.student.serializers import StudentSerializer
@@ -68,6 +69,7 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
 class CertificationResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+    result_fk_name = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(), allow_null=True)
     upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     class Meta:
         model = Results
@@ -75,6 +77,7 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
             'id',
             "who",
             'results',
+            "result_fk_name",
             'teacher',
             'student',
             'certificate_type',
@@ -91,6 +94,7 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["result_fk_name"] = ResultsNameSerializer(instance.result_fk_name).data if instance.result_fk_name else None
         rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,context=self.context).data if instance.upload_file else None
         rep["teacher"] = UserListSerializer(instance.teacher).data
         rep["student"] = StudentSerializer(instance.student).data
