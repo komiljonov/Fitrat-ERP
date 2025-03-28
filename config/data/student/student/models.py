@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class Student(BaseModel):
 
     user : "CustomUser" = models.ForeignKey("account.CustomUser",
-                            on_delete=models.CASCADE, related_name="students_user")
+                            on_delete=models.SET_NULL,null=True,blank=True, related_name="students_user")
 
     photo = models.ForeignKey('upload.File', on_delete=models.SET_NULL, null=True, blank=True,
                               related_name='students_photo')
