@@ -37,14 +37,14 @@ class StudentAuthBackend(BaseBackend):
 
         try:
             student = Student.objects.get(phone=phone)  # Get student by phone
-            user = student.user
+            user = student.user  # Assuming a OneToOneField between Student and User
 
             if student.is_archived:
                 raise AuthenticationFailed("O'quvchi arxivlanganligi tufayli, tizimga kirolmaydi !")
 
             if user and check_password(password, user.password):
                 print("Authentication successful")
-                return user  # Return the authenticated user
+                return user
             else:
                 print("Invalid password")
                 return None
@@ -57,7 +57,6 @@ class StudentAuthBackend(BaseBackend):
             return Student.objects.get(pk=user_id).user  # Return user, not Student
         except Student.DoesNotExist:
             return None
-
 
 class FilialRestrictedQuerySetMixin:
     """

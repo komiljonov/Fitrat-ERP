@@ -5,6 +5,7 @@ from django.db.models import F, Avg
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Student, FistLesson_data
 from ..attendance.models import Attendance
@@ -271,27 +272,33 @@ class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
         phone = attrs.get('phone')
         password = attrs.get('password')
 
-        if phone and password:
-            backend = StudentAuthBackend()
-            user = backend.authenticate(
-                request=self.context.get('request'),
-                phone=phone,
-                password=password,
-            )
-
-            if not user:
-                raise serializers.ValidationError(
-                    "Unable to log in with provided credentials.",
-                    code="authorization"
-                )
-        else:
+        if not phone or not password:
             raise serializers.ValidationError(
                 "Must include 'phone' and 'password'.",
                 code="authorization"
             )
 
-        attrs['user'] = user
-        return attrs
+        backend = StudentAuthBackend()
+        user = backend.authenticate(
+            request=self.context.get('request'),
+            phone=phone,
+            password=password,
+        )
+
+        if not user:
+            raise serializers.ValidationError(
+                "Unable to log in with provided credentials.",
+                code="authorization"
+            )
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user_id": user.id,
+            "phone": phone
+        }
 
 
 class StudentAppSerializer(serializers.ModelSerializer):

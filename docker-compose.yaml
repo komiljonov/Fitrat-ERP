@@ -2,64 +2,62 @@ version: "3.8"
 
 services:
 
-  postgres:
-    image: postgres:latest
-    container_name: postgres_f
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - TZ=Asia/Tashkent
-    volumes:
-      - "fitrat_volume:/var/lib/postgresql/data"
-    ports:
-      - "5433:5432"
-    command: postgres -c max_connections=1500
-
-
   redis:
     image: redis:alpine
+    container_name: "redis_fitrat"
     restart: always
-    container_name: redis
+    ports:
+      - "6380:6379"
     volumes:
       - ./data:/data
-    ports:
-      - "6378:6379"
+    command: redis-server --save 1 1 --loglevel warning --appendonly yes
 
+  postgres:
+    image: postgres:16
+    container_name: "postgres_fitrat"
+    environment:
+      - POSTGRES_DB=fitrat
+      - POSTGRES_USER=fitrat_user
+      - POSTGRES_PASSWORD=your_secure_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - "postgres_data_fitrat:/var/lib/postgresql/data"
 
   django:
-    container_name: django_f
+    container_name: "django_fitrat"
     build:
       context: ./config
     command: python manage.py runserver 0.0.0.0:8000
     volumes: &shared_volumes
-        - ./config:/usr/src/app
+      - ./config:/usr/src/app
+      - ./utils:/usr/src/app/utils
+      - ./locales:/usr/src/app/locales
+      - ./tg_bot:/usr/src/app/tg_bot
     ports:
-      - "8001:8000"
+      - "8044:8000"
     env_file:
       - .env
     depends_on:
-      - postgres
       - redis
-
+      - postgres
 
   bot:
+    container_name: "telegram_bot_fitrat"
     build:
       context: ./config
-    container_name: tg_bot
+    command: python manage.py bot
+    volumes: *shared_volumes
     env_file:
       - .env
     depends_on:
       - redis
       - django
-    volumes: *shared_volumes
-    command: python manage.py bot
-
 
   celery:
     build:
       context: ./config
-    container_name: celery_worker
+    container_name: "celery_worker_fitrat"
     restart: always
     command: celery --app=root.celery worker --loglevel=info
     env_file:
@@ -72,11 +70,10 @@ services:
       - django
     volumes: *shared_volumes
 
-
   celery_beat:
     build:
       context: ./config
-    container_name: celery_beat
+    container_name: "celery_beat_fitrat"
     restart: always
     command: celery --app=root.celery beat --loglevel=info
     env_file:
@@ -87,4 +84,4 @@ services:
     volumes: *shared_volumes
 
 volumes:
-    fitrat_volume:
+  postgres_data_fitrat:

@@ -123,7 +123,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
 class StudentLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = StudentTokenObtainPairSerializer(data=request.data)
+        serializer = StudentTokenObtainPairSerializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
