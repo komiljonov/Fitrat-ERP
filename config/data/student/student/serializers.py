@@ -14,7 +14,7 @@ from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Level
 from ...account.models import CustomUser
-from ...account.permission import PhoneAuthBackend
+from ...account.permission import PhoneAuthBackend, StudentAuthBackend
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
@@ -272,7 +272,7 @@ class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
         password = attrs.get('password')
 
         if phone and password:
-            backend = PhoneAuthBackend()
+            backend = StudentAuthBackend()
             user = backend.authenticate(
                 request=self.context.get('request'),
                 phone=phone,

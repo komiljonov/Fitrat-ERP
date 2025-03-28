@@ -1,9 +1,5 @@
 version: "3.8"
 
-networks:
-  my_project_network:
-    driver: bridge
-
 services:
 
   postgres:
@@ -15,29 +11,29 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - TZ=Asia/Tashkent
     volumes:
-      - ./config/app_data:/var/lib/postgresql/data
+      - "fitrat_volume:/var/lib/postgresql/data"
     ports:
       - "5433:5432"
     command: postgres -c max_connections=1500
-    networks:
-      - my_project_network
+
 
   redis:
     image: redis:alpine
     restart: always
     container_name: redis
+    volumes:
+      - ./data:/data
     ports:
       - "6378:6379"
-    networks:
-      - my_project_network
+
 
   django:
     container_name: django_f
     build:
       context: ./config
     command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./config:/usr/src/app
+    volumes: &shared_volumes
+        - ./config:/usr/src/app
     ports:
       - "8001:8000"
     env_file:
@@ -45,8 +41,7 @@ services:
     depends_on:
       - postgres
       - redis
-    networks:
-      - my_project_network
+
 
   bot:
     build:
@@ -57,11 +52,9 @@ services:
     depends_on:
       - redis
       - django
-    volumes:
-      - ./config:/usr/src/app
+    volumes: *shared_volumes
     command: python manage.py bot
-    networks:
-      - my_project_network
+
 
   celery:
     build:
@@ -77,10 +70,8 @@ services:
     depends_on:
       - redis
       - django
-    volumes:
-      - ./config:/usr/src/app
-    networks:
-      - my_project_network
+    volumes: *shared_volumes
+
 
   celery_beat:
     build:
@@ -93,7 +84,7 @@ services:
     depends_on:
       - redis
       - celery
-    volumes:
-      - ./config:/usr/src/app
-    networks:
-      - my_project_network
+    volumes: *shared_volumes
+
+volumes:
+    fitrat_volume:
