@@ -85,7 +85,7 @@ class CertificationResultsNoPg(ListAPIView):
         return Response(data)
 
 
-class ResultsViewSet(ListAPIView):
+class ResultsViewSet(ListCreateAPIView):
     queryset = Results.objects.all()
     serializer_class = StudentResultsSerializer
     permission_classes = [IsAuthenticated]

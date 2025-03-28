@@ -38,6 +38,8 @@ class CustomUser(AbstractUser):
         ("ASSISTANT", "Assistant teacher"),
         ("MULTIPLE_FILIAL_MANAGER", "Multiple Filial Manager"),
         ("DIRECTOR", "Director"),
+        ("Student", "Student"),
+        ("Parents", "Parents"),
     )
 
     is_call_center = models.BooleanField(default=False)
