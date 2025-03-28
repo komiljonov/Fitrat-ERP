@@ -11,7 +11,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
                                                allow_null=True)
     video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),
                                               allow_null=True)
-    document = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),
+    documents = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),
                                                   allow_null=True)
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),
                                                allow_null=True)
