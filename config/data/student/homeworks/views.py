@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from data.student.homeworks.models import Homework
@@ -18,4 +18,10 @@ class HomeworkListCreateView(ListCreateAPIView):
         if theme:
             queryset = queryset.filter(theme__id__in=theme)
         return queryset
+
+
+class HomeworkDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Homework.objects.all()
+    serializer_class = HomeworkSerializer
+    permission_classes = [IsAuthenticated]
 
