@@ -9,11 +9,11 @@ class Homework(BaseModel):
                               related_name="themes_homework")
     title = models.TextField()
     body = models.TextField()
-    video : "File" = models.ManyToManyField("upload.File",null=True,blank=True,
+    video : "File" = models.ManyToManyField("upload.File",blank=True,
                                             related_name="homeworks_video")
-    documents : "File" = models.ManyToManyField("upload.File",null=True,blank=True,
+    documents : "File" = models.ManyToManyField("upload.File",blank=True,
                                                 related_name="homework_documents")
-    photo : "File" = models.ManyToManyField("upload.File",null=True,blank=True,
+    photo : "File" = models.ManyToManyField("upload.File",blank=True,
                                             related_name="homework_photo")
 
     class Meta:

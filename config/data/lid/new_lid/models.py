@@ -46,7 +46,7 @@ class Lid(BaseModel):
                                        null=True, blank=True,
                                        help_text="Filial for this student")
 
-    marketing_channel: MarketingChannel = models.ForeignKey(MarketingChannel,
+    marketing_channel: "MarketingChannel" = models.ForeignKey("marketing_channel.MarketingChannel",
                                                             on_delete=models.SET_NULL,
                                                             null=True, blank=True,
                                                             help_text="Marketing channel for this student")
@@ -101,7 +101,7 @@ class Lid(BaseModel):
         on_delete=models.CASCADE, null=True,blank=True, related_name="sales_manager")
 
     file: "File" = models.ManyToManyField("upload.File",
-                                          related_name="lid_file", null=True, blank=True)
+                                          related_name="lid_file", blank=True)
 
     ordered_date = models.DateTimeField(null=True, blank=True)
 

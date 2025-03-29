@@ -8,7 +8,7 @@ class Course(BaseModel):
     level: 'Level' = models.ForeignKey('subject.Level', on_delete=models.SET_NULL, null=True,blank=True)
     lessons_number = models.CharField(max_length=100,null=True, blank=True,help_text="Number of lessons")
 
-    theme : 'Theme' = models.ManyToManyField('subject.Theme', related_name='courses',null=True,blank=True)
+    theme : 'Theme' = models.ManyToManyField('subject.Theme', related_name='courses',blank=True)
 
     status = models.CharField(
         choices=[
