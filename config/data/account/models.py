@@ -12,7 +12,7 @@ class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
     files : 'File' = models.ManyToManyField('upload.File',
-                                            blank=True,null=True,related_name='account_files')
+                                            blank=True,related_name='account_files')
     full_name = models.CharField(max_length=100, blank=True, null=True)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
@@ -60,7 +60,7 @@ class CustomUser(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
-    filial : 'Filial' = models.ManyToManyField('filial.Filial',)
+    filial : 'Filial' = models.ManyToManyField('filial.Filial',blank=True, related_name='users_filials')
 
     is_archived = models.BooleanField(default=False)
 

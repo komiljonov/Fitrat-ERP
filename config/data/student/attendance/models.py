@@ -9,7 +9,7 @@ from ...student.groups.models import Group
 
 
 class Attendance(BaseModel):
-    theme : 'Theme' = models.ManyToManyField('subject.Theme', null=True, blank=True,related_name='attendance_theme')
+    theme : 'Theme' = models.ManyToManyField('subject.Theme', blank=True,related_name='attendance_theme')
     group : "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE, null=True, blank=True, related_name='attendance_group')
     repeated = models.BooleanField(default=False)
     lid : 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True,
