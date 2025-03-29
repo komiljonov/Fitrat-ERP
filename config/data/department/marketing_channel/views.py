@@ -29,7 +29,7 @@ class MarketingChannelNOPG(ListAPIView):
 
 
 class GroupTypeList(ListAPIView):
-    model = Group_Type
+    queryset = Group_Type.objects.all()
     serializer_class = Group_typeSerializer
     permission_classes = [IsAuthenticated]
 
