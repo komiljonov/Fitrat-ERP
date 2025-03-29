@@ -42,7 +42,7 @@ class Theme(BaseModel):
     )
 
     repeated_theme = models.ManyToManyField(
-        "subject.Theme",related_name="repeated_theme",
+        "subject.Theme",blank=True,related_name="theme_repeated_theme",
     )
 
     course = models.ForeignKey(
