@@ -8,3 +8,14 @@ class MarketingChannel(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class Group_Type(BaseModel):
+    price_type = models.CharField(choices=[
+        ('DAILY', 'Daily payment'),
+        ('MONTHLY', 'Monthly payment'),
+    ],
+        default='DAILY',
+        max_length=100)
+    def __str__(self):
+        return self.price_type
