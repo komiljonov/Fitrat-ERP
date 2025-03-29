@@ -38,6 +38,10 @@ app.conf.beat_schedule = {
     "check_monthly_asos5": {
         "task": "data.finance.compensation.tasks.check_monthly_student_catching_monitoring",
         "schedule": crontab(day_of_month=28, hour=0, minute=0),
+    },
+    "activate_group" : {
+        "task": "data.student.groups.tasks.activate_group",
+        "schedule": crontab(hour=0, minute=0),
     }
 }
 
