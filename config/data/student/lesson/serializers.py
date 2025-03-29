@@ -258,7 +258,9 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
         lesson_schedule = {}
 
         start_date = datetime.datetime.today().strftime('%Y-%m-%d')
-        end_date = datetime.datetime.today() + datetime.timedelta(days=30)
+        end_date = datetime.datetime.today() + datetime.timedelta(days=30) \
+            if obj.finish_date > datetime.datetime.today() + datetime.timedelta(days=30) \
+            else obj.finish_date
 
         lesson_type = ','.join([day.name for day in schedule_days])
         holidays = []
