@@ -24,6 +24,7 @@ class GroupSerializer(serializers.ModelSerializer):
     student_count = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
     current_theme = serializers.SerializerMethodField()
+    room_number = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all(),allow_null=True)
 
     subject = serializers.SerializerMethodField()
     level = serializers.SerializerMethodField()
@@ -95,6 +96,7 @@ class GroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['teacher'] = UserSerializer(instance.teacher).data
+        rep["room_number"] = RoomsSerializer(instance.room_number).data
         return rep
 
     def create(self, validated_data):
