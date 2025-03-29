@@ -13,7 +13,7 @@ class Group_typeSerializer(serializers.ModelSerializer):
         model = Group_Type
         fields = [
             "id",
-            "group_type",
+            "price_type",
             "created_at",
             "updated_at",
         ]
