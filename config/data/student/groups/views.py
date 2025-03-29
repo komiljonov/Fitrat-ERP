@@ -44,6 +44,16 @@ class StudentGroupsView(ListCreateAPIView):
         day = self.request.query_params.get('day', None)
         price_type = self.request.query_params.get('price_type', None)
 
+        if day == "1":
+            days = []
+            days.append(Day.objects.filter(name="Dushanba"))
+            queryset = queryset.filter(scheduled_day_type__name__in=days)
+
+        if day == "0":
+            days = []
+            days.append(Day.objects.filter(name="Seshanba"))
+            queryset = queryset.filter(scheduled_day_type__name__in=days)
+
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
         if course:
@@ -52,8 +62,7 @@ class StudentGroupsView(ListCreateAPIView):
             queryset = queryset.filter(course__subject__id=subject)
         if filial:
             queryset = queryset.filter(filial__id=filial)
-        if day:
-            queryset = queryset.filter(scheduled_day_type__id=day)
+
         if price_type:
             queryset = queryset.filter(price_type=price_type)
         return queryset
