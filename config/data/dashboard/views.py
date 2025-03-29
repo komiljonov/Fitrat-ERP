@@ -246,7 +246,7 @@ class DashboardSecondView(APIView):
 
         # Active and Ended Courses
         new_student = Student.objects.filter(student_stage_type="NEW_STUDENT", **filters)
-        active_student = StudentGroup.objects.filter(group__status="ACTIVE", **filters)
+        active_student = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", **filters)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
         all_students = Student.objects.filter(is_archived=False)
 
