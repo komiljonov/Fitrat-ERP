@@ -7,14 +7,10 @@ from ...upload.serializers import FileUploadSerializer
 
 
 class HomeworkSerializer(serializers.ModelSerializer):
-    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(),
-                                               allow_null=True)
-    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),
-                                              allow_null=True)
-    documents = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),
-                                                  allow_null=True)
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),
-                                               allow_null=True)
+    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
+    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    documents = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
 
     class Meta:
         model = Homework
@@ -31,8 +27,9 @@ class HomeworkSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
-        res["theme"] = ThemeSerializer(instance.theme).data
-        res["video"] = FileUploadSerializer(instance.video).data
-        res["documents"] = FileUploadSerializer(instance.documents).data
-        res["photo"] = FileUploadSerializer(instance.photo).data
+        res["theme"] = ThemeSerializer(instance.theme).data if instance.theme else None
+        res["video"] = FileUploadSerializer(instance.video.all(), many=True).data
+        res["documents"] = FileUploadSerializer(instance.documents.all(), many=True).data
+        res["photo"] = FileUploadSerializer(instance.photo.all(), many=True).data
         return res
+
