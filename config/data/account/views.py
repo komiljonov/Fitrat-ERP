@@ -64,7 +64,7 @@ class UserList(ListAPIView):
         is_archived = self.request.query_params.get('is_archived', None)
 
         subject = self.request.query_params.get('subject', None)
-        queryset = CustomUser.objects.all()
+        queryset = CustomUser.objects.filter().exclude(role__in=["Student","Parents"])
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
