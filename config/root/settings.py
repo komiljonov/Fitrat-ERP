@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'data.student.quiz',
     'data.student.mastering',
     'data.student.homeworks',
+    'data.student.appsettings',
 
     'data.parents',
     'data.command',
