@@ -94,7 +94,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "rest_framework_simplejwt",
-    "django_celery_beat",
+    # "django_celery_beat",
 
 ]
 
