@@ -16,7 +16,7 @@ class HomeworkListCreateView(ListCreateAPIView):
         theme = self.request.query_params.get('theme', None)
         queryset = Homework.objects.all()
         if theme:
-            queryset = queryset.filter(theme__id__in=theme)
+            queryset = queryset.filter(theme__id=theme)
         return queryset
 
 
