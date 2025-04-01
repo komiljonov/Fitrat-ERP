@@ -2,6 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Group, SecondaryGroup
+from ...department.filial.models import Filial
 from ...notifications.models import Notification
 
 
@@ -13,8 +14,11 @@ def on_create(sender, instance: Group, created, **kwargs):
             teacher=instance.secondary_teacher,
             group=instance
         )
-        secondary.scheduled_day_type.set(instance.scheduled_day_type.all())
-        secondary.filial.set(instance.teacher.filial.all())
+        if isinstance(instance.teacher.filial, Filial):  # If it's a ForeignKey
+            secondary.filial = instance.teacher.filial
+            secondary.save()
+        elif hasattr(instance.teacher.filial, "all"):  # If it's a ManyToManyField
+            secondary.filial.set(instance.teacher.filial.all())
 
 
         Notification.objects.create(
