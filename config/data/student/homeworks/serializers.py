@@ -27,9 +27,9 @@ class HomeworkSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
-        res["theme"] = ThemeSerializer(instance.theme).data if instance.theme else None
-        res["video"] = FileUploadSerializer(instance.video.all(), many=True).data
-        res["documents"] = FileUploadSerializer(instance.documents.all(), many=True).data
-        res["photo"] = FileUploadSerializer(instance.photo.all(), many=True).data
+        res["theme"] = ThemeSerializer(instance.theme, context=self.context).data if instance.theme else None
+        res["video"] = FileUploadSerializer(instance.video.all(), many=True,context=self.context).data
+        res["documents"] = FileUploadSerializer(instance.documents.all(), many=True,context=self.context).data
+        res["photo"] = FileUploadSerializer(instance.photo.all(), many=True,context=self.context).data
         return res
 
