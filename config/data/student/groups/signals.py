@@ -11,10 +11,10 @@ def on_create(sender, instance: Group, created, **kwargs):
         secondary = SecondaryGroup.objects.create(
             name=f"{instance.name} ning yordamchi guruhi",
             teacher=instance.secondary_teacher,
-            filial=instance.teacher.filial,
             group=instance
         )
         secondary.scheduled_day_type.set(instance.scheduled_day_type.all())
+        secondary.filial.set(instance.teacher.filial.all())
 
 
         Notification.objects.create(
