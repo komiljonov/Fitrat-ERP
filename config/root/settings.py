@@ -11,12 +11,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 from datetime import timedelta
 from pathlib import Path
-from decouple import config
 
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 from data.notifications.send_notifications import initialize_firebase
-
 
 initialize_firebase()
 
@@ -75,6 +74,7 @@ INSTALLED_APPS = [
     'data.student.homeworks',
 
     'data.parents',
+    'data.command',
 
     'data.results',
 
@@ -87,7 +87,7 @@ INSTALLED_APPS = [
     'data.department.filial',
     'data.department.marketing_channel',
 
-    #Installed
+    # Installed
     "corsheaders",
     "drf_yasg",
     "rest_framework",
@@ -96,7 +96,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_celery_beat",
 
-    'data.command',
 ]
 
 MIDDLEWARE = [
@@ -151,7 +150,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'root.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 #
@@ -195,7 +193,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -221,12 +218,10 @@ MEDIA_URL = '/media/'  # Leading slash added
 STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 AUTH_USER_MODEL = 'account.CustomUser'
 
@@ -254,7 +249,6 @@ CORS_ALLOW_METHODS = (
     "PUT",
     "OPTIONS",
 )
-
 
 CORS_ALLOW_HEADERS = (
     "accept",

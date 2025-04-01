@@ -6,9 +6,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
 
 app = Celery("root")
 
-# ✅ Discover tasks from ALL installed Django apps
 app.config_from_object("django.conf:settings", namespace="CELERY")
-app.autodiscover_tasks()  # ✅ This ensures all apps are included
+app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
     'send-daily-messages': {
