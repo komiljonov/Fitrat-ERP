@@ -19,10 +19,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include
+from django.urls import path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -35,7 +36,6 @@ schema_view = get_schema_view(
 )
 
 
-from django.urls import path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -52,9 +52,8 @@ urlpatterns = [
 
     path('groups/', include('data.student.groups.urls')),
     path('add-group/', include('data.student.studentgroup.urls')),
-
-    path('students/',include('data.student.student.urls')),
-    path('lessons/',include('data.student.lesson.urls')),
+    path('students/', include('data.student.student.urls')),
+    path('lessons/', include('data.student.lesson.urls')),
     path('attendances/', include('data.student.attendance.urls')),
     path('subjects/', include('data.student.subject.urls')),
     path('courses/', include('data.student.course.urls')),
@@ -62,13 +61,8 @@ urlpatterns = [
     path('mastering/', include('data.student.mastering.urls')),
     path('homework/', include('data.student.homeworks.urls')),
 
-
     path('results/', include('data.results.urls')),
-
     path('parents/', include('data.parents.urls')),
-
-
-
     path('teacher/', include('data.teachers.teacher.urls')),
 
     path('finance/', include('data.finances.finance.urls')),
@@ -80,27 +74,15 @@ urlpatterns = [
     path('upload/', include('data.upload.urls')),
     path('dashboard/', include('data.dashboard.urls')),
 
-
-
     path("docs<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"),
-    path(
-        "swagger/",
-        schema_view.with_ui("swagger", cache_timeout=0),
-        name="schema-swagger-ui",
-    ),
+    path("swagger/",schema_view.with_ui("swagger", cache_timeout=0),name="schema-swagger-ui",),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
 
-
 urlpatterns += [
     path("api_docs/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path(
-        "api/docs/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
-    ),
+    path("api/docs/",SpectacularSwaggerView.as_view(url_name="schema"),name="swagger-ui",),
 ]
-
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
