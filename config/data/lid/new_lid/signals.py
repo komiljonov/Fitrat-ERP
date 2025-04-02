@@ -91,7 +91,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.photo = instance.photo
                 student.middle_name = instance.middle_name
                 student.date_of_birth = instance.date_of_birth
-                student.password = password_hash
+                student.password = "1234"
                 student.education_lang = instance.education_lang
                 student.student_type = instance.student_type
                 student.edu_class = instance.edu_class
