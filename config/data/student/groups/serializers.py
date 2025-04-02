@@ -7,6 +7,8 @@ from .lesson_date_calculator import calculate_lessons
 from .models import Group, Day, Room, SecondaryGroup
 from .room_filings_calculate import calculate_room_filling_statistics
 from ..attendance.models import Attendance
+from ..course.models import Course
+from ..course.serializers import CourseSerializer
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Theme
 from ...account.models import CustomUser
@@ -25,7 +27,7 @@ class GroupSerializer(serializers.ModelSerializer):
     lessons_count = serializers.SerializerMethodField()
     current_theme = serializers.SerializerMethodField()
     room_number = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all(),allow_null=True)
-
+    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(),allow_null=True)
     subject = serializers.SerializerMethodField()
     level = serializers.SerializerMethodField()
 
@@ -97,6 +99,7 @@ class GroupSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['teacher'] = UserSerializer(instance.teacher).data
         rep["room_number"] = RoomsSerializer(instance.room_number).data
+        rep["course"] = CourseSerializer(instance.course).data
         return rep
 
     def create(self, validated_data):
