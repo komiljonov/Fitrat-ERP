@@ -29,7 +29,7 @@ class Student(BaseModel):
     phone = models.CharField(max_length=100)
     date_of_birth = models.DateField(default=timezone.now())
 
-    password = models.CharField(max_length=100, null=True, blank=True, default=hashlib.sha256("1".encode()).hexdigest())
+    password = models.CharField(max_length=100, null=True, blank=True)
 
     language_choice = (("ENG", "ENG"),
                        ("RU", "RU"),

@@ -61,8 +61,6 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             instance.save()
 
         if instance.is_student and instance.filial :
-            import hashlib
-            password_hash = hashlib.sha256("1".encode()).hexdigest()
 
             student, student_created = Student.objects.get_or_create(
                 phone=instance.phone_number,
@@ -70,7 +68,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                     "first_name": instance.first_name,
                     "last_name": instance.last_name,
                     "photo": instance.photo,
-                    "password": password_hash,
+                    "password": "1234",
                     "middle_name": instance.middle_name,
                     "date_of_birth": instance.date_of_birth,
                     "education_lang": instance.education_lang,
