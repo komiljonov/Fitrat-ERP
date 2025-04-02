@@ -14,6 +14,7 @@ class PhoneAuthBackend(BaseBackend):
         print(f"Attempting authentication for phone: {phone}")
         try:
             user = CustomUser.objects.get(phone=phone)
+
             if user.check_password(password):
                 print("Authentication successful")
                 return user
@@ -33,39 +34,39 @@ class PhoneAuthBackend(BaseBackend):
             return None
 
 
-class StudentAuthBackend(BaseBackend):
-    def authenticate(self, request, phone=None, password=None):
-        ic(password)  # Parolni tekshiramiz
-        print(f"Attempting authentication for phone: {phone}")
-
-        try:
-            student = Student.objects.get(phone=phone)
-            user = getattr(student, 'user', None)
-            if not user:
-                print("Student user mavjud emas!")
-                return None
-
-            if student.is_archived:
-                raise AuthenticationFailed("O'quvchi arxivlanganligi tufayli, tizimga kirolmaydi!")
-
-            ic(user.password)  # User passwordni tekshiramiz
-            ic(password,user.password)
-
-            if check_password(password, user.password):
-                print("Authentication successful")
-                return user
-            else:
-                print("Invalid password")
-                return None
-        except ObjectDoesNotExist:
-            print("User does not exist")
-            return None
-
-    def get_user(self, user_id):
-        try:
-            return Student.objects.get(pk=user_id).user  # Return user, not Student
-        except ObjectDoesNotExist:
-            return None
+# class StudentAuthBackend(BaseBackend):
+#     def authenticate(self, request, phone=None, password=None):
+#         ic(password)  # Parolni tekshiramiz
+#         print(f"Attempting authentication for phone: {phone}")
+#
+#         try:
+#             student = Student.objects.get(phone=phone)
+#             user = getattr(student, 'user', None)
+#             if not user:
+#                 print("Student user mavjud emas!")
+#                 return None
+#
+#             if student.is_archived:
+#                 raise AuthenticationFailed("O'quvchi arxivlanganligi tufayli, tizimga kirolmaydi!")
+#
+#             ic(user.password)  # User passwordni tekshiramiz
+#             ic(password,user.password)
+#
+#             if check_password(password, user.password):
+#                 print("Authentication successful")
+#                 return user
+#             else:
+#                 print("Invalid password")
+#                 return None
+#         except ObjectDoesNotExist:
+#             print("User does not exist")
+#             return None
+#
+#     def get_user(self, user_id):
+#         try:
+#             return Student.objects.get(pk=user_id).user  # Return user, not Student
+#         except ObjectDoesNotExist:
+#             return None
 
 
 

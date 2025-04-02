@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import StudentListView, StudentDetailView, StudentListNoPG, StudentScheduleView, StudentLoginAPIView, \
+from .views import StudentListView, StudentDetailView, StudentListNoPG, StudentScheduleView, \
     ExportLidToExcelAPIView, StudentStatistics, StudentAllStatistics, FistLesson_dataList, FirstLesson_dataListRetrive
 
 urlpatterns = [
@@ -10,7 +10,7 @@ urlpatterns = [
 
     path('schedule/<uuid:pk>/', StudentScheduleView.as_view(), name='student-schedule'),
 
-    path('auth/',StudentLoginAPIView.as_view(), name='student-login'),
+    # path('auth/',StudentLoginAPIView.as_view(), name='student-login'),
 
     path('statistics/', StudentStatistics.as_view(), name='student-statistics'),
 

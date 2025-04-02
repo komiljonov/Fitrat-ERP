@@ -1,3 +1,4 @@
+from icecream import ic
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
@@ -73,7 +74,7 @@ class UserLoginSerializer(serializers.Serializer):
             user = CustomUser.objects.filter(phone=phone).first()
 
             pages = Page.objects.filter(user=user, is_readable=True)
-            if not pages.exists():
+            if not pages.exists() and (user.role not in ["Student", "Parents"]):
                 raise serializers.ValidationError({"permission denied": "Siz uchun ruxsat etilgan saxivalar yo'q !"},
                                                   code='permission_denied')
 
@@ -84,6 +85,7 @@ class UserLoginSerializer(serializers.Serializer):
                 phone=phone,
                 password=password,
             )
+            ic(user)
 
             if not user:
                 raise serializers.ValidationError(
