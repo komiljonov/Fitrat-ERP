@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from rest_framework import serializers
 
 from data.account.models import CustomUser
@@ -301,18 +301,26 @@ class KpiFinanceSerializer(serializers.ModelSerializer):
 
 class VoucherSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    number = serializers.SerializerMethodField()
     class Meta:
         model = Voucher
         fields = [
             "id",
             "creator",
             "amount",
+            "number",
+            "count",
             "is_expired",
             "lid",
             "student",
             "filial",
             "created_at"
         ]
+
+    def get_number(self, obj):
+        return VoucherStudent.objects.filter(voucher=obj).aggregate(
+            total=Count('id'))['total'] or 0
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['creator'] = UserListSerializer(instance.creator).data

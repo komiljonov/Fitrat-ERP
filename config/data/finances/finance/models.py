@@ -168,6 +168,9 @@ class Voucher(BaseModel):
         blank=True,
     )
     amount = models.FloatField(default=0, max_length=100)
+
+    count = models.IntegerField(default=0)
+
     is_expired = models.BooleanField(default=False)
     lid : "Lid" = models.ForeignKey(
         'new_lid.Lid',
