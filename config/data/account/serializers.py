@@ -6,6 +6,7 @@ from .models import CustomUser
 from ..account.permission import PhoneAuthBackend
 from ..department.filial.models import Filial
 from ..finances.compensation.models import Compensation, Bonus, Page
+from ..finances.finance.models import Casher
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
@@ -195,15 +196,18 @@ class UserSerializer(serializers.ModelSerializer):
     bonus = serializers.SerializerMethodField()
     compensation = serializers.SerializerMethodField()
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
-
+    is_linked = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "phone", "role", "pages", "files",
+            "id", "full_name", "first_name", "last_name", "is_linked","phone", "role", "pages", "files",
             "photo", "filial", "balance", "ball", "salary","extra_number","is_call_center",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation",
             "updated_at","is_archived"
         )
+
+    def get_is_linked(self, obj):
+        return [True if Casher.objects.filter(user=obj).exists() else False]
 
     def get_bonus(self, obj):
         bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
