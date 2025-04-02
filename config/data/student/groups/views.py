@@ -87,6 +87,11 @@ class StudentListAPIView(ListAPIView):
         teacher = self.request.query_params.get('teacher', None)
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
+        student = self.request.query_params.get('student', None)
+
+
+        if student:
+            filter["student_groups__student__id"] = student
         if filial:
             filter['filial__id'] = filial
         if course:
