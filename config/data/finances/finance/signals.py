@@ -1,3 +1,6 @@
+from itertools import count
+
+from django.db.models import Count
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from icecream import ic
@@ -38,6 +41,12 @@ def on_create(sender, instance: Finance, created, **kwargs):
 @receiver(post_save, sender=VoucherStudent)
 def on_create(sender, instance: VoucherStudent, created, **kwargs):
     if created:
+
+        if instance.voucher:
+            if Count(instance.voucher) >= instance.voucher.count:
+                instance.voucher.is_expired = True
+                instance.voucher.save()
+
         casher = Casher.objects.filter(filial__in=instance.creator.filial.all(),
                                        role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first()
         if instance.lid:
