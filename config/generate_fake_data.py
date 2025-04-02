@@ -48,6 +48,7 @@ def generate_fake_data():
       "control",
       "monitoring_page",
       "settings",
+      "results"
     ]
     for i in pages:
         Page.objects.create(
@@ -79,14 +80,14 @@ def generate_fake_data():
         )
 
     marketing_channels = {
-        "Tanishlar orqali": "#FF5733",  # Bright Red-Orange
-        "Instagram": "#33FF57",  # Vibrant Green
-        "Telegram": "#3357FF",  # Deep Blue
-        "Facebook reklamasi": "#F4A261",  # Warm Sand
-        "Flayer": "#9B5DE5",  # Purple Glow
-        "Olimpiadalar": "#00C9A7",  # Teal Mint
-        "Reklama bannerlar va doskalari": "#E63946",  # Coral Red
-        "Loyihalardan": "#FDCB58",  # Golden Yellow
+        "Tanishlar orqali": "#FF5733",
+        "Instagram": "#33FF57",
+        "Telegram": "#3357FF",
+        "Facebook reklamasi": "#F4A261",
+        "Flayer": "#9B5DE5",
+        "Olimpiadalar": "#00C9A7",
+        "Reklama bannerlar va doskalari": "#E63946",
+        "Loyihalardan": "#FDCB58",
     }
 
     for name, color in marketing_channels.items():
