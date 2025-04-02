@@ -43,10 +43,12 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
     if created:
 
         if instance.voucher:
-            if Count(instance.voucher) >= instance.voucher.count:
+            # Count the number of VoucherStudent objects for the given voucher
+            voucher_student_count = VoucherStudent.objects.filter(voucher=instance.voucher).count()
+
+            if voucher_student_count >= instance.voucher.count:
                 instance.voucher.is_expired = True
                 instance.voucher.save()
-
         casher = Casher.objects.filter(filial__in=instance.creator.filial.all(),
                                        role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first()
         if instance.lid:
