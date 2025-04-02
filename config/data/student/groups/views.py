@@ -82,6 +82,7 @@ class StudentListAPIView(ListAPIView):
     def get_queryset(self):
         filter = {}
         queryset = Group.objects.all()
+        status = self.request.query_params.get('status', None)
         filial = self.request.query_params.get('filial', None)
         course = self.request.query_params.get('course', None)
         teacher = self.request.query_params.get('teacher', None)
@@ -89,7 +90,8 @@ class StudentListAPIView(ListAPIView):
         end_date = self.request.query_params.get('end_date', None)
         student = self.request.query_params.get('student', None)
 
-
+        if status:
+            filter['status'] = status
         if student:
             filter["student_groups__student__id"] = student
         if filial:

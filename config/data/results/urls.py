@@ -1,7 +1,7 @@
 from .views import *
 from django.urls import path, include
 
-urlpatterns = [\
+urlpatterns = [
 
     path('university/',UniversityResultsViewSet.as_view()),
     path('university/<uuid:pk>/',UniversityResultsRetrieveAPIView.as_view()),
