@@ -13,6 +13,8 @@ class Points(BaseModel):
 
     student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="points_of_student")
 
+    comment = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.student.phone}  -- {self.point} point"
 
@@ -21,6 +23,8 @@ class Coins(BaseModel):
     coin = models.IntegerField(default=0)
     student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="coins_of_student")
     is_exchanged = models.BooleanField(default=False)
+
+    comment = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.student.phone}  -- {self.coin} coin"
@@ -40,3 +44,4 @@ class Shop(BaseModel):
 
     def __str__(self):
         return f"{self.student.phone}  -- {self.product}"
+
