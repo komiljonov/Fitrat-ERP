@@ -238,7 +238,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://fitrat-erp.vercel.app",
     "https://api.fitrat.sector-soft.ru",
     "https://ilm.fitrat.sector-soft.ru",
-    "https://fitrat-erp.vercel.app",
     "https://api.ilm.fitrat.sector-soft.ru"
 ]
 
@@ -263,6 +262,6 @@ CORS_ALLOW_HEADERS = (
 
 CORS_ALLOW_CREDENTIALS = True
 
-CELERY_BROKER_URL = 'redis://redis:6379/0'  # If you're using Redis
+CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
