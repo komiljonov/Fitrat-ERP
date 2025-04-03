@@ -60,7 +60,8 @@ urlpatterns = [
     path('quizzes/', include('data.student.quiz.urls')),
     path('mastering/', include('data.student.mastering.urls')),
     path('homework/', include('data.student.homeworks.urls')),
-    path('store/', include('data.student.appsettings.urls')),
+    path('appsettings/', include('data.student.appsettings.urls')),
+    path('shop/', include('data.student.shop.urls')),
 
     path('results/', include('data.results.urls')),
     path('parents/', include('data.parents.urls')),
