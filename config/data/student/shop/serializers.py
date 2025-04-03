@@ -16,6 +16,7 @@ class PointsSerializer(serializers.ModelSerializer):
             "id",
             "student",
             "point",
+            "comment",
             "from_test",
             "from_homework",
             "is_exchanged",
@@ -38,6 +39,7 @@ class CoinsSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "student",
+            "comment",
             "is_exchanged",
             "created_at",
         ]
