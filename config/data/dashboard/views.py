@@ -1,9 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from io import BytesIO
 
 import openpyxl
-import pandas as pd
 from django.db.models import Case, When
 from django.db.models import Count
 from django.db.models import Sum, F, DecimalField, Value
@@ -14,9 +12,7 @@ from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
-
 from rest_framework import status
-from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -27,7 +23,7 @@ from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group, Day
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
-from ..finances.compensation.models import Compensation, Bonus, Monitoring, Asos, Comments, StudentCatchingMonitoring, \
+from ..finances.compensation.models import Monitoring, Asos, Comments, StudentCatchingMonitoring, \
     Monitoring5, StudentCountMonitoring
 from ..lid.new_lid.serializers import LidSerializer
 from ..results.models import Results
