@@ -1,5 +1,5 @@
 """
-URL configuration for khalifa project.
+URL configuration for Fitrat project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
@@ -38,6 +38,7 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
+
     path("admin/", admin.site.urls),
     path("auth/", include("data.account.urls")),
 
