@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from io import BytesIO
 
+import openpyxl
 import pandas as pd
 from django.db.models import Case, When
 from django.db.models import Count
@@ -12,6 +13,8 @@ from django.utils.dateparse import parse_date
 from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
+from openpyxl.utils import get_column_letter
+
 from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -24,6 +27,8 @@ from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group, Day
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
+from ..finances.compensation.models import Compensation, Bonus, Monitoring, Asos, Comments, StudentCatchingMonitoring, \
+    Monitoring5, StudentCountMonitoring
 from ..lid.new_lid.serializers import LidSerializer
 from ..results.models import Results
 from ..student.attendance.models import Attendance
@@ -696,154 +701,91 @@ class MonitoringView(APIView):
         return Response(teacher_data)
 
 
-class MonitoringExcelDownloadView(APIView):
-    def get(self, request):
-        # Create a workbook and get the active worksheet
-        wb = Workbook()
+class GenerateExcelView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        # Initialize workbook and worksheet
+        wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "ALL_ASOS"
+        ws.title = "Monitoring Data"
 
-        # Set column widths
-        ws.column_dimensions['A'].width = 25
-        for col in ['B', 'D', 'F', 'H', 'J', 'L', 'N', 'P', 'R', 'T', 'V', 'X', 'Z', 'AB', 'AD', 'AF', 'AH']:
-            ws.column_dimensions[col].width = 5
-        for col in ['C', 'E', 'G', 'I', 'K', 'M', 'O', 'Q', 'S', 'U', 'W', 'Y', 'AA', 'AC', 'AE', 'AG']:
-            ws.column_dimensions[col].width = 10
-
-        # Add data to the worksheet
-        data = [
-            ["ASOSLAR", "", "1", "", "2", "", "3", "4", "5", "6", "", "7", "", "", "", "", "8", "", "", "", "", "", "9",
-             "", "", "", "", "", "10", "11", "12", "13", "14", "JAMI"],
-            ["", "", "OYLIK HISOBDA", "", "", "", "KIRILGAN DARS", "OYLIK HISOBDA", "OYLIK HISOBDA", "OYLIK HISOBDA",
-             "", "OYLIK HISOBDA", "", "", "", "", "TESTGA JALB QILINISHI BO`YICHA H.BALL", "", "", "", "", "",
-             "O`RTACHA O`ZLASHTIRISH FOIZI BO`YICHA H.BALL", "", "", "", "", "",
-             "TABELLARNI TO`LIQ YURUTISHI BO`YICHA H.BALL", "EDU TIZIM BILAN ISHLASHI BO`YICHA H. BALL",
-             "Jadval asosida markaz tadbirlarida faol qatnashish, haftalik va oylik (unit va mock) testlar, olimpiadalarda, Yakshanbalik tadbirlarda qatnashgani  uchun\n15 ball",
-             "Jadvaldan tashqari tadbirlar, musobaqalar, bellashuvlar, eventlar tashkil etgani uchun\n15 ball",
-             "O'quvchilar yoki ota-onalardan tushgan asosli shikoyatlar har biri -10 ball", ""],
-            ["", "", "ISHGA O`Z VAQTIDA KELIB KETISH BO`YICHA HISOBLANGAN BALL", "",
-             "DARS O`TISH DAVOMATI\nBO`YICHA HISOBLANGAN BALL", "", "DARS ICHI", "DARS TASHQARISI",
-             "O`QUVCHI SONI BO`YICHA H. BALL", "OLIB QOLISH \nBO`YICHA H.BALL", "", "TEST JO`NATISH", "", "", "", "",
-             "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-            ["", "",
-             "Ishga har kuni vaqtidan 15 daqiqa oldin kelishi\n\n-Har bir kechikishi  \n-Atpechatka bosmaslik\n-10 ball",
-             "", "Dars qoldirmasligi\nto`liq o`tilishi \n\nHar bir qoldirilgan dars \n- 15 ball", "", "DARS\n\n1-ILOVA",
-             "DARS\n\n2-ILOVA",
-             "30+ =  +2  ball\n50+ =  +4  ball\n70+ =  +6  ball\n80+ =  +8  ball\n90+ = +10 ball\n100+ = +15 ball",
-             "80%+ = +5 ball\n100%+ = +10 ball\n\n\n 50% =   -5 ball\n40%  = -10 ball", "",
-             "CHORSHANBA KUNIGACHA \nTEST BO`LIMIGA JO`NATISH", "", "", "", "",
-             "30% =-15 ball  \n 30%+=-10 ball\n50%+= 0 ball", "", "", "",
-             "70%+ = 5 ball\n80%+ = 10 ball\n90%+ = 15 ball", "", "30% = -20 ball\n30%+ = -10 ball\n50%+ =  0 ball", "",
-             "", "", "INGLIZ TILI", "70%+ =  5 ball\n80%+ = 10 ball\n90%+ = 20 ball",
-             "Haftalik test\nOylik test\nUnit test\nLevel test\nMOCK exam \n\nnatijalari to`liq yozilganligi",
-             "EDU tizim bilan yaxshi ishlashi\nBuyurmani vaqtida qubul qilishi\nDavomat va yo`qlamani muntazam vaqtida qilishi",
-             "", "", "", ""],
-            ["USTOZ", "", "TO`LIQ=", "BALL = +15", "TO`LIQ=", "BALL = +15", "BALL \n= +40", "BALL \n= +1000",
-             "BALL \n= +15", "BALL \n= +10", "", "OKTABR\nYAKSHANBA", "", "", "", "BALL \n= +20", "OKTABR\nYAKSHANBA",
-             "", "", "", "BALL = +15", "", "SENTABR\nYAKSHANBA", "", "", "", "", "BALL = +20", "", "", "", "", "", ""],
-            ["", "", "NECHTA", "BALL = -10", "NECHTA", "BALL = -15", "", "", "", "", "", "6", "13", "20", "27",
-             "BALL \n= -5", "6", "13", "20", "27", "", "", "6", "13", "20", "27", "M", "", "BALL = +10", "BALL = +10",
-             "BALL = +15", "BALL = +15", "BALL \n= -10", ""],
-            ["MAX BALL", "", "0", "15", "0", "15", "40", "", "15", "", "10", "20", "20", "20", "20", "=(O7+N7+M7+L7)/4",
-             "15", "15", "15", "15", "=(T7+S7+R7+Q7)/4", "", "20", "20", "20", "20", "", "=(Z7+Y7+X7+W7)/4", "10", "10",
-             "15", "15", "0", "=AG7+AF7+AE7+AD7+AC7+AB7+U7+P7+K7+I7+H7+G7+F7+D7"],
-            ["1", "DONIYOROV SARVAR USTOZ", "0", "15", "0", "15", "38", "20", "15", "0.8", "5", "", "", "", "", "", "",
-             "", "", "", "", "", "", "", "", "", "0.65", "=(Z8+Y8+X8)/3", "10", "10", "10", "30", "0",
-             "=AG8+AF8+AE8+AD8+AC8+AB8+V8+P8+K8+I8+H8+G8+F8+D8"],
-            ["2", "DJUMAYEVA NORGUL USTOZ", "0", "15", "0", "15", "37", "", "", "0.8", "5", "", "", "", "", "20", "",
-             "0", "10", "0", "", "=(T9+S9+R9)/3", "", "10", "10", "10", "", "=(Z9+Y9+X9)/3", "10", "10", "10", "15",
-             "0", "=AG9+AF9+AE9+AD9+AC9+AB9+V9+P9+K9+I9+H9+G9+F9+D9"],
-            ["3", "JABBOROV SOHIBJON USTOZ", "0", "15", "0", "15", "38", "", "4", "0.8", "5", "", "", "", "", "20", "",
-             "10", "0", "0", "", "=(T10+S10+R10)/3", "", "0", "0", "0", "", "=(Z10+Y10+X10)/3", "10", "10", "10", "15",
-             "0", "=AG10+AF10+AE10+AD10+AC10+AB10+V10+P10+K10+I10+H10+G10+F10+D10"],
-            ["4", "ASHUROV NODIRBEK USTOZ", "0", "15", "0", "15", "38", "40", "2", "0.8", "5", "", "", "", "", "", "",
-             "", "", "", "", "=(T11+S11+R11)/3", "", "", "", "", "0.62", "=(Z11+Y11+X11)/3", "10", "10", "10", "", "0",
-             "=AG11+AF11+AE11+AD11+AC11+AB11+V11+P11+K11+I11+H11+G11+F11+D11"],
-            ["5", "SHODIJONOV DONIYOR USTOZ", "0", "15", "0", "15", "38", "10", "4", "0.8", "5", "", "", "", "", "20",
-             "", "0", "15", "0", "", "=(T12+S12+R12)/3", "", "", "5", "", "", "=(Z12+Y12+X12)/3", "10", "10", "10", "",
-             "0", "=AG12+AF12+AE12+AD12+AC12+AB12+V12+P12+K12+I12+H12+G12+F12+D12"],
-            ["6", "USMONXO'JAEVA SHOHIDA USTOZ", "0", "15", "0", "15", "38", "", "4", "0.8", "5", "", "", "", "", "20",
-             "", "5", "5", "5", "", "=(T13+S13+R13)/3", "", "5", "5", "10", "", "=(Z13+Y13+X13)/3", "10", "10", "10",
-             "", "0", "=AG13+AF13+AE13+AD13+AC13+AB13+V13+P13+K13+I13+H13+G13+F13+D13"],
-            ["7", "CHORIEV EGAMBERDI USTOZ", "0", "15", "0", "15", "37", "", "2", "0.8", "5", "", "", "", "", "20", "",
-             "15", "10", "15", "", "=(T14+S14+R14)/3", "", "-10", "0", "0", "", "=(Z14+Y14+X14)/3", "10", "10", "10",
-             "", "0", "=AG14+AF14+AE14+AD14+AC14+AB14+V14+P14+K14+I14+H14+G14+F14+D14"],
-            ["8", "AMETOVA ZEBO USTOZ", "0", "15", "0", "15", "37", "", "", "0.8", "5", "", "", "", "", "20", "", "0",
-             "15", "10", "", "=(T15+S15+R15)/3", "", "0", "0", "0", "", "=(Z15+Y15+X15)/3", "10", "10", "10", "", "0",
-             "=AG15+AF15+AE15+AD15+AC15+AB15+V15+P15+K15+I15+H15+G15+F15+D15"],
-            ["9", "SUNNATOV SARDOR USTOZ", "0", "15", "0", "15", "37", "", "", "0.8", "5", "", "", "", "", "20", "",
-             "10", "10", "0", "", "=(T16+S16+R16)/3", "", "0", "5", "0", "", "=(Z16+Y16+X16)/3", "10", "10", "10", "",
-             "0", "=AG16+AF16+AE16+AD16+AC16+AB16+V16+P16+K16+I16+H16+G16+F16+D16"],
-            ["10", "YO`LDOSHBOEVA RUHSHONA USTOZ", "0", "15", "0", "15", "37", "", "", "0.8", "5", "", "", "", "", "20",
-             "", "0", "5", "5", "", "=(T17+S17+R17)/3", "", "5", "5", "0", "", "=(Z17+Y17+X17)/3", "10", "10", "10", "",
-             "0", "=AG17+AF17+AE17+AD17+AC17+AB17+V17+P17+K17+I17+H17+G17+F17+D17"],
-            ["11", "BARATOV AKBAR USTOZ", "0", "15", "0", "15", "35", "", "", "0.8", "5", "", "", "", "", "20", "", "0",
-             "15", "15", "", "=(T18+S18+R18)/3", "", "0", "-10", "5", "", "=(Z18+Y18+X18)/3", "10", "10", "10", "", "0",
-             "=AG18+AF18+AE18+AD18+AC18+AB18+V18+P18+K18+I18+H18+G18+F18+D18"],
-            ["12", "HAMDAMOV HAMROBEK USTOZ", "0", "15", "0", "15", "36", "", "10", "0.8", "5", "", "", "", "", "20",
-             "", "0", "0", "0", "", "=(T19+S19+R19)/3", "", "0", "0", "-10", "", "=(Z19+Y19+X19)/3", "10", "10", "10",
-             "", "0", "=AG19+AF19+AE19+AD19+AC19+AB19+V19+P19+K19+I19+H19+G19+F19+D19"],
-            ["13", "ABDULLAEV BOBURBEK USTOZ", "0", "15", "0", "15", "37", "", "", "0.8", "5", "", "", "", "", "20", "",
-             "5", "0", "0", "", "=(T20+S20+R20)/3", "", "10", "0", "0", "", "=(Z20+Y20+X20)/3", "10", "10", "10", "",
-             "0", "=AG20+AF20+AE20+AD20+AC20+AB20+V20+P20+K20+I20+H20+G20+F20+D20"],
-            ["14", "ISROILOVA DURDONA USTOZ", "0", "15", "0", "15", "37", "", "2", "0.8", "5", "", "", "", "", "20", "",
-             "0", "0", "0", "", "=(T21+S21+R21)/3", "", "0", "0", "5", "", "=(Z21+Y21+X21)/3", "10", "10", "10", "",
-             "0", "=AG21+AF21+AE21+AD21+AC21+AB21+V21+P21+K21+I21+H21+G21+F21+D21"],
-            ["15", "ASRORBEK USTOZ", "0", "15", "0", "15", "34", "", "", "0.8", "5", "", "", "", "", "20", "", "0", "0",
-             "5", "", "=(T22+S22+R22)/3", "", "0", "0", "0", "", "=(Z22+Y22+X22)/3", "10", "10", "10", "", "0",
-             "=AG22+AF22+AE22+AD22+AC22+AB22+V22+P22+K22+I22+H22+G22+F22+D22"],
-            ["16", "TOSHPO'LATOV FIRDAVS  USTOZ", "0", "15", "0", "15", "36", "", "", "0.8", "5", "", "", "", "", "",
-             "", "", "", "", "", "=(T23+S23+R23)/3", "", "", "", "", "0.73", "5", "10", "10", "10", "", "0",
-             "=AG23+AF23+AE23+AD23+AC23+AB23+V23+P23+K23+I23+H23+G23+F23+D23"],
-            ["17", "MURODOVA RUXSORA", "0", "15", "0", "15", "38", "", "2", "0.8", "5", "", "", "", "", "", "", "", "",
-             "", "", "=(T24+S24+R24)/3", "", "", "", "", "", "", "10", "10", "10", "", "0",
-             "=AG24+AF24+AE24+AD24+AC24+AB24+V24+P24+K24+I24+H24+G24+F24+D24"],
-            ["18", "QO'ZIBOYEVA DILNOZA USTOZ", "0", "15", "0", "15", "36", "", "", "0.8", "5", "", "", "", "", "", "",
-             "", "", "", "", "=(T25+S25+R25)/3", "", "", "", "", "0.51", "=(Z25+Y25+X25)/3", "10", "10", "10", "", "0",
-             "=AG25+AF25+AE25+AD25+AC25+AB25+V25+P25+K25+I25+H25+G25+F25+D25"],
-            ["19", "SHOHIDA USTOZ TURK TILI", "0", "15", "0", "15", "36", "", "", "0.8", "5", "", "", "", "", "", "",
-             "", "", "", "", "=(T26+S26+R26)/3", "", "", "", "", "", "=(Z26+Y26+X26)/3", "10", "10", "10", "", "0",
-             "=AG26+AF26+AE26+AD26+AC26+AB26+V26+P26+K26+I26+H26+G26+F26+D26"],
-            ["20", "ASXADULINA YAZILIYA USTOZ", "0", "15", "0", "15", "35", "", "", "0.8", "5", "", "", "", "", "", "",
-             "", "", "", "", "=(T27+S27+R27)/3", "", "", "", "", "0.59", "=(Z27+Y27+X27)/3", "10", "10", "10", "", "0",
-             "=AG27+AF27+AE27+AD27+AC27+AB27+V27+P27+K27+I27+H27+G27+F27+D27"],
-            ["21", "SHUKUROV ABDURAHIM USTOZ", "1", "-15", "0", "15", "38", "", "2", "0.8", "5", "", "", "", "", "20",
-             "", "5", "5", "0", "", "=(T28+S28+R28)/3", "", "0", "0", "-10", "", "=(Z28+Y28+X28)/3", "10", "10", "10",
-             "", "0", "=AG28+AF28+AE28+AD28+AC28+AB28+V28+P28+K28+I28+H28+G28+F28+D28"],
-            ["22", "BEKMURODOVA GO'ZAL USTOZ", "2", "-30", "0", "15", "37", "", "", "0.8", "5", "", "", "", "", "20",
-             "", "15", "15", "15", "", "=(T29+S29+R29)/3", "", "0", "0", "0", "", "=(Z29+Y29+X29)/3", "10", "10", "10",
-             "", "0", "=AG29+AF29+AE29+AD29+AC29+AB29+V29+P29+K29+I29+H29+G29+F29+D29"],
-            ["23", "XUSHMURODOV BEHRUZBEK USTOZ", "1", "-15", "0", "15", "38", "", "", "0.8", "5", "", "", "", "", "",
-             "", "", "", "", "", "=(T30+S30+R30)/3", "", "", "", "", "0.64", "=(Z30+Y30+X30)/3", "10", "10", "10", "15",
-             "0", "=AG30+AF30+AE30+AD30+AC30+AB30+V30+P30+K30+I30+H30+G30+F30+D30"],
-            [
-                "MANITORING VA TEST BO`LIMI 2024-YIL OKTABR OYI UCHUN TO`LIQ MANITORING NATIJALARI HISOBOTI BO`LIB, \nHAR BIR QO`YILGAN BALL ASOSLI VA HOLATGA QARAB BERILGAN.",
-                "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-                "", "", "", "", "", ""],
-            ["REGISTAN LC SERGELI FILIALI \nMONITORING VA TEST BO`LIMI", "", "", "", "", "", "",
-             "MONITORING ISHI HISOBOTI", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-             "", "", "", "", ""]
+        # Header row with relevant field names
+        headers = [
+            "Ustoz", "Asos nomi", "Monitoring Ball", "Monitoring Counter",
+            "Monitoring  ", "Result Name", "Result Subject", "Student Catching Name",
+            "Student Catching From", "Student Catching To", "Monitoring 5 Ball",
+            "Monitoring 5 Student Count", "Student Count Monitoring Amount"
         ]
+        ws.append(headers)  # Add headers to the first row
 
-        for row in data:
+        # Query the models to get data
+        users = set(Monitoring.objects.values_list('user', flat=True))
+        asos_data = Asos.objects.all()
+        student_catching_monitoring = StudentCatchingMonitoring.objects.all()
+        monitoring_5 = Monitoring5.objects.all()
+        student_count_monitoring = StudentCountMonitoring.objects.all()
+
+        # Iterate through each user and fetch their related data
+        for user_id in users:
+            user = CustomUser.objects.get(id=user_id)  # Get the full user object
+
+            # Get the monitorings for the current user
+            user_monitorings = Monitoring.objects.filter(user=user)
+
+            # Prepare the row for this user
+            row = [user.full_name]  # User full name in the first column
+
+            # For each Asos related to the user's monitoring, add the corresponding data
+            for asos in asos_data:
+                monitoring_for_asos = user_monitorings.filter(point__asos=asos)
+                for monitoring in monitoring_for_asos:
+                    comments = Comments.objects.filter(monitoring=monitoring)
+                    comment_text = "\n".join([comment.comment for comment in comments])
+
+                    # Add data for each Asos and its related monitoring entry
+                    row.extend([
+                        asos.name, monitoring.ball, monitoring.counter, comment_text,
+                        "", "", "", "", "", "", ""
+                    ])
+
+            # Add student catching data for the current user
+            student_catching = student_catching_monitoring.filter(teacher=user)
+            for catching in student_catching:
+                row.extend([
+                    catching.name, catching.from_student, catching.to_student,
+                    "", "", ""
+                ])
+
+            # Add Monitoring 5 data for the current user
+            monitoring5_data = monitoring_5.filter(teacher=user)
+            for monitoring5 in monitoring5_data:
+                row.extend([
+                    monitoring5.ball, monitoring5.student_count, ""
+                ])
+
+            # Add Student Count Monitoring data for the current user
+            student_monitoring_data = student_count_monitoring.filter(teacher=user)
+            for student_monitoring in student_monitoring_data:
+                row.extend([
+                    "", "", student_monitoring.amount
+                ])
+
+            # Append the row to the Excel sheet
             ws.append(row)
 
-        # Apply text wrapping and alignment for multi-line cells
-        for row in ws.iter_rows():
-            for cell in row:
-                cell.alignment = Alignment(wrap_text=True, vertical='top')
+        # Set column width for better readability
+        for col in range(1, len(headers) + 1):
+            column = get_column_letter(col)
+            ws.column_dimensions[column].width = 20
 
-        # Save workbook to a bytes buffer
-        buffer = BytesIO()
-        wb.save(buffer)
-        buffer.seek(0)
+        # Prepare the HTTP response to send the file
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="monitoring_data.xlsx"'
 
-        # Create response with Excel file
-        response = Response(buffer.getvalue())
-        response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        response['Content-Disposition'] = f'attachment; filename=monitoring_report.xlsx'
-
+        # Save the workbook to the response
+        wb.save(response)
         return response
+
 
 
 class DashboardWeeklyFinanceAPIView(APIView):
