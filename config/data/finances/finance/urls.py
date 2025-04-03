@@ -3,8 +3,8 @@ from django.urls import path
 from .views import FinanceListAPIView, FinanceDetailAPIView, FinanceNoPGList, StudentFinanceListAPIView, \
     StuffFinanceListAPIView, CasherListCreateAPIView, CasherRetrieveUpdateDestroyAPIView, CasherHandoverAPIView, \
     FinanceStatisticsAPIView, CasherNoPg, CasherHandoverHistory, CasherStatisticsAPIView, \
-    TeacherGroupFinanceAPIView, FinanceTeacher, FinanceExcel, KindRetrive, KindList, PaymentMethodsRetrive, \
-    PaymentMethodsList, PaymentStatistics, PaymentCasherStatistics, SalesList, SalesStudentList, SalesStudentsRetrive, \
+    TeacherGroupFinanceAPIView, FinanceTeacher, FinanceExcel, KindRetrieve, KindList, PaymentMethodsRetrieve, \
+    PaymentMethodsList, PaymentStatistics, PaymentCasherStatistics, SalesList, SalesStudentList, SalesStudentsRetrieve, \
     PaymentStatisticsByKind, SalesStudentNoPG, GeneratePaymentExcelAPIView, SaleStudentRetrieve, VoucherList, \
     VoucherRetrieve, VoucherNoPG, VoucherStudentRetrieve, VoucherStudentList
 
@@ -31,10 +31,10 @@ urlpatterns = [
     path('excel/', FinanceExcel.as_view(), name='finance_excel'),
 
     path('kind/', KindList.as_view(), name='finance_kind'),
-    path('kind/<uuid:pk>/', KindRetrive.as_view(), name='finance_kind'),
+    path('kind/<uuid:pk>/', KindRetrieve.as_view(), name='finance_kind'),
 
     path('method/', PaymentMethodsList.as_view(), name='payment_method'),
-    path('method/<uuid:pk>/', PaymentMethodsRetrive.as_view(), name='payment_method'),
+    path('method/<uuid:pk>/', PaymentMethodsRetrieve.as_view(), name='payment_method'),
     path('payment_statistics/', PaymentStatistics.as_view(), name='payment_method'),
 
     path('payment_casher/<uuid:pk>', PaymentCasherStatistics.as_view(), name='payment_casher'),
@@ -44,7 +44,7 @@ urlpatterns = [
     path('sale-student/', SalesStudentList.as_view(), name='sale_student'),
     path("sale-student/<uuid:pk>/", SaleStudentRetrieve.as_view(), name="sale_student"),
     path("sale/no-pg/", SalesStudentNoPG.as_view(), name="sale_student"),
-    path("sale/student/<uuid:pk>/", SalesStudentsRetrive.as_view(), name="sale_student"),
+    path("sale/student/<uuid:pk>/", SalesStudentsRetrieve.as_view(), name="sale_student"),
 
     path("payment-reason/", PaymentStatisticsByKind.as_view(), name="payment_kind"),
 

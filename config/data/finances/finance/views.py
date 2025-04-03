@@ -525,7 +525,7 @@ class KindList(ListCreateAPIView):
         return Response(data)
 
 
-class KindRetrive(RetrieveUpdateDestroyAPIView):
+class KindRetrieve(RetrieveUpdateDestroyAPIView):
     serializer_class = KindSerializer
     permission_classes = [IsAuthenticated]
     queryset = Kind.objects.all()
@@ -537,7 +537,7 @@ class PaymentMethodsList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class PaymentMethodsRetrive(RetrieveUpdateDestroyAPIView):
+class PaymentMethodsRetrieve(RetrieveUpdateDestroyAPIView):
     serializer_class = PaymentMethodSerializer
     permission_classes = [IsAuthenticated]
     queryset = PaymentMethod.objects.all()
@@ -695,7 +695,7 @@ class SaleStudentRetrieve(ListAPIView):
         return Response(data)
 
 
-class SalesStudentsRetrive(RetrieveUpdateDestroyAPIView):
+class SalesStudentsRetrieve(RetrieveUpdateDestroyAPIView):
     serializer_class = SaleStudentSerializer
     queryset = SaleStudent.objects.all()
     permission_classes = [IsAuthenticated]
