@@ -1,0 +1,113 @@
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticated
+
+from .models import Coins, Points , Products,Shop
+from .serializers import CoinsSerializer, PointsSerializer, ProductsSerializer, ShopSerializer
+
+
+class CoinsList(ListCreateAPIView):
+    queryset = Coins.objects.all()
+    serializer_class = CoinsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Coins.objects.all()
+        student = self.request.query_params.get('student')
+        is_exchanged = self.request.query_params.get('is_exchanged')
+
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        if start_date and end_date:
+            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+        if start_date:
+            queryset = queryset.filter(created_at__gte=start_date)
+        if student:
+            queryset = queryset.filter(student__id=student)
+        if is_exchanged:
+            queryset = queryset.filter(is_exchanged=is_exchanged.capitalize())
+        return queryset
+
+
+class CoinsDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Coins.objects.all()
+    serializer_class = CoinsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class PointsList(ListCreateAPIView):
+    queryset = Points.objects.all()
+    serializer_class = PointsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Points.objects.all()
+        student = self.request.query_params.get('student')
+        is_exchanged = self.request.query_params.get('is_exchanged')
+        from_test = self.request.query_params.get('from_test')
+        from_homework = self.request.query_params.get('from_homework')
+
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        if start_date and end_date:
+            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+        if start_date:
+            queryset = queryset.filter(created_at__gte=start_date)
+
+        if student:
+            queryset = queryset.filter(student__id=student)
+        if is_exchanged:
+            queryset = queryset.filter(is_exchanged=is_exchanged.capitalize())
+        if from_test:
+            queryset = queryset.filter(from_test__id=from_test)
+        if from_homework:
+            queryset = queryset.filter(from_homework__id=from_homework)
+
+        return queryset
+
+
+class PointsDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Points.objects.all()
+    serializer_class = PointsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class ProductsList(ListCreateAPIView):
+    queryset = Products.objects.all()
+    serializer_class = ProductsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class ProductsDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Products.objects.all()
+    serializer_class = ProductsSerializer
+    permission_classes = [IsAuthenticated]
+
+class ShopList(ListCreateAPIView):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        queryset = Shop.objects.all()
+        student = self.request.query_params.get('student')
+
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        if start_date and end_date:
+            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+
+        if start_date:
+            queryset = queryset.filter(created_at__gte=start_date)
+
+        if student:
+            queryset = queryset.filter(student__id=student)
+
+        return queryset
+
+class ShopDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+    permission_classes = [IsAuthenticated]
+
