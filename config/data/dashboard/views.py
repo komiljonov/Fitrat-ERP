@@ -738,7 +738,6 @@ class GenerateExcelView(APIView):
                     comments = Comments.objects.filter(monitoring=monitoring)
                     comment_text = "\n".join([comment.comment for comment in comments])
 
-                    # Add data for each Asos and its related monitoring entry
                     row.extend([
                         asos.name, monitoring.ball, monitoring.counter, comment_text,
                         "", "", "", "", "", "", ""
@@ -781,7 +780,6 @@ class GenerateExcelView(APIView):
         # Save the workbook to the response
         wb.save(response)
         return response
-
 
 
 class DashboardWeeklyFinanceAPIView(APIView):
