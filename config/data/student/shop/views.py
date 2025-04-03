@@ -84,6 +84,7 @@ class ProductsDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = ProductsSerializer
     permission_classes = [IsAuthenticated]
 
+
 class ShopList(ListCreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
@@ -105,6 +106,7 @@ class ShopList(ListCreateAPIView):
             queryset = queryset.filter(student__id=student)
 
         return queryset
+
 
 class ShopDetail(RetrieveUpdateDestroyAPIView):
     queryset = Shop.objects.all()
