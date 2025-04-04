@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from icecream import ic
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
@@ -195,16 +196,27 @@ class UserSerializer(serializers.ModelSerializer):
     pages = serializers.SerializerMethodField()
     bonus = serializers.SerializerMethodField()
     compensation = serializers.SerializerMethodField()
+    penalty = serializers.SerializerMethodField()
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
     is_linked = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "is_linked","phone", "role", "pages", "files",
+            "id", "full_name", "first_name", "last_name", "is_linked","phone", "role", "penalty" ,"pages", "files",
             "photo", "filial", "balance", "ball", "salary","extra_number","is_call_center",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation",
             "updated_at","is_archived"
         )
+
+    def get_penalty(self, obj):
+        # Use .aggregate() to get the sum of the 'amount' field
+        compensation = Compensation.objects.filter(user=obj).aggregate(total_penalty=Sum('amount'))
+
+        # Extract the sum value
+        total_penalty = compensation.get('total_penalty', 0)  # Defaults to 0 if there's no match
+
+        return total_penalty
 
     def get_is_linked(self, obj):
         return [True if Casher.objects.filter(user=obj).exists() else False]
