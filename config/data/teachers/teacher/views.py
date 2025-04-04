@@ -102,7 +102,7 @@ class Teacher_StudentsView(ListAPIView):
 
     def get_queryset(self):
 
-        students = self.request.query_params.get("student_stage_type", None)
+        students = self.request.query_params.get("status", None)
 
 
         group = StudentGroup.objects.filter(group__teacher=self.request.user)
