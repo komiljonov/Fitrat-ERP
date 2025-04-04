@@ -71,5 +71,8 @@ class Theme(BaseModel):
         'upload.File',  blank=True, related_name='theme_photos'
     )
 
+
+    class Meta:
+        ordering = ('created_at',)
     def __str__(self):
         return f"{self.subject} - {self.title}"
