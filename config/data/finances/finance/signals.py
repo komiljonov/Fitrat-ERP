@@ -27,7 +27,7 @@ def on_create(sender, instance: Finance, created, **kwargs):
                     instance.student.save()
 
         if instance.stuff:
-            if instance.action == "EXPENSE" and (instance.kind.name == "Salary" or instance.kind.name == "Bonus"):
+            if instance.action == "EXPENSE" and (instance.kind.name == "Salary"):
                 instance.stuff.balance -= instance.amount
                 instance.stuff.save()
             else:
@@ -85,6 +85,14 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
 @receiver(post_save, sender=KpiFinance)
 def on_create(sender, instance: KpiFinance, created, **kwargs):
     if created:
-        instance.user.balance += instance.amount
-        instance.user.save()
+        Finance.objects.create(
+            casher = Casher.objects.filter(filial__in=instance.creator.filial.all(),
+                                           role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
+            action = "EXPENSE",
+            amount = instance.amount,
+            kind = Kind.objects.filter(name="Bonus").first(),
+            payment_method="card",
+            stuff = instance.user,
+            comment = "Xodim uchun kpi sifatida qo'shildi!"
+        )
 
