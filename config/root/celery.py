@@ -41,7 +41,23 @@ app.conf.beat_schedule = {
     "activate_group" : {
         "task": "data.student.groups.tasks.activate_group",
         "schedule": crontab(hour=0, minute=0),
-    }
+    },
+    "check_attendance_manager_kpi" : {
+        "task": "data.student.mastering.tasks.check_attendance_manager_kpi",
+        "schedule": crontab(day_of_month=1,hour=0, minute=0),
+    },
+    "check_filial_manager_kpi": {
+        "task": "data.student.mastering.tasks.check_filial_manager_kpi",
+        "schedule": crontab(day_of_month=1, hour=0, minute=0),
+    },
+    "check_filial_director_kpi": {
+        "task": "data.student.mastering.tasks.check_filial_director_kpi",
+        "schedule": crontab(day_of_month=1, hour=0, minute=0),
+    },
+    "check_monitoring_manager_kpi": {
+        "task": "data.student.mastering.tasks.check_monitoring_manager_kpi",
+        "schedule": crontab(day_of_month=1, hour=0, minute=0),
+    },
 }
 
 app.conf.timezone = "Asia/Tashkent"

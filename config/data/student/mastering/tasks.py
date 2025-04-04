@@ -181,3 +181,87 @@ def check_accountant_kpi():
 
         logging.info(f"for {accountant.full_name} months kpi calculation ended ... ")
     logging.info(f"months kpi calculation ended ... ")
+
+
+@shared_task
+def check_attendance_manager_kpi():
+    att_manager = CustomUser.objects.filter(role="ATTENDANCE_MANAGER")
+    for manager in att_manager:
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus")
+        if bonus.amount > 0 and manager is not None:
+            students = Student.objects.filter(student_stage_type="ACTIVE_STUDENT" , balance_status="ACTIVE",filial__id=manager.filial.id)
+            KpiFinance.objects.create(
+                user=manager,
+                reason="Aktiv o'quvchi soniga bonus",
+                amount=(bonus.amount * students.count()) if bonus else 0,
+                type="INCOME",
+                lid=None,
+                student=None
+            )
+
+@shared_task
+def check_filial_manager_kpi():
+    att_manager = CustomUser.objects.filter(role="FILIAL_Manager")
+    for manager in att_manager:
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus")
+        if bonus.amount > 0 and manager is not None:
+            students = Student.objects.filter(student_stage_type="ACTIVE_STUDENT" , balance_status="ACTIVE",filial__id=manager.filial.id)
+            KpiFinance.objects.create(
+                user=manager,
+                reason="Aktiv o'quvchi soniga bonus",
+                amount=(bonus.amount * students.count()) if bonus else 0,
+                type="INCOME",
+                lid=None,
+                student=None
+            )
+
+
+@shared_task
+def check_filial_director_kpi():
+    att_manager = CustomUser.objects.filter(role="HEAD_TEACHER")
+    for manager in att_manager:
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus")
+        if bonus.amount > 0 and manager is not None:
+            students = Student.objects.filter(student_stage_type="ACTIVE_STUDENT" , balance_status="ACTIVE", filial__id = manager.filial.id)
+            KpiFinance.objects.create(
+                user=manager,
+                reason="Aktiv o'quvchi soniga bonus",
+                amount=(bonus.amount * students.count()) if bonus else 0,
+                type="INCOME",
+                lid=None,
+                student=None
+            )
+
+
+@shared_task
+def check_monitoring_manager_kpi():
+    att_manager = CustomUser.objects.filter(role="MONITORING_MANAGER")
+    for manager in att_manager:
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus")
+        if bonus.amount > 0 and manager is not None:
+            students = Student.objects.filter(student_stage_type="ACTIVE_STUDENT" , balance_status="ACTIVE", filial__id = manager.filial.id)
+            KpiFinance.objects.create(
+                user=manager,
+                reason="Aktiv o'quvchi soniga bonus",
+                amount=(bonus.amount * students.count()) if bonus else 0,
+                type="INCOME",
+                lid=None,
+                student=None
+            )
+
+
+@shared_task
+def check_monitoring_manager_kpi():
+    att_manager = CustomUser.objects.filter(role="TESTOLOG")
+    for manager in att_manager:
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus")
+        if bonus.amount > 0 and manager is not None:
+            students = Student.objects.filter(student_stage_type="ACTIVE_STUDENT" , balance_status="ACTIVE", filial__id = manager.filial.id)
+            KpiFinance.objects.create(
+                user=manager,
+                reason="Aktiv o'quvchi soniga bonus",
+                amount=(bonus.amount * students.count()) if bonus else 0,
+                type="INCOME",
+                lid=None,
+                student=None
+            )
