@@ -448,7 +448,7 @@ class FinanceExcel(APIView):
 
     def get(self, request, *args, **kwargs):
         filial = request.GET.get('filial')
-        casher_id = request.GET.get('casher')
+        casher_id = request.GET.get('cashier')
         casher_role = request.GET.get('casher_role')
         kind_id = request.GET.get('kind')
         action = request.GET.get('action')
