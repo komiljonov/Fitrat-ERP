@@ -86,7 +86,7 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
 def on_create(sender, instance: KpiFinance, created, **kwargs):
     if created:
         Finance.objects.create(
-            casher = Casher.objects.filter(filial__in=instance.filial,
+            casher = Casher.objects.filter(filial__in=[filial for filial in instance.filial.objects.all()],
                                            role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
             action = "EXPENSE",
             amount = instance.amount,
