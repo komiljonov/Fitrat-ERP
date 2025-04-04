@@ -101,7 +101,14 @@ class Teacher_StudentsView(ListAPIView):
     search_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name")
 
     def get_queryset(self):
+
+        students = self.request.query_params.get("student_stage_type", None)
+
+
         group = StudentGroup.objects.filter(group__teacher=self.request.user)
+
+        if students:
+            group = group.filter(student__student_stage_type=students)
         if group:
             return group
         return StudentGroup.objects.none()
