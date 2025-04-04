@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from icecream import ic
 
-from .models import Finance, SaleStudent, Voucher, VoucherStudent, Casher, Kind, PaymentMethod
+from .models import Finance, SaleStudent, Voucher, VoucherStudent, Casher, Kind, PaymentMethod, KpiFinance
 
 
 @receiver(post_save, sender=Finance)
@@ -28,10 +28,10 @@ def on_create(sender, instance: Finance, created, **kwargs):
 
         if instance.stuff:
             if instance.action == "EXPENSE" and (instance.kind.name == "Salary" or instance.kind.name == "Bonus"):
-                instance.stuff.balance += instance.amount
+                instance.stuff.balance -= instance.amount
                 instance.stuff.save()
             else:
-                instance.stuff.balance -= instance.amount
+                instance.stuff.balance += instance.amount
                 instance.stuff.save()
 
 
@@ -81,4 +81,10 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
         ic(f"For {finance.lid.first_name if finance.lid else finance.student.first_name} voucher created ...")
 
 
+
+@receiver(post_save, sender=KpiFinance)
+def on_create(sender, instance: KpiFinance, created, **kwargs):
+    if created:
+        instance.user.balance += instance.amount
+        instance.user.save()
 
