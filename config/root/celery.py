@@ -44,19 +44,19 @@ app.conf.beat_schedule = {
     # },
     "check_attendance_manager_kpi" : {
         "task": "data.student.mastering.tasks.check_attendance_manager_kpi",
-        "schedule": crontab(minute="/1"),
+        "schedule": crontab(minute="*/1"),
     },
     "check_filial_manager_kpi": {
         "task": "data.student.mastering.tasks.check_filial_manager_kpi",
-        "schedule": crontab(minute="/1"),
+        "schedule": crontab(minute="*/1"),
     },
     "check_filial_director_kpi": {
         "task": "data.student.mastering.tasks.check_filial_director_kpi",
-        "schedule": crontab(minute="/1"),
+        "schedule": crontab(minute="*/1"),
     },
     "check_monitoring_manager_kpi": {
         "task": "data.student.mastering.tasks.check_monitoring_manager_kpi",
-        "schedule": crontab(minute="/1"),
+        "schedule": crontab(minute="*/1"),
     },
 }
 
