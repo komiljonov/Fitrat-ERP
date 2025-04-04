@@ -207,7 +207,7 @@ def check_monitoring_manager_kpi():
 
 
 @shared_task
-def check_monitoring_manager_kpi():
+def check_filial_manager_kpi():
     att_manager = CustomUser.objects.filter(role="FILIAL_Manager")
     for manager in att_manager:
         bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus").first()
@@ -276,7 +276,7 @@ def check_monitoring_manager_kpi():
 
 
 @shared_task
-def check_monitoring_manager_kpi():
+def check_testolog_manager_kpi():
     att_manager = CustomUser.objects.filter(role="TESTOLOG")
     for manager in att_manager:
         bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus").first()
