@@ -194,7 +194,7 @@ def check_monitoring_manager_kpi():
                 students = Student.objects.filter(
                     student_stage_type="ACTIVE_STUDENT",
                     balance_status="ACTIVE",
-                    filial__id=filial.filial.id  # Access the id of the related filial
+                    filial__id=filial.id  # Access the id of the related filial
                 )
                 KpiFinance.objects.create(
                     user=manager,
@@ -217,7 +217,7 @@ def check_filial_manager_kpi():
                 students = Student.objects.filter(
                     student_stage_type="ACTIVE_STUDENT",
                     balance_status="ACTIVE",
-                    filial__id=filial.filial.id  # Access the id of the related filial
+                    filial__id=filial.id  # Access the id of the related filial
                 )
                 KpiFinance.objects.create(
                     user=manager,
@@ -240,7 +240,7 @@ def check_filial_director_kpi():
                 students = Student.objects.filter(
                     student_stage_type="ACTIVE_STUDENT",
                     balance_status="ACTIVE",
-                    filial__id=filial.filial.id  # Access the id of the related filial
+                    filial__id=filial.id  # Access the id of the related filial
                 )
                 KpiFinance.objects.create(
                     user=manager,
@@ -263,7 +263,7 @@ def check_monitoring_manager_kpi():
                 students = Student.objects.filter(
                     student_stage_type="ACTIVE_STUDENT",
                     balance_status="ACTIVE",
-                    filial__id=filial.filial.id  # Access the id of the related filial
+                    filial__id=filial.id  # Access the id of the related filial
                 )
                 KpiFinance.objects.create(
                     user=manager,
@@ -286,7 +286,7 @@ def check_testolog_manager_kpi():
                 students = Student.objects.filter(
                     student_stage_type="ACTIVE_STUDENT",
                     balance_status="ACTIVE",
-                    filial__id=filial.filial.id  # Access the id of the related filial
+                    filial__id=filial.id  # Access the id of the related filial
                 )
                 KpiFinance.objects.create(
                     user=manager,
