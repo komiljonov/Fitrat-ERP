@@ -85,14 +85,26 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
 @receiver(post_save, sender=KpiFinance)
 def on_create(sender, instance: KpiFinance, created, **kwargs):
     if created:
-        Finance.objects.create(
-            casher = Casher.objects.filter(filial__in=instance.user.filial.all(),
-                                           role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
-            action = "EXPENSE",
-            amount = instance.amount,
-            kind = Kind.objects.filter(name="Bonus").first(),
-            payment_method="card",
-            stuff = instance.user,
-            comment = "Xodim uchun kpi sifatida qo'shildi!"
-        )
+        if instance.type == "INCOME":
+            Finance.objects.create(
+                casher = Casher.objects.filter(filial__in=instance.user.filial.all(),
+                                               role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
+                action = "EXPENSE",
+                amount = instance.amount,
+                kind = Kind.objects.filter(name="Bonus").first(),
+                payment_method="card",
+                stuff = instance.user,
+                comment = "Xodim uchun bonus kpi sifatida qo'shildi!"
+            )
+        else:
+            Finance.objects.create(
+                casher=Casher.objects.filter(filial__in=instance.user.filial.all(),
+                                             role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
+                action="INCOME",
+                amount=instance.amount,
+                kind=Kind.objects.filter(name="Money back").first(),
+                payment_method="card",
+                stuff=instance.user,
+                comment="Xodim uchun jarima sifatida qo'shildi!"
+            )
 
