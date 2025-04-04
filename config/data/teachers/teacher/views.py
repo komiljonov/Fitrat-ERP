@@ -54,29 +54,44 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Calculate statistics
+
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+
+        filters = {}
+
+        if start_date:
+            filters['created_at__gte'] = start_date
+        if end_date:
+            filters['created_at__lte'] = end_date
+
+
         Average_assimilation = None
         new_students = StudentGroup.objects.filter(
             group__teacher=self.request.user,
-            student__student_stage_type="NEW_STUDENT"
+            student__student_stage_type="NEW_STUDENT",
+            **filters
         ).count()
 
         stopped_students = StudentGroup.objects.filter(
             group__teacher=self.request.user,
             student__is_archived=True,
+            **filters
         ).count()
 
         active_students = StudentGroup.objects.filter(
             group__teacher=self.request.user,
-            student__student_stage_type="ACTIVE_STUDENT"
+            student__student_stage_type="ACTIVE_STUDENT",
+            **filters
         ).count()
         low_assimilation = None
 
-        complaints = Complaint.objects.filter(user=self.request.user).count()
+        complaints = Complaint.objects.filter(user=self.request.user,**filters).count()
 
-        results = Results.objects.filter(teacher=self.request.user, status="Accepted").count()
+        results = Results.objects.filter(teacher=self.request.user, status="Accepted",**filters).count()
         all_students = StudentGroup.objects.filter(
-            group__teacher=self.request.user
+            group__teacher=self.request.user,
+            **filters
         ).count()
 
 
