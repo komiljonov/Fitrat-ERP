@@ -13,17 +13,17 @@ def on_create(sender, instance: Finance, created, **kwargs):
     if created :
         if instance.lid :
             if instance.action == "INCOME":
-                instance.lid.balance+= instance.amount
+                instance.lid.balance+= float(instance.amount)
                 instance.lid.save()
 
 
         if instance.student:
             if instance.action == "INCOME":
-                instance.student.balance += instance.amount
+                instance.student.balance += float(instance.amount)
                 instance.student.save()
             else:
                 if not instance.kind.name == "Voucher":
-                    instance.student.balance -= instance.amount
+                    instance.student.balance -= float(instance.amount)
                     instance.student.save()
 
         if instance.stuff:
@@ -32,10 +32,10 @@ def on_create(sender, instance: Finance, created, **kwargs):
                     and instance.kind is not None
                     and instance.kind.name == "Salary"
             ):
-                instance.stuff.balance -= instance.amount
+                instance.stuff.balance -= float(instance.amount)
                 instance.stuff.save()
             else:
-                instance.stuff.balance += instance.amount
+                instance.stuff.balance += float(instance.amount)
                 instance.stuff.save()
 
 

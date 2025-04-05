@@ -69,102 +69,105 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 
 @receiver(post_save, sender=Attendance)
 def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
-    if created:
-        if instance.reason in ["IS_PRESENT", "UNREASONED", "REASONED"] and instance.group:
-            if instance.group.price_type == "DAILY":
-                if instance.student:
+    if not created or not instance.student or not instance.group:
+        return
 
-                    is_first = True if Finance.objects.filter(action="INCOME").count() == 1 else False
-                    kind = Kind.objects.get(name="Lesson payment")
+    if instance.reason not in ["IS_PRESENT", "UNREASONED", "REASONED"]:
+        return
 
-                    teacher_bonus = Bonus.objects.filter(
-                        user=instance.group.teacher,
-                        name="O’quvchi to’lagan summadan foiz beriladi"
-                    ).values("amount").first()
-                    ic(teacher_bonus)
+    kind = Kind.objects.get(name="Lesson payment")
+    is_first_income = Finance.objects.filter(action="INCOME").count() == 0
 
-                    bonus = teacher_bonus.get("amount") if teacher_bonus else 0
-                    ic(bonus)
-                    if teacher_bonus:
-                        ic(bonus)
-                        Finance.objects.create(
-                            action="EXPENSE",
-                            amount=instance.group.price * (float(bonus) / float("100")),
-                            kind=kind,
-                            attendance=instance,
-                            student=instance.student,
-                            is_first=is_first,
-                            comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
-                        )
-                        instance.group.teacher.balance += instance.group.price * (float(bonus) / float("100"))
-                        instance.group.teacher.save()
+    # Get teacher bonus as Decimal (if exists)
+    teacher_bonus = Bonus.objects.filter(
+        user=instance.group.teacher,
+        name="O’quvchi to’lagan summadan foiz beriladi"
+    ).values("amount").first()
 
+    bonus_percent = Decimal(teacher_bonus["amount"]) if teacher_bonus else Decimal("0.0")
 
-                        Finance.objects.create(
-                            action="INCOME",
-                            amount=instance.group.price * (float("1") - float(bonus) / float("100")),
-                            kind=kind,
-                            attendance=instance,
-                            student=instance.student,
-                            is_first=is_first,
-                            comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
-                        )
-                        instance.student.balance -= instance.group.price
-                        instance.student.save()
-                else:
-                    print("Attendance does not have a related student.")
+    ic(bonus_percent)
 
-            elif instance.group.price_type == "MONTHLY":
-                if instance.student:
-                    # Get the first day of the current month (YYYY-MM format)
-                    current_month_start = datetime.date.today().replace(day=1).strftime("%Y-%m-%d")
+    price = Decimal(instance.group.price)
 
-                    # Extract lesson days from group and format as a comma-separated string
-                    lesson_days_queryset = instance.group.scheduled_day_type.all()  # Ensure `.all()` is used
-                    lesson_days = ",".join([day.name for day in lesson_days_queryset]) if lesson_days_queryset else ""
+    ic(price)
 
-                    # Define holidays & days off
-                    holidays = []
-                    days_off = ["Yakshanba"]
+    if instance.group.price_type == "DAILY":
+        # DAILY PAYMENT TYPE
+        bonus_amount = price * bonus_percent / Decimal("100")
+        income_amount = price - bonus_amount
 
-                    # Calculate lessons for the month from the start of the month
-                    lessons_per_month = calculate_lessons(
-                        start_date=current_month_start,  # Always start from the 1st of the month
-                        end_date=instance.group.finish_date.strftime("%Y-%m-%d"),
-                        lesson_type=lesson_days,
-                        holidays=holidays,
-                        days_off=days_off,
-                    )
+        ic(income_amount , bonus_amount)
 
-                    ic(lessons_per_month.get(current_month_start[:7], []))
-                    lesson_count = len(lessons_per_month.get(current_month_start[:7], []))  # Extract YYYY-MM
+        # Teacher bonus (EXPENSE)
+        Finance.objects.create(
+            action="EXPENSE",
+            amount=bonus_amount,
+            kind=kind,
+            attendance=instance,
+            student=instance.student,
+            is_first=is_first_income,
+            comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
+        )
+        instance.group.teacher.balance += float(bonus_amount)
+        instance.group.teacher.save()
 
-                    ic(lesson_count)
+        # Center's income
+        Finance.objects.create(
+            action="INCOME",
+            amount=income_amount,
+            kind=kind,
+            attendance=instance,
+            student=instance.student,
+            is_first=is_first_income,
+            comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
+        )
 
-                    if lesson_count > 0:
-                        price_per_lesson = instance.group.price / lesson_count
-                        ic(price_per_lesson)
-                        instance.student.balance -= price_per_lesson
-                        instance.student.save()
+        instance.student.balance -= float(price)
+        instance.student.save()
 
-                        teacher_bonus = Bonus.objects.filter(user=instance.group.teacher,
-                                                             name="O’quvchi to’lagan summadan foiz beriladi")
-                        if teacher_bonus:
-                            bonus = teacher_bonus.get("amount")
+    elif instance.group.price_type == "MONTHLY":
+        # MONTHLY PAYMENT TYPE
+        current_month = datetime.date.today().replace(day=1)
+        month_key = current_month.strftime("%Y-%m")
 
-                            instance.group.teacher.balance += price_per_lesson * (bonus / 100)
-                            kind = Kind.objects.get(name="Lesson payment")
-                            is_first = True if Finance.objects.filter(action="INCOME").count() == 1 else False
-                            Finance.objects.create(
-                                action="INCOME",
-                                amount=instance.group.price * (float("1") - float(bonus) / float("100")),
-                                kind=kind,
-                                attendance=instance,
-                                student=instance.student,
-                                is_first=is_first,
-                                comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
-                            )
+        lesson_days_qs = instance.group.scheduled_day_type.all()
+        lesson_days = ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
 
-                    else:
-                        print(f"No lessons scheduled for {current_month_start}, skipping balance deduction.")
+        holidays = []
+        days_off = ["Yakshanba"]
 
+        lessons_per_month = calculate_lessons(
+            start_date=current_month.strftime("%Y-%m-%d"),
+            end_date=instance.group.finish_date.strftime("%Y-%m-%d"),
+            lesson_type=lesson_days,
+            holidays=holidays,
+            days_off=days_off,
+        )
+
+        lessons = lessons_per_month.get(month_key, [])
+        lesson_count = len(lessons)
+
+        if lesson_count > 0:
+            per_lesson_price = price / lesson_count
+            bonus_amount = per_lesson_price * bonus_percent / Decimal("100")
+            income_amount = per_lesson_price - bonus_amount
+
+            # Update balances
+            instance.student.balance -= per_lesson_price
+            instance.student.save()
+
+            instance.group.teacher.balance += bonus_amount
+            instance.group.teacher.save()
+
+            Finance.objects.create(
+                action="INCOME",
+                amount=income_amount,
+                kind=kind,
+                attendance=instance,
+                student=instance.student,
+                is_first=is_first_income,
+                comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
+            )
+        else:
+            print(f"No lessons scheduled for {month_key}, skipping balance deduction.")
