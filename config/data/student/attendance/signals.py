@@ -165,7 +165,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
             Finance.objects.create(
                 action="EXPENSE",
-                amount=income_amount,
+                amount=bonus_amount,
                 kind=kind,
                 attendance=instance,
                 student=instance.student,
@@ -173,6 +173,8 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 is_first=is_first_income,
                 comment=f"Talaba {instance.student.first_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M' )}"
             )
+            instance.group.teacher.balance += float(bonus_amount)
+            instance.group.teacher.save()
 
             Finance.objects.create(
                 action="INCOME",

@@ -35,8 +35,9 @@ def on_create(sender, instance: Finance, created, **kwargs):
                 instance.stuff.balance -= float(instance.amount)
                 instance.stuff.save()
             else:
-                instance.stuff.balance += float(instance.amount)
-                instance.stuff.save()
+                if instance.kind.name != "Lesson payment":
+                    instance.stuff.balance += float(instance.amount)
+                    instance.stuff.save()
 
 
 
