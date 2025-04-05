@@ -76,9 +76,13 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                     is_first = True if Finance.objects.filter(action="INCOME").count() == 1 else False
                     kind = Kind.objects.get(name="Lesson payment")
 
-                    teacher_bonus = Bonus.objects.filter(user=instance.group.teacher, name="O’quvchi to’lagan summadan foiz beriladi")
+                    teacher_bonus = Bonus.objects.filter(
+                        user=instance.group.teacher,
+                        name="O’quvchi to’lagan summadan foiz beriladi"
+                    ).values("amount").first()
+
+                    bonus = teacher_bonus.get("amount") if teacher_bonus else 0
                     if teacher_bonus:
-                        bonus = teacher_bonus.get("amount")
                         ic(bonus)
                         Finance.objects.create(
                             action="EXPENSE",
