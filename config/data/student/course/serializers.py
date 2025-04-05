@@ -2,7 +2,7 @@ from icecream import ic
 from rest_framework import serializers
 
 from data.student.course.models import Course
-from data.student.subject.models import Level, Theme
+from data.student.subject.models import Level, Theme, Subject
 from data.student.subject.serializers import SubjectSerializer, ThemeSerializer, LevelSerializer
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -10,6 +10,7 @@ class CourseSerializer(serializers.ModelSerializer):
     theme = serializers.PrimaryKeyRelatedField(
         queryset=Theme.objects.all(), many=True, required=False, allow_null=True
     )
+    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
 
     class Meta:
         model = Course
@@ -48,6 +49,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["subject"] = SubjectSerializer(instance.subject).data
         if instance.level:
             rep["level"] = LevelSerializer(instance.level).data
         else:
