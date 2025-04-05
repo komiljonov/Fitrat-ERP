@@ -108,7 +108,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             student=instance.student,
             stuff=instance.group.teacher,
             is_first=is_first_income,
-            comment=f"Talaba {instance.student.first_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
+            comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
         )
         instance.group.teacher.balance += float(bonus_amount)
         instance.group.teacher.save()
@@ -121,7 +121,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             attendance=instance,
             student=instance.student,
             is_first=is_first_income,
-            comment=f"Talaba {instance.student.first_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
+            comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
         )
 
         instance.student.balance -= float(price)
@@ -171,7 +171,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 student=instance.student,
                 stuff=instance.group.teacher,
                 is_first=is_first_income,
-                comment=f"Talaba {instance.student.first_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M' )}"
+                comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M' )}"
             )
             instance.group.teacher.balance += float(bonus_amount)
             instance.group.teacher.save()
