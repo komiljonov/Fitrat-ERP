@@ -72,7 +72,6 @@ class Student(BaseModel):
             ("GURUH_O'ZGARTIRGAN", "GURUH_O'ZGARTIRGAN"),
             ("QARIZDOR", "QARIZDOR"),
         ],
-        default="BIRNCHI_DARS",
         null=True,
         blank=True,
         max_length=100,
