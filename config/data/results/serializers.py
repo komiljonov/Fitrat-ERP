@@ -120,7 +120,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
 
     national = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
 
-    result_fk_name = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),many=True,allow_null=True)
+    result_fk_name = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
 
 
     class Meta:
