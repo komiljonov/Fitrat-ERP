@@ -99,30 +99,30 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         ic(income_amount , bonus_amount)
 
-        # Teacher bonus (EXPENSE)
-        Finance.objects.create(
-            action="EXPENSE",
-            amount=bonus_amount,
-            kind=kind,
-            attendance=instance,
-            student=instance.student,
-            stuff=instance.group.teacher,
-            is_first=is_first_income,
-            comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
-        )
+        # # Teacher bonus (EXPENSE)
+        # Finance.objects.create(
+        #     action="EXPENSE",
+        #     amount=bonus_amount,
+        #     kind=kind,
+        #     attendance=instance,
+        #     student=instance.student,
+        #     stuff=instance.group.teacher,
+        #     is_first=is_first_income,
+        #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
+        # )
         instance.group.teacher.balance += float(bonus_amount)
         instance.group.teacher.save()
 
-        # Center's income
-        Finance.objects.create(
-            action="INCOME",
-            amount=income_amount,
-            kind=kind,
-            attendance=instance,
-            student=instance.student,
-            is_first=is_first_income,
-            comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
-        )
+        # # Center's income
+        # Finance.objects.create(
+        #     action="INCOME",
+        #     amount=income_amount,
+        #     kind=kind,
+        #     attendance=instance,
+        #     student=instance.student,
+        #     is_first=is_first_income,
+        #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
+        # )
 
         instance.student.balance -= float(price)
         instance.student.save()
@@ -163,27 +163,27 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             instance.student.balance -= float(per_lesson_price)
             instance.student.save()
 
-            Finance.objects.create(
-                action="EXPENSE",
-                amount=bonus_amount,
-                kind=kind,
-                attendance=instance,
-                student=instance.student,
-                stuff=instance.group.teacher,
-                is_first=is_first_income,
-                comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M' )}"
-            )
+            # Finance.objects.create(
+            #     action="EXPENSE",
+            #     amount=bonus_amount,
+            #     kind=kind,
+            #     attendance=instance,
+            #     student=instance.student,
+            #     stuff=instance.group.teacher,
+            #     is_first=is_first_income,
+            #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M' )}"
+            # )
             instance.group.teacher.balance += float(bonus_amount)
             instance.group.teacher.save()
 
-            Finance.objects.create(
-                action="INCOME",
-                amount=income_amount,
-                kind=kind,
-                attendance=instance,
-                student=instance.student,
-                is_first=is_first_income,
-                comment=f"Talaba {instance.student.first_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
-            )
+            # Finance.objects.create(
+            #     action="INCOME",
+            #     amount=income_amount,
+            #     kind=kind,
+            #     attendance=instance,
+            #     student=instance.student,
+            #     is_first=is_first_income,
+            #     comment=f"Talaba {instance.student.first_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
+            # )
         else:
             print(f"No lessons scheduled for {month_key}, skipping balance deduction.")
