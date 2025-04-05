@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -80,26 +81,28 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                         user=instance.group.teacher,
                         name="O’quvchi to’lagan summadan foiz beriladi"
                     ).values("amount").first()
+                    ic(teacher_bonus)
 
                     bonus = teacher_bonus.get("amount") if teacher_bonus else 0
+                    ic(bonus)
                     if teacher_bonus:
                         ic(bonus)
                         Finance.objects.create(
                             action="EXPENSE",
-                            amount=instance.group.price * (bonus/100),
+                            amount=instance.group.price * (float(bonus) / float("100")),
                             kind=kind,
                             attendance=instance,
                             student=instance.student,
                             is_first=is_first,
                             comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
                         )
-                        instance.group.teacher.balance += instance.group.price * (bonus/100)
+                        instance.group.teacher.balance += instance.group.price * (float(bonus) / float("100"))
                         instance.group.teacher.save()
 
 
                         Finance.objects.create(
                             action="INCOME",
-                            amount=instance.group.price * (1-bonus/100),
+                            amount=instance.group.price * (float("1") - float(bonus) / float("100")),
                             kind=kind,
                             attendance=instance,
                             student=instance.student,
@@ -154,7 +157,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                             is_first = True if Finance.objects.filter(action="INCOME").count() == 1 else False
                             Finance.objects.create(
                                 action="INCOME",
-                                amount=instance.group.price * (1-bonus/100),
+                                amount=instance.group.price * (float("1") - float(bonus) / float("100")),
                                 kind=kind,
                                 attendance=instance,
                                 student=instance.student,

@@ -27,7 +27,11 @@ def on_create(sender, instance: Finance, created, **kwargs):
                     instance.student.save()
 
         if instance.stuff:
-            if instance.action == "EXPENSE" and (instance.kind.name == "Salary"):
+            if (
+                    instance.action == "EXPENSE"
+                    and instance.kind is not None
+                    and instance.kind.name == "Salary"
+            ):
                 instance.stuff.balance -= instance.amount
                 instance.stuff.save()
             else:
