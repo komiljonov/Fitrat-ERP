@@ -12,9 +12,9 @@ def on_create(sender, instance: Group_Type, created, **kwargs):
         for group in Group.objects.all():
             group.price_type = instance.price_type
             group.save()
-    Notification.objects.create(
-        user=[user for user in CustomUser.objects.filter(
-            role__in=["DIRECTOR", "ACCOUNTING"])],
-        comment=f"Guruhlarning to'lov uslubi {instance.price_type} ga o'zgartirildi !",
-        come_from=Group.objects.filter().first(),
-    )
+    for user in CustomUser.objects.filter(role__in=["DIRECTOR", "ACCOUNTING"]):
+        Notification.objects.create(
+            user=user,  # Assign single user
+            comment=f"Guruhlarning to'lov uslubi {instance.price_type} ga o'zgartirildi !",
+            come_from=Group.objects.filter().first(),
+        )
