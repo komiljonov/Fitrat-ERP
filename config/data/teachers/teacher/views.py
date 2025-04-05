@@ -4,7 +4,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import TeacherSerializer, AssistantSerializer
+from .serializers import TeacherSerializer
 from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...notifications.models import Complaint
@@ -14,9 +14,9 @@ from ...student.groups.serializers import GroupSerializer, SecondaryGroupSeriali
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.mastering.models import Mastering, MasteringTeachers
-from ...student.mastering.serializers import MasteringSerializer, StuffMasteringSerializer
+from ...student.mastering.serializers import StuffMasteringSerializer
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ...student.studentgroup.serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializer
+from ...student.studentgroup.serializers import StudentsGroupSerializer
 
 
 class TeacherList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
@@ -65,7 +65,6 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         if end_date:
             filters['created_at__lte'] = end_date
 
-
         Average_assimilation = None
         new_students = StudentGroup.objects.filter(
             group__teacher=self.request.user,
@@ -86,14 +85,13 @@ class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         ).count()
         low_assimilation = None
 
-        complaints = Complaint.objects.filter(user=self.request.user,**filters).count()
+        complaints = Complaint.objects.filter(user=self.request.user, **filters).count()
 
-        results = Results.objects.filter(teacher=self.request.user, status="Accepted",**filters).count()
+        results = Results.objects.filter(teacher=self.request.user, status="Accepted", **filters).count()
         all_students = StudentGroup.objects.filter(
             group__teacher=self.request.user,
             **filters
         ).count()
-
 
         statistics = {
             "all_students": all_students,
@@ -119,7 +117,6 @@ class Teacher_StudentsView(ListAPIView):
 
         students = self.request.query_params.get("status", None)
 
-
         group = StudentGroup.objects.filter(group__teacher=self.request.user)
 
         if students:
@@ -127,7 +124,6 @@ class Teacher_StudentsView(ListAPIView):
         if group:
             return group
         return StudentGroup.objects.none()
-
 
 
 class TeachersGroupsView(ListAPIView):
@@ -154,6 +150,7 @@ class TeachersGroupsView(ListAPIView):
 
         return queryset
 
+
 class AsistantTeachersView(ListAPIView):
     serializer_class = SecondaryGroupSerializer
     permission_classes = [IsAuthenticated]
@@ -174,7 +171,6 @@ class AssistantStatisticsView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-
         students = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user).count()
         average_assimilation = None
         low_assimilation = None
