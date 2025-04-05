@@ -39,7 +39,10 @@ def on_create(sender, instance: Finance, created, **kwargs):
                     instance.stuff.balance += float(instance.amount)
                     instance.stuff.save()
 
-
+# @receiver(post_save, sender=Finance)
+# def on_finance_create(sender, instance: Finance,created, **kwargs):
+#     if created:
+#         if instance.
 
 
 
