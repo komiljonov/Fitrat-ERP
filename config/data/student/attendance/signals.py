@@ -106,6 +106,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             kind=kind,
             attendance=instance,
             student=instance.student,
+            stuff=instance.group.teacher,
             is_first=is_first_income,
             comment=f"Talaba {instance.student.first_name} dan {instance.created_at}"
         )
