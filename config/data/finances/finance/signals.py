@@ -13,7 +13,7 @@ def on_create(sender, instance: Finance, created, **kwargs):
     if created :
         if instance.lid :
             if instance.action == "INCOME":
-                instance.lid.balance+= float(instance.amount)
+                instance.lid.balance += float(instance.amount)
                 instance.lid.save()
 
 
