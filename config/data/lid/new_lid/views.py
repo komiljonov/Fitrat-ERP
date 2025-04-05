@@ -236,7 +236,7 @@ class ExportLidToExcelAPIView(APIView):
             "Tug'ulgan sanasi", "O'quv tili", "O'quv sinfi",
             "Fan", "Ball", "Filial", "Marketing kanali", "Lead varonkasi",
             "Lead etapi", "Buyurtma etapi", "Arxivlangan",
-            "Call Operator", "Sotuv menejeri" ,"O'quvchi bo'lgan", "Service manager", "Yaratilgan vaqti"
+            "Call Operator", "Sotuv menejeri", "O'quvchi bo'lgan", "Service manager", "Yaratilgan vaqti"
         ]
         sheet.append(headers)
 

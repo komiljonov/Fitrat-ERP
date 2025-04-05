@@ -17,11 +17,12 @@ class ArchivedListAPIView(ListCreateAPIView):
     serializer_class = ArchivedSerializer
     permission_classes = (IsAuthenticated,)
 
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     search_fields = ('reason',)
     filterset_fields = ('reason',)
     ordering_fields = ('reason',)
+
 
 class ArchivedDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Archived.objects.all()
@@ -67,6 +68,7 @@ class StuffArchive(CreateAPIView):
                 user.is_archived = True
                 user.save()
                 return Response({"message": "Xodim arxivlandi!"}, status=status.HTTP_200_OK)
-            return Response({"error": "Xodim arxivlangan, qayta arxivlash amalga oshirib bulmaydi!"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Xodim arxivlangan, qayta arxivlash amalga oshirib bulmaydi!"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"error": "Xodim topilmadi!"}, status=status.HTTP_404_NOT_FOUND)
