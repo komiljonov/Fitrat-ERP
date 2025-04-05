@@ -83,6 +83,14 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         return data
 
+    def create(self, validated_data):
+        # Handle bulk creation manually
+        if isinstance(validated_data, list):
+            instances = [Attendance.objects.create(**item) for item in validated_data]
+            return instances
+        return super().create(validated_data)
+
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
