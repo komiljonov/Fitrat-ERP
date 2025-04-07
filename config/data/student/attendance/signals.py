@@ -168,26 +168,24 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         ic(lesson_count)
 
         if lesson_count > 0:
-
             # Get user sale if there is any...
             if instance.student is not None:
                 sale = SaleStudent.objects.filter(
                     student=instance.student,
-                    # expire_date__lte=datetime.datetime.now(),
                 ).first()
             else:
                 sale = SaleStudent.objects.filter(
                     lid=instance.lid,
-                    # expire_date__lte=datetime.datetime.now(),
                 ).first()
 
-                # DAILY PAYMENT TYPE
             per_lesson_price = price / lesson_count
+
             if sale:
                 ic(sale.amount)
                 ic(per_lesson_price * (sale.amount / 100))
-                per_lesson_price = per_lesson_price - per_lesson_price * (sale.amount / 100)
+                per_lesson_price -= per_lesson_price * (sale.amount / 100)
                 ic(per_lesson_price)
+
 
             instance.amount = per_lesson_price
             instance.save()
