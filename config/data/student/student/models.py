@@ -107,7 +107,7 @@ class Student(BaseModel):
     active_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ('-created_at',"is_frozen")
+        ordering = ('is_frozen', '-created_at')
 
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
