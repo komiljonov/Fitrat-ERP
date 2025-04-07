@@ -2,7 +2,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Group, SecondaryGroup
-from ...department.filial.models import Filial
 from ...notifications.models import Notification
 
 
@@ -35,6 +34,3 @@ def on_create(sender, instance: Group, created, **kwargs):
             comment=f"{instance.name} guruhining yordamchi guruhi yaratildi !",
             come_from=instance,
         )
-
-
-
