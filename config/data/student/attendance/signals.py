@@ -93,13 +93,13 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         # Get user sale if there is any...
         if instance.student is not None:
-            sale = SaleStudent.objects.filter(
+            sale = SaleStudent.objects.get(
                 student = instance.student,
-            ).first()
+            )
         else:
-            sale = SaleStudent.objects.filter(
+            sale = SaleStudent.objects.get(
                 lid=instance.lid,
-            ).first()
+            )
 
         # DAILY PAYMENT TYPE
         if sale:
@@ -170,13 +170,13 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         if lesson_count > 0:
             # Get user sale if there is any...
             if instance.student is not None:
-                sale = SaleStudent.objects.filter(
+                sale = SaleStudent.objects.get(
                     student=instance.student,
-                ).first()
+                )
             else:
-                sale = SaleStudent.objects.filter(
+                sale = SaleStudent.objects.get(
                     lid=instance.lid,
-                ).first()
+                )
 
             per_lesson_price = price / lesson_count
 
