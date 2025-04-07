@@ -8,7 +8,7 @@ from icecream import ic
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ...finances.compensation.models import Bonus
-from ...finances.finance.models import Finance, Kind
+from ...finances.finance.models import Finance, Kind, SaleStudent
 from ...notifications.models import Notification
 
 
@@ -95,7 +95,21 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     ic(price)
 
     if instance.group.price_type == "DAILY":
+
+        # Get user sale if there is any...
+        if instance.student is not None:
+            sale = SaleStudent.objects.filter(
+                student = instance.student,
+                expire_date__lte = datetime.datetime.now(),
+            )
+        else:
+            sale = SaleStudent.objects.filter(
+                lid=instance.lid,
+                expire_date__lte=datetime.datetime.now(),
+            )
+
         # DAILY PAYMENT TYPE
+        price = price - price * (sale.amount / 100)
         bonus_amount = price * bonus_percent / Decimal("100")
         income_amount = price - bonus_amount
 
@@ -133,6 +147,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         instance.student.save()
 
     elif instance.group.price_type == "MONTHLY":
+
         # MONTHLY PAYMENT TYPE
         current_month = datetime.date.today().replace(day=1)
         ic(current_month)
@@ -158,7 +173,22 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         ic(lesson_count)
 
         if lesson_count > 0:
+
+            # Get user sale if there is any...
+            if instance.student is not None:
+                sale = SaleStudent.objects.filter(
+                    student=instance.student,
+                    expire_date__lte=datetime.datetime.now(),
+                )
+            else:
+                sale = SaleStudent.objects.filter(
+                    lid=instance.lid,
+                    expire_date__lte=datetime.datetime.now(),
+                )
+
+                # DAILY PAYMENT TYPE
             per_lesson_price = price / lesson_count
+            per_lesson_price = per_lesson_price - per_lesson_price * (sale.amount / 100)
 
             instance.amount = per_lesson_price
             instance.save()
