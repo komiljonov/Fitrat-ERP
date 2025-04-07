@@ -41,17 +41,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         ]
 
     def get_teacher(self, obj):
-        if obj.theme.exists():
-            theme = obj.theme.first()
-            group = Group.objects.filter(course=theme.course).first()
-            if group and group.teacher:
-                teacher = group.teacher
-                return {
-                    'first_name': teacher.first_name,
-                    'last_name': teacher.last_name,
-                    'full_name': f"{teacher.first_name} {teacher.last_name}"
-                }
-        return None
+        return obj.group.teacher.full_name
 
     def validate(self, data):
         """
