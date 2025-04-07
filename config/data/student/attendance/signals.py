@@ -110,7 +110,10 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         # DAILY PAYMENT TYPE
         if sale:
+            ic(sale.amount)
+            ic(price * (sale.amount / 100))
             price = price - price * (sale.amount / 100)
+            ic(price)
         bonus_amount = price * bonus_percent / Decimal("100")
         income_amount = price - bonus_amount
 
@@ -190,7 +193,10 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 # DAILY PAYMENT TYPE
             per_lesson_price = price / lesson_count
             if sale:
+                ic(sale.amount)
+                ic(per_lesson_price * (sale.amount / 100))
                 per_lesson_price = per_lesson_price - per_lesson_price * (sale.amount / 100)
+                ic(per_lesson_price)
 
             instance.amount = per_lesson_price
             instance.save()
