@@ -18,7 +18,8 @@ from ...account.serializers import UserSerializer
 class DaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Day
-        fields = ["id","name",]
+        fields = ["id", "name", ]
+
 
 class GroupSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
@@ -26,8 +27,8 @@ class GroupSerializer(serializers.ModelSerializer):
     student_count = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
     current_theme = serializers.SerializerMethodField()
-    room_number = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all(),allow_null=True)
-    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(),allow_null=True)
+    room_number = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all(), allow_null=True)
+    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True)
     subject = serializers.SerializerMethodField()
     level = serializers.SerializerMethodField()
 
@@ -59,7 +60,7 @@ class GroupSerializer(serializers.ModelSerializer):
         ]
 
     def get_subject(self, obj):
-        return Group.objects.filter(pk=obj.pk).values("course__subject","course__subject__name").first()
+        return Group.objects.filter(pk=obj.pk).values("course__subject", "course__subject__name").first()
 
     def get_level(self, obj):
         return Group.objects.filter(pk=obj.pk).values_list("course__level", flat=True).first()
@@ -113,12 +114,12 @@ class GroupSerializer(serializers.ModelSerializer):
         if not filial:
             raise serializers.ValidationError({"filial": "Filial could not be determined."})
 
-        group = Group.objects.create(filial=filial,**validated_data)
-
+        group = Group.objects.create(filial=filial, **validated_data)
 
         group.scheduled_day_type.set(scheduled_day_type_data)
 
         return group
+
 
 class GroupLessonSerializer(serializers.ModelSerializer):
     group_lesson_dates = serializers.SerializerMethodField()  # Add this field
@@ -162,9 +163,10 @@ class GroupLessonSerializer(serializers.ModelSerializer):
 
         if start_date and end_date:
             # Use the calculate_lessons function to get lesson dates
-            lesson_dates = calculate_lessons(start_date, end_date, ','.join(lesson_days), holidays, days_off,)
+            lesson_dates = calculate_lessons(start_date, end_date, ','.join(lesson_days), holidays, days_off, )
             return lesson_dates
         return []
+
 
 class RoomsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -176,6 +178,7 @@ class RoomsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
         if not filial:
@@ -188,6 +191,7 @@ class RoomsSerializer(serializers.ModelSerializer):
 
         room = Room.objects.create(filial=filial, **validated_data)
         return room
+
 
 class RoomFilterSerializer(serializers.ModelSerializer):
     lessons_start_time = serializers.CharField()
@@ -203,8 +207,8 @@ class RoomFilterSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'lessons_start_time',  # Include here
-            'lessons_end_time',    # Include here
-            'average_lesson_hours' # Include here
+            'lessons_end_time',  # Include here
+            'average_lesson_hours'  # Include here
         ]
 
     def calculate(self, validated_data):
@@ -302,4 +306,3 @@ class SecondarygroupModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecondaryGroup
         fields = ['id', 'name']
-
