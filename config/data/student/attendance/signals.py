@@ -101,12 +101,14 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 lid=instance.lid,
             )
 
-        # DAILY PAYMENT TYPE
-        if sale:
-            ic(sale.sale.amount)
-            ic(price * (sale.sale.amount / 100))
-            price = price - price * (sale.sale.amount / 100)
+        if sale and hasattr(sale, "sale") and sale.sale and hasattr(sale.sale, "amount"):
+            sale_percent = Decimal(sale.sale.amount)
+            discount = price * (sale_percent / Decimal("100"))
+            ic(sale_percent)
+            ic(discount)
+            price -= discount
             ic(price)
+
         bonus_amount = price * bonus_percent / Decimal("100")
         income_amount = price - bonus_amount
 
