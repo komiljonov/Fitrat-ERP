@@ -112,7 +112,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         bonus_amount = price * bonus_percent / Decimal("100")
         income_amount = price - bonus_amount
 
-        instance.amount = instance.group.price
+        instance.amount = bonus_amount + income_amount
         instance.save()
 
         ic(income_amount , bonus_amount)
