@@ -86,13 +86,8 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
     bonus_percent = Decimal(teacher_bonus["amount"]) if teacher_bonus else Decimal("0.0")
 
-    ic(bonus_percent)
-
     price = Decimal(instance.group.price)
 
-
-
-    ic(price)
 
     if instance.group.price_type == "DAILY":
 
@@ -134,16 +129,16 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         instance.group.teacher.balance += float(bonus_amount)
         instance.group.teacher.save()
 
-        # # Center's income
-        # Finance.objects.create(
-        #     action="INCOME",
-        #     amount=income_amount,
-        #     kind=kind,
-        #     attendance=instance,
-        #     student=instance.student,
-        #     is_first=is_first_income,
-        #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
-        # )
+        # Center's income
+        Finance.objects.create(
+            action="INCOME",
+            amount=income_amount,
+            kind=kind,
+            attendance=instance,
+            student=instance.student,
+            is_first=is_first_income,
+            comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
+        )
 
         instance.student.balance -= float(price)
         instance.student.save()
@@ -152,9 +147,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         # MONTHLY PAYMENT TYPE
         current_month = datetime.date.today().replace(day=1)
-        ic(current_month)
         month_key = current_month.strftime("%Y-%m")
-        ic(month_key)
 
         lesson_days_qs = instance.group.scheduled_day_type.all()
         lesson_days = ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
@@ -180,12 +173,12 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             if instance.student is not None:
                 sale = SaleStudent.objects.filter(
                     student=instance.student,
-                    expire_date__lte=datetime.datetime.now(),
+                    # expire_date__lte=datetime.datetime.now(),
                 )
             else:
                 sale = SaleStudent.objects.filter(
                     lid=instance.lid,
-                    expire_date__lte=datetime.datetime.now(),
+                    # expire_date__lte=datetime.datetime.now(),
                 )
 
                 # DAILY PAYMENT TYPE
@@ -223,14 +216,14 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             instance.group.teacher.balance += float(bonus_amount)
             instance.group.teacher.save()
 
-            # Finance.objects.create(
-            #     action="INCOME",
-            #     amount=income_amount,
-            #     kind=kind,
-            #     attendance=instance,
-            #     student=instance.student,
-            #     is_first=is_first_income,
-            #     comment=f"Talaba {instance.student.first_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
-            # )
+            Finance.objects.create(
+                action="INCOME",
+                amount=income_amount,
+                kind=kind,
+                attendance=instance,
+                student=instance.student,
+                is_first=is_first_income,
+                comment=f"Talaba {instance.student.first_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
+            )
         else:
             print(f"No lessons scheduled for {month_key}, skipping balance deduction.")
