@@ -90,12 +90,17 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
     price = Decimal(instance.group.price)
 
+
+
     ic(price)
 
     if instance.group.price_type == "DAILY":
         # DAILY PAYMENT TYPE
         bonus_amount = price * bonus_percent / Decimal("100")
         income_amount = price - bonus_amount
+
+        instance.amount = instance.group.price
+        instance.save()
 
         ic(income_amount , bonus_amount)
 
@@ -154,6 +159,10 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         if lesson_count > 0:
             per_lesson_price = price / lesson_count
+
+            instance.amount = per_lesson_price
+            instance.save()
+
             bonus_amount = per_lesson_price * bonus_percent / Decimal("100")
             income_amount = per_lesson_price - bonus_amount
 
@@ -162,6 +171,8 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             # Update balances
             instance.student.balance -= float(per_lesson_price)
             instance.student.save()
+
+
 
             # Finance.objects.create(
             #     action="EXPENSE",

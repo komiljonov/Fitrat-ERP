@@ -33,6 +33,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             'teacher',
             'reason',
             'remarks',
+            "amount",
             'created_at',
             'updated_at',
         ]
