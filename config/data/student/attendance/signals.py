@@ -100,12 +100,10 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         if instance.student is not None:
             sale = SaleStudent.objects.filter(
                 student = instance.student,
-                expire_date__lte = datetime.datetime.now(),
             )
         else:
             sale = SaleStudent.objects.filter(
                 lid=instance.lid,
-                expire_date__lte=datetime.datetime.now(),
             )
 
         # DAILY PAYMENT TYPE
