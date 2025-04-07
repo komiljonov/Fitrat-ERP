@@ -31,6 +31,13 @@ class Attendance(BaseModel):
     )
     remarks : str = models.TextField(blank=True, null=True)
 
+    amount = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Attendance counted amount ..."
+    )
+
     def __str__(self):
         return f" {self.group} is marked as {self.reason}"
 
