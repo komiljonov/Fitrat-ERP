@@ -1,9 +1,11 @@
 from datetime import date
 
 from django.db.models import Q
+from icecream import ic
 from rest_framework import serializers
 
 from .models import Attendance
+from ..groups.models import Group
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ..subject.models import Theme
@@ -41,14 +43,13 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def get_teacher(self, obj):
         if obj.theme.exists():
             theme = obj.theme.first()
-            teacher = (Attendance.objects
-                       .filter(student=obj.student, theme=theme)
-                       .values('theme__course__group__teacher__first_name',
-                               'theme__course__group__teacher__last_name'))
-            if teacher.exists():
-                return teacher[0]
+            teacher = Group.objects.get(course=theme.course).teacher
+            return {
+                'first_name': teacher.first_name,
+                'last_name': teacher.last_name,
+                'full_name': f"{teacher.first_name} {teacher.last_name}"
+            }
         return None
-
 
     def validate(self, data):
         """
