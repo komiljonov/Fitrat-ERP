@@ -8,22 +8,27 @@ from ...notifications.models import Notification
 
 @receiver(post_save, sender=Group)
 def on_create(sender, instance: Group, created, **kwargs):
-    if created and instance.is_secondary == True:
+    if created and instance.is_secondary is True:
         secondary = SecondaryGroup.objects.create(
             name=f"{instance.name} ning yordamchi guruhi",
             teacher=instance.secondary_teacher,
             group=instance
         )
-        if isinstance(instance.teacher.filial, Filial):  # If it's a ForeignKey
-            secondary.filial = instance.teacher.filial
-            secondary.save()
-        elif hasattr(instance.teacher.filial, "all"):  # If it's a ManyToManyField
-            secondary.filial.set(instance.teacher.filial.all())
 
+        teacher_filial = getattr(instance.teacher, "filial", None)
+
+        if isinstance(teacher_filial, Filial):
+            # ForeignKey
+            secondary.filial = teacher_filial
+            secondary.save()
+
+        elif teacher_filial and hasattr(teacher_filial, "all"):
+            # ManyToManyField
+            secondary.filial.set(teacher_filial.all())
 
         Notification.objects.create(
             user=instance.secondary_teacher,
-            comment=f"{instance.name} guruhining yordamchi guruhi yaratildi !",
+            comment=f"{instance.name} guruhining yordamchi guruhi yaratildi!",
             come_from=instance,
         )
 
