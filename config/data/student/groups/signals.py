@@ -15,16 +15,8 @@ def on_create(sender, instance: Group, created, **kwargs):
             group=instance
         )
 
-        teacher_filial = getattr(instance.teacher, "filial", None)
-
-        if isinstance(teacher_filial, Filial):
-            # ForeignKey
-            secondary.filial = teacher_filial
-            secondary.save()
-
-        elif teacher_filial and hasattr(teacher_filial, "all"):
-            # ManyToManyField
-            secondary.filial.set(teacher_filial.all())
+        secondary.filial = instance.teacher.filial.first()
+        secondary.save()
 
         Notification.objects.create(
             user=instance.secondary_teacher,
