@@ -180,11 +180,10 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
             per_lesson_price = price / lesson_count
 
-            if sale:
-                ic(sale.sale.amount)
-                ic(per_lesson_price * (sale.sale.amount / 100))
-                per_lesson_price -= per_lesson_price * (sale.sale.amount / 100)
-                ic(per_lesson_price)
+            if sale and hasattr(sale, "sale") and sale.sale and hasattr(sale.sale, "amount"):
+                sale_percent = Decimal(sale.sale.amount)
+                ic(per_lesson_price * (sale_percent / Decimal("100")))
+                per_lesson_price -= per_lesson_price * (sale_percent / Decimal("100"))
 
 
             instance.amount = per_lesson_price
