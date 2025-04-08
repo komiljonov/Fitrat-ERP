@@ -3,10 +3,7 @@ import hashlib
 
 from django.db.models import F, Avg
 from django.utils.module_loading import import_string
-from icecream import ic
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Student, FistLesson_data
 from ..attendance.models import Attendance
@@ -16,7 +13,6 @@ from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Level
 from ...account.models import CustomUser
-from ...account.permission import PhoneAuthBackend
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
