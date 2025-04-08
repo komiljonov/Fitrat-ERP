@@ -2,6 +2,7 @@ import json
 
 from django.db.models import Avg, OuterRef, Subquery, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
+from icecream import ic
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView
@@ -28,6 +29,8 @@ class BonusList(ListCreateAPIView):
     ordering_fields = ("name",)
 
     def create(self, request, *args, **kwargs):
+
+
         if isinstance(request.data, list):
             serializer = self.get_serializer(data=request.data, many=True)  # Use `many=True`
         else:
@@ -37,6 +40,13 @@ class BonusList(ListCreateAPIView):
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
+    def get_queryset(self):
+        queryset = Bonus.objects.all()
+
+        print(queryset.values_list())
+
+        return queryset
 
 class BonusDetail(RetrieveUpdateDestroyAPIView):
     queryset = Bonus.objects.all()
@@ -54,6 +64,13 @@ class BonusNoPG(ListAPIView):
     filterset_fields = ("name",)
     ordering_fields = ("name",)
 
+    def get_queryset(self):
+        queryset = Bonus.objects.all()
+        ic(queryset.values_list())
+        name = self.request.query_params.get("name")
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+        return queryset
 
     def get_paginated_response(self, data):
         return Response(data)
