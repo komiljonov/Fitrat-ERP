@@ -226,7 +226,7 @@ class DashboardSecondView(APIView):
         # Initial QuerySets
         lid = Lid.objects.filter(lid_stage_type="NEW_LID",**filters).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
         archived_lid = lid.filter(lid_stage_type="NEW_LID",is_archived=True,)
-        orders = lid.filter(lid_stage_type="ORDERED_LID")
+        orders = Lid.objects.filter(lid_stage_type="ORDERED_LID",**filters).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
         orders_archived = orders.filter(is_archived=True)
         first_lesson = FirstLLesson.objects.filter(**filters)
 
