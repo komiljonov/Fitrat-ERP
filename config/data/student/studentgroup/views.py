@@ -322,11 +322,17 @@ class SecondaryStudentList(ListCreateAPIView):
 
 class SecondaryGroupList(ListAPIView):
     serializer_class = SecondarygroupModelSerializer
-    queryset = SecondaryGroup.objects.all()  # Corrected to fetch data
+    queryset = SecondaryGroup.objects.all()
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        status = self.request.query_params.get("status")
         id = self.kwargs.get('pk')
+
+        queryset = SecondaryGroup.objects.all()
+
+        if status:
+            queryset = queryset.filter(student__status=status)
         if id:
             return SecondaryGroup.objects.filter(teacher__id=id)
         return SecondaryGroup.objects.none()

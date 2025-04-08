@@ -663,14 +663,14 @@ class SalesStudentNoPG(ListAPIView):
 
 class SalesStudentList(ListCreateAPIView):
     serializer_class = SaleStudentSerializer
-    queryset = SaleStudent.objects.all()
+    queryset = SaleStudent.objects.filter(sale__status="ACTIVE")
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
         type = self.request.query_params.get('type')
 
-        queryset = SaleStudent.objects.all()
+        queryset = SaleStudent.objects.filter(sale__status="ACTIVE")
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
@@ -688,7 +688,7 @@ class SaleStudentRetrieve(ListAPIView):
     def get_queryset(self):
         id = self.kwargs.get('pk')
         if id:
-            return SaleStudent.objects.filter(Q(lid__id=id) | Q(student__id=id))
+            return SaleStudent.objects.filter(Q(lid__id=id) | Q(student__id=id)).filter(sale__status="ACTIVE")
         return SaleStudent.objects.none()
 
     def get_paginated_response(self, data):
