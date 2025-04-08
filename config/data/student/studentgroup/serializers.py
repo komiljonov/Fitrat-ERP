@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from rest_framework import serializers
-
 from .models import StudentGroup, SecondaryStudentGroup
 from ..groups.models import Group, SecondaryGroup
 from ..groups.serializers import SecondaryGroupSerializer
@@ -117,7 +115,6 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
         return rep
 
 
-from typing import List, Optional
 class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=SecondaryGroup.objects.all(), required=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)

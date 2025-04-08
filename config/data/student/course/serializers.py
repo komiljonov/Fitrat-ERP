@@ -1,3 +1,4 @@
+from django.db.models import Count
 from icecream import ic
 from rest_framework import serializers
 
@@ -11,6 +12,7 @@ class CourseSerializer(serializers.ModelSerializer):
         queryset=Theme.objects.all(), many=True, required=False, allow_null=True
     )
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
+    lessons_number = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -20,6 +22,9 @@ class CourseSerializer(serializers.ModelSerializer):
         res = super().to_internal_value(data)
         res["theme"] = res.get("theme", [])
         return res
+
+    def get_lessons_number(self, obj):
+        return Course.objects.filter(id=obj.id).aggregate(total_lessons=Count('lessons'))['total_lessons']
 
     def validate_theme(self, value):
         """Allow theme to be an empty list or a list of valid theme UUIDs"""

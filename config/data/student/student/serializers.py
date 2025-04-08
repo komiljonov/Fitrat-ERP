@@ -112,8 +112,14 @@ class StudentSerializer(serializers.ModelSerializer):
             if sale.expire_date else "Unlimited"} for sale in sales]
 
     def get_teacher(self, obj):
-        teachers = StudentGroup.objects.filter(student=obj).values_list("group__teacher__id", flat=True)
-        return list(teachers)
+        group = StudentGroup.objects.select_related('group__teacher').filter(student=obj).first()
+        if group and group.group and group.group.teacher:
+            teacher = group.group.teacher
+            return {
+                "id": teacher.id,
+                "full_name": teacher.full_name
+            }
+        return None
 
     def get_learning(self, obj):
         mastering_qs = Mastering.objects.filter(student=obj)
