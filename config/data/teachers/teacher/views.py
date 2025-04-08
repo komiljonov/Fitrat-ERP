@@ -171,7 +171,17 @@ class AssistantStatisticsView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        students = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user).count()
+
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+        filters = {}
+        if start_date:
+            filters["created_at__gte"] = start_date
+
+        if end_date:
+            filters["created_at__lte"] = end_date
+
+        students = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user,**filters).count()
         average_assimilation = None
         low_assimilation = None
         high_assimilation = None
