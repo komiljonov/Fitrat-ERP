@@ -195,3 +195,4 @@ class TeacherMasteringStatisticsView(ListAPIView):
         if queryset:
             return queryset
         return Mastering.objects.none()
+
