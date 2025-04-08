@@ -90,8 +90,8 @@ def check_accountant_kpi():
             active_percentage = ((active_no_debt_students.count() + new_no_debt_students.count()) / students.count()) * 100
 
             if active_percentage <95:
-                bonus = Bonus.objects.filter(user=accountant,name="Jami yangi va aktiv o'quvchi o'quvchilarning "
-                                                                  "93% dan 94.9% gacha bo'lgan qismi uchun bonus").first()
+                bonus = Bonus.objects.filter(user=accountant,
+                        name="Jami yangi va aktiv o'quvchi o'quvchilarning 93% dan 94.9% gacha bo'lgan qismi uchun bonus").first()
                 KpiFinance.objects.create(
                     user=accountant,
                     lid=None,
@@ -103,8 +103,8 @@ def check_accountant_kpi():
                 )
 
             if active_percentage == 100:
-                bonus = Bonus.objects.filter(user=accountant, name="Jami yangi va aktiv o'quvchi o'quvchilarning "
-                                                                   "100% gacha bo'lgan qismi uchun bonus").first()
+                bonus = Bonus.objects.filter(user=accountant,
+                                name="Jami yangi va aktiv o'quvchi o'quvchilarning 100% gacha bo'lgan qismi uchun bonus").first()
                 KpiFinance.objects.create(
                     user=accountant,
                     lid=None,
@@ -116,8 +116,8 @@ def check_accountant_kpi():
                 )
 
             if active_percentage >= 98 and active_percentage <= 99.9:
-                bonus = Bonus.objects.filter(user=accountant, name="Jami yangi va aktiv o'quvchi o'quvchilarning"
-                                                                   " 98% dan 99.9% gacha bo'lgan qismi uchun bonus").first()
+                bonus = Bonus.objects.filter(user=accountant,
+                        name="Jami yangi va aktiv o'quvchi o'quvchilarning 98% dan 99.9% gacha bo'lgan qismi uchun bonus").first()
                 KpiFinance.objects.create(
                     user=accountant,
                     lid=None,
@@ -128,8 +128,8 @@ def check_accountant_kpi():
                 )
 
             if active_percentage >=95 and active_percentage <=97.9:
-                bonus = Bonus.objects.filter(user=accountant, name="Jami yangi va aktiv o'quvchi o'quvchilarning "
-                                                                   "95% dan 97.9% gacha bo'lgan qismi uchun bonus").first()
+                bonus = Bonus.objects.filter(user=accountant,
+                        name="Jami yangi va aktiv o'quvchi o'quvchilarning 95% dan 97.9% gacha bo'lgan qismi uchun bonus").first()
                 KpiFinance.objects.create(
                     user=accountant,
                     lid=None,
@@ -144,8 +144,8 @@ def check_accountant_kpi():
             debt_percentage = (debt.count() / students.count()) * 100
 
             if debt_percentage > 0 and debt_percentage <= 70:
-                comp = Compensation.objects.filter(user=accountant, name="Jami qarzdor o'quvchilar sonining "
-                                                                         "70% dan kichik bo'lgan qismi (Jarima)").first()
+                comp = Compensation.objects.filter(user=accountant,
+                            name="Jami qarzdor o'quvchilar sonining 70% dan kichik bo'lgan qismi (Jarima)").first()
                 KpiFinance.objects.create(
                     user=accountant,
                     lid=None,
@@ -156,8 +156,8 @@ def check_accountant_kpi():
                 )
 
             if debt_percentage >=70.1 and debt_percentage <=80:
-                comp = Compensation.objects.filter(user=accountant, name="Jami qarzdor o'quvchilar sonining 70% "
-                                                                         "dan 80.1% gacha bo'lgan qismi (Jarima)").first()
+                comp = Compensation.objects.filter(user=accountant,
+                            name="Jami qarzdor o'quvchilar sonining 70% dan 80.1% gacha bo'lgan qismi (Jarima)").first()
                 KpiFinance.objects.create(
                     user=accountant,
                     lid=None,
@@ -187,7 +187,7 @@ def check_accountant_kpi():
 def check_monitoring_manager_kpi():
     att_manager = CustomUser.objects.filter(role="ATTENDANCE_MANAGER")
     for manager in att_manager:
-        bonus = Bonus.objects.filter(user=manager, name__icontains="Aktiv o'quvchi soniga bonus").first()
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus").first()
         if bonus and bonus.amount > 0 and manager is not None:
             # Loop through each filial if it's a ManyToManyField
             for filial in manager.filial.all():  # Iterating over each related filial
@@ -210,7 +210,7 @@ def check_monitoring_manager_kpi():
 def check_filial_manager_kpi():
     att_manager = CustomUser.objects.filter(role="FILIAL_Manager")
     for manager in att_manager:
-        bonus = Bonus.objects.filter(user=manager, name__icontains="Aktiv o'quvchi soniga bonus").first()
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus").first()
         if bonus and bonus.amount > 0 and manager is not None:
             # Loop through each filial if it's a ManyToManyField
             for filial in manager.filial.all():  # Iterating over each related filial
@@ -233,7 +233,7 @@ def check_filial_manager_kpi():
 def check_filial_director_kpi():
     att_manager = CustomUser.objects.filter(role="HEAD_TEACHER")
     for manager in att_manager:
-        bonus = Bonus.objects.filter(user=manager, name__icontains="Aktiv o'quvchi soniga bonus").first()
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus").first()
         if bonus and bonus.amount > 0 and manager is not None:
             # Loop through each filial if it's a ManyToManyField
             for filial in manager.filial.all():  # Iterating over each related filial
@@ -256,7 +256,7 @@ def check_filial_director_kpi():
 def check_monitoring_manager_kpi():
     att_manager = CustomUser.objects.filter(role="MONITORING_MANAGER")
     for manager in att_manager:
-        bonus = Bonus.objects.filter(user=manager, name__icontains="Aktiv o'quvchi soniga bonus").first()
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus").first()
         if bonus and bonus.amount > 0 and manager is not None:
             # Loop through each filial if it's a ManyToManyField
             for filial in manager.filial.all():  # Iterating over each related filial
@@ -279,7 +279,7 @@ def check_monitoring_manager_kpi():
 def check_testolog_manager_kpi():
     att_manager = CustomUser.objects.filter(role="TESTOLOG")
     for manager in att_manager:
-        bonus = Bonus.objects.filter(user=manager, name__icontains="Aktiv o'quvchi soniga bonus").first()
+        bonus = Bonus.objects.filter(user=manager, name="Aktiv o'quvchi soniga bonus").first()
         if bonus and bonus.amount > 0 and manager is not None:
             # Loop through each filial if it's a ManyToManyField
             for filial in manager.filial.all():  # Iterating over each related filial
