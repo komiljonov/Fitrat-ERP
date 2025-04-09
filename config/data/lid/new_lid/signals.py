@@ -76,6 +76,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                     "edu_class": instance.edu_class,
                     "edu_level": instance.edu_level,
                     "subject": instance.subject,
+                    "balance": instance.balance,
                     "ball": instance.ball,
                     "filial": instance.filial,
                     "marketing_channel": instance.marketing_channel,
@@ -98,6 +99,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.edu_class = instance.edu_class
                 student.edu_level = instance.edu_level
                 student.subject = instance.subject
+                student.balance = instance.balance
                 student.ball = instance.ball
                 student.filial = instance.filial
                 student.marketing_channel = instance.marketing_channel
