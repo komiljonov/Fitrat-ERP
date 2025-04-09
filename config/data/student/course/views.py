@@ -19,7 +19,7 @@ from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...account.models import CustomUser
 
 
-class CourseList(ListCreateAPIView):
+class   CourseList(ListCreateAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     # permission_classes = [IsAuthenticated]
@@ -36,15 +36,15 @@ class CourseList(ListCreateAPIView):
         filial = self.request.query_params.get('filial', None)
         subject = self.request.query_params.get('subject', None)
 
-        queryset = Course.objects.all()  # ✅ Correct QuerySet initialization
+        queryset = Course.objects.all()
 
         if filial:
-            queryset = queryset.filter(filial=filial)  # ✅ Removed `.objects`
+            queryset = queryset.filter(filial=filial)
         else:
-            queryset = queryset.filter(filial=self.request.user.filial.first())  # ✅ Removed `.objects`
+            queryset = queryset.filter(filial=self.request.user.filial.first())
 
         if level:
-            queryset = queryset.filter(level__id=level)  # ✅ Removed `.objects`
+            queryset = queryset.filter(level__id=level)
 
         if subject:
             queryset = queryset.filter(subject__id=subject)
