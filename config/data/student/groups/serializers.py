@@ -63,7 +63,10 @@ class GroupSerializer(serializers.ModelSerializer):
         return Group.objects.filter(pk=obj.pk).values("course__subject", "course__subject__name").first()
 
     def get_level(self, obj):
-        return Level.objects.filter(courses=obj.course).first()
+        level = Level.objects.filter(courses=obj.course).first()
+        if level:
+            return {"id": level.id, "name": level.name}  # return only what's needed
+        return None
 
     def get_current_theme(self, obj):
         today = date.today()
