@@ -24,7 +24,7 @@ class CourseSerializer(serializers.ModelSerializer):
         return res
 
     def get_lessons_number(self, obj):
-        return Course.objects.filter(id=obj.id).aggregate(total_lessons=Count('lessons'))['total_lessons']
+        return Course.objects.filter(id=obj.id).aggregate(total_lessons=Count('theme'))['total_lessons']
 
     def validate_theme(self, value):
         """Allow theme to be an empty list or a list of valid theme UUIDs"""

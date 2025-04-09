@@ -307,7 +307,6 @@ class StudentSerializer(serializers.ModelSerializer):
 #         }
 
 
-
 class StudentAppSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
@@ -339,3 +338,5 @@ class FistLesson_dataSerializer(serializers.ModelSerializer):
             "level",
             "lid",
         ]
+
+
