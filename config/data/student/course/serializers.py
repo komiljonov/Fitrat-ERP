@@ -26,7 +26,7 @@ class CourseSerializer(serializers.ModelSerializer):
         return res
 
     def get_level_counts(self, obj):
-        return Level.objects.filter(course=obj).count()
+        return Level.objects.filter(courses=obj).count()
 
     def get_lessons_number(self, obj):
         return Course.objects.filter(id=obj.id).aggregate(total_lessons=Count('theme'))['total_lessons']
