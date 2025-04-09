@@ -91,15 +91,11 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
     if instance.group.price_type == "DAILY":
 
-        # Get user sale if there is any...
         if instance.student is not None:
-            sale = SaleStudent.objects.get(
-                student = instance.student,
-            )
+            sale = SaleStudent.objects.filter(student=instance.student).first()
         else:
-            sale = SaleStudent.objects.get(
-                lid=instance.lid,
-            )
+            sale = SaleStudent.objects.filter(lid=instance.lid).first()
+
 
         if sale and hasattr(sale, "sale") and sale.sale and hasattr(sale.sale, "amount"):
             sale_percent = Decimal(sale.sale.amount)
@@ -172,13 +168,9 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         if lesson_count > 0:
             # Get user sale if there is any...
             if instance.student is not None:
-                sale = SaleStudent.objects.get(
-                    student=instance.student,
-                )
+                sale = SaleStudent.objects.filter(student=instance.student).first()
             else:
-                sale = SaleStudent.objects.get(
-                    lid=instance.lid,
-                )
+                sale = SaleStudent.objects.filter(lid=instance.lid).first()
 
             per_lesson_price = price / lesson_count
 
