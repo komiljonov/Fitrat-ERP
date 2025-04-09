@@ -51,8 +51,6 @@ class PaymentMethod(BaseModel):
     def __str__(self):
         return f"{self.name}"
 
-
-
 class Finance(BaseModel):
 
     casher : "Casher" = models.ForeignKey(
@@ -105,10 +103,10 @@ class Finance(BaseModel):
 
     is_first = models.BooleanField(default=False,null=True,blank=True)
 
+    is_given = models.BooleanField(default=False,null=True,blank=True)
+
     def __str__(self):
         return f'{self.amount}  {self.action}'
-
-
 
 class Handover(BaseModel):
     casher : "Casher" = models.ForeignKey(
@@ -153,8 +151,6 @@ class KpiFinance(BaseModel):
     )
     def __str__(self):
         return f"{self.user.phone} {self.type} {self.amount}"
-
-
 
 class Voucher(BaseModel):
     creator: "CustomUser" = models.ForeignKey(
