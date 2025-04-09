@@ -47,7 +47,6 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 
 class LevelSerializer(serializers.ModelSerializer):
-    course = serializers.SerializerMethodField()
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
     class Meta:
         model = Level
@@ -55,10 +54,8 @@ class LevelSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'subject',
-            "course",
+            "courses"
         ]
-    def get_course(self, obj):
-        return Course.objects.filter(level=obj).count()
 
     def to_representation(self, obj):
         rep = super().to_representation(obj)

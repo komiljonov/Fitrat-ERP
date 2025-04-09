@@ -22,6 +22,7 @@ class Level(BaseModel):
     subject : "Subject" = models.ForeignKey("subject.Subject",
                                             on_delete=models.SET_NULL,null=True,blank=True)
     name = models.CharField(max_length=100)
+    courses : "Course" = models.ForeignKey("course.Course",on_delete=models.SET_NULL,null=True,blank=True,related_name="levels_course")
     def __str__(self):
         return self.name
 
