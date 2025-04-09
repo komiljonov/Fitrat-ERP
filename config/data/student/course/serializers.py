@@ -14,14 +14,19 @@ class CourseSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
     lessons_number = serializers.SerializerMethodField()
 
+    level_counts = serializers.SerializerMethodField()
+
     class Meta:
         model = Course
-        fields = ["id", "name", "level","filial", "lessons_number", "theme", "subject", "status"]
+        fields = ["id", "name", "level","filial", "lessons_number", "level_counts" ,"theme", "subject", "status"]
 
     def to_internal_value(self, data):
         res = super().to_internal_value(data)
         res["theme"] = res.get("theme", [])
         return res
+
+    def get_level_counts(self, obj):
+        return Level.objects.filter(course=obj).count()
 
     def get_lessons_number(self, obj):
         return Course.objects.filter(id=obj.id).aggregate(total_lessons=Count('theme'))['total_lessons']

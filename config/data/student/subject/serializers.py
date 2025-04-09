@@ -60,7 +60,7 @@ class LevelSerializer(serializers.ModelSerializer):
         ]
 
     def get_all_themes(self, obj):
-        themes = Theme.objects.filter(subject=obj.subject).count()
+        themes = Theme.objects.filter(course__level=obj).count()
         return themes
 
 
