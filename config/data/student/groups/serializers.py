@@ -10,7 +10,7 @@ from ..attendance.models import Attendance
 from ..course.models import Course
 from ..course.serializers import CourseSerializer
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ..subject.models import Theme
+from ..subject.models import Theme, Level
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 
@@ -63,7 +63,7 @@ class GroupSerializer(serializers.ModelSerializer):
         return Group.objects.filter(pk=obj.pk).values("course__subject", "course__subject__name").first()
 
     def get_level(self, obj):
-        return Group.objects.filter(pk=obj.pk).values_list("course__level", flat=True).first()
+        return Level.objects.filter(courses=obj.course).first()
 
     def get_current_theme(self, obj):
         today = date.today()
