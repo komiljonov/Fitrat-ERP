@@ -62,14 +62,10 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
         bonus = Bonus.objects.filter(user=instance.call_operator,
                                      name="Yaratilgan buyurtma uchun bonus").first()
 
-        ic(Bonus.objects.filter(user=instance.student.call_operator))
-
-        ic(bonus)
 
         is_bonused = KpiFinance.objects.filter(
             lid=instance,
         ).count()
-        ic(bonus,is_bonused)
 
         if (instance.lid_stage_type == "ORDERED_LID" and instance.filial is not
                 None and is_bonused == 0 and instance.call_operator):
@@ -97,7 +93,6 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
         amount = Bonus.objects.filter(user=sale_manager.sales_manager,
                                       name="Sinov darsiga kelgani uchun bonus").first()
 
-        ic(Bonus.objects.filter(user=sale_manager.sales_manager))
         if attendances_count == 1 and instance.student.sales_manager:
             KpiFinance.objects.create(
                 lid=None,
@@ -120,7 +115,7 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
                                        ).count()
         amount = Bonus.objects.filter(user=instance.student.sales_manager,
                                       name="Aktiv o'quvchiga aylangan yangi o’quvchi uchun bonus").first()
-        ic(amount)
+
 
         if count == 1 and instance.student.balance_status=="ACTIVE" and instance.student.sales_manager:
             KpiFinance.objects.create(
@@ -142,9 +137,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
         amount = Bonus.objects.filter(user=instance.student.sales_manager,
                                       name="Sinov darsiga yozilb kemaganlar uchun jarima (Jarima)").first()
 
-        ic(Bonus.objects.filter(user=instance.student.sales_manager))
 
-        ic(amount)
         if attendances_count == 1 and instance.student.sales_manager:
             KpiFinance.objects.create(
                 user=instance.student.sales_manager,
