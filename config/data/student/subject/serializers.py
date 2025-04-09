@@ -44,8 +44,6 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 
 
-
-
 class LevelSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
     all_themes = serializers.SerializerMethodField()
