@@ -95,7 +95,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
         if sale_manager is None:
             sale_manager = instance.student
         amount = Bonus.objects.filter(user=sale_manager.sales_manager,
-                                      name="Sinov darsiga kelgani uchun bonus")
+                                      name="Sinov darsiga kelgani uchun bonus").first()
 
         ic(Bonus.objects.filter(user=sale_manager.sales_manager))
         if attendances_count == 1 and instance.student.sales_manager:
@@ -119,7 +119,7 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
                                        action="INCOME",
                                        ).count()
         amount = Bonus.objects.filter(user=instance.student.sales_manager,
-                                      name="Aktiv o'quvchiga aylangan yangi o’quvchi uchun bonus")
+                                      name="Aktiv o'quvchiga aylangan yangi o’quvchi uchun bonus").first()
         ic(amount)
 
         if count == 1 and instance.student.balance_status=="ACTIVE" and instance.student.sales_manager:
@@ -140,7 +140,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
     if created:
         attendances_count = Attendance.objects.filter(student=instance.student,reason=["UNREASONED"]).count()
         amount = Bonus.objects.filter(user=instance.student.sales_manager,
-                                      name="Sinov darsiga yozilb kemaganlar uchun jarima (Jarima)")
+                                      name="Sinov darsiga yozilb kemaganlar uchun jarima (Jarima)").first()
 
         ic(Bonus.objects.filter(user=instance.student.sales_manager))
 
@@ -164,7 +164,7 @@ def new_created_order(sender, instance: Student, created, **kwargs):
         finance = Finance.objects.filter(student=instance,action="INCOME").count()
         if instance.service_manager and instance.balance_status == "ACTIVE" and finance == 1:
             amount = Bonus.objects.filter(user=instance.service_manager,
-                                          name="Hizmat ko’rsatgan har bir Aktiv o'quvchi uchun bonus")
+                                          name="Hizmat ko’rsatgan har bir Aktiv o'quvchi uchun bonus").first()
             KpiFinance.objects.create(
                 user=instance.service_manager,
                 student=instance,
@@ -182,7 +182,7 @@ def new_created_order(sender, instance: Student, created, **kwargs):
         att = Attendance.objects.filter(student=instance,reason="UNREASONED").count()
         if att > 2 and instance.service_manager:
             amount = Bonus.objects.filter(user=instance.service_manager,
-                                          name="Agar o’quvchi ketib qolsa jarima yoziladi (Jarima)")
+                                          name="Agar o’quvchi ketib qolsa jarima yoziladi (Jarima)").first()
             KpiFinance.objects.create(
                 user=instance.service_manager,
                 student=instance,
