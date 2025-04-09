@@ -58,7 +58,7 @@ class LevelList(ListCreateAPIView):
         queryset = Level.objects.all()
 
         if course:
-            queryset = queryset.filter(courses_level__id=course)
+            queryset = queryset.filter(courses__id=course)
 
         if subject:
             queryset = queryset.filter(subject__id=subject)
