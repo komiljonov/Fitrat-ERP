@@ -1,3 +1,4 @@
+from icecream import ic
 from rest_framework import serializers
 
 from data.account.models import CustomUser
@@ -282,12 +283,6 @@ class ResultsSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
-    def create(self, validated_data):
-        teacher = validated_data.get('teacher')
-        filial = teacher.filials.first()  # Assuming teacher can have many filials
-
-        result = Results.objects.create(filial=filial, **validated_data)
-        return result
     def to_representation(self, instance):
 
         """ Remove fields that are None or empty """
