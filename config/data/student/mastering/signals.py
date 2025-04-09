@@ -97,7 +97,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
         amount = Bonus.objects.filter(user=sale_manager.sales_manager,
                                       name="Sinov darsiga kelgani uchun bonus")
 
-        ic(Bonus.objects.filter(user=instance.lid.sales_manager))
+        ic(Bonus.objects.filter(user=sale_manager.sales_manager))
         if attendances_count == 1 and instance.student.sales_manager:
             KpiFinance.objects.create(
                 lid=None,
