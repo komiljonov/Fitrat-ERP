@@ -111,13 +111,19 @@ class ThemeList(ListCreateAPIView):
         queryset = Theme.objects.all()
 
         theme = self.request.query_params.get('theme')
+        level = self.request.query_params.get('level')
         if theme:
             queryset = queryset.filter(theme=theme)
         course = self.request.query_params.get('course')
         if course:
             queryset = queryset.filter(course__id=course)
 
+
         id = self.request.query_params.get('id')
+
+        if level:
+            queryset = queryset.filter(course__levels_course__id=level)
+
         if id:
             try:
                 course = Group.objects.get(id=id)  # Agar id yo'q bo'lsa, xatolik qaytaradi
