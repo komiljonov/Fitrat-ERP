@@ -89,30 +89,37 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
         ic(f"For {finance.lid.first_name if finance.lid else finance.student.first_name} voucher created ...")
 
 
-#
-# @receiver(post_save, sender=KpiFinance)
-# def on_create(sender, instance: KpiFinance, created, **kwargs):
-#     if created:
-#         if instance.type == "INCOME":
-#             Finance.objects.create(
-#                 casher = Casher.objects.filter(filial__in=instance.user.filial.all(),
-#                                                role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
-#                 action = "EXPENSE",
-#                 amount = instance.amount,
-#                 kind = Kind.objects.filter(name="Bonus").first(),
-#                 payment_method="card",
-#                 stuff = instance.user,
-#                 comment = "Xodim uchun bonus kpi sifatida qo'shildi!"
-#             )
-#         else:
-#             Finance.objects.create(
-#                 casher=Casher.objects.filter(filial__in=instance.user.filial.all(),
-#                                              role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
-#                 action="INCOME",
-#                 amount=instance.amount,
-#                 kind=Kind.objects.filter(name="Money back").first(),
-#                 payment_method="card",
-#                 stuff=instance.user,
-#                 comment="Xodim uchun jarima sifatida qo'shildi!"
-#             )
+
+@receiver(post_save, sender=KpiFinance)
+def on_create(sender, instance: KpiFinance, created, **kwargs):
+    if created:
+        if instance.type == "INCOME":
+            instance.user.balance += float(instance.amount)
+            instance.user.save()
+
+            # Finance.objects.create(
+            #     casher = Casher.objects.filter(filial__in=instance.user.filial.all(),
+            #                                    role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
+            #     action = "EXPENSE",
+            #     amount = instance.amount,
+            #     kind = Kind.objects.filter(name="Bonus").first(),
+            #     payment_method="card",
+            #     stuff = instance.user,
+            #     comment = "Xodim uchun bonus kpi sifatida qo'shildi!"
+            # )
+        else:
+
+            instance.user.balance -= float(instance.amount)
+            instance.user.save()
+
+            # Finance.objects.create(
+            #     casher=Casher.objects.filter(filial__in=instance.user.filial.all(),
+            #                                  role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
+            #     action="INCOME",
+            #     amount=instance.amount,
+            #     kind=Kind.objects.filter(name="Money back").first(),
+            #     payment_method="card",
+            #     stuff=instance.user,
+            #     comment="Xodim uchun jarima sifatida qo'shildi!"
+            # )
 
