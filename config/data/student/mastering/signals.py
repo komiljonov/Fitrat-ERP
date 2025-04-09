@@ -91,7 +91,8 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
     if created:
         attendances_count = Attendance.objects.filter(student=instance.student,
                                                       reason="IS_PRESENT").count()
-        amount = Bonus.objects.filter(user=instance.student.sales_manager,
+        sale_manager = Lid.objects.filter(student=instance.student,).first()
+        amount = Bonus.objects.filter(user=sale_manager.sales_manager,
                                       name="Sinov darsiga kelgani uchun bonus")
 
         ic(Bonus.objects.filter(user=instance.lid.sales_manager))
