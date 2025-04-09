@@ -9,7 +9,7 @@ django.setup()
 
 from data.student.groups.models import Day
 from data.account.models import CustomUser
-from data.department.marketing_channel.models import MarketingChannel
+from data.department.marketing_channel.models import MarketingChannel, Group_Type
 from data.finances.compensation.models import Page, Asos
 from data.finances.finance.models import Kind
 fake = Faker()

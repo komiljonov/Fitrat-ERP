@@ -2,6 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Group, SecondaryGroup
+from ...department.marketing_channel.models import Group_Type
 from ...notifications.models import Notification
 
 
@@ -34,3 +35,13 @@ def on_create(sender, instance: Group, created, **kwargs):
             comment=f"{instance.name} guruhining yordamchi guruhi yaratildi !",
             come_from=instance,
         )
+
+
+@receiver(post_save, sender=Group)
+def on_payment_method(sender, instance: Group, created: bool, **kwargs):
+    if created:
+        group_count = Group.objects.all().count()
+        if group_count == 1:
+             Group_Type.objects.create(
+                 price_type=instance.price_type
+             )
