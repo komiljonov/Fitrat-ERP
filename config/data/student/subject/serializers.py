@@ -48,14 +48,21 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 class LevelSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
+    all_themes = serializers.SerializerMethodField()
     class Meta:
         model = Level
         fields = [
             'id',
             'name',
             'subject',
-            "courses"
+            "courses",
+            "all_themes",
         ]
+
+    def get_all_themes(self, obj):
+        themes = Theme.objects.filter(subject=obj).count()
+        return themes
+
 
     def to_representation(self, obj):
         rep = super().to_representation(obj)
