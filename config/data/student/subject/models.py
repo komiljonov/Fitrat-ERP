@@ -13,6 +13,9 @@ class Subject(BaseModel):
     label = models.CharField(max_length=100, blank=True, null=True)
     has_level = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ('created_at',)
+
     def __str__(self):
         return f"{self.name}  has level  {self.has_level}"
 
