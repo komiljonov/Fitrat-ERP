@@ -50,6 +50,11 @@ class Theme(BaseModel):
         "course.Course", on_delete=models.CASCADE, related_name="courses_themes"
     )
 
+    level : "Level" = models.ForeignKey(
+        "subject.Level", on_delete=models.SET_NULL,null=True,blank=True, 
+        related_name="themes_level"
+    )
+
     # Separate fields for different types of work within the same Theme
     homework_files = models.ManyToManyField(
         'upload.File',  blank=True, related_name='theme_homework_files'

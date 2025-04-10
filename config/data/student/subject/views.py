@@ -121,15 +121,15 @@ class ThemeList(ListCreateAPIView):
 
         id = self.request.query_params.get('id')
 
-        if level:
-            queryset = queryset.filter(course__levels_course__id=level)
-
         if id:
             try:
                 course = Group.objects.get(id=id)  # Agar id yo'q bo'lsa, xatolik qaytaradi
                 queryset = queryset.filter(course=course.course)
             except Group.DoesNotExist:
                 pass  # Agar Group topilmasa, filtr qo'llanilmaydi
+        
+        if level:
+            queryset = queryset.filter(level__id=level)
 
         return queryset
 

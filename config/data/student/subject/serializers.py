@@ -92,6 +92,7 @@ class ThemeSerializer(serializers.ModelSerializer):
             'theme',
             "repeated_theme",
             'course',
+            'level',
             'description',
             'videos',
             'files',
