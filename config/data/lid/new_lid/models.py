@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 
@@ -108,7 +109,7 @@ class Lid(BaseModel):
     student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL,
                                             null=True,blank=True,)
 
-    balance = models.FloatField(default=0)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"
