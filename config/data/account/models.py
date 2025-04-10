@@ -1,3 +1,4 @@
+from decimal import Decimal
 import uuid
 
 from django.contrib.auth.models import AbstractUser
@@ -46,7 +47,7 @@ class CustomUser(AbstractUser):
 
     role = models.CharField(choices=ROLE_CHOICES, max_length=30, default="DIRECTOR")
 
-    balance = models.FloatField(default=0)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
     salary = models.FloatField(default=0)
 

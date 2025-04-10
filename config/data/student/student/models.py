@@ -1,3 +1,4 @@
+from decimal import Decimal
 import hashlib
 from typing import TYPE_CHECKING
 
@@ -77,7 +78,7 @@ class Student(BaseModel):
         max_length=100,
         help_text="Student stage type",
     )
-    balance = models.FloatField(default=0)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
     balance_status = models.CharField(
         choices=[

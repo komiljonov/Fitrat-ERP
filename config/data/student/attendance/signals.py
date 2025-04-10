@@ -124,7 +124,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         #     is_first=is_first_income,
         #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
         # )
-        instance.group.teacher.balance += float(bonus_amount)
+        instance.group.teacher.balance += bonus_amount
         instance.group.teacher.save()
 
         # Center's income
@@ -138,7 +138,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
         )
 
-        instance.student.balance -= float(price)
+        instance.student.balance -= price
         instance.student.save()
 
     elif instance.group.price_type == "MONTHLY":
@@ -189,7 +189,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             ic(per_lesson_price, bonus_amount, income_amount)
 
             # Update balances
-            instance.student.balance -= float(per_lesson_price)
+            instance.student.balance -= per_lesson_price
             instance.student.save()
 
 
@@ -204,7 +204,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             #     is_first=is_first_income,
             #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M' )}"
             # )
-            instance.group.teacher.balance += float(bonus_amount)
+            instance.group.teacher.balance += bonus_amount
             instance.group.teacher.save()
 
             Finance.objects.create(
