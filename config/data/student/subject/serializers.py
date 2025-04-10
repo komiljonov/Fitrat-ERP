@@ -53,7 +53,7 @@ class LevelSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'subject',
-            # "courses",
+            "courses",
             "all_themes",
         ]
 
