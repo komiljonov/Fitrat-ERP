@@ -131,7 +131,7 @@ class ThemeList(ListCreateAPIView):
         if level:
             queryset = queryset.filter(level__id=level)
 
-        return queryset
+        return queryset 
 
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):
