@@ -1,3 +1,4 @@
+from decimal import Decimal
 from itertools import count
 
 from django.db.models import Count
@@ -13,17 +14,17 @@ def on_create(sender, instance: Finance, created, **kwargs):
     if created :
         if instance.lid :
             if instance.action == "INCOME":
-                instance.lid.balance += instance.amount
+                instance.lid.balance += Decimal(instance.amount)
                 instance.lid.save()
 
 
         if instance.student:
             if instance.action == "INCOME":
-                instance.student.balance += instance.amount
+                instance.student.balance += Decimal(instance.amount)
                 instance.student.save()
             else:
                 if not instance.kind.name == "Voucher":
-                    instance.student.balance -= instance.amount
+                    instance.student.balance -= Decimal(instance.amount)
                     instance.student.save()
 
         if instance.stuff:
@@ -32,11 +33,11 @@ def on_create(sender, instance: Finance, created, **kwargs):
                     and instance.kind is not None
                     and instance.kind.name == "Salary"
             ):
-                instance.stuff.balance -= instance.amount
+                instance.stuff.balance -= Decimal(instance.amount)
                 instance.stuff.save()
             else:
                 if instance.kind.name != "Lesson payment":
-                    instance.stuff.balance += instance.amount
+                    instance.stuff.balance += Decimal(instance.amount)
                     instance.stuff.save()
 
 # @receiver(post_save, sender=Finance)
@@ -69,7 +70,7 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
                 lid=instance.lid,
                 comment = f"Ushbu buyurtma uchun {instance.voucher.amount} so'm miqdorida voucher qo'shildi!"
             )
-            finance.lid.balance += finance.amount
+            finance.lid.balance += Decimal(finance.amount)
             finance.lid.save()
 
         else:
@@ -82,7 +83,7 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
                 student=instance.student,
                 comment= f"Ushbu o'quvchi uchun {instance.voucher.amount} so'm miqdorida voucher qo'shildi!"
             )
-            finance.student.balance += finance.amount
+            finance.student.balance += Decimal(finance.amount)
             finance.student.save()
 
 
@@ -94,7 +95,7 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
 def on_create(sender, instance: KpiFinance, created, **kwargs):
     if created:
         if instance.type == "INCOME":
-            instance.user.balance += instance.amount
+            instance.user.balance += Decimal(instance.amount)
             instance.user.save()
 
             # Finance.objects.create(
@@ -109,7 +110,7 @@ def on_create(sender, instance: KpiFinance, created, **kwargs):
             # )
         else:
 
-            instance.user.balance -= instance.amount
+            instance.user.balance -= Decimal(instance.amount)
             instance.user.save()
 
             # Finance.objects.create(
