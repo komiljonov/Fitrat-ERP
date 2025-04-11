@@ -202,7 +202,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             ic(per_lesson_price, bonus_amount, income_amount)
 
             # Update balances
-            instance.student.balance -= per_lesson_price / 100
+            instance.student.balance -= per_lesson_price
             instance.student.save()
 
 
@@ -217,12 +217,12 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             #     is_first=is_first_income,
             #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M' )}"
             # )
-            instance.group.teacher.balance += bonus_amount / 100
+            instance.group.teacher.balance += bonus_amount 
             instance.group.teacher.save()
 
             Finance.objects.create(
                 action="INCOME",
-                amount=income_amount / 100,
+                amount=income_amount,
                 kind=kind,
                 attendance=instance,
                 student=instance.student,
