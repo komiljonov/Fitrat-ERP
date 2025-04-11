@@ -144,7 +144,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
         )
 
-        instance.student.balance -= price
+        instance.student.balance -= Decimal(instance.group.price)
         instance.student.save()
 
     elif instance.group.price_type == "MONTHLY":
