@@ -165,7 +165,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         lesson_days = ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
 
         holidays = []
-        days_off = ["Yakshanba"]
+        days_off: list[str] = ["Yakshanba"]
 
         lessons_per_month = calculate_lessons(
             start_date=current_month.strftime("%Y-%m-%d"),
