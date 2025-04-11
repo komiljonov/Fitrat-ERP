@@ -110,6 +110,10 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             ic(discount)
             price -= discount
             ic(price)
+        
+
+        instance.student.balance -= price
+        instance.student.save()
 
         bonus_amount = price * bonus_percent / Decimal("100")
         income_amount = price - bonus_amount
@@ -144,8 +148,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
         )
 
-        instance.student.balance -= Decimal(instance.group.price)
-        instance.student.save()
+
 
     elif instance.group.price_type == "MONTHLY":
 
@@ -196,16 +199,13 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             instance.amount = per_lesson_price
             instance.save()
 
+            instance.student.balance -= per_lesson_price
+            instance.student.save()
+
             bonus_amount = per_lesson_price * bonus_percent / Decimal("100")
             income_amount = per_lesson_price - bonus_amount
 
             ic(per_lesson_price, bonus_amount, income_amount)
-
-            # Update balances
-            instance.student.balance -= per_lesson_price
-            instance.student.save()
-
-
 
             # Finance.objects.create(
             #     action="EXPENSE",
@@ -217,6 +217,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             #     is_first=is_first_income,
             #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M' )}"
             # )
+            
             instance.group.teacher.balance += bonus_amount 
             instance.group.teacher.save()
 
