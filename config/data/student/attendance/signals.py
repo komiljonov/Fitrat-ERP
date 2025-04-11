@@ -13,59 +13,78 @@ from ...finances.finance.models import Finance, Kind, SaleStudent
 from ...notifications.models import Notification
 
 
+def get_sale_for_instance(instance):
+    if instance.student:
+        return SaleStudent.objects.filter(student=instance.student).select_related("sale").first()
+    return SaleStudent.objects.filter(lid=instance.lid).select_related("sale").first()
+
+
+def apply_discount(price, sale):
+    if sale and sale.sale and sale.sale.amount:
+        try:
+            sale_percent = Decimal(sale.sale.amount)
+            discount = price * sale_percent / Decimal("100")
+            ic("Discount:", discount)
+            return price - discount
+        except (TypeError, ValueError, Decimal.InvalidOperation):
+            ic("Invalid sale amount")
+    return price
+
+
+def calculate_bonus_and_income(price, bonus_percent):
+    bonus_amount = price * bonus_percent / Decimal("100")
+    income_amount = price - bonus_amount
+    return bonus_amount, income_amount
+
+
+def create_finance_record(action, amount, kind, instance, student, teacher=None, is_first=False):
+    return Finance.objects.create(
+        action=action,
+        amount=amount,
+        kind=kind,
+        attendance=instance,
+        student=student,
+        stuff=teacher,
+        is_first=is_first,
+        comment=f"Talaba {student.first_name} {student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
+    )
+
+
 @receiver(post_save, sender=Attendance)
 def on_attendance_create(sender, instance: Attendance, created, **kwargs):
-
-
     if instance.lid:
-
         attendances_count = Attendance.objects.filter(lid=instance.lid).count()
+        instance.lid.is_student = True
+        instance.lid.save()
 
-        if attendances_count == 1:
-            if instance.reason == "IS_PRESENT":
-                instance.lid.is_student = True
-                instance.lid.save()
-
-            else:
-                instance.lid.is_student = True
-                instance.lid.save()
-                stage_name = f"{attendances_count} darsga qatnashmagan"
-                Notification.objects.create(
-                    user=instance.lid.call_operator,
-                    comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {stage_name} !",
-                    come_from=instance.lid,
-                )
+        if attendances_count == 1 and instance.reason != "IS_PRESENT":
+            Notification.objects.create(
+                user=instance.lid.call_operator,
+                comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan !",
+                come_from=instance.lid,
+            )
 
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
 
         if attendances_count == 1:
-            if instance.reason in ["UNREASONED","REASONED"]:
-                instance.student.new_student_stages = "BIRINCHI_DARSGA_KELMAGAN"
-                instance.student.save()
+            stage = "BIRINCHI_DARS" if instance.reason == "IS_PRESENT" else "BIRINCHI_DARSGA_KELMAGAN"
+            instance.student.new_student_stages = stage
+            instance.student.save()
 
-            if instance.reason == "IS_PRESENT":
-                instance.student.new_student_stages = "BIRINCHI_DARS"
-                instance.student.save()
-
-        if attendances_count > 1 and instance.reason == "IS_PRESENT":
-
-            if instance.student.balance_status =="INACTIVE":
+        if attendances_count > 1:
+            if instance.reason == "IS_PRESENT" and instance.student.balance_status == "INACTIVE":
                 Notification.objects.create(
                     user=instance.student.sales_manager,
-                    comment=f"Talaba {instance.student.first_name} {instance.student.phone} - "
-                            f"{attendances_count} darsga qatnashdi va balansi statusi inactive, To'lov haqida ogohlantiring!",
+                    comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashdi va balansi statusi inactive, To'lov haqida ogohlantiring!",
                     come_from=instance.lid,
                 )
-
-        if attendances_count > 1 and instance.reason == "UNREASONED":
-
-            Notification.objects.create(
-                user=instance.student.sales_manager,
-                comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashmagan!",
-                come_from=instance.student,
-            )
-
+            elif instance.reason == "UNREASONED":
+                Notification.objects.create(
+                    user=instance.student.sales_manager,
+                    comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashmagan!",
+                    come_from=instance.student,
+                )
 
 
 @receiver(post_save, sender=Attendance)
@@ -77,83 +96,37 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         return
 
     kind = Kind.objects.get(name="Lesson payment")
-    is_first_income = Finance.objects.filter(action="INCOME").count() == 0
+    is_first_income = not Finance.objects.filter(action="INCOME").exists()
 
-    # Get teacher bonus as Decimal (if exists)
-    teacher_bonus = Bonus.objects.filter(
+    bonus = Bonus.objects.filter(
         user=instance.group.teacher,
         name="O’quvchi to’lagan summadan foiz beriladi"
     ).values("amount").first()
 
-    bonus_percent = Decimal(teacher_bonus["amount"]) if teacher_bonus else Decimal("0.0")
+    bonus_percent = Decimal(bonus["amount"]) if bonus else Decimal("0.0")
 
     price = Decimal(instance.group.price)
+    sale = get_sale_for_instance(instance)
 
     if instance.group.price_type == "DAILY":
+        final_price = apply_discount(price, sale)
 
-        if instance.student is not None:
-            sale = SaleStudent.objects.filter(student=instance.student).first()
-        else:
-            sale = SaleStudent.objects.filter(lid=instance.lid).first()
-
-
-        if sale and hasattr(sale, "sale") and sale.sale and hasattr(sale.sale, "amount"):
-            sale_percent = Decimal(sale.sale.amount)
-
-            ic("sale_price" ,sale_percent)
-
-            discount = price * (sale_percent / Decimal("100"))
-            ic(discount)
-            price -= discount
-            ic(price)
-        
-
-        instance.student.balance -= price
+        instance.student.balance -= final_price
         instance.student.save()
 
-        bonus_amount = price * bonus_percent / Decimal("100")
-        income_amount = price - bonus_amount
+        bonus_amount, income_amount = calculate_bonus_and_income(final_price, bonus_percent)
 
-        instance.amount = bonus_amount + income_amount
+        instance.amount = final_price
         instance.save()
 
-        ic(income_amount , bonus_amount)
-
-        # # Teacher bonus (EXPENSE)
-        # Finance.objects.create(
-        #     action="EXPENSE",
-        #     amount=bonus_amount,
-        #     kind=kind,
-        #     attendance=instance,
-        #     student=instance.student,
-        #     stuff=instance.group.teacher,
-        #     is_first=is_first_income,
-        #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
-        # )
         instance.group.teacher.balance += bonus_amount
         instance.group.teacher.save()
 
-        # Center's income
-        Finance.objects.create(
-            action="INCOME",
-            amount=income_amount,
-            kind=kind,
-            attendance=instance,
-            student=instance.student,
-            is_first=is_first_income,
-            comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
-        )
-
-
+        create_finance_record("INCOME", income_amount, kind, instance, instance.student, is_first=is_first_income)
 
     elif instance.group.price_type == "MONTHLY":
-
-
-        # MONTHLY PAYMENT TYPE
         current_month = datetime.date.today().replace(day=1)
         month_key = current_month.strftime("%Y-%m")
-
-        # Get the last day of the current month
         last_day = calendar.monthrange(current_month.year, current_month.month)[1]
         end_of_month = current_month.replace(day=last_day)
 
@@ -161,7 +134,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         lesson_days = ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
 
         holidays = []
-        days_off: list[str] = ["Yakshanba"]
+        days_off = ["Yakshanba"]
 
         lessons_per_month = calculate_lessons(
             start_date=current_month.strftime("%Y-%m-%d"),
@@ -170,29 +143,13 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             holidays=holidays,
             days_off=days_off,
         )
-        
-        price = Decimal(instance.group.price)
 
         lessons = lessons_per_month.get(month_key, [])
         lesson_count = len(lessons)
-        ic(lesson_count)
 
         if lesson_count > 0:
-            # Get user sale if there is any...
-            if instance.student is not None:
-                sale = SaleStudent.objects.filter(student=instance.student).first()
-            else:
-                sale = SaleStudent.objects.filter(lid=instance.lid).first()
-
             per_lesson_price = price / lesson_count
-
-            ic(per_lesson_price)
-
-            if sale and hasattr(sale, "sale") and sale.sale and hasattr(sale.sale, "amount"):
-                sale_percent = Decimal(sale.sale.amount)
-                ic(per_lesson_price * (sale_percent / Decimal("100")))
-                per_lesson_price -= per_lesson_price * (sale_percent / Decimal("100"))
-
+            per_lesson_price = apply_discount(per_lesson_price, sale)
 
             instance.amount = per_lesson_price
             instance.save()
@@ -200,33 +157,11 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             instance.student.balance -= per_lesson_price
             instance.student.save()
 
-            bonus_amount = per_lesson_price * bonus_percent / Decimal("100")
-            income_amount = per_lesson_price - bonus_amount
+            bonus_amount, income_amount = calculate_bonus_and_income(per_lesson_price, bonus_percent)
 
-            ic(per_lesson_price, bonus_amount, income_amount)
-
-            # Finance.objects.create(
-            #     action="EXPENSE",
-            #     amount=bonus_amount,
-            #     kind=kind,
-            #     attendance=instance,
-            #     student=instance.student,
-            #     stuff=instance.group.teacher,
-            #     is_first=is_first_income,
-            #     comment=f"Talaba {instance.student.first_name} {instance.student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M' )}"
-            # )
-            
-            instance.group.teacher.balance += bonus_amount 
+            instance.group.teacher.balance += bonus_amount
             instance.group.teacher.save()
 
-            Finance.objects.create(
-                action="INCOME",
-                amount=income_amount,
-                kind=kind,
-                attendance=instance,
-                student=instance.student,
-                is_first=is_first_income,
-                comment=f"Talaba {instance.student.first_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
-            )
+            create_finance_record("INCOME", income_amount, kind, instance, instance.student, is_first=is_first_income)
         else:
-            print(f"No lessons scheduled for {month_key}, skipping balance deduction.")
+            ic(f"No lessons scheduled for {month_key}, skipping balance deduction.")
