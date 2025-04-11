@@ -86,12 +86,8 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     ).values("amount").first()
 
     bonus_percent = Decimal(teacher_bonus["amount"]) if teacher_bonus else Decimal("0.0")
-    ic(bonus_percent)
 
     price = Decimal(instance.group.price)
-
-    ic(price)
-
 
     if instance.group.price_type == "DAILY":
 
@@ -174,6 +170,8 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             holidays=holidays,
             days_off=days_off,
         )
+        
+        price = Decimal(instance.group.price)
 
         lessons = lessons_per_month.get(month_key, [])
         lesson_count = len(lessons)
