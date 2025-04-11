@@ -1,3 +1,4 @@
+import calendar
 import datetime
 from decimal import Decimal
 
@@ -85,8 +86,11 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     ).values("amount").first()
 
     bonus_percent = Decimal(teacher_bonus["amount"]) if teacher_bonus else Decimal("0.0")
+    ic(bonus_percent)
 
     price = Decimal(instance.group.price)
+
+    ic(price)
 
 
     if instance.group.price_type == "DAILY":
@@ -99,8 +103,10 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         if sale and hasattr(sale, "sale") and sale.sale and hasattr(sale.sale, "amount"):
             sale_percent = Decimal(sale.sale.amount)
+
+            ic("sale_price" ,sale_percent)
+
             discount = price * (sale_percent / Decimal("100"))
-            ic(sale_percent)
             ic(discount)
             price -= discount
             ic(price)
@@ -143,9 +149,14 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
     elif instance.group.price_type == "MONTHLY":
 
+
         # MONTHLY PAYMENT TYPE
         current_month = datetime.date.today().replace(day=1)
         month_key = current_month.strftime("%Y-%m")
+
+        # Get the last day of the current month
+        last_day = calendar.monthrange(current_month.year, current_month.month)[1]
+        end_of_month = current_month.replace(day=last_day)
 
         lesson_days_qs = instance.group.scheduled_day_type.all()
         lesson_days = ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
@@ -155,7 +166,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         lessons_per_month = calculate_lessons(
             start_date=current_month.strftime("%Y-%m-%d"),
-            end_date=instance.group.finish_date.strftime("%Y-%m-%d"),
+            end_date=end_of_month.strftime("%Y-%m-%d"),
             lesson_type=lesson_days,
             holidays=holidays,
             days_off=days_off,
@@ -173,6 +184,8 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 sale = SaleStudent.objects.filter(lid=instance.lid).first()
 
             per_lesson_price = price / lesson_count
+
+            ic(per_lesson_price)
 
             if sale and hasattr(sale, "sale") and sale.sale and hasattr(sale.sale, "amount"):
                 sale_percent = Decimal(sale.sale.amount)
