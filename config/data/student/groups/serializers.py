@@ -67,7 +67,7 @@ class GroupSerializer(serializers.ModelSerializer):
             created_at__date=date.today()
         ).first()
         
-        return attendance.theme if attendance else False
+        return attendance.theme if attendance else ""
 
     def get_subject(self, obj):
         return Group.objects.filter(pk=obj.pk).values("course__subject", "course__subject__name").first()
