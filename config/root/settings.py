@@ -15,9 +15,8 @@ from pathlib import Path
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-from data.notifications.send_notifications import initialize_firebase
 
-initialize_firebase()
+# initialize_firebase()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -134,6 +133,7 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -154,13 +154,15 @@ WSGI_APPLICATION = 'root.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-#
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# from decouple import config
 
 # DATABASES = {
 #     "default": {
@@ -169,13 +171,12 @@ DATABASES = {
 #         "USER": config("POSTGRES_USER"),
 #         "PASSWORD": config("POSTGRES_PASSWORD"),
 #         "HOST": config("POSTGRES_HOST", default="localhost"),
-#         "PORT": config("POSTGRES_PORT", default=5432, cast=int),
+#         "PORT": config("POSTGRES_PORT", default=5434, cast=int),
 #         "OPTIONS": {
 #             "client_encoding": "UTF8",
 #         }
 #     }
 # }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

@@ -268,45 +268,6 @@ class StudentSerializer(serializers.ModelSerializer):
         return representation
 
 
-# class StudentTokenObtainPairSerializer(TokenObtainPairSerializer):
-#     phone = serializers.CharField()
-#     password = serializers.CharField(write_only=True)
-#
-#     def validate(self, attrs):
-#         phone = attrs.get('phone')
-#         password = attrs.get('password')
-#         ic(password)
-#
-#         if not phone or not password:
-#             raise serializers.ValidationError(
-#                 "Must include 'phone' and 'password'.",
-#                 code="authorization"
-#             )
-#
-#         backend = StudentAuthBackend()
-#         user = backend.authenticate(
-#             request=self.context.get('request'),
-#             phone=phone,
-#             password=password,
-#         )
-#         ic(user)
-#
-#         if not user:
-#             raise serializers.ValidationError(
-#                 "Unable to log in with provided credentials.",
-#                 code="authorization"
-#             )
-#
-#         # Generate JWT tokens
-#         refresh = RefreshToken.for_user(user)
-#         return {
-#             "refresh": str(refresh),
-#             "access": str(refresh.access_token),
-#             "user_id": user.id,
-#             "phone": phone
-#         }
-
-
 class StudentAppSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
