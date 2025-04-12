@@ -134,7 +134,7 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
 def new_created_order(sender, instance: Attendance, created, **kwargs):
     if created:
         attendances_count = Attendance.objects.filter(student=instance.student,reason=["UNREASONED"]).count()
-        amount = Bonus.objects.filter(user=instance.student.sales_manager,
+        amount = Bonus.objects.filter(user=instance.student.sales_manager if instance.student else instance.lid.sales_manager,
                                       name="Sinov darsiga yozilb kemaganlar uchun jarima (Jarima)").first()
 
 
