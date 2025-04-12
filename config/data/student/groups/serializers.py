@@ -123,7 +123,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
         return group
 
-
+ 
 class GroupLessonSerializer(serializers.ModelSerializer):
     group_lesson_dates = serializers.SerializerMethodField()  # Add this field
 
