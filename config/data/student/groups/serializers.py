@@ -13,7 +13,7 @@ from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Theme, Level
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
-
+from icecream import ic
 
 class DaySerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,7 +31,6 @@ class GroupSerializer(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True)
     subject = serializers.SerializerMethodField()
     level = serializers.SerializerMethodField()
-    is_attendance = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
@@ -56,18 +55,9 @@ class GroupSerializer(serializers.ModelSerializer):
             'start_date',
             'finish_date',
             'is_secondary',
-            'is_attendance',
             'current_theme',
             "created_at",
         ]
-
-    def get_is_attendance(self, obj):
-        attendance = Attendance.objects.filter(
-            group=obj,
-            created_at__date=date.today()
-        ).first()
-        
-        return attendance.theme if attendance else ""
 
     def get_subject(self, obj):
         return Group.objects.filter(pk=obj.pk).values("course__subject", "course__subject__name").first()
