@@ -14,7 +14,7 @@ def on_create(sender, instance: Student, created, **kwargs):
     global _signal_active
 
     if _signal_active:
-        return  # Prevent recursion if the signal is already active
+        return
 
     if not created:
         try:

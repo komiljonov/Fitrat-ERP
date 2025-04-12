@@ -31,7 +31,6 @@ class GroupSerializer(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True)
     subject = serializers.SerializerMethodField()
     level = serializers.SerializerMethodField()
-    
     is_attendance = serializers.Serializer()
 
     class Meta:
@@ -61,12 +60,15 @@ class GroupSerializer(serializers.ModelSerializer):
             'current_theme',
             "created_at",
         ]
-        
-    def get_is_attendance(self,obj):
-        return Attendance.objects.filter(
+
+    def get_is_attendance(self, obj):
+        attendance = Attendance.objects.filter(
             group=obj,
             created_at__date=date.today()
-        ).exists()
+        ).first()
+        
+        return attendance.theme if attendance else False
+
     def get_subject(self, obj):
         return Group.objects.filter(pk=obj.pk).values("course__subject", "course__subject__name").first()
 
