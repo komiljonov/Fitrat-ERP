@@ -299,5 +299,3 @@ class FistLesson_dataSerializer(serializers.ModelSerializer):
             "level",
             "lid",
         ]
-
-
