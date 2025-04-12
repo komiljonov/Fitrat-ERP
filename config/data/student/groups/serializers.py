@@ -31,7 +31,7 @@ class GroupSerializer(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True)
     subject = serializers.SerializerMethodField()
     level = serializers.SerializerMethodField()
-    is_attendance = serializers.Serializer()
+    is_attendance = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
