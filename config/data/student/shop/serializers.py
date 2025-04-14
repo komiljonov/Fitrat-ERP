@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Points,Coins,Products,Shop
+from .models import Points,Coins,Products,Purchase
 
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
@@ -56,6 +56,8 @@ class ProductsSerializer(serializers.ModelSerializer):
         model = Products
         fields = [
             "id",
+            "category",
+            "coin",
             "image",
             "created_at",
         ]
@@ -65,11 +67,11 @@ class ProductsSerializer(serializers.ModelSerializer):
         return rep
 
 
-class ShopSerializer(serializers.ModelSerializer):
+class PurchaseSerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Products.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     class Meta:
-        model = Shop
+        model = Purchase
         fields = [
             "id",
             "product",
