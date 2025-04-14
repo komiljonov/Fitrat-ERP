@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from rest_framework import serializers
 
 from .models import Points,Coins,Products,Purchase
@@ -39,10 +40,21 @@ class CoinsSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "student",
+            "coin",
             "comment",
             "is_exchanged",
             "created_at",
         ]
+
+    # def create(self, validated_data):
+    #     if validated_data["student"] and validated_data["coin"] <0:
+    #         raise serializers.ValidationError("Coins cannot be negative")
+    #
+    #     user = Student.objects.get(pk=validated_data["student"])
+    #     user.
+    #
+    #     return Coins.objects.create(**validated_data)
+`
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -79,6 +91,24 @@ class PurchaseSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
         ]
+
+    def create(self, validated_data):
+        total = Coins.objects.filter(
+            user=self.context["request"].user,
+            is_exchanged=False
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        if total < validated_data.get("product").coin :
+            raise serializers.ValidationError(
+                "Student does not have enough coins to purchase product"
+            )
+
+
+
+        return Purchase.objects.create(**validated_data)
+
+
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["student"] = StudentSerializer(instance.student).data
