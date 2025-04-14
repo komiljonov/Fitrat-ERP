@@ -11,6 +11,7 @@ from ...upload.models import File
 class Subject(BaseModel):
     name = models.CharField(max_length=100)
     label = models.CharField(max_length=100, blank=True, null=True)
+    image = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True)
     has_level = models.BooleanField(default=False)
 
     def __str__(self):
