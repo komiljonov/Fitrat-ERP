@@ -108,8 +108,6 @@ class PurchaseList(ListCreateAPIView):
         return queryset
 
 
-
-
 class PurchaseDetail(RetrieveUpdateDestroyAPIView):
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
