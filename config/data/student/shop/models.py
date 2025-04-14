@@ -30,17 +30,23 @@ class Coins(BaseModel):
         return f"{self.student.phone}  -- {self.coin} coin"
 
 
+class Category(BaseModel):
+    name = models.CharField(max_length=120)
+    def __str__(self):
+        return self.name
+
 class Products(BaseModel):
     name = models.CharField(max_length=120)
     coin = models.IntegerField(default=0)
+    category : "Category" = models.ForeignKey("shop.Category", on_delete=models.SET_NULL, null=True, blank=True, related_name="product_category")
     image : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name="product_image")
 
     def __str__(self):
         return f"{self.name} -- {str(self.coin)}"
 
-class Shop(BaseModel):
-    product : "Products" = models.ForeignKey("shop.Products", on_delete=models.SET_NULL, null=True, blank=True, related_name="shops_product")
-    student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="shops_customer")
+class Purchase(BaseModel):
+    product : "Products" = models.ForeignKey("shop.Products", on_delete=models.SET_NULL, null=True, blank=True, related_name="purchases_product")
+    student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="purchases_customer")
 
     def __str__(self):
         return f"{self.student.phone}  -- {self.product}"
