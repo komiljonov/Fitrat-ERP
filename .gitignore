@@ -176,3 +176,9 @@ redis_data/
 
 celerybeat-schedule-shm
 celerybeat-schedule-wal
+
+/data/dump.rdb
+/data/appendonlydir
+locales
+utils
+/data/

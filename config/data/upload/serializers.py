@@ -10,6 +10,8 @@ class FileUploadSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'file',
+            "choice",
+            "url"
         ]
 
     def to_representation(self, instance):
