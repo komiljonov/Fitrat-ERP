@@ -54,7 +54,7 @@ class CoinsSerializer(serializers.ModelSerializer):
     #     user.
     #
     #     return Coins.objects.create(**validated_data)
-`
+
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
