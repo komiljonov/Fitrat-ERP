@@ -1,6 +1,6 @@
 from .views import (PurchaseList, PurchaseDetail, PointsList,
                     PointsDetail, CoinsList, CoinsDetail,
-                    ProductsDetail, ProductsList, PointToCoinExchangeApiView)
+                    ProductsDetail, ProductsList, PointToCoinExchangeApiView, CategoryList, CategoryDetail)
 
 from django.urls import path
 
@@ -16,6 +16,9 @@ urlpatterns = [
 
     path("products/", ProductsList.as_view()),
     path("products/<uuid:pk>", ProductsDetail.as_view()),
+
+    path("categories/", CategoryList.as_view()),
+    path("categories/<uuid:pk>", CategoryDetail.as_view()),
 
     path("exchange/", PointToCoinExchangeApiView.as_view()),
 
