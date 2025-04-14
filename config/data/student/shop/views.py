@@ -87,7 +87,13 @@ class ProductsList(ListCreateAPIView):
 
     def get_queryset(self):
         category = self.request.query_params.get('category')
+        search = self.request.query_params.get('search')
+
         queryset = Products.objects.all()
+
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
         if category:
             queryset = queryset.filter(category__id=category)
         return queryset
@@ -162,6 +168,13 @@ class CategoryList(ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Category.objects.all()
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        return queryset
 
 class CategoryDetail(RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
