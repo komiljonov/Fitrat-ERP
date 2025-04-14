@@ -6,9 +6,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Coins, Points , Products,Purchase
+from .models import Coins, Points, Products, Purchase, Category
 from .serializers import CoinsSerializer, PointsSerializer, ProductsSerializer, PurchaseSerializer, \
-    PointToCoinExchangeSerializer
+    PointToCoinExchangeSerializer, CategoriesSerializer
 from ..student.models import Student
 
 
@@ -85,6 +85,13 @@ class ProductsList(ListCreateAPIView):
     serializer_class = ProductsSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        category = self.request.query_params.get('category')
+        queryset = Products.objects.all()
+        if category:
+            queryset = queryset.filter(category__id=category)
+        return queryset
+
 
 class ProductsDetail(RetrieveUpdateDestroyAPIView):
     queryset = Products.objects.all()
@@ -120,6 +127,7 @@ class PurchaseDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = PurchaseSerializer
     permission_classes = [IsAuthenticated]
 
+
 class PointToCoinExchangeApiView(APIView):
 
     def post(self, request, *args, **kwargs):
@@ -138,7 +146,7 @@ class PointToCoinExchangeApiView(APIView):
 
         # Deduct points
         user.points -= point_amount
-        user.points.save()
+        user.save()
 
         # Create coin
         Coins.objects.create(student=user, coin=coins_to_add)
@@ -150,3 +158,12 @@ class PointToCoinExchangeApiView(APIView):
         }, status=status.HTTP_201_CREATED)
 
 
+class CategoryList(ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoriesSerializer
+    permission_classes = [IsAuthenticated]
+
+class CategoryDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoriesSerializer
+    permission_classes = [IsAuthenticated]

@@ -1,7 +1,7 @@
 from django.db.models import Sum
 from rest_framework import serializers
 
-from .models import Points,Coins,Products,Purchase
+from .models import Points, Coins, Products, Purchase, Category
 
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
@@ -57,6 +57,14 @@ class CoinsSerializer(serializers.ModelSerializer):
         rep["student"] = StudentSerializer(instance.student).data
         return rep
 
+class CategoriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = [
+            "id",
+            "name",
+            "created_at",
+        ]
 
 class ProductsSerializer(serializers.ModelSerializer):
     image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
