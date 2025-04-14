@@ -1,6 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from data.notifications.models import Notification
 from data.student.shop.models import Coins, Purchase
 from data.student.student.models import Student
 
@@ -21,5 +22,13 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
         if user:
             user.coins -= instance.product.coin
             user.save()
+
+    if not created and instance.status == "Completed":
+        user = Student.objects.filter(pk=instance.student.pk).first()
+        Notification.objects.create(
+            user=user,
+            comment=f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz sizga taqdim e'tish uchun tayyor.\n"
+                    f"Filial : {instance.product.filial}\n"
+        )
 
 
