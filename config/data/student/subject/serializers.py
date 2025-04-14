@@ -10,6 +10,7 @@ from ...upload.serializers import FileUploadSerializer
 class SubjectSerializer(serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
     all_themes = serializers.SerializerMethodField()
+    image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     class Meta:
         model = Subject
         fields = [
@@ -17,6 +18,7 @@ class SubjectSerializer(serializers.ModelSerializer):
             'name',
             'course',
             'has_level',
+            'image',
             'all_themes',
             'label',
         ]
@@ -34,13 +36,19 @@ class SubjectSerializer(serializers.ModelSerializer):
         room = Subject.objects.create(filial=filial, **validated_data)
         return room
 
-
     def get_course(self, obj):
         return Course.objects.filter(subject=obj).count()
 
     def get_all_themes(self, obj):
         themes = Theme.objects.filter(subject=obj).count()
         return themes
+
+    def to_representation(self, instance):
+
+        rep = super().to_representation(instance)
+        rep["image"] = FileUploadSerializer(instance.image).data
+        return rep
+
 
 
 
