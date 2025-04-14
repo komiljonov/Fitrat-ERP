@@ -76,6 +76,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
             "id",
             "product",
             "student",
+            "status",
             "created_at",
         ]
     def to_representation(self, instance):
