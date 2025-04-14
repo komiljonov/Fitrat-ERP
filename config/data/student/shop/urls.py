@@ -1,12 +1,12 @@
-from .views import (ShopList, ShopDetail, PointsList,
+from .views import (PurchaseList, PurchaseDetail, PointsList,
                     PointsDetail, CoinsList, CoinsDetail,
                     ProductsDetail,ProductsList)
 
 from django.urls import path
 
 urlpatterns = [
-    path('', ShopList.as_view()),
-    path('<uuid:pk>', ShopDetail.as_view()),
+    path('', PurchaseList.as_view()),
+    path('<uuid:pk>', PurchaseDetail.as_view()),
 
     path("points/", PointsList.as_view()),
     path("points/<uuid:pk>", PointsDetail.as_view()),
