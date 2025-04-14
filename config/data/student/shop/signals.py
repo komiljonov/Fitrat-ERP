@@ -6,6 +6,15 @@ from data.student.shop.models import Coins, Purchase, Points
 from data.student.student.models import Student
 
 
+@receiver(post_save, sender=Points)
+def new_created_order(sender, instance: Points, created, **kwargs):
+    if created:
+        user = Student.objects.filter(pk=instance.student.pk).first()
+        if user:
+            user.points += instance.point
+            user.save()
+
+
 @receiver(post_save, sender=Coins)
 def new_created_order(sender, instance: Coins, created, **kwargs):
     if created:
