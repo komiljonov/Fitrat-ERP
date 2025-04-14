@@ -130,16 +130,15 @@ class PointToCoinExchangeApiView(APIView):
         student_id = serializer.validated_data['student']
 
         user = Student.objects.get(id=student_id)
-        point_obj = Points.objects.filter(user=user).first()
-        if not point_obj or point_obj.amount < point_amount:
+        if not user.points < point_amount:
             return Response({"detail": "Not enough points."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Calculate coins
         coins_to_add = int(point_amount / Decimal('10'))
 
         # Deduct points
-        point_obj.point -= point_amount
-        point_obj.save()
+        user.points -= point_amount
+        user.points.save()
 
         # Create coin
         Coins.objects.create(student=user, coin=coins_to_add)
@@ -147,7 +146,7 @@ class PointToCoinExchangeApiView(APIView):
         return Response({
             "message": "Exchange successful",
             "coins_received": coins_to_add,
-            "remaining_points": point_obj.amount
+            "remaining_points": user.points
         }, status=status.HTTP_201_CREATED)
 
 
