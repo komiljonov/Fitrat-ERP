@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from data.notifications.models import Notification
-from data.student.shop.models import Coins, Purchase
+from data.student.shop.models import Coins, Purchase, Points
 from data.student.student.models import Student
 
 
@@ -30,5 +30,6 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
             comment=f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz sizga taqdim e'tish uchun tayyor.\n"
                     f"Filial : {instance.product.filial}\n"
         )
+
 
 
