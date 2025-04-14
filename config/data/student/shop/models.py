@@ -23,8 +23,8 @@ class Points(BaseModel):
 
 class Coins(BaseModel):
     coin = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
-    student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="coins_of_student")
-    is_exchanged = models.BooleanField(default=False)
+    student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True,
+                                            blank=True, related_name="coins_of_student")
 
     comment = models.TextField(blank=True, null=True)
 

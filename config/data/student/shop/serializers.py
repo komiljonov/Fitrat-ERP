@@ -42,17 +42,12 @@ class CoinsSerializer(serializers.ModelSerializer):
             "student",
             "coin",
             "comment",
-            "is_exchanged",
             "created_at",
         ]
 
     def create(self, validated_data):
         if validated_data["student"] and validated_data["coin"] <0:
             raise serializers.ValidationError("Coins cannot be negative")
-
-        user = Student.objects.get(pk=validated_data["student"])
-        user.coins += validated_data["coin"]
-        user.save()
 
         return Coins.objects.create(**validated_data)
 
@@ -94,20 +89,13 @@ class PurchaseSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        total = Coins.objects.filter(
-            user=self.context["request"].user,
-            is_exchanged=False
-        ).aggregate(total=Sum("amount"))["total"] or 0
 
-        if total < validated_data.get("product").coin :
+        user = Student.objects.get(pk=validated_data["student"])
+
+        if user.coins < validated_data.get("product").coin :
             raise serializers.ValidationError(
                 "Student does not have enough coins to purchase product"
             )
-
-        user = Student.objects.get(pk=validated_data["student"])
-        if user:
-            user.coins -= validated_data["product"].coin
-            user.save()
 
         return Purchase.objects.create(**validated_data)
 
