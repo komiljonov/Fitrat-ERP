@@ -1,8 +1,15 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from decimal import Decimal
+
+from rest_framework import status
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Coins, Points , Products,Purchase
-from .serializers import CoinsSerializer, PointsSerializer, ProductsSerializer, PurchaseSerializer
+from .serializers import CoinsSerializer, PointsSerializer, ProductsSerializer, PurchaseSerializer, \
+    PointToCoinExchangeSerializer
+from ..student.models import Student
 
 
 class CoinsList(ListCreateAPIView):
@@ -112,4 +119,35 @@ class PurchaseDetail(RetrieveUpdateDestroyAPIView):
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
     permission_classes = [IsAuthenticated]
+
+class PointToCoinExchangeApiView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        serializer = PointToCoinExchangeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        point_amount = serializer.validated_data['point']
+        student_id = serializer.validated_data['student']
+
+        user = Student.objects.get(id=student_id)
+        point_obj = Points.objects.filter(user=user).first()
+        if not point_obj or point_obj.amount < point_amount:
+            return Response({"detail": "Not enough points."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculate coins
+        coins_to_add = int(point_amount / Decimal('10'))
+
+        # Deduct points
+        point_obj.point -= point_amount
+        point_obj.save()
+
+        # Create coin
+        Coins.objects.create(student=user, coin=coins_to_add)
+
+        return Response({
+            "message": "Exchange successful",
+            "coins_received": coins_to_add,
+            "remaining_points": point_obj.amount
+        }, status=status.HTTP_201_CREATED)
+
 

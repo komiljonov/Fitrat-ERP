@@ -104,3 +104,14 @@ class PurchaseSerializer(serializers.ModelSerializer):
         rep["student"] = StudentSerializer(instance.student).data
         rep["product"] = ProductsSerializer(instance.product).data
         return rep
+
+
+class PointToCoinExchangeSerializer(serializers.Serializer):
+    point = serializers.DecimalField(max_digits=10, decimal_places=2)
+    student = serializers.CharField()  # or serializers.UUIDField() if ID used
+
+    def validate_point(self, value):
+        if value < 10:
+            raise serializers.ValidationError("Minimum 10 points required to exchange.")
+        return value
+

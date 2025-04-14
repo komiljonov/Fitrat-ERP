@@ -46,7 +46,7 @@ class SubjectSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
 
         rep = super().to_representation(instance)
-        rep["image"] = FileUploadSerializer(instance.image).data
+        rep["image"] = FileUploadSerializer(instance.image, context=self.context).data
         return rep
 
 
