@@ -67,7 +67,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
         ]
 
 class ProductsSerializer(serializers.ModelSerializer):
-    image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True ,allow_null=True)
     class Meta:
         model = Products
         fields = [
@@ -80,7 +80,7 @@ class ProductsSerializer(serializers.ModelSerializer):
         ]
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["image"] = FileUploadSerializer(instance.image, context=self.context).data
+        rep["image"] = FileUploadSerializer(instance.image,many=True ,context=self.context).data
         return rep
 
 
