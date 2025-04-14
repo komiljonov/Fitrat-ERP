@@ -1,8 +1,8 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Coins, Points , Products,Shop
-from .serializers import CoinsSerializer, PointsSerializer, ProductsSerializer, ShopSerializer
+from .models import Coins, Points , Products,Purchase
+from .serializers import CoinsSerializer, PointsSerializer, ProductsSerializer, PurchaseSerializer
 
 
 class CoinsList(ListCreateAPIView):
@@ -85,12 +85,12 @@ class ProductsDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class ShopList(ListCreateAPIView):
-    queryset = Shop.objects.all()
-    serializer_class = ShopSerializer
+class PurchaseList(ListCreateAPIView):
+    queryset = Purchase.objects.all()
+    serializer_class = PurchaseSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
-        queryset = Shop.objects.all()
+        queryset = Purchase.objects.all()
         student = self.request.query_params.get('student')
 
         start_date = self.request.query_params.get('start_date')
@@ -108,8 +108,10 @@ class ShopList(ListCreateAPIView):
         return queryset
 
 
-class ShopDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Shop.objects.all()
-    serializer_class = ShopSerializer
+
+
+class PurchaseDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Purchase.objects.all()
+    serializer_class = PurchaseSerializer
     permission_classes = [IsAuthenticated]
 
