@@ -7,8 +7,6 @@ class Store(BaseModel):
     video = models.ForeignKey("upload.File",on_delete=models.CASCADE,related_name="uploaded_store")
     seen = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.seen
 
 
 
