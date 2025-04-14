@@ -176,6 +176,10 @@ class CategoryList(ListCreateAPIView):
             queryset = queryset.filter(name__icontains=search)
         return queryset
 
+    def get_paginated_response(self, data):
+        return Response({data})
+
+
 class CategoryDetail(RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
