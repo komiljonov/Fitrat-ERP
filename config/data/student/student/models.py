@@ -107,6 +107,8 @@ class Student(BaseModel):
     new_student_date = models.DateTimeField(null=True, blank=True)
     active_date = models.DateTimeField(null=True, blank=True)
 
+    coins = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
     class Meta:
         ordering = ('is_frozen', '-created_at')
 

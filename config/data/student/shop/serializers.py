@@ -46,14 +46,15 @@ class CoinsSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    # def create(self, validated_data):
-    #     if validated_data["student"] and validated_data["coin"] <0:
-    #         raise serializers.ValidationError("Coins cannot be negative")
-    #
-    #     user = Student.objects.get(pk=validated_data["student"])
-    #     user.
-    #
-    #     return Coins.objects.create(**validated_data)
+    def create(self, validated_data):
+        if validated_data["student"] and validated_data["coin"] <0:
+            raise serializers.ValidationError("Coins cannot be negative")
+
+        user = Student.objects.get(pk=validated_data["student"])
+        user.coins += validated_data["coin"]
+        user.save()
+
+        return Coins.objects.create(**validated_data)
 
 
     def to_representation(self, instance):
@@ -103,7 +104,10 @@ class PurchaseSerializer(serializers.ModelSerializer):
                 "Student does not have enough coins to purchase product"
             )
 
-
+        user = Student.objects.get(pk=validated_data["student"])
+        if user:
+            user.coins -= validated_data["product"].coin
+            user.save()
 
         return Purchase.objects.create(**validated_data)
 
