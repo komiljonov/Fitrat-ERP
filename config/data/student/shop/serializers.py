@@ -99,8 +99,6 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
         return Purchase.objects.create(**validated_data)
 
-
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["student"] = StudentSerializer(instance.student).data
