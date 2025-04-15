@@ -88,6 +88,7 @@ class ProductsSerializer(serializers.ModelSerializer):
     def get_selling_counts(self, instance):
         return Purchase.objects.filter(product=instance).count()
 
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["image"] = FileUploadSerializer(instance.image,many=True ,context=self.context).data
