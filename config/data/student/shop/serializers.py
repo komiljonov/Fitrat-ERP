@@ -72,6 +72,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 class ProductsSerializer(serializers.ModelSerializer):
     image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True ,allow_null=True)
+    selling_counts = serializers.SerializerMethodField()
     class Meta:
         model = Products
         fields = [
@@ -80,8 +81,13 @@ class ProductsSerializer(serializers.ModelSerializer):
             "category",
             "coin",
             "image",
+            "selling_counts",
             "created_at",
         ]
+
+    def get_selling_counts(self, instance):
+        return Purchase.objects.filter(product=instance).count()
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["image"] = FileUploadSerializer(instance.image,many=True ,context=self.context).data
@@ -100,6 +106,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
         ]
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["student"] = StudentSerializer(instance.student, context=self.context).data
