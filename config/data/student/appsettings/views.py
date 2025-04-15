@@ -9,7 +9,7 @@ from ...student.studentgroup.models import StudentGroup
 
 from rest_framework.response import Response
 
-from .serializers import StoresSerializer, StudentSerializer, StudentFinanceSerializer
+from .serializers import StoresSerializer, StudentAPPSerializer, StudentFinanceSerializer
 from .models import Store
 
 from rest_framework.generics import (
@@ -71,7 +71,7 @@ class StudentHomeView(APIView):
 
 class StudentDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()
-    serializer_class = StudentSerializer
+    serializer_class = StudentAPPSerializer
     permission_classes = [IsAuthenticated]
 
 

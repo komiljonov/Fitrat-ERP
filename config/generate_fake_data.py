@@ -48,7 +48,8 @@ def generate_fake_data():
       "control",
       "monitoring_page",
       "settings",
-      "results"
+      "results",
+      "shop",
     ]
     for i in pages:
         Page.objects.create(
