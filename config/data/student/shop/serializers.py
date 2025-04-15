@@ -117,11 +117,6 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
         return Purchase.objects.create(**validated_data)
 
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        rep["student"] = StudentSerializer(instance.student).data
-        rep["product"] = ProductsSerializer(instance.product).data
-        return rep
 
 
 class PointToCoinExchangeSerializer(serializers.Serializer):
