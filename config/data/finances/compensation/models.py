@@ -56,7 +56,7 @@ class Bonus(BaseModel):
 
 
 class Page(BaseModel):
-    user: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
+    user: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,blank=True)
     name = models.CharField(max_length=256)
     is_editable = models.BooleanField(default=False)
     is_readable = models.BooleanField(default=False)
