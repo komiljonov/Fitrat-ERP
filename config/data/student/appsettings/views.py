@@ -2,17 +2,21 @@ from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from ...finances.finance.models import Finance
 from ...student.course.models import Course
 from ...student.student.models import Student
 from ...student.studentgroup.models import StudentGroup
 
 from rest_framework.response import Response
 
-from .serializers import StoresSerializer
+from .serializers import StoresSerializer, StudentSerializer, StudentFinanceSerializer
 from .models import Store
 
-from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView
-
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    ListAPIView
+    )
 
 class StoresListView(ListCreateAPIView):
     queryset = Store.objects.all()
@@ -36,6 +40,7 @@ class StoreDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Store.objects.all()
     serializer_class = StoresSerializer
     permission_classes = [IsAuthenticated]
+
 
 class StudentHomeView(APIView):
     permission_classes = [IsAuthenticated]
@@ -61,4 +66,45 @@ class StudentHomeView(APIView):
             "in_progress_courses" : in_progress_courses,
             "in_progress_courses_counts" : in_progress_courses_counts
         }
-        ) 
+        )
+
+
+class StudentDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class FinanceListView(ListAPIView):
+    queryset = Finance.objects.all()
+    serializer_class = StudentFinanceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.kwargs.get('id')
+
+        action =  self.request.query_params.get('action', None)
+        kind = self.request.query_params.get('kind', None)
+        payment_method = self.request.query_params.get('payment_method', None)
+        search = self.request.query_params.get('search', None)
+
+        queryset = Finance.objects.all()
+        if id:
+            queryset = queryset.filter(student__id=id)
+
+        if action:
+            queryset = queryset.filter(action=action)
+
+        if kind:
+            queryset = queryset.filter(kind__id=kind)
+
+        if payment_method:
+            queryset = queryset.filter(payment_method=payment_method)
+
+        if search:
+            queryset = queryset.filter(amount__icontains=search)
+
+        return queryset
+
+
+

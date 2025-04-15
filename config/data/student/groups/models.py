@@ -9,7 +9,7 @@ from ...command.models import BaseModel
 if TYPE_CHECKING:
     from ..course.models import Course
 from ...account.models import CustomUser
-
+from ..subject.models import Level
 
 class Room(BaseModel):
     room_number = models.CharField(max_length=100,)
@@ -30,6 +30,8 @@ class Group(BaseModel):
     name = models.CharField(max_length=100)
 
     course: 'Course' = models.ForeignKey('course.Course', on_delete=models.CASCADE)
+
+    level : "Level" = models.ForeignKey('level.Level', on_delete=models.CASCADE, related_name='groups__level')
 
     teacher: 'CustomUser' = models.ForeignKey('account.CustomUser',
                                               on_delete=models.SET_NULL, null=True, blank=True,

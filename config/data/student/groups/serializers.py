@@ -11,6 +11,7 @@ from ..course.models import Course
 from ..course.serializers import CourseSerializer
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Theme, Level
+from ..subject.serializers import LevelSerializer
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from icecream import ic
@@ -30,7 +31,7 @@ class GroupSerializer(serializers.ModelSerializer):
     room_number = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all(), allow_null=True)
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True)
     subject = serializers.SerializerMethodField()
-    level = serializers.SerializerMethodField()
+    level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all(), allow_null=True)
 
     class Meta:
         model = Group
@@ -61,12 +62,6 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def get_subject(self, obj):
         return Group.objects.filter(pk=obj.pk).values("course__subject", "course__subject__name").first()
-
-    def get_level(self, obj):
-        level = Level.objects.filter(courses=obj.course).first()
-        if level:
-            return {"id": level.id, "name": level.name}  # return only what's needed
-        return None
 
     def get_current_theme(self, obj):
         today = date.today()
@@ -101,6 +96,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["level"] = LevelSerializer(instance.level).data
         rep['teacher'] = UserSerializer(instance.teacher).data
         rep["room_number"] = RoomsSerializer(instance.room_number).data
         rep["course"] = CourseSerializer(instance.course).data
