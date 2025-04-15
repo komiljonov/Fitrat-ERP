@@ -126,7 +126,6 @@ class PurchaseSerializer(serializers.ModelSerializer):
         return Purchase.objects.create(**validated_data)
 
 
-
 class PointToCoinExchangeSerializer(serializers.Serializer):
     point = serializers.DecimalField(max_digits=10, decimal_places=2)
     student = serializers.CharField()  # or serializers.UUIDField() if ID used

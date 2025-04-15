@@ -75,6 +75,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
     sales = serializers.SerializerMethodField()
     voucher = serializers.SerializerMethodField()
 
+
     class Meta:
         model = Student
         fields = [
@@ -247,7 +248,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
     def get_course(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
                    .values("group__course__name", "group__course__level__name"))
-        return list(courses)
+        return list(courses),len(courses)
 
     def get_group(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
