@@ -31,7 +31,7 @@ class Group(BaseModel):
 
     course: 'Course' = models.ForeignKey('course.Course', on_delete=models.CASCADE)
 
-    level : "Level" = models.ForeignKey('level.Level', on_delete=models.CASCADE, related_name='groups__level')
+    level : "Level" = models.ForeignKey('subject.Level', on_delete=models.CASCADE, related_name='groups_level')
 
     teacher: 'CustomUser' = models.ForeignKey('account.CustomUser',
                                               on_delete=models.SET_NULL, null=True, blank=True,
