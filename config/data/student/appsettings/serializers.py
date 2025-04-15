@@ -57,7 +57,7 @@ class StudentFinanceSerializer(serializers.ModelSerializer):
         ]
 
 
-class StudentSerializer(serializers.ModelSerializer):
+class StudentAPPSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
     marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
