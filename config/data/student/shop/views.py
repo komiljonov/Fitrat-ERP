@@ -126,6 +126,8 @@ class PurchaseList(ListCreateAPIView):
             queryset = queryset.filter(student__id=student)
 
         return queryset
+    def get_paginated_response(self, data):
+        return Response(data)
 
 
 class PurchaseDetail(RetrieveUpdateDestroyAPIView):
