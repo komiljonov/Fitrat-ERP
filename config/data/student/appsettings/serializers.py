@@ -299,3 +299,5 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             instance.service_manager).data if instance.service_manager else None
         representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
         return representation
+
+
