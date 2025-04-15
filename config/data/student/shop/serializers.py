@@ -58,13 +58,17 @@ class CoinsSerializer(serializers.ModelSerializer):
         return rep
 
 class CategoriesSerializer(serializers.ModelSerializer):
+    products = serializers.SerializerMethodField()
     class Meta:
         model = Category
         fields = [
             "id",
             "name",
+            "products",
             "created_at",
         ]
+    def get_products(self, instance):
+        return Products.objects.filter(category=instance).count()
 
 class ProductsSerializer(serializers.ModelSerializer):
     image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True ,allow_null=True)
