@@ -100,6 +100,11 @@ class PurchaseSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
         ]
+    def to_representation(self, instance):
+        rep = super().to_representation(instance).data
+        rep["student"] = StudentSerializer(instance.student, context=self.context).data
+        rep["product"] = ProductsSerializer(instance.product, context=self.context).data
+        return rep
 
     def create(self, validated_data):
 
