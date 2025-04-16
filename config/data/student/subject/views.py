@@ -1,6 +1,9 @@
 import pandas as pd
 from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from icecream import ic
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.parsers import MultiPartParser
@@ -11,7 +14,9 @@ from rest_framework.views import APIView
 from .models import Subject, Level, Theme
 # Create your views here.
 from .serializers import SubjectSerializer, LevelSerializer, ThemeSerializer
+from ..course.models import Course
 from ..groups.models import Group
+from ..homeworks.models import Homework
 
 
 class SubjectList(ListCreateAPIView):
@@ -173,6 +178,23 @@ class ThemeNoPG(ListAPIView):
 class ImportStudentsAPIView(APIView):
     parser_classes = [MultiPartParser]
 
+    @swagger_auto_schema(
+        operation_summary="Exceldan studentlar import qilish",
+        manual_parameters=[
+            openapi.Parameter(
+                name='file',
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_FILE,
+                required=True,
+                description='Excel (.xlsx) fayl',
+            ),
+        ],
+        responses={
+            201: openapi.Response(description="Import qilingan mavzular va uyga vazifalar"),
+            400: "Xatolik yuz berdi",
+            500: "Ichki server xatoligi",
+        }
+    )
     def post(self, request):
         file = request.FILES.get('file')
 
@@ -182,25 +204,49 @@ class ImportStudentsAPIView(APIView):
         try:
             df = pd.read_excel(file)
 
-            required_fields = {'name', 'age', 'email'}
+            required_fields = {'Mavzu', 'Dars mazmuni', 'Uyga vazifa', 'Uyga vazifa mazmuni', 'Course', 'Subject'}
             if not required_fields.issubset(df.columns):
-                return Response({'error': f'Excel faylda quyidagi ustunlar bo\'lishi shart: {required_fields}'},
-                                status=400)
+                return Response({
+                    'error': f'Excel faylda quyidagi ustunlar bo\'lishi shart: {required_fields}'}, status=400)
 
             created = 0
             errors = []
 
             with transaction.atomic():
                 for idx, row in df.iterrows():
-                    serializer = ThemeSerializer(data=row)
-                    if serializer.is_valid():
-                        serializer.save()
-                        created += 1
-                    else:
-                        errors.append({'row': idx + 2, 'errors': serializer.errors})  # +2: Excel row (1-based + header)
+                    course_name = str(row.get("Course", "")).strip()
+                    subject_name = str(row.get("Subject", "")).strip()
+
+                    course = Course.objects.filter(name__icontains=course_name).first()
+                    subject = Subject.objects.filter(name__icontains=subject_name).first()
+
+                    ic(Course.objects.all())
+                    ic(Subject.objects.all())
+
+                    if not course or not subject:
+                        errors.append({
+                            'row': idx + 2,
+                            'error': f"Course yoki Subject topilmadi: {row['Course']}, {row['Subject']}"
+                        })
+                        continue
+
+                    theme = Theme.objects.create(
+                        title=row['Mavzu'],
+                        description=row['Dars mazmuni'],
+                        theme="Lesson",
+                        course=course,
+                        subject=subject,
+                    )
+
+                    Homework.objects.create(
+                        theme=theme,
+                        title=row['Uyga vazifa'],
+                        body=row['Uyga ishi mazmuni'],
+                    )
+                    created += 1
 
             return Response({
-                'message': f"{created} ta student muvaffaqiyatli qo'shildi",
+                'message': f"{created} ta tema va uyga vazifa import qilindi",
                 'errors': errors
             }, status=201)
 
