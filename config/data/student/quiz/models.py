@@ -41,3 +41,4 @@ class Question(BaseModel):
         if self.answers.count() == 0: # Ensure at least 4 answers when question is saved
             for i in range(4): # Add dummy answers if no answers exist
                 Answer.objects.create(text=f"Answer {i+1}", is_correct=False)
+
