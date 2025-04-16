@@ -111,10 +111,14 @@ class PurchaseList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         queryset = Purchase.objects.all()
+        user = self.request.query_params.get('user')
         student = self.request.query_params.get('student')
 
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+
+        if user:
+            queryset = queryset.filter(student__user__id=user)
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
