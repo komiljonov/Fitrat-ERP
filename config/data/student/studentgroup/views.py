@@ -388,7 +388,7 @@ class SecondaryStudentCreate(ListCreateAPIView):
     serializer_class = SecondaryStudentsGroupSerializer
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.request.query_params.get('pk')
         filial = self.request.query_params.get("filial")
         search = self.request.query_params.get("search")
 
