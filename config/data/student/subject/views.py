@@ -242,7 +242,7 @@ class ImportStudentsAPIView(APIView):
                     Homework.objects.create(
                         theme=theme,
                         title=row['Uyga vazifa'],
-                        body=row['Uyga ishi mazmuni'],
+                        body=row['Uyga vazifa mazmuni'],
                     )
                     created += 1
 
