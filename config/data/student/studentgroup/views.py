@@ -380,3 +380,23 @@ class StudentGroupStatistics(APIView):
             "students" : students.count(),
             "orders" : orders.count(),
         })
+
+
+class SecondaryStudentCreate(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = SecondaryStudentGroup.objects.all()
+    serializer_class = SecondaryStudentsGroupSerializer
+
+    def get_queryset(self):
+        id = self.kwargs.get('pk')
+        filial = self.request.query_params.get("filial")
+        search = self.request.query_params.get("search")
+
+        queryset = SecondaryStudentGroup.objects.all()
+        if id:
+            queryset = queryset.filter(group__id=id)
+
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
+
+        return queryset
