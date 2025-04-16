@@ -30,7 +30,7 @@ class CoinsList(ListCreateAPIView):
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
         if student:
-            queryset = queryset.filter(student__id=student)
+            queryset = queryset.filter(student__user__id=student)
         if is_exchanged:
             queryset = queryset.filter(is_exchanged=is_exchanged.capitalize())
         return queryset
@@ -40,6 +40,7 @@ class CoinsDetail(RetrieveUpdateDestroyAPIView):
     queryset = Coins.objects.all()
     serializer_class = CoinsSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'user_id'
 
 
 class PointsList(ListCreateAPIView):
@@ -149,7 +150,7 @@ class PointToCoinExchangeApiView(APIView):
         point_amount = serializer.validated_data['point']
         student_id = serializer.validated_data['student']
 
-        user = Student.objects.get(id=student_id)
+        user = Student.objects.get(user__id=student_id)
         if not user.points < point_amount:
             return Response({"detail": "Not enough points."}, status=status.HTTP_400_BAD_REQUEST)
 
