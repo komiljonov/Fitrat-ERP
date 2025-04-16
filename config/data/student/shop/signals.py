@@ -36,11 +36,11 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
     elif instance.status == "Completed":
         # Notify when marked as completed
         Notification.objects.create(
-            user=student,
+            user=student.user,
             comment=(
                 f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz "
                 f"sizga taqdim etish uchun tayyor.\n"
-                f"Filial : {instance.product.filial}\n"
+                f"Filial : {instance.product.filial.name}\n"
             )
         )
 
