@@ -160,11 +160,7 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        try:
-            rep['group'] = SecondaryGroupSerializer(instance.group, context=self.context).data
-        except RecursionError:
-            rep['group'] = "Error in serialization"
-
+        rep['group'] = SecondaryGroupSerializer(instance.group, context=self.context).data
         rep['lid'] = LidSerializer(instance.lid, context=self.context).data if instance.lid else None
         rep['student'] = StudentSerializer(instance.student, context=self.context).data if instance.student else None
 
