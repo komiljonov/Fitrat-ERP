@@ -119,7 +119,7 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=SecondaryGroup.objects.all(), required=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
-    main_teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+    main_teacher = serializers.SerializerMethodField()
 
     class Meta:
         model = SecondaryStudentGroup
