@@ -400,3 +400,6 @@ class SecondaryStudentCreate(ListCreateAPIView):
             queryset = queryset.filter(filial__id=filial)
 
         return queryset
+
+    def get_paginated_response(self, data):
+        return Response(data)
