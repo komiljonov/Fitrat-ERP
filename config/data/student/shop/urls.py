@@ -9,10 +9,10 @@ urlpatterns = [
     path('<uuid:pk>', PurchaseDetail.as_view()),
 
     path("points/", PointsList.as_view()),
-    path("points/<uuid:pk>", PointsDetail.as_view()),
+    path("points/<uuid:user_id>", PointsDetail.as_view()),
 
     path("coins/", CoinsList.as_view()),
-    path("coins/<uuid:pk>", CoinsDetail.as_view()),
+    path("coins/<uuid:user_id>", CoinsDetail.as_view()),
 
     path("products/", ProductsList.as_view()),
     path("products/<uuid:pk>", ProductsDetail.as_view()),
