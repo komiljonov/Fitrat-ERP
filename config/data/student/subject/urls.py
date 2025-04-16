@@ -1,8 +1,8 @@
 from django.urls import path
 
-from .views import (SubjectList,SubjectNoPG,SubjectDetail,
-                    LevelList,LevelDetail,LevelNoPG,
-                    ThemeList,ThemeDetail,ThemeNoPG)
+from .views import (SubjectList, SubjectNoPG, SubjectDetail,
+                    LevelList, LevelDetail, LevelNoPG,
+                    ThemeList, ThemeDetail, ThemeNoPG, ImportStudentsAPIView)
 
 
 urlpatterns = [
@@ -18,4 +18,5 @@ urlpatterns = [
     path('theme/<uuid:pk>/', ThemeDetail.as_view(), name='theme-detail'),
     path('theme/no-pg/', ThemeNoPG.as_view(), name='theme-nopg'),
 
+    path('import/',ImportStudentsAPIView.as_view(), name='import'),
 ]
