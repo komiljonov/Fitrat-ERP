@@ -73,6 +73,7 @@ class StudentDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentAPPSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'user__id'
 
 
 class FinanceListView(ListAPIView):
