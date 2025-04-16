@@ -140,10 +140,15 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
         return room
 
     def get_main_teacher(self, instance):
-        try:
-            return SecondaryGroup.objects.get(id=instance.group.id).teacher
-        except SecondaryGroup.DoesNotExist:
-            return None
+        teacher = getattr(instance.group, 'teacher', None)
+        if teacher:
+            return {
+                "id": teacher.id,
+                "full_name": teacher.get_full_name(),  # or teacher.full_name if field
+                "username": teacher.username
+            }
+        return None
+
     def validate_group(self, value):
         if not SecondaryGroup.objects.filter(id=value.id).exists():
             raise serializers.ValidationError("Invalid group ID")
