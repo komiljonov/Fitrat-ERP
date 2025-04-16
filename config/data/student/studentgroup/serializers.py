@@ -6,6 +6,7 @@ from ..groups.serializers import SecondaryGroupSerializer
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ...account.models import CustomUser
+from ...account.serializers import UserSerializer
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
 
@@ -141,13 +142,7 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
 
     def get_main_teacher(self, instance):
         teacher = getattr(instance.group, 'teacher', None)
-        if teacher:
-            return {
-                "id": teacher.id,
-                "full_name": teacher.get_full_name(),  # or teacher.full_name if field
-                "username": teacher.username
-            }
-        return None
+        return UserSerializer(teacher).data if teacher else None
 
     def validate_group(self, value):
         if not SecondaryGroup.objects.filter(id=value.id).exists():
