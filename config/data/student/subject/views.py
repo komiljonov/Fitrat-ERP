@@ -1,13 +1,16 @@
+import pandas as pd
+from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Subject, Level, Theme
 # Create your views here.
 from .serializers import SubjectSerializer, LevelSerializer, ThemeSerializer
-from ..course.models import Course
 from ..groups.models import Group
 
 
@@ -41,6 +44,7 @@ class SubjectNoPG(ListAPIView):
         if filial:
             queryset = queryset.filter(filial__id=filial)
         return queryset
+
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -79,7 +83,6 @@ class LevelNoPG(ListAPIView):
     serializer_class = LevelSerializer
     permission_classes = [IsAuthenticated]
 
-
     def get_queryset(self):
         filial = self.request.query_params.get('filial', None)
         subject = self.request.query_params.get('subject', None)
@@ -102,10 +105,10 @@ class ThemeList(ListCreateAPIView):
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
-    search_fields = ('title','theme','type',)
-    ordering_fields = ('title','theme','type',)
-    filterser_fields = ('title','theme','type',)
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    search_fields = ('title', 'theme', 'type',)
+    ordering_fields = ('title', 'theme', 'type',)
+    filterser_fields = ('title', 'theme', 'type',)
 
     def get_queryset(self):
         queryset = Theme.objects.all()
@@ -118,7 +121,6 @@ class ThemeList(ListCreateAPIView):
         if course:
             queryset = queryset.filter(course__id=course)
 
-
         id = self.request.query_params.get('id')
 
         if id:
@@ -127,11 +129,11 @@ class ThemeList(ListCreateAPIView):
                 queryset = queryset.filter(course=course.course)
             except Group.DoesNotExist:
                 pass  # Agar Group topilmasa, filtr qo'llanilmaydi
-        
+
         if level:
             queryset = queryset.filter(level__id=level)
 
-        return queryset 
+        return queryset
 
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):
@@ -166,3 +168,41 @@ class ThemeNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class ImportStudentsAPIView(APIView):
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        file = request.FILES.get('file')
+
+        if not file or not file.name.endswith(('.xlsx', '.xls')):
+            return Response({'error': 'Excel fayl (.xlsx/.xls) yuboring'}, status=400)
+
+        try:
+            df = pd.read_excel(file)
+
+            required_fields = {'name', 'age', 'email'}
+            if not required_fields.issubset(df.columns):
+                return Response({'error': f'Excel faylda quyidagi ustunlar bo\'lishi shart: {required_fields}'},
+                                status=400)
+
+            created = 0
+            errors = []
+
+            with transaction.atomic():
+                for idx, row in df.iterrows():
+                    serializer = ThemeSerializer(data=row)
+                    if serializer.is_valid():
+                        serializer.save()
+                        created += 1
+                    else:
+                        errors.append({'row': idx + 2, 'errors': serializer.errors})  # +2: Excel row (1-based + header)
+
+            return Response({
+                'message': f"{created} ta student muvaffaqiyatli qo'shildi",
+                'errors': errors
+            }, status=201)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
