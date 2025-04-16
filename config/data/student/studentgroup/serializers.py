@@ -140,7 +140,7 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
         return room
 
     def get_main_teacher(self, instance):
-        return instance.group.teacher if instance.group and instance.group.teacher else None
+        return [instance.group.teacher if instance.group and instance.group.teacher else None]
 
     def validate_group(self, value):
         if not SecondaryGroup.objects.filter(id=value.id).exists():
