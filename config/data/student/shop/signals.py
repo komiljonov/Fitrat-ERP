@@ -40,7 +40,7 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
             comment=(
                 f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz "
                 f"sizga taqdim etish uchun tayyor.\n"
-                f"Filial : {instance.product.filial.name}\n"
+                f"Filial : {instance.product.filial}\n"
             )
         )
 
