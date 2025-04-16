@@ -25,6 +25,7 @@ class QuizSerializer(serializers.ModelSerializer):
         model = Quiz
         fields = ["id", "title", "description", "questions"]
 
+
 class QuizImportSerializer(serializers.Serializer):
     title = serializers.CharField()
     description = serializers.CharField(required=False, allow_blank=True)
@@ -49,6 +50,7 @@ class QuizImportSerializer(serializers.Serializer):
             question.answers.set(answers)
 
         return quiz
+
 
 class UserAnswerSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()

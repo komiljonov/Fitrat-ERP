@@ -26,19 +26,22 @@ def new_created_order(sender, instance: Coins, created, **kwargs):
 
 @receiver(post_save, sender=Purchase)
 def new_created_order(sender, instance: Purchase, created, **kwargs):
+    student = instance.student
+
     if created:
-        user = Student.objects.filter(pk=instance.student.pk).first()
-        if user:
-            user.coins -= instance.product.coin
-            user.save()
+        # Subtract coins on creation
+        student.coins -= instance.product.coin
+        student.save()
 
-    if not created and instance.status == "Completed":
-        user = Student.objects.filter(pk=instance.student.pk).first()
+    elif instance.status == "Completed":
+        # Notify when marked as completed
         Notification.objects.create(
-            user=user,
-            comment=f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz sizga taqdim e'tish uchun tayyor.\n"
-                    f"Filial : {instance.product.filial}\n"
+            user=student,
+            comment=(
+                f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz "
+                f"sizga taqdim etish uchun tayyor.\n"
+                f"Filial : {instance.product.filial}\n"
+            )
         )
-
 
 
