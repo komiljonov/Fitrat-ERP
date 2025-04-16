@@ -37,6 +37,7 @@ class Category(BaseModel):
     def __str__(self):
         return self.name
 
+
 class Products(BaseModel):
     name = models.CharField(max_length=120)
     comment = models.TextField(blank=True, null=True)
@@ -46,6 +47,7 @@ class Products(BaseModel):
 
     def __str__(self):
         return f"{self.name} -- {str(self.coin)}"
+
 
 class Purchase(BaseModel):
     product : "Products" = models.ForeignKey("shop.Products", on_delete=models.SET_NULL,

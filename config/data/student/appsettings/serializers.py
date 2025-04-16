@@ -4,7 +4,7 @@ from datetime import datetime
 from django.db.models import Avg, F
 from rest_framework import serializers
 
-from .models import Store
+from .models import Store, Strike, VersionUpdate
 from ..attendance.models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..mastering.models import Mastering
@@ -74,6 +74,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
     teacher = serializers.SerializerMethodField()
     sales = serializers.SerializerMethodField()
     voucher = serializers.SerializerMethodField()
+    strike = serializers.SerializerMethodField()
 
 
     class Meta:
@@ -113,6 +114,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             "attendance_count",
             'relatives',
             'file',
+            "strike",
             'secondary_group',
             'secondary_teacher',
             "new_student_stages",
@@ -121,6 +123,9 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def get_strike(self, obj):
+        return Strike.objects.filter(student=obj).count()
 
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(student=obj)
@@ -302,3 +307,25 @@ class StudentAPPSerializer(serializers.ModelSerializer):
         return representation
 
 
+class StrikeSerializer(serializers.Serializer):
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
+    class Meta:
+        model = Strike
+        fields = [
+            "id",
+            "student",
+            "created_at",
+        ]
+
+
+class VersionUpdateSerializer(serializers.Serializer):
+    class Meta:
+        model = VersionUpdate
+        fields = [
+            "id",
+            "app_name",
+            "version",
+            "should_update",
+            "forced_update",
+            "created_at",
+        ]
