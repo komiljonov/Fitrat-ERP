@@ -40,7 +40,6 @@ class CoinsDetail(RetrieveUpdateDestroyAPIView):
     queryset = Coins.objects.all()
     serializer_class = CoinsSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'user_id'
 
 
 class PointsList(ListCreateAPIView):
@@ -64,7 +63,7 @@ class PointsList(ListCreateAPIView):
             queryset = queryset.filter(created_at__gte=start_date)
 
         if student:
-            queryset = queryset.filter(student__id=student)
+            queryset = queryset.filter(student__user__id=student)
         if is_exchanged:
             queryset = queryset.filter(is_exchanged=is_exchanged.capitalize())
         if from_test:
