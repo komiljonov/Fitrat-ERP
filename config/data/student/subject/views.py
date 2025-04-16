@@ -204,7 +204,7 @@ class ImportStudentsAPIView(APIView):
         try:
             df = pd.read_excel(file)
 
-            required_fields = {'Mavzu', 'Dars mazmuni', 'Uyga vazifa', 'Uyga vazifa mazmuni', 'Course',"Level" ,'Subject'}
+            required_fields = {'Mavzu', 'Dars mazmuni', 'Uyga vazifa', 'Uyga vazifa mazmuni', 'Kurslar',"Daraja" ,'Fanlar'}
             if not required_fields.issubset(df.columns):
                 return Response({
                     'error': f'Excel faylda quyidagi ustunlar bo\'lishi shart: {required_fields}'}, status=400)
@@ -214,9 +214,9 @@ class ImportStudentsAPIView(APIView):
 
             with transaction.atomic():
                 for idx, row in df.iterrows():
-                    course_name = str(row.get("Course", "")).strip()
-                    subject_name = str(row.get("Subject", "")).strip()
-                    level_name = str(row.get("Level", "")).strip()
+                    course_name = str(row.get("Kurslar", "")).strip()
+                    subject_name = str(row.get("Fanlar", "")).strip()
+                    level_name = str(row.get("Daraja", "")).strip()
 
                     course = Course.objects.filter(name__icontains=course_name).first()
                     level = Level.objects.filter(name__icontains=level_name).first()
