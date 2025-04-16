@@ -1,13 +1,13 @@
 from django.urls import path
 
-from .views import StoresListView, StoreDetailView, StudentHomeView, StudentDetailView, FinanceListView, StrikeListView, \
+from .views import StoresListView, StoreDetailView, StudentDetailView, FinanceListView, StrikeListView, \
     VersionUpdateView, StudentNotificationsView
 
 urlpatterns = [
     path('story/',StoresListView.as_view()),
     path('story/<uuid:pk>',StoreDetailView.as_view()),
 
-    path('home/',StudentHomeView.as_view()),
+    # path('home/',StudentHomeView.as_view()),
 
     path("student/<uuid:user__id>",StudentDetailView.as_view()),
 

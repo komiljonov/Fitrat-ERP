@@ -46,33 +46,6 @@ class StoreDetailView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class StudentHomeView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-
-        user = self.request.user
-
-        avg_progress = Student.objects.filter(
-            user = user
-        )
-
-        in_progress_courses = Course.objects.filter(
-            group__in=StudentGroup.objects.filter(
-                group__status='ACTIVE', student__user=user
-            ).values_list('group', flat=True)
-        ).distinct()
-
-        in_progress_courses_counts = in_progress_courses.count()
-
-
-        return Response( {
-            "avg_progress" : avg_progress,
-            "in_progress_courses" : in_progress_courses,
-            "in_progress_courses_counts" : in_progress_courses_counts
-        }
-        )
-
-
 class StudentDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentAPPSerializer
