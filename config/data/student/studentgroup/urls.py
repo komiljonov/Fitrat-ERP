@@ -30,6 +30,6 @@ urlpatterns = [
 
     path("stats/", StudentGroupStatistics.as_view()),
 
-    path("secondary/group",SecondaryStudentCreate.as_view()),
+    path("secondary/web",SecondaryStudentCreate.as_view()),
 
 ]
