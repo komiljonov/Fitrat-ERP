@@ -138,9 +138,24 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
 
         room = SecondaryStudentGroup.objects.create(filial=filial, **validated_data)
         return room
+
     def get_main_teacher(self, instance):
         return Group.objects.get(id=instance.group.id).teacher
 
+    def validate_group(self, value):
+        if not SecondaryGroup.objects.filter(id=value.id).exists():
+            raise serializers.ValidationError("Invalid group ID")
+        return value
+
+    def validate_student(self, value):
+        if not Student.objects.filter(id=value.id).exists():
+            raise serializers.ValidationError("Invalid student ID")
+        return value
+
+    def validate_lid(self, value):
+        if value and not Lid.objects.filter(id=value.id).exists():
+            raise serializers.ValidationError("Invalid lid ID")
+        return value
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
