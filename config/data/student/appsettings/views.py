@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from reportlab import Version
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
@@ -9,8 +10,9 @@ from ...student.studentgroup.models import StudentGroup
 
 from rest_framework.response import Response
 
-from .serializers import StoresSerializer, StudentAPPSerializer, StudentFinanceSerializer
-from .models import Store
+from .serializers import StoresSerializer, StudentAPPSerializer, StudentFinanceSerializer, StrikeSerializer, \
+    VersionUpdateSerializer
+from .models import Store, Strike, VersionUpdate
 
 from rest_framework.generics import (
     ListCreateAPIView,
@@ -45,7 +47,7 @@ class StoreDetailView(RetrieveUpdateDestroyAPIView):
 class StudentHomeView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        
+
         user = self.request.user
 
         avg_progress = Student.objects.filter(
@@ -57,7 +59,7 @@ class StudentHomeView(APIView):
                 group__status='ACTIVE', student__user=user
             ).values_list('group', flat=True)
         ).distinct()
-        
+
         in_progress_courses_counts = in_progress_courses.count()
 
 
@@ -108,4 +110,27 @@ class FinanceListView(ListAPIView):
         return queryset
 
 
+class StrikeListView(ListCreateAPIView):
+    queryset = Strike.objects.all()
+    serializer_class = StrikeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.request.query_params.get('id', None)
+        if id:
+            return Strike.objects.filter(student__user__id=id)
+        return Strike.objects.none()
+
+
+class VersionUpdateView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = VersionUpdate.objects.all()
+    serializer_class = VersionUpdateSerializer
+
+    def get_queryset(self):
+        app_name = self.request.query_params.get('app_name', None)
+        if app_name:
+            queryset = VersionUpdate.objects.filter(app_name=app_name).first()
+            return queryset
+        return VersionUpdate.objects.none()
 
