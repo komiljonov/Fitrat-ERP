@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from ...finances.finance.models import Finance
+from ...notifications.models import Notification
+from ...notifications.serializers import NotificationSerializer
 from ...student.course.models import Course
 from ...student.student.models import Student
 from ...student.studentgroup.models import StudentGroup
@@ -134,3 +136,14 @@ class VersionUpdateView(ListCreateAPIView):
             return queryset
         return VersionUpdate.objects.none()
 
+
+class StudentNotificationsView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        id = self.request.query_params.get('id', None)
+        if id:
+            return Notification.objects.filter(user__id=id)
+        return Notification.objects.none()
