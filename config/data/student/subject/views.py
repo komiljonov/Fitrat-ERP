@@ -42,7 +42,6 @@ class SubjectNoPG(ListAPIView):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = None
 
     def get_queryset(self):
         queryset = Subject.objects.all()
@@ -51,6 +50,8 @@ class SubjectNoPG(ListAPIView):
             queryset = queryset.filter(filial__id=filial)
         return queryset
 
+    def get_paginated_response(self, data):
+        return Response(data)
 
 
 class LevelList(ListCreateAPIView):
