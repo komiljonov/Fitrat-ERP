@@ -67,7 +67,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
-    is_attendance = serializers.SerializerMethodField()
+    #is_attendance = serializers.SerializerMethodField()
     secondary_group = serializers.SerializerMethodField()
     secondary_teacher = serializers.SerializerMethodField()
     learning = serializers.SerializerMethodField()
@@ -85,7 +85,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "middle_name",
-            "is_attendance",
+            #"is_attendance",
             "phone",
             "learning",
             'password',
@@ -179,52 +179,22 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             "learning": percentage_scaled
         }
 
-    def get_is_attendance(self, obj):
-        groups = StudentGroup.objects.prefetch_related('group__scheduled_day_type').filter(student=obj)
+    #def get_is_attendance(self, obj):
+       # groups = StudentGroup.objects.prefetch_related('group__scheduled_day_type').filter(student=obj)
 
-        for group in groups:
-            if not group.group:  # Ensure group.group is not None
-                continue
+        #for group in groups:
+           # if not group.group:  # Ensure group.group is not None
+               # continue
 
-            lesson_days_queryset = getattr(group.group, 'scheduled_day_type', None)
-            if lesson_days_queryset is None:
-                continue
+           # lesson_days_queryset = getattr(group.group, 'scheduled_day_type', None)
+            #if lesson_days_queryset is None:
+               # continue
 
-            lesson_days = [day.name for day in lesson_days_queryset.all()] if hasattr(lesson_days_queryset,
-                                                                                      'all') else []
+          #  lesson_days = [day.name for day in lesson_days_queryset.all()] if hasattr(lesson_days_queryset,
+                                                                                   #   'all') else []
 
-            if not lesson_days:  # Skip iteration if no lesson days
-                continue
-
-            start_date = datetime.datetime.today()  # Keep it as a datetime object
-            finish_date = start_date + datetime.timedelta(days=30)  # Properly add 30 days
-
-            # Convert to string format for calculate_lessons
-            start_date_str = start_date.strftime("%Y-%m-%d")
-            finish_date_str = finish_date.strftime("%Y-%m-%d")
-
-            dates = calculate_lessons(
-                start_date=start_date_str,
-                end_date=finish_date_str,
-                lesson_type=','.join(lesson_days),
-                holidays=[""],
-                days_off=["Yakshanba"]
-            )
-
-            if not dates:
-                continue
-
-            first_month = min(dates.keys())  # Get the first available month
-            lesson_date = dates[first_month][0]  # Get the first lesson date in that month
-
-            attendance = Attendance.objects.filter(created_at__gte=lesson_date, student=obj).first()
-
-            return {
-                "date": lesson_date,
-                "attendance": attendance.reason if attendance else "",
-            }
-
-        return {'is_attendance': None}  # Default return if no valid group found
+          #  if not lesson_days:  # Skip iteration if no lesson days
+                # Default return if no valid group found
 
     def get_secondary_group(self, obj):
         group = SecondaryStudentGroup.objects.filter(student=obj).annotate(
