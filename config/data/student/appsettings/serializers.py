@@ -196,7 +196,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             if not lesson_days:  # Skip iteration if no lesson days
                 continue
 
-            start_date = datetime.datetime.today()  # Keep it as a datetime object
+            start_date = datetime.today()  # Keep it as a datetime object
             finish_date = start_date + datetime.timedelta(days=30)  # Properly add 30 days
 
             # Convert to string format for calculate_lessons
