@@ -27,13 +27,13 @@ class StudentGroupsView(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
 
     search_fields = ('name', 'scheduled_day_type__name', "status", 'teacher__id',
-                     'course__subject__id', 'course__level__id')
+                     'course__subject__id', )
     ordering_fields = ('name', 'scheduled_day_type', 'start_date',
                        'end_date', 'price_type', "status", 'teacher__id',
-                       'course__subject__id', 'course__level__id')
+                       'course__subject__id', )
     filterset_fields = ('name', 'scheduled_day_type__name',
                         'price_type', "status", 'teacher__id',
-                        'course__subject__id', 'course__level__id')
+                        'course__subject__id', )
 
     def get_queryset(self):
         queryset = Group.objects.all()
@@ -43,6 +43,7 @@ class StudentGroupsView(ListCreateAPIView):
         filial = self.request.query_params.get('filial', None)
         day = self.request.query_params.get('day', None)
         price_type = self.request.query_params.get('price_type', None)
+        level = self.request.query_params.get('course__level__id', None)
 
         if day == "1":
             days = []
@@ -53,6 +54,9 @@ class StudentGroupsView(ListCreateAPIView):
             days = []
             days.append(Day.objects.filter(name="Seshanba"))
             queryset = queryset.filter(scheduled_day_type__name__in=days)
+
+        if level:
+            queryset = queryset.filter(level__id=level)
 
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
