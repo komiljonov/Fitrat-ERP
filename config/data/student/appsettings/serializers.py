@@ -191,7 +191,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
                # continue
 
           #  lesson_days = [day.name for day in lesson_days_queryset.all()] if hasattr(lesson_days_queryset,
-                                                                                      'all') else []
+                                                                                   #   'all') else []
 
           #  if not lesson_days:  # Skip iteration if no lesson days
                 # Default return if no valid group found
