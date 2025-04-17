@@ -116,7 +116,7 @@ class ThemeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['subject'] = SubjectSerializer(instance.subject).data
+        rep['subject'] = SubjectSerializer(instance.subject, context=self.context).data
         rep["repeated_theme"] = ThemeSerializer(instance.repeated_theme.all(),many=True,context=self.context).data
         rep['videos'] = FileUploadSerializer(instance.videos.all(), many=True,context=self.context).data
         rep['files'] = FileUploadSerializer(instance.files.all(), many=True,context=self.context).data
