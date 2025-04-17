@@ -1,22 +1,24 @@
 import pandas as pd
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView,GenericAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, GenericAPIView, RetrieveAPIView
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Answer
+from .models import Answer, Fill_gaps, Vocabulary, Pairs, MatchPairs
 from .models import Quiz, Question
-from .serializers import QuizSerializer, QuestionSerializer, UserAnswerSerializer
+from .serializers import QuizSerializer, QuestionSerializer, UserAnswerSerializer, FillGapsSerializer, \
+    VocabularySerializer, PairsSerializer, MatchPairsSerializer
 from ..mastering.models import Mastering
 
 
 class QuizListCreateView(ListCreateAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
+
 
 
 class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
@@ -196,3 +198,54 @@ class QuizImportView(CreateAPIView):
             question.answers.set(answers)
 
         return Response({"message": "Quiz data imported successfully."}, status=status.HTTP_201_CREATED)
+
+
+class FillGapsView(ListCreateAPIView):
+    queryset = Fill_gaps.objects.all()
+    serializer_class = FillGapsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class FillGapsDetailsView(RetrieveUpdateDestroyAPIView):
+    queryset = Fill_gaps.objects.all()
+    serializer_class = FillGapsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+
+
+class VocabularyListView(ListCreateAPIView):
+    queryset = Vocabulary.objects.all()
+    serializer_class = VocabularySerializer
+    permission_classes = [IsAuthenticated]
+
+
+class VocabularyDetailsView(RetrieveUpdateDestroyAPIView):
+    queryset = Vocabulary.objects.all()
+    serializer_class = VocabularySerializer
+    permission_classes = [IsAuthenticated]
+
+
+class PairsListView(ListCreateAPIView):
+    queryset = Pairs.objects.all()
+    serializer_class = PairsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class PairsDetailsView(RetrieveUpdateDestroyAPIView):
+    queryset = Pairs.objects.all()
+    serializer_class = PairsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class MatchPairsListView(ListCreateAPIView):
+    queryset = MatchPairs.objects.all()
+    serializer_class = MatchPairsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class MatchPairsDetailsView(RetrieveUpdateDestroyAPIView):
+    queryset = MatchPairs.objects.all()
+    serializer_class = MatchPairsSerializer
+    permission_classes = [IsAuthenticated]
+
