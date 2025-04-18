@@ -8,10 +8,10 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Answer, Fill_gaps, Vocabulary, Pairs, MatchPairs
+from .models import Answer, Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam
 from .models import Quiz, Question
 from .serializers import QuizSerializer, QuestionSerializer, UserAnswerSerializer, FillGapsSerializer, \
-    VocabularySerializer, PairsSerializer, MatchPairsSerializer
+    VocabularySerializer, PairsSerializer, MatchPairsSerializer, ExamSerializer
 from ..mastering.models import Mastering
 
 
@@ -248,4 +248,28 @@ class MatchPairsDetailsView(RetrieveUpdateDestroyAPIView):
     queryset = MatchPairs.objects.all()
     serializer_class = MatchPairsSerializer
     permission_classes = [IsAuthenticated]
+
+
+class ExamListView(ListCreateAPIView):
+    queryset = Exam.objects.all()
+    serializer_class = ExamSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.request.query_params.get("id")
+        search = self.request.query_params.get("search")
+
+        queryset = Exam.objects.all()
+
+        if id:
+            queryset = queryset.filter(quiz__id=id)
+
+        return queryset
+
+
+class ExamDetailsView(RetrieveUpdateDestroyAPIView):
+    queryset = Exam.objects.all()
+    serializer_class = ExamSerializer
+    permission_classes = [IsAuthenticated]
+
 
