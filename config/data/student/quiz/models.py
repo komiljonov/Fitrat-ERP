@@ -8,6 +8,7 @@ class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
+
     def __str__(self):
         return self.title
 
@@ -83,3 +84,21 @@ class MatchPairs(BaseModel):
     pairs : "Pairs" = models.ManyToManyField(Pairs)
     def __str__(self):
         return f"{self.quiz.title} "
+
+
+class Exam(BaseModel):
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True,blank=True,related_name='exam_quiz')
+    type = models.CharField(choices=[
+        ("Online", "Online"),
+        ("Offline", "Offline"),
+    ],max_length=255, null=True,blank=True)
+    students = models.ManyToManyField(Student)
+    subject = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,related_name='exam_subject')
+    students_xml = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='exam_students_xml')
+    exam_materials = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='exam_materials')
+    results = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='exam_results')
+
+    end_date = models.DateTimeField(null=True,blank=True)
+
+    def __str__(self):
+        return f"{self.quiz.title}    {self.type}"

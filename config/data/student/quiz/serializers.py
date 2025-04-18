@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, Pairs, MatchPairs
+from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam
+from ..student.models import Student
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
@@ -144,3 +145,23 @@ class MatchPairsSerializer(serializers.Serializer):
         rep["quiz"] = QuizSerializer(instance.quiz).data
         rep["pairs"] = PairsSerializer(instance.pairs).data
         return rep
+
+
+class ExamSerializer(serializers.Serializer):
+    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(),allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),many=True,allow_null=True)
+    class Meta:
+        model = Exam
+        fields = [
+            "id",
+            "quiz",
+            "type",
+            "student",
+            "subjects",
+            "students_xml",
+            "exam_materials",
+            "results",
+            "end_date",
+            "created_at",
+        ]
+
