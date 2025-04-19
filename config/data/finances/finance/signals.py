@@ -18,7 +18,7 @@ def on_create(sender, instance: Finance, created, **kwargs):
                 instance.lid.save()
 
 
-        if instance.student:
+        if instance.student and not instance.kind.name == "Lesson payment":
             if instance.action == "INCOME":
                 instance.student.balance += Decimal(instance.amount)
                 instance.student.save()
