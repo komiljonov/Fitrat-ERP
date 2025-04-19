@@ -56,22 +56,10 @@ class TeacherStatistics(ListAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
     serializer_class = TeacherSerializer
 
-    def get_queryset(self):
-        start_date = self.request.GET.get("start_date")
-        end_date = self.request.GET.get("end_date")
-
-        ic(start_date,end_date)
-
-        filters = {}
-
-        if start_date:
-            filters["created_at__gte"] = start_date
-        if end_date:
-            filters["created_at__lte"] = end_date
-        return filters
 
     def list(self, request, *args, **kwargs):
-        filters = self.get_queryset()
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
 
         teacher = self.request.user
 
@@ -80,34 +68,34 @@ class TeacherStatistics(ListAPIView):
         new_students = StudentGroup.objects.filter(
             group__teacher=teacher,
             student__student_stage_type="NEW_STUDENT",
-            **filters
+            created_at__gte=start_date,created_at__lte=end_date
         ).count()
 
         stopped_students = StudentGroup.objects.filter(
             group__teacher=teacher,
             student__is_archived=True,
-            **filters
+            created_at__gte=start_date,created_at__lte=end_date
         ).count()
 
         active_students = StudentGroup.objects.filter(
             group__teacher=teacher,
             student__student_stage_type="ACTIVE_STUDENT",
-            **filters
+            created_at__gte=start_date,created_at__lte=end_date
         ).count()
 
         low_assimilation = None
 
-        complaints = Complaint.objects.filter(user=teacher, **filters).count()
+        complaints = Complaint.objects.filter(user=teacher, created_at__gte=start_date,created_at__lte=end_date).count()
 
         results = Results.objects.filter(
             teacher=teacher,
             status="Accepted",
-            **filters
+            created_at__gte=start_date,created_at__lte=end_date
         ).count()
 
         all_students = StudentGroup.objects.filter(
             group__teacher=teacher,
-            **filters
+            created_at__gte=start_date,created_at__lte=end_date
         ).count()
 
         statistics = {
