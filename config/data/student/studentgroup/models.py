@@ -15,6 +15,10 @@ class StudentGroup(BaseModel):
     lid: "Lid" = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name="lids_group")
 
+    class Meta:
+        verbose_name = "Student Group"
+        verbose_name_plural = "Student Groups"
+
     def __str__(self):
         return self.group.name if self.group else ""
 
@@ -26,6 +30,11 @@ class SecondaryStudentGroup(BaseModel):
                                            related_name="students_secondary_group", null=True, blank=True)
     lid: "Lid" = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,
                                    related_name="lids_secondary_group", null=True, blank=True)
+
+
+    class Meta:
+        verbose_name = "Secondary Add group"
+        verbose_name_plural = "Secondary Add group"
 
     def __str__(self):
         return self.group.name
