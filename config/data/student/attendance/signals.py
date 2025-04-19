@@ -23,6 +23,8 @@ def apply_discount(price, sale):
     if sale and sale.sale and sale.sale.amount:
         try:
             sale_percent = Decimal(sale.sale.amount)
+            ic("sales_percent",sale_percent)
+
             discount = price * sale_percent / Decimal("100")
             ic("Discount:", discount)
             return price - discount
@@ -34,6 +36,9 @@ def apply_discount(price, sale):
 def calculate_bonus_and_income(price, bonus_percent):
     bonus_amount = price * bonus_percent / Decimal("100")
     income_amount = price - bonus_amount
+
+    ic("Bonus:", bonus_amount,"income:",income_amount)
+
     return bonus_amount, income_amount
 
 
@@ -111,6 +116,8 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     if instance.group.price_type == "DAILY":
         final_price = apply_discount(price, sale)
 
+        ic("final_price", final_price)
+
         instance.student.balance -= final_price
         instance.student.save()
 
@@ -122,13 +129,23 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         instance.group.teacher.balance += bonus_amount
         instance.group.teacher.save()
 
-        create_finance_record("INCOME", income_amount, kind, instance, instance.student, is_first=is_first_income)
+        create_finance_record(
+            "INCOME",
+          income_amount,
+          kind,
+          instance, 
+          instance.student,
+          is_first=is_first_income
+        )
 
     elif instance.group.price_type == "MONTHLY":
         current_month = datetime.date.today().replace(day=1)
         month_key = current_month.strftime("%Y-%m")
+
         last_day = calendar.monthrange(current_month.year, current_month.month)[1]
         end_of_month = current_month.replace(day=last_day)
+
+        ic(month_key, end_of_month)
 
         lesson_days_qs = instance.group.scheduled_day_type.all()
         lesson_days = ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
@@ -147,9 +164,13 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         lessons = lessons_per_month.get(month_key, [])
         lesson_count = len(lessons)
 
+        ic("lesson_count", lesson_count)
+
         if lesson_count > 0:
             per_lesson_price = price / lesson_count
             per_lesson_price = apply_discount(per_lesson_price, sale)
+
+            ic(per_lesson_price)
 
             instance.amount = per_lesson_price
             instance.save()

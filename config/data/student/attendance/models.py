@@ -32,7 +32,7 @@ class Attendance(BaseModel):
     remarks : str = models.TextField(blank=True, null=True)
 
     amount = models.CharField(
-        max_length=20,
+        max_length=50,
         blank=True,
         null=True,
         help_text="Attendance counted amount ..."

@@ -35,7 +35,7 @@ services:
       - ./locales:/usr/src/app/locales
       - ./tg_bot:/usr/src/app/tg_bot
     ports:
-      - "8044:8000"
+      - "8000:8000"
     env_file:
       - .env
     depends_on:
@@ -51,7 +51,6 @@ services:
     env_file:
       - .env
     depends_on:
-      - redis
       - django
 
   celery:
@@ -84,20 +83,24 @@ services:
     volumes: *shared_volumes
 
   backup:
-    image: postgres:16
+    build:
+      context: ./config/
+      dockerfile: Dockerfile
     container_name: "postgres_backup_fitrat"
     depends_on:
       - postgres
     volumes:
       - ./backups:/backups
-      - ./cron/backup-cron.sh:/backup-cron.sh
-      - ./cron/crontab.txt:/etc/cron.d/db-backup
     environment:
       - POSTGRES_DB=fitrat
       - POSTGRES_USER=fitrat_user
       - POSTGRES_PASSWORD=your_secure_password
       - PGPASSWORD=your_secure_password
-    entrypoint: ["sh", "-c", "chmod +x /backup-cron.sh && crontab /etc/cron.d/db-backup && cron -f"]
+    command: ["crond", "-f", "-l", "2"]
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
 
 volumes:
   postgres_data_fitrat:
