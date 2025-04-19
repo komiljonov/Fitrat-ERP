@@ -178,7 +178,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             instance.save()
 
             ic(instance.amount, per_lesson_price)
-            instance.student.balance -= per_lesson_price
+            instance.student.balance -= instance.amount
             instance.student.save()
             instance.refresh_from_db()
 
