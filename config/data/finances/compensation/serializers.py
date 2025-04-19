@@ -207,7 +207,7 @@ class MonitoringAsos4Serializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
     asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
-    # result = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
+    result = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
     subject = serializers.PrimaryKeyRelatedField(queryset=ResultSubjects.objects.all(),allow_null=True)
     class Meta:
         model = MonitoringAsos4
@@ -216,6 +216,7 @@ class MonitoringAsos4Serializer(serializers.ModelSerializer):
             "creator",
             "user",
             "asos",
+            "result",
             "subject",
             "ball",
             "created_at",
@@ -225,7 +226,7 @@ class MonitoringAsos4Serializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["creator"] = UserSerializer(instance.creator).data
         data["asos"] = AsosSerializer(instance.asos).data
-        # data["result"] = ResultsNameSerializer(instance.result).data
+        data["result"] = ResultsNameSerializer(instance.result).data
         data["subject"] = ResultPointsSerializer(instance.subject).data
         data["user"] = UserListSerializer(instance.user).data
         return data
