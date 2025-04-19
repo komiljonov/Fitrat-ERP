@@ -175,14 +175,21 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             instance.amount = per_lesson_price
             instance.save()
 
+            ic(instance.amount, per_lesson_price)
             instance.student.balance -= per_lesson_price
             instance.student.save()
+
+            ic(instance.student.balance, per_lesson_price)
 
             bonus_amount, income_amount = calculate_bonus_and_income(per_lesson_price, bonus_percent)
 
             instance.group.teacher.balance += bonus_amount
             instance.group.teacher.save()
 
+            ic(instance.group.teacher.balance, bonus_amount)
+
             create_finance_record("INCOME", income_amount, kind, instance, instance.student, is_first=is_first_income)
+
+
         else:
             ic(f"No lessons scheduled for {month_key}, skipping balance deduction.")
