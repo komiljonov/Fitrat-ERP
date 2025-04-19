@@ -2,6 +2,7 @@ from django.db import models
 
 from data.command.models import BaseModel
 from data.student.student.models import Student
+from data.student.subject.models import Subject
 
 
 class Quiz(BaseModel):
@@ -19,30 +20,18 @@ class Answer(BaseModel):
     def __str__(self):
         return self.text
 
+class QuizGaps(BaseModel):
+    name = models.CharField(max_length=255, null=True,blank=True)
+
+
 class Question(BaseModel):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
-    question_text = models.TextField()
-    answers = models.ManyToManyField(Answer)
+    quiz = models.ForeignKey(Quiz, on_delete=models.SET_NULL,null=True,blank=True)
+    text : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL,
+                                          null=True,blank=True, related_name="questions_gaps")
+    answers : "Answer" = models.ManyToManyField("quiz.Answer", related_name="questions_answers")
 
     def __str__(self):
-        return self.question_text
-
-    def get_correct_answer(self):
-      return self.answers.filter(is_correct=True).first()
-
-    def check_answer(self, answer_id):
-        try:
-            answer = Answer.objects.get(pk=answer_id)
-            return answer.is_correct and answer in self.answers.all()
-        except Answer.DoesNotExist:
-            return False
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # Call the "real" save() method.
-        if self.answers.count() == 0: # Ensure at least 4 answers when question is saved
-            for i in range(4): # Add dummy answers if no answers exist
-                Answer.objects.create(text=f"Answer {i+1}", is_correct=False)
-
+        return self.text.name
 
 
 class Vocabulary(BaseModel):
@@ -55,33 +44,47 @@ class Vocabulary(BaseModel):
         return f"{self.quiz.name}    {self.in_english}    {self.in_uzbek}"
 
 
-class Fill_gaps(BaseModel):
-    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True,blank=True,related_name='fill_gaps_quiz')
-    question : "Question" = models.ForeignKey("quiz.Question", on_delete=models.SET_NULL, null=True, blank=True,related_name='fill_gaps_question')
+class Gaps(BaseModel):
+    name = models.CharField(max_length=255, null=True,blank=True)
+
+    class Meta:
+        ordering = ['created_at']
 
     def __str__(self):
-        return f"{self.quiz.title}    {self.question.question_text}"
+        return self.name
+
+class Fill_gaps(BaseModel):
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True,blank=True,related_name='fill_gaps_quiz')
+    question : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,related_name='fill_gaps_question')
+    gaps : "Gaps" = models.ManyToManyField("quiz.Gaps")
+
+    def __str__(self):
+        return f"{self.quiz.title}    {self.question.name}"
 
 
 class Listening(BaseModel):
     quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True,blank=True,related_name='listening_quiz')
-    question : "Question" = models.ForeignKey("quiz.Question", on_delete=models.SET_NULL, null=True, blank=True,related_name='listening_question')
-
+    voice = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='listening_voice')
+    question : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,related_name='listening_question')
+    answers : "Answer" = models.ManyToManyField(Answer)
     def __str__(self):
-        return f"{self.quiz.title}    {self.question.question_text}"
+        return f"{self.quiz.title}    {self.question.name}"
+
 
 
 class Pairs(BaseModel):
-    first_pair = models.CharField(max_length=255)
-    second_pair = models.CharField(max_length=255)
-
+    pair = models.CharField(max_length=255)
+    choice = models.CharField(choices=[
+        ("Left", "Left"),
+        ("Right", "Right")
+    ])
     def __str__(self):
-        return f"{self.first_pair}    {self.second_pair}"
+        return self.pair
 
 
 class MatchPairs(BaseModel):
     quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True,blank=True,related_name='match_pairs_quiz')
-    pairs : "Pairs" = models.ManyToManyField(Pairs)
+    pairs : "Pairs" = models.ManyToManyField("quiz.Pairs",related_name='match_pairs_pair')
     def __str__(self):
         return f"{self.quiz.title} "
 
@@ -93,7 +96,7 @@ class Exam(BaseModel):
         ("Offline", "Offline"),
     ],max_length=255, null=True,blank=True)
     students = models.ManyToManyField(Student)
-    subject = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,related_name='exam_subject')
+    subject : "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,related_name='exam_subject')
     students_xml = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='exam_students_xml')
     exam_materials = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='exam_materials')
     results = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='exam_results')

@@ -56,57 +56,28 @@ class TeacherStatistics(ListAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
     serializer_class = TeacherSerializer
 
-
-    def list(self, request, *args, **kwargs):
-        start_date = self.request.GET.get("start_date")
-        end_date = self.request.GET.get("end_date")
-
-        teacher = self.request.user
-
-        Average_assimilation = None
-
-        new_students = StudentGroup.objects.filter(
-            group__teacher=teacher,
-            student__student_stage_type="NEW_STUDENT",
-            created_at__gte=start_date,created_at__lte=end_date
-        ).count()
-
-        stopped_students = StudentGroup.objects.filter(
-            group__teacher=teacher,
-            student__is_archived=True,
-            created_at__gte=start_date,created_at__lte=end_date
-        ).count()
-
-        active_students = StudentGroup.objects.filter(
-            group__teacher=teacher,
-            student__student_stage_type="ACTIVE_STUDENT",
-            created_at__gte=start_date,created_at__lte=end_date
-        ).count()
-
-        low_assimilation = None
-
-        complaints = Complaint.objects.filter(user=teacher, created_at__gte=start_date,created_at__lte=end_date).count()
-
-        results = Results.objects.filter(
-            teacher=teacher,
-            status="Accepted",
-            created_at__gte=start_date,created_at__lte=end_date
-        ).count()
-
-        all_students = StudentGroup.objects.filter(
-            group__teacher=teacher,
-            created_at__gte=start_date,created_at__lte=end_date
-        ).count()
+    def get(self, request, *args, **kwargs):
+        teacher = request.user
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        filters = {}
+        if start_date:
+            filters = {"created_at__gte": start_date}
+        if end_date:
+            filters["created_at__lte"] = end_date
 
         statistics = {
-            "all_students": all_students,
-            "average_assimilation": Average_assimilation,
-            "new_students": new_students,
-            "education_stopped_students": stopped_students,
-            "active_students": active_students,
-            "low_assimilation": low_assimilation,
-            "complaints": complaints,
-            "results": results,
+            "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
+            "new_students": StudentGroup.objects.filter(group__teacher=teacher,
+                                                        student__student_stage_type="NEW_STUDENT", **filters).count(),
+            "education_stopped_students": StudentGroup.objects.filter(group__teacher=teacher,
+                                                                      student__is_archived=True, **filters).count(),
+            "active_students": StudentGroup.objects.filter(group__teacher=teacher,
+                                                           student__student_stage_type="ACTIVE_STUDENT", **filters).count(),
+            "complaints": Complaint.objects.filter(user=teacher, **filters).count(),
+            "results": Results.objects.filter(teacher=teacher, status="Accepted", **filters).count(),
+            "average_assimilation": None,
+            "low_assimilation": None,
         }
 
         return Response(statistics)
