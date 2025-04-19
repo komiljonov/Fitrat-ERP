@@ -188,6 +188,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
             instance.group.teacher.balance += bonus_amount
             instance.group.teacher.save()
+            instance.refresh_from_db()
 
             ic(instance.group.teacher.balance, bonus_amount)
 
