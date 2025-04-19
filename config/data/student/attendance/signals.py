@@ -177,12 +177,15 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 per_lesson_price = price / lesson_count
                 per_lesson_price = apply_discount(per_lesson_price, sale)
 
-                instance.amount = per_lesson_price
-                instance.save(update_fields=["amount"])
 
                 ic("MINUS FROM STUDENT BALANCE:", per_lesson_price)
                 instance.student.balance -= per_lesson_price
                 instance.student.save(update_fields=["balance"])
+
+                instance.amount = per_lesson_price
+                instance.save(update_fields=["amount"])
+
+
 
                 bonus_amount, income_amount = calculate_bonus_and_income(per_lesson_price, bonus_percent)
 
