@@ -182,7 +182,7 @@ class MonitoringAsos4(BaseModel):
                                               on_delete=models.SET_NULL, null=True, blank=True,
                                               related_name="MonitoringAsos4_creator_comments")
     result_frk = models.ForeignKey('results.Results', on_delete=models.SET_NULL, null=True, blank=True)
-    result = models.ForeignKey('compensation.ResultName', on_delete=models.SET_NULL, null=True, blank=True)
+    # result = models.ForeignKey('compensation.ResultName', on_delete=models.SET_NULL, null=True, blank=True)
     user: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True)
     subject = models.ForeignKey('compensation.ResultSubjects', on_delete=models.SET_NULL, null=True, blank=True)
     ball = models.CharField(max_length=128, null=True, blank=True)
