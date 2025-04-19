@@ -116,10 +116,12 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     if instance.group.price_type == "DAILY":
         final_price = apply_discount(price, sale)
 
-        ic("final_price", final_price)
-
+        ic("Before save - balance:", instance.student.balance)
         instance.student.balance -= final_price
         instance.student.save()
+        instance.refresh_from_db()
+        ic("After save - balance:", instance.student.balance)
+
 
         bonus_amount, income_amount = calculate_bonus_and_income(final_price, bonus_percent)
 
@@ -178,6 +180,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             ic(instance.amount, per_lesson_price)
             instance.student.balance -= per_lesson_price
             instance.student.save()
+            instance.refresh_from_db()
 
             ic(instance.student.balance, per_lesson_price)
 
