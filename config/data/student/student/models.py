@@ -123,5 +123,10 @@ class FistLesson_data(BaseModel):
     level: "Level" = models.ForeignKey("subject.Level", on_delete=models.SET_NULL, null=True, blank=True)
     lid: "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True)
 
+    class Meta:
+        verbose_name = "Fist Lesson"
+        verbose_name_plural = "Fist Lesson"
+
+
     def __str__(self):
         return f"{self.teacher.full_name} {self.group} {self.lesson_date}"
