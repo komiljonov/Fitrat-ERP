@@ -16,8 +16,8 @@ class StudentGroup(BaseModel):
                                    related_name="lids_group")
 
     class Meta:
-        verbose_name = "Student Group"
-        verbose_name_plural = "Student Groups"
+        verbose_name = "Add Group"
+        verbose_name_plural = "Add Groups"
 
     def __str__(self):
         return self.group.name if self.group else ""
