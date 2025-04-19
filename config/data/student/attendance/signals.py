@@ -118,7 +118,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         ic("Before save - balance:", instance.student.balance)
         instance.student.balance -= final_price
-        instance.student.save()
+        instance.student.balance.save()
         instance.refresh_from_db()
         ic("After save - balance:", instance.student.balance)
 
@@ -129,7 +129,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         instance.save()
 
         instance.group.teacher.balance += bonus_amount
-        instance.group.teacher.save()
+        instance.group.teacher.balance.save()
 
         create_finance_record(
             "INCOME",
@@ -179,7 +179,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
             ic(instance.amount, per_lesson_price)
             instance.student.balance -= instance.amount
-            instance.student.save()
+            instance.student.balance.save()
             instance.refresh_from_db()
 
             ic(instance.student.balance, per_lesson_price)
@@ -187,7 +187,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             bonus_amount, income_amount = calculate_bonus_and_income(per_lesson_price, bonus_percent)
 
             instance.group.teacher.balance += bonus_amount
-            instance.group.teacher.save()
+            instance.group.teacher.balance.save()
             instance.refresh_from_db()
 
             ic(instance.group.teacher.balance, bonus_amount)
