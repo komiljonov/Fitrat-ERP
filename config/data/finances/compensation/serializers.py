@@ -172,7 +172,8 @@ class ResultPointsSerializer(serializers.ModelSerializer):
 
 
 class StudentCountMonitoringSerializer(serializers.ModelSerializer):
-    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),
+                                              allow_null=True)
     class Meta:
         model = StudentCountMonitoring
         fields = [
