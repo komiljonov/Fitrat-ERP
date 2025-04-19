@@ -50,13 +50,17 @@ class TeacherScheduleView(ListAPIView):
                                      ).order_by("day", "start_time")
 
 
-class TeacherStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
+class TeacherStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
 
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        query_serializer = TeacherSerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+        validated = query_serializer.validated_data
+
+        start_date = validated.get("start_date")
+        end_date = validated.get("end_date")
 
         filters = {}
 
