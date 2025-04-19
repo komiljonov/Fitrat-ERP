@@ -71,6 +71,10 @@ class FirstLLesson(BaseModel):
         'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True
     )
 
+    class Meta:
+        verbose_name = "First Lesson"
+        verbose_name_plural = "First Lessons"
+
     def __str__(self):
         return f"{self.lid.first_name}   {self.group.name if self.group else ""}     {self.date}     {self.time}"
 
