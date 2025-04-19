@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from icecream import ic
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -52,48 +53,60 @@ class TeacherScheduleView(ListAPIView):
 
 class TeacherStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
+    queryset = CustomUser.objects.filter(role='TEACHER')
+    serializer_class = TeacherSerializer
 
-    def get(self, request, *args, **kwargs):
+    def get_queryset(self):
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
 
-        query_serializer = TeacherSerializer(data=request.query_params)
-        query_serializer.is_valid(raise_exception=True)
-        validated = query_serializer.validated_data
-
-        start_date = validated.get("start_date")
-        end_date = validated.get("end_date")
+        ic(start_date,end_date)
 
         filters = {}
 
         if start_date:
-            filters['created_at__gte'] = start_date
+            filters["created_at__gte"] = start_date
         if end_date:
-            filters['created_at__lte'] = end_date
+            filters["created_at__lte"] = end_date
+        return filters
+
+    def list(self, request, *args, **kwargs):
+        filters = self.get_queryset()
+
+        teacher = self.request.user
 
         Average_assimilation = None
+
         new_students = StudentGroup.objects.filter(
-            group__teacher=self.request.user,
+            group__teacher=teacher,
             student__student_stage_type="NEW_STUDENT",
             **filters
         ).count()
 
         stopped_students = StudentGroup.objects.filter(
-            group__teacher=self.request.user,
+            group__teacher=teacher,
             student__is_archived=True,
             **filters
         ).count()
 
         active_students = StudentGroup.objects.filter(
-            group__teacher=self.request.user,
+            group__teacher=teacher,
             student__student_stage_type="ACTIVE_STUDENT",
             **filters
         ).count()
+
         low_assimilation = None
 
-        complaints = Complaint.objects.filter(user=self.request.user, **filters).count()
+        complaints = Complaint.objects.filter(user=teacher, **filters).count()
 
-        results = Results.objects.filter(teacher=self.request.user, status="Accepted", **filters).count()
+        results = Results.objects.filter(
+            teacher=teacher,
+            status="Accepted",
+            **filters
+        ).count()
+
         all_students = StudentGroup.objects.filter(
-            group__teacher=self.request.user,
+            group__teacher=teacher,
             **filters
         ).count()
 
@@ -107,8 +120,8 @@ class TeacherStatistics(ListAPIView):
             "complaints": complaints,
             "results": results,
         }
-        return Response(statistics)
 
+        return Response(statistics)
 
 class Teacher_StudentsView(ListAPIView):
     queryset = StudentGroup.objects.all()
