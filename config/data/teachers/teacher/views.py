@@ -132,7 +132,7 @@ class Teacher_StudentsView(ListAPIView):
 
     def get_queryset(self):
 
-        students = self.request.query_params.get("status", None)
+        students = self.request.GET.get("status", None)
 
         group = StudentGroup.objects.filter(group__teacher=self.request.user)
 
@@ -153,7 +153,7 @@ class TeachersGroupsView(ListAPIView):
     filterser_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
 
     def get_queryset(self):
-        status = self.request.query_params.get("status")
+        status = self.request.GET.get("status")
         teacher_id = self.request.user.pk  # Get the teacher ID
 
         queryset = Group.objects.filter(teacher__id=teacher_id)  # First filter by teacher
@@ -161,7 +161,7 @@ class TeachersGroupsView(ListAPIView):
         if status:
             queryset = queryset.filter(status=status)  # Apply status filter if present
 
-        ordering = self.request.query_params.get("ordering")
+        ordering = self.request.GET.get("ordering")
         if ordering:
             queryset = queryset.order_by(ordering)  # Explicitly apply ordering
 
@@ -173,12 +173,12 @@ class AsistantTeachersView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        status = self.request.query_params.get("status")
+        status = self.request.GET.get("status")
         teacher_id = self.request.user.pk
         queryset = SecondaryGroup.objects.filter(teacher__id=teacher_id)
         if status:
             queryset = queryset.filter(status=status)
-        ordering = self.request.query_params.get("ordering")
+        ordering = self.request.GET.get("ordering")
         if ordering:
             queryset = queryset.order_by(ordering)
         return queryset
@@ -189,8 +189,8 @@ class AssistantStatisticsView(ListAPIView):
 
     def get(self, request, *args, **kwargs):
 
-        start_date = self.request.query_params.get("start_date")
-        end_date = self.request.query_params.get("end_date")
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
         filters = {}
         if start_date:
             filters["created_at__gte"] = start_date
