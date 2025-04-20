@@ -397,8 +397,9 @@ class TeacherGroupFinanceAPIView(APIView):
 
         # Paginate the group data
         paginator = self.pagination_class()
-        paginated_data = paginator.paginate_queryset(group_data_list, request)
+        paginated_data = paginator.paginate_queryset(group_data_list[0], request)
         return paginator.get_paginated_response(paginated_data)
+
 
 class FinanceTeacher(ListAPIView):
     serializer_class = FinanceSerializer
