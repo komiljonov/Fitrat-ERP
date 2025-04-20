@@ -329,56 +329,40 @@ class CustomPagination(PageNumberPagination):
 
 class TeacherGroupFinanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    pagination_class = CustomPagination  # Attach custom pagination
+    pagination_class = CustomPagination
 
     def get(self, request, *args, **kwargs):
-        teacher_id = self.kwargs.get('pk')  # Get teacher ID from URL parameter
+        teacher_id = self.kwargs.get('pk')
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
 
-        # Get attended groups for the teacher
         group_filters = {"group__teacher_id": teacher_id}
-
         if start_date and end_date:
-            group_filters["created_at__range"] = (start_date, end_date)  # Use range filter
+            group_filters["created_at__range"] = (start_date, end_date)
         elif start_date:
             group_filters["created_at__gte"] = start_date
 
         attended_groups = Attendance.objects.filter(**group_filters).values_list('group_id', flat=True).distinct()
-
-        # Use a list to store unique group data for pagination
         group_data_list = []
 
         for group_id in attended_groups:
-            # Apply start_date and end_date filters dynamically
+            # Prepare finance filter
             finance_filters = {"attendance__group__id": group_id}
-
             if start_date and end_date:
                 finance_filters["created_at__range"] = (start_date, end_date)
             elif start_date:
                 finance_filters["created_at__gte"] = start_date
 
-            # Fetch finance records sorted by group and date
             finance_records = Finance.objects.filter(**finance_filters).order_by("created_at")
-
-            if finance_records.exists():
-                created_at = finance_records.first().created_at
-            else:
-                created_at = None
-
-            # Sum total payments for the group on each date
+            created_at = finance_records.first().created_at if finance_records.exists() else None
             total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
-            ic(total_group_payment)
 
-            # Get distinct students per group
-            student_data = []
+            # Collect students in group
             students = Student.objects.filter(attendance_student__group__id=group_id).distinct()
-            ic(students)
+            student_data = []
 
             for student in students:
-                student_attendances = Attendance.objects.filter(group_id=group_id, student=student).order_by(
-                    "created_at")
-
+                student_attendances = Attendance.objects.filter(group_id=group_id, student=student)
                 student_finance_filters = {"attendance__in": student_attendances}
 
                 if start_date and end_date:
@@ -390,7 +374,7 @@ class TeacherGroupFinanceAPIView(APIView):
                     first_attendance = student_attendances.first()
                     student_finance_filters["created_at__date"] = first_attendance.created_at.date()
                     total_student_payment = Finance.objects.filter(**student_finance_filters).aggregate(Sum('amount'))[
-                                                'amount__sum'] or 0
+                        'amount__sum'] or 0
                 else:
                     total_student_payment = 0
 
@@ -400,11 +384,9 @@ class TeacherGroupFinanceAPIView(APIView):
                     "total_payment": total_student_payment
                 })
 
-            # Get group name safely
             group_name = Attendance.objects.filter(group_id=group_id).first()
             group_name = group_name.group.name if group_name else "Unknown Group"
 
-            # Append group data to list
             group_data_list.append({
                 "group_id": str(group_id),
                 "group_name": group_name,
@@ -413,12 +395,10 @@ class TeacherGroupFinanceAPIView(APIView):
                 "created_at": created_at,
             })
 
-        # 🔹 Apply Pagination
+        # Paginate the group data
         paginator = self.pagination_class()
         paginated_data = paginator.paginate_queryset(group_data_list, request)
-
         return paginator.get_paginated_response(paginated_data)
-
 
 class FinanceTeacher(ListAPIView):
     serializer_class = FinanceSerializer
