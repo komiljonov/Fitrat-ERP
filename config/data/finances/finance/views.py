@@ -397,7 +397,7 @@ class TeacherGroupFinanceAPIView(APIView):
 
         # Paginate the group data
         paginator = self.pagination_class()
-        paginated_data = paginator.paginate_queryset(group_data_list[0], request)
+        paginated_data = paginator.paginate_queryset(group_data_list, request)
         return paginator.get_paginated_response(paginated_data)
 
 
