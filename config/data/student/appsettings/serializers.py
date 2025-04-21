@@ -23,7 +23,7 @@ from ...upload.serializers import FileUploadSerializer
 
 class StoresSerializer(serializers.ModelSerializer):
     video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     class Meta:
         model = Store
         fields = [
