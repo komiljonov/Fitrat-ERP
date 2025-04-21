@@ -7,7 +7,8 @@ from ...account.serializers import UserSerializer
 
 
 class TimeTrackerSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),
+                                              allow_null=True)
     class Meta:
         model = Employee_attendance
         fields = [
