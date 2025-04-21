@@ -5,7 +5,7 @@ from .views import (
     QuestionRetrieveUpdateDestroyView, FillGapsView, FillGapsDetailsView, VocabularyListView, VocabularyDetailsView,
     LeftPairsListView, LeftPairsDetailsView, MatchPairsListView, MatchPairsDetailsView, ExamListView, ExamDetailsView,
     QuizGapsListView, QuizGapsDetailsView, QuestionsListCreateView, AnswerListCreateView,
-    AnswerRetrieveUpdateDestroyView
+    AnswerRetrieveUpdateDestroyView, QuizCheckAPIView
 )
 
 urlpatterns = [
@@ -35,5 +35,7 @@ urlpatterns = [
 
     path("exam/",ExamListView.as_view(), name='exam'),
     path("exam/<uuid:pk>", ExamDetailsView.as_view(), name='exam-details'),
+
+    path("check/",QuizCheckAPIView.as_view(), name='check'),
 
 ]
