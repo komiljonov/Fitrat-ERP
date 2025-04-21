@@ -8,7 +8,7 @@ from data.student.subject.models import Subject
 class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    theme = models.ForeignKey('theme.Theme', on_delete=models.SET_NULL,
+    theme : "Subject" = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL,
                               null=True,blank=True, related_name='quiz_theme')
 
     def __str__(self):
