@@ -23,4 +23,3 @@ class Employee_attendance(BaseModel):
         return f"{self.user.full_name}   {self.action}   {self.type}"
 
 
-
