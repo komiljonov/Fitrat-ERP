@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -115,7 +116,7 @@ class TeachersGroupsView(ListAPIView):
         status = self.request.GET.get("status")
         teacher_id = self.request.user.pk  # Get the teacher ID
 
-        queryset = Group.objects.filter(teacher__id=teacher_id)  # First filter by teacher
+        queryset = Group.objects.filter(Q(teacher__id=teacher_id) | Q(secondary_teacher__id=teacher_id))  # First filter by teacher
 
         if status:
             queryset = queryset.filter(status=status)  # Apply status filter if present
