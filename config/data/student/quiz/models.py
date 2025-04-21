@@ -101,7 +101,6 @@ class Exam(BaseModel):
     students_xml = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='exam_students_xml')
     exam_materials = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='exam_materials')
     results = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='exam_results')
-
     end_date = models.DateTimeField(null=True,blank=True)
 
     def __str__(self):
