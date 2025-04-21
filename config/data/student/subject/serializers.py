@@ -112,7 +112,7 @@ class ThemeSerializer(serializers.ModelSerializer):
         ]
 
     def get_course(self, obj):
-        return list(Course.objects.filter(subject=obj.subject).values('id', 'group__id'))
+        return list(Course.objects.filter(subject=obj.subject).values('id', 'groups_courses'))
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
