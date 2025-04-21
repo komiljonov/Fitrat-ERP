@@ -87,8 +87,8 @@ class StudentCourse(ListAPIView):
 
 
 class CourseTheme(ListAPIView):
-    queryset = Attendance.objects.all()
-    serializer_class = AttendanceTHSerializer
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
