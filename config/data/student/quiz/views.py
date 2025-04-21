@@ -161,6 +161,16 @@ class QuizListCreateView(ListCreateAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
 
+    def get_queryset(self):
+
+        queryset = Quiz.objects.all()
+
+        theme = self.request.query_params.get("theme")
+        if theme:
+            queryset = queryset.filter(theme__id=theme)
+        return queryset
+
+
 
 class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Quiz.objects.all()
