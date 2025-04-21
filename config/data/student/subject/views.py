@@ -146,6 +146,8 @@ class ThemeDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
+from rest_framework.exceptions import NotFound
+
 class ThemeNoPG(ListAPIView):
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
@@ -153,25 +155,23 @@ class ThemeNoPG(ListAPIView):
     def get_queryset(self):
         queryset = Theme.objects.all()
 
-        # Filter by theme if 'theme' query param is provided
         theme = self.request.query_params.get('theme')
         if theme:
-            queryset = queryset.filter(theme=theme)  # Assuming `theme` field is in the `Theme` model
+            queryset = queryset.filter(theme=theme)
 
-        # Filter by Group ID if 'id' query param is provided
         group_id = self.request.query_params.get('id')
         if group_id:
             try:
-                # Retrieve the Group by ID and filter the related Course
                 group = Group.objects.get(id=group_id)
-                queryset = queryset.filter(course=group.course)  # Assuming Group has a `course` field
+                queryset = queryset.filter(course=group.course)
             except Group.DoesNotExist:
-                return Response({"detail": "Group not found."}, status=404)  # Custom response for invalid Group ID
+                raise NotFound("Group not found.")
 
         return queryset
 
     def get_paginated_response(self, data):
         return Response(data)
+
 
 
 class ImportStudentsAPIView(APIView):
