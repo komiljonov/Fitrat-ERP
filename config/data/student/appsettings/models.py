@@ -5,6 +5,7 @@ from data.student.student.models import Student
 
 
 class Store(BaseModel):
+    photo = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True,blank=True, related_name="store_photo")
     video = models.ForeignKey("upload.File",on_delete=models.CASCADE,related_name="uploaded_store")
     seen = models.BooleanField(default=False)
 

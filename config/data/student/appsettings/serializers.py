@@ -28,6 +28,7 @@ class StoresSerializer(serializers.ModelSerializer):
         model = Store
         fields = [
             "id",
+            "photo"
             "video",
             "seen",
             "created_at",
@@ -35,6 +36,7 @@ class StoresSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["photo"] = FileUploadSerializer(instance.photo, context=self.context).data
         rep["video"] = FileUploadSerializer(instance.video, context=self.context).data
         return rep
 
