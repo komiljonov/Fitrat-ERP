@@ -95,7 +95,7 @@ class CourseTheme(ListAPIView):
         course = Group.objects.filter(id=id).first()
         print(course)
         if course:
-            return Attendance.objects.filter(theme__course=course)
+            return Attendance.objects.filter(attendance_group__group=course)
         return Attendance.objects.none()
 
 
