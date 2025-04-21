@@ -223,9 +223,23 @@ class StudentAPPSerializer(serializers.ModelSerializer):
         return teacher_list[0] if teacher_list else None
 
     def get_course(self, obj):
-        courses = (StudentGroup.objects.filter(student=obj)
-                   .values("group__course__name", "group__course__level__name"))
-        return list(courses),len(courses)
+        courses_qs = StudentGroup.objects.filter(student=obj).values(
+            "group__course__name",
+            "group__course__level__name"
+        )
+
+        formatted_courses = [
+            {
+                "name": course["group__course__name"],
+                "level": course["group__course__level__name"]
+            }
+            for course in courses_qs
+        ]
+
+        return {
+            "count": len(formatted_courses),
+            "items": formatted_courses
+        }
 
     def get_group(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
