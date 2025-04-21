@@ -16,6 +16,7 @@ from ..attendance.models import Attendance
 from ..attendance.serializers import AttendanceSerializer, AttendanceTHSerializer
 from ..groups.models import Group
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
+from ..subject.models import Theme
 from ...account.models import CustomUser
 
 
@@ -92,11 +93,11 @@ class CourseTheme(ListAPIView):
 
     def get_queryset(self):
         id = self.kwargs.get('pk')
-        course = Course.objects.filter(id=id).first()
-        print(course)
+        course = Course.objects.filter(groups_courses__course__id=id).first()
         if course:
-            return Attendance.objects.filter(theme__course=course)
-        return Attendance.objects.none()
+            return Theme.objects.filter(course=course)
+        else:
+            return Theme.objects.none()
 
 
 class CourseTeacher(ListAPIView):
