@@ -178,26 +178,26 @@ class RoomFilterView(ListAPIView):
         return queryset
 
 
+
 class CheckRoomLessonScheduleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        filial = request.query_params.get('filial', None)
-        room_id = request.query_params.get('room', None)
-        date_str = request.query_params.get('date', None)
-        started_at_str = request.query_params.get('started_at', None)
-        ended_at_str = request.query_params.get('ended_at', None)
+        filial = request.query_params.get('filial')
+        room_id = request.query_params.get('room')
+        date_str = request.query_params.get('date')
+        started_at_str = request.query_params.get('started_at')
+        ended_at_str = request.query_params.get('ended_at')
 
         if not (room_id and date_str and started_at_str and ended_at_str):
             return Response({'error': 'Missing required parameters'}, status=400)
 
         try:
-            # Convert input strings to datetime objects
             date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
             started_at = datetime.datetime.strptime(started_at_str, "%H:%M").time()
             ended_at = datetime.datetime.strptime(ended_at_str, "%H:%M").time()
 
-            # Get the weekday name in Uzbek
+            # Determine weekday in Uzbek
             weekday_name = date.strftime("%A")
             uzbek_weekdays = {
                 "Monday": "Dushanba",
@@ -218,17 +218,28 @@ class CheckRoomLessonScheduleView(APIView):
         except ValueError:
             return Response({'error': 'Invalid date or time format'}, status=400)
 
-        # Check conflicts in Regular Group Lessons
+        # Determine week parity (odd/even)
+        week_number = date.isocalendar()[1]
+        current_week_parity = week_number % 2
+
+        # Check conflicts in Group (only same week parity)
         conflicting_groups = Group.objects.filter(
             room_number__id=room_id,
             start_date__lte=date,
             finish_date__gte=date,
             scheduled_day_type=day
+        ).annotate(
+            start_week_parity=(
+                datetime.datetime.strptime('1970-01-01', '%Y-%m-%d').date() + (
+                    (datetime.F('start_date') - datetime.date(1970, 1, 1))
+                )
+            ).isocalendar()[1] % 2
         ).filter(
-            Q(started_at__lt=ended_at, ended_at__gt=started_at)
+            Q(started_at__lt=ended_at, ended_at__gt=started_at),
+            start_week_parity=current_week_parity
         )
 
-        # Check conflicts in ExtraLessonGroup (Group-based extra lessons)
+        # Conflicts in ExtraLessonGroup
         conflicting_extra_group_lessons = ExtraLessonGroup.objects.filter(
             room_id=room_id,
             date=date
@@ -236,7 +247,7 @@ class CheckRoomLessonScheduleView(APIView):
             Q(started_at__lt=ended_at, ended_at__gt=started_at)
         )
 
-        # Check conflicts in ExtraLesson (Individual extra lessons)
+        # Conflicts in ExtraLesson
         conflicting_extra_lessons = ExtraLesson.objects.filter(
             room_id=room_id,
             date=date
@@ -244,18 +255,33 @@ class CheckRoomLessonScheduleView(APIView):
             Q(started_at__lt=ended_at, ended_at__gt=started_at)
         )
 
-        # Serialize conflicts
         conflicts = {
             "group_lessons": GroupLessonSerializer(conflicting_groups, many=True).data,
-            "extra_group_lessons": [{"group": lesson.group.name, "date": lesson.date, "started_at": lesson.started_at, "ended_at": lesson.ended_at} for lesson in conflicting_extra_group_lessons],
-            "extra_lessons": [{"student": lesson.student.phone if lesson.student else None, "teacher": lesson.teacher.username if lesson.teacher else None, "date": lesson.date, "started_at": lesson.started_at, "ended_at": lesson.ended_at} for lesson in conflicting_extra_lessons],
+            "extra_group_lessons": [
+                {
+                    "group": lesson.group.name,
+                    "date": lesson.date,
+                    "started_at": lesson.started_at,
+                    "ended_at": lesson.ended_at
+                }
+                for lesson in conflicting_extra_group_lessons
+            ],
+            "extra_lessons": [
+                {
+                    "student": lesson.student.phone if lesson.student else None,
+                    "teacher": lesson.teacher.username if lesson.teacher else None,
+                    "date": lesson.date,
+                    "started_at": lesson.started_at,
+                    "ended_at": lesson.ended_at
+                }
+                for lesson in conflicting_extra_lessons
+            ],
         }
 
         if conflicting_groups.exists() or conflicting_extra_group_lessons.exists() or conflicting_extra_lessons.exists():
             return Response({'available': False, 'conflicts': conflicts})
 
         return Response({'available': True})
-
 
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Room.objects.all()
