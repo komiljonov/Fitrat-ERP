@@ -2,7 +2,7 @@ import datetime
 import locale
 from collections import defaultdict
 
-from django.db.models import Q
+from django.db.models import Q, F
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
@@ -189,72 +189,70 @@ class CheckRoomLessonScheduleView(APIView):
         started_at_str = request.query_params.get('started_at')
         ended_at_str = request.query_params.get('ended_at')
 
-        if not (room_id and date_str and started_at_str and ended_at_str):
+        # Validate required fields
+        if not all([room_id, date_str, started_at_str, ended_at_str]):
             return Response({'error': 'Missing required parameters'}, status=400)
 
         try:
             date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
             started_at = datetime.datetime.strptime(started_at_str, "%H:%M").time()
             ended_at = datetime.datetime.strptime(ended_at_str, "%H:%M").time()
-
-            # Determine weekday in Uzbek
-            weekday_name = date.strftime("%A")
-            uzbek_weekdays = {
-                "Monday": "Dushanba",
-                "Tuesday": "Seshanba",
-                "Wednesday": "Chorshanba",
-                "Thursday": "Payshanba",
-                "Friday": "Juma",
-                "Saturday": "Shanba",
-                "Sunday": "Yakshanba",
-            }
-            weekday_name = uzbek_weekdays.get(weekday_name, weekday_name)
-
-            try:
-                day = Day.objects.get(name=weekday_name.capitalize())
-            except Day.DoesNotExist:
-                return Response({'error': f'Day "{weekday_name}" not found in the database'}, status=400)
-
         except ValueError:
             return Response({'error': 'Invalid date or time format'}, status=400)
 
-        # Determine week parity (odd/even)
-        week_number = date.isocalendar()[1]
-        current_week_parity = week_number % 2
+        # Convert weekday to Uzbek
+        weekday_name = date.strftime("%A")
+        uzbek_weekdays = {
+            "Monday": "Dushanba",
+            "Tuesday": "Seshanba",
+            "Wednesday": "Chorshanba",
+            "Thursday": "Payshanba",
+            "Friday": "Juma",
+            "Saturday": "Shanba",
+            "Sunday": "Yakshanba",
+        }
+        uzbek_day = uzbek_weekdays.get(weekday_name)
+        if not uzbek_day:
+            return Response({'error': f'Could not determine Uzbek weekday for "{weekday_name}"'}, status=400)
 
-        # Check conflicts in Group (only same week parity)
+        try:
+            day = Day.objects.get(name=uzbek_day)
+        except Day.DoesNotExist:
+            return Response({'error': f'Day "{uzbek_day}" not found in the database'}, status=400)
+
+        # Calculate current week parity (0 for even, 1 for odd)
+        current_week_parity = date.isocalendar()[1] % 2
+
+        # Get all group lessons in that room, that day, overlapping in time and same week parity
         conflicting_groups = Group.objects.filter(
-            room_number__id=room_id,
+            room_number_id=room_id,
             start_date__lte=date,
             finish_date__gte=date,
-            scheduled_day_type=day
+            scheduled_day_type=day,
         ).annotate(
-            start_week_parity=(
-                datetime.datetime.strptime('1970-01-01', '%Y-%m-%d').date() + (
-                    (datetime.F('start_date') - datetime.date(1970, 1, 1))
-                )
-            ).isocalendar()[1] % 2
+            start_week_parity=F('start_date__week') % 2
         ).filter(
             Q(started_at__lt=ended_at, ended_at__gt=started_at),
             start_week_parity=current_week_parity
         )
 
-        # Conflicts in ExtraLessonGroup
+        # Extra lessons (groups)
         conflicting_extra_group_lessons = ExtraLessonGroup.objects.filter(
             room_id=room_id,
-            date=date
-        ).filter(
-            Q(started_at__lt=ended_at, ended_at__gt=started_at)
+            date=date,
+            started_at__lt=ended_at,
+            ended_at__gt=started_at
         )
 
-        # Conflicts in ExtraLesson
+        # Extra lessons (students)
         conflicting_extra_lessons = ExtraLesson.objects.filter(
             room_id=room_id,
-            date=date
-        ).filter(
-            Q(started_at__lt=ended_at, ended_at__gt=started_at)
+            date=date,
+            started_at__lt=ended_at,
+            ended_at__gt=started_at
         )
 
+        # Format conflicts
         conflicts = {
             "group_lessons": GroupLessonSerializer(conflicting_groups, many=True).data,
             "extra_group_lessons": [
@@ -263,8 +261,7 @@ class CheckRoomLessonScheduleView(APIView):
                     "date": lesson.date,
                     "started_at": lesson.started_at,
                     "ended_at": lesson.ended_at
-                }
-                for lesson in conflicting_extra_group_lessons
+                } for lesson in conflicting_extra_group_lessons
             ],
             "extra_lessons": [
                 {
@@ -273,16 +270,18 @@ class CheckRoomLessonScheduleView(APIView):
                     "date": lesson.date,
                     "started_at": lesson.started_at,
                     "ended_at": lesson.ended_at
-                }
-                for lesson in conflicting_extra_lessons
-            ],
+                } for lesson in conflicting_extra_lessons
+            ]
         }
 
-        if conflicting_groups.exists() or conflicting_extra_group_lessons.exists() or conflicting_extra_lessons.exists():
+        if any([
+            conflicting_groups.exists(),
+            conflicting_extra_group_lessons.exists(),
+            conflicting_extra_lessons.exists()
+        ]):
             return Response({'available': False, 'conflicts': conflicts})
 
         return Response({'available': True})
-
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Room.objects.all()
     permission_classes = [IsAuthenticated]
