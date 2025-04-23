@@ -17,6 +17,16 @@ class AttendanceList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
+class AttendanceBulkList(ListCreateAPIView):
+    queryset = Attendance.objects.all()
+    serializer_class = AttendanceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer(self, *args, **kwargs):
+        if isinstance(kwargs.get("data", {}), list):
+            kwargs["many"] = True
+        return super().get_serializer(*args, **kwargs)
+
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Attendance.objects.all()
