@@ -21,6 +21,8 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = Question
         fields = ["id","quiz" ,"text", "answers"]
 
+
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["text"] = QuizGapsSerializer(instance.text).data
