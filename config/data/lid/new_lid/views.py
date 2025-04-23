@@ -137,6 +137,7 @@ class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 class LidListNoPG(ListAPIView):
     queryset = Lid.objects.all()
     serializer_class = LidSerializer
+    pagination_class = None
 
     def get_queryset(self):
         filial = self.request.query_params.get("filial")

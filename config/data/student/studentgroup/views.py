@@ -75,6 +75,7 @@ class StudentGroupNopg(ListAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentsGroupSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_paginated_response(self, data):
         return Response(data)

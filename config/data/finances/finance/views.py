@@ -51,6 +51,7 @@ class CasherNoPg(ListAPIView):
     queryset = Casher.objects.all()
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         role = self.request.query_params.get('role', None)
@@ -115,6 +116,7 @@ class FinanceNoPGList(ListAPIView):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = None
 
     def get_paginated_response(self, data):
         return Response(data)
@@ -631,6 +633,7 @@ class SalesStudentNoPG(ListAPIView):
     serializer_class = SalesSerializer
     queryset = Sale.objects.all()
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
@@ -755,6 +758,7 @@ class VoucherNoPG(ListAPIView):
     serializer_class = VoucherSerializer
     queryset = Voucher.objects.all()
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         is_expired = self.request.query_params.get('is_expired')

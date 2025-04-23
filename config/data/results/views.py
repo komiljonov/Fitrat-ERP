@@ -58,6 +58,7 @@ class UniversityResultsNoPg(ListAPIView):
     queryset = Results.objects.all()
     serializer_class = UniversityResultsSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
@@ -77,6 +78,7 @@ class CertificationResultsNoPg(ListAPIView):
     queryset = Results.objects.all()
     serializer_class = CertificationResultsSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         return Results.objects.filter(teacher=self.request.user)
