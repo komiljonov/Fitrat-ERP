@@ -6,7 +6,8 @@ from rest_framework.generics import (ListCreateAPIView,
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Attendance, Student
+from .models import Attendance, Student, SecondaryAttendance
+from .secondary_serializers import SecondaryAttendanceSerializer
 from .serializers import AttendanceSerializer
 from ...lid.new_lid.models import Lid
 
@@ -82,4 +83,19 @@ class LessonAttendanceList(ListAPIView):
 
 
 
+class SecondaryAttendanceList(ListCreateAPIView):
+    queryset = SecondaryAttendance.objects.all()
+    serializer_class = SecondaryAttendanceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer(self, *args, **kwargs):
+        if isinstance(kwargs.get("data", {}), list):
+            kwargs["many"] = True
+        return super().get_serializer(*args, **kwargs)
+
+
+class SecondaryAttendanceDetail(RetrieveUpdateDestroyAPIView):
+    queryset = SecondaryAttendance.objects.all()
+    serializer_class = SecondaryAttendanceSerializer
+    permission_classes = [IsAuthenticated]
 
