@@ -70,7 +70,7 @@ class FinanceListView(ListAPIView):
         queryset = Finance.objects.all()
         ic(id)
         if id:
-            queryset = queryset.filter(student__id=id)
+            queryset = queryset.filter(student__user__id=id)
 
         if action:
             queryset = queryset.filter(action=action)
