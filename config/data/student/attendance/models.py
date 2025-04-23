@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from ...command.models import BaseModel
 from ...lid.new_lid.models import Lid
 from ...student.student.models import Student
-from ...student.groups.models import Group
+from ...student.groups.models import Group, SecondaryGroup
 
 
 class Attendance(BaseModel):
@@ -40,6 +40,31 @@ class Attendance(BaseModel):
         null=True,
         help_text="Attendance counted amount ..."
     )
+
+    def __str__(self):
+        return f" {self.group} is marked as {self.reason}"
+
+
+class SecondaryAttendance(BaseModel):
+    theme: 'Theme' = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL,
+                                       null=True, blank=True, related_name='secondary_group_attendance_theme')
+    group: "SecondaryGroup" = models.ForeignKey('groups.SecondaryGroup', on_delete=models.SET_NULL,null=True,blank=True,
+                                                related_name='secondary_group_attendance_secondary_group')
+    student: 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='attendance_student')
+    REASON_CHOICES = [
+        ('IS_PRESENT', 'Is Present'),
+        ('REASONED', 'Sababli'),
+        ('UNREASONED', 'Sababsiz'),
+        ('HOLIDAY', 'Dam olish kuni'),
+    ]
+    reason = models.CharField(
+        max_length=20,
+        choices=REASON_CHOICES,
+        default='UNREASONED',
+        help_text="Attendance reason (Sababli/Sababsiz)"
+    )
+    remarks: str = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f" {self.group} is marked as {self.reason}"
