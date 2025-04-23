@@ -51,7 +51,7 @@ class SecondaryAttendance(BaseModel):
     group: "SecondaryGroup" = models.ForeignKey('groups.SecondaryGroup', on_delete=models.SET_NULL,null=True,blank=True,
                                                 related_name='secondary_group_attendance_secondary_group')
     student: 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL, null=True, blank=True,
-                                           related_name='attendance_student')
+                                           related_name='secondary_attendance_student')
     REASON_CHOICES = [
         ('IS_PRESENT', 'Is Present'),
         ('REASONED', 'Sababli'),
