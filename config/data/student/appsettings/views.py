@@ -116,9 +116,13 @@ class StudentNotificationsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
+    pagination_class = None
 
     def get_queryset(self):
         id = self.request.query_params.get('id', None)
         if id:
             return Notification.objects.filter(user__id=id)
         return Notification.objects.none()
+
+    def get_paginated_response(self, data):
+        return Response(data)

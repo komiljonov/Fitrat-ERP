@@ -82,6 +82,7 @@ class StudentListAPIView(ListAPIView):
     queryset = Group.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
+    pagination_class = None
 
     def get_queryset(self):
         filter = {}
@@ -296,6 +297,7 @@ class RoomNoPG(ListAPIView):
     search_fields = ('room_number', 'room_filling')
     ordering_fields = ('room_number', 'room_filling')
     filterset_fields = ('room_number', 'room_filling')
+    pagination_class = None
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial', None)
@@ -395,6 +397,7 @@ class DaysNoPG(ListAPIView):
     queryset = Day.objects.all()
     serializer_class = DaySerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_paginated_response(self, data):
         return Response(data)

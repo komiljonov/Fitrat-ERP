@@ -22,6 +22,7 @@ class MarketingChannelDetail(RetrieveUpdateDestroyAPIView):
 class MarketingChannelNOPG(ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = MarketingChannel.objects.all()
+    pagination_class = None
     serializer_class = MarketingChannelSerializer
 
     def get_paginated_response(self, data):

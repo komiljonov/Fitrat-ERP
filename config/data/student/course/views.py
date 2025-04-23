@@ -60,6 +60,7 @@ class CourseNoPG(ListAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_paginated_response(self, data):
         return Response(data)

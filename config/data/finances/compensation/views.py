@@ -58,6 +58,7 @@ class BonusNoPG(ListAPIView):
     queryset = Bonus.objects.all()
     serializer_class = BonusSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
     search_fields = ("name",)
@@ -105,6 +106,7 @@ class CompensationNoPG(ListAPIView):
     queryset = Compensation.objects.all()
     serializer_class = CompensationSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ("name",)
     filterset_fields = ("name",)
@@ -196,6 +198,7 @@ class AsosNoPGListView(ListAPIView):
     queryset = Asos.objects.all()
     serializer_class = AsosSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         filial = self.request.query_params.get("filial")
@@ -248,6 +251,7 @@ class PointNoPGListView(ListAPIView):
     queryset = Point.objects.all()
     serializer_class = PointSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         asos = self.request.query_params.get("asos")

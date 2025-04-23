@@ -140,6 +140,7 @@ class StudentListNoPG(FilialRestrictedQuerySetMixin, ListAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         filial_id = self.request.query_params.get('filial')
