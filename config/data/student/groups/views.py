@@ -513,9 +513,14 @@ class LessonScheduleListApi(ListAPIView):
         # Prepare the sorted response
         sorted_lessons = []
         for lesson_date in sorted_dates:
+            lessons = lessons_by_date[lesson_date]
+
+            # Sort by started_at (string format HH:MM)
+            lessons.sort(key=lambda x: x.get("started_at"))
+
             sorted_lessons.append({
                 "date": lesson_date.strftime('%d-%m-%Y'),
-                "lessons": lessons_by_date[lesson_date]
+                "lessons": lessons
             })
 
         return Response(sorted_lessons)
