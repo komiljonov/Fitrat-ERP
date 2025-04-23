@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from icecream import ic
 from reportlab import Version
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -59,7 +60,7 @@ class FinanceListView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.kwargs.get('id')
+        id = self.kwargs.get('pk')
 
         action =  self.request.query_params.get('action', None)
         kind = self.request.query_params.get('kind', None)
@@ -67,6 +68,7 @@ class FinanceListView(ListAPIView):
         search = self.request.query_params.get('search', None)
 
         queryset = Finance.objects.all()
+        ic(id)
         if id:
             queryset = queryset.filter(student__id=id)
 
