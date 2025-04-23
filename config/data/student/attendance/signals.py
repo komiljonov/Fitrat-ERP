@@ -138,7 +138,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             instance.group.teacher.save(update_fields=["balance"])
 
             create_finance_record(
-                "INCOME",
+                "EXPENSE",
                 income_amount,
                 kind,
                 instance,
@@ -193,7 +193,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 instance.group.teacher.save(update_fields=["balance"])
 
                 create_finance_record(
-                    "INCOME",
+                    "EXPENSE",
                     income_amount,
                     kind,
                     instance,
