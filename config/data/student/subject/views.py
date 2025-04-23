@@ -41,6 +41,7 @@ class SubjectNoPG(ListAPIView):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Subject.objects.all()
@@ -86,6 +87,7 @@ class LevelNoPG(ListAPIView):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial', None)
@@ -151,6 +153,7 @@ from rest_framework.exceptions import NotFound
 class ThemeNoPG(ListAPIView):
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Theme.objects.all()
