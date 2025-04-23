@@ -45,6 +45,7 @@ class TaskListNoPGView(ListAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         filial = self.request.query_params.get("filial")
