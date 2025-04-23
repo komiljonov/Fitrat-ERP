@@ -606,8 +606,8 @@ class GroupIsActiveNowAPIView(APIView):
         group = get_object_or_404(Group, id=group_id)
 
         now_time = datetime.datetime.now()
-        current_weekday_en = now_time.strftime('%A')  # e.g. "Tuesday"
-        current_weekday_uz = WEEKDAYS_UZ[current_weekday_en]  # e.g. "seshanba"
+        current_weekday_en = now_time.strftime('%A')
+        current_weekday_uz = WEEKDAYS_UZ[current_weekday_en]
         current_time = now_time.time()
 
         for day in group.scheduled_day_type.all():
