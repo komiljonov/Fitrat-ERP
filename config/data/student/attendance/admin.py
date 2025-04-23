@@ -15,6 +15,6 @@ class AttendanceAdmin(admin.ModelAdmin):
 @admin.register(SecondaryAttendance)
 class SecondaryAttendanceAdmin(admin.ModelAdmin):
     list_display = ('student',"group",'reason',"created_at")
-    list_filter = ('reason',"student__first_name",'student__last_name',"student__phone_number")
-    search_fields = ('reason',"student__first_name",'student__last_name',"student__phone_number")
+    list_filter = ('reason',"student__first_name",'student__last_name',"student__phone")
+    search_fields = ('reason',"student__first_name",'student__last_name',"student__phone")
 
