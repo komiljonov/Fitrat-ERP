@@ -3,11 +3,12 @@ import locale
 from collections import defaultdict
 
 from django.db.models import Q, F
+from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, get_object_or_404
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -18,6 +19,7 @@ from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer
     DaySerializer, RoomFilterSerializer
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
+from ..lesson.views import LessonSchedule
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -581,3 +583,41 @@ class LessonScheduleWebListApi(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+
+class GroupIsActiveNowAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request,*args, **kwargs):
+
+        WEEKDAYS_UZ = {
+            "Monday": "dushanba",
+            "Tuesday": "seshanba",
+            "Wednesday": "chorshanba",
+            "Thursday": "payshanba",
+            "Friday": "juma",
+            "Saturday": "shanba",
+            "Sunday": "yakshanba"
+        }
+        group_id = self.kwargs.get('pk', None)
+        ic(group_id)
+
+        group = get_object_or_404(Group, id=group_id)
+
+        now_time = datetime.datetime.now()
+        current_weekday_en = now_time.strftime('%A')  # e.g. "Tuesday"
+        current_weekday_uz = WEEKDAYS_UZ[current_weekday_en]  # e.g. "seshanba"
+        current_time = now_time.time()
+
+        for day in group.scheduled_day_type.all():
+            if day.name.lower() == current_weekday_uz:
+                start = group.started_at
+                end = group.ended_at
+
+                ic(start,end,current_time)
+
+                if start <= current_time <= end:
+                    return Response({"is_scheduled_now": True})
+
+        return Response({"is_scheduled_now": False})

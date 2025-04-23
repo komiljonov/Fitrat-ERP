@@ -11,6 +11,8 @@ services:
     volumes:
       - redis-data:/data
     command: redis-server --save 1 1 --loglevel warning --appendonly yes
+    environment:
+      - TZ=Etc/GMT+5
 
   postgres:
     image: postgres:16
@@ -19,6 +21,7 @@ services:
       - POSTGRES_DB=fitrat
       - POSTGRES_USER=fitrat_user
       - POSTGRES_PASSWORD=your_secure_password
+      - TZ=Etc/GMT+5
     ports:
       - "5434:5432"
     volumes:
@@ -38,6 +41,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - TZ=Etc/GMT+5
     depends_on:
       - redis
       - postgres
@@ -50,6 +55,8 @@ services:
     volumes: *shared_volumes
     env_file:
       - .env
+    environment:
+      - TZ=Etc/GMT+5
     depends_on:
       - django
 
@@ -62,8 +69,9 @@ services:
     env_file:
       - .env
     environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TZ=Etc/GMT+5
     depends_on:
       - redis
       - django
@@ -77,6 +85,8 @@ services:
     command: celery --app=root.celery beat --loglevel=info
     env_file:
       - .env
+    environment:
+      - TZ=Etc/GMT+5
     depends_on:
       - redis
       - celery
@@ -96,6 +106,7 @@ services:
       - POSTGRES_USER=fitrat_user
       - POSTGRES_PASSWORD=your_secure_password
       - PGPASSWORD=your_secure_password
+      - TZ=Etc/GMT+5
     command: ["crond", "-f", "-l", "2"]
     security_opt:
       - seccomp:unconfined
