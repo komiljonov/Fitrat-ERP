@@ -181,7 +181,6 @@ class RoomFilterView(ListAPIView):
         return queryset
 
 
-
 class CheckRoomLessonScheduleView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -285,6 +284,8 @@ class CheckRoomLessonScheduleView(APIView):
             return Response({'available': False, 'conflicts': conflicts})
 
         return Response({'available': True})
+
+
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Room.objects.all()
     permission_classes = [IsAuthenticated]
@@ -583,7 +584,6 @@ class LessonScheduleWebListApi(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
 
 
 class GroupIsActiveNowAPIView(APIView):
