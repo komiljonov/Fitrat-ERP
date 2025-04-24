@@ -19,7 +19,9 @@ class Quiz(BaseModel):
     results_excel =models.ForeignKey("upload.File", on_delete=models.SET_NULL,null=True,blank=True,
                                      related_name='quiz_results_excel')
     students_count = models.IntegerField(default=0)
-
+    date = models.DateField(null=True, blank=True)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
     def __str__(self):
         return self.title
 

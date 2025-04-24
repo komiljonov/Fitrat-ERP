@@ -59,6 +59,10 @@ class QuizSerializer(serializers.ModelSerializer):
             "results_excel",
             "students_count",
 
+            "date",
+            "start_time",
+            "end_time",
+
             "description",
             "questions",
             "fill_gap",
