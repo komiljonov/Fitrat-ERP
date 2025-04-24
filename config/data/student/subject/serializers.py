@@ -50,8 +50,6 @@ class SubjectSerializer(serializers.ModelSerializer):
         return rep
 
 
-
-
 class LevelSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
     all_themes = serializers.SerializerMethodField()
@@ -74,9 +72,6 @@ class LevelSerializer(serializers.ModelSerializer):
         rep = super().to_representation(obj)
         rep["subject"] = SubjectSerializer(obj.subject).data
         return rep
-
-
-
 
 
 class ThemeSerializer(serializers.ModelSerializer):
@@ -128,3 +123,5 @@ class ThemeSerializer(serializers.ModelSerializer):
 
         rep['course'] = self.get_course(instance)
         return rep
+
+

@@ -43,32 +43,53 @@ class MasteringQuizFilter(ListAPIView):
             return quiz
         return Mastering.objects.none()
 
-class TeacherMasteringList(ListAPIView):
-    queryset = MasteringTeachers.objects.all()
-    serializer_class = StuffMasteringSerializer
-    permission_classes = [IsAuthenticated]
+# class TeacherMasteringList(ListAPIView):
+#     queryset = MasteringTeachers.objects.all()
+#     serializer_class = StuffMasteringSerializer
+#     permission_classes = [IsAuthenticated]
+#
+#     def get_queryset(self):
+#         id = self.kwargs.get('pk')
+#         icecream.ic(id)
+#         if id:
+#             return MasteringTeachers.objects.filter(teacher__id=id)
+#         return MasteringTeachers.objects.none()
+#
+#
+# class StuffMasteringList(ListCreateAPIView):
+#     queryset = KpiFinance.objects.all()
+#     serializer_class = KpiFinanceSerializer
+#     permission_classes = [IsAuthenticated]
+#
+#     def get_queryset(self):
+#         id = self.request.query_params.get('id')
+#         if id:
+#             return KpiFinance.objects.filter(user__id=id)
+#         return KpiFinance.objects.all()
+#
+#
+# class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
+#     queryset = KpiFinance.objects.all()
+#     serializer_class = KpiFinanceSerializer
+#     permission_classes = [IsAuthenticated]
+#
 
+
+class MasteringStudentFilter(ListAPIView):
+    queryset = Mastering.objects.all()
+    serializer_class = MasteringSerializer
+    permission_classes = [IsAuthenticated]
     def get_queryset(self):
-        id = self.kwargs.get('pk')
-        icecream.ic(id)
-        if id:
-            return MasteringTeachers.objects.filter(teacher__id=id)
-        return MasteringTeachers.objects.none()
+        quiz_id = self.request.query_qaram.get('quiz_id')
+        student = self.request.query_param.get('student')
+        user = self.queryset.query_param.get('user')
+        queryset = Mastering.objects.all()
+        if quiz_id:
+            queryset = queryset.filter(test__id=quiz_id)
 
+        if student:
+            queryset = queryset.filter(student__id=student)
 
-class StuffMasteringList(ListCreateAPIView):
-    queryset = KpiFinance.objects.all()
-    serializer_class = KpiFinanceSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        id = self.request.query_params.get('id')
-        if id:
-            return KpiFinance.objects.filter(user__id=id)
-        return KpiFinance.objects.all()
-
-
-class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
-    queryset = KpiFinance.objects.all()
-    serializer_class = KpiFinanceSerializer
-    permission_classes = [IsAuthenticated]
+        if user:
+            queryset = queryset.filter(student__user__id=user)
+        return queryset
