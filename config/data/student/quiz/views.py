@@ -18,6 +18,7 @@ from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer,
     QuizGapsSerializer, AnswerSerializer
 from ..mastering.models import Mastering
 from ..student.models import Student
+from ..subject.models import Theme
 
 
 class QuizCheckAPIView(APIView):
@@ -25,7 +26,8 @@ class QuizCheckAPIView(APIView):
 
     @swagger_auto_schema(
         operation_summary="Check Quiz Answers",
-        operation_description="Submit a complete set of answers for a quiz, and receive feedback on which answers are correct.",
+        operation_description="Submit a complete set of answers for a quiz, and "
+                              "receive feedback on which answers are correct.",
         request_body=QuizCheckSerializer,
         responses={200: openapi.Response(
             description="Result summary and detailed correctness per question type"
@@ -162,7 +164,10 @@ class QuizCheckAPIView(APIView):
 
         student = Student.objects.filter(user=request.user).first()
 
+        theme = data.get("theme")
+        theme = Theme.objects.get(id=theme)
         mastering = Mastering.objects.create(
+            theme=theme,
             lid=None,
             student=student,
             test=quiz,
