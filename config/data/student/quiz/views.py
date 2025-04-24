@@ -1,3 +1,4 @@
+import pandas as pd
 from django.db import transaction
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -182,15 +183,32 @@ class QuizCheckAPIView(APIView):
 class QuizListCreateView(ListCreateAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
+    parser_classes = (MultiPartParser, FormParser)
 
     def get_queryset(self):
-
         queryset = Quiz.objects.all()
-
         theme = self.request.query_params.get("theme")
         if theme:
             queryset = queryset.filter(theme__id=theme)
         return queryset
+
+    def perform_create(self, serializer):
+        quiz = serializer.save()
+        self.update_students_count(quiz)
+
+    def perform_update(self, serializer):
+        quiz = serializer.save()
+        self.update_students_count(quiz)
+
+    def update_students_count(self, quiz):
+        if quiz.students_excel and quiz.students_excel.file:
+            try:
+                df = pd.read_excel(quiz.students_excel.file)
+                quiz.students_count = len(df)
+                quiz.save(update_fields=['students_count'])
+            except Exception as e:
+                # optionally: log the error
+                print(f"Failed to parse Excel for quiz {quiz.id}: {e}")
 
 
 

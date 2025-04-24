@@ -22,6 +22,7 @@ class Quiz(BaseModel):
     date = models.DateField(null=True, blank=True)
     start_time = models.TimeField(null=True, blank=True)
     end_time = models.TimeField(null=True, blank=True)
+
     def __str__(self):
         return self.title
 
