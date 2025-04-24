@@ -10,6 +10,8 @@ urlpatterns = [
 
     path("bulk/",AttendanceBulkList.as_view(), name='bulk-attendance-list'),
 
+    path("bulk/update",AttendanceBulkUpdateAPIView.as_view(), name='bulk-update-attendance-list'),
+
     path("secondary/",SecondaryAttendanceList.as_view(), name='secondary-attendance-list'),
     path("secondary/<uuid:pk>",SecondaryAttendanceDetail.as_view(), name='secondary-attendance-detail'),
 

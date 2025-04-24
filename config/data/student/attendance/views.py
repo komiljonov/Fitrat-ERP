@@ -1,10 +1,13 @@
+from django.db import transaction
 from django.db.models import Q
+from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      ListAPIView)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Attendance, Student, SecondaryAttendance
 from .secondary_serializers import SecondaryAttendanceSerializer
@@ -28,6 +31,35 @@ class AttendanceBulkList(ListCreateAPIView):
             kwargs["many"] = True
         return super().get_serializer(*args, **kwargs)
 
+
+class AttendanceBulkUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        data = request.data
+
+        if not isinstance(data, list):
+            return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
+
+        updated = []
+
+        for item in data:
+            if "id" not in item:
+                return Response({"detail": "Missing 'id' for update item."}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                instance = Attendance.objects.get(id=item["id"])
+                serializer = AttendanceSerializer(instance, data=item, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                updated.append(serializer.data)
+            except Attendance.DoesNotExist:
+                return Response({"detail": f"Attendance with id {item['id']} not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({
+            "updated": updated
+        }, status=status.HTTP_200_OK)
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Attendance.objects.all()
