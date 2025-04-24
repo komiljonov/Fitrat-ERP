@@ -45,11 +45,20 @@ class QuizSerializer(serializers.ModelSerializer):
     vocabularies = serializers.SerializerMethodField()
     match_pairs = serializers.SerializerMethodField()
 
+    students_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    results_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+
     class Meta:
         model = Quiz
         fields = [
             "id",
             "title",
+
+            "type",
+            "students_excel",
+            "results_excel",
+            "students_count",
+
             "description",
             "questions",
             "fill_gap",
@@ -61,13 +70,17 @@ class QuizSerializer(serializers.ModelSerializer):
         return QuestionSerializer(Question.objects.all(), many=True).data
     def get_fill_gap(self, obj):
         return FillGapsSerializer(Fill_gaps.objects.filter(quiz=obj), many=True).data  # ✅ correct
-
     def get_vocabularies(self, obj):
         return VocabularySerializer(Vocabulary.objects.filter(quiz=obj), many=True).data
-
     def get_match_pairs(self, obj):
         return MatchPairsSerializer(MatchPairs.objects.filter(quiz=obj), many=True).data
 
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["students_excel"] = FileUploadSerializer(instance.students_excel, context=self.context).data
+        rep["results_excel"] = FileUploadSerializer(instance.results_excel, context=self.context).data
+        return rep
 
 class QuizImportSerializer(serializers.Serializer):
     title = serializers.CharField()
