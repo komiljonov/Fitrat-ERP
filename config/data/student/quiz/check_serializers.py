@@ -36,6 +36,7 @@ class MatchPairsSerializer(serializers.Serializer):
         ref_name = "Check_MatchPairsSerializer"
 
 class QuizCheckSerializer(serializers.Serializer):
+    theme = serializers.UUIDField(required=False)
     quiz_id = serializers.UUIDField()
     multiple_choice = MultipleChoiceSerializer(many=True, required=False)
     fill_gaps = FillGapsSerializer(many=True, required=False)

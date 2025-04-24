@@ -6,6 +6,6 @@ from .models import Mastering
 
 @admin.register(Mastering)
 class MasteringAdmin(admin.ModelAdmin):
-    list_display = ('student','lid','test',"ball")
+    list_display = ('student__phone','theme__title','test',"ball")
     search_fields = ('student__first_name','lid__first_name','test__title',"ball")
     list_filter = ('student__first_name','lid__first_name','test__title',"ball")
