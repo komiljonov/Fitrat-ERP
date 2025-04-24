@@ -22,7 +22,6 @@ class MasteringDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = MasteringSerializer
     permission_classes = [IsAuthenticated]
 
-
 class MasteringNoPG(ListAPIView):
     queryset = Mastering.objects.all()
     serializer_class = MasteringSerializer

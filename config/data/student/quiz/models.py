@@ -10,6 +10,15 @@ class Quiz(BaseModel):
     description = models.TextField(blank=True)
     theme : "Subject" = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL,
                               null=True,blank=True, related_name='quiz_theme')
+    type = models.CharField(choices=[
+        ("Online", "Online"),
+        ("Offline", "Offline"),
+    ], max_length=255, null=True, blank=True)
+    students_excel =models.ForeignKey("upload.File", on_delete=models.SET_NULL,null=True,blank=True,
+                                      related_name='quiz_students_excel')
+    results_excel =models.ForeignKey("upload.File", on_delete=models.SET_NULL,null=True,blank=True,
+                                     related_name='quiz_results_excel')
+    students_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
