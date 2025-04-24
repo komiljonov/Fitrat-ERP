@@ -15,6 +15,6 @@ def on_create(sender, instance: Group_Type, created, **kwargs):
     for user in CustomUser.objects.filter(role__in=["DIRECTOR", "ACCOUNTING"]):
         Notification.objects.create(
             user=user,  # Assign single user
-            comment=f"Guruhlarning to'lov uslubi {instance.price_type} ga o'zgartirildi !",
+            comment=f"Guruhlarning to'lov uslubi {"Oylik" if instance.price_type == "MONTHLY" else "Kunlik"} ga o'zgartirildi !",
             come_from=Group.objects.filter().first(),
         )
