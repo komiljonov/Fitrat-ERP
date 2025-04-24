@@ -211,15 +211,16 @@ class QuizListCreateView(ListCreateAPIView):
                 print(f"Failed to parse Excel for quiz {quiz.id}: {e}")
 
 
-
 class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
+
 
 class AnswerListCreateView(ListCreateAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
     permission_classes = [IsAuthenticated]
+
 
 class AnswerRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Answer.objects.all()
@@ -232,10 +233,12 @@ class QuestionsListCreateView(ListCreateAPIView):
     serializer_class = QuestionSerializer
     permission_classes = [IsAuthenticated]
 
+
 class QuestionRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     permission_classes = [IsAuthenticated]
+
 
 class FillGapsView(ListCreateAPIView):
     queryset = Fill_gaps.objects.all()
@@ -247,8 +250,6 @@ class FillGapsDetailsView(RetrieveUpdateDestroyAPIView):
     queryset = Fill_gaps.objects.all()
     serializer_class = FillGapsSerializer
     permission_classes = [IsAuthenticated]
-
-
 
 
 class VocabularyListView(ListCreateAPIView):
@@ -273,6 +274,7 @@ class LeftPairsDetailsView(RetrieveUpdateDestroyAPIView):
     queryset = Pairs.objects.all()
     serializer_class = PairsSerializer
     permission_classes = [IsAuthenticated]
+
 
 class MatchPairsListView(ListCreateAPIView):
     queryset = MatchPairs.objects.all()
