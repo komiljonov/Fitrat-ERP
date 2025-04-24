@@ -42,6 +42,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include("data.account.urls")),
 
+    path("payme/", include("data.payme.urls")),
+
     path("tasks/", include("data.tasks.urls")),
     path("comments/", include("data.comments.urls")),
 

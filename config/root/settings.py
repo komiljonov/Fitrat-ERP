@@ -51,7 +51,7 @@ INSTALLED_APPS = [
 
     # Installed apps
     'data.account',
-
+    'data.payme',
     'data.tasks',
     'data.finances.finance',
     'data.finances.compensation',
@@ -227,7 +227,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'account.CustomUser'
-
+PAYME_ACCOUNT_MODEL = 'data.student.student.models.Student'
 # Maximum file upload size in bytes (10 MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
 
