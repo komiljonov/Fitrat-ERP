@@ -4,6 +4,8 @@ from rest_framework import serializers
 from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary,  MatchPairs, Exam, Gaps, \
     QuizGaps, Pairs
 from ..student.models import Student
+from ..subject.models import Subject
+from ..subject.serializers import SubjectSerializer
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
@@ -47,7 +49,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
     students_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     results_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
-
+    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
     class Meta:
         model = Quiz
         fields = [
@@ -58,6 +60,7 @@ class QuizSerializer(serializers.ModelSerializer):
             "students_excel",
             "results_excel",
             "students_count",
+            "subject",
 
             "date",
             "start_time",
@@ -82,6 +85,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["subject"] = SubjectSerializer(instance.subject).data
         rep["students_excel"] = FileUploadSerializer(instance.students_excel, context=self.context).data
         rep["results_excel"] = FileUploadSerializer(instance.results_excel, context=self.context).data
         return rep

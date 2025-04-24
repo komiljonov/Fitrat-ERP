@@ -14,6 +14,8 @@ class Quiz(BaseModel):
         ("Online", "Online"),
         ("Offline", "Offline"),
     ], max_length=255, null=True, blank=True)
+    subject : "Subject" = models.ForeignKey('subject.Subject', on_delete=models.SET_NULL,null=True,blank=True,
+                                            related_name='quiz_subject')
     students_excel =models.ForeignKey("upload.File", on_delete=models.SET_NULL,null=True,blank=True,
                                       related_name='quiz_students_excel')
     results_excel =models.ForeignKey("upload.File", on_delete=models.SET_NULL,null=True,blank=True,
