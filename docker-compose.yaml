@@ -57,8 +57,7 @@ services:
       - .env
     environment:
       - TZ=Etc/GMT+5
-    depends_on:
-      - django
+
 
   celery:
     build:

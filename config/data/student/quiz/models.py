@@ -13,6 +13,7 @@ class Quiz(BaseModel):
     type = models.CharField(choices=[
         ("Online", "Online"),
         ("Offline", "Offline"),
+        ("Theme", "Theme"),
     ], max_length=255, null=True, blank=True)
     subject : "Subject" = models.ForeignKey('subject.Subject', on_delete=models.SET_NULL,null=True,blank=True,
                                             related_name='quiz_subject')
