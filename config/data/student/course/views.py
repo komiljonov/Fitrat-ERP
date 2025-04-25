@@ -126,3 +126,4 @@ class CourseTeacher(ListAPIView):
 
         return Course.objects.none()
 
+

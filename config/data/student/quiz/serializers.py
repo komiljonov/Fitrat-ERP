@@ -9,12 +9,10 @@ from ..subject.serializers import SubjectSerializer
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
-
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ["id", "text", "is_correct"]
-
 
 class QuestionSerializer(serializers.ModelSerializer):
     answers = serializers.PrimaryKeyRelatedField(many=True, queryset=Answer.objects.all())
@@ -30,7 +28,6 @@ class QuestionSerializer(serializers.ModelSerializer):
         rep["text"] = QuizGapsSerializer(instance.text).data
         rep["answers"] = AnswerSerializer(instance.answers.all(),many=True).data
         return rep
-
 
 class QuizGapsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -115,7 +112,6 @@ class QuizImportSerializer(serializers.Serializer):
 
         return quiz
 
-
 class UserAnswerSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     answer_id = serializers.IntegerField()
@@ -127,7 +123,6 @@ class GapsSerializer(serializers.ModelSerializer):
             "id",
             "name"
         ]
-
 
 class FillGapsSerializer(serializers.ModelSerializer):
     quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
@@ -200,8 +195,6 @@ class PairsSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-
-
 class MatchPairsSerializer(serializers.ModelSerializer):
     pairs = serializers.PrimaryKeyRelatedField(queryset=Pairs.objects.all(),many=True,allow_null=True)
     class Meta:
@@ -217,7 +210,6 @@ class MatchPairsSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep["pairs"] = PairsSerializer(instance.pairs.all(),many=True).data
         return rep
-
 
 class ExamSerializer(serializers.ModelSerializer):
     quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(),allow_null=True)
