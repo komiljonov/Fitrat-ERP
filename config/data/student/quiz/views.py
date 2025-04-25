@@ -17,9 +17,12 @@ from .models import Quiz, Question
 from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer, \
     VocabularySerializer, PairsSerializer, MatchPairsSerializer, ExamSerializer, \
     QuizGapsSerializer, AnswerSerializer
+from ..homeworks.models import Homework
 from ..mastering.models import Mastering
+from ..shop.models import Points
 from ..student.models import Student
 from ..subject.models import Theme
+from ...finances.compensation.models import Point
 
 
 class QuizCheckAPIView(APIView):
@@ -174,7 +177,18 @@ class QuizCheckAPIView(APIView):
             test=quiz,
             ball=ball
         )
-        if mastering:
+        if mastering and mastering.ball >= 75:
+            homework = Homework.objects.filter(theme=theme).first()
+            point = Points.objects.create(
+                point=20,
+                from_test=mastering,
+                from_homework=homework,
+                student=student,
+                comment=f"{homework.theme.title} mavzusining vazifalarini"
+                        f" bajarganligi uchun 20 ball taqdim etildi !"
+            )
+            ic(f"{point} object has created ...")
+
             ic(mastering)
 
         return Response(results)
