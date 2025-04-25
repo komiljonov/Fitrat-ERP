@@ -92,26 +92,26 @@ services:
       - celery
     volumes: *shared_volumes
 
-  backup:
-    build:
-      context: ./config/
-      dockerfile: Dockerfile
-    container_name: "postgres_backup_fitrat"
-    depends_on:
-      - postgres
-    volumes:
-      - ./backups:/backups
-    environment:
-      - POSTGRES_DB=fitrat
-      - POSTGRES_USER=fitrat_user
-      - POSTGRES_PASSWORD=your_secure_password
-      - PGPASSWORD=your_secure_password
-      - TZ=Etc/GMT+5
-    command: ["crond", "-f", "-l", "2"]
-    security_opt:
-      - seccomp:unconfined
-    cap_add:
-      - SYS_PTRACE
+#  backup:
+#    build:
+#      context: ./config/
+#      dockerfile: Dockerfile
+#    container_name: "postgres_backup_fitrat"
+#    depends_on:
+#      - postgres
+#    volumes:
+#      - ./backups:/backups
+#    environment:
+#      - POSTGRES_DB=fitrat
+#      - POSTGRES_USER=fitrat_user
+#      - POSTGRES_PASSWORD=your_secure_password
+#      - PGPASSWORD=your_secure_password
+#      - TZ=Etc/GMT+5
+#    command: ["crond", "-f", "-l", "2"]
+#    security_opt:
+#      - seccomp:unconfined
+#    cap_add:
+#      - SYS_PTRACE
 
 volumes:
   postgres_data_fitrat:
