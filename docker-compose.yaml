@@ -17,6 +17,7 @@ services:
   postgres:
     image: postgres:16
     container_name: "postgres_fitrat"
+    init: true
     environment:
       - POSTGRES_DB=fitrat
       - POSTGRES_USER=fitrat_user
