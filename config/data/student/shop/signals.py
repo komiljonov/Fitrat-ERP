@@ -33,7 +33,7 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
         student.coins -= instance.product.coin
         student.save()
 
-    elif instance.status == "Completed":
+    if not created and instance.status == "Completed":
         # Notify when marked as completed
         Notification.objects.create(
             user=student.user,
