@@ -170,7 +170,7 @@ class ThemePgList(ListCreateAPIView):
         course = self.request.query_params.get('course')
 
         if search:
-            queryset = queryset.filter(theme__title__icontains=search)
+            queryset = queryset.filter(title__icontains=search)
 
         if theme:
             queryset = queryset.filter(theme=theme)
