@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import (SubjectList, SubjectNoPG, SubjectDetail,
                     LevelList, LevelDetail, LevelNoPG,
-                    ThemeList, ThemeDetail, ThemeNoPG, ImportStudentsAPIView)
+                    ThemeList, ThemeDetail, ThemeNoPG, ImportStudentsAPIView, ThemePgList)
 
 
 urlpatterns = [
@@ -15,6 +15,7 @@ urlpatterns = [
     path('level/no-pg/', LevelNoPG.as_view(), name='level-nopg'),
 
     path('theme/', ThemeList.as_view(), name='theme-list'),
+    path("theme-pg/",ThemePgList.as_view(), name='theme-pg'),
     path('theme/<uuid:pk>/', ThemeDetail.as_view(), name='theme-detail'),
     path('theme/no-pg/', ThemeNoPG.as_view(), name='theme-nopg'),
 

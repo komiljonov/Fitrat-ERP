@@ -5,6 +5,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -110,6 +111,56 @@ class ThemeList(ListCreateAPIView):
     queryset = Theme.objects.all()
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
+
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    search_fields = ('title', 'theme', 'type',)
+    ordering_fields = ('title', 'theme', 'type',)
+    filterser_fields = ('title', 'theme', 'type',)
+
+    def get_queryset(self):
+        queryset = Theme.objects.all()
+
+        theme = self.request.query_params.get('theme')
+        level = self.request.query_params.get('level')
+        if theme:
+            queryset = queryset.filter(theme=theme)
+        course = self.request.query_params.get('course')
+        if course:
+            queryset = queryset.filter(course__id=course)
+
+        id = self.request.query_params.get('id')
+        group_id = self.request.query_params.get('group')
+        if group_id:
+            try:
+                group = Group.objects.get(id=group_id)
+                queryset = queryset.filter(course=group.course)
+            except Group.DoesNotExist:
+                raise NotFound("Group not found.")
+
+
+        if id:
+            try:
+                course = Group.objects.get(id=id)  # Agar id yo'q bo'lsa, xatolik qaytaradi
+                queryset = queryset.filter(course=course.course)
+            except Group.DoesNotExist:
+                pass  # Agar Group topilmasa, filtr qo'llanilmaydi
+
+        if level:
+            queryset = queryset.filter(level__id=level)
+
+        return queryset
+
+
+class DynamicPageSizePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class ThemePgList(ListCreateAPIView):
+    queryset = Theme.objects.all()
+    serializer_class = ThemeSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = DynamicPageSizePagination
 
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ('title', 'theme', 'type',)
