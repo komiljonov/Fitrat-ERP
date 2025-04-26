@@ -165,25 +165,25 @@ class ThemePgList(ListCreateAPIView):
         theme = self.request.query_params.get('theme')
         level = self.request.query_params.get('level')
         search = self.request.query_params.get('search')
+        id = self.request.query_params.get('id')
+        group_id = self.request.query_params.get('group')
+        course = self.request.query_params.get('course')
 
         if search:
             queryset = queryset.filter(theme__title__icontains=search)
 
         if theme:
             queryset = queryset.filter(theme=theme)
-        course = self.request.query_params.get('course')
+
         if course:
             queryset = queryset.filter(course__id=course)
 
-        id = self.request.query_params.get('id')
-        group_id = self.request.query_params.get('group')
         if group_id:
             try:
                 group = Group.objects.get(id=group_id)
                 queryset = queryset.filter(course=group.course)
             except Group.DoesNotExist:
                 raise NotFound("Group not found.")
-
 
         if id:
             try:
