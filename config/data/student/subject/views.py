@@ -115,7 +115,7 @@ class ThemeList(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ('title', 'theme', 'type',)
     ordering_fields = ('title', 'theme', 'type',)
-    filterser_fields = ('title', 'theme', 'type',)
+    filterset_fields = ('title', 'theme', 'type',)
 
     def get_queryset(self):
         queryset = Theme.objects.all()
@@ -165,13 +165,18 @@ class ThemePgList(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ('title', 'theme', 'type',)
     ordering_fields = ('title', 'theme', 'type',)
-    filterser_fields = ('title', 'theme', 'type',)
+    filterset_fields = ('title', 'theme', 'type',)
 
     def get_queryset(self):
         queryset = Theme.objects.all()
 
         theme = self.request.query_params.get('theme')
         level = self.request.query_params.get('level')
+        search = self.request.query_params.get('search')
+
+        if search:
+            queryset = queryset.filter(theme__title__icontains=search)
+
         if theme:
             queryset = queryset.filter(theme=theme)
         course = self.request.query_params.get('course')
