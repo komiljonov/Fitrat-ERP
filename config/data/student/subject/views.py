@@ -112,10 +112,6 @@ class ThemeList(ListCreateAPIView):
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    search_fields = ('title', 'theme', 'type',)
-    ordering_fields = ('title', 'theme', 'type',)
-    filterset_fields = ('title', 'theme', 'type',)
 
     def get_queryset(self):
         queryset = Theme.objects.all()
@@ -162,10 +158,6 @@ class ThemePgList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     pagination_class = DynamicPageSizePagination
 
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    search_fields = ('title', 'theme', 'type',)
-    ordering_fields = ('title', 'theme', 'type',)
-    filterset_fields = ('title', 'theme', 'type',)
 
     def get_queryset(self):
         queryset = Theme.objects.all()
