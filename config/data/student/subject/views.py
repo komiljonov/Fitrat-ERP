@@ -128,6 +128,14 @@ class ThemeList(ListCreateAPIView):
             queryset = queryset.filter(course__id=course)
 
         id = self.request.query_params.get('id')
+        group_id = self.request.query_params.get('group')
+        if group_id:
+            try:
+                group = Group.objects.get(id=group_id)
+                queryset = queryset.filter(course=group.course)
+            except Group.DoesNotExist:
+                raise NotFound("Group not found.")
+
 
         if id:
             try:
