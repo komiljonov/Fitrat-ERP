@@ -3,7 +3,6 @@ import locale
 from collections import defaultdict
 
 from django.db.models import Q, F
-from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
@@ -19,7 +18,6 @@ from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer
     DaySerializer, RoomFilterSerializer
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
-from ..lesson.views import LessonSchedule
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -338,7 +336,6 @@ class SecondaryGroupsView(ListCreateAPIView):
         start_date = parse_date(start_date) if start_date else None
         end_date = parse_date(end_date) if end_date else None
 
-        # Apply filters correctly
         if filial:
             queryset = queryset.filter(filial__id=filial)
         if start_date:
