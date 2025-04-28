@@ -32,7 +32,7 @@ urlpatterns = [
     path('secondary/',SecondaryGroupsView.as_view(), name='secondary-list'),
     path('secondary/<uuid:pk>/', SecondaryGroupRetrieveUpdateDestroyAPIView.as_view(),
          name='secondary-detail'),
-    path('Secondary/no-pg/',SecondaryNoPG.as_view(), name='secondary-no-pg-list'),
+    path('secondary/no-pg/',SecondaryNoPG.as_view(), name='secondary-no-pg-list'),
 
 
     path('days',DaysAPIView.as_view(), name='days-list'),

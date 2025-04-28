@@ -52,7 +52,7 @@ services:
     container_name: "telegram_bot_fitrat"
     build:
       context: ./config
-    command: python manage.py bot
+    command: python      .py bot
     volumes: *shared_volumes
     env_file:
       - .env
