@@ -32,4 +32,6 @@ urlpatterns = [
 
     path("secondary/web",SecondaryStudentCreate.as_view()),
 
+    path("secondary/", SecondaryStudentGroupDelete.as_view()),
+
 ]
