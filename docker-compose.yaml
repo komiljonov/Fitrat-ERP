@@ -39,7 +39,7 @@ services:
       - ./locales:/usr/src/app/locales
       - ./tg_bot:/usr/src/app/tg_bot
     ports:
-      - "8000:8000"
+      - "8001:8000"
     env_file:
       - .env
     environment:
