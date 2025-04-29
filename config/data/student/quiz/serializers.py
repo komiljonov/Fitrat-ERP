@@ -75,7 +75,7 @@ class QuizSerializer(serializers.ModelSerializer):
     def get_fill_gap(self, obj):
         return FillGapsSerializer(Fill_gaps.objects.filter(quiz=obj), many=True).data  # ✅ correct
     def get_vocabularies(self, obj):
-        return VocabularySerializer(Vocabulary.objects.filter(quiz=obj), many=True).data
+        return VocabularySerializer(Vocabulary.objects.filter(quiz=obj),context=self.context ,many=True).data
     def get_match_pairs(self, obj):
         return MatchPairsSerializer(MatchPairs.objects.filter(quiz=obj), many=True).data
 
