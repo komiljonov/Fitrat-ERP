@@ -181,8 +181,8 @@ class VocabularySerializer(serializers.ModelSerializer):
         ]
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["photo"] = FileUploadSerializer(instance.photo).data
-        rep["voice"] = FileUploadSerializer(instance.voice).data
+        rep["photo"] = FileUploadSerializer(instance.photo,context=self.context).data
+        rep["voice"] = FileUploadSerializer(instance.voice,context=self.context).data
         return rep
 
 class PairsSerializer(serializers.ModelSerializer):
