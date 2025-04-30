@@ -36,5 +36,4 @@ class SecondaryStudentGroup(BaseModel):
         verbose_name = "Secondary Add group"
         verbose_name_plural = "Secondary Add group"
 
-    def __str__(self):
-        return self.group.name
+
