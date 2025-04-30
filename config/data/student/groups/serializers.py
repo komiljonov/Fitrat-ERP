@@ -229,85 +229,64 @@ class RoomFilterSerializer(serializers.ModelSerializer):
         return average_students_filling
 
 
+class SecondaryGroupListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        instances = [self.child.create(attrs) for attrs in validated_data]
+        return SecondaryGroup.objects.bulk_create(instances)
+
+
 class SecondaryGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student_count = serializers.SerializerMethodField()
     current_theme = serializers.SerializerMethodField()
 
-
     class Meta:
         model = SecondaryGroup
         fields = [
-            'id',
-            'name',
-            'group',
-            'teacher',
-            'scheduled_day_type',  # This is a ManyToManyField
-            'status',
-            'student_count',
-            'current_theme',
-            'started_at',
-            'ended_at',
-            'start_date',
-            'finish_date',
-            'created_at',
-            'updated_at',
+            'id', 'name', 'group', 'teacher', 'scheduled_day_type',
+            'status', 'student_count', 'current_theme',
+            'started_at', 'ended_at', 'start_date', 'finish_date',
+            'created_at', 'updated_at'
         ]
+        list_serializer_class = SecondaryGroupListSerializer
 
     def get_current_theme(self, obj):
         today = date.today()
-
-        # Ensures we compare only the date and remove duplicate themes
         attendance = (
-            SecondaryAttendance.objects.filter(group=obj, created_at__date=today)
+            SecondaryAttendance.objects
+            .filter(group=obj, created_at__date=today)
             .values("theme",)
             .distinct()
         )
-
         return list(attendance)
 
     def get_student_count(self, obj):
         return SecondaryStudentGroup.objects.filter(group=obj).count()
 
     def create(self, validated_data):
-        """
-        Handles M2M relation (scheduled_day_type) separately using set().
-        """
-        scheduled_day_types = validated_data.pop("scheduled_day_type", [])  # Extract M2M field
+        scheduled_day_types = validated_data.pop("scheduled_day_type", [])
         filial = validated_data.pop("filial", None)
 
-        # Determine filial from request if not provided
-        if not filial:
-            request = self.context.get("request")
-            if request and hasattr(request.user, "filial"):
-                filial = request.user.filial.first()
+        request = self.context.get("request")
+        if not filial and request and hasattr(request.user, "filial"):
+            filial = request.user.filial.first()
 
         if not filial:
             raise serializers.ValidationError({"filial": "Filial could not be determined."})
 
-        # Create the SecondaryGroup instance without M2M
         group = SecondaryGroup.objects.create(filial=filial, **validated_data)
 
-        # Set the ManyToMany field properly
         if scheduled_day_types:
-            group.scheduled_day_type.set(scheduled_day_types)  # Correct M2M assignment
+            group.scheduled_day_type.set(scheduled_day_types)
 
         return group
 
     def update(self, instance, validated_data):
-        """
-        Handles M2M relation (scheduled_day_type) separately during update.
-        """
-        scheduled_day_types = validated_data.pop("scheduled_day_type", None)  # Extract M2M field
-
-        # Update other fields normally
+        scheduled_day_types = validated_data.pop("scheduled_day_type", None)
         instance = super().update(instance, validated_data)
-
-        # Update ManyToMany relation only if provided
         if scheduled_day_types is not None:
-            instance.scheduled_day_type.set(scheduled_day_types)  # Correct M2M update
-
+            instance.scheduled_day_type.set(scheduled_day_types)
         return instance
 
     def to_representation(self, instance):
@@ -315,7 +294,6 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
         rep['teacher'] = UserSerializer(instance.teacher).data
         rep['group'] = GroupSerializer(instance.group).data
         return rep
-
 
 class SecondarygroupModelSerializer(serializers.ModelSerializer):
     class Meta:
