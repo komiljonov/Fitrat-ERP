@@ -613,3 +613,41 @@ class GroupIsActiveNowAPIView(APIView):
                     return Response({"is_scheduled_now": True})
 
         return Response({"is_scheduled_now": False})
+
+
+
+class SecondaryGroupIsActiveNowAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        WEEKDAYS_UZ = {
+            "Monday": "dushanba",
+            "Tuesday": "seshanba",
+            "Wednesday": "chorshanba",
+            "Thursday": "payshanba",
+            "Friday": "juma",
+            "Saturday": "shanba",
+            "Sunday": "yakshanba"
+        }
+
+        group_id = self.kwargs.get('pk', None)
+        ic(group_id)
+
+        group = get_object_or_404(SecondaryGroup, id=group_id)
+
+        now_time = datetime.datetime.now()
+        current_weekday_en = now_time.strftime('%A')
+        current_weekday_uz = WEEKDAYS_UZ[current_weekday_en]
+        current_time = now_time.time()
+
+        for day in group.scheduled_day_type.all():
+            if day.name.lower() == current_weekday_uz:
+                start = group.started_at
+                end = group.ended_at
+
+                ic(start, end, current_time)
+
+                if start <= current_time <= end:
+                    return Response({"is_scheduled_now": True})
+
+        return Response({"is_scheduled_now": False})
