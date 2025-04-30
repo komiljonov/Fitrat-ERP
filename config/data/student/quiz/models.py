@@ -42,7 +42,6 @@ class Answer(BaseModel):
 class QuizGaps(BaseModel):
     name = models.CharField(max_length=255, null=True,blank=True)
 
-
 class Question(BaseModel):
     quiz = models.ForeignKey(Quiz, on_delete=models.SET_NULL,null=True,blank=True)
     text : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL,
@@ -72,6 +71,7 @@ class Gaps(BaseModel):
     def __str__(self):
         return self.name
 
+
 class Fill_gaps(BaseModel):
     quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True,blank=True,related_name='fill_gaps_quiz')
     question : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,related_name='fill_gaps_question')
@@ -84,11 +84,18 @@ class Fill_gaps(BaseModel):
 class Listening(BaseModel):
     quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True,blank=True,related_name='listening_quiz')
     voice = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name='listening_voice')
-    question : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,related_name='listening_question')
+    question : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,
+                                              related_name='listening_question')
+    type = models.CharField(choices=[
+        ("MultipleChoice", "MultipleChoice"),
+        ("TFG","True False Not Given"),
+        ("YNG","Yes No Not Given"),
+        ("Fill_gaps", "Fill Gaps"),
+
+    ])
     answers : "Answer" = models.ManyToManyField(Answer)
     def __str__(self):
         return f"{self.quiz.title}    {self.question.name}"
-
 
 
 class Pairs(BaseModel):
