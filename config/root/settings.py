@@ -91,7 +91,7 @@ INSTALLED_APPS = [
     # Installed
     "corsheaders",
     "rangefilter",
-    # "django_plotly_dash",
+    "django_plotly_dash",
     "drf_yasg",
     "rest_framework",
     "drf_spectacular",
