@@ -228,6 +228,9 @@ class RoomFilterSerializer(serializers.ModelSerializer):
 
         return average_students_filling
 
+class SecondaryGroupListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        return [self.child.create(item) for item in validated_data]
 
 class SecondaryGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
@@ -254,6 +257,7 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+    list_serializer_class = SecondaryGroupListSerializer
 
     def get_current_theme(self, obj):
         today = date.today()
