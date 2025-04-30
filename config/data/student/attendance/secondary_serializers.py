@@ -10,6 +10,27 @@ from data.student.subject.models import Theme
 from data.student.subject.serializers import ThemeSerializer
 
 
+class SecondaryAttendanceBulkSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        ids = [item.get("id") for item in validated_data if item.get("id")]
+        duplicates = set(
+            SecondaryAttendance.objects.filter(id__in=ids).values_list("id", flat=True)
+        )
+        if duplicates:
+            raise serializers.ValidationError(
+                f"Duplicate ID(s) already exist: {', '.join(map(str, duplicates))}"
+            )
+
+        instances = []
+        for item in validated_data:
+            item.pop("id", None)  # Ensure id isn't passed if model auto-generates it
+            serializer = self.child.__class__(data=item, context=self.context)
+            serializer.is_valid(raise_exception=True)
+            instance = serializer.save()
+            instances.append(instance)
+        return instances
+
+
 class SecondaryAttendanceSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     group = serializers.PrimaryKeyRelatedField(queryset=SecondaryGroup.objects.all(), allow_null=True)
@@ -21,6 +42,10 @@ class SecondaryAttendanceSerializer(serializers.ModelSerializer):
             "id", "student", "group", "theme", "reason",
             "remarks", "updated_at"
         ]
+        list_serializer_class = SecondaryAttendanceBulkSerializer
+        extra_kwargs = {
+            "id": {"read_only": True}
+        }
 
     def get_teacher(self, obj):
         return obj.group.teacher.full_name
@@ -50,12 +75,3 @@ class SecondaryAttendanceSerializer(serializers.ModelSerializer):
         rep['theme'] = ThemeSerializer(instance.theme, context=self.context).data
         rep['student'] = StudentSerializer(instance.student, context=self.context).data
         return rep
-
-
-class SecondaryAttendanceBulkSerializer(serializers.ListSerializer):
-    def create(self, validated_data):
-        instances = [self.child.create(item) for item in validated_data]
-        return SecondaryAttendance.objects.bulk_create(instances)
-
-
-SecondaryAttendanceSerializer.Meta.list_serializer_class = SecondaryAttendanceBulkSerializer
