@@ -210,21 +210,6 @@ class QuizListCreateView(ListCreateAPIView):
         quiz = serializer.save()
         self.update_students_count(quiz)
 
-    def perform_update(self, serializer):
-        quiz = serializer.save()
-        new_file = self.request.FILES.get("students_excel")
-        if new_file:
-            self.update_students_count_from_file(quiz,new_file)
-            ic("updating...")
-
-    def update_students_count_from_file(self, quiz, file_obj):
-        try:
-            df = pd.read_excel(file_obj)
-            quiz.students_count = len(df)
-            quiz.save(update_fields=['students_count'])
-            ic("updated ....")
-        except Exception as e:
-            print(f"❌ Failed to parse Excel for quiz {quiz.id}: {e}")
 
     def update_students_count(self, quiz):
         if quiz.students_excel and quiz.students_excel.file:
@@ -241,6 +226,21 @@ class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
 
+    def perform_update(self, serializer):
+        quiz = serializer.save()
+        new_file = self.request.FILES.get("students_excel")
+        if new_file:
+            self.update_students_count_from_file(quiz,new_file)
+            ic("updating...")
+
+    def update_students_count_from_file(self, quiz, file_obj):
+        try:
+            df = pd.read_excel(file_obj)
+            quiz.students_count = len(df)
+            quiz.save(update_fields=['students_count'])
+            ic("updated ....")
+        except Exception as e:
+            print(f"❌ Failed to parse Excel for quiz {quiz.id}: {e}")
 
 class AnswerListCreateView(ListCreateAPIView):
     queryset = Answer.objects.all()
