@@ -49,7 +49,8 @@ class SecondaryAttendanceSerializer(serializers.ModelSerializer):
         }
 
     def get_teacher(self, obj):
-        return obj.group.teacher.full_name
+        # Optional helper if you use it externally
+        return obj.group.teacher.full_name if obj.group and obj.group.teacher else None
 
     def validate(self, attrs):
         student = attrs.get("student")
@@ -57,14 +58,14 @@ class SecondaryAttendanceSerializer(serializers.ModelSerializer):
         today = now().date()
 
         if student and group:
-            exists = SecondaryAttendance.objects.filter(
+            already_exists = SecondaryAttendance.objects.filter(
                 student=student,
                 group=group,
                 created_at__date=today
             ).exists()
-            if exists:
+            if already_exists:
                 raise serializers.ValidationError(
-                    f"Student {student} is already marked present today."
+                    f"Student {student} is already marked present in this group today."
                 )
         return attrs
 
@@ -73,6 +74,16 @@ class SecondaryAttendanceSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['theme'] = ThemeSerializer(instance.theme, context=self.context).data
-        rep['student'] = StudentSerializer(instance.student, context=self.context).data
+
+        # Always safe, even during bulk POST
+        try:
+            rep['theme'] = ThemeSerializer(instance.theme, context=self.context).data
+        except Exception:
+            rep['theme'] = None
+
+        try:
+            rep['student'] = StudentSerializer(instance.student, context=self.context).data
+        except Exception:
+            rep['student'] = None
+
         return rep
