@@ -21,6 +21,9 @@ class Quiz(BaseModel):
                                       related_name='quiz_students_excel')
     results_excel =models.ForeignKey("upload.File", on_delete=models.SET_NULL,null=True,blank=True,
                                      related_name='quiz_results_excel')
+
+    materials = models.ManyToManyField('upload.File', related_name='quiz_materials')
+
     students_count = models.IntegerField(default=0)
     date = models.DateField(null=True, blank=True)
     start_time = models.TimeField(null=True, blank=True)
