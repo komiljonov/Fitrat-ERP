@@ -157,3 +157,32 @@ class SecondaryAttendanceDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = SecondaryAttendanceSerializer
     permission_classes = [IsAuthenticated]
 
+
+class SecondaryAttendanceBulkUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        data = request.data
+        if not isinstance(data, list):
+            return Response({"error": "Expected a list of attendance objects"}, status=status.HTTP_400_BAD_REQUEST)
+
+        updated_instances = []
+
+        for item in data:
+            attendance_id = item.get("id")
+            if not attendance_id:
+                continue
+
+            try:
+                instance = SecondaryAttendance.objects.get(id=attendance_id)
+            except SecondaryAttendance.DoesNotExist:
+                continue
+
+            serializer = SecondaryAttendanceSerializer(instance, data=item, partial=True, context={"request": request})
+            if serializer.is_valid():
+                serializer.save()
+                updated_instances.append(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(updated_instances, status=status.HTTP_200_OK)
