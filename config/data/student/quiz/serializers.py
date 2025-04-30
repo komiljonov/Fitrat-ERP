@@ -47,6 +47,7 @@ class QuizSerializer(serializers.ModelSerializer):
     students_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     results_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
+    materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
     class Meta:
         model = Quiz
         fields = [
@@ -58,6 +59,7 @@ class QuizSerializer(serializers.ModelSerializer):
             "results_excel",
             "students_count",
             "subject",
+            "materials",
 
             "date",
             "start_time",
@@ -83,6 +85,7 @@ class QuizSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
+        rep["materials"] = FileUploadSerializer(instance.materials.all(),context=self.context,many=True).data
         rep["students_excel"] = FileUploadSerializer(instance.students_excel, context=self.context).data
         rep["results_excel"] = FileUploadSerializer(instance.results_excel, context=self.context).data
         return rep
