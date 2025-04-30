@@ -212,7 +212,9 @@ class QuizListCreateView(ListCreateAPIView):
 
     def perform_update(self, serializer):
         quiz = serializer.save()
-        self.update_students_count(quiz)
+        new_file = self.request.FILES.get("students_excel")
+        if new_file:
+            self.update_students_count(quiz,)
 
     def update_students_count(self, quiz):
         if quiz.students_excel and quiz.students_excel.file:
