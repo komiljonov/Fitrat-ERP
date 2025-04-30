@@ -152,7 +152,6 @@ class SecondaryAttendanceList(ListCreateAPIView):
             kwargs["many"] = True
         return super().get_serializer(*args, **kwargs)
 
-
 class SecondaryAttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = SecondaryAttendance.objects.all()
     serializer_class = SecondaryAttendanceSerializer
