@@ -75,7 +75,7 @@ class QuizSerializer(serializers.ModelSerializer):
     def get_fill_gap(self, obj):
         return FillGapsSerializer(Fill_gaps.objects.filter(quiz=obj), many=True).data  # ✅ correct
     def get_vocabularies(self, obj):
-        return VocabularySerializer(Vocabulary.objects.filter(quiz=obj), many=True).data
+        return VocabularySerializer(Vocabulary.objects.filter(quiz=obj),context=self.context ,many=True).data
     def get_match_pairs(self, obj):
         return MatchPairsSerializer(MatchPairs.objects.filter(quiz=obj), many=True).data
 
@@ -181,8 +181,8 @@ class VocabularySerializer(serializers.ModelSerializer):
         ]
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["photo"] = FileUploadSerializer(instance.photo).data
-        rep["voice"] = FileUploadSerializer(instance.voice).data
+        rep["photo"] = FileUploadSerializer(instance.photo,context=self.context).data
+        rep["voice"] = FileUploadSerializer(instance.voice,context=self.context).data
         return rep
 
 class PairsSerializer(serializers.ModelSerializer):

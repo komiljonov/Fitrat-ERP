@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.utils.dateparse import parse_date
 from icecream import ic
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
+from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.utils import get_column_letter
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -698,86 +698,65 @@ class MonitoringView(APIView):
 
 
 class GenerateExcelView(APIView):
-
     def get(self, request, *args, **kwargs):
-        # Initialize workbook and worksheet
-        wb = openpyxl.Workbook()
+        wb = Workbook()
         ws = wb.active
-        ws.title = "Monitoring Data"
+        ws.title = "Monitoring Table"
 
-        # Header row with relevant field names
+        # 1. Merge and style header
+        ws.merge_cells('A1:A3')
+        ws.merge_cells('B1:N1')
+        ws['A1'] = "ASOSLAR"
+        ws['A1'].font = Font(bold=True)
+        ws['A1'].alignment = Alignment(horizontal='center', vertical='center')
+
+        # Then fill merged headings manually
+        ws['B1'] = "OYLIK HISOBDA"
+
+        # Other headers manually or in a loop
         headers = [
-            "Ustoz", "Asos nomi", "Monitoring Ball", "Monitoring Counter",
-            "Monitoring  ", "Result Name", "Result Subject", "Student Catching Name",
-            "Student Catching From", "Student Catching To", "Monitoring 5 Ball",
-            "Monitoring 5 Student Count", "Student Count Monitoring Amount"
+            "USTOZ", "MAX BALL",  # continue all the way to JAMI
+            #...
         ]
-        ws.append(headers)  # Add headers to the first row
 
-        # Query the models to get data
-        users = set(Monitoring.objects.values_list('user', flat=True))
-        asos_data = Asos.objects.all()
-        student_catching_monitoring = StudentCatchingMonitoring.objects.all()
-        monitoring_5 = Monitoring5.objects.all()
-        student_count_monitoring = StudentCountMonitoring.objects.all()
+        ws.append(headers)
 
-        # Iterate through each user and fetch their related data
-        for user_id in users:
-            user = CustomUser.objects.get(id=user_id)  # Get the full user object
+        # 2. Set column widths
+        for col in range(1, len(headers)+1):
+            col_letter = get_column_letter(col)
+            ws.column_dimensions[col_letter].width = 18
 
-            # Get the monitorings for the current user
-            user_monitorings = Monitoring.objects.filter(user=user)
+        # 3. Fetch teachers and their monitoring scores
+        teachers = CustomUser.objects.filter(role="TEACHER")
 
-            # Prepare the row for this user
-            row = [user.full_name]  # User full name in the first column
+        for teacher in teachers:
+            # calculate all points manually
+            max_ball = 15  # example
+            ball_plus_40 = 40  # example
+            ball_plus_1000 = 1000  # etc.
 
-            # For each Asos related to the user's monitoring, add the corresponding data
-            for asos in asos_data:
-                monitoring_for_asos = user_monitorings.filter(point__asos=asos)
-                for monitoring in monitoring_for_asos:
-                    comments = Comments.objects.filter(monitoring=monitoring)
-                    comment_text = "\n".join([comment.comment for comment in comments])
+            total_score = ball_plus_40 + ball_plus_1000  # etc.
 
-                    row.extend([
-                        asos.name, monitoring.ball, monitoring.counter, comment_text,
-                        "", "", "", "", "", "", ""
-                    ])
-
-            # Add student catching data for the current user
-            student_catching = student_catching_monitoring.filter(teacher=user)
-            for catching in student_catching:
-                row.extend([
-                    catching.name, catching.from_student, catching.to_student,
-                    "", "", ""
-                ])
-
-            # Add Monitoring 5 data for the current user
-            monitoring5_data = monitoring_5.filter(teacher=user)
-            for monitoring5 in monitoring5_data:
-                row.extend([
-                    monitoring5.ball, monitoring5.student_count, ""
-                ])
-
-            # Add Student Count Monitoring data for the current user
-            student_monitoring_data = student_count_monitoring.filter(teacher=user)
-            for student_monitoring in student_monitoring_data:
-                row.extend([
-                    "", "", student_monitoring.amount
-                ])
-
-            # Append the row to the Excel sheet
+            row = [
+                teacher.full_name,
+                max_ball,
+                ball_plus_40,
+                ball_plus_1000,
+                # etc
+                total_score
+            ]
             ws.append(row)
 
-        # Set column width for better readability
-        for col in range(1, len(headers) + 1):
-            column = get_column_letter(col)
-            ws.column_dimensions[column].width = 20
+        # 4. Set color fills (optional for columns)
+        fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+        for cell in ws["N"]:  # example for yellow JAMI column
+            cell.fill = fill
 
-        # Prepare the HTTP response to send the file
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="monitoring_data.xlsx"'
-
-        # Save the workbook to the response
+        # 5. Return response
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="monitoring_table.xlsx"'
         wb.save(response)
         return response
 
