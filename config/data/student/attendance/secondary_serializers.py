@@ -23,11 +23,12 @@ class SecondaryAttendanceBulkSerializer(serializers.ListSerializer):
 
         instances = []
         for item in validated_data:
-            item.pop("id", None)  # Ensure id isn't passed if model auto-generates it
-            serializer = self.child.__class__(data=item, context=self.context)
-            serializer.is_valid(raise_exception=True)
-            instance = serializer.save()
+            item.pop("id", None)  # Prevent manual ID conflict
+
+            # ✅ call child.create() with already validated data
+            instance = self.child.create(item)
             instances.append(instance)
+
         return instances
 
 
