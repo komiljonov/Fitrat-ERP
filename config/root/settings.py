@@ -90,6 +90,7 @@ INSTALLED_APPS = [
 
     # Installed
     "corsheaders",
+    "rangefilter",
     "drf_yasg",
     "rest_framework",
     "drf_spectacular",
