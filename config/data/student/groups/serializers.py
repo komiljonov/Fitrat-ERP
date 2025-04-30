@@ -6,7 +6,7 @@ from rest_framework import serializers
 from .lesson_date_calculator import calculate_lessons
 from .models import Group, Day, Room, SecondaryGroup
 from .room_filings_calculate import calculate_room_filling_statistics
-from ..attendance.models import Attendance
+from ..attendance.models import Attendance, SecondaryAttendance
 from ..course.models import Course
 from ..course.serializers import CourseSerializer
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
@@ -233,6 +233,8 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student_count = serializers.SerializerMethodField()
+    current_theme = serializers.SerializerMethodField()
+
 
     class Meta:
         model = SecondaryGroup
@@ -244,6 +246,7 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
             'scheduled_day_type',  # This is a ManyToManyField
             'status',
             'student_count',
+            'current_theme',
             'started_at',
             'ended_at',
             'start_date',
@@ -251,6 +254,18 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+    def get_current_theme(self, obj):
+        today = date.today()
+
+        # Ensures we compare only the date and remove duplicate themes
+        attendance = (
+            SecondaryAttendance.objects.filter(group=obj, created_at__date=today)
+            .values("theme",)
+            .distinct()
+        )
+
+        return list(attendance)
 
     def get_student_count(self, obj):
         return SecondaryStudentGroup.objects.filter(group=obj).count()

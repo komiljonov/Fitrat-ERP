@@ -5,8 +5,10 @@ from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, get_object_or_404
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, get_object_or_404, \
+    UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -164,6 +166,28 @@ class SecondaryGroupStudentList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class SecondaryGroupUpdate(UpdateAPIView):
+    queryset = SecondaryStudentGroup.objects.all()
+    serializer_class = SecondaryStudentsGroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        queryset = self.get_queryset()
+
+        lid_id = self.request.query_params.get('lid_id')
+        student_id = self.request.query_params.get('student_id')
+
+        if lid_id:
+            obj = get_object_or_404(queryset, lid__id=lid_id)
+        elif student_id:
+            obj = get_object_or_404(queryset, student__id=student_id)
+        else:
+            raise ValidationError("You must provide either 'lid_id' or 'student_id'.")
+
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 
 class StudentGroupDelete(APIView):
