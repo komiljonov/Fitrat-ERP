@@ -320,21 +320,16 @@ class SecondaryGroupsView(ListCreateAPIView):
 
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
     search_fields = ('name', 'scheduled_day_type__name')
-    ordering_fields = ('name', 'scheduled_day_type', 'start_date', 'end_date',)
-    filterset_fields = ('name', 'scheduled_day_type',)
+    ordering_fields = ('name', 'scheduled_day_type', 'start_date', 'end_date')
+    filterset_fields = ('name', 'scheduled_day_type')
 
     def get_queryset(self):
         queryset = SecondaryGroup.objects.all()
-
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        start_date = parse_date(self.request.query_params.get('start_date')) if self.request.query_params.get('start_date') else None
+        end_date = parse_date(self.request.query_params.get('end_date')) if self.request.query_params.get('end_date') else None
         teacher = self.request.query_params.get('teacher')
         course = self.request.query_params.get('course')
         filial = self.request.query_params.get('filial')
-
-        # Convert dates to proper format
-        start_date = parse_date(start_date) if start_date else None
-        end_date = parse_date(end_date) if end_date else None
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
