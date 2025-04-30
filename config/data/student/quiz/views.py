@@ -215,12 +215,14 @@ class QuizListCreateView(ListCreateAPIView):
         new_file = self.request.FILES.get("students_excel")
         if new_file:
             self.update_students_count_from_file(quiz,new_file)
+            ic("updating...")
 
     def update_students_count_from_file(self, quiz, file_obj):
         try:
             df = pd.read_excel(file_obj)
             quiz.students_count = len(df)
             quiz.save(update_fields=['students_count'])
+            ic("updated ....")
         except Exception as e:
             print(f"❌ Failed to parse Excel for quiz {quiz.id}: {e}")
 
