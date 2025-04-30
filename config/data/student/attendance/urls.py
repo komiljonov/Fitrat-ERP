@@ -7,6 +7,7 @@ urlpatterns = [
     path('<uuid:pk>/', AttendanceDetail.as_view(), name='attendance-detail'),
     path('student/<uuid:pk>/', AttendanceListView.as_view(), name='student-attendance-list'),
     path('lesson/<uuid:pk>/', LessonAttendanceList.as_view(), name='lesson-list'),
+    path("lesson/secondary/<uuid:pk>/",LessonSecondaryAttendanceList.as_view(), name='lesson-secondary-list'),
 
     path("bulk/",AttendanceBulkList.as_view(), name='bulk-attendance-list'),
 
