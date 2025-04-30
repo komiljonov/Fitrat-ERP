@@ -228,17 +228,26 @@ class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         quiz = serializer.save()
-        new_file = self.request.FILES.get("students_excel")
-        if new_file:
-            self.update_students_count_from_file(quiz,new_file)
-            ic("updating...")
+
+        file_id = self.request.data.get("students_excel")  # ✅ this is UUID from frontend
+        if file_id:
+            from ...upload.models import File  # or your correct File model path
+
+            try:
+                file_instance = File.objects.get(id=file_id)
+                self.update_students_count_from_file(quiz, file_instance.file)
+                print("✅ Student count updated from Excel")
+            except File.DoesNotExist:
+                print(f"❌ File not found for ID: {file_id}")
+            except Exception as e:
+                print(f"❌ Error updating student count: {e}")
 
     def update_students_count_from_file(self, quiz, file_obj):
         try:
             df = pd.read_excel(file_obj)
             quiz.students_count = len(df)
             quiz.save(update_fields=['students_count'])
-            ic("updated ....")
+            print(f"✅ ROWS COUNTED: {len(df)}")
         except Exception as e:
             print(f"❌ Failed to parse Excel for quiz {quiz.id}: {e}")
 
