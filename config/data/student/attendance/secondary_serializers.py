@@ -52,12 +52,10 @@ class SecondaryAttendanceSerializer(serializers.ModelSerializer):
         return rep
 
 
-# list serializer for bulk create
 class SecondaryAttendanceBulkSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         instances = [self.child.create(item) for item in validated_data]
         return SecondaryAttendance.objects.bulk_create(instances)
 
 
-# assign list serializer to Meta if bulk POST is expected
 SecondaryAttendanceSerializer.Meta.list_serializer_class = SecondaryAttendanceBulkSerializer
