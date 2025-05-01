@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from .models import Subject, Level, Theme
 # Create your views here.
 from .serializers import SubjectSerializer, LevelSerializer, ThemeSerializer
+from ..attendance.models import Attendance
 from ..course.models import Course
 from ..groups.models import Group
 from ..homeworks.models import Homework
@@ -152,50 +153,67 @@ class DynamicPageSizePagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+
 class ThemePgList(ListCreateAPIView):
-    queryset = Theme.objects.all()
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = DynamicPageSizePagination
 
-
     def get_queryset(self):
-        queryset = Theme.objects.all()
+        params = self.request.query_params
+        search = params.get('search')
+        theme_filter = params.get('theme')  # 'Lesson' or 'Repeat'
+        level_id = params.get('level')
+        group_id = params.get('group')
+        course_id = params.get('course')
+        alt_group_id = params.get('id')  # fallback course extractor
 
-        theme = self.request.query_params.get('theme')
-        level = self.request.query_params.get('level')
-        search = self.request.query_params.get('search')
-        id = self.request.query_params.get('id')
-        group_id = self.request.query_params.get('group')
-        course = self.request.query_params.get('course')
+        # Base queryset
+        qs = Theme.objects.all()
 
+        # Apply full-text filter early
         if search:
-            queryset = queryset.filter(title__icontains=search)
+            qs = qs.filter(title__icontains=search)
 
-        if theme:
-            queryset = queryset.filter(theme=theme)
-
-        if course:
-            queryset = queryset.filter(course__id=course)
+        # Course resolution via group or course
+        course = None
+        group = None
 
         if group_id:
-            try:
-                group = Group.objects.get(id=group_id)
-                queryset = queryset.filter(course=group.course)
-            except Group.DoesNotExist:
+            group = Group.objects.select_related('course').filter(id=group_id).first()
+            if not group:
                 raise NotFound("Group not found.")
+            course = group.course
+        elif alt_group_id:
+            group = Group.objects.select_related('course').filter(id=alt_group_id).first()
+            if group:
+                course = group.course
+        elif course_id:
+            course = course_id  # fallback if explicitly set
 
-        if id:
-            try:
-                course = Group.objects.get(id=id)  # Agar id yo'q bo'lsa, xatolik qaytaradi
-                queryset = queryset.filter(course=course.course)
-            except Group.DoesNotExist:
-                pass  # Agar Group topilmasa, filtr qo'llanilmaydi
+        if course:
+            qs = qs.filter(course=course)
 
-        if level:
-            queryset = queryset.filter(level__id=level)
+        # Level filter
+        if level_id:
+            qs = qs.filter(level_id=level_id)
 
-        return queryset
+        # Smart filtering based on theme (Lesson/Repeat) and Attendance
+        if theme_filter in ['Lesson', 'Repeat'] and group:
+            last_attendance = (
+                Attendance.objects
+                .filter(group=group)
+                .select_related('theme')
+                .order_by('-id')
+                .first()
+            )
+            if last_attendance and last_attendance.theme:
+                qs = qs.filter(id__gt=last_attendance.theme.id)
+
+        elif theme_filter:
+            qs = qs.filter(theme=theme_filter)
+
+        return qs.order_by('id')
 
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):
