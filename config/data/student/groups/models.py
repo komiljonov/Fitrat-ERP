@@ -47,7 +47,7 @@ class Group(BaseModel):
             ("PENDING", "Pending"),
             ('INACTIVE', 'Inactive'),
         ],
-        default='PENDING',
+        default='ACTIVE',
         max_length=100,
     )
 
@@ -91,7 +91,7 @@ class SecondaryGroup(BaseModel):
             ("PENDING", "Pending"),
             ('INACTIVE', 'Inactive'),
         ],
-        default='PENDING',
+        default='ACTIVE',
         max_length=100,
     )
 
