@@ -42,36 +42,36 @@ class MasteringQuizFilter(ListAPIView):
             return quiz
         return Mastering.objects.none()
 
-# class TeacherMasteringList(ListAPIView):
-#     queryset = MasteringTeachers.objects.all()
-#     serializer_class = StuffMasteringSerializer
-#     permission_classes = [IsAuthenticated]
-#
-#     def get_queryset(self):
-#         id = self.kwargs.get('pk')
-#         icecream.ic(id)
-#         if id:
-#             return MasteringTeachers.objects.filter(teacher__id=id)
-#         return MasteringTeachers.objects.none()
-#
-#
-# class StuffMasteringList(ListCreateAPIView):
-#     queryset = KpiFinance.objects.all()
-#     serializer_class = KpiFinanceSerializer
-#     permission_classes = [IsAuthenticated]
-#
-#     def get_queryset(self):
-#         id = self.request.query_params.get('id')
-#         if id:
-#             return KpiFinance.objects.filter(user__id=id)
-#         return KpiFinance.objects.all()
-#
-#
-# class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
-#     queryset = KpiFinance.objects.all()
-#     serializer_class = KpiFinanceSerializer
-#     permission_classes = [IsAuthenticated]
-#
+class TeacherMasteringList(ListAPIView):
+    queryset = MasteringTeachers.objects.all()
+    serializer_class = StuffMasteringSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.kwargs.get('pk')
+        icecream.ic(id)
+        if id:
+            return MasteringTeachers.objects.filter(teacher__id=id)
+        return MasteringTeachers.objects.none()
+
+
+class StuffMasteringList(ListCreateAPIView):
+    queryset = KpiFinance.objects.all()
+    serializer_class = KpiFinanceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.request.query_params.get('id')
+        if id:
+            return KpiFinance.objects.filter(user__id=id)
+        return KpiFinance.objects.all()
+
+
+class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
+    queryset = KpiFinance.objects.all()
+    serializer_class = KpiFinanceSerializer
+    permission_classes = [IsAuthenticated]
+
 
 
 class MasteringStudentFilter(ListAPIView):
