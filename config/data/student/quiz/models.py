@@ -1,6 +1,7 @@
 from django.db import models
 
 from data.command.models import BaseModel
+from data.student.homeworks.models import Homework
 from data.student.student.models import Student
 from data.student.subject.models import Subject
 
@@ -30,7 +31,7 @@ class Quiz(BaseModel):
     end_time = models.TimeField(null=True, blank=True)
 
     is_homework = models.BooleanField(default=False)
-    quiz : "Quiz" = models.ForeignKey('quiz.Quiz', on_delete=models.SET_NULL,null=True,blank=True,
+    homework : "Homework" = models.ForeignKey('homework.Homework', on_delete=models.SET_NULL,null=True,blank=True,
                                       related_name='homeworks_quiz')
 
     def __str__(self):

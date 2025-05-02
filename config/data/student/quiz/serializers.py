@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary,  MatchPairs, Exam, Gaps, \
     QuizGaps, Pairs
+from ..homeworks.models import Homework
 from ..student.models import Student
 from ..subject.models import Subject
 from ..subject.serializers import SubjectSerializer
@@ -48,7 +49,7 @@ class QuizSerializer(serializers.ModelSerializer):
     results_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
     materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
-    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(),allow_null=True)
+    homework = serializers.PrimaryKeyRelatedField(queryset=Homework.objects.all(),allow_null=True)
     class Meta:
         model = Quiz
         fields = [
@@ -73,7 +74,7 @@ class QuizSerializer(serializers.ModelSerializer):
             "match_pairs",
 
             "is_homework",
-            "quiz",
+            "homework",
 
             "created_at",
         ]
