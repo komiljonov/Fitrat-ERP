@@ -172,6 +172,7 @@ class SecondaryGroupUpdate(UpdateAPIView):
     queryset = SecondaryStudentGroup.objects.all()
     serializer_class = SecondaryStudentsGroupSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = "student__id"
 
     # def get_object(self):
     #     queryset = self.get_queryset()
