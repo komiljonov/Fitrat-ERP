@@ -31,7 +31,7 @@ class Quiz(BaseModel):
     end_time = models.TimeField(null=True, blank=True)
 
     is_homework = models.BooleanField(default=False)
-    homework : "Homework" = models.ForeignKey('homework.Homework', on_delete=models.SET_NULL,null=True,blank=True,
+    homework : "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL,null=True,blank=True,
                                       related_name='homeworks_quiz')
 
     def __str__(self):
