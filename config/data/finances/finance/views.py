@@ -427,6 +427,102 @@ class FinanceTeacher(ListAPIView):
         return Finance.objects.none()
 
 
+class MergedTeacherFinanceAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get(self, request, *args, **kwargs):
+        teacher_id = self.kwargs.get('pk')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        # --- 1. Group-based finance
+        group_filters = {"group__teacher_id": teacher_id}
+        if start_date and end_date:
+            group_filters["created_at__range"] = (start_date, end_date)
+        elif start_date:
+            group_filters["created_at__gte"] = start_date
+
+        attended_groups = Attendance.objects.filter(**group_filters).values_list('group_id', flat=True).distinct()
+        merged_data = []
+
+        for group_id in attended_groups:
+            finance_filters = {"attendance__group__id": group_id}
+            if start_date and end_date:
+                finance_filters["created_at__range"] = (start_date, end_date)
+            elif start_date:
+                finance_filters["created_at__gte"] = start_date
+
+            finance_records = Finance.objects.filter(**finance_filters)
+            total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
+            created_at = finance_records.first().created_at if finance_records.exists() else None
+
+            if total_group_payment == 0:
+                continue  # skip zero groups
+
+            students = Student.objects.filter(attendance_student__group__id=group_id).distinct()
+            student_data = []
+
+            for student in students:
+                student_attendances = Attendance.objects.filter(group_id=group_id, student=student)
+                student_finance_filters = {"attendance__in": student_attendances}
+
+                if start_date and end_date:
+                    student_finance_filters["created_at__range"] = (start_date, end_date)
+                elif start_date:
+                    student_finance_filters["created_at__gte"] = start_date
+
+                total_student_payment = Finance.objects.filter(**student_finance_filters).aggregate(Sum('amount'))[
+                    'amount__sum'] or 0
+
+                if total_student_payment == 0:
+                    continue
+
+                student_data.append({
+                    "student_id": str(student.id),
+                    "student_name": f"{student.first_name} {student.last_name}",
+                    "total_payment": total_student_payment
+                })
+
+            group_name = Attendance.objects.filter(group_id=group_id).first()
+            group_name = group_name.group.name if group_name else "Unknown Group"
+
+            merged_data.append({
+                "type": "group_finance",
+                "group_id": str(group_id),
+                "group_name": group_name,
+                "total_group_payment": total_group_payment,
+                "students": student_data,
+                "created_at": created_at,
+            })
+
+        # --- 2. Individual teacher finance (no attendance linked)
+        teacher = request.user
+        personal_finance_qs = Finance.objects.filter(stuff=teacher, attendance__isnull=True)
+        if start_date and end_date:
+            personal_finance_qs = personal_finance_qs.filter(created_at__range=(start_date, end_date))
+        elif start_date:
+            personal_finance_qs = personal_finance_qs.filter(created_at__gte=start_date)
+
+        personal_finance_qs = personal_finance_qs.annotate(total=Sum('amount')).filter(total__gt=0)
+
+        for item in personal_finance_qs:
+            amount = item.amount or 0
+            if amount == 0:
+                continue
+            merged_data.append({
+                "type": "personal_finance",
+                "finance_id": str(item.id),
+                "amount": amount,
+                "created_at": item.created_at,
+                "comment": item.comment,
+            })
+
+        # --- 3. Paginate combined result
+        paginator = self.pagination_class()
+        paginated_data = paginator.paginate_queryset(merged_data, request)
+        return paginator.get_paginated_response(paginated_data)
+
 class FinanceExcel(APIView):
 
     def get(self, request, *args, **kwargs):
