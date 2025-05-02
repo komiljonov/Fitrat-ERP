@@ -179,12 +179,14 @@ class SecondaryGroupUpdate(UpdateAPIView):
         lid_id = self.request.query_params.get('lid_id')
         student_id = self.request.query_params.get('student_id')
 
-        if lid_id:
+        group_id = self.request.query_params.get('group_id')
+
+        if student_id and group_id:
+            obj = get_object_or_404(queryset, student__id=student_id, group__id=group_id)
+        elif lid_id:
             obj = get_object_or_404(queryset, lid__id=lid_id)
-        elif student_id:
-            obj = get_object_or_404(queryset, student__id=student_id)
         else:
-            raise ValidationError("You must provide either 'lid_id' or 'student_id'.")
+            raise ValidationError("You must provide either 'lid_id' or both 'student_id' and 'group_id'.")
 
         self.check_object_permissions(self.request, obj)
         return obj
