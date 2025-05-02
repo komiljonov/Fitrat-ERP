@@ -208,7 +208,6 @@ class QuizListCreateView(ListCreateAPIView):
 
         if homework:
             queryset = queryset.filter(homework__id=homework)
-
         if is_homework:
             queryset = queryset.filter(is_homework=is_homework.capitalize())
         if type:

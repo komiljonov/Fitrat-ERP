@@ -168,26 +168,30 @@ class SecondaryGroupStudentList(ListAPIView):
         return Response(data)
 
 
-class SecondaryGroupUpdate(UpdateAPIView):
-    queryset = SecondaryStudentGroup.objects.all()
-    serializer_class = SecondaryStudentsGroupSerializer
+class SecondaryGroupUpdate(APIView):
     permission_classes = [IsAuthenticated]
-    lookup_field = "student_id"
+    serializer_class = SecondaryStudentsGroupSerializer
 
-    def get_object(self):
-        student_id = self.kwargs.get("student_id")
-        group_id = self.request.data.get("group")
+
+    def put(self, request, *args, **kwargs):
+        student_id = self.kwargs.get('pk')
+        group_id = self.request.GET.get('group_id')
 
         if not group_id:
-            raise ValidationError({"group": "Group ID is required in the request body."})
+            return Response({"error": "Group ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        obj = get_object_or_404(
-            self.get_queryset(),
-            student__id=student_id,
-            group__id=group_id
+        instance = get_object_or_404(
+            SecondaryStudentGroup,
+            group_id=group_id,
+            student_id=student_id
         )
-        self.check_object_permissions(self.request, obj)
-        return obj
+
+        serializer = self.serializer_class(instance, data=request.data, partial=True, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class StudentGroupDelete(APIView):
     permission_classes = [IsAuthenticated]
