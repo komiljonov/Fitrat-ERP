@@ -3,6 +3,9 @@ from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from icecream import ic
+from numpy.ma.core import floor_divide
+from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
@@ -160,60 +163,40 @@ class ThemePgList(ListCreateAPIView):
     pagination_class = DynamicPageSizePagination
 
     def get_queryset(self):
-        params = self.request.query_params
-        search = params.get('search')
-        theme_filter = params.get('theme')  # 'Lesson' or 'Repeat'
-        level_id = params.get('level')
-        group_id = params.get('group')
-        course_id = params.get('course')
-        alt_group_id = params.get('id')  # fallback course extractor
+        request = self.request
+        search = request.query_params.get('search')
+        theme_filter = request.query_params.get('theme')  # 'Lesson' or 'Repeat'
+        group_id = request.query_params.get('group')
 
-        # Base queryset
         qs = Theme.objects.all()
 
-        # Apply full-text filter early
         if search:
             qs = qs.filter(title__icontains=search)
 
-        # Course resolution via group or course
-        course = None
-        group = None
+        if theme_filter and group_id:
 
-        if group_id:
-            group = Group.objects.select_related('course').filter(id=group_id).first()
-            if not group:
-                raise NotFound("Group not found.")
-            course = group.course
-        elif alt_group_id:
-            group = Group.objects.select_related('course').filter(id=alt_group_id).first()
-            if group:
-                course = group.course
-        elif course_id:
-            course = course_id  # fallback if explicitly set
+            ic(theme_filter,group_id)
 
-        if course:
-            qs = qs.filter(course=course)
+            last_att = Attendance.objects.filter(
+                group__id=group_id,
+                theme__theme=theme_filter,
+            ).first()
 
-        # Level filter
-        if level_id:
-            qs = qs.filter(level_id=level_id)
+            if last_att and last_att.theme.exists():
+                last_theme = last_att.theme.order_by('-created_at').first()
 
-        # Smart filtering based on theme (Lesson/Repeat) and Attendance
-        if theme_filter in ['Lesson', 'Repeat'] and group:
-            last_attendance = (
-                Attendance.objects
-                .filter(group=group)
-                .select_related('theme')
-                .order_by('-id')
-                .first()
-            )
-            if last_attendance and last_attendance.theme:
-                qs = qs.filter(id__gt=last_attendance.theme.id)
+                if last_theme:
+                    # Only return the next one for 'Lesson', all for 'Repeat'
+                    qs = Theme.objects.filter(
+                        created_at__gt=last_theme.created_at,
+                        theme=theme_filter,
+                        course=last_theme.course
+                    ).order_by('created_at')
 
-        elif theme_filter:
-            qs = qs.filter(theme=theme_filter)
+                    if theme_filter == "Lesson":
+                        return qs[:1]  # return only next one
 
-        return qs.order_by('id')
+        return qs
 
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):
