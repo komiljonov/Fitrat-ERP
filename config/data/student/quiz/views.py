@@ -202,6 +202,10 @@ class QuizListCreateView(ListCreateAPIView):
     def get_queryset(self):
         queryset = Quiz.objects.all()
         theme = self.request.query_params.get("theme")
+        type = self.request.GET.get("type")
+
+        if type:
+            queryset = queryset.filter(type=type)
         if theme:
             queryset = queryset.filter(theme__id=theme)
         return queryset
