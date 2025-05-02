@@ -14,22 +14,28 @@ class LidWebhook(APIView):
         data = request.data
         if not data:
             return Response({'error': 'No data provided'}, status=status.HTTP_400_BAD_REQUEST)
-        marketing_channel_id = MarketingChannel.objects.filter(name="Olimpiadalar").first().id
+
+        marketing_channel = MarketingChannel.objects.filter(name="Olimpiadalar").first()
+        if not marketing_channel:
+            return Response({'error': 'Marketing channel not found'}, status=status.HTTP_400_BAD_REQUEST)
+
         lid = Lid.objects.create(
             first_name=data.get('first_name'),
-            last_name=data('last_name'),
-            marketing_channel_id=marketing_channel_id,
+            last_name=data.get('last_name'),
+            phone_number=data.get('phone_number'),
+            marketing_channel=marketing_channel,
             photo=None,
-            language_choise="UZB",
             subject=None,
             filial=None,
             lid_stage_type="NEW_LID",
-            lid_stage="YANGI_LEAD",
+            lid_stages="YANGI_LEAD",
             call_operator=None,
             service_manager=None,
             sales_manager=None,
-            file=None,
             student=None
         )
-        if lid:
-            return Response({'status': 'Thank youu mann!'}, status=status.HTTP_201_CREATED)
+
+        # Set many-to-many field AFTER creation
+        lid.file.set([])  # empty list, or pass a list of File objects/IDs
+
+        return Response({'status': 'Thank youu mann!'}, status=status.HTTP_201_CREATED)
