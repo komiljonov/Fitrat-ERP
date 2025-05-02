@@ -168,7 +168,7 @@ class ThemePgList(ListCreateAPIView):
         theme_filter = request.query_params.get('theme')  # 'Lesson' or 'Repeat'
         group_id = request.query_params.get('group')
 
-        qs = Theme.objects.all()
+        qs = Theme.objects.filter(course=Group.objects.filter(id=group_id).first().course)
 
         if search:
             qs = qs.filter(title__icontains=search)
