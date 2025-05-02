@@ -57,6 +57,6 @@ urlpatterns = [
     path("voucher/student/", VoucherStudentList.as_view()),
     path("voucher/student/<uuid:pk>/", VoucherStudentRetrieve.as_view()),
 
-    path("merged/",MergedTeacherFinanceAPIView.as_view(), name="merged"),
+    path("merged/<uuid:pk>/",MergedTeacherFinanceAPIView.as_view(), name="merged"),
 
 ]
