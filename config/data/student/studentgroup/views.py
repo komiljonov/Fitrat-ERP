@@ -174,22 +174,20 @@ class SecondaryGroupUpdate(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = "student_id"
 
-    # def get_object(self):
-    #     queryset = self.get_queryset()
-    #
-    #     lid_id = self.request.query_params.get('lid_id')
-    #     student_id = self.request.query_params.get('student_id')
-    #
-    #     if lid_id:
-    #         obj = get_object_or_404(queryset, lid__id=lid_id)
-    #     elif student_id:
-    #         obj = get_object_or_404(queryset, student__id=student_id)
-    #     else:
-    #         raise ValidationError("You must provide either 'lid_id' or 'student_id'.")
-    #
-    #     self.check_object_permissions(self.request, obj)
-    #     return obj
+    def get_object(self):
+        student_id = self.kwargs.get("student_id")
+        group_id = self.request.data.get("group")
 
+        if not group_id:
+            raise ValidationError({"group": "Group ID is required in the request body."})
+
+        obj = get_object_or_404(
+            self.get_queryset(),
+            student__id=student_id,
+            group__id=group_id
+        )
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 class StudentGroupDelete(APIView):
     permission_classes = [IsAuthenticated]
