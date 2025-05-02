@@ -174,16 +174,18 @@ class SecondaryGroupUpdate(APIView):
 
 
     def put(self, request, *args, **kwargs):
-        student_id = self.kwargs.get('pk')
+        student_id = self.kwargs.get('student_id')
         group_id = self.request.GET.get('group_id')
 
         if not group_id:
             return Response({"error": "Group ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        ic(group_id, student_id)
+
         instance = get_object_or_404(
             SecondaryStudentGroup,
-            group_id=group_id,
-            student_id=student_id
+            group__id=group_id,
+            student__id=student_id
         )
 
         serializer = self.serializer_class(instance, data=request.data, partial=True, context={"request": request})
