@@ -202,8 +202,11 @@ class QuizListCreateView(ListCreateAPIView):
     def get_queryset(self):
         queryset = Quiz.objects.all()
         theme = self.request.query_params.get("theme")
+        is_homework = self.request.GET.get("is_homework")
         type = self.request.GET.get("type")
 
+        if is_homework:
+            queryset = queryset.filter(is_homework=is_homework.capitalize())
         if type:
             queryset = queryset.filter(type=type)
         if theme:
