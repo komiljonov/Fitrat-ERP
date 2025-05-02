@@ -29,6 +29,10 @@ class Quiz(BaseModel):
     start_time = models.TimeField(null=True, blank=True)
     end_time = models.TimeField(null=True, blank=True)
 
+    is_homework = models.BooleanField(default=False)
+    quiz : "Quiz" = models.ForeignKey('quiz.Quiz', on_delete=models.SET_NULL,null=True,blank=True,
+                                      related_name='homeworks_quiz')
+
     def __str__(self):
         return self.title
 

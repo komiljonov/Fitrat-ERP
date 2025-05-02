@@ -48,6 +48,7 @@ class QuizSerializer(serializers.ModelSerializer):
     results_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
     materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
+    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(),allow_null=True)
     class Meta:
         model = Quiz
         fields = [
@@ -70,6 +71,10 @@ class QuizSerializer(serializers.ModelSerializer):
             "fill_gap",
             "vocabularies",
             "match_pairs",
+
+            "is_homework",
+            "quiz",
+
             "created_at",
         ]
     def get_questions(self, obj):
