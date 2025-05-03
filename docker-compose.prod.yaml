@@ -1,0 +1,119 @@
+version: "3.8"
+
+services:
+
+  redis:
+    image: redis:alpine
+    container_name: "redis_fitrat"
+    restart: always
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --save 1 1 --loglevel warning --appendonly yes
+    environment:
+      - TZ=Etc/GMT+5
+
+  postgres:
+    image: postgres:16
+    container_name: "postgres_fitrat"
+    init: true
+    environment:
+      - POSTGRES_DB=fitrat
+      - POSTGRES_USER=fitrat_user
+      - POSTGRES_PASSWORD=your_secure_password
+      - TZ=Etc/GMT+5
+    ports:
+      - "5434:5432"
+    volumes:
+      - "postgres_data_fitrat:/var/lib/postgresql/data"
+
+  django:
+    container_name: "django_fitrat"
+    build:
+      context: ./config
+    command: python manage.py runserver 0.0.0.0:8000
+
+    volumes: &shared_volumes
+      - ./config:/usr/src/app
+      - ./utils:/usr/src/app/utils
+      - ./locales:/usr/src/app/locales
+      - ./tg_bot:/usr/src/app/tg_bot
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    environment:
+      - TZ=Etc/GMT+5
+    depends_on:
+      - redis
+      - postgres
+
+  bot:
+    container_name: "telegram_bot_fitrat"
+    build:
+      context: ./config
+    command: python      .py bot
+    volumes: *shared_volumes
+    env_file:
+      - .env
+    environment:
+      - TZ=Etc/GMT+5
+
+
+  celery:
+    build:
+      context: ./config
+    container_name: "celery_worker_fitrat"
+    restart: always
+    command: celery --app=root.celery worker --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TZ=Etc/GMT+5
+    depends_on:
+      - redis
+      - django
+    volumes: *shared_volumes
+
+  celery_beat:
+    build:
+      context: ./config
+    container_name: "celery_beat_fitrat"
+    restart: always
+    command: celery --app=root.celery beat --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - TZ=Etc/GMT+5
+    depends_on:
+      - redis
+      - celery
+    volumes: *shared_volumes
+
+#  backup:
+#    build:
+#      context: ./config/
+#      dockerfile: Dockerfile
+#    container_name: "postgres_backup_fitrat"
+#    depends_on:
+#      - postgres
+#    volumes:
+#      - ./backups:/backups
+#    environment:
+#      - POSTGRES_DB=fitrat
+#      - POSTGRES_USER=fitrat_user
+#      - POSTGRES_PASSWORD=your_secure_password
+#      - PGPASSWORD=your_secure_password
+#      - TZ=Etc/GMT+5
+#    command: ["crond", "-f", "-l", "2"]
+#    security_opt:
+#      - seccomp:unconfined
+#    cap_add:
+#      - SYS_PTRACE
+
+volumes:
+  postgres_data_fitrat:
+  redis-data:
