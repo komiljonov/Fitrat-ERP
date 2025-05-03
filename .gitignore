@@ -183,3 +183,5 @@ locales
 utils
 /data/
 tg_bot
+
+docker-compose.prod.yaml
