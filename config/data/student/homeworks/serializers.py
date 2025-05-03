@@ -38,10 +38,23 @@ class HomeworkSerializer(serializers.ModelSerializer):
         online_avg = histories.filter(homework__choice="Online").aggregate(avg=Avg("mark"))["avg"] or 0
         offline_avg = histories.filter(homework__choice="Offline").aggregate(avg=Avg("mark"))["avg"] or 0
 
+        overall_avg = round(histories.aggregate(avg=Avg("mark"))["avg"] or 0, 2)
+
+        if overall_avg <= 20:
+            ball = 1
+        elif overall_avg <= 40:
+            ball = 2
+        elif overall_avg <= 60:
+            ball = 3
+        elif overall_avg <= 80:
+            ball = 4
+        else:
+            ball = 5
         return {
             "online_avg": round(online_avg, 2),
             "offline_avg": round(offline_avg, 2),
-            "overall_avg": round(histories.aggregate(avg=Avg("mark"))["avg"] or 0, 2)
+            "overall_avg": round(histories.aggregate(avg=Avg("mark"))["avg"] or 0, 2),
+            "ball": round(ball, 2),
         }
 
 
