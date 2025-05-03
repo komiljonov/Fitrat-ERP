@@ -16,8 +16,11 @@ class HomeworkListCreateView(ListCreateAPIView):
         group = self.request.query_params.get('group')
         course = self.request.query_params.get('course')  # ✅ fix here
         theme = self.request.query_params.get('theme')
+        choice = self.request.query_params.get('choice')
         queryset = Homework.objects.all()
 
+        if choice:
+            queryset = queryset.filter(choice=choice)
         if group:
             queryset = queryset.filter(theme__course=Group.objects.get(id=group).course)
 
