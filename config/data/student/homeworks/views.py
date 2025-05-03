@@ -16,9 +16,9 @@ class HomeworkListCreateView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        group=self.request.GET.get('group')
-        course=self.request.GET.get('course')
-        theme = self.request.query_params.get('theme', None)
+        group = self.request.query_params.get('group')
+        course = self.request.query_params.get('course')  # ✅ fix here
+        theme = self.request.query_params.get('theme')
         queryset = Homework.objects.all()
 
         if group:
