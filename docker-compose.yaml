@@ -32,7 +32,7 @@ services:
     container_name: "django_fitrat"
     build:
       context: ./config
-    command: gunicorn root.wsgi:application --bind 0.0.0.0:8000 --workers 4 --threads 4
+    command: gunicorn root.wsgi:application --bind 0.0.0.0:8000 --workers 10 --threads 10
 
     volumes: &shared_volumes
       - ./config:/usr/src/app
