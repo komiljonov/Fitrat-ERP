@@ -15,6 +15,6 @@ class HomeworkAdmin(admin.ModelAdmin):
 
 @admin.register(Homework_history)
 class HomeworkHistoryAdmin(admin.ModelAdmin):
-    list_display = ("homework__title", "student__fist_name","status","is_active","mark")
+    list_display = ("homework__title", "student__first_name","status","is_active","mark")
     list_filter = ('homework__title',"status","is_active")
     search_fields = ('homework__title',)
