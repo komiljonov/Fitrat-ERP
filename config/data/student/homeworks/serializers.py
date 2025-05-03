@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Homework
+from .models import Homework, Homework_history
 from ..subject.models import Theme
 from ..subject.serializers import ThemeSerializer
 from ...upload.models import File
@@ -33,3 +33,16 @@ class HomeworkSerializer(serializers.ModelSerializer):
         res["photo"] = FileUploadSerializer(instance.photo.all(), many=True,context=self.context).data
         return res
 
+
+
+class HomeworksHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Homework_history
+        fields = [
+            "id",
+            "homework",
+            "status",
+            "is_active",
+            "mark",
+            "created_at"
+        ]
