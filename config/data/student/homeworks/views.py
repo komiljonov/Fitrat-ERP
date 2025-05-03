@@ -1,9 +1,6 @@
-from django.shortcuts import render
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from data.student import course
-from data.student.course.models import Course
 from data.student.groups.models import Group
 from data.student.homeworks.models import Homework, Homework_history
 from data.student.homeworks.serializers import HomeworkSerializer, HomeworksHistorySerializer
