@@ -41,6 +41,7 @@ class HomeworksHistorySerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "homework",
+            "student",
             "status",
             "is_active",
             "mark",

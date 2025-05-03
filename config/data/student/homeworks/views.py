@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from data.student.homeworks.models import Homework
-from data.student.homeworks.serializers import HomeworkSerializer
+from data.student.homeworks.models import Homework, Homework_history
+from data.student.homeworks.serializers import HomeworkSerializer, HomeworksHistorySerializer
 
 
 # Create your views here.
@@ -25,3 +25,30 @@ class HomeworkDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = HomeworkSerializer
     permission_classes = [IsAuthenticated]
 
+
+class HomeworkHistoryListCreateView(ListCreateAPIView):
+    queryset = Homework_history.objects.all()
+    serializer_class = HomeworksHistorySerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        homework = self.request.GET.get('homework', None)
+        is_active = self.request.GET.get('is_active', None)
+        status = self.request.GET.get('status', None)
+        student = self.request.GET.get('student', None)
+
+        queryset = Homework_history.objects.all()
+        if homework:
+            queryset = queryset.filter(homework__id=homework)
+        if is_active:
+            queryset = queryset.filter(is_active=is_active.capitalize())
+        if status:
+            queryset = queryset.filter(status=status)
+        if student:
+            queryset = queryset.filter(student__id=student)
+        return queryset
+
+
+class HomeworkHistoryView(RetrieveUpdateDestroyAPIView):
+    queryset = Homework.objects.all()
+    serializer_class = HomeworksHistorySerializer
+    permission_classes = [IsAuthenticated]
