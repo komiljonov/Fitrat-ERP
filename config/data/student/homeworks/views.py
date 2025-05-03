@@ -2,6 +2,8 @@ from django.shortcuts import render
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
+from data.student.course.models import Course
+from data.student.groups.models import Group
 from data.student.homeworks.models import Homework, Homework_history
 from data.student.homeworks.serializers import HomeworkSerializer, HomeworksHistorySerializer
 
@@ -13,8 +15,13 @@ class HomeworkListCreateView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        group=self.request.GET.get('group')
         theme = self.request.query_params.get('theme', None)
         queryset = Homework.objects.all()
+
+        if group:
+            queryset = queryset.filter(theme__course=Group.objects.get(id=group).course)
+
         if theme:
             queryset = queryset.filter(theme__id=theme)
         return queryset
