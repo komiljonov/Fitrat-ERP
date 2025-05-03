@@ -3,6 +3,7 @@ from django.db import models
 from data.command.models import BaseModel
 from data.student.subject.models import Theme
 from ...upload.models import File
+from ..student.models import Student
 
 class Homework(BaseModel):
     theme : "Theme" = models.ForeignKey("subject.Theme", on_delete=models.CASCADE,
@@ -32,6 +33,8 @@ class Homework(BaseModel):
 class Homework_history(BaseModel):
     homework : "Homework" = models.ForeignKey("homeworks.Homework",
             on_delete=models.CASCADE,related_name="homeworks_history")
+    student : "Student" = models.ForeignKey("student.Student",
+            on_delete=models.CASCADE,related_name="student_homeworks_history")
     status = models.CharField(choices=[
         ("Passed", "Passed"),
         ("Failed", "Failed"),
