@@ -179,7 +179,6 @@ class ThemePgList(ListCreateAPIView):
 
             last_att = Attendance.objects.filter(
                 group__id=group_id,
-                theme__theme=theme_filter,
             ).first()
 
             if last_att and last_att.theme.exists():
@@ -188,7 +187,7 @@ class ThemePgList(ListCreateAPIView):
                 if last_theme:
                     # Only return the next one for 'Lesson', all for 'Repeat'
                     qs = Theme.objects.filter(
-                        created_at__gt=last_theme.created_at,
+                        created_at__lt=last_theme.created_at,
                         theme=theme_filter,
                         course=last_theme.course
                     ).order_by('created_at')
