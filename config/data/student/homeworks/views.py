@@ -1,5 +1,6 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from data.student.groups.models import Group
 from data.student.homeworks.models import Homework, Homework_history
@@ -45,6 +46,7 @@ class HomeworkHistoryListCreateView(ListCreateAPIView):
     queryset = Homework_history.objects.all()
     serializer_class = HomeworksHistorySerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
     def get_queryset(self):
         homework = self.request.GET.get('homework', None)
         is_active = self.request.GET.get('is_active', None)
@@ -61,6 +63,9 @@ class HomeworkHistoryListCreateView(ListCreateAPIView):
         if student:
             queryset = queryset.filter(student__id=student)
         return queryset
+
+    def get_paginated_response(self, data):
+        return Response(data)
 
 
 class HomeworkHistoryView(RetrieveUpdateDestroyAPIView):
