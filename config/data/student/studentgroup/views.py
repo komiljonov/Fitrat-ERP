@@ -345,9 +345,23 @@ class SecondaryStudentList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+
+        qs = SecondaryStudentGroup.objects.all()
+
+        search = self.request.GET.get("search")
+        status = self.request.GET.get("status")
+        if search:
+            qs = qs.filter(
+                Q(student__first_name__icontains=search),
+                Q(lid__first_name__icontains=search),
+            )
+        if status:
+            qs = qs.filter(
+                student__student_stage_type=status,
+            )
         if self.request.user.role == 'ASSISTANT':
-            return SecondaryStudentGroup.objects.filter(group__teacher__id=self.request.user.id)
-        return SecondaryStudentGroup.objects.filter(group__filial__in=self.request.user.filial.all())
+            qs = qs.filter(group__teacher__id=self.request.user.id)
+        return qs
 
 
 class SecondaryGroupList(ListAPIView):
