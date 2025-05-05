@@ -1,6 +1,7 @@
 from django.db.models import Avg
 from rest_framework import serializers
 from .models import Homework, Homework_history
+from ..attendance.models import Attendance
 from ..subject.models import Theme
 from ..subject.serializers import ThemeSerializer
 from ...upload.models import File
@@ -12,6 +13,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
     video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     documents = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    is_active = serializers.SerializerMethodField()
     ball = serializers.SerializerMethodField()
 
     class Meta:
@@ -25,6 +27,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
             "documents",
             "photo",
             "ball",
+            "is_active",
             "created_at"
         ]
 
@@ -57,6 +60,14 @@ class HomeworkSerializer(serializers.ModelSerializer):
             "ball": round(ball, 2),
         }
 
+    def get_is_active(self, obj):
+        att = Attendance.objects.filter(
+            theme=obj.theme
+        ).first()
+
+        if att:
+            return True
+        return False
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
