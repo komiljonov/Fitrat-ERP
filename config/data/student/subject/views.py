@@ -156,7 +156,6 @@ class DynamicPageSizePagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-
 class ThemePgList(ListCreateAPIView):
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
@@ -168,32 +167,37 @@ class ThemePgList(ListCreateAPIView):
         theme_filter = request.query_params.get('theme')  # 'Lesson' or 'Repeat'
         group_id = request.query_params.get('group')
 
-        qs = Theme.objects.filter(course=Group.objects.filter(id=group_id).first().course)
+        ic(group_id,theme_filter)
+
+        group = Group.objects.filter(id=group_id).first()
+        if not group or not group.course:
+            return Theme.objects.none()
+
+        qs = Theme.objects.filter(course=group.course).order_by('created_at')
 
         if search:
             qs = qs.filter(title__icontains=search)
 
         if theme_filter and group_id:
-
-            ic(theme_filter,group_id)
-
+            # Get latest attendance for this group and theme type
             last_att = Attendance.objects.filter(
-                group__id=group_id,
-            ).first()
+                group_id=group_id,
+                theme__theme=theme_filter
+            ).order_by('-created_at').first()
 
             if last_att and last_att.theme.exists():
                 last_theme = last_att.theme.order_by('-created_at').first()
 
                 if last_theme:
-                    # Only return the next one for 'Lesson', all for 'Repeat'
-                    qs = Theme.objects.filter(
-                        created_at__lt=last_theme.created_at,
-                        theme=theme_filter,
-                        course=last_theme.course
-                    ).order_by('created_at')
+                    if theme_filter == "Repeat":
+                        # Get themes from first to the last attended
+                        qs = qs.filter(created_at__lte=last_theme.created_at)
+                        return qs
 
-                    if theme_filter == "Lesson":
-                        return qs[:1]  # return only next one
+                    elif theme_filter == "Lesson":
+                        # Get the next theme only
+                        next_theme = qs.filter(created_at__gt=last_theme.created_at).first()
+                        return Theme.objects.filter(id=next_theme.id) if next_theme else Theme.objects.none()
 
         return qs
 
