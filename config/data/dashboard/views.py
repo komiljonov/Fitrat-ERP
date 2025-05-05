@@ -97,7 +97,7 @@ class DashboardView(APIView):
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 
             first_lesson_come_archived = first_lesson_come.filter(
-                is_archived=True) if first_lesson_come.exists() else None
+                is_archived=True,is_student=False) if first_lesson_come.exists() else None
             first_course_payment = first_course_payment.filter(is_archived=is_student_value)
             first_course_payment_archived = first_course_payment.filter(
                 is_archived=True) if first_course_payment.exists() else None
