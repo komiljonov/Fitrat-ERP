@@ -184,3 +184,22 @@ class TeacherMasteringStatisticsView(ListAPIView):
         return Mastering.objects.none()
 
 
+class SecondaryGroupStatic(ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        all = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user).count()
+        first = (SecondaryStudentGroup.objects.filter(group__teacher=self.request.user,
+                                                      lid__isnull=False)).count()
+        new_student = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user,
+                                                           student__student_stage_type="NEW_STUDENT").count()
+        active = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user,
+                                                      student__student_stage_type="ACTIVE_STUDENT").count()
+
+
+        return Response({
+            "all": all,
+            "first": first,
+            "new_student": new_student,
+            "active": active
+        })
