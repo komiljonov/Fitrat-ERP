@@ -18,8 +18,11 @@ class LidWebhook(APIView):
         if not data:
             return Response({'error': 'No data provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-        marketing_channel = MarketingChannel.objects.filter(name="Olimpiadalar").first()
-        if not marketing_channel:
+        if data.get("channel") and data["channel"] == "Web site":
+            marketing_channel = MarketingChannel.objects.filter(name="Web site").first()
+        if data.get("channel") and data["channel"] == "bot":
+            marketing_channel = MarketingChannel.objects.filter(name="Olimpiadalar").first()
+        if not data.get("channel"):
             return Response({'error': 'Marketing channel not found'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Always initialize subject as None
