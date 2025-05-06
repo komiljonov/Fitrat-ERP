@@ -212,12 +212,16 @@ class StudentsAvgLearning(APIView):
             group__teacher=request.user
         ).select_related("student")
 
+        ic(student_groups)
+
         # Collect student IDs
         student_ids = [sg.student.id for sg in student_groups if sg.student]
 
+        ic(student_ids)
+
         # Prefetch all mastering records for those students
-        masterings = Mastering.objects.filter(student__id__in=student_ids).select_related("student")
+        mastering = Mastering.objects.filter(student__id__in=student_ids).select_related("student")
 
         # Serialize
-        serializer = MasteringSerializer(masterings, many=True)
+        serializer = MasteringSerializer(mastering, many=True)
         return Response(serializer.data)
