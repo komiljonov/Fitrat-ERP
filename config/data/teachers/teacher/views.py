@@ -207,21 +207,46 @@ class StudentsAvgLearning(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Get all SecondaryStudentGroup for the teacher
-        student_groups = SecondaryStudentGroup.objects.filter(
+        # Get all StudentGroup entries for the teacher
+        student_groups = StudentGroup.objects.filter(
             group__teacher=request.user
         ).select_related("student")
 
-        ic(student_groups)
-
-        # Collect student IDs
         student_ids = [sg.student.id for sg in student_groups if sg.student]
 
-        ic(student_ids)
+        # Fetch mastering records with student and test details
+        mastering_records = Mastering.objects.filter(
+            student__id__in=student_ids
+        ).select_related("student", "test")
 
-        # Prefetch all mastering records for those students
-        mastering = Mastering.objects.filter(student__id__in=student_ids).select_related("student")
+        results = []
+        for student_id in student_ids:
+            student_record = mastering_records.filter(student_id=student_id)
 
-        # Serialize
-        serializer = MasteringSerializer(mastering, many=True)
-        return Response(serializer.data)
+            exams = []
+            homeworks = []
+            for m in student_record:
+                item = {
+                    "title": m.test.title if m.test else "N/A",
+                    "ball": m.ball,
+                    "type": m.test.type if m.test else "unknown"
+                }
+                if m.test and m.test.type == "Offline":
+                    exams.append(item)
+                else:
+                    homeworks.append(item)
+
+            overall_exam = sum(x['ball'] for x in exams) / len(exams) if exams else 0
+            overall_homework = sum(x['ball'] for x in homeworks) / len(homeworks) if homeworks else 0
+            overall = round((overall_exam + overall_homework) / 2, 2) if exams or homeworks else 0
+
+            if student_record:
+                student = student_record[0].student
+                results.append({
+                    "full_name": f"{student.first_name} {student.last_name}",
+                    "exams": exams,
+                    "homeworks": homeworks,
+                    "overall": overall
+                })
+
+        return Response(results)
