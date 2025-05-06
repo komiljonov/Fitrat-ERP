@@ -17,7 +17,7 @@ from ...student.groups.serializers import GroupSerializer, SecondaryGroupSeriali
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.mastering.models import Mastering, MasteringTeachers
-from ...student.mastering.serializers import StuffMasteringSerializer
+from ...student.mastering.serializers import StuffMasteringSerializer, MasteringSerializer
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...student.studentgroup.serializers import StudentsGroupSerializer
 
@@ -202,3 +202,22 @@ class SecondaryGroupStatic(APIView):
             "new_student": new_student_count,
             "active": active_count
         })
+
+class StudentsAvgLearning(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Get all SecondaryStudentGroup for the teacher
+        student_groups = SecondaryStudentGroup.objects.filter(
+            group__teacher=request.user
+        ).select_related("student")
+
+        # Collect student IDs
+        student_ids = [sg.student.id for sg in student_groups if sg.student]
+
+        # Prefetch all mastering records for those students
+        masterings = Mastering.objects.filter(student__id__in=student_ids).select_related("student")
+
+        # Serialize
+        serializer = MasteringSerializer(masterings, many=True)
+        return Response(serializer.data)
