@@ -1,8 +1,5 @@
 import difflib
-import os
 
-from django.contrib.postgres.search import TrigramSimilarity
-from django.http import HttpResponseForbidden
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,12 +9,13 @@ from data.lid.new_lid.models import Lid
 from data.parents.models import Relatives
 from data.student.subject.models import Subject
 
+
 class LidWebhook(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         if not data:
             return Response({'error': 'No data provided'}, status=status.HTTP_400_BAD_REQUEST)
-            marketing_channel=None
+        marketing_channel=None
         if data.get("channel") and data["channel"] == "Web site":
             marketing_channel = MarketingChannel.objects.filter(name="Web site").first()
         if data.get("channel") and data["channel"] == "bot":
@@ -61,6 +59,6 @@ class LidWebhook(APIView):
                 student=None
             )
 
-        lid.file.set([])  # Optional: set related files if needed
+        lid.file.set([])
 
         return Response({'status': 'Thank youu mann!'}, status=status.HTTP_201_CREATED)
