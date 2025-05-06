@@ -88,6 +88,7 @@ class HomeworksHistorySerializer(serializers.ModelSerializer):
             "student",
             "status",
             "is_active",
+            "description",
             "mark",
             "created_at"
         ]

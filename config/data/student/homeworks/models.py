@@ -43,6 +43,8 @@ class Homework_history(BaseModel):
     is_active = models.BooleanField(default=False)
     mark = models.IntegerField(default=0)
 
+    description = models.TextField(null=True,blank=True)
+
     class Meta:
         verbose_name = "Homeworks History"
         verbose_name_plural = "Histories"
