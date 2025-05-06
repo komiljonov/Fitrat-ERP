@@ -5,6 +5,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import TeacherSerializer
 from ...account.models import CustomUser
@@ -184,22 +185,20 @@ class TeacherMasteringStatisticsView(ListAPIView):
         return Mastering.objects.none()
 
 
-class SecondaryGroupStatic(ListAPIView):
+class SecondaryGroupStatic(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        all = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user).count()
-        first = (SecondaryStudentGroup.objects.filter(group__teacher=self.request.user,
-                                                      lid__isnull=False)).count()
-        new_student = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user,
-                                                           student__student_stage_type="NEW_STUDENT").count()
-        active = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user,
-                                                      student__student_stage_type="ACTIVE_STUDENT").count()
+        base_qs = SecondaryStudentGroup.objects.filter(group__teacher=request.user)
 
+        all_count = base_qs.count()
+        first_count = base_qs.filter(lid__isnull=False).count()
+        new_student_count = base_qs.filter(student__student_stage_type="NEW_STUDENT").count()
+        active_count = base_qs.filter(student__student_stage_type="ACTIVE_STUDENT").count()
 
         return Response({
-            "all": all,
-            "first": first,
-            "new_student": new_student,
-            "active": active
+            "all": all_count,
+            "first": first_count,
+            "new_student": new_student_count,
+            "active": active_count
         })
