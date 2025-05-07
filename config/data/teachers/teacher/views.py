@@ -207,24 +207,35 @@ class StudentsAvgLearning(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Get all StudentGroup entries for the teacher
-        student_groups = StudentGroup.objects.filter(
-            group__teacher=request.user
-        ).select_related("student")
-        ic(student_groups)
+        group_id = request.query_params.get("group")
+        if not group_id:
+            return Response({"error": "group parameter is required"}, status=400)
 
-        ic(request.user)
+        student_groups = StudentGroup.objects.filter(
+            group__id=group_id,
+            group__teacher=request.user
+        ).select_related("student", "lid")
 
         student_ids = [sg.student.id for sg in student_groups if sg.student]
+        lid_ids = [sg.lid.id for sg in student_groups if sg.lid]
 
-        # Fetch mastering records with student and test details
         mastering_records = Mastering.objects.filter(
-            student__id__in=student_ids
-        ).select_related("student", "test")
+            Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids)
+        ).select_related("student", "lid", "test")
 
         results = []
-        for student_id in student_ids:
-            student_record = mastering_records.filter(student_id=student_id)
+
+        for sg in student_groups:
+            # Prefer student if available, else use lid
+            target_id = sg.student.id if sg.student else sg.lid.id
+            is_student = bool(sg.student)
+
+            if is_student:
+                student_record = mastering_records.filter(student__id=target_id)
+                name = f"{sg.student.first_name} {sg.student.last_name}"
+            else:
+                student_record = mastering_records.filter(lid__id=target_id)
+                name = f"{sg.lid.first_name} {sg.lid.last_name}"
 
             exams = []
             homeworks = []
@@ -243,13 +254,11 @@ class StudentsAvgLearning(APIView):
             overall_homework = sum(x['ball'] for x in homeworks) / len(homeworks) if homeworks else 0
             overall = round((overall_exam + overall_homework) / 2, 2) if exams or homeworks else 0
 
-            if student_record:
-                student = student_record[0].student
-                results.append({
-                    "full_name": f"{student.first_name} {student.last_name}",
-                    "exams": exams,
-                    "homeworks": homeworks,
-                    "overall": overall
-                })
+            results.append({
+                "full_name": name,
+                "exams": exams,
+                "homeworks": homeworks,
+                "overall": overall
+            })
 
         return Response(results)
