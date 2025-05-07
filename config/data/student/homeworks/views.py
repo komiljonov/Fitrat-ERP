@@ -61,7 +61,7 @@ class HomeworkHistoryListCreateView(ListCreateAPIView):
         if status:
             queryset = queryset.filter(status=status)
         if student:
-            queryset = queryset.filter(student__id=student)
+            queryset = queryset.filter(student__id=student) 
         return queryset
 
     def get_paginated_response(self, data):
