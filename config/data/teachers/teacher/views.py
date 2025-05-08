@@ -256,8 +256,14 @@ class StudentsAvgLearning(APIView):
 
             results.append({
                 "full_name": name,
-                "exams": exams,
-                "homeworks": homeworks,
+                "exams": {
+                    "items": exams,
+                    "overall": round(overall_exam, 2)
+                },
+                "homeworks": {
+                    "items": homeworks,
+                    "overall": round(overall_homework, 2)
+                },
                 "overall": overall
             })
 
