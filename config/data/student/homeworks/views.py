@@ -33,7 +33,7 @@ class HomeworkListCreateView(ListCreateAPIView):
 
         if theme:
             queryset = queryset.filter(theme__id=theme)
-        return queryset
+        return queryset.order_by("theme__created_at")
 
 
 class HomeworkDetailView(RetrieveUpdateDestroyAPIView):
