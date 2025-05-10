@@ -18,6 +18,7 @@ from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.mastering.models import Mastering, MasteringTeachers
 from ...student.mastering.serializers import StuffMasteringSerializer, MasteringSerializer
+from ...student.student.models import Student
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...student.studentgroup.serializers import StudentsGroupSerializer
 
@@ -254,8 +255,11 @@ class StudentsAvgLearning(APIView):
             overall_homework = sum(x['ball'] for x in homeworks) / len(homeworks) if homeworks else 0
             overall = round((overall_exam + overall_homework) / 2, 2) if exams or homeworks else 0
 
+            first_ball = Student.objects.filter(id=sg.student.id).first()
+
             results.append({
                 "full_name": name,
+                "first_ball": first_ball.ball,
                 "exams": {
                     "items": exams,
                     "overall": round(overall_exam, 2)
