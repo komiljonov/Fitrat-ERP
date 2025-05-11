@@ -244,7 +244,8 @@ class StudentsAvgLearning(APIView):
                 item = {
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
-                    "type": m.test.type if m.test else "unknown"
+                    "type": m.test.type if m.test else "unknown",
+                    "created_at": m.created_at
                 }
                 if m.test and m.test.type == "Offline":
                     exams.append(item)
