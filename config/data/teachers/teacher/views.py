@@ -256,15 +256,15 @@ class StudentsAvgLearning(APIView):
             overall_homework = sum(x['ball'] for x in homeworks) / len(homeworks) if homeworks else 0
             overall = round((overall_exam + overall_homework) / 2, 2) if exams or homeworks else 0
 
-            first_ball = Student.objects.filter(id=sg.student.id).first()
+            first_ball = Student.objects.filter(id=sg.student.id).first() if sg.student else None
 
             results.append({
                 "full_name": name,
-                "first_ball": first_ball.ball,
+                "first_ball":first_ball.ball if first_ball else 0,
                 "exams": {
                     "items": exams,
                     "overall": round(overall_exam, 2)
-                },
+                },  
                 "homeworks": {
                     "items": homeworks,
                     "overall": round(overall_homework, 2)
