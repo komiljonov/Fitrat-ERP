@@ -205,7 +205,6 @@ class SecondaryGroupStatic(APIView):
         })
 
 class StudentsAvgLearning(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         group_id = request.query_params.get("group")
