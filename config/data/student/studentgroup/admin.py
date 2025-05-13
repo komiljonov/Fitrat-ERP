@@ -12,6 +12,6 @@ class StudentGroupAdmin(admin.ModelAdmin):
 
 @admin.register(SecondaryStudentGroup)
 class StudentGroupAdmin(admin.ModelAdmin):
-    list_display = ('group','student','lid')
-    search_fields = ('group__name','student__name','lid__name')
+    list_display = ('group__name','student__first_name','lid__first_name')
+    search_fields = ('group__name','student__first_name','lid__first_name')
     list_filter = ('group__name',)

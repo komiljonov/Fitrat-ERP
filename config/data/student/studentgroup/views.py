@@ -168,26 +168,31 @@ class SecondaryGroupStudentList(ListAPIView):
         return Response(data)
 
 
-class SecondaryGroupUpdate(UpdateAPIView):
-    queryset = SecondaryStudentGroup.objects.all()
-    serializer_class = SecondaryStudentsGroupSerializer
+class SecondaryGroupUpdate(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = SecondaryStudentsGroupSerializer
 
-    def get_object(self):
-        queryset = self.get_queryset()
 
-        lid_id = self.request.query_params.get('lid_id')
-        student_id = self.request.query_params.get('student_id')
+    def put(self, request, *args, **kwargs):
+        student_id = self.kwargs.get('student_id')
+        group_id = self.request.GET.get('group_id')
 
-        if lid_id:
-            obj = get_object_or_404(queryset, lid__id=lid_id)
-        elif student_id:
-            obj = get_object_or_404(queryset, student__id=student_id)
-        else:
-            raise ValidationError("You must provide either 'lid_id' or 'student_id'.")
+        if not group_id:
+            return Response({"error": "Group ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        self.check_object_permissions(self.request, obj)
-        return obj
+        ic(group_id, student_id)
+
+        instance = get_object_or_404(
+            SecondaryStudentGroup,
+            group__id=group_id,
+            student__id=student_id
+        )
+
+        serializer = self.serializer_class(instance, data=request.data, partial=True, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class StudentGroupDelete(APIView):
@@ -340,9 +345,23 @@ class SecondaryStudentList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+
+        qs = SecondaryStudentGroup.objects.all()
+
+        search = self.request.GET.get("search")
+        status = self.request.GET.get("status")
+        if search:
+            qs = qs.filter(
+                Q(student__first_name__icontains=search),
+                Q(lid__first_name__icontains=search),
+            )
+        if status:
+            qs = qs.filter(
+                student__student_stage_type=status,
+            )
         if self.request.user.role == 'ASSISTANT':
-            return SecondaryStudentGroup.objects.filter(group__teacher__id=self.request.user.id)
-        return SecondaryStudentGroup.objects.filter(group__filial__in=self.request.user.filial.all())
+            qs = qs.filter(group__teacher__id=self.request.user.id)
+        return qs
 
 
 class SecondaryGroupList(ListAPIView):

@@ -202,6 +202,16 @@ class QuizListCreateView(ListCreateAPIView):
     def get_queryset(self):
         queryset = Quiz.objects.all()
         theme = self.request.query_params.get("theme")
+        is_homework = self.request.GET.get("is_homework")
+        homework = self.request.GET.get("homework")
+        type = self.request.GET.get("type")
+
+        if homework:
+            queryset = queryset.filter(homework__id=homework)
+        if is_homework:
+            queryset = queryset.filter(is_homework=is_homework.capitalize())
+        if type:
+            queryset = queryset.filter(type=type)
         if theme:
             queryset = queryset.filter(theme__id=theme)
         return queryset
@@ -210,9 +220,6 @@ class QuizListCreateView(ListCreateAPIView):
         quiz = serializer.save()
         self.update_students_count(quiz)
 
-    def perform_update(self, serializer):
-        quiz = serializer.save()
-        self.update_students_count(quiz)
 
     def update_students_count(self, quiz):
         if quiz.students_excel and quiz.students_excel.file:
@@ -229,6 +236,30 @@ class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
 
+    def perform_update(self, serializer):
+        quiz = serializer.save()
+
+        file_id = self.request.data.get("students_excel")  # ✅ this is UUID from frontend
+        if file_id:
+            from ...upload.models import File  # or your correct File model path
+
+            try:
+                file_instance = File.objects.get(id=file_id)
+                self.update_students_count_from_file(quiz, file_instance.file)
+                print("✅ Student count updated from Excel")
+            except File.DoesNotExist:
+                print(f"❌ File not found for ID: {file_id}")
+            except Exception as e:
+                print(f"❌ Error updating student count: {e}")
+
+    def update_students_count_from_file(self, quiz, file_obj):
+        try:
+            df = pd.read_excel(file_obj)
+            quiz.students_count = len(df)
+            quiz.save(update_fields=['students_count'])
+            print(f"✅ ROWS COUNTED: {len(df)}")
+        except Exception as e:
+            print(f"❌ Failed to parse Excel for quiz {quiz.id}: {e}")
 
 class AnswerListCreateView(ListCreateAPIView):
     queryset = Answer.objects.all()

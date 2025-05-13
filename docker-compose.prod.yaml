@@ -4,19 +4,19 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: "redis_fitrat1"
+    container_name: "redis_fitrat"
     restart: always
     ports:
-      - "6381:6379"
+      - "6380:6379"
     volumes:
-      - redis-data1:/data
+      - redis-data:/data
     command: redis-server --save 1 1 --loglevel warning --appendonly yes
     environment:
       - TZ=Etc/GMT+5
 
   postgres:
     image: postgres:16
-    container_name: "postgres_fitrat1"
+    container_name: "postgres_fitrat"
     init: true
     environment:
       - POSTGRES_DB=fitrat
@@ -24,15 +24,15 @@ services:
       - POSTGRES_PASSWORD=your_secure_password
       - TZ=Etc/GMT+5
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
-      - "postgres_data_fitrat1:/var/lib/postgresql/data"
+      - "postgres_data_fitrat:/var/lib/postgresql/data"
 
   django:
-    container_name: "django_fitrat1"
+    container_name: "django_fitrat"
     build:
       context: ./config
-    command: gunicorn root.wsgi:application --bind 0.0.0.0:8000 --workers 10 --threads 10
+    command: python manage.py runserver 0.0.0.0:8000
 
     volumes: &shared_volumes
       - ./config:/usr/src/app
@@ -40,7 +40,7 @@ services:
       - ./locales:/usr/src/app/locales
       - ./tg_bot:/usr/src/app/tg_bot
     ports:
-      - "8000:8000"
+      - "8001:8000"
     env_file:
       - .env
     environment:
@@ -50,7 +50,7 @@ services:
       - postgres
 
   bot:
-    container_name: "telegram_bot_fitrat1"
+    container_name: "telegram_bot_fitrat"
     build:
       context: ./config
     command: python      .py bot
@@ -64,7 +64,7 @@ services:
   celery:
     build:
       context: ./config
-    container_name: "celery_worker_fitrat1"
+    container_name: "celery_worker_fitrat"
     restart: always
     command: celery --app=root.celery worker --loglevel=info
     env_file:
@@ -81,7 +81,7 @@ services:
   celery_beat:
     build:
       context: ./config
-    container_name: "celery_beat_fitrat1"
+    container_name: "celery_beat_fitrat"
     restart: always
     command: celery --app=root.celery beat --loglevel=info
     env_file:
@@ -115,5 +115,5 @@ services:
 #      - SYS_PTRACE
 
 volumes:
-  postgres_data_fitrat1:
-  redis-data1:
+  postgres_data_fitrat:
+  redis-data:

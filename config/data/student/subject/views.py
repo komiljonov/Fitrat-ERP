@@ -3,6 +3,9 @@ from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from icecream import ic
+from numpy.ma.core import floor_divide
+from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
@@ -14,6 +17,7 @@ from rest_framework.views import APIView
 from .models import Subject, Level, Theme
 # Create your views here.
 from .serializers import SubjectSerializer, LevelSerializer, ThemeSerializer
+from ..attendance.models import Attendance
 from ..course.models import Course
 from ..groups.models import Group
 from ..homeworks.models import Homework
@@ -153,49 +157,49 @@ class DynamicPageSizePagination(PageNumberPagination):
     max_page_size = 100
 
 class ThemePgList(ListCreateAPIView):
-    queryset = Theme.objects.all()
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = DynamicPageSizePagination
 
-
     def get_queryset(self):
-        queryset = Theme.objects.all()
+        request = self.request
+        search = request.query_params.get('search')
+        theme_filter = request.query_params.get('theme')  # 'Lesson' or 'Repeat'
+        group_id = request.query_params.get('group')
 
-        theme = self.request.query_params.get('theme')
-        level = self.request.query_params.get('level')
-        search = self.request.query_params.get('search')
-        id = self.request.query_params.get('id')
-        group_id = self.request.query_params.get('group')
-        course = self.request.query_params.get('course')
+        ic(group_id,theme_filter)
+
+        group = Group.objects.filter(id=group_id).first()
+        if not group or not group.course:
+            return Theme.objects.none()
+
+        qs = Theme.objects.filter(course=group.course).order_by('created_at')
 
         if search:
-            queryset = queryset.filter(title__icontains=search)
+            qs = qs.filter(title__icontains=search)
 
-        if theme:
-            queryset = queryset.filter(theme=theme)
+        if theme_filter and group_id:
+            # Get latest attendance for this group and theme type
+            last_att = Attendance.objects.filter(
+                group_id=group_id,
+                theme__theme=theme_filter
+            ).order_by('-created_at').first()
 
-        if course:
-            queryset = queryset.filter(course__id=course)
+            if last_att and last_att.theme.exists():
+                last_theme = last_att.theme.order_by('-created_at').first()
 
-        if group_id:
-            try:
-                group = Group.objects.get(id=group_id)
-                queryset = queryset.filter(course=group.course)
-            except Group.DoesNotExist:
-                raise NotFound("Group not found.")
+                if last_theme:
+                    if theme_filter == "Repeat":
+                        # Get themes from first to the last attended
+                        qs = qs.filter(created_at__lte=last_theme.created_at)
+                        return qs
 
-        if id:
-            try:
-                course = Group.objects.get(id=id)  # Agar id yo'q bo'lsa, xatolik qaytaradi
-                queryset = queryset.filter(course=course.course)
-            except Group.DoesNotExist:
-                pass  # Agar Group topilmasa, filtr qo'llanilmaydi
+                    elif theme_filter == "Lesson":
+                        # Get the next theme only
+                        next_theme = qs.filter(created_at__gt=last_theme.created_at).first()
+                        return Theme.objects.filter(id=next_theme.id) if next_theme else Theme.objects.none()
 
-        if level:
-            queryset = queryset.filter(level__id=level)
-
-        return queryset
+        return qs
 
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):

@@ -320,21 +320,16 @@ class SecondaryGroupsView(ListCreateAPIView):
 
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
     search_fields = ('name', 'scheduled_day_type__name')
-    ordering_fields = ('name', 'scheduled_day_type', 'start_date', 'end_date',)
-    filterset_fields = ('name', 'scheduled_day_type',)
+    ordering_fields = ('name', 'scheduled_day_type', 'start_date', 'end_date')
+    filterset_fields = ('name', 'scheduled_day_type')
 
     def get_queryset(self):
         queryset = SecondaryGroup.objects.all()
-
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        start_date = parse_date(self.request.query_params.get('start_date')) if self.request.query_params.get('start_date') else None
+        end_date = parse_date(self.request.query_params.get('end_date')) if self.request.query_params.get('end_date') else None
         teacher = self.request.query_params.get('teacher')
         course = self.request.query_params.get('course')
         filial = self.request.query_params.get('filial')
-
-        # Convert dates to proper format
-        start_date = parse_date(start_date) if start_date else None
-        end_date = parse_date(end_date) if end_date else None
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
@@ -613,6 +608,44 @@ class GroupIsActiveNowAPIView(APIView):
                 end = group.ended_at
 
                 ic(start,end,current_time)
+
+                if start <= current_time <= end:
+                    return Response({"is_scheduled_now": True})
+
+        return Response({"is_scheduled_now": False})
+
+
+
+class SecondaryGroupIsActiveNowAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        WEEKDAYS_UZ = {
+            "Monday": "dushanba",
+            "Tuesday": "seshanba",
+            "Wednesday": "chorshanba",
+            "Thursday": "payshanba",
+            "Friday": "juma",
+            "Saturday": "shanba",
+            "Sunday": "yakshanba"
+        }
+
+        group_id = self.kwargs.get('pk', None)
+        ic(group_id)
+
+        group = get_object_or_404(SecondaryGroup, id=group_id)
+
+        now_time = datetime.datetime.now()
+        current_weekday_en = now_time.strftime('%A')
+        current_weekday_uz = WEEKDAYS_UZ[current_weekday_en]
+        current_time = now_time.time()
+
+        for day in group.scheduled_day_type.all():
+            if day.name.lower() == current_weekday_uz:
+                start = group.started_at
+                end = group.ended_at
+
+                ic(start, end, current_time)
 
                 if start <= current_time <= end:
                     return Response({"is_scheduled_now": True})

@@ -89,6 +89,7 @@ def generate_fake_data():
         "Olimpiadalar": "#00C9A7",
         "Reklama bannerlar va doskalari": "#E63946",
         "Loyihalardan": "#FDCB58",
+        "Web site": "#9B5DE5"
     }
 
     for name, color in marketing_channels.items():
