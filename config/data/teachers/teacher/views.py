@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -69,6 +69,25 @@ class TeacherStatistics(ListAPIView):
         if end_date:
             filters["created_at__lte"] = end_date
 
+        # Get all student IDs under this teacher
+        student_ids = StudentGroup.objects.filter(group__teacher=teacher).values_list("student_id", flat=True)
+
+        # Annotate average mastering score per student
+        student_averages = (
+            Mastering.objects
+            .filter(student__in=student_ids)
+            .values('student')
+            .annotate(avg_ball=Avg('ball'))
+        )
+
+        if student_averages:
+            total_avg = sum(s["avg_ball"] for s in student_averages) / len(student_averages)
+            total_avg_scaled = min(max(round(total_avg / 20), 1), 5)
+            low_assimilation_count = sum(1 for s in student_averages if s["avg_ball"] <= 40)
+        else:
+            total_avg_scaled = None
+            low_assimilation_count = 0
+
         statistics = {
             "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
             "new_students": StudentGroup.objects.filter(group__teacher=teacher,
@@ -79,8 +98,8 @@ class TeacherStatistics(ListAPIView):
                                                            student__student_stage_type="ACTIVE_STUDENT", **filters).count(),
             "complaints": Complaint.objects.filter(user=teacher, **filters).count(),
             "results": Results.objects.filter(teacher=teacher, status="Accepted", **filters).count(),
-            "average_assimilation": None,
-            "low_assimilation": None,
+            "average_assimilation": total_avg_scaled,
+            "low_assimilation": low_assimilation_count,
         }
 
         return Response(statistics)
