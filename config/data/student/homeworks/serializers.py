@@ -32,7 +32,14 @@ class HomeworkSerializer(serializers.ModelSerializer):
         ]
 
     def get_ball(self, obj):
+        request = self.context.get("request")
+        student_id = request.query_params.get("student") if request else None
+
+        if not student_id:
+            return None
+
         histories = Homework_history.objects.filter(
+            student__id=student_id,
             homework=obj,
             status="Passed",
             mark__gt=0
