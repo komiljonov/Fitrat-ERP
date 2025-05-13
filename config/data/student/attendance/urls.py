@@ -16,5 +16,6 @@ urlpatterns = [
     path("secondary/",SecondaryAttendanceList.as_view(), name='secondary-attendance-list'),
     path("secondary/<uuid:pk>",SecondaryAttendanceDetail.as_view(), name='secondary-attendance-detail'),
 
+    path("secondary/bulk",SecondaryAttendanceBulkUpdateView.as_view(), name='secondary-bulk-update-attendance-list'),
     # path('filter/',FilterAttendanceView.as_view(), name='filter-attendance'),
 ]

@@ -65,18 +65,18 @@ class DashboardView(APIView):
         first_lesson = FirstLLesson.objects.filter(**filters)
 
         # Students with One Attendance
-        students_with_one_attendance = Attendance.objects.values("student").annotate(
-            count=Count("id")).filter(count=1, **filters).values_list("student", flat=True)
+        # students_with_one_attendance = Attendance.objects.values("student").annotate(
+        #     count=Count("id")).filter(count=1, **filters).values_list("student", flat=True)
 
-        first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters)
+        first_lesson_come = Student.objects.filter(student_stage_type="NEW_STUDENT", **filters)
         first_lesson_come_archived = first_lesson_come.filter(is_archived=True)
 
-        # First Course Payment Students
-        payment_students = Finance.objects.filter(
-            student__isnull=False, kind__name="COURSE_PAYMENT", **filters
-        ).values_list("student", flat=True)
+        # # First Course Payment Students
+        # payment_students = Finance.objects.filter(
+        #     student__isnull=False, kind__name="COURSE_PAYMENT", **filters
+        # ).values_list("student", flat=True)
 
-        first_course_payment = Student.objects.filter(id__in=payment_students, **filters)
+        first_course_payment = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", **filters)
         first_course_payment_archived = first_course_payment.filter(is_archived=True)
 
         # Active and Ended Courses
@@ -97,7 +97,7 @@ class DashboardView(APIView):
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 
             first_lesson_come_archived = first_lesson_come.filter(
-                is_archived=True) if first_lesson_come.exists() else None
+                is_archived=True,is_student=False) if first_lesson_come.exists() else None
             first_course_payment = first_course_payment.filter(is_archived=is_student_value)
             first_course_payment_archived = first_course_payment.filter(
                 is_archived=True) if first_course_payment.exists() else None

@@ -3,6 +3,7 @@ import hashlib
 
 from django.db.models import F, Avg
 from django.utils.module_loading import import_string
+from icecream import ic
 from rest_framework import serializers
 
 from .models import Student, FistLesson_data
@@ -192,19 +193,21 @@ class StudentSerializer(serializers.ModelSerializer):
             name=F('group__name')  # Rename group__name to name
         ).values('id', 'name')
 
-        # Convert the queryset to a list of dictionaries with keys as 'id' and 'name'
+        ic(group)
+
         group_list = [{'id': item['id'], 'name': item['name']} for item in group]
         return group_list[0] if group_list else None
 
     def get_secondary_teacher(self, obj):
-        # Annotate the queryset to rename teacher's id, first_name, and last_name
+
         teacher = SecondaryStudentGroup.objects.filter(student=obj).annotate(
-            teacher_id=F('group__teacher__id'),  # Rename to 'teacher_id'
-            teacher_first_name=F('group__teacher__first_name'),  # Rename to 'teacher_first_name'
-            teacher_last_name=F('group__teacher__last_name')  # Rename to 'teacher_last_name'
+            teacher_id=F('group__teacher__id'),
+            teacher_first_name=F('group__teacher__first_name'),
+            teacher_last_name=F('group__teacher__last_name')
         ).values('teacher_id', 'teacher_first_name', 'teacher_last_name')
 
-        # Convert the queryset to a list of dictionaries with custom keys
+        ic(teacher)
+
         teacher_list = [
             {'id': item['teacher_id'], 'first_name': item['teacher_first_name'], 'last_name': item['teacher_last_name']}
             for item in teacher]

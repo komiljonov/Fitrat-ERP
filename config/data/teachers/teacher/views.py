@@ -1,10 +1,11 @@
-from django.db.models import Q
+from django.db.models import Q, Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import TeacherSerializer
 from ...account.models import CustomUser
@@ -16,7 +17,8 @@ from ...student.groups.serializers import GroupSerializer, SecondaryGroupSeriali
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.mastering.models import Mastering, MasteringTeachers
-from ...student.mastering.serializers import StuffMasteringSerializer
+from ...student.mastering.serializers import StuffMasteringSerializer, MasteringSerializer
+from ...student.student.models import Student
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...student.studentgroup.serializers import StudentsGroupSerializer
 
@@ -67,6 +69,25 @@ class TeacherStatistics(ListAPIView):
         if end_date:
             filters["created_at__lte"] = end_date
 
+        # Get all student IDs under this teacher
+        student_ids = StudentGroup.objects.filter(group__teacher=teacher).values_list("student_id", flat=True)
+
+        # Annotate average mastering score per student
+        student_averages = (
+            Mastering.objects
+            .filter(student__in=student_ids)
+            .values('student')
+            .annotate(avg_ball=Avg('ball'))
+        )
+
+        if student_averages:
+            total_avg = sum(s["avg_ball"] for s in student_averages) / len(student_averages)
+            total_avg_scaled = min(max(round(total_avg / 20), 1), 5)
+            low_assimilation_count = sum(1 for s in student_averages if s["avg_ball"] <= 40)
+        else:
+            total_avg_scaled = None
+            low_assimilation_count = 0
+
         statistics = {
             "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
             "new_students": StudentGroup.objects.filter(group__teacher=teacher,
@@ -77,8 +98,8 @@ class TeacherStatistics(ListAPIView):
                                                            student__student_stage_type="ACTIVE_STUDENT", **filters).count(),
             "complaints": Complaint.objects.filter(user=teacher, **filters).count(),
             "results": Results.objects.filter(teacher=teacher, status="Accepted", **filters).count(),
-            "average_assimilation": None,
-            "low_assimilation": None,
+            "average_assimilation": total_avg_scaled,
+            "low_assimilation": low_assimilation_count,
         }
 
         return Response(statistics)
@@ -184,3 +205,88 @@ class TeacherMasteringStatisticsView(ListAPIView):
         return Mastering.objects.none()
 
 
+class SecondaryGroupStatic(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        base_qs = SecondaryStudentGroup.objects.filter(group__teacher=request.user)
+
+        all_count = base_qs.count()
+        first_count = base_qs.filter(lid__isnull=False).count()
+        new_student_count = base_qs.filter(student__student_stage_type="NEW_STUDENT").count()
+        active_count = base_qs.filter(student__student_stage_type="ACTIVE_STUDENT").count()
+
+        return Response({
+            "all": all_count,
+            "first": first_count,
+            "new_student": new_student_count,
+            "active": active_count
+        })
+
+class StudentsAvgLearning(APIView):
+
+    def get(self, request, *args, **kwargs):
+        group_id = request.query_params.get("group")
+        if not group_id:
+            return Response({"error": "group parameter is required"}, status=400)
+
+        student_groups = StudentGroup.objects.filter(
+            group__id=group_id,
+        ).select_related("student", "lid")
+
+        student_ids = [sg.student.id for sg in student_groups if sg.student]
+        lid_ids = [sg.lid.id for sg in student_groups if sg.lid]
+
+        mastering_records = Mastering.objects.filter(
+            Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids)
+        ).select_related("student", "lid", "test")
+
+        results = []
+
+        for sg in student_groups:
+            # Prefer student if available, else use lid
+            target_id = sg.student.id if sg.student else sg.lid.id
+            is_student = bool(sg.student)
+
+            if is_student:
+                student_record = mastering_records.filter(student__id=target_id)
+                name = f"{sg.student.first_name} {sg.student.last_name}"
+            else:
+                student_record = mastering_records.filter(lid__id=target_id)
+                name = f"{sg.lid.first_name} {sg.lid.last_name}"
+
+            exams = []
+            homeworks = []
+            for m in student_record:
+                item = {
+                    "title": m.test.title if m.test else "N/A",
+                    "ball": m.ball,
+                    "type": m.test.type if m.test else "unknown",
+                    "created_at": m.created_at
+                }
+                if m.test and m.test.type == "Offline":
+                    exams.append(item)
+                else:
+                    homeworks.append(item)
+
+            overall_exam = sum(x['ball'] for x in exams) / len(exams) if exams else 0
+            overall_homework = sum(x['ball'] for x in homeworks) / len(homeworks) if homeworks else 0
+            overall = round((overall_exam + overall_homework) / 2, 2) if exams or homeworks else 0
+
+            first_ball = Student.objects.filter(id=sg.student.id).first() if sg.student else None
+
+            results.append({
+                "full_name": name,
+                "first_ball":first_ball.ball if first_ball else 0,
+                "exams": {
+                    "items": exams,
+                    "overall": round(overall_exam, 2)
+                },  
+                "homeworks": {
+                    "items": homeworks,
+                    "overall": round(overall_homework, 2)
+                },
+                "overall": overall
+            })
+
+        return Response(results)

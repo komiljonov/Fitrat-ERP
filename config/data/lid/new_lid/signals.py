@@ -11,7 +11,7 @@ from ...finances.finance.models import SaleStudent
 from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.student.models import Student
-from ...student.studentgroup.models import StudentGroup
+from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 
 
 @receiver(pre_save, sender=Lid)
@@ -109,6 +109,9 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.save()
 
             StudentGroup.objects.filter(lid=instance).update(student=student,lid=None)
+
+            if SecondaryStudentGroup.objects.filter(lid=instance):
+                SecondaryStudentGroup.objects.filter(lid=instance).update(student=student,lid=None)
 
             Attendance.objects.filter(lid=instance).update(student=student, lid=None)
 

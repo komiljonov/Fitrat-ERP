@@ -41,6 +41,7 @@ urlpatterns = [
 
     path("admin/", admin.site.urls),
     path("auth/", include("data.account.urls")),
+    # path('dash/', include('django_plotly_dash.urls')),
 
     path("payme/", include("data.payme.urls")),
 

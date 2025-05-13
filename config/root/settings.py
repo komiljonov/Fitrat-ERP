@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", default=True, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,[::1]").split(",")
 
@@ -90,6 +90,8 @@ INSTALLED_APPS = [
 
     # Installed
     "corsheaders",
+    "rangefilter",
+    # "django_plotly_dash",
     "drf_yasg",
     "rest_framework",
     "drf_spectacular",
@@ -233,13 +235,16 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 10 MB
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:8000",
+    "http://localhost:3001",
     "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://localhost:8000",
     "http://127.0.0.1:8000",
     "https://fitrat-erp.vercel.app",
     "https://api.fitrat.sector-soft.ru",
     "https://ilm.fitrat.sector-soft.ru",
-    "https://api.ilm.fitrat.sector-soft.ru"
+    "https://api.ilm.fitrat.sector-soft.ru",
+
 ]
 
 CORS_ALLOW_METHODS = (
