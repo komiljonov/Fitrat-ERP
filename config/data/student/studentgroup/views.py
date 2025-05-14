@@ -350,6 +350,9 @@ class SecondaryStudentList(ListCreateAPIView):
 
         search = self.request.GET.get("search")
         status = self.request.GET.get("status")
+        group = self.request.GET.get("group")
+        if group:
+            qs = qs.filter(group__id=group)
         if search:
             qs = qs.filter(
                 Q(student__first_name__icontains=search),
