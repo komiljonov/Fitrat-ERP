@@ -2,6 +2,7 @@
 import re
 import urllib
 
+from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -171,17 +172,17 @@ class StuffRolesView(ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserListSerializer
 
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
-    search_fields = ('role','first_name','last_name')
-    ordering_fields = ('role','first_name','last_name')
-    filterset_fields = ('role','first_name','last_name')
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    search_fields = ('role', 'first_name', 'last_name')
+    ordering_fields = ('role', 'first_name', 'last_name')
+    filterset_fields = ('role', 'first_name', 'last_name')
 
     def get_queryset(self):
+        subject = self.request.query_params.get('subject')
+        filial = self.request.query_params.get('filial')
+        role = self.request.query_params.get('role')
+        is_call_operator = self.request.query_params.get('is_call_operator')
 
-        subject = self.request.query_params.get('subject', None)
-
-        filial = self.request.query_params.get('filial', None)
-        role = self.request.query_params.get('role', None)
         queryset = CustomUser.objects.all().order_by('-created_at')
 
         if subject:
@@ -189,8 +190,18 @@ class StuffRolesView(ListAPIView):
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
-        if role:
+
+        if is_call_operator and is_call_operator.lower() == 'true':
+            # Match users who are call center OR role is what was requested
+            if role:
+                queryset = queryset.filter(
+                    Q(is_call_center=True) | Q(role=role)
+                )
+            else:
+                queryset = queryset.filter(is_call_center=True)
+        elif role:
             queryset = queryset.filter(role=role)
+
         return queryset
 
     def get_paginated_response(self, data):
