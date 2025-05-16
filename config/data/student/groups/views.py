@@ -44,6 +44,7 @@ class StudentGroupsView(ListCreateAPIView):
         day = self.request.query_params.get('day', None)
         price_type = self.request.query_params.get('price_type', None)
         level = self.request.query_params.get('course__level__id', None)
+        not_added = self.request.query_params.get('not_added', None)
 
         if day == "1":
             days = []
@@ -69,16 +70,18 @@ class StudentGroupsView(ListCreateAPIView):
 
         if price_type:
             queryset = queryset.filter(price_type=price_type)
+        if not_added.lower() == "true":
+            queryset = queryset.exclude(status="INACTIVE")
         return queryset
 
 
-class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+class GroupRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
 
 
-class StudentListAPIView(ListAPIView):
+class GroupListAPIView(ListAPIView):
     queryset = Group.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
@@ -94,6 +97,7 @@ class StudentListAPIView(ListAPIView):
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
         student = self.request.query_params.get('student', None)
+        not_added=self.request.GET.get('not_added', None)
 
         if status:
             filter['status'] = status
@@ -109,6 +113,8 @@ class StudentListAPIView(ListAPIView):
             filter['created_at__gte'] = start_date
         if end_date:
             filter['created_at__lte'] = end_date
+        if not_added.lower() == "true":
+            queryset = queryset.exclude(status="INACTIVE")
         return queryset.filter(**filter)
 
     def get_paginated_response(self, data):
