@@ -1,5 +1,6 @@
 import difflib
 
+from icecream import ic
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -51,7 +52,8 @@ class LidWebhook(APIView):
             student=None
         )
 
-        if data.get("parents"):
+        if data.get("parents_name"):
+            ic(data['parents_number'])
             Relatives.objects.create(
                 name=data.get("parents_name"),
                 phone=data.get('parents_number'),
