@@ -26,7 +26,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - "postgres_data_fitrat1:/var/lib/postgresql/data"
+      - ./postgresql.conf:/etc/postgres-custom/postgresql.conf
+      - ./pg_hba.conf:/etc/postgres-custom/pg_hba.conf
+      - postgres_data_fitrat1:/var/lib/postgresql/data
+    command: postgres -c config_file=/etc/postgres-custom/postgresql.conf
 
   django:
     container_name: "django_fitrat1"
