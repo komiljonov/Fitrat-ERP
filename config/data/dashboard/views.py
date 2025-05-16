@@ -36,13 +36,13 @@ from ..upload.serializers import FileUploadSerializer
 class DashboardView(APIView):
     def get(self, request, *args, **kwargs):
         # Get Query Parameters
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
+        start_date = request.query_params.get('start_date',None)
+        end_date = request.query_params.get('end_date',None)
         channel_id = request.query_params.get('marketing_channel')
         service_manager = request.query_params.get('service_manager')
         call_operator = request.query_params.get('call_operator')
         sales_manager = request.query_params.get('sales_manager')
-        filial = request.query_params.get('filial')
+        filial = request.query_params.get('filial' , None)
         subjects = request.query_params.get('subject')
         course = request.query_params.get('course')
         teacher = request.query_params.get('teacher')
