@@ -251,6 +251,7 @@ class StudentsAvgLearning(APIView):
             if is_student:
                 student_record = mastering_records.filter(student__id=target_id)
                 name = f"{sg.student.first_name} {sg.student.last_name}"
+
             else:
                 student_record = mastering_records.filter(lid__id=target_id)
                 name = f"{sg.lid.first_name} {sg.lid.last_name}"
@@ -276,6 +277,7 @@ class StudentsAvgLearning(APIView):
             first_ball = Student.objects.filter(id=sg.student.id).first() if sg.student else None
 
             results.append({
+                "id":target_id,
                 "full_name": name,
                 "first_ball":first_ball.ball if first_ball else 0,
                 "exams": {
