@@ -191,16 +191,13 @@ class StuffRolesView(ListAPIView):
         if filial:
             queryset = queryset.filter(filial__id=filial)
 
-        if is_call_operator and is_call_operator.lower() == 'true':
-            # Match users who are call center OR role is what was requested
-            if role:
-                queryset = queryset.filter(
-                    Q(is_call_center=True) | Q(role=role)
-                )
-            else:
-                queryset = queryset.filter(is_call_center=True)
+        if is_call_operator and is_call_operator.lower() == 'true' and role:
+            queryset = queryset.filter(Q(is_call_center=True) | Q(role=role))
+            ic(queryset)
+
         elif role:
             queryset = queryset.filter(role=role)
+            ic(queryset)
 
         return queryset
 
