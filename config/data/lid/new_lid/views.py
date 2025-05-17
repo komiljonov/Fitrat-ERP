@@ -37,6 +37,16 @@ class LidListCreateView(ListCreateAPIView):
         "is_dubl",
         "is_archived",
     ]
+    def get_serializer(self, *args, **kwargs):
+
+        # super().get_serializer()
+
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        return serializer_class(*args, **kwargs,
+        include_only=["id","first_name","last_name","middle_name","photo","phone_number",
+                      "filial","lid_stages","lid_stage_type","ordered_stages","call_operator","sales_manager"
+                      ,"ordered_date","created_at"])
 
     def get_queryset(self):
         user = self.request.user
