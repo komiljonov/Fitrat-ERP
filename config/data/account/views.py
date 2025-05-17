@@ -178,14 +178,15 @@ class StuffRolesView(ListAPIView):
     filterset_fields = ('role', 'first_name', 'last_name')
 
     def get_serializer(self, *args, **kwargs):
-
-        # super().get_serializer()
-
         serializer_class = self.get_serializer_class()
         kwargs.setdefault('context', self.get_serializer_context())
-        return serializer_class(*args, **kwargs,
-                                include_only=["id", "first_name", "last_name", "full_name", "phone", "balance",
-                                              "subject","filial","role","is_call_operator"])
+        return serializer_class(
+            *args, **kwargs,
+            include_only=[
+                "id", "first_name", "last_name", "full_name", "phone",
+                "balance", "subject", "filial", "role", "is_call_operator"
+            ]
+        )
 
     def get_queryset(self):
         subject = self.request.query_params.get('subject')
