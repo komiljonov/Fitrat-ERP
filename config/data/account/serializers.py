@@ -171,7 +171,14 @@ class UserListSerializer(ModelSerializer):
         fields = ['id', 'phone', "full_name", "first_name", "last_name", 'role',"balance",
                   "salary", "pages", "files","is_archived","extra_number","is_call_center",
                   "photo", "filial", "bonus", "compensation","created_at" ]
-
+    def __init__(self, *args, include_only=None, **kwargs):
+        # pop our custom arg before calling super
+        super().__init__(*args, **kwargs)
+        if include_only is not None:
+            allowed = set(include_only)
+            for field_name in list(self.fields):
+                if field_name not in allowed:
+                    self.fields.pop(field_name)
     def get_bonus(self, obj):
         bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
         return list(bonus)

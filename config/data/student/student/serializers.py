@@ -226,18 +226,23 @@ class StudentSerializer(serializers.ModelSerializer):
         return group_list[0] if group_list else None
 
     def get_secondary_teacher(self, obj):
+        # Only fetch the first relevant teacher using select_related for performance
+        group = (
+            SecondaryStudentGroup.objects
+            .filter(student=obj)
+            .select_related('group__teacher')  # avoids joins at Python level
+            .first()
+        )
 
-        teacher = SecondaryStudentGroup.objects.filter(student=obj).annotate(
-            teacher_id=F('group__teacher__id'),
-            teacher_first_name=F('group__teacher__first_name'),
-            teacher_last_name=F('group__teacher__last_name')
-        ).values('teacher_id', 'teacher_first_name', 'teacher_last_name')
+        if group and group.group and group.group.teacher:
+            teacher = group.group.teacher
+            return {
+                'id': teacher.id,
+                'first_name': teacher.first_name,
+                'last_name': teacher.last_name
+            }
 
-        teacher_list = [
-            {'id': item['teacher_id'], 'first_name': item['teacher_first_name'], 'last_name': item['teacher_last_name']}
-            for item in teacher]
-
-        return teacher_list[0] if teacher_list else None
+        return None
 
     def get_course(self, obj):
         courses = (StudentGroup.objects.filter(student=obj)
