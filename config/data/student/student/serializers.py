@@ -136,7 +136,7 @@ class StudentSerializer(serializers.ModelSerializer):
             if sale.expire_date else "Unlimited"} for sale in sales]
 
     def get_teacher(self, obj):
-        group = StudentGroup.objects.select_related('group__teacher').filter(student=obj).first()
+        group = StudentGroup.objects.filter(student=obj).select_related('group__teacher').first()
         if group and group.group and group.group.teacher:
             teacher = group.group.teacher
             return {
@@ -233,8 +233,6 @@ class StudentSerializer(serializers.ModelSerializer):
             teacher_last_name=F('group__teacher__last_name')
         ).values('teacher_id', 'teacher_first_name', 'teacher_last_name')
 
-        ic(teacher)
-
         teacher_list = [
             {'id': item['teacher_id'], 'first_name': item['teacher_first_name'], 'last_name': item['teacher_last_name']}
             for item in teacher]
@@ -304,7 +302,7 @@ class StudentSerializer(serializers.ModelSerializer):
         if 'service_manager' in representation:
             representation['service_manager'] = UserSerializer(
                 instance.service_manager,
-                include_only=["id","full_name","first_name","last_name"]).data if instance.service_manager else None
+                include_only=["id", "full_name", "first_name", "last_name"]).data if instance.service_manager else None
 
         if 'file' in representation:
             representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
