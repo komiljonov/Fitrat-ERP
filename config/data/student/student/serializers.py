@@ -271,10 +271,12 @@ class StudentSerializer(serializers.ModelSerializer):
             instance.marketing_channel).data if instance.marketing_channel else None
 
         representation['sales_manager'] = UserSerializer(
-            instance.sales_manager).data if instance.sales_manager else None
+            instance.sales_manager
+            , remove_fields=["pages", "bonus", "compensation", "salary"]).data if instance.sales_manager else None
 
         representation['service_manager'] = UserSerializer(
-            instance.service_manager, remove_fields=["pages"]).data if instance.service_manager else None
+            instance.service_manager,
+            remove_fields=["pages", "bonus", "compensation", "salary"]).data if instance.service_manager else None
         representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
         return representation
 
