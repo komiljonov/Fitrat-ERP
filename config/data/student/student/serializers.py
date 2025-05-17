@@ -43,6 +43,14 @@ class StudentSerializer(serializers.ModelSerializer):
     sales = serializers.SerializerMethodField()
     voucher = serializers.SerializerMethodField()
 
+    def __init__(self, *args, **kwargs):
+        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        super(StudentSerializer, self).__init__(*args, **kwargs)
+
+        if fields_to_remove:
+            for field in fields_to_remove:
+                self.fields.pop(field, None)
+
     class Meta:
         model = Student
         fields = [
@@ -266,7 +274,7 @@ class StudentSerializer(serializers.ModelSerializer):
             instance.sales_manager).data if instance.sales_manager else None
 
         representation['service_manager'] = UserSerializer(
-            instance.service_manager).data if instance.service_manager else None
+            instance.service_manager, remove_fields=["pages"]).data if instance.service_manager else None
         representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
         return representation
 
