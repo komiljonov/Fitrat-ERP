@@ -301,9 +301,8 @@ class StudentSerializer(serializers.ModelSerializer):
 
         if 'sales_manager' in representation:
             representation['sales_manager'] = UserSerializer(
-                instance.sales_manager
-                , remove_fields=["pages", "bonus", "compensation", "salary", "files", "photo",
-                                 "filial"]).data if instance.sales_manager else None
+                instance.sales_manager,
+                include_only=["id", "full_name", "first_name", "last_name"]).data if instance.sales_manager else None
         if 'service_manager' in representation:
             representation['service_manager'] = UserSerializer(
                 instance.service_manager,
