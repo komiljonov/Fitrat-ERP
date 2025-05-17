@@ -200,6 +200,15 @@ class UserSerializer(serializers.ModelSerializer):
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
     is_linked = serializers.SerializerMethodField()
 
+
+    def __init__(self, *args, **kwargs):
+        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        super(UserSerializer, self).__init__(*args, **kwargs)
+
+        if fields_to_remove:
+            for field in fields_to_remove:
+                self.fields.pop(field, None)
+
     class Meta:
         model = CustomUser
         fields = (
