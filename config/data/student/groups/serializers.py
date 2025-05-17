@@ -119,12 +119,17 @@ class GroupSerializer(serializers.ModelSerializer):
         return student_count
 
     def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        rep["level"] = LevelSerializer(instance.level).data
-        rep['teacher'] = UserSerializer(instance.teacher, include_only=[]).data
-        rep["room_number"] = RoomsSerializer(instance.room_number).data
-        rep["course"] = CourseSerializer(instance.course).data
-        return rep
+        res = super().to_representation(instance)
+        if 'level' in res:
+            res["level"] = LevelSerializer(instance.level).data
+        if 'teacher' in res:
+            res['teacher'] = UserSerializer(instance.teacher, include_only=[]).data
+
+        if 'room_number' in res:
+            res["room_number"] = RoomsSerializer(instance.room_number).data
+        if 'course' in res:
+            res["course"] = CourseSerializer(instance.course).data
+        return res
 
     def create(self, validated_data):
         status = validated_data.pop("status",None)
