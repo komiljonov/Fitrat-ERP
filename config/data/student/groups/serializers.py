@@ -123,7 +123,7 @@ class GroupSerializer(serializers.ModelSerializer):
         if 'level' in res:
             res["level"] = LevelSerializer(instance.level).data
         if 'teacher' in res:
-            res['teacher'] = UserSerializer(instance.teacher, include_only=[]).data
+            res['teacher'] = UserSerializer(instance.teacher, include_only=["id","first_name","last_name","full_name"]).data
 
         if 'room_number' in res:
             res["room_number"] = RoomsSerializer(instance.room_number).data

@@ -42,7 +42,8 @@ class StudentGroupsView(ListCreateAPIView):
         serializer_class = self.get_serializer_class()
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
-                                include_only=["id", "name","student_count","price_type","lessons_count","room_number"])
+                                include_only=["id", "name","student_count","price_type",
+                                              "lessons_count","room_number","teacher"])
     def get_queryset(self):
         queryset = Group.objects.all()
         teacher = self.request.query_params.get('teacher', None)
