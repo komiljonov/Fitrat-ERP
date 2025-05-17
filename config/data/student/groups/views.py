@@ -27,13 +27,13 @@ class StudentGroupsView(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
 
     search_fields = ('name', 'scheduled_day_type__name', "status", 'teacher__id',
-                     'course__subject__id', )
+                     'course__subject__id',)
     ordering_fields = ('name', 'scheduled_day_type', 'start_date',
                        'end_date', 'price_type', "status", 'teacher__id',
-                       'course__subject__id', )
+                       'course__subject__id',)
     filterset_fields = ('name', 'scheduled_day_type__name',
                         'price_type', "status", 'teacher__id',
-                        'course__subject__id', )
+                        'course__subject__id',)
 
     def get_queryset(self):
         queryset = Group.objects.all()
@@ -87,6 +87,15 @@ class GroupListAPIView(ListAPIView):
     serializer_class = GroupSerializer
     pagination_class = None
 
+    def get_serializer(self, *args, **kwargs):
+
+        # super().get_serializer()
+
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        return serializer_class(*args, **kwargs,
+                                include_only=["id", "name"])
+
     def get_queryset(self):
         filter = {}
         queryset = Group.objects.all()
@@ -97,7 +106,7 @@ class GroupListAPIView(ListAPIView):
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
         student = self.request.query_params.get('student', None)
-        not_added=self.request.GET.get('not_added', None)
+        not_added = self.request.GET.get('not_added', None)
 
         if status:
             filter['status'] = status
@@ -331,8 +340,10 @@ class SecondaryGroupsView(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = SecondaryGroup.objects.all()
-        start_date = parse_date(self.request.query_params.get('start_date')) if self.request.query_params.get('start_date') else None
-        end_date = parse_date(self.request.query_params.get('end_date')) if self.request.query_params.get('end_date') else None
+        start_date = parse_date(self.request.query_params.get('start_date')) if self.request.query_params.get(
+            'start_date') else None
+        end_date = parse_date(self.request.query_params.get('end_date')) if self.request.query_params.get(
+            'end_date') else None
         teacher = self.request.query_params.get('teacher')
         course = self.request.query_params.get('course')
         filial = self.request.query_params.get('filial')
@@ -544,8 +555,6 @@ class LessonScheduleWebListApi(ListAPIView):
 
         queryset = self.queryset.all()
 
-
-
         if group:
             queryset = queryset.filter(id=group)
         if subject:
@@ -587,7 +596,7 @@ class LessonScheduleWebListApi(ListAPIView):
 class GroupIsActiveNowAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request,*args, **kwargs):
+    def get(self, request, *args, **kwargs):
 
         WEEKDAYS_UZ = {
             "Monday": "dushanba",
@@ -613,13 +622,12 @@ class GroupIsActiveNowAPIView(APIView):
                 start = group.started_at
                 end = group.ended_at
 
-                ic(start,end,current_time)
+                ic(start, end, current_time)
 
                 if start <= current_time <= end:
                     return Response({"is_scheduled_now": True})
 
         return Response({"is_scheduled_now": False})
-
 
 
 class SecondaryGroupIsActiveNowAPIView(APIView):
