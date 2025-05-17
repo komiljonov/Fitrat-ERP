@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    "debug_toolbar",
+    # "debug_toolbar",
 
     # Installed apps
     'data.account',
@@ -110,7 +110,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
 
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -257,15 +257,15 @@ CORS_ALLOWED_ORIGINS = [
 
 ]
 
-INTERNAL_IPS = [
-    "api.ilm.fitrat.sector-soft.ru",
-    "194.26.138.23",
-    "api.ilm.fitrat.sector-soft.ru",
-    "https://api.ilm.fitrat.sector-soft.ru/"
-]
-
-hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-INTERNAL_IPS += ["127.0.0.1"] + [ip[: ip.rfind(".")] + ".1" for ip in ips]
+# INTERNAL_IPS = [
+#     "api.ilm.fitrat.sector-soft.ru",
+#     "194.26.138.23",
+#     "api.ilm.fitrat.sector-soft.ru",
+#     "https://api.ilm.fitrat.sector-soft.ru/"
+# ]
+#
+# hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+# INTERNAL_IPS += ["127.0.0.1"] + [ip[: ip.rfind(".")] + ".1" for ip in ips]
 
 CORS_ALLOW_METHODS = (
     "DELETE",
