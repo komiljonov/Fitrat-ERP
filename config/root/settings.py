@@ -253,6 +253,8 @@ CORS_ALLOWED_ORIGINS = [
 
 INTERNAL_IPS = [
     "api.ilm.fitrat.sector-soft.ru",
+    "194.26.138.23",
+    "*"
 ]
 
 
