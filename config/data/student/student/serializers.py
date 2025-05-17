@@ -169,68 +169,68 @@ class StudentSerializer(serializers.ModelSerializer):
         }
 
     def get_is_attendance(self, obj):
-        groups = StudentGroup.objects.prefetch_related('group__scheduled_day_type').filter(student=obj)
+        # Prefetch only related scheduled_day_type once
+        groups = (
+            StudentGroup.objects
+            .filter(student=obj)
+            .select_related('group')  # ensures group exists
+            .prefetch_related('group__scheduled_day_type')
+        )
+
+        today = datetime.date.today()
+        end_date = today + datetime.timedelta(days=30)
+
+        start_date_str = today.strftime("%Y-%m-%d")
+        end_date_str = end_date.strftime("%Y-%m-%d")
 
         for group in groups:
-            if not group.group:  # Ensure group.group is not None
+            group_obj = getattr(group, 'group', None)
+            if not group_obj:
                 continue
 
-            lesson_days_queryset = getattr(group.group, 'scheduled_day_type', None)
-            if lesson_days_queryset is None:
+            # Get lesson days
+            scheduled_days = getattr(group_obj, 'scheduled_day_type', None)
+            if not scheduled_days:
                 continue
 
-            lesson_days = [day.name for day in lesson_days_queryset.all()] if hasattr(lesson_days_queryset,
-                                                                                      'all') else []
-
-            if not lesson_days:  # Skip iteration if no lesson days
+            lesson_days = [day.name for day in scheduled_days.all()]
+            if not lesson_days:
                 continue
 
-            start_date = datetime.datetime.today()  # Keep it as a datetime object
-            finish_date = start_date + datetime.timedelta(days=30)  # Properly add 30 days
-
-            # Convert to string format for calculate_lessons
-            start_date_str = start_date.strftime("%Y-%m-%d")
-            finish_date_str = finish_date.strftime("%Y-%m-%d")
-
-            dates = calculate_lessons(
+            # Calculate lesson dates
+            lesson_dates = calculate_lessons(
                 start_date=start_date_str,
-                end_date=finish_date_str,
+                end_date=end_date_str,
                 lesson_type=','.join(lesson_days),
                 holidays=[""],
                 days_off=["Yakshanba"]
             )
 
-            if not dates:
-                continue
+            if lesson_dates:
+                # If any attendance date found, return True
+                return True
 
-            first_month = min(dates.keys())  # Get the first available month
-            lesson_date = dates[first_month][0]  # Get the first lesson date in that month
-
-            attendance = Attendance.objects.filter(created_at__gte=lesson_date, student=obj).first()
-
-            return {
-                "date": lesson_date,
-                "attendance": attendance.reason if attendance else "",
-            }
-
-        return {'is_attendance': None}  # Default return if no valid group found
+        return False
 
     def get_secondary_group(self, obj):
-        group = SecondaryStudentGroup.objects.filter(student=obj).annotate(
-            name=F('group__name')  # Rename group__name to name
-        ).values('id', 'name')
-
-        ic(group)
-
-        group_list = [{'id': item['id'], 'name': item['name']} for item in group]
-        return group_list[0] if group_list else None
-
-    def get_secondary_teacher(self, obj):
-        # Only fetch the first relevant teacher using select_related for performance
         group = (
             SecondaryStudentGroup.objects
             .filter(student=obj)
-            .select_related('group__teacher')  # avoids joins at Python level
+            .select_related('group')
+            .only('id', 'group__name')
+            .first()
+        )
+
+        if group and group.group:
+            return {'id': group.id, 'name': group.group.name}
+
+        return None
+
+    def get_secondary_teacher(self, obj):
+        group = (
+            SecondaryStudentGroup.objects
+            .filter(student=obj)
+            .select_related('group__teacher')
             .first()
         )
 
