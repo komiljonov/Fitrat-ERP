@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+import socket
 from datetime import timedelta
 from pathlib import Path
 
@@ -262,6 +263,9 @@ INTERNAL_IPS = [
     "api.ilm.fitrat.sector-soft.ru",
     "https://api.ilm.fitrat.sector-soft.ru/"
 ]
+
+hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+INTERNAL_IPS += ["127.0.0.1"] + [ip[: ip.rfind(".")] + ".1" for ip in ips]
 
 CORS_ALLOW_METHODS = (
     "DELETE",
