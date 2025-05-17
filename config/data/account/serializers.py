@@ -201,13 +201,32 @@ class UserSerializer(serializers.ModelSerializer):
     is_linked = serializers.SerializerMethodField()
 
 
+    # def __init__(self, *args, **kwargs):
+    #     fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+    #     super(UserSerializer, self).__init__(*args, **kwargs)
+    #
+    #     if fields_to_remove:
+    #         for field in fields_to_remove:
+    #             self.fields.pop(field, None)
+
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        include_only: list | None = kwargs.pop("include_only", None)
+
+        if fields_to_remove and include_only:
+            raise ValueError("You cannot use 'remove_fields' and 'include_only' at the same time.")
+
         super(UserSerializer, self).__init__(*args, **kwargs)
 
-        if fields_to_remove:
-            for field in fields_to_remove:
-                self.fields.pop(field, None)
+        if include_only is not None:
+            allowed = set(include_only)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+        elif fields_to_remove:
+            for field_name in fields_to_remove:
+                self.fields.pop(field_name, None)
 
     class Meta:
         model = CustomUser
