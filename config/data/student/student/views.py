@@ -54,7 +54,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
                                 remove_fields=["photo", "is_attendance", "filial", "marketing_channel", "group",
-                                               "teacher", "secondary_teacher", "secondary_group", "sales_manager"])
+                                               "teacher", "secondary_teacher", "secondary_group", "sales_manager",
+                                               "sales", "course", "file", "relatives", "call_operator",
+                                               "attendance_count", "voucher"])
 
     def get_queryset(self):
         """
