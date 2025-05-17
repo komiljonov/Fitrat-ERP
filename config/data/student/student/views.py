@@ -59,7 +59,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         #                                        "attendance_count", "voucher", "subject"])
         return serializer_class(*args, **kwargs,
                                 include_only=["id", "first_name", "last_name", "middle_name", "phone", "balance",
-                                              "learning", "student_stage_type", "teacher", "secondary_teacher",
+                                              "learning", "student_stage_type", "teacher", 
                                               "service_manager"])
 
     def get_queryset(self):
