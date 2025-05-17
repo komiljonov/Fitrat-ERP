@@ -256,7 +256,7 @@ class StudentSerializer(serializers.ModelSerializer):
         .values(
             "group__name", "group__status", "group__started_at", "group__ended_at", "group__teacher__first_name",
             "group__teacher__last_name"
-        ))
+        ).distinct())
         return list(courses)
 
     def get_relatives(self, obj):
