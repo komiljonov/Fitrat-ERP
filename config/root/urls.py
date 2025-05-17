@@ -24,6 +24,8 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+import debug_toolbar
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -34,8 +36,6 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
-
-
 
 urlpatterns = [
 
@@ -81,21 +81,17 @@ urlpatterns = [
     path('dashboard/', include('data.dashboard.urls')),
 
     path("docs<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"),
-    path("swagger/",schema_view.with_ui("swagger", cache_timeout=0),name="schema-swagger-ui",),
+    path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui", ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
 
 urlpatterns += [
     path("api_docs/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/docs/",SpectacularSwaggerView.as_view(url_name="schema"),name="swagger-ui",),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui", ),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-
-import debug_toolbar
-urlpatterns += [
-        path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+urlpatterns += + debug_toolbar_urls()
