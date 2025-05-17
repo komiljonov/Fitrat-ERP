@@ -16,6 +16,9 @@ from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from icecream import ic
 
+from ...department.marketing_channel.models import Group_Type
+
+
 class DaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Day
@@ -104,6 +107,7 @@ class GroupSerializer(serializers.ModelSerializer):
         return rep
 
     def create(self, validated_data):
+        status = validated_data.pop("status",None)
         scheduled_day_type_data = validated_data.pop('scheduled_day_type', [])
         filial = validated_data.pop("filial", None)
         if not filial:
@@ -113,6 +117,12 @@ class GroupSerializer(serializers.ModelSerializer):
 
         if not filial:
             raise serializers.ValidationError({"filial": "Filial could not be determined."})
+
+        if not status:
+            group_type = Group_Type.objects.filter().first()
+            if group_type:
+                status = group_type.price_type
+                validated_data["status"] = status
 
         group = Group.objects.create(filial=filial, **validated_data)
 
