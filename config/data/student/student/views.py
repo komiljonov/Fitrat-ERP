@@ -56,7 +56,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
                                 remove_fields=["photo", "is_attendance", "filial", "marketing_channel", "group",
                                                "teacher", "secondary_teacher", "secondary_group", "sales_manager",
                                                "sales", "course", "file", "relatives", "call_operator",
-                                               "attendance_count", "voucher"])
+                                               "attendance_count", "voucher", "subject"])
 
     def get_queryset(self):
         """
