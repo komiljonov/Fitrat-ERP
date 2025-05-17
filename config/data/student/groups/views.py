@@ -113,7 +113,7 @@ class GroupListAPIView(ListAPIView):
             filter['created_at__gte'] = start_date
         if end_date:
             filter['created_at__lte'] = end_date
-        if not_added.lower() == "true":
+        if not_added and not_added.lower() == "true":
             queryset = queryset.exclude(status="INACTIVE")
         return queryset.filter(**filter)
 
