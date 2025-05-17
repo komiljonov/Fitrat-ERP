@@ -227,8 +227,11 @@ class StudentSerializer(serializers.ModelSerializer):
                    .values("group__course__name", "group__course__level__name"))
         return list(courses)
 
-    def get_group(self, obj):
-        courses = (StudentGroup.objects.filter(student=obj)
+    def get_group(self, obj: Student):
+
+
+        # courses = (StudentGroup.objects.filter(student=obj)
+        courses = (obj.students_group
         .values(
             "group__name", "group__status", "group__started_at", "group__ended_at", "group__teacher__first_name",
             "group__teacher__last_name"
@@ -267,17 +270,17 @@ class StudentSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
-        # representation['marketing_channel'] = MarketingChannelSerializer(
-        #     instance.marketing_channel).data if instance.marketing_channel else None
-        #
-        # representation['sales_manager'] = UserSerializer(
-        #     instance.sales_manager
-        #     , remove_fields=["pages", "bonus", "compensation", "salary"]).data if instance.sales_manager else None
-        #
-        # representation['service_manager'] = UserSerializer(
-        #     instance.service_manager,
-        #     remove_fields=["pages", "bonus", "compensation", "salary"]).data if instance.service_manager else None
-        # representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
+        representation['marketing_channel'] = MarketingChannelSerializer(
+            instance.marketing_channel).data if instance.marketing_channel else None
+
+        representation['sales_manager'] = UserSerializer(
+            instance.sales_manager
+            , remove_fields=["pages", "bonus", "compensation", "salary"]).data if instance.sales_manager else None
+
+        representation['service_manager'] = UserSerializer(
+            instance.service_manager,
+            remove_fields=["pages", "bonus", "compensation", "salary"]).data if instance.service_manager else None
+        representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
         return representation
 
 
