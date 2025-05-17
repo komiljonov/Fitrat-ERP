@@ -15,6 +15,8 @@ from ...upload.models import File
 
 if TYPE_CHECKING:
     from ...lid.new_lid.models import Lid
+    from ..studentgroup.models import StudentGroup
+
 
 
 class Student(BaseModel):
@@ -109,6 +111,9 @@ class Student(BaseModel):
 
     coins = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     points = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    students_group: "models.QuerySet[StudentGroup]"
+
     class Meta:
         ordering = ('is_frozen', '-created_at')
 
