@@ -269,7 +269,7 @@ class StudentSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         if 'photo' in representation:
             representation['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
-            
+
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(
             instance.marketing_channel).data if instance.marketing_channel else None
