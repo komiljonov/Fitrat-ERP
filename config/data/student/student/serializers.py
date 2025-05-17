@@ -229,7 +229,6 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def get_group(self, obj: Student):
 
-
         # courses = (StudentGroup.objects.filter(student=obj)
         courses = (obj.students_group
         .values(
@@ -268,19 +267,26 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
+        if 'photo' in representation:
+            representation['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
+            
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(
             instance.marketing_channel).data if instance.marketing_channel else None
 
         representation['sales_manager'] = UserSerializer(
             instance.sales_manager
-            , remove_fields=["pages", "bonus", "compensation", "salary","files","photo","filial"]).data if instance.sales_manager else None
+            , remove_fields=["pages", "bonus", "compensation", "salary", "files", "photo",
+                             "filial"]).data if instance.sales_manager else None
 
         representation['service_manager'] = UserSerializer(
             instance.service_manager,
-            remove_fields=["pages", "bonus", "compensation", "salary","files","photo","filial"]).data if instance.service_manager else None
-        representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
+            remove_fields=["pages", "bonus", "compensation", "salary", "files", "photo",
+                           "filial"]).data if instance.service_manager else None
+
+        if 'file' in representation:
+            representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
+
         return representation
 
 
