@@ -1,3 +1,7 @@
+import cProfile
+import io
+import pstats
+
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
@@ -15,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Student, FistLesson_data
-from .serializers import StudentSerializer,  FistLesson_dataSerializer
+from .serializers import StudentSerializer, FistLesson_dataSerializer
 from ..lesson.models import Lesson
 from ..lesson.serializers import LessonSerializer
 from ..studentgroup.models import StudentGroup
@@ -27,8 +31,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     queryset = Student.objects.all().select_related('marketing_channel', 'sales_manager', 'service_manager')
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
-
-
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ["first_name", "last_name", "phone"]
@@ -123,6 +125,21 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         return queryset
 
 
+    def get(self, *args, **kwargs):
+        profiler = cProfile.Profile()
+        profiler.enable()
+
+        res = super().get(*args, **kwargs)
+
+        profiler.disable()
+        stream = io.StringIO()
+        stats = pstats.Stats(profiler, stream=stream).sort_stats('cumulative')
+        stats.print_stats(10)  # print top 10 functions by cumulative time
+
+        print(stream.getvalue())  # print the profiling results
+
+        return res
+
 # class StudentLoginAPIView(APIView):
 #     def post(self, request, *args, **kwargs):
 #         serializer = StudentTokenObtainPairSerializer(data=request.data, context={'request': request})
@@ -209,8 +226,8 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             **filter,
         ).count()
 
-        almost_debt = Student.objects.filter(is_archived=False,balance__lte=0,
-                                             balance__gte=100000,**filter).count()
+        almost_debt = Student.objects.filter(is_archived=False, balance__lte=0,
+                                             balance__gte=100000, **filter).count()
 
         statistics = {
             "new_students_count": new_students_count,
@@ -310,7 +327,6 @@ class ExportLidToExcelAPIView(APIView):
         filial_id = self.request.query_params.get("filial")
         is_archived = self.request.query_params.get("is_archived")
 
-
         queryset = Student.objects.all()
 
         if balance_status:
@@ -398,7 +414,7 @@ class ExportLidToExcelAPIView(APIView):
                 student.marketing_channel.name if student.marketing_channel else "",
                 "Yangi student" if student.student_stage_type == "NEW_STUDENT" else "Faol student",
                 student.balance if student.balance else 0,
-                "Haqdor" if student.balance_status=="ACTIVE" else "Qarzdor"  if student.balance_status else "",
+                "Haqdor" if student.balance_status == "ACTIVE" else "Qarzdor" if student.balance_status else "",
                 "Ha" if student.is_archived else "Yo'q",
                 student.call_operator.full_name if student.call_operator else "",
                 student.service_manager.full_name if student.service_manager else "",
@@ -433,6 +449,7 @@ class FistLesson_dataList(ListCreateAPIView):
         if id:
             queryset = queryset.filter(lid__id=id)
         return queryset
+
     def get_paginated_response(self, data):
         return Response(data)
 
