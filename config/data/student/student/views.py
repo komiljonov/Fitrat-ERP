@@ -126,20 +126,20 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         return queryset
 
 
-    def get(self, *args, **kwargs):
-        profiler = cProfile.Profile()
-        profiler.enable()
-
-        res = super().get(*args, **kwargs)
-
-        profiler.disable()
-        stream = io.StringIO()
-        stats = pstats.Stats(profiler, stream=stream).sort_stats('cumulative')
-        stats.print_stats(10)  # print top 10 functions by cumulative time
-
-        print(stream.getvalue())  # print the profiling results
-
-        return res
+    # def get(self, *args, **kwargs):
+    #     profiler = cProfile.Profile()
+    #     profiler.enable()
+    #
+    #     res = super().get(*args, **kwargs)
+    #
+    #     profiler.disable()
+    #     stream = io.StringIO()
+    #     stats = pstats.Stats(profiler, stream=stream).sort_stats('cumulative')
+    #     stats.print_stats(10)  # print top 10 functions by cumulative time
+    #
+    #     print(stream.getvalue())  # print the profiling results
+    #
+    #     return res
 
 # class StudentLoginAPIView(APIView):
 #     def post(self, request, *args, **kwargs):
