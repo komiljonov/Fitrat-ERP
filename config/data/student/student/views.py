@@ -46,6 +46,16 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         # "course",  # Added courses filter
     ]
 
+    def get_serializer(self, *args, **kwargs):
+
+        # super().get_serializer()
+
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        return serializer_class(*args, **kwargs,
+                                remove_fields=["photo", "is_attendance", "filial", "marketing_channel", "group",
+                                               "teacher", "secondary_teacher", "secondary_group"])
+
     def get_queryset(self):
         """
         Customize queryset filtering based on user roles and other criteria.
@@ -125,7 +135,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         return queryset
 
-
     # def get(self, *args, **kwargs):
     #     profiler = cProfile.Profile()
     #     profiler.enable()
@@ -140,6 +149,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     #     print(stream.getvalue())  # print the profiling results
     #
     #     return res
+
 
 # class StudentLoginAPIView(APIView):
 #     def post(self, request, *args, **kwargs):
