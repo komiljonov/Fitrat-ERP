@@ -171,6 +171,7 @@ class StuffRolesView(ListAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = CustomUser.objects.all()
     serializer_class = UserListSerializer
+    pagination_class = None
 
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ('role', 'first_name', 'last_name')
