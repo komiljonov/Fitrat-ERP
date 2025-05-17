@@ -54,8 +54,8 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
                                 include_only=["id", "first_name", "last_name", "middle_name", "phone", "balance",
-                                              "learning", "student_stage_type", "teacher","secondary_teacher",
-                                              "service_manager"])
+                                              "learning", "student_stage_type", "teacher","secondary_teacher","balance_status",
+                                              "service_manager","sales_manager","get_attendance_count","group"])
 
     def get_queryset(self):
         """
