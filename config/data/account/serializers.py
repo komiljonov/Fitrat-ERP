@@ -186,8 +186,10 @@ class UserListSerializer(ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
-        rep['files'] = FileUploadSerializer(instance.files.all(), many=True, context=self.context).data
+        if "photo" in rep:
+            rep['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
+        if "files" in rep:
+            rep['files'] = FileUploadSerializer(instance.files.all(), many=True, context=self.context).data
         return rep
 
 
