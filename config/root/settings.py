@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    "debug_toolbar",
+
     # Installed apps
     'data.account',
     'data.payme',
@@ -102,6 +104,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -246,6 +249,12 @@ CORS_ALLOWED_ORIGINS = [
     "https://api.ilm.fitrat.sector-soft.ru",
 
 ]
+
+
+INTERNAL_IPS = [
+    "api.ilm.fitrat.sector-soft.ru",
+]
+
 
 CORS_ALLOW_METHODS = (
     "DELETE",
