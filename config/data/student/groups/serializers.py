@@ -63,6 +63,26 @@ class GroupSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
+    def __init__(self, *args, **kwargs):
+        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        include_only: list | None = kwargs.pop("include_only", None)
+
+        if fields_to_remove and include_only:
+            raise ValueError("You cannot use 'remove_fields' and 'include_only' at the same time.")
+
+        super(GroupSerializer, self).__init__(*args, **kwargs)
+
+        if include_only is not None:
+            allowed = set(include_only)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+        elif fields_to_remove:
+            for field_name in fields_to_remove:
+                self.fields.pop(field_name, None)
+
     def get_subject(self, obj):
         return Group.objects.filter(pk=obj.pk).values("course__subject",
                                                       "course__subject__name").first()
@@ -101,7 +121,7 @@ class GroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["level"] = LevelSerializer(instance.level).data
-        rep['teacher'] = UserSerializer(instance.teacher).data
+        rep['teacher'] = UserSerializer(instance.teacher, include_only=[]).data
         rep["room_number"] = RoomsSerializer(instance.room_number).data
         rep["course"] = CourseSerializer(instance.course).data
         return rep
