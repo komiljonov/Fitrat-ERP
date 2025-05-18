@@ -35,21 +35,19 @@ def on_create(sender, instance: MasteringTeachers, created, **kwargs):
 @receiver(post_save, sender=FirstLLesson)
 def bonus_call_operator(sender, instance: FirstLLesson, created, **kwargs):
     if not created:
-        if instance.lid.lid_stage_type == "ORDERED_LID":
-            ic("-----------")
-            bonus = Bonus.objects.filter(user=instance.lid.call_operator,
-                                         name="Markazga kelgan o‘quvchi uchun bonus").first()
-            ic(bonus)
-            ic(Bonus.objects.filter(user=instance.student.sales_manager))
-            if bonus and instance.lid.call_operator:
-                KpiFinance.objects.create(
-                    user=instance.lid.call_operator,
-                    reason="Markazga kelgan o‘quvchi uchun bonus",
-                    amount=bonus.amount if bonus else 0,
-                    type="INCOME",
-                    lid=instance,
-                    student=None
-                )
+        ic("-----------")
+        bonus = Bonus.objects.filter(user=instance.lid.call_operator,
+                                     name="Markazga kelgan o‘quvchi uchun bonus").first()
+        ic(bonus)
+        if bonus and instance.lid.call_operator:
+            KpiFinance.objects.create(
+                user=instance.lid.call_operator,
+                reason="Markazga kelgan o‘quvchi uchun bonus",
+                amount=bonus.amount if bonus else 0,
+                type="INCOME",
+                lid=instance,
+                student=None
+            )
 
 
 #Sotuv menejeri
