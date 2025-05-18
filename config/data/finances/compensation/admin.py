@@ -5,14 +5,14 @@ from data.finances.compensation.models import Compensation, Bonus, Page, Asos, M
 
 @admin.register(Compensation)
 class CompensationAdmin(admin.ModelAdmin):
-    list_display = ("name", 'amount')
-    search_fields = ("name",)
+    list_display = ("user__full_name","name", 'amount')
+    search_fields = ("user__full_name","name",)
 
 
 @admin.register(Bonus)
 class BonsAdmin(admin.ModelAdmin):
-    list_display = ("name", 'amount')
-    search_fields = ("name",)
+    list_display = ("user__full_name","name", 'amount')
+    search_fields = ("user__full_name","name",)
 
 
 @admin.register(Page)
