@@ -124,13 +124,13 @@ class LidListCreateView(ListCreateAPIView):
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
         elif start_date:
             try:
-                start_date = parse_datetime(start_date).date()
+                start_date = parse_datetime(start_date)
                 queryset = queryset.filter(created_at__gte=start_date)
             except ValueError:
                 pass
         elif end_date:
             try:
-                end_date = parse_datetime(end_date).date()
+                end_date = parse_datetime(end_date)
                 queryset = queryset.filter(created_at__lte=end_date)
             except ValueError:
                 pass
