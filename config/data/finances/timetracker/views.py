@@ -45,7 +45,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-
 class UserTimeLineList(ListCreateAPIView):
     queryset = UserTimeLine.objects.all()
     serializer_class = UserTimeLineSerializer
