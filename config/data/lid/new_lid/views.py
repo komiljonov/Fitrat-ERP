@@ -80,8 +80,8 @@ class LidListCreateView(ListCreateAPIView):
         subject = self.request.query_params.get("subject")
         is_student = self.request.query_params.get("is_student")
 
-        if is_archived == "True":
-            queryset = queryset.filter(is_archived=True)
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if channel:
             queryset = queryset.filter(marketing_channel__id=channel)
