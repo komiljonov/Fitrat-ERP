@@ -14,8 +14,6 @@ from ..subject.models import Theme, Level
 from ..subject.serializers import LevelSerializer
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
-from icecream import ic
-
 from ...department.marketing_channel.models import Group_Type
 
 
@@ -329,6 +327,7 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
         rep['teacher'] = UserSerializer(instance.teacher).data
         rep['group'] = GroupSerializer(instance.group).data
         return rep
+
 
 class SecondarygroupModelSerializer(serializers.ModelSerializer):
     class Meta:
