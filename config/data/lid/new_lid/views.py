@@ -46,7 +46,7 @@ class LidListCreateView(ListCreateAPIView):
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
         include_only=["id","first_name","last_name","middle_name","photo","phone_number",
-                      "filial","lid_stages","lid_stage_type","ordered_stages","call_operator","sales_manager"
+                      "filial","lid_stages","lid_stage_type","ordered_stages","call_operator","sales_manager","is_archived"
                       ,"ordered_date","created_at"])
 
     def get_queryset(self):
