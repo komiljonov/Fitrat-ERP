@@ -96,14 +96,14 @@ class GroupListAPIView(ListAPIView):
     serializer_class = GroupSerializer
     pagination_class = None
 
-    # def get_serializer(self, *args, **kwargs):
-    #
-    #     # super().get_serializer()
-    #
-    #     serializer_class = self.get_serializer_class()
-    #     kwargs.setdefault('context', self.get_serializer_context())
-    #     return serializer_class(*args, **kwargs,
-    #                             include_only=["id", "name"])
+    def get_serializer(self, *args, **kwargs):
+    
+        # super().get_serializer()
+    
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        return serializer_class(*args, **kwargs,
+                                include_only=["id", "name"])
 
     def get_queryset(self):
         filter = {}
