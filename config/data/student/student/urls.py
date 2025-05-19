@@ -10,7 +10,6 @@ urlpatterns = [
 
     path('schedule/<uuid:pk>/', StudentScheduleView.as_view(), name='student-schedule'),
 
-    # path('auth/',StudentLoginAPIView.as_view(), name='student-login'),
 
     path('statistics/', StudentStatistics.as_view(), name='student-statistics'),
 
