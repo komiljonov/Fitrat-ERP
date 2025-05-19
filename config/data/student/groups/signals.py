@@ -49,25 +49,25 @@ def on_create(sender, instance: Group, created, **kwargs):
             come_from=instance,
         )
 
-    if not created and instance.is_secondary == True:
-        secondary_group = SecondaryGroup.objects.create(
-            name=f"{instance.name} ning yordamchi guruhi",
-            teacher=instance.secondary_teacher,
-            group=instance)
-        if StudentGroup.objects.filter(group=instance).exists():
-            student = StudentGroup.objects.filter(group=instance)
-            for i in student:
-                SecondaryStudentGroup.objects.create(
-                    group=secondary_group,
-                    student=i.student if i.student else None,
-                    lid=i.lid if i.lid else None
-                )
-
-        Notification.objects.create(
-            user=instance.secondary_teacher,
-            comment=f"{instance.name} guruhining yordamchi guruhi yaratildi !",
-            come_from=instance,
-        )
+    # if not created and instance.is_secondary == True:
+    #     secondary_group = SecondaryGroup.objects.create(
+    #         name=f"{instance.name} ning yordamchi guruhi",
+    #         teacher=instance.secondary_teacher,
+    #         group=instance)
+    #     if StudentGroup.objects.filter(group=instance).exists():
+    #         student = StudentGroup.objects.filter(group=instance)
+    #         for i in student:
+    #             SecondaryStudentGroup.objects.create(
+    #                 group=secondary_group,
+    #                 student=i.student if i.student else None,
+    #                 lid=i.lid if i.lid else None
+    #             )
+    #
+    #     Notification.objects.create(
+    #         user=instance.secondary_teacher,
+    #         comment=f"{instance.name} guruhining yordamchi guruhi yaratildi !",
+    #         come_from=instance,
+    #     )
 
 
 @receiver(post_save, sender=Group)
