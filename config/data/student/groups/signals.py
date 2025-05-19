@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import Group, SecondaryGroup
+from .models import Group, SecondaryGroup, Day
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...department.marketing_channel.models import Group_Type
 from ...notifications.models import Notification
@@ -13,8 +13,23 @@ def on_create(sender, instance: Group, created, **kwargs):
         secondary = SecondaryGroup.objects.create(
             name=f"{instance.name} ning yordamchi guruhi",
             teacher=instance.secondary_teacher,
+            status="ACTIVE",
             group=instance
         )
+
+        first_day = instance.scheduled_day_type.first()
+        if first_day:
+            if first_day.name == "Dushanba":
+                week_days = ["Seshanba", "Payshanba", "Shanba"]
+
+            else:
+                week_days = ["Dushanba", "Chorshanba", "Juma"]
+
+            day_objs = Day.objects.filter(name__in=week_days)
+
+            secondary.scheduled_day_type.set(day_objs)
+        else:
+            secondary.scheduled_day_type.clear()
 
         secondary.filial = instance.teacher.filial.first()
         secondary.save()
