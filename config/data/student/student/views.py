@@ -13,7 +13,11 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    ListAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -28,7 +32,9 @@ from ...finances.finance.models import Finance
 
 
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
-    queryset = Student.objects.all().select_related('marketing_channel', 'sales_manager', 'service_manager')
+    queryset = Student.objects.all().select_related(
+        "marketing_channel", "sales_manager", "service_manager"
+    )
     serializer_class = StudentSerializer
     # permission_classes = [IsAuthenticated]
 
@@ -51,11 +57,32 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         # super().get_serializer()
 
         serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
-        return serializer_class(*args, **kwargs,
-                                include_only=["id", "first_name", "last_name", "middle_name", "phone", "balance",
-                                              "learning", "student_stage_type", "teacher","secondary_teacher",
-                                              "service_manager"])
+        kwargs.setdefault("context", self.get_serializer_context())
+        return serializer_class(
+            *args,
+            **kwargs,
+            include_only=[
+                "id",
+                "first_name",
+                "last_name",
+                "middle_name",
+                "phone",
+                "balance",
+                "learning",
+                "student_stage_type",
+                "teacher",
+                "secondary_teacher",
+                "balance_status",
+                "service_manager",
+                "sales_manager",
+                "attendance_count",
+                "group",
+                "created_at",
+                "active_date",
+                "is_frozen",
+                "secondary_group",
+            ],
+        )
 
     def get_queryset(self):
         """
@@ -67,14 +94,14 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         queryset = self.queryset.all()
 
         # Add filters based on query parameters (for sales managment and operators)
-        sales_manager_id = self.request.query_params.get('sales_manager')
-        call_operator_id = self.request.query_params.get('call_operator')
-        from_price = self.request.query_params.get('from_price')
-        edu_langauge = self.request.query_params.get('language')
-        to_price = self.request.query_params.get('to_price')
-        course_id = self.request.query_params.get('course')
-        teacher_id = self.request.query_params.get('teacher')
-        service_manager = self.request.query_params.get('service_manager')
+        sales_manager_id = self.request.query_params.get("sales_manager")
+        call_operator_id = self.request.query_params.get("call_operator")
+        from_price = self.request.query_params.get("from_price")
+        edu_langauge = self.request.query_params.get("language")
+        to_price = self.request.query_params.get("to_price")
+        course_id = self.request.query_params.get("course")
+        teacher_id = self.request.query_params.get("teacher")
+        service_manager = self.request.query_params.get("service_manager")
         group_id = self.request.query_params.get("group")
         subject_id = self.request.query_params.get("subject")
         filial_id = self.request.query_params.get("filial")
@@ -109,7 +136,8 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         if course_id:
             queryset = queryset.filter(
-                students_group__group__course__id=course_id)  # Assuming Many-to-Many relation in groups
+                students_group__group__course__id=course_id
+            )  # Assuming Many-to-Many relation in groups
         if service_manager:
             queryset = queryset.filter(service_manager__id=service_manager)
 
@@ -174,7 +202,7 @@ class StudentListNoPG(FilialRestrictedQuerySetMixin, ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        filial_id = self.request.query_params.get('filial')
+        filial_id = self.request.query_params.get("filial")
         queryset = Student.objects.all()
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id, is_archived=False)
@@ -190,45 +218,70 @@ class StudentScheduleView(FilialRestrictedQuerySetMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        student_groups = StudentGroup.objects.filter(student_id=self.kwargs['pk']).values_list('group_id', flat=True)
-        return Lesson.objects.filter(group_id__in=student_groups).order_by("day", "start_time")
+        student_groups = StudentGroup.objects.filter(
+            student_id=self.kwargs["pk"]
+        ).values_list("group_id", flat=True)
+        return Lesson.objects.filter(group_id__in=student_groups).order_by(
+            "day", "start_time"
+        )
 
 
 class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        filial = self.request.query_params.get('filial')
+        filial = self.request.query_params.get("filial")
 
         filter = {}
         if filial:
             filter["filial__id"] = filial
             ic(filial)
-        new_students_count = Student.objects.filter(is_archived=False,
-                                                    student_stage_type="NEW_STUDENT", **filter).count()
-        total_debt = \
-            Student.objects.filter(is_archived=False, student_stage_type="NEW_STUDENT",
-                                   balance__lt=0, **filter).aggregate(total_debt=Sum('balance'))['total_debt'] or 0
-        archived_new_students = Student.objects.filter(is_archived=True,
-                                                       student_stage_type="NEW_STUDENT", **filter).count()
+        new_students_count = Student.objects.filter(
+            is_archived=False, student_stage_type="NEW_STUDENT", **filter
+        ).count()
+        total_debt = (
+            Student.objects.filter(
+                is_archived=False,
+                student_stage_type="NEW_STUDENT",
+                balance__lt=0,
+                **filter,
+            ).aggregate(total_debt=Sum("balance"))["total_debt"]
+            or 0
+        )
+        archived_new_students = Student.objects.filter(
+            is_archived=True, student_stage_type="NEW_STUDENT", **filter
+        ).count()
 
         # Ordered statistics
-        student_count = Student.objects.filter(is_archived=False,
-                                               student_stage_type="ACTIVE_STUDENT", **filter).count()
-        total_income = \
-            Student.objects.filter(is_archived=False, student_stage_type="ACTIVE_STUDENT",
-                                   balance__gt=0, **filter).aggregate(total_income=Sum('balance'))['total_income'] or 0
-        student_total_debt = \
-            Student.objects.filter(is_archived=False, student_stage_type="ACTIVE_STUDENT",
-                                   balance__lt=0, **filter).aggregate(
-                total_debt=Sum('balance'))['total_debt'] or 0
+        student_count = Student.objects.filter(
+            is_archived=False, student_stage_type="ACTIVE_STUDENT", **filter
+        ).count()
+        total_income = (
+            Student.objects.filter(
+                is_archived=False,
+                student_stage_type="ACTIVE_STUDENT",
+                balance__gt=0,
+                **filter,
+            ).aggregate(total_income=Sum("balance"))["total_income"]
+            or 0
+        )
+        student_total_debt = (
+            Student.objects.filter(
+                is_archived=False,
+                student_stage_type="ACTIVE_STUDENT",
+                balance__lt=0,
+                **filter,
+            ).aggregate(total_debt=Sum("balance"))["total_debt"]
+            or 0
+        )
 
-        balance_active = Student.objects.filter(is_archived=False,
-                                                balance_status="ACTIVE", **filter
-                                                ).count()
+        balance_active = Student.objects.filter(
+            is_archived=False, balance_status="ACTIVE", **filter
+        ).count()
 
-        archived_student = Student.objects.filter(is_archived=True,
-                                                  student_stage_type="ACTIVE_STUDENT", **filter).count()
+        archived_student = Student.objects.filter(
+            is_archived=True, student_stage_type="ACTIVE_STUDENT", **filter
+        ).count()
 
         from_new_to_active = Finance.objects.filter(
             student__isnull=False,
@@ -238,8 +291,9 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             **filter,
         ).count()
 
-        almost_debt = Student.objects.filter(is_archived=False, balance__lte=0,
-                                             balance__gte=100000, **filter).count()
+        almost_debt = Student.objects.filter(
+            is_archived=False, balance__lte=0, balance__gte=100000, **filter
+        ).count()
 
         statistics = {
             "new_students_count": new_students_count,
@@ -273,24 +327,23 @@ class StudentAllStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
     def get(self, request, *args, **kwargs):
 
         filter = {}
-        filial = self.request.query_params.get('filial')
+        filial = self.request.query_params.get("filial")
         if filial:
             filter["filial__id"] = filial
 
-        all_students = Student.objects.filter(is_archived=False, **filter
-                                              ).count()
+        all_students = Student.objects.filter(is_archived=False, **filter).count()
         archived_students = Student.objects.filter(is_archived=True, **filter).count()
         if StudentGroup.student:
-            course_ended = StudentGroup.objects.filter(
-                group__status="INACTIVE"
-            ).count()
+            course_ended = StudentGroup.objects.filter(group__status="INACTIVE").count()
         else:
             course_ended = StudentGroup.objects.filter(
                 group__status="INACTIVE",
             ).count()
-        balance_active = Student.objects.filter(is_archived=False, **filter,
-                                                balance_status="ACTIVE",
-                                                ).count()
+        balance_active = Student.objects.filter(
+            is_archived=False,
+            **filter,
+            balance_status="ACTIVE",
+        ).count()
         balance_inactive = Student.objects.filter(
             is_archived=False, **filter, balance_status="INACTIVE"
         ).count()
@@ -307,33 +360,52 @@ class StudentAllStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
 class ExportLidToExcelAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter("start_date", openapi.IN_QUERY, description="Filter by start date (YYYY-MM-DD)",
-                              type=openapi.TYPE_STRING),
-            openapi.Parameter("end_date", openapi.IN_QUERY, description="Filter by end date (YYYY-MM-DD)",
-                              type=openapi.TYPE_STRING),
-            openapi.Parameter("is_student", openapi.IN_QUERY,
-                              description="Filter by whether the lead is a student (true/false)",
-                              type=openapi.TYPE_STRING),
-            openapi.Parameter("filial_id", openapi.IN_QUERY, description="Filter by filial ID",
-                              type=openapi.TYPE_INTEGER),
-            openapi.Parameter("student_stage_type", openapi.IN_QUERY, description="Filter by student stage type",
-                              type=openapi.TYPE_STRING),
+            openapi.Parameter(
+                "start_date",
+                openapi.IN_QUERY,
+                description="Filter by start date (YYYY-MM-DD)",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "end_date",
+                openapi.IN_QUERY,
+                description="Filter by end date (YYYY-MM-DD)",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "is_student",
+                openapi.IN_QUERY,
+                description="Filter by whether the lead is a student (true/false)",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "filial_id",
+                openapi.IN_QUERY,
+                description="Filter by filial ID",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "student_stage_type",
+                openapi.IN_QUERY,
+                description="Filter by student stage type",
+                type=openapi.TYPE_STRING,
+            ),
         ],
-        responses={200: "Excel file generated"}
+        responses={200: "Excel file generated"},
     )
     def get(self, request):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
         student_stage_type = request.query_params.get("student_stage_type")
-        sales_manager_id = self.request.query_params.get('sales_manager')
-        call_operator_id = self.request.query_params.get('call_operator')
-        from_price = self.request.query_params.get('from_price')
-        edu_langauge = self.request.query_params.get('language')
-        to_price = self.request.query_params.get('to_price')
-        balance_status = self.request.query_params.get('balance_status')
-        course_id = self.request.query_params.get('course')
-        teacher_id = self.request.query_params.get('teacher')
-        service_manager = self.request.query_params.get('service_manager')
+        sales_manager_id = self.request.query_params.get("sales_manager")
+        call_operator_id = self.request.query_params.get("call_operator")
+        from_price = self.request.query_params.get("from_price")
+        edu_langauge = self.request.query_params.get("language")
+        to_price = self.request.query_params.get("to_price")
+        balance_status = self.request.query_params.get("balance_status")
+        course_id = self.request.query_params.get("course")
+        teacher_id = self.request.query_params.get("teacher")
+        service_manager = self.request.query_params.get("service_manager")
         group_id = self.request.query_params.get("group")
         subject_id = self.request.query_params.get("subject")
         filial_id = self.request.query_params.get("filial")
@@ -376,7 +448,8 @@ class ExportLidToExcelAPIView(APIView):
 
         if course_id:
             queryset = queryset.filter(
-                students_group__group__course__id=course_id)  # Assuming Many-to-Many relation in groups
+                students_group__group__course__id=course_id
+            )  # Assuming Many-to-Many relation in groups
 
         if service_manager:
             queryset = queryset.filter(service_manager__id=service_manager)
@@ -385,7 +458,9 @@ class ExportLidToExcelAPIView(APIView):
             queryset = queryset.filter(students_group__group__id=group_id)
 
         if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = queryset.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
 
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
@@ -403,35 +478,81 @@ class ExportLidToExcelAPIView(APIView):
 
         # Define headers
         headers = [
-            "Ism", "Familiya", "Telefon raqami",
-            "Tug'ulgan sanasi", "O'quv tili", "O'quv sinfi",
-            "Fan", "Ball", "Filial", "Marketing kanali", "O'quvchi varonkasi",
-            "Balansi", "Balans statusi", "Arxivlangan",
-            "Call Operator", "Service manager", "Yaratilgan vaqti"
+            "Ism",
+            "Familiya",
+            "Telefon raqami",
+            "Tug'ulgan sanasi",
+            "O'quv tili",
+            "O'quv sinfi",
+            "Fan",
+            "Ball",
+            "Filial",
+            "Marketing kanali",
+            "O'quvchi varonkasi",
+            "Balansi",
+            "Balans statusi",
+            "Arxivlangan",
+            "Call Operator",
+            "Service manager",
+            "Yaratilgan vaqti",
         ]
         sheet.append(headers)
 
         for student in queryset:
-            sheet.append([
-                student.first_name,
-                student.last_name,
-                student.phone,
-                student.date_of_birth.strftime('%d-%m-%Y') if student.date_of_birth else "",
-                "Uzbek tili" if student.education_lang == "UZB" else "Ingliz tili" if student.education_lang == "ENG" else "Rus tili" if student.education_lang == "RU" else "",
-                "Maktab" if student.edu_class == "SCHOOL" else "Universitet" if student.edu_class == "UNIVERSITY" else "",
-                student.subject.name if student.subject else "",
-                student.ball if student.ball else "",
-                student.ball,
-                student.filial.name if student.filial else "",
-                student.marketing_channel.name if student.marketing_channel else "",
-                "Yangi student" if student.student_stage_type == "NEW_STUDENT" else "Faol student",
-                student.balance if student.balance else 0,
-                "Haqdor" if student.balance_status == "ACTIVE" else "Qarzdor" if student.balance_status else "",
-                "Ha" if student.is_archived else "Yo'q",
-                student.call_operator.full_name if student.call_operator else "",
-                student.service_manager.full_name if student.service_manager else "",
-                student.created_at.strftime('%d-%m-%Y %H:%M:%S') if student.created_at else "",
-            ])
+            sheet.append(
+                [
+                    student.first_name,
+                    student.last_name,
+                    student.phone,
+                    (
+                        student.date_of_birth.strftime("%d-%m-%Y")
+                        if student.date_of_birth
+                        else ""
+                    ),
+                    (
+                        "Uzbek tili"
+                        if student.education_lang == "UZB"
+                        else (
+                            "Ingliz tili"
+                            if student.education_lang == "ENG"
+                            else "Rus tili" if student.education_lang == "RU" else ""
+                        )
+                    ),
+                    (
+                        "Maktab"
+                        if student.edu_class == "SCHOOL"
+                        else "Universitet" if student.edu_class == "UNIVERSITY" else ""
+                    ),
+                    student.subject.name if student.subject else "",
+                    student.ball if student.ball else "",
+                    student.ball,
+                    student.filial.name if student.filial else "",
+                    student.marketing_channel.name if student.marketing_channel else "",
+                    (
+                        "Yangi student"
+                        if student.student_stage_type == "NEW_STUDENT"
+                        else "Faol student"
+                    ),
+                    student.balance if student.balance else 0,
+                    (
+                        "Haqdor"
+                        if student.balance_status == "ACTIVE"
+                        else "Qarzdor" if student.balance_status else ""
+                    ),
+                    "Ha" if student.is_archived else "Yo'q",
+                    student.call_operator.full_name if student.call_operator else "",
+                    (
+                        student.service_manager.full_name
+                        if student.service_manager
+                        else ""
+                    ),
+                    (
+                        student.created_at.strftime("%d-%m-%Y %H:%M:%S")
+                        if student.created_at
+                        else ""
+                    ),
+                ]
+            )
 
         # Style headers
         for col_num, header in enumerate(headers, 1):
@@ -457,7 +578,7 @@ class FistLesson_dataList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = FistLesson_data.objects.all()
-        id = self.request.query_params.get('id')
+        id = self.request.query_params.get("id")
         if id:
             queryset = queryset.filter(lid__id=id)
         return queryset

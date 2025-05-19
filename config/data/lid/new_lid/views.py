@@ -5,6 +5,7 @@ from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from rest_framework import status
@@ -37,6 +38,16 @@ class LidListCreateView(ListCreateAPIView):
         "is_dubl",
         "is_archived",
     ]
+    def get_serializer(self, *args, **kwargs):
+
+        # super().get_serializer()
+
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        return serializer_class(*args, **kwargs,
+        include_only=["id","first_name","last_name","middle_name","photo","phone_number",
+                      "filial","lid_stages","lid_stage_type","ordered_stages","call_operator","sales_manager","is_archived"
+                      ,"ordered_date","created_at"])
 
     def get_queryset(self):
         user = self.request.user
@@ -69,8 +80,8 @@ class LidListCreateView(ListCreateAPIView):
         subject = self.request.query_params.get("subject")
         is_student = self.request.query_params.get("is_student")
 
-        if is_archived == "True":
-            queryset = queryset.filter(is_archived=True)
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if channel:
             queryset = queryset.filter(marketing_channel__id=channel)
@@ -109,21 +120,15 @@ class LidListCreateView(ListCreateAPIView):
         # ✅ Date Filtering
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
+        ic(start_date,end_date)
+        if start_date:
+            queryset = queryset.filter(created_at__gte=start_date)
+
+        if end_date:
+            queryset = queryset.filter(created_at__lte=end_date)
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
-        elif start_date:
-            try:
-                start_date = parse_datetime(start_date).date()
-                queryset = queryset.filter(created_at__gte=start_date)
-            except ValueError:
-                pass
-        elif end_date:
-            try:
-                end_date = parse_datetime(end_date).date()
-                queryset = queryset.filter(created_at__lte=end_date)
-            except ValueError:
-                pass
 
         return queryset
 

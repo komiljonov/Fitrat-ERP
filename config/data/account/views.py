@@ -56,6 +56,16 @@ class UserList(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserListSerializer
 
+    def get_serializer(self, *args, **kwargs):
+
+        # super().get_serializer()
+
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        return serializer_class(*args, **kwargs,
+                                include_only=["id", "first_name", "last_name", "full_name", "phone", "balance",
+                                            "role","created_at"])
+
     def get_queryset(self):
         user = self.request.user
         filial = self.request.query_params.get('filial', None)
@@ -171,6 +181,7 @@ class StuffRolesView(ListAPIView):
     # permission_classes = (IsAuthenticated,)
     queryset = CustomUser.objects.all()
     serializer_class = UserListSerializer
+    pagination_class = None
 
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ('role', 'first_name', 'last_name')

@@ -52,11 +52,13 @@ class LidSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        include_only: list | None = kwargs.pop("include_only", None)
+
+        if fields_to_remove and include_only:
+            raise ValueError("You cannot use 'remove_fields' and 'include_only' at the same time.")
+
         super(LidSerializer, self).__init__(*args, **kwargs)
 
-        if fields_to_remove:
-            for field in fields_to_remove:
-                self.fields.pop(field, None)
 
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(lid__id=obj.id)
