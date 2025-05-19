@@ -75,6 +75,6 @@ def on_payment_method(sender, instance: Group, created: bool, **kwargs):
     if created:
         group_count = Group.objects.all().count()
         if group_count == 1:
-             Group_Type.objects.create(
-                 price_type=instance.price_type
-             )
+            Group_Type.objects.create(
+                price_type=instance.price_type
+            )

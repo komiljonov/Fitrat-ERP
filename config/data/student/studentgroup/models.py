@@ -1,9 +1,9 @@
 from django.db import models
 
 from data.command.models import BaseModel
-from data.student.groups.models import Group , SecondaryGroup
-from data.student.student.models import Student
 from data.lid.new_lid.models import Lid
+from data.student.groups.models import Group, SecondaryGroup
+from data.student.student.models import Student
 
 
 # Create your models here.
@@ -31,9 +31,6 @@ class SecondaryStudentGroup(BaseModel):
     lid: "Lid" = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,
                                    related_name="lids_secondary_group", null=True, blank=True)
 
-
     class Meta:
         verbose_name = "Secondary Add group"
         verbose_name_plural = "Secondary Add group"
-
-
