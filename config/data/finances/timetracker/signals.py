@@ -6,6 +6,7 @@ from rest_framework.generics import get_object_or_404
 from .models import Employee_attendance, UserTimeLine
 from ...account.models import CustomUser
 
+
 @receiver(post_save, sender=Employee_attendance)
 def on_update(sender, instance: Employee_attendance, created, **kwargs):
     if created:
@@ -30,4 +31,3 @@ def on_update(sender, instance: Employee_attendance, created, **kwargs):
         #
         #         instance.is_merged = True
         #         instance.save()
-
