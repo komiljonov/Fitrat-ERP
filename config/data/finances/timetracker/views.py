@@ -1,4 +1,5 @@
 from django.utils.dateparse import parse_datetime
+from icecream import ic
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
@@ -10,6 +11,12 @@ class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
 
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ic(request.data)
+        return super(AttendanceList, self).create(request, *args, **kwargs)
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
         user_id = self.request.query_params.get('id')
