@@ -24,6 +24,7 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        ic(self.fields,self.validated_data)
         ic(validated_data)
         employee = validated_data.get("employee")
 
