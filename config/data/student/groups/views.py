@@ -18,7 +18,7 @@ from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer
     DaySerializer, RoomFilterSerializer
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
-from ..studentgroup.models import StudentGroup
+from ..studentgroup.models import SecondaryStudentGroup
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -98,9 +98,9 @@ class GroupListAPIView(ListAPIView):
     pagination_class = None
 
     def get_serializer(self, *args, **kwargs):
-    
+
         # super().get_serializer()
-    
+
         serializer_class = self.get_serializer_class()
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
@@ -640,7 +640,6 @@ class GroupIsActiveNowAPIView(APIView):
         return Response({"is_scheduled_now": False})
 
 
-
 class SecondaryGroupIsActiveNowAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -695,7 +694,7 @@ class StudentGroupIsActiveNowAPIView(APIView):
         student_id = self.kwargs.get('pk', None)
         ic(student_id)
 
-        group = get_object_or_404(StudentGroup, Q(student_id=student_id) | Q(lid_id=student_id))
+        group = get_object_or_404(SecondaryStudentGroup, Q(student_id=student_id) | Q(lid_id=student_id))
 
         now_time = datetime.datetime.now()
         current_weekday_en = now_time.strftime('%A')
