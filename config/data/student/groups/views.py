@@ -702,17 +702,12 @@ class StudentGroupIsActiveNowAPIView(APIView):
         current_time = now_time.time()
 
         for day in group.group.scheduled_day_type.all():
-            ic(day)
             if day.name.lower() == current_weekday_uz:
-                ic(day.name.lower(), current_weekday_uz)
 
                 start = group.group.started_at
                 end = group.group.ended_at
 
-                ic(start, end, current_time)
-
                 if start <= current_time <= end:
-                    ic("------")
                     return Response({
                         "is_scheduled_now": True,
                         "group_id": group.id
