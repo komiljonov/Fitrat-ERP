@@ -1,3 +1,4 @@
+from django.shortcuts import aget_object_or_404, get_object_or_404
 from rest_framework import serializers
 
 from data.account.models import CustomUser
@@ -20,6 +21,18 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
             "date",
             "created_at",
         ]
+
+    def update(self, instance, validated_data):
+        if instance.check_in and instance.check_out:
+            attendance = get_object_or_404(
+                Employee_attendance,
+                user=instance.user,
+                check_in=instance.check_in
+            )
+            attendance.check_out = instance.check_out
+            attendance.save()
+
+        return instance
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
