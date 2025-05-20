@@ -14,10 +14,9 @@ class AttendanceList(ListCreateAPIView):
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
         user_id = self.request.query_params.get('id')
-        action = self.request.query_params.get('action')
-        type = self.request.query_params.get('type')
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+        not_marked = self.request.GET.get('not_marked')
 
         queryset = Employee_attendance.objects.all()
 
@@ -26,11 +25,8 @@ class AttendanceList(ListCreateAPIView):
         if start_date and end_date:
             queryset = queryset.filter(date__gte=parse_datetime(start_date),
                                        date__lte=parse_datetime(end_date))
-
-        if type:
-            queryset = queryset.filter(type=type)
-        if action:
-            queryset = queryset.filter(action=action)
+        if not_marked:
+            queryset = queryset.filter(date__lte=parse_datetime(end_date))
         if filial:
             queryset = queryset.filter(filial__id=filial)
         if user_id:
