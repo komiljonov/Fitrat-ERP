@@ -20,6 +20,7 @@ class Employee_attendance(BaseModel):
             ("Late", "Late"),
         ],max_length=10,null=True,blank=True
     )
+    is_merged = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.employee.full_name}   {self.check_in}   {self.check_out}"
 

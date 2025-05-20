@@ -8,9 +8,9 @@ from .models import Employee_attendance, UserTimeLine
 
 @admin.register(Employee_attendance)
 class TimeTrackerAdmin(admin.ModelAdmin):
-    list_display = ('employee__full_name', "check_in","check_out")
+    list_display = ('employee__full_name', "check_in","check_out","is_merged")
     search_fields = ('employee__full_name', "check_in","check_out")
-    list_filter = ('employee__full_name', "check_in","check_out")
+    list_filter = ('employee__full_name', "check_in","check_out","is_merged")
 
 
 @admin.register(UserTimeLine)
