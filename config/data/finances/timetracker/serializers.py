@@ -9,6 +9,7 @@ from ...account.serializers import UserSerializer
 
 
 class TimeTrackerSerializer(serializers.ModelSerializer):
+    # Bind employee via second_user field
     employee = serializers.SlugRelatedField(
         queryset=CustomUser.objects.all(),
         slug_field="second_user",
@@ -26,6 +27,26 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
             "date",
             "created_at",
         ]
+
+    def update(self, instance, validated_data):
+        if instance.check_in and instance.check_out:
+            attendance = get_object_or_404(
+                Employee_attendance,
+                employee=instance.employee,
+                check_in=instance.check_in
+            )
+            attendance.check_out = instance.check_out
+            attendance.save()
+
+        return instance
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["employee"] = {
+            "id": instance.employee.id if instance.employee else None,
+            "full_name": instance.employee.full_name if instance.employee else None,
+            "second_user": instance.employee.second_user if instance.employee else None,
+        }
+        return rep
     #
     # def create(self, validated_data):
     #     ic(self.fields,self.validated_data)
@@ -44,17 +65,7 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
     #
     #     return super().create(validated_data)
 
-    def update(self, instance, validated_data):
-        if instance.check_in and instance.check_out:
-            attendance = get_object_or_404(
-                Employee_attendance,
-                employee=instance.employee,
-                check_in=instance.check_in
-            )
-            attendance.check_out = instance.check_out
-            attendance.save()
 
-        return instance
 
     # def to_representation(self, instance):
     #     rep = super().to_representation(instance)
