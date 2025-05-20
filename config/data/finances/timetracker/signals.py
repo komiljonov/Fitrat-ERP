@@ -22,3 +22,5 @@ def on_create(sender, instance: Employee_attendance, created, **kwargs):
                     instance.type = "On_time"
 
                 instance.save()
+
+

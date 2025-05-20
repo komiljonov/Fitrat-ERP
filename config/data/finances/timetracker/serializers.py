@@ -14,8 +14,9 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
-            "action",
-            "type",
+            "check_in",
+            "check_out",
+            "not_marked",
             "date",
             "created_at",
         ]
