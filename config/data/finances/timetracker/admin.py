@@ -6,11 +6,11 @@ from .models import Employee_attendance, UserTimeLine
 # Register your models here.
 
 
-@admin.register(Employee_attendance)
-class FinansAdmin(admin.ModelAdmin):
-    list_display = ('user__full_name', "check_in","check_out")
-    search_fields = ('user__full_name', "check_in","check_out")
-    list_filter = ('user__full_name', "check_in","check_out")
+# @admin.register(Employee_attendance)
+# class FinansAdmin(admin.ModelAdmin):
+#     list_display = ('user__full_name', "check_in","check_out")
+#     search_fields = ('user__full_name', "check_in","check_out")
+#     list_filter = ('user__full_name', "check_in","check_out")
 
 
 @admin.register(UserTimeLine)
