@@ -5,7 +5,7 @@ from data.account.models import CustomUser
 from ...command.models import BaseModel
 
 class Employee_attendance(BaseModel):
-    employee : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name="employee_attendance")
+    user : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name="employee_attendance")
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
     not_marked = models.BooleanField(default=False)
@@ -19,7 +19,7 @@ class Employee_attendance(BaseModel):
         ],max_length=10,null=True,blank=True
     )
     def __str__(self):
-        return f"{self.employee.full_name}   {self.check_in}   {self.check_out}"
+        return f"{self.user.full_name}   {self.check_in}   {self.check_out}"
 
 
 class UserTimeLine(BaseModel):
