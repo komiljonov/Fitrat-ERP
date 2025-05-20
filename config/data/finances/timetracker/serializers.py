@@ -24,15 +24,21 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        ic(validated_data)
-        employee = validated_data.pop("employee")
+        ic(validated_data)  # Logs full input
+        employee = validated_data.get("employee")
+
+        # Log the raw value for debugging
+        ic(employee)
 
         if employee:
-            user = get_object_or_404(CustomUser, second_user=employee)
-            validated_data["employee"] = user.id
-            validated_data["second_user"] = employee
+            try:
+                user = CustomUser.objects.get(second_user=employee)
+                validated_data["employee"] = user.id
+                validated_data["second_user"] = employee
+            except CustomUser.DoesNotExist:
+                raise serializers.ValidationError({"employee": "No matching user for given secondary reference."})
 
-        return super(TimeTrackerSerializer, self).create(validated_data)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         if instance.check_in and instance.check_out:
