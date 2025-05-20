@@ -695,8 +695,8 @@ class StudentGroupIsActiveNowAPIView(APIView):
         student_id = self.kwargs.get('pk', None)
         ic(student_id)
 
-        group = get_object_or_404(StudentGroup, Q(student_id=student_id) ,
-                                  Q(lid_id=student_id))
+        group = get_object_or_404(StudentGroup, Q(student_id=student_id) | Q(lid_id=student_id))
+
 
         now_time = datetime.datetime.now()
         current_weekday_en = now_time.strftime('%A')
