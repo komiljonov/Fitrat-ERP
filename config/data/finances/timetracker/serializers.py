@@ -24,10 +24,9 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        ic(validated_data)  # Logs full input
+        ic(validated_data)
         employee = validated_data.get("employee")
 
-        # Log the raw value for debugging
         ic(employee)
 
         if employee:
