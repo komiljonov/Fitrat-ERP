@@ -9,7 +9,6 @@ from .serializers import TimeTrackerSerializer, UserTimeLineSerializer
 class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')

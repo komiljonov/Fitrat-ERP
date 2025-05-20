@@ -697,6 +697,7 @@ class StudentGroupIsActiveNowAPIView(APIView):
 
         group = get_object_or_404(StudentGroup, Q(student_id=student_id) | Q(lid_id=student_id))
 
+        ic(group)
 
         now_time = datetime.datetime.now()
         current_weekday_en = now_time.strftime('%A')
@@ -705,7 +706,6 @@ class StudentGroupIsActiveNowAPIView(APIView):
 
         for day in group.group.scheduled_day_type.all():
             if day.name.lower() == current_weekday_uz:
-                ic(group.name)
                 start = group.started_at
                 end = group.ended_at
 
