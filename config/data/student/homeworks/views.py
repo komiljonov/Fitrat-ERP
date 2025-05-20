@@ -69,6 +69,6 @@ class HomeworkHistoryListCreateView(ListCreateAPIView):
 
 
 class HomeworkHistoryView(RetrieveUpdateDestroyAPIView):
-    queryset = Homework.objects.all()
+    queryset = Homework_history.objects.all()
     serializer_class = HomeworksHistorySerializer
     permission_classes = [IsAuthenticated]
