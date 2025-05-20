@@ -130,11 +130,12 @@ class GroupSerializer(serializers.ModelSerializer):
         return res
 
     def create(self, validated_data):
-        status = validated_data.pop("status",None)
+        status = validated_data.pop("status", None)
         scheduled_day_type_data = validated_data.pop('scheduled_day_type', [])
         filial = validated_data.pop("filial", None)
+
         if not filial:
-            request = self.context.get("request")  #
+            request = self.context.get("request")
             if request and hasattr(request.user, "filial"):
                 filial = request.user.filial.first()
 
@@ -147,8 +148,15 @@ class GroupSerializer(serializers.ModelSerializer):
                 status = group_type.price_type
                 validated_data["status"] = status
 
+        # ✅ Ensure course exists
+        course = validated_data.get("course")
+        if not course:
+            raise serializers.ValidationError({"course": "This field is required."})
+
+        # ✅ Create the group
         group = Group.objects.create(filial=filial, **validated_data)
 
+        # ✅ Set related ManyToMany data
         group.scheduled_day_type.set(scheduled_day_type_data)
 
         return group
