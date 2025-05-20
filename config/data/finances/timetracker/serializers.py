@@ -1,4 +1,5 @@
 from django.shortcuts import aget_object_or_404, get_object_or_404
+from icecream import ic
 from rest_framework import serializers
 
 from data.account.models import CustomUser
@@ -21,12 +22,16 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
             "date",
             "created_at",
         ]
+
     def create(self, validated_data):
+        ic(validated_data)
         employee = validated_data.pop("employee")
+
         if employee:
             user = get_object_or_404(CustomUser, second_user=employee)
             validated_data["employee"] = user.id
             validated_data["second_user"] = employee
+
         return super(TimeTrackerSerializer, self).create(validated_data)
 
     def update(self, instance, validated_data):
