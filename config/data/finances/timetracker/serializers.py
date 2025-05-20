@@ -1,11 +1,7 @@
-from django.shortcuts import aget_object_or_404, get_object_or_404
-from icecream import ic
 from rest_framework import serializers
 
 from data.account.models import CustomUser
-
 from .models import Employee_attendance, UserTimeLine
-from ...account.serializers import UserSerializer
 
 
 class TimeTrackerSerializer(serializers.ModelSerializer):
