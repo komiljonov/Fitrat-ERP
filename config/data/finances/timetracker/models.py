@@ -25,7 +25,11 @@ class Employee_attendance(BaseModel):
 
 
 class UserTimeLine(BaseModel):
-    user : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name="user_timeline")
+    user : "CustomUser" = models.ForeignKey(
+        "account.CustomUser",
+        on_delete=models.CASCADE,
+        related_name="user_timeline"
+    )
     day = models.CharField(choices=[
         ("Monday","Monday"),
         ("Tuesday","Tuesday"),
