@@ -16,8 +16,7 @@ class Employee_attendance(BaseModel):
         choices=[
            ("On_time", "On_time"),
             ("Late", "Late"),
-        ],
-        default="On_time", max_length=10,null=True,blank=True
+        ],max_length=10,null=True,blank=True
     )
     def __str__(self):
         return f"{self.user.full_name}   {self.check_in}   {self.check_out}"
