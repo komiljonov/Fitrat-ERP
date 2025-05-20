@@ -1,25 +1,23 @@
 import datetime
-from django.db.models.signals import post_save
+
+from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from rest_framework.generics import get_object_or_404
 
 from .models import Employee_attendance, UserTimeLine
-from ...account.models import CustomUser
 
 
-@receiver(post_save, sender=Employee_attendance)
-def on_update(sender, instance: Employee_attendance, created, **kwargs):
-    if created:
-        if instance.check_in and instance.check_out is None:
-
-            day_name = datetime.datetime.today().strftime('%A')
+@receiver(pre_save, sender=Employee_attendance)
+def on_update(sender, instance: Employee_attendance, **kwargs):
+    if instance.check_in and instance.check_out is None:
+        day_name = datetime.datetime.today().strftime('%A')
+        try:
             timeline = UserTimeLine.objects.get(user=instance.employee, day=day_name)
             if timeline.start_time and instance.check_in > timeline.start_time:
                 instance.status = "Late"
             else:
                 instance.status = "On_time"
-            instance.save()
-
+        except UserTimeLine.DoesNotExist:
+            pass  # optionally log or handle missing timeline
         # elif instance.check_in and instance.check_out:
         #     pair = get_object_or_404(
         #         Employee_attendance,
