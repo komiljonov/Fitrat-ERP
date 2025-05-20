@@ -6,7 +6,9 @@ from ...command.models import BaseModel
 
 
 class Employee_attendance(BaseModel):
-    employee : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name="employee_attendance")
+    employee : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL,
+                                                related_name="employee_attendance",null=True, blank=True)
+    second_user = models.CharField("TimeTracker User Id", max_length=100, null=True, blank=True)
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
     not_marked = models.BooleanField(default=False)

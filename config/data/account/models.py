@@ -14,6 +14,7 @@ class CustomUser(AbstractUser):
     username = None
     files : 'File' = models.ManyToManyField('upload.File',
                                             blank=True,related_name='account_files')
+    second_user = models.CharField(max_length=100,null=True ,blank=True)
     full_name = models.CharField(max_length=100, blank=True, null=True)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
