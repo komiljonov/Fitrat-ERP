@@ -14,8 +14,8 @@ class Employee_attendance(BaseModel):
     amount = models.FloatField(default=0)
     status = models.CharField(
         choices=[
-            "On_time",
-            "Late"
+           ( "On_time"),
+            ("Late")
         ],
         default="On_time", max_length=10,null=True,blank=True
     )
