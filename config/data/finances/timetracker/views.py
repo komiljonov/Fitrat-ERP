@@ -30,7 +30,7 @@ class AttendanceList(ListCreateAPIView):
         if filial:
             queryset = queryset.filter(filial__id=filial)
         if user_id:
-            queryset = queryset.filter(user_id=user_id)
+            queryset = queryset.filter(employee_id=user_id)
 
         return queryset
 
