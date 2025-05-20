@@ -715,4 +715,5 @@ class StudentGroupIsActiveNowAPIView(APIView):
                         "group_id":group.id
                                      })
 
-        return Response({"is_scheduled_now": False})
+        return Response({"is_scheduled_now": False,
+                         "group_id":None})
