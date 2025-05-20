@@ -51,10 +51,10 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        rep["employee"] = UserSerializer(instance.employee).data
-        return rep
+    # def to_representation(self, instance):
+    #     rep = super().to_representation(instance)
+    #     rep["employee"] = UserSerializer(instance.employee).data
+    #     return rep
 
 
 class UserTimeLineSerializer(serializers.ModelSerializer):

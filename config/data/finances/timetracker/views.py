@@ -11,12 +11,6 @@ class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
 
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        ic(request.data)
-        return super(AttendanceList, self).create(request, *args, **kwargs)
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
         user_id = self.request.query_params.get('id')
