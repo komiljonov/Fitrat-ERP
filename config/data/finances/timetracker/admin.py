@@ -15,6 +15,6 @@ from .models import Employee_attendance, UserTimeLine
 
 @admin.register(UserTimeLine)
 class UserTimeLineAdmin(admin.ModelAdmin):
-    list_display = ('user__full_name', 'day',"start_time", "end_time")
-    search_fields = ('user__full_name', 'day', 'start_time', 'end_time')
-    list_filter = ('user__full_name', 'day', 'start_time', 'end_time')
+    list_display = ('employee__full_name', 'day',"start_time", "end_time")
+    search_fields = ('employee__full_name', 'day', 'start_time', 'end_time')
+    list_filter = ('employee__full_name', 'day', 'start_time', 'end_time')

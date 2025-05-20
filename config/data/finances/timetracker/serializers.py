@@ -8,13 +8,13 @@ from ...account.serializers import UserSerializer
 
 
 class TimeTrackerSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),
+    employee = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),
                                               allow_null=True)
     class Meta:
         model = Employee_attendance
         fields = [
             "id",
-            "user",
+            "employee",
             "check_in",
             "check_out",
             "not_marked",
@@ -26,7 +26,7 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
         if instance.check_in and instance.check_out:
             attendance = get_object_or_404(
                 Employee_attendance,
-                user=instance.user,
+                employee=instance.employee,
                 check_in=instance.check_in
             )
             attendance.check_out = instance.check_out
@@ -36,7 +36,7 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["user"] = UserSerializer(instance.user).data
+        rep["employee"] = UserSerializer(instance.employee).data
         return rep
 
 
