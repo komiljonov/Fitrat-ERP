@@ -1,25 +1,65 @@
 from django.utils.dateparse import parse_datetime
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Employee_attendance, UserTimeLine
-from .serializers import TimeTrackerSerializer, UserTimeLineSerializer
-from .sinx import TimetrackerSinc
-
+from .models import Employee_attendance, CustomUser, UserTimeLine
+from .serializers import TimeTrackerSerializer
+from .serializers import UserTimeLineSerializer
+from .sinx import TimetrackerSinc  # assuming you keep that class in a separate file
 
 class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
     permission_classes = [IsAuthenticated]
 
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     tt = TimetrackerSinc()
-    #     create = tt.create_data(serializer.validated_data)
-    #     return Response(create, status=status.HTTP_201_CREATED)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        tt = TimetrackerSinc()
+
+        user = CustomUser.objects.filter(id=serializer.data['employee']).first()
+        if not user:
+            return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        timelines = UserTimeLine.objects.filter(user=user)
+        timeline_by_day = {tl.day: tl for tl in timelines}
+
+        def get_day_times(day_name):
+            tl = timeline_by_day.get(day_name)
+            if tl:
+                return {
+                    "start": tl.start_time.strftime("%H:%M"),
+                    "end": tl.end_time.strftime("%H:%M")
+                }
+            else:
+                return None
+
+        external_data = {
+            "name": user.full_name,
+            "phone_number": user.phone,
+            "filials": [],  # Add real filial info if available
+            "salary": user.salary,
+            "wt_monday": get_day_times("Monday"),
+            "wt_tuesday": get_day_times("Tuesday"),
+            "wt_wednesday": get_day_times("Wednesday"),
+            "wt_thursday": get_day_times("Thursday"),
+            "wt_friday": get_day_times("Friday"),
+            "wt_saturday": get_day_times("Saturday"),
+            "wt_sunday": get_day_times("Sunday"),
+            "lunch_time": None
+        }
+
+        external_response = tt.create_data(external_data)
+
+        return Response({
+            "local": serializer.data,
+            "external": external_response
+        }, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
