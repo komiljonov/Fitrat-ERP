@@ -1,6 +1,4 @@
 # Create your views here.
-import re
-import urllib
 
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
@@ -24,22 +22,20 @@ from .models import CustomUser
 from .serializers import UserCreateSerializer, UserUpdateSerializer, CheckNumberSerializer
 from .utils import build_weekly_schedule
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
-from ..finances.timetracker.models import UserTimeLine
 from ..finances.timetracker.sinx import TimetrackerSinc
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
-
 class RegisterAPIView(CreateAPIView):
     serializer_class = UserCreateSerializer
+
     # permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Check if the phone number already exists
         phone = serializer.validated_data['phone']
         if CustomUser.objects.filter(phone=phone).exists():
             return Response({'success': False, 'message': 'already_used_number'},
@@ -47,7 +43,7 @@ class RegisterAPIView(CreateAPIView):
 
         user = serializer.save()
         user_serializer = UserCreateSerializer(user)
-
+        ic(build_weekly_schedule(user))
         external_data = {
             "name": user.full_name,
             "phone_number": user.phone,
@@ -67,7 +63,6 @@ class RegisterAPIView(CreateAPIView):
         }, status=status.HTTP_201_CREATED)
 
 
-
 class UserList(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserListSerializer
@@ -80,7 +75,7 @@ class UserList(ListAPIView):
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
                                 include_only=["id", "first_name", "last_name", "full_name", "phone", "balance",
-                                            "role","created_at"])
+                                              "role", "created_at"])
 
     def get_queryset(self):
         user = self.request.user
@@ -91,7 +86,7 @@ class UserList(ListAPIView):
         is_archived = self.request.query_params.get('is_archived', None)
 
         subject = self.request.query_params.get('subject', None)
-        queryset = CustomUser.objects.filter().exclude(role__in=["Student","Parents"])
+        queryset = CustomUser.objects.filter().exclude(role__in=["Student", "Parents"])
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
@@ -137,17 +132,18 @@ class CustomAuthToken(TokenObtainPairView):
             'filial': filial,
         }, status=status.HTTP_200_OK)
 
+
 class UserUpdateAPIView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = CustomUser.objects.all()
     serializer_class = UserUpdateSerializer
+
 
 class CheckNumberApi(APIView):
     """
     API to check if a phone number exists in the database.
     Accepts phone number from request body.
     """
-
 
     @swagger_auto_schema(
         request_body=CheckNumberSerializer,  # ✅ Adds request body documentation in Swagger
@@ -163,7 +159,6 @@ class CheckNumberApi(APIView):
         exists = CustomUser.objects.filter(phone=phone).exists()
 
         return Response({"exists": exists}, status=status.HTTP_200_OK)
-
 
 
 class LogoutAPIView(APIView):
@@ -186,11 +181,10 @@ class UserInfo(APIView):
             raise NotFound(detail="User not found.")
 
         # Serialize the user data
-        user_serializer = UserSerializer(user,context ={
+        user_serializer = UserSerializer(user, context={
             "request": request
         })
         return Response(user_serializer.data)
-
 
 
 class StuffRolesView(ListAPIView):
@@ -246,7 +240,7 @@ class StuffRolesView(ListAPIView):
 class StuffList(ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     def get_queryset(self):
         id = self.kwargs['pk']
@@ -257,4 +251,3 @@ class StuffList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-

@@ -27,7 +27,7 @@ class TimetrackerSinc:
     def create_data(self, data):
         try:
             response = requests.post(
-                self.url + "employees/",
+                self.url + "employees/create",
                 json=data,
                 headers=self.headers
             )
