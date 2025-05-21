@@ -41,7 +41,6 @@ class RegisterAPIView(CreateAPIView):
 
         user = serializer.save()
         user_serializer = UserCreateSerializer(user)
-        ic(build_weekly_schedule(user))
         external_data = {
             "name": user.full_name,
             "phone_number": user.phone,
@@ -53,6 +52,8 @@ class RegisterAPIView(CreateAPIView):
 
         tt = TimetrackerSinc()
         external_response = tt.create_data(external_data)
+        user.second_user = external_response.get("id")
+        user.save()
 
         return Response({
             "success": True,
@@ -99,6 +100,34 @@ class UserList(ListAPIView):
             queryset = queryset.filter(role=role).order_by('-created_at')
 
         return queryset
+
+
+class TT_Data(APIView):
+    def get(self, request):
+        tt = TimetrackerSinc()
+        tt_data = tt.get_data()
+        count = 0
+        if tt_data:
+
+            for user in tt_data:
+                ic(user)
+                if user:
+                    check = CustomUser.objects.filter(full_name=user['name']).exists()
+                    if check:
+                        custom_user = CustomUser.objects.get(full_name=user['name'])
+                        try:
+                            custom_user.second_user = user['id']
+                            custom_user.save()
+                        except Exception as e:
+                            continue
+                        count += 1
+                        if user:
+                            continue
+                else:
+                    continue
+            ic(count)
+
+        return Response({"count":count}, status=status.HTTP_200_OK)
 
 
 class CustomAuthToken(TokenObtainPairView):

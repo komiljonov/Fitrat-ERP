@@ -1,5 +1,6 @@
 import requests
 from decouple import config
+from icecream import ic
 
 base_url = config('TT_URL')
 token = config('INTEGRATION_TOKEN')
@@ -8,8 +9,9 @@ class TimetrackerSinc:
     def __init__(self):
         self.INTEGRATION_TOKEN = token
         self.url = f"{base_url}/"
+
         self.headers = {
-            "X-Internal-Auth": self.INTEGRATION_TOKEN,
+            "X-Integration-Token": self.INTEGRATION_TOKEN,
             "Accept": "application/json",
             "Content-Type": "application/json"
         }
@@ -21,6 +23,7 @@ class TimetrackerSinc:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
+            print(e)
             print(f"[GET] Error: {e}")
             return None
 
@@ -31,6 +34,7 @@ class TimetrackerSinc:
                 json=data,
                 headers=self.headers
             )
+
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
