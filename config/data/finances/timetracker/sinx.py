@@ -1,9 +1,9 @@
 import requests
 from decouple import config
-from icecream import ic
 
 base_url = config('TT_URL')
 token = config('INTEGRATION_TOKEN')
+
 
 class TimetrackerSinc:
     def __init__(self):
