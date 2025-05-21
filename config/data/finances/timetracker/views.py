@@ -14,12 +14,12 @@ class AttendanceList(ListCreateAPIView):
     serializer_class = TimeTrackerSerializer
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        tt = TimetrackerSinc()
-        create = tt.create_data(serializer.validated_data)
-        return Response(create, status=status.HTTP_201_CREATED)
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     tt = TimetrackerSinc()
+    #     create = tt.create_data(serializer.validated_data)
+    #     return Response(create, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
