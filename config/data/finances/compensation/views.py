@@ -12,10 +12,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Bonus, Compensation, Page, Asos, Monitoring, Point, ResultSubjects, StudentCountMonitoring, \
-    ResultName, MonitoringAsos4, Comments, Monitoring5
+    ResultName, MonitoringAsos4, Comments, Monitoring5, MonitoringAsos1_2, Asos1_2
 from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer, \
     PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer, ResultsNameSerializer, \
-    MonitoringAsos4Serializer, CommentsSerializer, Monitoring5Serializer
+    MonitoringAsos4Serializer, CommentsSerializer, Monitoring5Serializer, Monitoring1_2serializer
 from ...account.models import CustomUser
 
 
@@ -385,7 +385,6 @@ class MonitoringBulkCreateView(APIView):
         return Response(MonitoringSerializer(instances, many=True).data, status=201)
 
 
-
 class Asos4ListCreateView(ListCreateAPIView):
     queryset = ResultSubjects.objects.all()
     serializer_class = ResultPointsSerializer
@@ -405,7 +404,6 @@ class Asos4ListCreateView(ListCreateAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
 
 
 class ResultSubjectRetrieveView(RetrieveUpdateDestroyAPIView):
@@ -433,7 +431,6 @@ class StudentCountRetrieveView(RetrieveUpdateDestroyAPIView):
     queryset = StudentCountMonitoring.objects.all()
     serializer_class = StudentCountMonitoringSerializer
     permission_classes = [IsAuthenticated]
-
 
 
 class ResultsNameListCreateView(ListCreateAPIView):
@@ -516,3 +513,25 @@ class Monitoring5List(ListAPIView):
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
         return queryset
+
+
+class MonitoringAsos_1_2List(ListCreateAPIView):
+    queryset = Asos1_2.objects.all()
+    serializer_class = Monitoring1_2serializer
+
+    def get_queryset(self):
+        asos = self.request.GET.get("asos")
+        type = self.request.GET.get("type")
+
+        queryset = Asos1_2.objects.all()
+        if asos:
+            queryset = queryset.filter(asos__id=asos)
+        if type:
+            queryset = queryset.filter(type=type)
+        return queryset
+
+
+class MonitoringAsos_1_2Update(RetrieveUpdateDestroyAPIView):
+    queryset = Asos1_2.objects.all()
+    serializer_class = Monitoring1_2serializer
+    permission_classes = [IsAuthenticated]

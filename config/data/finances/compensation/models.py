@@ -262,6 +262,19 @@ class StudentCatchingMonitoring(BaseModel):
 
 
 
+class Asos1_2(BaseModel):
+    asos = models.CharField(choices=[
+        ("asos1", "asos1"),
+        ("asos2", "asos2"),
+    ],max_length=256, null=True, blank=True)
+    ball = models.FloatField(default=0, null=True, blank=True)
+    type = models.CharField(choices=[
+        ("Bonus", "Bonus"),
+        ("Compensation", "Compensation"),
+    ], max_length=256, null=True, blank=True)
+    amount = models.FloatField(default=0, null=True, blank=True)
+
+
 class MonitoringAsos1_2(BaseModel):
     user : "CustomUser" = models.ForeignKey('account.CustomUser',
                         on_delete=models.SET_NULL, null=True, blank=True)
