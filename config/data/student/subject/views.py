@@ -180,7 +180,7 @@ class ThemePgList(ListCreateAPIView):
 
         if theme_filter and group_id:
             # Get latest attendance for this group and theme type
-            last_att = Attendance.objects.filter(
+            last_att = Attendance.objects.filter(   
                 group_id=group_id,
                 theme__theme=theme_filter
             ).order_by('-created_at').first()
