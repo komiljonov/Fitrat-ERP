@@ -5,8 +5,12 @@ from data.account.models import CustomUser
 from ...command.models import BaseModel
 
 class Employee_attendance(BaseModel):
-    employee : "CustomUser" = models.ForeignKey("account.CustomUser",to_field="second_user", on_delete=models.SET_NULL,
-                                                related_name="employee_attendance",null=True, blank=True)
+    employee : "CustomUser" = models.ForeignKey("account.CustomUser",
+        to_field="second_user",
+        on_delete=models.SET_NULL,
+        related_name="employee_attendance",
+        null=True, blank=True
+    )
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
     not_marked = models.BooleanField(default=False)

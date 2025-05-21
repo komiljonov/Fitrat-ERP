@@ -1,22 +1,33 @@
 from django.utils.dateparse import parse_datetime
-from icecream import ic
+from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .models import Employee_attendance, UserTimeLine
 from .serializers import TimeTrackerSerializer, UserTimeLineSerializer
+from .sinx import TimetrackerSinc
 
 
 class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        tt = TimetrackerSinc()
+        create = tt.create_data(serializer.validated_data)
+        return Response(create, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
         user_id = self.request.query_params.get('id')
+        action = self.request.query_params.get('action')
+        type = self.request.query_params.get('type')
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
-        not_marked = self.request.GET.get('not_marked')
 
         queryset = Employee_attendance.objects.all()
 
@@ -25,12 +36,15 @@ class AttendanceList(ListCreateAPIView):
         if start_date and end_date:
             queryset = queryset.filter(date__gte=parse_datetime(start_date),
                                        date__lte=parse_datetime(end_date))
-        if not_marked:
-            queryset = queryset.filter(date__lte=parse_datetime(end_date))
+
+        if type:
+            queryset = queryset.filter(type=type)
+        if action:
+            queryset = queryset.filter(action=action)
         if filial:
             queryset = queryset.filter(filial__id=filial)
         if user_id:
-            queryset = queryset.filter(employee_id=user_id)
+            queryset = queryset.filter(user_id=user_id)
 
         return queryset
 
