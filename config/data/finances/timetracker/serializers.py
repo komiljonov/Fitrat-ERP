@@ -1,17 +1,14 @@
 from rest_framework import serializers
 
 from data.account.models import CustomUser
+
 from .models import Employee_attendance, UserTimeLine
+from ...account.serializers import UserSerializer
 
 
 class TimeTrackerSerializer(serializers.ModelSerializer):
-    # Bind employee via second_user field
-    employee = serializers.SlugRelatedField(
-        queryset=CustomUser.objects.all(),
-        slug_field="second_user",
-        allow_null=True
-    )
-
+    employee = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),
+                                              allow_null=True)
     class Meta:
         model = Employee_attendance
         fields = [
@@ -20,19 +17,16 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
             "check_in",
             "check_out",
             "not_marked",
+            "status",
             "date",
+            "amount",
             "created_at",
         ]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["employee"] = {
-            "id": instance.employee.id if instance.employee else None,
-            "full_name": instance.employee.full_name if instance.employee else None,
-            "second_user": instance.employee.second_user if instance.employee else None,
-        }
+        rep["employee"] = UserSerializer(instance.employee).data
         return rep
-
 
 
 class UserTimeLineSerializer(serializers.ModelSerializer):
