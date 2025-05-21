@@ -52,6 +52,7 @@ class RegisterAPIView(CreateAPIView):
                         status=status.HTTP_201_CREATED)
 
 
+
 class UserList(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserListSerializer

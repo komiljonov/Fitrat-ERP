@@ -6,7 +6,7 @@ from .views import (
     AsosListRetrieveView, AsosNoPGListView, MonitoringBulkCreateView, MonitoringRetrieveView,
     PointListCreateView, PointRetrieveView, PointNoPGListView, MonitoringListCreateView,
     Asos4ListCreateView, ResultSubjectRetrieveView, StudentCountMonitoringListCreateView, MonitoringAsosListCreateView,
-    CommentsListCreateView, Monitoring5List, MonitoringAsos_1_2List,
+    CommentsListCreateView, Monitoring5List, MonitoringAsos_1_2List, MonitoringAsos_1_2Update,
 )
 
 urlpatterns = [
@@ -45,6 +45,6 @@ urlpatterns = [
     path("comments/",CommentsListCreateView.as_view()),
 
     path("asos1/",MonitoringAsos_1_2List.as_view()),
-    path("asos1/<uuid:pk>/",MonitoringRetrieveView.as_view()),
+    path("asos1/<uuid:pk>/",MonitoringAsos_1_2Update.as_view()),
 
 ]
