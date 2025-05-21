@@ -525,7 +525,7 @@ class MonitoringAsos_1_2List(ListCreateAPIView):
 
         queryset = Asos1_2.objects.all()
         if asos:
-            queryset = queryset.filter(asos__id=asos)
+            queryset = queryset.filter(asos=asos)
         if type:
             queryset = queryset.filter(type=type)
         return queryset
