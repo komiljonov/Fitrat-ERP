@@ -1,7 +1,7 @@
 import requests
 from decouple import config
 
-base_url = config('TT_urls')
+base_url = config('TT_URLS')
 
 class TimetrackerSinc:
     def __init__(self):
