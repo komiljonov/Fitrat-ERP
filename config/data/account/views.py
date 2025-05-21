@@ -22,7 +22,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import CustomUser
 from .serializers import UserCreateSerializer, UserUpdateSerializer, CheckNumberSerializer
+from .utils import build_weekly_schedule
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
+from ..finances.timetracker.models import UserTimeLine
+from ..finances.timetracker.sinx import TimetrackerSinc
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -42,14 +45,26 @@ class RegisterAPIView(CreateAPIView):
             return Response({'success': False, 'message': 'already_used_number'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # Save the user (this calls the `create` method of the serializer)
         user = serializer.save()
-
-        # Serialize the user to return a JSON response
         user_serializer = UserCreateSerializer(user)
 
-        return Response({"user": user_serializer.data, 'success': True, 'message': 'User created successfully.'},
-                        status=status.HTTP_201_CREATED)
+        external_data = {
+            "name": user.full_name,
+            "phone_number": user.phone,
+            "filials": [],
+            "salary": user.salary,
+            **build_weekly_schedule(user),
+            "lunch_time": None
+        }
+
+        tt = TimetrackerSinc()
+        external_response = tt.create_data(external_data)
+
+        return Response({
+            "success": True,
+            "user": user_serializer.data,
+            "external_response": external_response
+        }, status=status.HTTP_201_CREATED)
 
 
 
