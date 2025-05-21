@@ -1,23 +1,23 @@
 import datetime
 
+from data.finances.compensation.models import MonitoringAsos1_2
 from data.finances.timetracker.models import UserTimeLine
 
 
 def calculate_penalty(check_in, check_out, user_id) -> float:
-    # Get current day name (e.g., Monday)
+    timeline = UserTimeLine.objects.filter(user__id=user_id)
     day_name = datetime.datetime.today().strftime('%A')
+    today = timeline.filter(day=day_name)
 
-    try:
-        timeline = UserTimeLine.objects.get(user_id=user_id, day=day_name)
-    except UserTimeLine.DoesNotExist:
-        return 0
+    if today.exists():
+        amount_obj = MonitoringAsos1_2.objects.filter(user__id=user_id).first()
+        if not amount_obj:
+            return 0.0
 
-    if timeline.start_time:
-        timeline_start_minutes = timeline.start_time.hour * 60 + timeline.start_time.minute
-        check_in_minutes = check_in.hour * 60 + check_in.minute
+        delta = check_out - check_in
+        minutes = delta.total_seconds() / 60
 
-        late_minutes = check_in_minutes - timeline_start_minutes
-        if late_minutes > 0:
-            penalty = late_minutes * 10000
-            return penalty
-    return 0
+        if minutes > 0:
+            return minutes * amount_obj.amount
+    return 0.0
+

@@ -127,7 +127,7 @@ class TT_Data(APIView):
                     continue
             ic(count)
 
-        return Response({"count":count}, status=status.HTTP_200_OK)
+        return Response({"count": count}, status=status.HTTP_200_OK)
 
 
 class CustomAuthToken(TokenObtainPairView):
