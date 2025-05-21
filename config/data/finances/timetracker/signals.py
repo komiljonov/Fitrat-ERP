@@ -1,9 +1,10 @@
 import datetime
 
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
 from .models import Employee_attendance, UserTimeLine
+from .utils import calculate_penalty
 
 
 @receiver(pre_save, sender=Employee_attendance)
@@ -17,7 +18,7 @@ def on_update(sender, instance: Employee_attendance, **kwargs):
             else:
                 instance.status = "On_time"
         except UserTimeLine.DoesNotExist:
-            pass  # optionally log or handle missing timeline
+            pass
         # elif instance.check_in and instance.check_out:
         #     pair = get_object_or_404(
         #         Employee_attendance,
@@ -29,3 +30,10 @@ def on_update(sender, instance: Employee_attendance, **kwargs):
         #
         #         instance.is_merged = True
         #         instance.save()
+
+
+# @receiver(post_save,sender=Employee_attendance)
+# def on_amount_create(sender, instance: Employee_attendance,created, **kwargs):
+#     if created:
+#         if instance.check_in and instance.check_out :
+#             amount = calculate_penalty()
