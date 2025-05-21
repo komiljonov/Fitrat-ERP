@@ -30,8 +30,6 @@ pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 class RegisterAPIView(CreateAPIView):
     serializer_class = UserCreateSerializer
 
-    # permission_classes = [IsAuthenticated]
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

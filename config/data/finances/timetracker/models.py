@@ -21,6 +21,8 @@ class Employee_attendance(BaseModel):
         choices=[
            ("On_time", "On_time"),
             ("Late", "Late"),
+            ("Absent", "Absent"),
+            ("Gone", "Gone"),
         ],max_length=10,null=True,blank=True
     )
     def __str__(self):
