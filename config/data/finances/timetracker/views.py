@@ -15,52 +15,6 @@ class AttendanceList(ListCreateAPIView):
     serializer_class = TimeTrackerSerializer
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-
-        tt = TimetrackerSinc()
-
-        user = CustomUser.objects.filter(id=serializer.data['employee']).first()
-        if not user:
-            return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
-
-        timelines = UserTimeLine.objects.filter(user=user)
-        timeline_by_day = {tl.day: tl for tl in timelines}
-
-        def get_day_times(day_name):
-            tl = timeline_by_day.get(day_name)
-            if tl:
-                return {
-                    "start": tl.start_time.strftime("%H:%M"),
-                    "end": tl.end_time.strftime("%H:%M")
-                }
-            else:
-                return None
-
-        external_data = {
-            "name": user.full_name,
-            "phone_number": user.phone,
-            "filials": [],  # Add real filial info if available
-            "salary": user.salary,
-            "wt_monday": get_day_times("Monday"),
-            "wt_tuesday": get_day_times("Tuesday"),
-            "wt_wednesday": get_day_times("Wednesday"),
-            "wt_thursday": get_day_times("Thursday"),
-            "wt_friday": get_day_times("Friday"),
-            "wt_saturday": get_day_times("Saturday"),
-            "wt_sunday": get_day_times("Sunday"),
-            "lunch_time": None
-        }
-
-        external_response = tt.create_data(external_data)
-
-        return Response({
-            "local": serializer.data,
-            "external": external_response
-        }, status=status.HTTP_201_CREATED)
-
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
         user_id = self.request.query_params.get('id')
