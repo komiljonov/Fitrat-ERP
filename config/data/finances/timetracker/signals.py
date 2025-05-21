@@ -8,12 +8,12 @@ from ...account.models import CustomUser
 @receiver(post_save, sender=Employee_attendance)
 def on_create(sender, instance: Employee_attendance, created, **kwargs):
     if created:
-        if instance.user and instance.action == "In_office":
-            user = CustomUser.objects.get(id=instance.user.id)
+        if instance.employee and instance.status == "In_office":
+            employee = CustomUser.objects.get(id=instance.employee.id)
 
             # Extract time from datetime
             check_in_time = instance.date.time() if instance.date else None
-            expected_time = user.enter.time() if user.enter else None
+            expected_time = employee.enter.time() if employee.enter else None
 
             if check_in_time and expected_time:
                 if check_in_time > expected_time:
