@@ -241,7 +241,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "is_linked","phone", "role", "penalty" ,"pages", "files",
-            "photo", "filial", "balance", "ball", "salary","extra_number","is_call_center",
+            "photo", "filial", "balance", "ball", "salary","extra_number","is_call_center","second_user",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation",
             "updated_at","is_archived"
         )
