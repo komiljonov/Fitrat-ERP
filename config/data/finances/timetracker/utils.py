@@ -2,7 +2,7 @@ import datetime
 
 from icecream import ic
 
-from data.finances.compensation.models import MonitoringAsos1_2
+from data.finances.compensation.models import MonitoringAsos1_2, Asos1_2
 from data.finances.timetracker.models import UserTimeLine
 
 
@@ -14,8 +14,7 @@ def calculate_penalty(check_in, check_out, user_id) -> float:
 
     if today.exists():
         ic(user_id)
-        amount_obj = MonitoringAsos1_2.objects.filter(
-            user__id=user_id,
+        amount_obj = Asos1_2.objects.filter(
             asos="asos1",
             type="Compensation"
         ).first()
@@ -25,6 +24,7 @@ def calculate_penalty(check_in, check_out, user_id) -> float:
 
         delta = check_out - check_in
         minutes = delta.total_seconds() / 60
+        ic(minutes)
 
         if minutes > 0:
             return minutes * amount_obj.amount
