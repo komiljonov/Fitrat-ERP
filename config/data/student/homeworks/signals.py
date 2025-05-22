@@ -33,6 +33,9 @@ def on_create(sender, instance: Homework_history, created, **kwargs):
                 instance.status = "Passed"
                 instance.save()
 
+
+@receiver(post_save, sender=Homework_history)
+def on_update(sender, instance: Homework_history, created, **kwargs):
     if not created:
         quiz = Quiz.objects.filter(homework=instance.homework).first()
         if instance.mark:
