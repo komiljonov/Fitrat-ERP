@@ -51,8 +51,8 @@ def on_update(sender, instance: Homework_history, created, **kwargs):
         ).first()
 
         if mastering:
-            mastering.mark = instance.mark
-            mastering.save(update_fields=['mark'])
-            print(f"✅ Updated mastering mark to {mastering.mark}")
+            mastering.ball = instance.mark
+            mastering.save(update_fields=['ball'])
+            print(f"✅ Updated mastering ball to {mastering.ball}")
         else:
             print("❗ Mastering not found.")
