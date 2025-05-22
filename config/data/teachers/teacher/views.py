@@ -263,10 +263,12 @@ class StudentsAvgLearning(APIView):
                 homework_id = Homework_history.objects.filter(
                     homework__theme=m.theme,
                     student=m.student,
-                ).first().id
+                ).first()
+                if homework_id is None:
+                    homework_id = None
 
                 item = {
-                    "homework_id": homework_id or None,
+                    "homework_id": homework_id.id if homework_id else None,
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
