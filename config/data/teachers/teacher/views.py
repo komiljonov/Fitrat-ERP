@@ -264,8 +264,6 @@ class StudentsAvgLearning(APIView):
                     homework__theme=m.theme,
                     student=m.student,
                 ).first()
-                if homework_id is None:
-                    homework_id = None
 
                 item = {
                     "homework_id": homework_id.id if homework_id else None,
