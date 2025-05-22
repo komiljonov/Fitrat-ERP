@@ -15,8 +15,8 @@ def on_create(sender, instance: Homework_history, created, **kwargs):
             mastering = Mastering.objects.create(
                 student=instance.student,
                 theme=instance.homework.theme,
-                test=instance.homework,
-                quiz=quiz or None,
+                test=quiz,
+                ball=instance.mark
             )
             if mastering:
                 Notification.objects.create(
@@ -32,3 +32,15 @@ def on_create(sender, instance: Homework_history, created, **kwargs):
             else:
                 instance.status = "Passed"
                 instance.save()
+
+    if not created:
+        quiz = Quiz.objects.filter(homework=instance.homework).first()
+        if instance.mark:
+            mastering = Mastering.objects.filter(
+                student=instance.student,
+                theme=instance.homework.theme,
+                test=quiz,
+                quiz=quiz or None
+            ).first()
+            mastering.mark = instance.mark
+            mastering.save()
