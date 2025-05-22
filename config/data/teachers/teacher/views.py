@@ -14,6 +14,7 @@ from ...notifications.models import Complaint
 from ...results.models import Results
 from ...student.groups.models import Group, SecondaryGroup
 from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
+from ...student.homeworks.models import Homework, Homework_history
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.mastering.models import Mastering, MasteringTeachers
@@ -259,7 +260,13 @@ class StudentsAvgLearning(APIView):
             exams = []
             homeworks = []
             for m in student_record:
+                homework_id = Homework_history.objects.filter(
+                    homework__theme=m.theme,
+                    student=m.student,
+                ).first().id
+
                 item = {
+                    "homework_id": homework_id,
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
