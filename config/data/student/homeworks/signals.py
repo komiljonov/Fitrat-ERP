@@ -53,6 +53,6 @@ def on_update(sender, instance: Homework_history, created, **kwargs):
         if mastering:
             mastering.mark = instance.mark
             mastering.save()
-            print(f"✅ Updated mastering mark to {instance.mark}")
+            print(f"✅ Updated mastering mark to {mastering.mark}")
         else:
             print("❗ Mastering not found.")
