@@ -40,7 +40,6 @@ def on_create(sender, instance: Homework_history, created, **kwargs):
                 student=instance.student,
                 theme=instance.homework.theme,
                 test=quiz,
-                quiz=quiz or None
             ).first()
             mastering.mark = instance.mark
             mastering.save()
