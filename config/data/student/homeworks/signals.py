@@ -39,20 +39,20 @@ def on_update(sender, instance: Homework_history, created, **kwargs):
     print("🔔 Signal triggered")
 
     if not created and instance.mark is not None:
-        quiz = Quiz.objects.filter(homework=instance.homework).first()
+        quiz = Quiz.objects.filter(
+            homework=instance.homework,
+            theme=instance.homework.theme,
+        ).first()
 
-        if quiz:
-            mastering = Mastering.objects.filter(
-                student=instance.student,
-                theme=instance.homework.theme,
-                test=quiz,
-            ).first()
+        mastering = Mastering.objects.filter(
+            student=instance.student,
+            theme=instance.homework.theme,
+            test=quiz or None,
+        ).first()
 
-            if mastering:
-                mastering.mark = instance.mark
-                mastering.save()
-                print(f"✅ Updated mastering mark to {instance.mark}")
-            else:
-                print("❗ Mastering not found.")
+        if mastering:
+            mastering.mark = instance.mark
+            mastering.save()
+            print(f"✅ Updated mastering mark to {instance.mark}")
         else:
-            print("❗ Quiz not found.")
+            print("❗ Mastering not found.")
