@@ -274,7 +274,7 @@ class StudentsAvgLearning(APIView):
                     "type": m.test.type if m.test else "unknown",
                     "created_at": m.created_at
                 }
-                if m.test and m.test.type == "Offline":
+                if m.test and m.test.type == "Online":
                     exams.append(item)
                 else:
                     homeworks.append(item)
