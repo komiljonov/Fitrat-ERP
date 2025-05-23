@@ -52,6 +52,7 @@ executing==2.1.0
 Faker==33.3.1
 firebase-admin==6.6.0
 Flask==3.0.3
+freezegun==1.5.1
 frozenlist==1.5.0
 google-api-core==2.24.1
 google-api-python-client==2.160.0
