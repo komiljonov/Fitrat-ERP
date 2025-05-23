@@ -2,10 +2,12 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from freezegun import freeze_time
 
 
 
 
+@freeze_time("2025-05-24 15:00:00")
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'root.settings')
