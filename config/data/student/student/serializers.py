@@ -139,7 +139,7 @@ class StudentSerializer(serializers.ModelSerializer):
             return False
 
         homeworks = Homework_history.objects.filter(
-            homework_id=homework_id,
+            homework__id=homework_id,
             student=obj,
             status="Passed",
             is_active=True,
