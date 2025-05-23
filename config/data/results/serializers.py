@@ -35,29 +35,18 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
     def create(self, validated_data):
         # Pop the 'upload_file' field to handle it separately
         upload_files = validated_data.pop('upload_file', [])
 
         # Create the Results instance
-        certificate = Results.objects.create(**validated_data)
+        result_instance = Results.objects.create(**validated_data)
 
-        # If 'upload_file' has data, assign the file instances to the Results instance
-        if upload_files:
-            certificate.upload_file.set(upload_files)
+        # Add the related upload files
+        result_instance.upload_file.set(upload_files)
 
-        filial = validated_data.pop("filial", None)
-        if not filial:
-            request = self.context.get("request")  #
-            if request and hasattr(request.user, "filial"):
-                filial = request.user.filial.first()
-
-        if not filial:
-            raise serializers.ValidationError({"filial": "Filial could not be determined."})
-
-        room = Results.objects.create(filial=filial, **validated_data)
-
-        return certificate, room
+        return result_instance
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
