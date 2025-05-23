@@ -1,6 +1,7 @@
 from datetime import timedelta
 
-from django.db.models import Avg
+from django.db.models import Avg, FloatField
+from django.db.models.functions import Cast
 from rest_framework import serializers
 
 from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring, \
@@ -123,7 +124,7 @@ class PointSerializer(serializers.ModelSerializer):
             created_at__gte=start_of_month,
             created_at__lte=end_of_month
         ).values("user").annotate(
-            avg_ball=Avg("ball")
+            avg_ball=Avg(Cast("ball", FloatField()))
         )
 
         return {str(entry["user"]): entry["avg_ball"] for entry in monitoring_qs}
