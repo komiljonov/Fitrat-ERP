@@ -622,7 +622,14 @@ class GroupIsActiveNowAPIView(APIView):
 
         group = get_object_or_404(Group, id=group_id)
 
+
+
+
         now_time = datetime.datetime.now()
+
+
+        print(now_time)
+
         current_weekday_en = now_time.strftime('%A')
         current_weekday_uz = WEEKDAYS_UZ[current_weekday_en]
         current_time = now_time.time()
