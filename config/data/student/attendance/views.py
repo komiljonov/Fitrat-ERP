@@ -61,6 +61,7 @@ class AttendanceBulkUpdateAPIView(APIView):
             "updated": updated
         }, status=status.HTTP_200_OK)
 
+
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
@@ -113,6 +114,7 @@ class LessonAttendanceList(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 class LessonSecondaryAttendanceList(ListAPIView):
     serializer_class = SecondaryAttendanceSerializer
 
@@ -142,6 +144,7 @@ class LessonSecondaryAttendanceList(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+
 class SecondaryAttendanceList(ListCreateAPIView):
     queryset = SecondaryAttendance.objects.all()
     serializer_class = SecondaryAttendanceSerializer
@@ -151,6 +154,7 @@ class SecondaryAttendanceList(ListCreateAPIView):
         if isinstance(kwargs.get("data", {}), list):
             kwargs["many"] = True
         return super().get_serializer(*args, **kwargs)
+
 
 class SecondaryAttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = SecondaryAttendance.objects.all()
