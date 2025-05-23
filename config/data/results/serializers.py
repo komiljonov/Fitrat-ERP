@@ -35,14 +35,6 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,context=self.context).data if instance.upload_file else None
-        rep["teacher"] = UserListSerializer(instance.teacher).data
-        rep["student"] = StudentSerializer(instance.student).data
-        return rep
-
     def create(self, validated_data):
         # Pop the 'upload_file' field to handle it separately
         upload_files = validated_data.pop('upload_file', [])
@@ -66,6 +58,14 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
         room = Results.objects.create(filial=filial, **validated_data)
 
         return certificate, room
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,context=self.context).data if instance.upload_file else None
+        rep["teacher"] = UserListSerializer(instance.teacher).data
+        rep["student"] = StudentSerializer(instance.student).data
+        return rep
+
 
 class CertificationResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
