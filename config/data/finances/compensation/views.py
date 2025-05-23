@@ -539,7 +539,7 @@ class MonitoringAsos_1_2Update(RetrieveUpdateDestroyAPIView):
 
 
 class UserMonitoringAsos1_2(ListCreateAPIView):
-    queryset = UserMonitoring1_2Serializer.objects.all()
+    queryset = MonitoringAsos1_2.objects.all()
     serializer_class = UserMonitoring1_2Serializer
     permission_classes = [IsAuthenticated]
 
