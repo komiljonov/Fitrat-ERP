@@ -294,3 +294,5 @@ class MonitoringAsos1_2(BaseModel):
     class Meta:
         verbose_name = "Monitoring Asos 1 va 2"
         verbose_name_plural = "Monitoring"
+
+

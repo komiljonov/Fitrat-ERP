@@ -15,7 +15,8 @@ from .models import Bonus, Compensation, Page, Asos, Monitoring, Point, ResultSu
     ResultName, MonitoringAsos4, Comments, Monitoring5, MonitoringAsos1_2, Asos1_2
 from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer, \
     PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer, ResultsNameSerializer, \
-    MonitoringAsos4Serializer, CommentsSerializer, Monitoring5Serializer, Monitoring1_2serializer
+    MonitoringAsos4Serializer, CommentsSerializer, Monitoring5Serializer, Monitoring1_2serializer, \
+    UserMonitoring1_2Serializer
 from ...account.models import CustomUser
 
 
@@ -535,3 +536,26 @@ class MonitoringAsos_1_2Update(RetrieveUpdateDestroyAPIView):
     queryset = Asos1_2.objects.all()
     serializer_class = Monitoring1_2serializer
     permission_classes = [IsAuthenticated]
+
+
+class UserMonitoringAsos1_2(ListCreateAPIView):
+    queryset = UserMonitoring1_2Serializer.objects.all()
+    serializer_class = UserMonitoring1_2Serializer
+    permission_classes = [IsAuthenticated]
+
+
+    def get_queryset(self):
+        asos = self.request.GET.get("asos")
+        type = self.request.GET.get("type")
+        user = self.request.GET.get("user")
+
+        queryset = MonitoringAsos1_2.objects.all()
+
+        if asos:
+            queryset = queryset.filter(asos=asos)
+
+        if type:
+            queryset = queryset.filter(type=type)
+
+        if user:
+            queryset = queryset.filter(user__id=user)
