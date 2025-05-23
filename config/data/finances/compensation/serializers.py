@@ -282,3 +282,22 @@ class Monitoring1_2serializer(serializers.ModelSerializer):
             "amount",
             "created_at",
         ]
+
+
+class UserMonitoring1_2Serializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    class Meta:
+        model = MonitoringAsos1_2
+        fields = [
+            "id",
+            "asos",
+            "user",
+            "ball",
+            "type",
+            "amount",
+            "created_at",
+        ]
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["user"] = UserSerializer(instance.user).data
+        return rep
