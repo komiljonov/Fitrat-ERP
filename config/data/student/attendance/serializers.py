@@ -23,6 +23,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     teacher = serializers.SerializerMethodField()
 
+
     class Meta:
         model = Attendance
         fields = [
@@ -100,6 +101,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
         return filtered_data
+
 
 class AttendanceBulkSerializer(serializers.ModelSerializer):
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
@@ -190,6 +192,7 @@ class AttendanceBulkSerializer(serializers.ModelSerializer):
 
         filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
         return filtered_data
+
 
 class AttendanceTHSerializer(serializers.ModelSerializer):
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
