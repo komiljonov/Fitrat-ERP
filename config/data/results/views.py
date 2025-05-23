@@ -16,11 +16,18 @@ class UniversityResultsViewSet(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Results.objects.filter(teacher=self.request.user)
+        teacher = self.request.user
         status = self.request.query_params.get('status')
+        certification_type = self.request.query_params.get('certificate_type')
+
+        queryset = Results.objects.all()
+
+        if teacher:
+            queryset = Results.objects.filter(teacher=teacher)
+
         if status:
             queryset = queryset.filter(status=status)
-        certification_type = self.request.query_params.get('certificate_type')
+
         if certification_type:
             queryset = queryset.filter(certificate_type=certification_type)
         return queryset
