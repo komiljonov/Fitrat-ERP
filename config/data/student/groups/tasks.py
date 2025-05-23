@@ -1,3 +1,4 @@
+import datetime
 import logging
 from datetime import timedelta
 
@@ -5,6 +6,7 @@ from celery import shared_task
 from django.utils.timezone import now
 
 from .models import Group
+from ..attendance.models import Attendance
 from ..lesson.models import ExtraLesson
 from ..studentgroup.models import StudentGroup
 from ...account.models import CustomUser
@@ -34,3 +36,15 @@ def activate_group():
             )
         logging.info("Activate group {}".format(group))
 
+
+@shared_task
+def attendance_group():
+    today = now().date()
+    groups = Group.objects.all()
+    for group in groups:
+        att = Attendance.objects.filter(
+            group=group,
+            created_at__gte=today,
+            created_at__lte=today + datetime.timedelta(days=1),
+
+        )
