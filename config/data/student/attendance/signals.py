@@ -62,8 +62,6 @@ def create_finance_record(action, amount, kind, instance, student, teacher=None,
 def on_attendance_create(sender, instance: Attendance, created, **kwargs):
     if instance.lid:
         attendances_count = Attendance.objects.filter(lid=instance.lid).count()
-        instance.lid.is_student = True
-        instance.lid.save()
 
         if attendances_count == 1 and instance.reason != "IS_PRESENT":
             Notification.objects.create(
@@ -71,6 +69,9 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan !",
                 come_from=instance.lid,
             )
+
+        instance.lid.is_student = True
+        instance.lid.save()
 
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
