@@ -20,6 +20,12 @@ class AttendanceList(ListCreateAPIView):
     serializer_class = AttendanceSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        student = self.request.GET.get('student')
+        queryset = Attendance.objects.all()
+        if student:
+            queryset = queryset.filter(student=student)
+        return queryset
 
 class AttendanceBulkList(ListCreateAPIView):
     queryset = Attendance.objects.all()
