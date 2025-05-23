@@ -623,8 +623,6 @@ class GroupIsActiveNowAPIView(APIView):
         group = get_object_or_404(Group, id=group_id)
 
 
-
-
         now_time = datetime.datetime.now()
 
 
