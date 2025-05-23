@@ -10,6 +10,7 @@ from .models import Student, FistLesson_data
 from ..attendance.models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import Group
+from ..homeworks.models import Homework_history
 from ..mastering.models import Mastering
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Level
@@ -50,6 +51,7 @@ class StudentSerializer(serializers.ModelSerializer):
     teacher = serializers.SerializerMethodField()
     sales = serializers.SerializerMethodField()
     voucher = serializers.SerializerMethodField()
+    is_passed = serializers.SerializerMethodField()
 
     # def __init__(self, *args, **kwargs):
     #     fields_to_remove: list | None = kwargs.pop("remove_fields", None)
@@ -117,6 +119,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "attendance_count",
             "relatives",
             "file",
+            "is_passed",
             "secondary_group",
             "secondary_teacher",
             "new_student_stages",
@@ -125,6 +128,26 @@ class StudentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def get_is_passed(self, obj):
+        request = self.context.get("request")
+        if not request:
+            return False
+
+        homework_id = request.query_params.get("homework")
+        if not homework_id:
+            return False
+
+        homeworks = Homework_history.objects.filter(
+            homework_id=homework_id,
+            student=obj,
+            status="Passed",
+            is_active=True,
+            created_at__gt=datetime.datetime.today(),
+            created_at__lte=datetime.datetime.today() + datetime.timedelta(days=2),
+        )
+
+        return homeworks.exists()
 
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(student=obj)

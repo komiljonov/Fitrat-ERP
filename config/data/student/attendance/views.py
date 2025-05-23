@@ -27,6 +27,7 @@ class AttendanceList(ListCreateAPIView):
             queryset = queryset.filter(student=student)
         return queryset
 
+
 class AttendanceBulkList(ListCreateAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
