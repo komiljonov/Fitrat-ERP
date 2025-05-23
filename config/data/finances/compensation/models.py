@@ -114,7 +114,7 @@ class Monitoring(BaseModel):
                                            on_delete=models.CASCADE, related_name='user_monitoring')
     point: "Point" = models.ForeignKey('compensation.Point',
                                        on_delete=models.CASCADE, related_name='point_monitoring')
-    ball = models.IntegerField(max_length=128, null=True, blank=True,
+    ball = models.CharField(max_length=128, null=True, blank=True,
                             help_text="This ball can not be higher than asos's max_ball !!!")
 
     counter = models.IntegerField()
