@@ -167,7 +167,7 @@ class ThemePgList(ListCreateAPIView):
         theme_filter = request.query_params.get('theme')  # 'Lesson' or 'Repeat'
         group_id = request.query_params.get('group')
 
-        ic(group_id,theme_filter)
+        ic(group_id, theme_filter)
 
         group = Group.objects.filter(id=group_id).first()
         if not group or not group.course:
@@ -179,29 +179,14 @@ class ThemePgList(ListCreateAPIView):
             qs = qs.filter(title__icontains=search)
 
         if theme_filter and group_id:
-            if theme_filter == "Repeat" and Attendance.objects.filter(group__id=group_id).count() ==0:
-                return Theme.objects.none()
-
-            if theme_filter == "Lesson" and Attendance.objects.filter(group__id=group_id).count() ==0:
-                return Theme.objects.filter(course=group.course).order_by('created_at').first()
-
-            last_att = Attendance.objects.filter(   
-                group_id=group_id,
-                theme__theme=theme_filter
-            ).order_by('-created_at').first()
-
-            if last_att and last_att.theme.exists():
-                last_theme = last_att.theme.order_by('-created_at').first()
-
-                if last_theme:
-                    if theme_filter == "Repeat":
-                        qs = qs.filter(created_at__lte=last_theme.created_at)
-                        ic(qs)
-                        return qs
-
-                    elif theme_filter == "Lesson":
-                        next_theme = qs.filter(created_at__gt=last_theme.created_at).first()
-                        return Theme.objects.filter(id=next_theme.id).first() if next_theme else Theme.objects.none()
+            if theme_filter == "Repeat":
+                attendance_count = Attendance.objects.filter(group__id=group_id).count()
+                if attendance_count > 0:
+                    qs = qs.filter(theme_type="Repeat")
+                else:
+                    qs = Theme.objects.none()  # return an empty queryset
+            elif theme_filter == "Lesson":
+                qs = qs.filter(theme_type="Lesson")
 
         return qs
 
