@@ -15,22 +15,6 @@ class AttendanceList(ListCreateAPIView):
     serializer_class = TimeTrackerSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        # Fix: Use serializer, not validated_data
-        employee = serializer.validated_data.get("employee")
-        print(employee)
-        if employee:
-            try:
-                user = CustomUser.objects.get(second_user=employee)
-
-                serializer.save(employee=user)
-
-            except CustomUser.DoesNotExist:
-                from rest_framework.exceptions import ValidationError
-                raise ValidationError("Employee not found")
-        else:
-            serializer.save()
-
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
         user_id = self.request.query_params.get('id')
