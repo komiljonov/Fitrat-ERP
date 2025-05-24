@@ -13,7 +13,7 @@ from .sinx import TimetrackerSinc  # assuming you keep that class in a separate 
 class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
-    permission_classes = [IsAuthenticated]
+
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
