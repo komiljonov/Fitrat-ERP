@@ -355,8 +355,8 @@ class SecondaryStudentList(ListCreateAPIView):
             qs = qs.filter(group__id=group)
         if search:
             qs = qs.filter(
-                Q(student__first_name__icontains=search),
-                Q(lid__first_name__icontains=search),
+                Q(student__first_name__icontains=search) | Q(student__last_name__icontains=search),
+                Q(lid__first_name__icontains=search) | Q(lid__last_name__icontains=search),
             )
         if status:
             qs = qs.filter(
