@@ -150,7 +150,7 @@ class TeachersGroupsView(ListAPIView):
         return queryset
 
 
-class AsistantTeachersView(ListAPIView):
+class AssistantTeachersView(ListAPIView):
     serializer_class = SecondaryGroupSerializer
     permission_classes = [IsAuthenticated]
 
@@ -226,7 +226,6 @@ class SecondaryGroupStatic(APIView):
 
 
 class StudentsAvgLearning(APIView):
-
     def get(self, request, *args, **kwargs):
         group_id = request.query_params.get("group")
         if not group_id:
@@ -246,7 +245,7 @@ class StudentsAvgLearning(APIView):
         results = []
 
         for sg in student_groups:
-            # Prefer student if available, else use lid
+
             target_id = sg.student.id if sg.student else sg.lid.id
             is_student = bool(sg.student)
 
