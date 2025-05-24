@@ -23,6 +23,16 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+    def create(self, validated_data):
+        employee = validated_data.get("employee")
+        if employee:
+            try:
+                user = CustomUser.objects.get(second_user=employee)
+                validated_data["employee"] = user  # not user.pk
+            except CustomUser.DoesNotExist:
+                raise serializers.ValidationError("No CustomUser found with the given second_user")
+        return super().create(validated_data)
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["employee"] = UserSerializer(instance.employee).data
