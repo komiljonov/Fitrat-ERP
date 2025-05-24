@@ -1,5 +1,6 @@
 from icecream import ic
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from data.account.models import CustomUser
 
@@ -8,8 +9,6 @@ from ...account.serializers import UserSerializer
 
 
 class TimeTrackerSerializer(serializers.ModelSerializer):
-    employee = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),
-                                              allow_null=True)
     class Meta:
         model = Employee_attendance
         fields = [
@@ -24,10 +23,15 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        rep["employee"] = UserSerializer(instance.employee).data
-        return rep
+    # def create(self, validated_data):
+    #     print("All validated data:", validated_data)
+    #     external_user_id = validated_data.get("employee")
+    #     print(f"Employee value: '{external_user_id}', type: {type(external_user_id)}")
+    #     if external_user_id:
+    #         user = CustomUser.objects.get(second_user=external_user_id)
+    #         validated_data["employee"] = user
+    #
+    #     return super().create(validated_data)
 
 
 class UserTimeLineSerializer(serializers.ModelSerializer):
