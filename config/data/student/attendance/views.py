@@ -99,20 +99,17 @@ class LessonAttendanceList(ListAPIView):
         themes = self.request.query_params.getlist('theme', None)
         group_id = self.kwargs.get('pk', None)
 
-        # If group_id is an empty string, set it to None
         if group_id == "":
             group_id = None
 
-        query = Q()  # Start with an empty query to chain filters
+        query = Q()
 
-        # If themes are provided, filter by theme IDs
         if themes:
             theme_query = Q()
             for theme in themes:
                 theme_query &= Q(theme__id=theme)
             query &= theme_query
 
-        # If group ID is provided and valid, filter by group ID
         if group_id:
             query &= Q(group__id=group_id)
 
