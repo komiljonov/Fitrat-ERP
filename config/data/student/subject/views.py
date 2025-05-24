@@ -216,7 +216,6 @@ class ThemePgList(ListCreateAPIView):
                         else:
                             return Theme.objects.none()
 
-        return qs
 
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):
