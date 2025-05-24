@@ -360,7 +360,7 @@ class LidStatisticsView(ListAPIView):
         ordered_archived = queryset.filter(is_archived=True, is_student=False, lid_stage_type="ORDERED_LID",
                                            **filter).count()
         first_lesson = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                       ordered_stages="BIRINCHI_DARS_BELGILANGAN", **filter).count()
+                                       ordered_stages="BIRINCHI_DARS_BELGILANGAN",is_student=False, **filter).count()
         first_lesson_not = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                            ordered_stages="BIRINCHI_DARSGA_KELMAGAN", **filter).count()
         all_archived = queryset.filter(is_archived=True, is_student=False, **filter).count()
