@@ -559,3 +559,4 @@ class UserMonitoringAsos1_2(ListCreateAPIView):
 
         if user:
             queryset = queryset.filter(user__id=user)
+        return queryset
