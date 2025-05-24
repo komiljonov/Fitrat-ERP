@@ -12,10 +12,11 @@ token = config('INTEGRATION_TOKEN')
 class TimetrackerSinc:
     def __init__(self):
 
-        print(token,base_url)
+        print(token)
 
         self.INTEGRATION_TOKEN = token
         self.url = f"{base_url.rstrip('/')}/"
+        print(self.url)
 
         self.headers = {
             "X-Integration-Token": self.INTEGRATION_TOKEN,
