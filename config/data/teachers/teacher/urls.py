@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import TeacherList, TeachersNoPGList, TeacherDetail, TeacherScheduleView, TeachersGroupsView, \
-    TeacherStatistics, AsistantTeachersView, AssistantStatisticsView, TeacherMasteringStatisticsView, \
+    TeacherStatistics, AssistantTeachersView, AssistantStatisticsView, TeacherMasteringStatisticsView, \
     SecondaryGroupStatic, StudentsAvgLearning
 
 urlpatterns = [
@@ -14,7 +14,7 @@ urlpatterns = [
     path('schedule/', TeacherScheduleView.as_view()),
     path('groups/', TeachersGroupsView.as_view()),
 
-    path('secondary/', AsistantTeachersView.as_view()),
+    path('secondary/', AssistantTeachersView.as_view()),
     path('secondary/statistics/', AssistantStatisticsView.as_view()),
 
     path('mastering/', TeacherMasteringStatisticsView.as_view()),
