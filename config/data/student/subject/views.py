@@ -179,10 +179,11 @@ class ThemePgList(ListCreateAPIView):
             qs = qs.filter(title__icontains=search)
 
         if theme_filter and group_id:
-            if theme_filter == "Repeat":
-                attendance_count = Attendance.objects.filter(group__id=group_id).count()
-                if attendance_count == 0:
-                    return Theme.objects.none()
+            if theme_filter == "Repeat" and Attendance.objects.filter(group__id=group_id).count() ==0:
+                return Theme.objects.none()
+
+            if theme_filter == "Lesson" and Attendance.objects.filter(group__id=group_id).count() ==0:
+                return Theme.objects.filter(course=group.course).order_by('created_at').first()
 
             last_att = Attendance.objects.filter(   
                 group_id=group_id,
@@ -199,9 +200,8 @@ class ThemePgList(ListCreateAPIView):
                         return qs
 
                     elif theme_filter == "Lesson":
-                        # Get the next theme only
                         next_theme = qs.filter(created_at__gt=last_theme.created_at).first()
-                        return Theme.objects.filter(id=next_theme.id) if next_theme else Theme.objects.none()
+                        return Theme.objects.filter(id=next_theme.id).first() if next_theme else Theme.objects.none()
 
         return qs
 
