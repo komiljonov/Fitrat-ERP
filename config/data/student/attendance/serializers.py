@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, time
 
 from django.db.models import Q
 from icecream import ic
@@ -14,7 +14,7 @@ from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
 
 
-from django.utils.timezone import now
+from django.utils.timezone import now, make_aware
 from rest_framework import serializers
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -44,6 +44,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def get_teacher(self, obj):
         return obj.group.teacher.full_name
 
+    from django.utils.timezone import now, make_aware
+    from datetime import datetime, time, timedelta
+
     def validate(self, data):
         """
         Ensure that a student or lid can only have one attendance per group per day.
@@ -56,21 +59,31 @@ class AttendanceSerializer(serializers.ModelSerializer):
         if not student and not lid:
             raise serializers.ValidationError("Either 'student' or 'lid' must be provided.")
 
-        instance_id = self.instance.id if self.instance else None  # Get existing instance ID if updating
+        instance_id = self.instance.id if self.instance else None
 
-        # Check if attendance exists for student (excluding the current record in updates)
+        # Define start and end of day
+        start_datetime = make_aware(datetime.combine(today, time.min))
+        end_datetime = make_aware(datetime.combine(today, time.max))
+
+        ic(start_datetime, end_datetime)
+
+        # Check if attendance exists for student
         if student:
             existing_attendance = Attendance.objects.filter(
-                student=student, group=group, created_at__date=today
+                student=student,
+                group=group,
+                created_at__range=(start_datetime, end_datetime)
             ).exclude(id=instance_id).exists()
 
             if existing_attendance:
                 raise serializers.ValidationError("This student has already been marked present today in this group.")
 
-        # Check if attendance exists for lid (excluding the current record in updates)
+        # Check if attendance exists for lid
         if lid:
             existing_attendance = Attendance.objects.filter(
-                lid=lid, group=group, created_at__date=today
+                lid=lid,
+                group=group,
+                created_at__range=(start_datetime, end_datetime)
             ).exclude(id=instance_id).exists()
 
             if existing_attendance:

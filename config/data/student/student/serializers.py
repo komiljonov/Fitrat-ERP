@@ -53,14 +53,6 @@ class StudentSerializer(serializers.ModelSerializer):
     voucher = serializers.SerializerMethodField()
     is_passed = serializers.SerializerMethodField()
 
-    # def __init__(self, *args, **kwargs):
-    #     fields_to_remove: list | None = kwargs.pop("remove_fields", None)
-    #     super(StudentSerializer, self).__init__(*args, **kwargs)
-    #
-    #     if fields_to_remove:
-    #         for field in fields_to_remove:
-    #             self.fields.pop(field, None)
-
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
         include_only: list | None = kwargs.pop("include_only", None)
