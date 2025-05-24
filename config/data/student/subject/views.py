@@ -195,15 +195,12 @@ class ThemePgList(ListCreateAPIView):
 
                 if last_theme:
                     if theme_filter == "Repeat":
-                        qs = qs.filter(created_at__lte=last_theme.created_at)
-                        ic(qs)
-                        return qs
+                        return qs.filter(created_at__lte=last_theme.created_at)
 
                     elif theme_filter == "Lesson":
                         next_theme = qs.filter(created_at__gt=last_theme.created_at).first()
                         return Theme.objects.filter(id=next_theme.id).first() if next_theme else Theme.objects.none()
 
-        return qs
 
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):
