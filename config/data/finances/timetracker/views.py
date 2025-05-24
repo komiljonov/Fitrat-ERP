@@ -1,14 +1,12 @@
 from django.utils.dateparse import parse_datetime
-from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
-from .models import Employee_attendance, CustomUser, UserTimeLine
+from .models import Employee_attendance, UserTimeLine
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .sinx import TimetrackerSinc  # assuming you keep that class in a separate file
+
 
 class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
