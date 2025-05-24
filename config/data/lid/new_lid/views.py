@@ -338,6 +338,7 @@ class LidStatisticsView(ListAPIView):
                 Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
                 Q(call_operator=user) | Q(call_operator__isnull=True)
             )
+
         else:
             queryset = queryset.filter(
                 Q(filial__in=user.filial.all()) | Q(filial__isnull=True)
