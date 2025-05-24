@@ -224,6 +224,7 @@ class SecondaryGroupStatic(APIView):
             "active": active_count
         })
 
+
 class StudentsAvgLearning(APIView):
 
     def get(self, request, *args, **kwargs):
