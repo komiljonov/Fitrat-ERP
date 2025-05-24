@@ -291,8 +291,7 @@ class MonitoringAsos1_2(BaseModel):
 
     def __str__(self):
         return f"{self.user.full_name} - {self.asos}"
-    class Meta:
-        verbose_name = "Monitoring Asos 1 va 2"
-        verbose_name_plural = "Monitoring"
+
+
 
 
