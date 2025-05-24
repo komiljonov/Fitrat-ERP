@@ -11,16 +11,16 @@ urlpatterns = [
 
     path('statistics/', TeacherStatistics.as_view()),
 
-    path('schedule/',TeacherScheduleView.as_view()),
-    path('groups/',TeachersGroupsView.as_view()),
+    path('schedule/', TeacherScheduleView.as_view()),
+    path('groups/', TeachersGroupsView.as_view()),
 
-    path('secondary/',AsistantTeachersView.as_view()),
-    path('secondary/statistics/',AssistantStatisticsView.as_view()),
+    path('secondary/', AsistantTeachersView.as_view()),
+    path('secondary/statistics/', AssistantStatisticsView.as_view()),
 
-    path('mastering/',TeacherMasteringStatisticsView.as_view()),
+    path('mastering/', TeacherMasteringStatisticsView.as_view()),
 
-    path("statis/",SecondaryGroupStatic.as_view()),
+    path("statis/", SecondaryGroupStatic.as_view()),
 
-    path("avg/",StudentsAvgLearning.as_view()),
+    path("avg/", StudentsAvgLearning.as_view()),
 
 ]
