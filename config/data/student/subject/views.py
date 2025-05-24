@@ -1,12 +1,8 @@
 import pandas as pd
 from django.db import transaction
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from icecream import ic
-from numpy.ma.core import floor_divide
-from rest_framework import status
-from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser
@@ -116,7 +112,6 @@ class ThemeList(ListCreateAPIView):
     serializer_class = ThemeSerializer
     permission_classes = [IsAuthenticated]
 
-
     def get_queryset(self):
         queryset = Theme.objects.all()
 
@@ -137,7 +132,6 @@ class ThemeList(ListCreateAPIView):
             except Group.DoesNotExist:
                 raise NotFound("Group not found.")
 
-
         if id:
             try:
                 course = Group.objects.get(id=id)  # Agar id yo'q bo'lsa, xatolik qaytaradi
@@ -150,10 +144,12 @@ class ThemeList(ListCreateAPIView):
 
         return queryset
 
+
 class DynamicPageSizePagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
+
 
 class ThemePgList(ListCreateAPIView):
     serializer_class = ThemeSerializer
@@ -238,6 +234,7 @@ class ThemePgList(ListCreateAPIView):
         # Return all themes for the course if no specific filter
         return qs
 
+
 class ThemeDetail(RetrieveUpdateDestroyAPIView):
     queryset = Theme.objects.all()
     serializer_class = ThemeSerializer
@@ -245,6 +242,7 @@ class ThemeDetail(RetrieveUpdateDestroyAPIView):
 
 
 from rest_framework.exceptions import NotFound
+
 
 class ThemeNoPG(ListAPIView):
     serializer_class = ThemeSerializer
@@ -270,7 +268,6 @@ class ThemeNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
 
 
 class ImportStudentsAPIView(APIView):
@@ -302,7 +299,8 @@ class ImportStudentsAPIView(APIView):
         try:
             df = pd.read_excel(file)
 
-            required_fields = {'Mavzu', 'Dars mazmuni', 'Uyga vazifa', 'Uyga vazifa mazmuni', 'Kurslar',"Daraja" ,'Fanlar'}
+            required_fields = {'Mavzu', 'Dars mazmuni', 'Uyga vazifa', 'Uyga vazifa mazmuni', 'Kurslar', "Daraja",
+                               'Fanlar'}
             if not required_fields.issubset(df.columns):
                 return Response({
                     'error': f'Excel faylda quyidagi ustunlar bo\'lishi shart: {required_fields}'}, status=400)
@@ -319,7 +317,6 @@ class ImportStudentsAPIView(APIView):
                     course = Course.objects.filter(name__icontains=course_name).first()
                     level = Level.objects.filter(name__icontains=level_name).first()
                     subject = Subject.objects.filter(name__icontains=subject_name).first()
-
 
                     if not course or not subject:
                         errors.append({

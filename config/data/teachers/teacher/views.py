@@ -265,6 +265,7 @@ class StudentsAvgLearning(APIView):
                     student=m.student,
                 ).first()
                 item = {
+                    "theme" : m.theme,
                     "homework_id": homework_id.id if homework_id else None,
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
