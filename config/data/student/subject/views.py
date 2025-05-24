@@ -199,7 +199,7 @@ class ThemePgList(ListCreateAPIView):
 
                 if last_theme:
                     if theme_filter == "Repeat":
-                        return qs.filter(created_at__lte=last_theme.created_at)
+                        return qs.filter(created_at__gte=last_theme.created_at)
 
                     elif theme_filter == "Lesson":
                         next_theme = qs.filter(created_at__gt=last_theme.created_at).first()
