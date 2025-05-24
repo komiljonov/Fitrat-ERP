@@ -8,8 +8,10 @@ from icecream import ic
 
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
+from ..student.models import Student
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import Finance, Kind, SaleStudent
+from ...lid.new_lid.models import Lid
 from ...notifications.models import Notification
 
 from threading import local
@@ -72,6 +74,13 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 
         instance.lid.is_student = True
         instance.lid.save()
+
+        student = Lid.objects.filter(id=instance.lid.id).first()
+        if student:
+            student = Student.objects.filter(id=student.student.id).first()
+            if student:
+                student.new_student_stages="BIRINCHI_DARSGA_KELMAGAN"
+                student.save()
 
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
