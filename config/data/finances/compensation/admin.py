@@ -51,3 +51,5 @@ class Asos1_2Admin(admin.ModelAdmin):
 @admin.register(MonitoringAsos1_2)
 class AsosAdmin(admin.ModelAdmin):
     list_display = ("user__full_name","asos","type" ,'amount',"ball")
+    search_fields = ("user__full_name",)
+    list_filter = ('type',)
