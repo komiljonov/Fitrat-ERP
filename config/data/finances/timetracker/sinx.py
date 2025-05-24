@@ -3,12 +3,17 @@ from decouple import config
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from data.lid.new_lid.signals import on_pre_save
+
 base_url = config('TT_URL')
 token = config('INTEGRATION_TOKEN')
 
 
 class TimetrackerSinc:
     def __init__(self):
+
+        print(token,base_url)
+
         self.INTEGRATION_TOKEN = token
         self.url = f"{base_url.rstrip('/')}/"
 
@@ -30,6 +35,7 @@ class TimetrackerSinc:
         self.session.mount("https://", HTTPAdapter(max_retries=retries))
 
     def get_data(self):
+
         url = self.url + "employees"
         try:
             response = self.session.get(url, headers=self.headers, timeout=10)
