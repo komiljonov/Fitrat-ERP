@@ -509,7 +509,7 @@ class Monitoring5List(ListAPIView):
         queryset = Monitoring5.objects.all()
 
         if start_date and end_date:
-            queryset = Monitoring5.objects.all(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = Monitoring5.objects.filter(created_at__gte=start_date, created_at__lte=end_date)
 
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
