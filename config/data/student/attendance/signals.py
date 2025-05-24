@@ -8,6 +8,7 @@ from icecream import ic
 
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
+from ..homeworks.models import Homework_history, Homework
 from ..student.models import Student
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import Finance, Kind, SaleStudent
@@ -216,3 +217,18 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
     finally:
         _signal_state.processing = False
+
+
+@receiver(post_save, sender=Attendance)
+def on_mastering_update(sender, instance:Attendance, created, **kwargs):
+    if created and instance.student is not None:
+
+        homework = Homework.objects.get(theme=instance.theme)
+
+        h_h = Homework_history.objects.filter(
+            homework=homework,
+            group=instance.group,
+            student=instance.student,
+            status="Passed",
+            mark=0
+        )
