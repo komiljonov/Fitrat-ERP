@@ -1,11 +1,10 @@
-from datetime import date, datetime, time
+from datetime import datetime, time
 
-from django.db.models import Q
+from django.utils.timezone import now, make_aware
 from icecream import ic
 from rest_framework import serializers
 
 from .models import Attendance
-from ..groups.models import Group
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ..subject.models import Theme
@@ -14,15 +13,11 @@ from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
 
 
-from django.utils.timezone import now, make_aware
-from rest_framework import serializers
-
 class AttendanceSerializer(serializers.ModelSerializer):
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     teacher = serializers.SerializerMethodField()
-
 
     class Meta:
         model = Attendance
@@ -43,9 +38,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     def get_teacher(self, obj):
         return obj.group.teacher.full_name
-
-    from django.utils.timezone import now, make_aware
-    from datetime import datetime, time, timedelta
 
     def validate(self, data):
         """
@@ -221,12 +213,9 @@ class AttendanceTHSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep['theme'] = ThemeSerializer(instance.theme, many=True,context=self.context).data
+        rep['theme'] = ThemeSerializer(instance.theme, many=True, context=self.context).data
         filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
         return filtered_data
-
-
