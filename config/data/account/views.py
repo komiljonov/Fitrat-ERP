@@ -106,6 +106,7 @@ class TT_Data(APIView):
     def get(self, request):
         tt = TimetrackerSinc()
         tt_data = tt.get_data()
+
         count = 0
         if tt_data:
 
