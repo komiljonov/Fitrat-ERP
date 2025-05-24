@@ -178,45 +178,65 @@ class ThemePgList(ListCreateAPIView):
             qs = qs.filter(title__icontains=search)
 
         if theme_filter and group_id:
-            if theme_filter == "Repeat" and Attendance.objects.filter(group__id=group_id).count() == 0:
-                return Theme.objects.none()
+            # Check if there are any attendance records for this group
+            attendance_count = Attendance.objects.filter(group__id=group_id).count()
 
-            if theme_filter == "Lesson" and Attendance.objects.filter(group__id=group_id).count() == 0:
-                # Return a queryset containing only the first theme, not the theme object itself
-                first_theme = Theme.objects.filter(course=group.course).order_by('created_at').first()
-                if first_theme:
-                    return Theme.objects.filter(id=first_theme.id)
-                else:
+            if theme_filter == "Repeat":
+                if attendance_count == 0:
                     return Theme.objects.none()
 
-            last_att = Attendance.objects.filter(
-                group_id=group_id,
-                theme__theme=theme_filter
-            ).order_by('-created_at').first()
+                # Get themes that have been used in attendance records for this group
+                attendance_qs = Attendance.objects.filter(
+                    group__id=group_id
+                ).exclude(theme__isnull=True)
 
-            if last_att and last_att.theme.exists():
-                last_theme = last_att.theme.order_by('-created_at').first()
+                ic(attendance_qs.all())
 
-                if last_theme:
-                    if theme_filter == "Repeat":
-                        attendance_qs = Attendance.objects.filter(group__id=group_id).exclude(theme__isnull=True)
-                        ic(attendance_qs.all())
-                        if not attendance_qs.exists():
-                            return Theme.objects.none()
+                if not attendance_qs.exists():
+                    return Theme.objects.none()
 
-                        theme_ids = attendance_qs.values_list('theme__id', flat=True).distinct()
-                        ic(theme_ids)
-                        return Theme.objects.filter(id__in=theme_ids).order_by('-created_at')
+                # Get unique theme IDs from attendance records
+                theme_ids = attendance_qs.values_list('theme__id', flat=True).distinct()
+                ic(theme_ids)
 
-                    elif theme_filter == "Lesson":
+                # Return only themes that have been used in attendance
+                return Theme.objects.filter(id__in=theme_ids).order_by('created_at')
+
+            elif theme_filter == "Lesson":
+                if attendance_count == 0:
+                    # Return first theme if no attendance records exist
+                    first_theme = qs.first()
+                    if first_theme:
+                        return Theme.objects.filter(id=first_theme.id)
+                    else:
+                        return Theme.objects.none()
+
+                # Find the last attendance record for this group
+                last_att = Attendance.objects.filter(
+                    group_id=group_id
+                ).exclude(theme__isnull=True).order_by('-created_at').first()
+
+                if last_att and last_att.theme.exists():
+                    # Get the most recent theme from the last attendance
+                    last_theme = last_att.theme.order_by('-created_at').first()
+
+                    if last_theme:
+                        # Find the next theme after the last one used
                         next_theme = qs.filter(created_at__gt=last_theme.created_at).first()
-                        # Return a queryset containing only the next theme, not the theme object itself
                         if next_theme:
                             return Theme.objects.filter(id=next_theme.id)
                         else:
                             return Theme.objects.none()
 
+                # Fallback: return first theme if no valid last attendance found
+                first_theme = qs.first()
+                if first_theme:
+                    return Theme.objects.filter(id=first_theme.id)
+                else:
+                    return Theme.objects.none()
 
+        # Return all themes for the course if no specific filter
+        return qs
 
 class ThemeDetail(RetrieveUpdateDestroyAPIView):
     queryset = Theme.objects.all()
