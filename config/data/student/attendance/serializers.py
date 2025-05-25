@@ -57,7 +57,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
         start_datetime = make_aware(datetime.combine(today, time.min))
         end_datetime = make_aware(datetime.combine(today, time.max))
 
-        ic(start_datetime, end_datetime)
 
         # Check if attendance exists for student
         if student:
