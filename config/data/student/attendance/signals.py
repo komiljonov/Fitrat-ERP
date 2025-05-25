@@ -223,12 +223,13 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 def on_mastering_update(sender, instance:Attendance, created, **kwargs):
     if created and instance.student is not None:
 
-        homework = Homework.objects.get(theme=instance.theme)
+        homework = Homework.objects.filter(theme=instance.theme).first()
+        if homework:
+            h_h = Homework_history.objects.filter(
+                homework=homework,
+                group=instance.group,
+                student=instance.student,
+                status="Passed",
+                mark=0
+            )
 
-        h_h = Homework_history.objects.filter(
-            homework=homework,
-            group=instance.group,
-            student=instance.student,
-            status="Passed",
-            mark=0
-        )
