@@ -1,3 +1,5 @@
+import datetime
+
 import icecream
 import openpyxl
 import pandas as pd
@@ -24,6 +26,7 @@ from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSeri
     PaymentMethodSerializer, SalesSerializer, SaleStudentSerializer, VoucherSerializer, VoucherStudentSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
+from ...student.groups.models import Group
 
 
 class CasherListCreateAPIView(ListCreateAPIView):
@@ -345,9 +348,20 @@ class TeacherGroupFinanceAPIView(APIView):
             group_filters["created_at__gte"] = start_date
 
         attended_groups = Attendance.objects.filter(**group_filters).values_list('group_id', flat=True).distinct()
-        group_data_list = []
 
-        for group_id in attended_groups:
+        # Convert to set to ensure uniqueness, then back to list
+        unique_group_ids = list(set(attended_groups))
+
+        group_data_list = []
+        processed_groups = set()  # Track processed groups to avoid duplicates
+
+        for group_id in unique_group_ids:
+            # Skip if already processed
+            if group_id in processed_groups:
+                continue
+
+            processed_groups.add(group_id)
+
             # Prepare finance filter
             finance_filters = {"attendance__group__id": group_id}
             if start_date and end_date:
@@ -359,12 +373,25 @@ class TeacherGroupFinanceAPIView(APIView):
             created_at = finance_records.first().created_at if finance_records.exists() else None
             total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
 
-            # Collect students in group
-            students = Student.objects.filter(attendance_student__group__id=group_id).distinct()
+            # Collect students in group with date filters applied
+            student_filters = {"attendance_student__group__id": group_id}
+            if start_date and end_date:
+                student_filters["attendance_student__created_at__range"] = (start_date, end_date)
+            elif start_date:
+                student_filters["attendance_student__created_at__gte"] = start_date
+
+            students = Student.objects.filter(**student_filters).distinct()
             student_data = []
 
             for student in students:
-                student_attendances = Attendance.objects.filter(group_id=group_id, student=student)
+                # Apply date filters to student attendances
+                student_attendance_filters = {"group_id": group_id, "student": student}
+                if start_date and end_date:
+                    student_attendance_filters["created_at__range"] = (start_date, end_date)
+                elif start_date:
+                    student_attendance_filters["created_at__gte"] = start_date
+
+                student_attendances = Attendance.objects.filter(**student_attendance_filters)
                 student_finance_filters = {"attendance__in": student_attendances}
 
                 if start_date and end_date:
@@ -374,9 +401,10 @@ class TeacherGroupFinanceAPIView(APIView):
 
                 if student_attendances.exists():
                     first_attendance = student_attendances.first()
-                    student_finance_filters["created_at__date"] = first_attendance.created_at.date()
+                    # Remove this line as it's too restrictive
+                    # student_finance_filters["created_at__date"] = first_attendance.created_at.date()
                     total_student_payment = Finance.objects.filter(**student_finance_filters).aggregate(Sum('amount'))[
-                        'amount__sum'] or 0
+                                                'amount__sum'] or 0
                 else:
                     total_student_payment = 0
 
@@ -386,8 +414,12 @@ class TeacherGroupFinanceAPIView(APIView):
                     "total_payment": total_student_payment
                 })
 
-            group_name = Attendance.objects.filter(group_id=group_id).first()
-            group_name = group_name.group.name if group_name else "Unknown Group"
+            # Get group name more efficiently
+            try:
+                group = Group.objects.get(id=group_id)
+                group_name = group.name
+            except Group.DoesNotExist:
+                group_name = "Unknown Group"
 
             group_data_list.append({
                 "group_id": str(group_id),
@@ -396,6 +428,9 @@ class TeacherGroupFinanceAPIView(APIView):
                 "students": student_data,
                 "created_at": created_at,
             })
+
+        # Sort by created_at if available, otherwise by group_name
+        group_data_list.sort(key=lambda x: x['created_at'] or datetime.datetime.now(), reverse=True)
 
         # Paginate the group data
         paginator = self.pagination_class()
