@@ -399,44 +399,77 @@ class SecondaryGroupList(ListAPIView):
 
 class StudentGroupStatistics(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request, **kwargs):
         filial = self.request.query_params.get("filial")
         course = self.request.query_params.get("course")
         teacher = self.request.query_params.get("teacher")
-
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
 
-        all = StudentGroup.objects.filter(filial__id=filial).all()
-        orders = StudentGroup.objects.filter(filial__id=filial, lid__lid_stage_type="ORDERED_LID",lid__is_student=False).all()
-        students = StudentGroup.objects.filter(filial__id=filial, student__isnull=False).all()
+        # Base queryset - fix the filial filter
+        base_queryset = StudentGroup.objects.all()
 
+        # Apply filial filter if provided
+        if filial:
+            # Check if filial is related through group
+            base_queryset = base_queryset.filter(group__filial__id=filial)
+            # OR if filial is directly on StudentGroup model:
+            # base_queryset = base_queryset.filter(filial__id=filial)
+
+        # Build specific querysets
+        all_groups = base_queryset
+
+        # Orders: groups with lids that are ordered and not students
+        orders = base_queryset.filter(
+            lid__isnull=False,
+            lid__lid_stage_type="ORDERED_LID",
+            lid__is_student=False
+        )
+
+        # Students: groups that have actual students
+        students = base_queryset.filter(student__isnull=False)
+
+        # Apply date filters
         if start_date and end_date:
-            all = all.filter(created_at__gte=start_date,created_at__lte=end_date)
-            orders = orders.filter(created_at__gte=start_date,created_at__lte=end_date)
-            students = students.filter(created_at__gte=start_date,created_at__lte=end_date)
-
-        if start_date:
-            all = all.filter(created_at__gte=start_date)
+            all_groups = all_groups.filter(created_at__gte=start_date, created_at__lte=end_date)
+            orders = orders.filter(created_at__gte=start_date, created_at__lte=end_date)
+            students = students.filter(created_at__gte=start_date, created_at__lte=end_date)
+        elif start_date:  # Only start_date provided
+            all_groups = all_groups.filter(created_at__gte=start_date)
             orders = orders.filter(created_at__gte=start_date)
             students = students.filter(created_at__gte=start_date)
 
+        # Apply course filter
         if course:
-            all = all.filter(group__course__id=course)
+            all_groups = all_groups.filter(group__course__id=course)
             orders = orders.filter(group__course__id=course)
             students = students.filter(group__course__id=course)
 
+        # Apply teacher filter
         if teacher:
-            all = all.filter(group__teacher__id=teacher)
+            all_groups = all_groups.filter(group__teacher__id=teacher)
             orders = orders.filter(group__teacher__id=teacher)
             students = students.filter(group__teacher__id=teacher)
 
-        return Response({
-            "all" : all.count(),
-            "students" : students.count(),
-            "orders" : orders.count(),
-        })
+        # Debug: Print the queries to see what's happening
+        print(f"Filial: {filial}")
+        print(f"All groups query: {all_groups.query}")
+        print(f"Orders query: {orders.query}")
+        print(f"Students query: {students.query}")
 
+        # Get counts
+        all_count = all_groups.count()
+        students_count = students.count()
+        orders_count = orders.count()
+
+        print(f"Counts - All: {all_count}, Students: {students_count}, Orders: {orders_count}")
+
+        return Response({
+            "all": all_count,
+            "students": students_count,
+            "orders": orders_count,
+        })
 
 class SecondaryStudentCreate(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
