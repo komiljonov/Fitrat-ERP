@@ -48,3 +48,4 @@ class Homework_history(BaseModel):
     class Meta:
         verbose_name = "Homeworks History"
         verbose_name_plural = "Histories"
+        ordering = ['created_at']
