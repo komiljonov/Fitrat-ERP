@@ -218,10 +218,10 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     finally:
         _signal_state.processing = False
 
-
+#
 # @receiver(post_save, sender=Attendance)
-# def on_mastering_update(sender, instance:Attendance, created, **kwargs):
-#     if created and instance.student is not None:
+# def on_mastering_update(sender, instance : Attendance, created, **kwargs):
+#     if created and instance.student:
 #         ic(instance.theme.title)
 #         homework = Homework.objects.filter(theme=instance.theme).first()
 #         ic(homework.title)

@@ -5,6 +5,7 @@ from icecream import ic
 from rest_framework import serializers
 
 from .models import Attendance
+from ..homeworks.models import Homework, Homework_history
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ..subject.models import Theme
@@ -85,9 +86,81 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Handle bulk creation manually
         if isinstance(validated_data, list):
-            instances = [Attendance.objects.create(**item) for item in validated_data]
+            instances = []
+            mastering_to_create = []
+
+            for item in validated_data:
+                # Create the attendance instance
+                instance = Attendance.objects.create(**item)
+                instances.append(instance)
+
+                # Collect mastering creation data for each instance
+                if instance.student and instance.theme:
+                    try:
+                        # Get homework related to the theme
+                        homework = Homework.objects.filter(theme=instance.theme).first()
+
+                        if homework:
+                            # Check if homework history exists with mark=0
+                            homework_history = Homework_history.objects.filter(
+                                homework=homework,
+                                group=instance.group,
+                                student=instance.student,
+                                mark=0
+                            ).first()
+
+                            if homework_history:
+                                # Collect mastering data for bulk creation
+                                mastering_data = {
+                                    'student': instance.student,
+                                    'theme': instance.theme,
+                                    'group': instance.group,
+                                    'homework': homework,
+                                    # Add other fields as needed
+                                }
+                                mastering_to_create.append(mastering_data)
+
+                    except Exception as e:
+                        # Log the error but don't fail the attendance creation
+                        print(f"Error preparing mastering for attendance {instance.id}: {e}")
+
+            # Bulk create mastering records if any
+            if mastering_to_create:
+                try:
+                    # Replace 'Mastering' with your actual model name
+                    # Mastering.objects.bulk_create([
+                    #     Mastering(**data) for data in mastering_to_create
+                    # ], ignore_conflicts=True)  # ignore_conflicts prevents duplicates
+                    pass  # Replace with your actual bulk creation
+                except Exception as e:
+                    print(f"Error bulk creating mastering records: {e}")
+
             return instances
-        return super().create(validated_data)
+
+        # Handle single instance creation
+        instance = super().create(validated_data)
+
+        # Handle mastering creation for single instance
+        if instance.student and instance.theme:
+            try:
+                homework = Homework.objects.filter(theme=instance.theme).first()
+
+                if homework:
+                    homework_history = Homework_history.objects.filter(
+                        homework=homework,
+                        group=instance.group,
+                        student=instance.student,
+                        mark=0
+                    ).first()
+
+                    if homework_history:
+                        # Add your mastering creation logic here
+                        pass
+
+            except Exception as e:
+                print(f"Error creating mastering for attendance {instance.id}: {e}")
+
+        return instance
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
