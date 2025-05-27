@@ -64,6 +64,15 @@ class StudentsGroupList(ListCreateAPIView):
             lid__isnull=False  # Exclude null `lid`
         )
 
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(student__first_name__icontains=search) |
+                Q(lid__first_name__icontains=search) |
+                Q(student__last_name__icontains=search) |
+                Q(lid__last_name__icontains=search)
+            )
+
         return queryset
 
 
