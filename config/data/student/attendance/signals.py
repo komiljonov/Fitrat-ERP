@@ -10,6 +10,7 @@ from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..homeworks.models import Homework_history, Homework
 from ..student.models import Student
+from ..subject.models import Theme
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import Finance, Kind, SaleStudent
 from ...lid.new_lid.models import Lid
@@ -222,7 +223,11 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 @receiver(post_save, sender=Attendance)
 def on_mastering_update(sender, instance : Attendance, created, **kwargs):
     if created and instance.student:
-        themes = instance.theme.first()
+        first_theme = instance.theme.first()  # this returns a Theme instance or None
+        if first_theme:
+            themes = Theme.objects.filter(id=first_theme.id)
+        else:
+            themes = Theme.objects.none()
         ic(themes)
         homework = Homework.objects.filter(theme=themes).first()
         ic("----")
