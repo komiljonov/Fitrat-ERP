@@ -21,6 +21,8 @@ class Mastering(BaseModel):
     def __str__(self):
         return self.lid.first_name if self.lid else self.student.first_name
 
+    class Meta:
+        ordering = ('created_at',)
 
 class MasteringTeachers(BaseModel):
     teacher : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL ,
