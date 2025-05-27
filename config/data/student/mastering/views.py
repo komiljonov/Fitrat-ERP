@@ -17,10 +17,12 @@ class MasteringList(ListCreateAPIView):
     serializer_class = MasteringSerializer
     permission_classes = [IsAuthenticated]
 
+
 class MasteringDetail(RetrieveUpdateDestroyAPIView):
     queryset = Mastering.objects.all()
     serializer_class = MasteringSerializer
     permission_classes = [IsAuthenticated]
+
 
 class MasteringNoPG(ListAPIView):
     queryset = Mastering.objects.all()
@@ -29,6 +31,7 @@ class MasteringNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
 
 class MasteringQuizFilter(ListAPIView):
     queryset = Mastering.objects.all()
@@ -41,6 +44,7 @@ class MasteringQuizFilter(ListAPIView):
         if quiz:
             return quiz
         return Mastering.objects.none()
+
 
 class TeacherMasteringList(ListAPIView):
     queryset = MasteringTeachers.objects.all()
@@ -71,7 +75,6 @@ class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
     queryset = KpiFinance.objects.all()
     serializer_class = KpiFinanceSerializer
     permission_classes = [IsAuthenticated]
-
 
 
 class MasteringStudentFilter(ListAPIView):
