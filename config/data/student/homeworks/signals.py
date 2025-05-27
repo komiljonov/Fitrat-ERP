@@ -26,12 +26,7 @@ def on_create(sender, instance: Homework_history, created, **kwargs):
                     "bajarilmadi" if instance.status == "Failed" else "bajarildi"
                     } deb belgilandi ."
                 )
-            if instance.mark < 75:
-                instance.status = "Failed"
-                instance.save()
-            else:
-                instance.status = "Passed"
-                instance.save()
+
 
 
 @receiver(post_save, sender=Homework_history)
