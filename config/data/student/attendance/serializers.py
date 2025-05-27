@@ -97,68 +97,25 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 # Collect mastering creation data for each instance
                 if instance.student and instance.theme:
                     try:
-                        # Get homework related to the theme
-                        homework = Homework.objects.filter(theme=instance.theme).first()
+                        themes = instance.theme.first()
+                        ic(themes)
+                        homework = Homework.objects.filter(theme=themes).first()
 
                         if homework:
-                            # Check if homework history exists with mark=0
-                            homework_history = Homework_history.objects.filter(
+                            homework_history = Homework_history.objects.create(
                                 homework=homework,
                                 group=instance.group,
                                 student=instance.student,
                                 mark=0
-                            ).first()
-
-                            if homework_history:
-                                # Collect mastering data for bulk creation
-                                mastering_data = {
-                                    'student': instance.student,
-                                    'theme': instance.theme,
-                                    'group': instance.group,
-                                    'homework': homework,
-                                    # Add other fields as needed
-                                }
-                                mastering_to_create.append(mastering_data)
+                            )
 
                     except Exception as e:
                         # Log the error but don't fail the attendance creation
                         print(f"Error preparing mastering for attendance {instance.id}: {e}")
 
-            # Bulk create mastering records if any
-            if mastering_to_create:
-                try:
-                    # Replace 'Mastering' with your actual model name
-                    # Mastering.objects.bulk_create([
-                    #     Mastering(**data) for data in mastering_to_create
-                    # ], ignore_conflicts=True)  # ignore_conflicts prevents duplicates
-                    pass  # Replace with your actual bulk creation
-                except Exception as e:
-                    print(f"Error bulk creating mastering records: {e}")
-
             return instances
 
-        # Handle single instance creation
         instance = super().create(validated_data)
-
-        # Handle mastering creation for single instance
-        if instance.student and instance.theme:
-            try:
-                homework = Homework.objects.filter(theme=instance.theme).first()
-
-                if homework:
-                    homework_history = Homework_history.objects.filter(
-                        homework=homework,
-                        group=instance.group,
-                        student=instance.student,
-                        mark=0
-                    ).first()
-
-                    if homework_history:
-                        # Add your mastering creation logic here
-                        pass
-
-            except Exception as e:
-                print(f"Error creating mastering for attendance {instance.id}: {e}")
 
         return instance
 
