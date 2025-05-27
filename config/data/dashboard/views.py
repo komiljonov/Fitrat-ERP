@@ -63,25 +63,13 @@ class DashboardView(APIView):
         orders = lid.filter(lid_stage_type="ORDERED_LID")
         orders_archived = orders.filter(is_archived=True)
         first_lesson = FirstLLesson.objects.filter(**filters)
-
-        # Students with One Attendance
-        # students_with_one_attendance = Attendance.objects.values("student").annotate(
-        #     count=Count("id")).filter(count=1, **filters).values_list("student", flat=True)
-
+        first_lesson_archived = Lid.objects.filter(is_archived=True,is_student=False)
         first_lesson_come = Student.objects.filter(student_stage_type="NEW_STUDENT", **filters)
         first_lesson_come_archived = first_lesson_come.filter(is_archived=True)
-
-        # # First Course Payment Students
-        # payment_students = Finance.objects.filter(
-        #     student__isnull=False, kind__name="COURSE_PAYMENT", **filters
-        # ).values_list("student", flat=True)
-
-        first_course_payment = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", **filters)
-        first_course_payment_archived = first_course_payment.filter(is_archived=True)
-
-        # Active and Ended Courses
         new_student = StudentGroup.objects.filter(student__student_stage_type="NEW_STUDENT", **filters)
+        new_student_archived = new_student.filter(is_archived=True)
         active_student = StudentGroup.objects.filter(student__student_stage_type="ACTIVE_STUDENT",group__status="ACTIVE", **filters)
+        active_student_archived = active_student.filter(is_archived=True)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
 
         # **Filtering Based on Dynamic Conditions**
@@ -98,9 +86,6 @@ class DashboardView(APIView):
 
             first_lesson_come_archived = first_lesson_come.filter(
                 is_archived=True,is_student=False) if first_lesson_come.exists() else None
-            first_course_payment = first_course_payment.filter(is_archived=is_student_value)
-            first_course_payment_archived = first_course_payment.filter(
-                is_archived=True) if first_course_payment.exists() else None
 
         if channel_id:
             channel = MarketingChannel.objects.get(id=channel_id)
@@ -111,8 +96,6 @@ class DashboardView(APIView):
             first_lesson = first_lesson.filter(lid__marketing_channel=channel)
             first_lesson_come = first_lesson_come.filter(marketing_channel=channel)
             first_lesson_come_archived = first_lesson_come_archived.filter(marketing_channel=channel)
-            first_course_payment = first_course_payment.filter(marketing_channel=channel)
-            first_course_payment_archived = first_course_payment_archived.filter(marketing_channel=channel)
 
         if service_manager:
             lid = lid.filter(service_manager_id=service_manager)
@@ -122,8 +105,7 @@ class DashboardView(APIView):
             first_lesson = first_lesson.filter(lid__service_manager_id=service_manager)
             first_lesson_come = first_lesson_come.filter(service_manager_id=service_manager)
             first_lesson_come_archived = first_lesson_come_archived.filter(service_manager_id=service_manager)
-            first_course_payment = first_course_payment.filter(service_manager_id=service_manager)
-            first_course_payment_archived = first_course_payment_archived.filter(service_manager_id=service_manager)
+
 
         if sales_manager:
             lid = lid.filter(sales_manager_id=sales_manager)
@@ -133,8 +115,6 @@ class DashboardView(APIView):
             first_lesson = first_lesson.filter(lid__sales_manager_id=sales_manager)
             first_lesson_come = first_lesson_come.filter(sales_manager_id=sales_manager)
             first_lesson_come_archived = first_lesson_come_archived.filter(sales_manager_id=sales_manager)
-            first_course_payment = first_course_payment.filter(sales_manager_id=sales_manager)
-            first_course_payment_archived = first_course_payment_archived.filter(sales_manager_id=sales_manager)
 
         if call_operator:
             lid = lid.filter(call_operator_id=call_operator)
@@ -144,8 +124,6 @@ class DashboardView(APIView):
             first_lesson = first_lesson.filter(lid__call_operator_id=call_operator)
             first_lesson_come = first_lesson_come.filter(call_operator_id=call_operator)
             first_lesson_come_archived = first_lesson_come_archived.filter(call_operator_id=call_operator)
-            first_course_payment = first_course_payment.filter(call_operator_id=call_operator)
-            first_course_payment_archived = first_course_payment_archived.filter(call_operator_id=call_operator)
 
         if subjects:
             lid = lid.filter(subject_id=subjects)
@@ -155,8 +133,6 @@ class DashboardView(APIView):
             first_lesson = first_lesson.filter(lid__subject_id=subjects)
             first_lesson_come = first_lesson_come.filter(subject_id=subjects)
             first_lesson_come_archived = first_lesson_come_archived.filter(subject_id=subjects)
-            first_course_payment = first_course_payment.filter(subject_id=subjects)
-            first_course_payment_archived = first_course_payment_archived.filter(subject_id=subjects)
 
         if teacher:
             lid = lid.filter(lids_group__group__teacher_id=teacher)
@@ -165,9 +141,7 @@ class DashboardView(APIView):
             orders_archived = orders_archived.filter(lids_group__group__teacher_id=teacher)
             first_lesson = first_lesson.filter(group__teacher_id=teacher)
             first_lesson_come = first_lesson_come.filter(students_group__group__teacher_id=teacher)
-            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group_id=teacher)
-            first_course_payment = first_course_payment.filter(students_group__group__teacher_id=teacher)
-            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__teacher_id=teacher)
+            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__teacher_id=teacher)
 
         if course:
             lid = lid.filter(lids_group__group__course_id=course)
@@ -177,8 +151,6 @@ class DashboardView(APIView):
             first_lesson = first_lesson.filter(group__course_id=course)
             first_lesson_come = first_lesson_come.filter(students_group__group__course_id=course)
             first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__course_id=course)
-            first_course_payment = first_course_payment.filter(students_group__group__course_id=course)
-            first_course_payment_archived = first_course_payment_archived.filter(students_group__group__course_id=course)
 
         # Final Data Output
         data = {
@@ -187,12 +159,13 @@ class DashboardView(APIView):
             "orders": orders.count(),
             "orders_archived": orders_archived.count(),
             "first_lesson": first_lesson.count(),
+            "first_lesson_archived": first_lesson_archived.count(),
             "first_lesson_come": first_lesson_come.count(),
             "first_lesson_come_archived": first_lesson_come_archived.count() if first_lesson_come_archived else 0,
-            "first_course_payment": first_course_payment.count(),
+            "new_student_archived": new_student_archived.count(),
             "new_student": new_student.count(),
             "active_student": active_student.count(),
-            "first_course_payment_archived": first_course_payment_archived.count() if first_course_payment_archived else 0,
+            "active_student_archived": active_student_archived.count() if active_student_archived else 0,
             "course_ended": course_ended.count(),
         }
 
