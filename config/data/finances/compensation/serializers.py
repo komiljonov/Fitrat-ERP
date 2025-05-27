@@ -200,6 +200,7 @@ class ResultsNameSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "who",
             "point_type",
             "type",
         ]

@@ -105,6 +105,7 @@ class TeacherStatistics(ListAPIView):
 
         return Response(statistics)
 
+
 class Teacher_StudentsView(ListAPIView):
     queryset = StudentGroup.objects.all()
     serializer_class = StudentsGroupSerializer
