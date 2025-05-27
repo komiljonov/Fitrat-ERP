@@ -41,8 +41,7 @@ class Results(BaseModel):
     university_name = models.CharField(max_length=120,null=True,blank=True)
     university_entering_type = models.CharField(choices=[
         ("Grant", "Grant"),
-        ("Kontrakt", "Kontrakt"),
-        ("Super_Kontrakt", "Super_Kontrakt"),
+        ("Kontrakt", "Kontrakt")
     ],
     max_length=100,null=True,blank=True)
     university_entering_ball = models.FloatField(null=True,blank=True)
