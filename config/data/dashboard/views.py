@@ -69,7 +69,7 @@ class DashboardView(APIView):
         new_student = StudentGroup.objects.filter(student__student_stage_type="NEW_STUDENT", **filters)
         new_student_archived = new_student.filter(student__is_archived=True)
         active_student = StudentGroup.objects.filter(student__student_stage_type="ACTIVE_STUDENT",group__status="ACTIVE", **filters)
-        active_student_archived = active_student.filter(is_archived=True)
+        active_student_archived = active_student.filter(student__is_archived=True)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
 
         # **Filtering Based on Dynamic Conditions**
