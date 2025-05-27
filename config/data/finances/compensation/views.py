@@ -439,6 +439,12 @@ class ResultsNameListCreateView(ListCreateAPIView):
     serializer_class = ResultsNameSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        who = self.request.GET.get("who")
+        if who:
+            return ResultName.objects.filter(who=who)
+        return ResultName.objects.all()
+
     def get_paginated_response(self, data):
         return Response(data)
 

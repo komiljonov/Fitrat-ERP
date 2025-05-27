@@ -135,6 +135,11 @@ class ResultName(BaseModel):
         ('Degree', 'Degree')],
         max_length=10
     )
+    who = models.CharField(
+        choices=[
+            ("Teacher", "Teacher"),
+            ("Student", "Student"),
+        ],max_length=10, default="Teacher",null=True,blank=True)
     type = models.CharField(choices=[
         ("One", "One"),
         ("Two", "Two"),
