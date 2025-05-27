@@ -5,7 +5,6 @@ from icecream import ic
 from rest_framework import serializers
 
 from .models import Attendance
-from ..homeworks.models import Homework, Homework_history
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ..subject.models import Theme
@@ -86,38 +85,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Handle bulk creation manually
         if isinstance(validated_data, list):
-            instances = []
-            mastering_to_create = []
-
-            for item in validated_data:
-                # Create the attendance instance
-                instance = Attendance.objects.create(**item)
-                instances.append(instance)
-
-                # Collect mastering creation data for each instance
-                if instance.student and instance.theme:
-                    try:
-                        themes = instance.theme.first()
-                        ic(themes)
-                        homework = Homework.objects.filter(theme=themes).first()
-
-                        if homework:
-                            homework_history = Homework_history.objects.create(
-                                homework=homework,
-                                group=instance.group,
-                                student=instance.student,
-                                mark=0
-                            )
-
-                    except Exception as e:
-                        # Log the error but don't fail the attendance creation
-                        print(f"Error preparing mastering for attendance {instance.id}: {e}")
-
+            instances = [Attendance.objects.create(**item) for item in validated_data]
             return instances
-
-        instance = super().create(validated_data)
-
-        return instance
+        return super().create(validated_data)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
