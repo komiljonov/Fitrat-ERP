@@ -37,13 +37,10 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        # Pop the 'upload_file' field to handle it separately
         upload_files = validated_data.pop('upload_file', [])
 
-        # Create the Results instance
         result_instance = Results.objects.create(**validated_data)
 
-        # Add the related upload files
         result_instance.upload_file.set(upload_files)
 
         return result_instance
