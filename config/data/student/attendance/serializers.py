@@ -6,6 +6,8 @@ from rest_framework import serializers
 
 from .models import Attendance
 from ..homeworks.models import Homework_history, Homework
+from ..mastering.models import Mastering
+from ..quiz.models import Quiz
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ..subject.models import Theme
@@ -92,26 +94,14 @@ class AttendanceSerializer(serializers.ModelSerializer):
         themes = validated_data.pop('theme', [])
 
         with transaction.atomic():
-            # Create the attendance instance
             attendance = Attendance.objects.create(**validated_data)
 
-            # Set the many-to-many relationships
             if themes:
                 attendance.theme.set(themes)
-                # Force save to trigger signals
                 attendance.save()
 
-            # Manually trigger the monitoring signal if needed
-            try:
-                # Replace 'your_monitoring_function' with your actual function name
-                from your_app.signals import your_monitoring_function
-                your_monitoring_function(sender=Attendance, instance=attendance, created=True)
-            except ImportError:
-                print("Monitoring function not found - make sure to import it correctly")
-
-            # Create homework history for each theme
             student = validated_data.get('student')
-            if student and themes:  # Only create if there's a student
+            if student and themes:
                 for theme in themes:
                     try:
                         homework = Homework.objects.filter(theme=theme).first()
@@ -124,6 +114,14 @@ class AttendanceSerializer(serializers.ModelSerializer):
                                 mark=0
                             )
                             print(f"Homework history created successfully")
+                            quiz = Quiz.objects.filter(homework=homework).first()
+
+                            mastering = Mastering.objects.create(
+                                student=student,
+                                theme=homework.theme,
+                                test=quiz,
+                                ball=0
+                            )
                         else:
                             print(f"No homework found for theme: {theme}")
                     except Exception as e:
