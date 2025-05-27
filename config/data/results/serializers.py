@@ -141,6 +141,9 @@ class StudentResultsSerializer(serializers.ModelSerializer):
 
             'upload_file',
             'status',
+
+            "updater",
+
             'created_at',
             'updated_at',
         ]
@@ -164,6 +167,15 @@ class StudentResultsSerializer(serializers.ModelSerializer):
             certificate.upload_file.set(upload_files)
 
         return certificate
+
+    def update(self, instance, validated_data):
+
+        request = self.context.get("request")
+
+        if validated_data["status"]:
+            instance.updater = request.user
+            instance.save()
+
 
 class OtherResultsSerializer(serializers.ModelSerializer):
     class Meta:

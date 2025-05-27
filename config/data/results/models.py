@@ -79,6 +79,7 @@ class Results(BaseModel):
         default="In_progress",
         max_length=100,
     )
+    updater : "CustomUser" = models.ForeignKey("account.CustomUser",on_delete=models.SET_NULL,related_name="updater_results",null=True,blank=True)
 
     def __str__(self):
         return f"{self.results}"
