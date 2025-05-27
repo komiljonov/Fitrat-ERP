@@ -84,23 +84,74 @@ class AttendanceSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        # Handle bulk creation manually
-        if isinstance(validated_data, list):
-            for item in validated_data:
-                items = Attendance.objects.create(**item)
-                if items:
-                    print(items)
-                    homework = Homework.objects.filter(
-                        theme=item.get('theme')[0],
-                    )
-                    Homework_history.objects.create(
-                        homework=homework,
-                        student=item.get('student'),
-                        status="Passed",
-                        mark=0
-                    )
+        # Extract themes from validated_data before creating the instance
+        themes = validated_data.pop('theme', [])
 
-        return super().create(validated_data)
+        # Create the attendance instance
+        attendance = Attendance.objects.create(**validated_data)
+
+        # Set the many-to-many relationships
+        if themes:
+            attendance.theme.set(themes)
+
+        # Create homework history for each theme
+        student = validated_data.get('student')
+        if student and themes:  # Only create if there's a student
+            for theme in themes:
+                try:
+                    homework = Homework.objects.filter(theme=theme).first()
+                    if homework:
+                        print(f"Creating homework history for theme: {theme}, student: {student}")
+                        Homework_history.objects.create(
+                            homework=homework,
+                            student=student,
+                            status="Passed",
+                            mark=0
+                        )
+                        print(f"Homework history created successfully")
+                    else:
+                        print(f"No homework found for theme: {theme}")
+                except Exception as e:
+                    print(f"Error creating homework history: {e}")
+
+        return attendance
+
+    @classmethod
+    def create_bulk(cls, validated_data_list):
+        """
+        Handle bulk creation of attendance records
+        """
+        created_instances = []
+
+        for data in validated_data_list:
+            themes = data.pop('theme', [])
+
+            # Create attendance instance
+            attendance = Attendance.objects.create(**data)
+
+            # Set themes
+            if themes:
+                attendance.theme.set(themes)
+
+            # Create homework history
+            student = data.get('student')
+            if student and themes:
+                for theme in themes:
+                    try:
+                        homework = Homework.objects.filter(theme=theme).first()
+                        if homework:
+                            Homework_history.objects.create(
+                                homework=homework,
+                                student=student,
+                                status="Passed",
+                                mark=0
+                            )
+                    except Exception as e:
+                        print(f"Error creating homework history: {e}")
+
+            created_instances.append(attendance)
+
+        return created_instances
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
