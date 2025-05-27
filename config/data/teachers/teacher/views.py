@@ -284,8 +284,8 @@ class StudentsAvgLearning(APIView):
                     homeworks.append(item)
 
             # Sort homework items by created_at (newest first)
-            homeworks.sort(key=lambda x: x['created_at'], reverse=True)
-            exams.sort(key=lambda x: x['created_at'], reverse=True)
+            # homeworks.sort(key=lambda x: x['created_at'], reverse=True)
+            # exams.sort(key=lambda x: x['created_at'], reverse=True)
 
             overall_exam = sum(x['ball'] for x in exams) / len(exams) if exams else 0
             overall_homework = sum(x['ball'] for x in homeworks) / len(homeworks) if homeworks else 0
