@@ -223,9 +223,11 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 def on_mastering_update(sender, instance : Attendance, created, **kwargs):
     if created and instance.student:
         themes = instance.theme.first()
+        ic(themes)
         homework = Homework.objects.filter(theme=themes).first()
+        ic("----")
         if homework:
-            h_h = Homework_history.objects.filter(
+            Homework_history.objects.filter(
                 homework=homework,
                 group=instance.group,
                 student=instance.student,
