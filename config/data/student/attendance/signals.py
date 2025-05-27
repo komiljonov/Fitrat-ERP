@@ -220,22 +220,23 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         _signal_state.processing = False
 
 
-@receiver(post_save, sender=Attendance)
-def on_mastering_update(sender, instance : Attendance, created, **kwargs):
-    if created and instance.student:
-        first_theme = instance.theme.first()
-        if first_theme:
-            themes = Theme.objects.filter(id=first_theme.id)
-        else:
-            themes = Theme.objects.none()
-        ic(themes)
-        homework = Homework.objects.filter(theme=themes).first()
-        ic("----")
-        if homework:
-            Homework_history.objects.filter(
-                homework=homework,
-                group=instance.group,
-                student=instance.student,
-                mark=0
-            )
+# @receiver(post_save, sender=Attendance)
+# def on_mastering_update(sender, instance : Attendance, created, **kwargs):
+#     if created and instance.student:
+#         print(instance.theme.all())
+#         first_theme = instance.theme.first()
+#         if first_theme:
+#             themes = Theme.objects.filter(id=first_theme.id)
+#         else:
+#             themes = Theme.objects.none()
+#         print(themes)
+#         homework = Homework.objects.filter(theme=themes).first()
+#         print("----")
+#         if homework:
+#             Homework_history.objects.filter(
+#                 homework=homework,
+#                 group=instance.group,
+#                 student=instance.student,
+#                 mark=0
+#             )
 

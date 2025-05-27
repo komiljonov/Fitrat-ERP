@@ -5,6 +5,7 @@ from icecream import ic
 from rest_framework import serializers
 
 from .models import Attendance
+from ..homeworks.models import Homework_history, Homework
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ..subject.models import Theme
@@ -85,8 +86,20 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Handle bulk creation manually
         if isinstance(validated_data, list):
-            instances = [Attendance.objects.create(**item) for item in validated_data]
-            return instances
+            for item in validated_data:
+                items = Attendance.objects.create(**item)
+                if items:
+                    print(items)
+                    homework = Homework.objects.filter(
+                        theme=item.get('theme')[0],
+                    )
+                    Homework_history.objects.create(
+                        homework=homework,
+                        student=item.get('student'),
+                        status="Passed",
+                        mark=0
+                    )
+
         return super().create(validated_data)
 
     def to_representation(self, instance):
