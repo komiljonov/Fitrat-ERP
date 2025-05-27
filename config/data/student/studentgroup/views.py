@@ -407,9 +407,9 @@ class StudentGroupStatistics(APIView):
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
 
-        all = StudentGroup.objects.filter(filial__id=filial, group__status="ACTIVE")
-        orders = StudentGroup.objects.filter(filial__id=filial, lid__lid_stage_type="ORDERED_LID", group__status="ACTIVE",lid__is_student=False)
-        students = StudentGroup.objects.filter(filial__id=filial, student__isnull=False, group__status="ACTIVE")
+        all = StudentGroup.objects.filter(filial__id=filial, group__status="ACTIVE").all()
+        orders = StudentGroup.objects.filter(filial__id=filial, lid__lid_stage_type="ORDERED_LID", group__status="ACTIVE",lid__is_student=False).all()
+        students = StudentGroup.objects.filter(filial__id=filial, student__isnull=False, group__status="ACTIVE").all()
 
         if start_date and end_date:
             all = all.filter(created_at__gte=start_date,created_at__lte=end_date)
