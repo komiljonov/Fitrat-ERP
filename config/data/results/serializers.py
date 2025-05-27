@@ -280,9 +280,18 @@ class ResultsSerializer(serializers.ModelSerializer):
             'subject_name',
             'upload_file',
             'status',
+            "updater",
             'created_at',
             'updated_at',
         ]
+    def update(self, instance, validated_data):
+
+        request = self.context.get("request")
+
+        if validated_data["status"]:
+            instance.updater = request.user
+            instance.save()
+
 
     def to_representation(self, instance):
 
