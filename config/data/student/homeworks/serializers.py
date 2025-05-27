@@ -41,7 +41,6 @@ class HomeworkSerializer(serializers.ModelSerializer):
         histories = Homework_history.objects.filter(
             student__id=student_id,
             homework=obj,
-            status="Passed"
         )
 
         online_avg = histories.filter(homework__choice="Online").aggregate(avg=Avg("mark"))["avg"] or 0
