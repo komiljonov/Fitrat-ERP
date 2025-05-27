@@ -224,7 +224,6 @@ def on_mastering_update(sender, instance : Attendance, created, **kwargs):
     if created and instance.student:
         themes = instance.theme.first()
         homework = Homework.objects.filter(theme=themes).first()
-        ic(homework.title)
         if homework:
             h_h = Homework_history.objects.filter(
                 homework=homework,
@@ -232,5 +231,5 @@ def on_mastering_update(sender, instance : Attendance, created, **kwargs):
                 student=instance.student,
                 mark=0
             )
-            ic(h_h)
+            ic("---------")
 
