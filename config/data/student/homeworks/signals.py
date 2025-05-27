@@ -31,9 +31,9 @@ def on_create(sender, instance: Homework_history, created, **kwargs):
 
 @receiver(post_save, sender=Homework_history)
 def on_update(sender, instance: Homework_history, created, **kwargs):
-    print("🔔 Signal triggered")
 
     if not created and instance.mark is not None:
+        print("🔔 Signal triggered")
         quiz = Quiz.objects.filter(
             homework=instance.homework,
             theme=instance.homework.theme,
