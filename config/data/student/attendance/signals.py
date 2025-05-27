@@ -223,7 +223,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 @receiver(post_save, sender=Attendance)
 def on_mastering_update(sender, instance : Attendance, created, **kwargs):
     if created and instance.student:
-        first_theme = instance.theme.first()  # this returns a Theme instance or None
+        first_theme = instance.theme.first()
         if first_theme:
             themes = Theme.objects.filter(id=first_theme.id)
         else:
@@ -238,5 +238,4 @@ def on_mastering_update(sender, instance : Attendance, created, **kwargs):
                 student=instance.student,
                 mark=0
             )
-            ic("---------")
 
