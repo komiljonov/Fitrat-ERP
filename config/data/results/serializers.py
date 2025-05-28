@@ -288,6 +288,7 @@ class ResultsSerializer(serializers.ModelSerializer):
         if validated_data["status"]:
             instance.updater = request.user
             instance.save()
+        return instance
 
 
     def to_representation(self, instance):
