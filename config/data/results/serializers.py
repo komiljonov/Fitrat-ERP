@@ -195,6 +195,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             "who",
+            "results",
             'teacher',
             'student',
             'certificate_type',

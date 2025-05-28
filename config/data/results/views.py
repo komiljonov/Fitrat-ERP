@@ -122,8 +122,11 @@ class OtherResultsViewSet(ListCreateAPIView):
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
         status = self.request.GET.get('status')
+        results = self.request.GET.get('results')
         degree = self.request.GET.get('degree')
 
+        if results:
+            queryset = queryset.filter(results=results)
         if degree:
             queryset = queryset.filter(degree=degree)
 
