@@ -141,6 +141,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
             'status',
 
             "updater",
+            "degree",
 
             'created_at',
             'updated_at',

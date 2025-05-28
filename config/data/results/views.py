@@ -150,7 +150,10 @@ class ResultsView(ListAPIView):
         type = self.request.query_params.get('type')
         filial = self.request.query_params.get('filial')
         teacher = self.request.query_params.get('teacher')
+        degree = self.request.GET.get('degree')
 
+        if degree:
+            queryset = queryset.filter(degree=degree)
         if status:
             queryset = queryset.filter(status=status)
         if type:
