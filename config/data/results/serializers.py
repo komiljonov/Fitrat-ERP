@@ -210,8 +210,9 @@ class OtherResultsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,
-                                                  context=self.context).data if instance.upload_file else None
+        rep['upload_file'] = FileUploadSerializer(
+            instance.upload_file, many=True,context=self.context).data \
+            if instance.upload_file else None
         rep["teacher"] = UserListSerializer(instance.teacher).data
         rep["student"] = StudentSerializer(instance.student).data
         return rep
