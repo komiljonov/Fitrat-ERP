@@ -297,6 +297,7 @@ class ResultsSerializer(serializers.ModelSerializer):
         """ Remove fields that are None or empty """
 
         data = super().to_representation(instance)
+        data["updater"] = UserListSerializer(instance.updater).data if instance.updater else None
         data['upload_file'] = FileUploadSerializer(instance.upload_file,context=self.context, many=True,).data
         data['student'] = StudentSerializer(instance.student,context=self.context).data
         data['teacher'] = UserListSerializer(instance.teacher,context=self.context).data
