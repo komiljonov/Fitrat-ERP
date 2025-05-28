@@ -47,6 +47,12 @@ class Results(BaseModel):
     max_length=100,null=True,blank=True)
     university_entering_ball = models.FloatField(null=True,blank=True)
 
+    degree = models.CharField(choices=[
+        ("1","1"),
+        ("2","2"),
+        ("3","3"),
+    ],
+    max_length=100,null=True,blank=True)
 
     certificate_type = models.CharField(choices=[
         ("IELTS", "IELTS"),
