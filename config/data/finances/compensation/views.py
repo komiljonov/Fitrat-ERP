@@ -395,9 +395,14 @@ class Asos4ListCreateView(ListCreateAPIView):
         asos = self.request.query_params.get("asos")
         name = self.request.query_params.get("name")
         level = self.request.GET.get("level")
+        degree = self.request.GET.get("degree")
+
 
         queryset = ResultSubjects.objects.all()
 
+
+        if degree:
+            queryset = queryset.filter(degree=degree)
         if level:
             queryset = queryset.filter(level=level)
         if name:

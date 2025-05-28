@@ -141,7 +141,6 @@ class StudentResultsSerializer(serializers.ModelSerializer):
             'status',
 
             "updater",
-            "degree",
 
             'created_at',
             'updated_at',
@@ -281,7 +280,6 @@ class  ResultsSerializer(serializers.ModelSerializer):
             'subject_name',
             'upload_file',
             'status',
-            "degree",
             "updater",
             'created_at',
             'updated_at',
