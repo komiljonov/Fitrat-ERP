@@ -161,7 +161,7 @@ class ResultPointsSerializer(serializers.ModelSerializer):
             "university_type",
             "from_point",
             "to_point",
-
+            "degree",
             "amount",
             "created_at",
             "updated_at"

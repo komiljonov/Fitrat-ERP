@@ -23,12 +23,6 @@ class Results(BaseModel):
     blank=True,
     )
 
-    degree = models.CharField(choices=[
-        ("1","1"),
-        ("2","2"),
-        ("3","3"),
-    ], max_length=1, null=True,blank=True)
-
     teacher : "CustomUser" = models.ForeignKey("account.CustomUser",
                             on_delete=models.CASCADE,related_name="teacher_results")
     student : "Student" = models.ForeignKey("student.Student",

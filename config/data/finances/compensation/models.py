@@ -170,6 +170,11 @@ class ResultSubjects(BaseModel):
         ("Region", "Region"),
         ("Regional", "Regional"),
     ], max_length=256, null=True, blank=True)
+    degree = models.CharField(choices=[
+        ("1","1"),
+        ("2","2"),
+        ("3","3"),
+    ], max_length=1, null=True,blank=True)
 
     university_type = models.CharField(choices=[
         ("Personal", "Personal"),
