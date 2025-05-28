@@ -394,7 +394,12 @@ class Asos4ListCreateView(ListCreateAPIView):
     def get_queryset(self):
         asos = self.request.query_params.get("asos")
         name = self.request.query_params.get("name")
+        level = self.request.GET.get("level")
+
         queryset = ResultSubjects.objects.all()
+
+        if level:
+            queryset = queryset.filter(level=level)
         if name:
             queryset = queryset.filter(result__id=name)
         if asos:
