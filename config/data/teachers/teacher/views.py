@@ -110,11 +110,11 @@ class TeacherStatistics(ListAPIView):
             "new_student_active" : StudentGroup.objects.filter(group__teacher=teacher,student__student_stage_type="ACTIVE_STUDENT",
                                                                student__new_student_date__isnull=False, **filters).count(),
             "new_student_archived" : StudentGroup.objects.filter(group__teacher=teacher,student__student_stage_type="NEW_STUDENT",
-                                                                 is_archived=True, **filters).count(),
+                                                                 student__is_archived=True, **filters).count(),
             "new_student_still" : StudentGroup.objects.filter(group__teacher=teacher,student__student_stage_type="NEW_STUDENT",
-                                                              is_archived=False, **filters).count(),
+                                                              student__is_archived=False, **filters).count(),
 
-            "active_students": StudentGroup.objects.filter(group__teacher=teacher,is_archived=False,
+            "active_students": StudentGroup.objects.filter(group__teacher=teacher,student__is_archived=False,
                                                            student__student_stage_type="ACTIVE_STUDENT",
                                                            **filters).count(),
 
