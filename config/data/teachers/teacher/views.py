@@ -89,19 +89,19 @@ class TeacherStatistics(ListAPIView):
             total_avg_scaled = None
             low_assimilation_count = 0
 
-        statistics = {
-            "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
-            "new_students": StudentGroup.objects.filter(group__teacher=teacher,
-                                                        student__student_stage_type="NEW_STUDENT", **filters).count(),
-            "education_stopped_students": StudentGroup.objects.filter(group__teacher=teacher,
-                                                                      student__is_archived=True, **filters).count(),
-            "active_students": StudentGroup.objects.filter(group__teacher=teacher,
-                                                           student__student_stage_type="ACTIVE_STUDENT", **filters).count(),
-            "complaints": Complaint.objects.filter(user=teacher, **filters).count(),
-            "results": Results.objects.filter(teacher=teacher, status="Accepted", **filters).count(),
-            "average_assimilation": total_avg_scaled,
-            "low_assimilation": low_assimilation_count,
-        }
+        # statistics = {
+        #     "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
+        #     "new_students": StudentGroup.objects.filter(group__teacher=teacher,
+        #                                                 student__student_stage_type="NEW_STUDENT", **filters).count(),
+        #     "education_stopped_students": StudentGroup.objects.filter(group__teacher=teacher,
+        #                                                               student__is_archived=True, **filters).count(),
+        #     "active_students": StudentGroup.objects.filter(group__teacher=teacher,
+        #                                                    student__student_stage_type="ACTIVE_STUDENT", **filters).count(),
+        #     "complaints": Complaint.objects.filter(user=teacher, **filters).count(),
+        #     "results": Results.objects.filter(teacher=teacher, status="Accepted", **filters).count(),
+        #     "average_assimilation": total_avg_scaled,
+        #     "low_assimilation": low_assimilation_count,
+        # }
 
         statistics1 = {
             "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),

@@ -225,7 +225,7 @@ def on_group_days_update(sender, instance, created, **kwargs):
     if created:
         group_first_att = Attendance.objects.filter(group=instance.group).count()
         if group_first_att == 1:
-            total_lessons = Theme.objects.filter(course=instance.course).count()
+            total_lessons = Theme.objects.filter(course=instance.group.course).count()
 
             week_days = [days.name for days in instance.scheduled_day_type.all()]
 
