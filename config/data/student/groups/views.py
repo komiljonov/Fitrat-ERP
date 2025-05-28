@@ -47,14 +47,18 @@ class StudentGroupsView(ListCreateAPIView):
     #                                           "price_type","lessons_count","status","start_date"])
     def get_queryset(self):
         queryset = Group.objects.all()
-        teacher = self.request.query_params.get('teacher', None)
-        course = self.request.query_params.get('course', None)
-        subject = self.request.query_params.get('subject', None)
-        filial = self.request.query_params.get('filial', None)
-        day = self.request.query_params.get('day', None)
-        price_type = self.request.query_params.get('price_type', None)
-        level = self.request.query_params.get('course__level__id', None)
-        not_added = self.request.query_params.get('not_added', None)
+        teacher = self.request.GET.get('teacher', None)
+        course = self.request.GET.get('course', None)
+        subject = self.request.GET.get('subject', None)
+        filial = self.request.GET.get('filial', None)
+        day = self.request.GET.get('day', None)
+        price_type = self.request.GET.get('price_type', None)
+        level = self.request.GET.get('course__level__id', None)
+        not_added = self.request.GET.get('not_added', None)
+        student = self.request.GET.get('student', None)
+
+        if student:
+            queryset = queryset.filter(student_groups__student__id=student)
 
         if day == "1":
             days = []
@@ -109,13 +113,13 @@ class GroupListAPIView(ListAPIView):
     def get_queryset(self):
         filter = {}
         queryset = Group.objects.all()
-        status = self.request.query_params.get('status', None)
-        filial = self.request.query_params.get('filial', None)
-        course = self.request.query_params.get('course', None)
-        teacher = self.request.query_params.get('teacher', None)
-        start_date = self.request.query_params.get('start_date', None)
-        end_date = self.request.query_params.get('end_date', None)
-        student = self.request.query_params.get('student', None)
+        status = self.request.GET.get('status', None)
+        filial = self.request.GET.get('filial', None)
+        course = self.request.GET.get('course', None)
+        teacher = self.request.GET.get('teacher', None)
+        start_date = self.request.GET.get('start_date', None)
+        end_date = self.request.GET.get('end_date', None)
+        student = self.request.GET.get('student', None)
         not_added = self.request.GET.get('not_added', None)
 
         if status:
@@ -183,7 +187,7 @@ class RoomListAPIView(ListCreateAPIView):
     filterset_fields = ('room_number', 'room_filling')
 
     def get_queryset(self):
-        filial = self.request.query_params.get('filial', None)
+        filial = self.request.GET.get('filial', None)
         if filial:
             return Room.objects.filter(filial=filial)
         return Room.objects.all()  # Ensure it always returns a queryset
@@ -199,7 +203,7 @@ class RoomFilterView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        filial = self.request.query_params.get('filial', None)
+        filial = self.request.GET.get('filial', None)
         queryset = Room.objects.filter(filial__id=filial)
         return queryset
 
@@ -208,11 +212,11 @@ class CheckRoomLessonScheduleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        filial = request.query_params.get('filial')
-        room_id = request.query_params.get('room')
-        date_str = request.query_params.get('date')
-        started_at_str = request.query_params.get('started_at')
-        ended_at_str = request.query_params.get('ended_at')
+        filial = request.GET.get('filial')
+        room_id = request.GET.get('room')
+        date_str = request.GET.get('date')
+        started_at_str = request.GET.get('started_at')
+        ended_at_str = request.GET.get('ended_at')
 
         # Validate required fields
         if not all([room_id, date_str, started_at_str, ended_at_str]):
@@ -326,7 +330,7 @@ class RoomNoPG(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        filial = self.request.query_params.get('filial', None)
+        filial = self.request.GET.get('filial', None)
         if filial:
             return Room.objects.filter(filial=filial)
         return Room.objects.filter(filial=self.request.user.filial.first())
@@ -350,13 +354,13 @@ class SecondaryGroupsView(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = SecondaryGroup.objects.all()
-        start_date = parse_date(self.request.query_params.get('start_date')) if self.request.query_params.get(
+        start_date = parse_date(self.request.GET.get('start_date')) if self.request.GET.get(
             'start_date') else None
-        end_date = parse_date(self.request.query_params.get('end_date')) if self.request.query_params.get(
+        end_date = parse_date(self.request.GET.get('end_date')) if self.request.GET.get(
             'end_date') else None
-        teacher = self.request.query_params.get('teacher')
-        course = self.request.query_params.get('course')
-        filial = self.request.query_params.get('filial')
+        teacher = self.request.GET.get('teacher')
+        course = self.request.GET.get('course')
+        filial = self.request.GET.get('filial')
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
@@ -385,11 +389,11 @@ class SecondaryNoPG(ListAPIView):
     def get_queryset(self):
         queryset = SecondaryGroup.objects.all()
 
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-        teacher = self.request.query_params.get('teacher')
-        course = self.request.query_params.get('course')
-        filial = self.request.query_params.get('filial')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        teacher = self.request.GET.get('teacher')
+        course = self.request.GET.get('course')
+        filial = self.request.GET.get('filial')
 
         # Apply filters correctly
         if filial:
@@ -432,11 +436,11 @@ class GroupSchedule(ListAPIView):
 
     def get_queryset(self):
         queryset = Group.objects.all()
-        start_date = self.request.query_params.get('from', None)
-        end_date = self.request.query_params.get('to', None)
+        start_date = self.request.GET.get('from', None)
+        end_date = self.request.GET.get('to', None)
 
         filial = self.request.user.filial
-        room_id = self.request.query_params.get('room')
+        room_id = self.request.GET.get('room')
         if room_id:
             return (queryset.filter(
                 room_number=room_id,
@@ -467,7 +471,7 @@ class LessonScheduleListApi(ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
 
         # Get the date filter from query params (optional)
-        date_filter = self.request.query_params.get('date', None)
+        date_filter = self.request.GET.get('date', None)
         date_filter = datetime.datetime.strptime(date_filter, "%d-%m-%Y").date() if date_filter else None
 
         # Prepare to collect lessons grouped by date
@@ -558,10 +562,10 @@ class LessonScheduleWebListApi(ListAPIView):
     filterset_fields = ('name', 'teacher__id', 'course__subject__name', 'room_number')
 
     def get_queryset(self):
-        group = self.request.query_params.get('group', None)
-        subject = self.request.query_params.get('subject')
-        teacher = self.request.query_params.get('teacher')
-        start_date_str = self.request.query_params.get('started_at')
+        group = self.request.GET.get('group', None)
+        subject = self.request.GET.get('subject')
+        teacher = self.request.GET.get('teacher')
+        start_date_str = self.request.GET.get('started_at')
 
         queryset = self.queryset.all()
 

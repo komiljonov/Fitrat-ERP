@@ -80,6 +80,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
                 "active_date",
                 "is_frozen",
                 "secondary_group",
+                "frozen_days",
             ],
         )
 

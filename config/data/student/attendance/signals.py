@@ -220,6 +220,23 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         _signal_state.processing = False
 
 
+@receiver(post_save, sender=Attendance)
+def on_group_days_update(sender,instance,created,**kwargs):
+    if created:
+        total_lessons = Theme.objects.filter(course=instance.course).count()
+        finish_date = datetime.today() + datetime.timedelta(days=365)
+
+        week_days = [days.name for days in instance.scheduled_day_type.all()]
+
+        date = calculate_lessons(
+            start_date=instance.start_date,
+            end_date=finish_date,
+            lesson_type=str(week_days),
+            holidays=[""],
+            days_off=["Yakshanba"]
+        )
+
+
 # @receiver(post_save, sender=Attendance)
 # def on_mastering_update(sender, instance : Attendance, created, **kwargs):
 #     if created and instance.student:
