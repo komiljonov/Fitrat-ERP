@@ -100,6 +100,7 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
 
         return certificate
 
+
 class StudentResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
@@ -212,6 +213,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
             certificate.upload_file.set(upload_files)
 
         return certificate
+
 
 class NationalSerializer(serializers.ModelSerializer):
     class Meta:
