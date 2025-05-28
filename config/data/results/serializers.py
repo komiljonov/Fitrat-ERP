@@ -202,6 +202,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
             'result_score',
             'subject_name',
             'status',
+            "degree",
             'upload_file',
             'created_at',
             'updated_at',
