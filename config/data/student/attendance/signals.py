@@ -219,38 +219,38 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
     finally:
         _signal_state.processing = False
 
-
-@receiver(post_save, sender=Attendance)
-def on_group_days_update(sender, instance, created, **kwargs):
-    if created:
-        group_first_att = Attendance.objects.filter(group=instance.group).count()
-        if group_first_att == 1:
-            total_lessons = Theme.objects.filter(course=instance.group.course).count()
-
-            week_days = [days.name for days in instance.scheduled_day_type.all()]
-
-            finish_date = datetime.today() + datetime.timedelta(days=365)
-
-            lesson_dates = calculate_lessons(
-                start_date=instance.start_date,
-                end_date=finish_date,
-                lesson_type=str(week_days),
-                holidays=[""],
-                days_off=["Yakshanba"]
-            )
-            print(lesson_dates)
-            if len(lesson_dates) >= total_lessons:
-                actual_end_date = lesson_dates[total_lessons - 1]
-                ic(actual_end_date)
-
-                instance.group.finish_date = actual_end_date
-                instance.group.save()
-
-            else:
-                if lesson_dates:
-                    instance.group.finish_date = lesson_dates[-1]
-                    instance.group.save()
-
+#
+# @receiver(post_save, sender=Attendance)
+# def on_group_days_update(sender, instance, created, **kwargs):
+#     if created:
+#         group_first_att = Attendance.objects.filter(group=instance.group).count()
+#         if group_first_att == 1:
+#             total_lessons = Theme.objects.filter(course=instance.group.course).count()
+#
+#             week_days = [days.name for days in instance.scheduled_day_type.all()]
+#
+#             finish_date = datetime.today() + datetime.timedelta(days=365)
+#
+#             lesson_dates = calculate_lessons(
+#                 start_date=instance.start_date,
+#                 end_date=finish_date,
+#                 lesson_type=str(week_days),
+#                 holidays=[""],
+#                 days_off=["Yakshanba"]
+#             )
+#             print(lesson_dates)
+#             if len(lesson_dates) >= total_lessons:
+#                 actual_end_date = lesson_dates[total_lessons - 1]
+#                 ic(actual_end_date)
+#
+#                 instance.group.finish_date = actual_end_date
+#                 instance.group.save()
+#
+#             else:
+#                 if lesson_dates:
+#                     instance.group.finish_date = lesson_dates[-1]
+#                     instance.group.save()
+#
 
 
 # @receiver(post_save, sender=Attendance)
