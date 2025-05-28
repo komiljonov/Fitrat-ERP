@@ -255,7 +255,7 @@ class NationalSerializer(serializers.ModelSerializer):
         return certificate
 
 
-class ResultsSerializer(serializers.ModelSerializer):
+class  ResultsSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     class Meta:
         model = Results
@@ -281,6 +281,7 @@ class ResultsSerializer(serializers.ModelSerializer):
             'subject_name',
             'upload_file',
             'status',
+            "degree",
             "updater",
             'created_at',
             'updated_at',
