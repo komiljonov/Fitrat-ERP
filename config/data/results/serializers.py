@@ -281,15 +281,16 @@ class ResultsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-    def update(self, instance, validated_data):
 
+    def update(self, instance, validated_data):
         request = self.context.get("request")
 
-        if validated_data["status"]:
-            instance.updater = request.user
-            instance.save()
-        return instance
+        # Set updater for any update
+        if request and request.user:
+            validated_data['updater'] = request.user
 
+        # Call the parent update method to handle all field updates
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
 
