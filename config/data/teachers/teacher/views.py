@@ -103,7 +103,31 @@ class TeacherStatistics(ListAPIView):
             "low_assimilation": low_assimilation_count,
         }
 
-        return Response(statistics)
+        statistics1 = {
+            "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
+            "new_students": StudentGroup.objects.filter(group__teacher=teacher,
+                                                        student__student_stage_type="NEW_STUDENT", **filters).count(),
+            "new_student_active" : StudentGroup.objects.filter(group__teacher=teacher,student__student_stage_type="ACTIVE_STUDENT",
+                                                               new_student_date__isnull=False, **filters).count(),
+            "new_student_archived" : StudentGroup.objects.filter(group__teacher=teacher,student__student_stage_type="NEW_STUDENT",
+                                                                 is_archived=True, **filters).count(),
+            "new_student_still" : StudentGroup.objects.filter(group__teacher=teacher,student__student_stage_type="NEW_STUDENT",
+                                                              is_archived=False, **filters).count(),
+
+            "active_students": StudentGroup.objects.filter(group__teacher=teacher,is_archived=False,
+                                                           student__student_stage_type="ACTIVE_STUDENT",
+                                                           **filters).count(),
+
+            "results": Results.objects.filter(teacher=teacher, **filters).count(),
+            "results_progress" : Results.objects.filter(teacher=teacher,status="In_progress", **filters).count(),
+            "results_accepted" : Results.objects.filter(teacher=teacher,status="Accepted", **filters).count(),
+            "results_rejected" : Results.objects.filter(teacher=teacher,status="Rejected",**filters).count(),
+
+            "average_assimilation": total_avg_scaled,
+            "low_assimilation": low_assimilation_count,
+        }
+
+        return Response(statistics1)
 
 
 class Teacher_StudentsView(ListAPIView):
