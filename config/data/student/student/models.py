@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 import hashlib
 from typing import TYPE_CHECKING
@@ -100,7 +101,7 @@ class Student(BaseModel):
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True, )
     is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
     is_frozen = models.BooleanField(default=False, help_text="Is this student frozen or not")
-
+    frozen_days = models.DateField(default=datetime.today(), null=True, blank=True)
     file: "File" = models.ManyToManyField('upload.File', blank=True,
                                           related_name="student_files", help_text="File for this student")
 

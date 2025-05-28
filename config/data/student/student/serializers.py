@@ -84,6 +84,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "middle_name",
             "is_attendance",
             "phone",
+            "is_frozen",
             "learning",
             "password",
             "date_of_birth",

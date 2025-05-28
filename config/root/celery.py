@@ -19,6 +19,10 @@ app.conf.beat_schedule = {
         "task": "data.lid.new_lid.tasks.check_daily_leads",
         "schedule": crontab(minute="*/1"),
     },
+    "update-frozen-days": {
+        "task": "data.student.student.task.update_frozen_days",
+        "schedule": crontab(hour=0,minute=0),
+    },
 
     # Daily tasks
     "check_attendance_daily": {

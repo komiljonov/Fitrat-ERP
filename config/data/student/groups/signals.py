@@ -1,8 +1,13 @@
+from datetime import datetime, timedelta
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from faker.providers.ssn.uk_UA import calculate_day_count
 
+from .lesson_date_calculator import calculate_lessons
 from .models import Group, SecondaryGroup, Day
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
+from ..subject.models import Theme
 from ...department.marketing_channel.models import Group_Type
 from ...notifications.models import Notification
 
@@ -78,3 +83,6 @@ def on_payment_method(sender, instance: Group, created: bool, **kwargs):
             Group_Type.objects.create(
                 price_type=instance.price_type
             )
+
+
+
