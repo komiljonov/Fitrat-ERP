@@ -148,6 +148,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["result_fk_name"] = ResultsNameSerializer(instance.result_fk_name).data if instance.result_fk_name else None
         rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,context=self.context).data if instance.upload_file else None
         rep["teacher"] = UserListSerializer(instance.teacher).data
         rep["student"] = StudentSerializer(instance.student, context=self.context).data
