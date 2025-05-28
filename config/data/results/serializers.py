@@ -168,12 +168,25 @@ class StudentResultsSerializer(serializers.ModelSerializer):
         return certificate
 
     def update(self, instance, validated_data):
-
         request = self.context.get("request")
 
-        if validated_data["status"]:
-            instance.updater = request.user
-            instance.save()
+        upload_files = validated_data.pop('upload_file', None)
+
+        if validated_data.get("status"):
+            validated_data['updater'] = request.user
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        if upload_files is not None:
+            if upload_files:
+                instance.upload_file.set(upload_files)
+            else:
+                instance.upload_file.clear()
+
+        return instance
 
 
 class OtherResultsSerializer(serializers.ModelSerializer):
