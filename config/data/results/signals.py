@@ -148,13 +148,15 @@ def on_update(sender, instance: Results,created, **kwargs):
                     who=who,
                 ).first()
 
+                ic(point)
+
                 subject = ResultSubjects.objects.filter(
                     asos__name__icontains="ASOS_4",
                     result=point,
                     result_type=who,
                     from_point__lt=instance.band_score,
-                    to_point__gte=instance.band_score,
                 ).first()
+                ic(subject)
 
                 ball = MonitoringAsos4.objects.create(
                     user=instance.teacher,
