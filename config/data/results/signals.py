@@ -193,6 +193,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                 who = "Mine" if instance.who == "Mine" else "Student"
 
                 DEGREE_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"]
+                ic(instance.result_fk_name.name)
 
                 point = ResultName.objects.filter(
                     name=instance.result_fk_name.name,
