@@ -245,13 +245,10 @@ class OtherResultsSerializer(serializers.ModelSerializer):
         return rep
 
     def create(self, validated_data):
-        # Pop the 'upload_file' field to handle it separately
         upload_files = validated_data.pop('upload_file', [])
 
-        # Create the Results instance
         certificate = Results.objects.create(**validated_data)
 
-        # If 'upload_file' has data, assign the file instances to the Results instance
         if upload_files:
             certificate.upload_file.set(upload_files)
 
