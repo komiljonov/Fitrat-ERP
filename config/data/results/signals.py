@@ -203,6 +203,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                     asos = Asos.objects.filter(name__icontains="ASOS_4").first()
 
                     if asos:
+                        ic("Max_Ball : ",subject.max_ball)
                         ball = MonitoringAsos4.objects.create(
                             creator=instance.teacher,  # Added creator field
                             asos=asos,  # Added asos field (assuming it's required)
