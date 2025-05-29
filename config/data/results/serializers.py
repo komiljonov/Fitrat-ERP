@@ -37,13 +37,38 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        # Pop the 'upload_file' field to handle it separately
         upload_files = validated_data.pop('upload_file', [])
 
-        result_instance = Results.objects.create(**validated_data)
+        # Create the Results instance
+        certificate = Results.objects.create(**validated_data)
 
-        result_instance.upload_file.set(upload_files)
+        # If 'upload_file' has data, assign the file instances to the Results instance
+        if upload_files:
+            certificate.upload_file.set(upload_files)
 
-        return result_instance
+        return certificate
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+
+        upload_files = validated_data.pop('upload_file', None)
+
+        if validated_data.get("status"):
+            validated_data['updater'] = request.user
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        if upload_files is not None:
+            if upload_files:
+                instance.upload_file.set(upload_files)
+            else:
+                instance.upload_file.clear()
+
+        return instance
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -231,6 +256,27 @@ class OtherResultsSerializer(serializers.ModelSerializer):
             certificate.upload_file.set(upload_files)
 
         return certificate
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+
+        upload_files = validated_data.pop('upload_file', None)
+
+        if validated_data.get("status"):
+            validated_data['updater'] = request.user
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        if upload_files is not None:
+            if upload_files:
+                instance.upload_file.set(upload_files)
+            else:
+                instance.upload_file.clear()
+
+        return instance
 
 
 class NationalSerializer(serializers.ModelSerializer):
