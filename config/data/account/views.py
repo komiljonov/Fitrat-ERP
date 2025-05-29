@@ -74,7 +74,7 @@ class UserList(ListAPIView):
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
                                 include_only=["id", "first_name", "last_name", "full_name", "phone", "balance",
-                                              "role", "created_at"])
+                                              "monitoring","role", "created_at"])
 
     def get_queryset(self):
         user = self.request.user
