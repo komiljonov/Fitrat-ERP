@@ -44,7 +44,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                     ic(level)
                     asos = Asos.objects.filter(
                         name__icontains="ASOS_4",
-                    )
+                    ).first()
                     ball = MonitoringAsos4.objects.create(
                         creator=instance.teacher,
                         asos=asos,
@@ -66,7 +66,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                     ).first()
                     asos = Asos.objects.filter(
                         name__icontains="ASOS_4",
-                    )
+                    ).first()
                     ball = MonitoringAsos4.objects.create(
                         creator=instance.teacher,
                         asos=asos,
