@@ -1,5 +1,6 @@
 
 import datetime
+import logging
 from cmath import isnan
 
 from django.db.models.signals import post_save
@@ -61,6 +62,17 @@ def on_update(sender, instance: Results,created, **kwargs):
                     result=None,
                     ball=level.max_ball
                 )
+                ball.user.balance+=level.amount
+                ball.user.save()
+                if level.amount:
+                    Notification.objects.create(
+                        user=instance.teacher,
+                        comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                        "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!",
+                        come_from=instance,
+                    )
+                    logging.info(f"Sizga {level.amount} sum qo'shildi!")
+
                 if ball:
                     Notification.objects.create(
                         user=instance.teacher,
@@ -90,6 +102,16 @@ def on_update(sender, instance: Results,created, **kwargs):
                         result=None,
                         ball=level.max_ball
                     )
+                    if level.amount:
+                        Notification.objects.create(
+                            user=instance.teacher,
+                            comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                            "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!",
+                            come_from=instance,
+                        )
+                        logging.info(
+                            f"Sizga {level.amount} sum qo'shildi!"
+                        )
                     if ball:
                         Notification.objects.create(
                             user=instance.teacher,
@@ -117,6 +139,16 @@ def on_update(sender, instance: Results,created, **kwargs):
                         result=None,
                         ball=level.max_ball
                     )
+                    if level.amount:
+                        Notification.objects.create(
+                            user=instance.teacher,
+                            comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                            "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!",
+                            come_from=instance,
+                        )
+                        logging.info(
+                            f"Sizga {level.amount} sum qo'shildi!"
+                        )
                     if ball:
                         Notification.objects.create(
                             user=instance.teacher,
@@ -124,6 +156,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                             "talabangiz natijasi"} uchun {level.max_ball} ball qo'shildi!",
                             come_from=instance,
                         )
+
 
             if instance.results == "Certificate":
                 who = "Mine" if instance.who == "Mine" else "Student"
@@ -248,6 +281,16 @@ def on_update(sender, instance: Results,created, **kwargs):
                                 result=point,
                                 ball=subject.max_ball
                             )
+                            if subject.amount:
+                                Notification.objects.create(
+                                    user=instance.teacher,
+                                    comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                                    "talabangiz natijasi"} uchun {subject.amount} sum qo'shildi!",
+                                    come_from=instance,
+                                )
+                                logging.info(
+                                    f"Sizga {subject.amount} sum qo'shildi!"
+                                )
                             if ball:
                                 Notification.objects.create(
                                     user=instance.teacher,
