@@ -18,7 +18,6 @@ class UniversityResultsViewSet(ListCreateAPIView):
     def get_queryset(self):
         teacher = self.request.user
         status = self.request.query_params.get('status')
-        certification_type = self.request.query_params.get('certificate_type')
 
         queryset = Results.objects.all()
 
