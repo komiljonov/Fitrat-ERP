@@ -130,7 +130,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                 who = "Mine" if instance.who == "Mine" else "Student"
 
                 ic(instance.result_fk_name.name)
-
+                ic(who)
                 point = ResultName.objects.filter(
                     name=instance.result_fk_name.name,
                     who=who,
