@@ -214,8 +214,6 @@ class MonitoringAsos4(BaseModel):
         verbose_name = "Monitoring 4"
         verbose_name_plural = "Monitoring 4"
 
-    def __str__(self):
-        return f"{self.user.full_name} - {self.asos.name} - {self.subject.name}"
 
 
 class StudentCountMonitoring(BaseModel):
