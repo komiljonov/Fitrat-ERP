@@ -125,13 +125,13 @@ def on_update(sender, instance: Results,created, **kwargs):
                             come_from=instance,
                         )
 
-
             if instance.results == "Certificate":
                 who = "Mine" if instance.who == "Mine" else "Student"
 
-                ic(instance.result_fk_name.name)
+                # Define degree hierarchy
+                DEGREE_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"]
 
-                # First, let's debug what we're looking for
+                ic(instance.result_fk_name.name)
                 ic(f"Looking for ResultName with name containing: {instance.result_fk_name.name}")
                 ic(f"Looking for who: {who}")
 
@@ -149,15 +149,13 @@ def on_update(sender, instance: Results,created, **kwargs):
                         who=who,
                     ).first()
 
-                # If still no match, try without who filter to see if the name exists
+                # If still no match, try without who filter
                 if not point:
                     ic("Still no match, checking if name exists without who filter...")
                     name_exists = ResultName.objects.filter(
                         name__icontains=instance.result_fk_name.name
                     ).values_list('name', 'who', 'type', 'point_type')
                     ic(f"Available ResultName records for this name: {list(name_exists)}")
-
-                    # Try with different who values
                     point = ResultName.objects.filter(
                         name__icontains=instance.result_fk_name.name,
                     ).first()
@@ -167,77 +165,92 @@ def on_update(sender, instance: Results,created, **kwargs):
 
                 subject = None
 
-                # Check the type and point_type to determine filtering logic
-                if point.type == "Two":
-                    # For type "Two", filter using from_point and to_point range
-                    if point.point_type == "Percentage":
-                        subject = ResultSubjects.objects.filter(
-                            asos__name__icontains="ASOS_4",
-                            result=point,
-                            result_type=who,
-                            from_point__lte=str(instance.band_score),  # Convert to string for comparison
-                            to_point__gte=str(instance.band_score),
-                        ).first()
-                    elif point.point_type == "Ball":
-                        subject = ResultSubjects.objects.filter(
-                            asos__name__icontains="ASOS_4",
-                            result=point,
-                            result_type=who,
-                            from_point__lte=str(instance.band_score),
-                            to_point__gte=str(instance.band_score),
-                        ).first()
-                    elif point.point_type == "Degree":
-                        # For degree, you might want to match exact degree value
-                        subject = ResultSubjects.objects.filter(
-                            asos__name__icontains="ASOS_4",
-                            result=point,
-                            result_type=who,
-                            degree=str(instance.band_score),  # Assuming band_score contains degree value
-                        ).first()
+                if point:
+                    # Normalize band_score for comparison
+                    band_score = str(instance.band_score).upper() if instance.band_score else None
 
-                elif point.type == "One":
-                    # For type "One", use the original logic with from_point comparison
-                    if point.point_type == "Percentage":
-                        subject = ResultSubjects.objects.filter(
-                            asos__name__icontains="ASOS_4",
-                            result=point,
-                            result_type=who,
-                            from_point__lte=str(instance.band_score),
-                        ).first()
-                    elif point.point_type == "Ball":
-                        subject = ResultSubjects.objects.filter(
-                            asos__name__icontains="ASOS_4",
-                            result=point,
-                            result_type=who,
-                            from_point__lte=str(instance.band_score),
-                        ).first()
-                    elif point.point_type == "Degree":
-                        subject = ResultSubjects.objects.filter(
-                            asos__name__icontains="ASOS_4",
-                            result=point,
-                            result_type=who,
-                            degree=str(instance.band_score),
-                        ).first()
-
-                ic(subject)
-
-                if subject:
-                    # Get the asos instance
-                    asos = Asos.objects.filter(name__icontains="ASOS_4").first()
-
-                    if asos:
-                        ic("Max_Ball : ",subject.max_ball)
-                        ball = MonitoringAsos4.objects.create(
-                            creator=instance.teacher,  # Added creator field
-                            asos=asos,  # Added asos field (assuming it's required)
-                            user=instance.teacher,
-                            subject=subject,
-                            result=point,
-                            ball=subject.max_ball
-                        )
-                        if ball:
-                            Notification.objects.create(
-                                user=instance.teacher,
-                                comment=f"Sizga {"natijangiz" if instance.who == who else "talabangiz natijasi"} uchun {subject.max_ball} ball qo'shildi!",
-                                come_from=instance,
+                    if point.type == "Two":
+                        # For type "Two", filter using range (from_point to to_point)
+                        if point.point_type == "Percentage":
+                            subject = ResultSubjects.objects.filter(
+                                asos__name__icontains="ASOS_4",
+                                result=point,
+                                result_type=who,
+                                from_point__lte=band_score,
+                                to_point__gte=band_score,
+                            ).first()
+                        elif point.point_type == "Ball":
+                            subject = ResultSubjects.objects.filter(
+                                asos__name__icontains="ASOS_4",
+                                result=point,
+                                result_type=who,
+                                from_point__lte=band_score,
+                                to_point__gte=band_score,
+                            ).first()
+                        elif point.point_type == "Degree" and band_score in DEGREE_ORDER:
+                            # Get all possible subjects first
+                            possible_subjects = ResultSubjects.objects.filter(
+                                asos__name__icontains="ASOS_4",
+                                result=point,
+                                result_type=who,
                             )
+
+                            # Filter in Python to check degree hierarchy
+                            for subj in possible_subjects:
+                                try:
+                                    from_idx = DEGREE_ORDER.index(subj.from_point.upper())
+                                    to_idx = DEGREE_ORDER.index(subj.to_point.upper())
+                                    band_idx = DEGREE_ORDER.index(band_score)
+
+                                    if from_idx <= band_idx <= to_idx:
+                                        subject = subj
+                                        break
+                                except (ValueError, AttributeError):
+                                    continue
+
+                    elif point.type == "One":
+                        # For type "One", use threshold comparison (from_point only)
+                        if point.point_type == "Percentage":
+                            subject = ResultSubjects.objects.filter(
+                                asos__name__icontains="ASOS_4",
+                                result=point,
+                                result_type=who,
+                                from_point__lte=band_score,
+                            ).first()
+                        elif point.point_type == "Ball":
+                            subject = ResultSubjects.objects.filter(
+                                asos__name__icontains="ASOS_4",
+                                result=point,
+                                result_type=who,
+                                from_point__lte=band_score,
+                            ).first()
+                        elif point.point_type == "Degree" and band_score in DEGREE_ORDER:
+                            subject = ResultSubjects.objects.filter(
+                                asos__name__icontains="ASOS_4",
+                                result=point,
+                                result_type=who,
+                                from_point__icontains=band_score,
+                            ).first()
+
+                    ic(subject)
+
+                    if subject:
+                        # Get the asos instance
+                        asos = Asos.objects.filter(name__icontains="ASOS_4").first()
+
+                        if asos:
+                            ic("Max_Ball : ", subject.max_ball)
+                            ball = MonitoringAsos4.objects.create(
+                                creator=instance.teacher,
+                                asos=asos,
+                                user=instance.teacher,
+                                subject=subject,
+                                result=point,
+                                ball=subject.max_ball
+                            )
+                            if ball:
+                                Notification.objects.create(
+                                    user=instance.teacher,
+                                    comment=f"Sizga {'natijangiz' if instance.who == who else 'talabangiz natijasi'} uchun {subject.max_ball} ball qo'shildi!",
+                                    come_from=instance,
+                                )
