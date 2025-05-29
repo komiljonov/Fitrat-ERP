@@ -199,13 +199,14 @@ def on_update(sender, instance: Results,created, **kwargs):
                     who=who,
                 ).first()
 
+                ic(point)
+
                 if not point:
                     point = ResultName.objects.filter(
                         name__icontains=instance.result_fk_name.name,
                         who=who,
                     ).first()
 
-                # If still no match, try without who filter
                 if not point:
 
                     name_exists = ResultName.objects.filter(
@@ -216,13 +217,12 @@ def on_update(sender, instance: Results,created, **kwargs):
                         name__icontains=instance.result_fk_name.name,
                     ).first()
 
-                ic(point)
-
                 subject = None
 
                 if point:
                     # Normalize band_score for comparison
                     band_score = str(instance.band_score).upper() if instance.band_score else None
+                    ic(band_score)
 
                     if point.type == "Two":
                         # For type "Two", filter using range (from_point to to_point)
@@ -264,7 +264,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                                     continue
 
                     elif point.type == "One":
-                        # For type "One", use threshold comparison (from_point only)
+
                         if point.point_type == "Percentage":
                             subject = ResultSubjects.objects.filter(
                                 asos__name__icontains="ASOS_4",
