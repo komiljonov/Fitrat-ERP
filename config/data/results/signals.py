@@ -3,6 +3,7 @@ import datetime
 import logging
 from cmath import isnan
 
+from django.contrib.admin import action
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -10,6 +11,7 @@ from icecream import ic
 
 from .models import Results
 from ..finances.compensation.models import MonitoringAsos4, Asos, ResultName, ResultSubjects
+from ..finances.finance.models import Finance, Casher, Kind
 from ..notifications.models import Notification
 
 
@@ -62,9 +64,17 @@ def on_update(sender, instance: Results,created, **kwargs):
                     result=None,
                     ball=level.max_ball
                 )
-                ball.user.balance+=level.amount
-                ball.user.save()
-                if level.amount:
+                finance = Finance.objects.create(
+                    casher=Casher.objects.filter(role="WEALTH").first(),
+                    action="EXPENSE",
+                    kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first(),
+                    amount=level.amount,
+                    payment_method="Card",
+                    stuff=instance.teacher,
+                    comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                    "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!"
+                )
+                if finance.amount:
                     Notification.objects.create(
                         user=instance.teacher,
                         comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
@@ -102,7 +112,17 @@ def on_update(sender, instance: Results,created, **kwargs):
                         result=None,
                         ball=level.max_ball
                     )
-                    if level.amount:
+                    finance = Finance.objects.create(
+                        casher=Casher.objects.filter(role="WEALTH").first(),
+                        action="EXPENSE",
+                        kind=Kind.objects.filter(action="EXPENSE",name__icontains="Bonus").first(),
+                        amount=level.amount,
+                        payment_method="Card",
+                        stuff=instance.teacher,
+                        comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                        "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!"
+                    )
+                    if finance.amount:
                         Notification.objects.create(
                             user=instance.teacher,
                             comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
@@ -139,7 +159,18 @@ def on_update(sender, instance: Results,created, **kwargs):
                         result=None,
                         ball=level.max_ball
                     )
-                    if level.amount:
+                    finance = Finance.objects.create(
+                        casher=Casher.objects.filter(role="WEALTH").first(),
+                        action="EXPENSE",
+                        kind=Kind.objects.filter(action="EXPENSE",name__icontains="Bonus").first(),
+                        amount=level.amount,
+                        payment_method="Card",
+                        stuff=instance.teacher,
+                        comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                        "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!"
+                    )
+
+                    if finance.amount:
                         Notification.objects.create(
                             user=instance.teacher,
                             comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
@@ -161,22 +192,14 @@ def on_update(sender, instance: Results,created, **kwargs):
             if instance.results == "Certificate":
                 who = "Mine" if instance.who == "Mine" else "Student"
 
-                # Define degree hierarchy
                 DEGREE_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"]
 
-                ic(instance.result_fk_name.name)
-                ic(f"Looking for ResultName with name containing: {instance.result_fk_name.name}")
-                ic(f"Looking for who: {who}")
-
-                # Try exact match first
                 point = ResultName.objects.filter(
                     name=instance.result_fk_name.name,
                     who=who,
                 ).first()
 
-                # If exact match fails, try icontains
                 if not point:
-                    ic("Exact match failed, trying icontains...")
                     point = ResultName.objects.filter(
                         name__icontains=instance.result_fk_name.name,
                         who=who,
@@ -184,15 +207,14 @@ def on_update(sender, instance: Results,created, **kwargs):
 
                 # If still no match, try without who filter
                 if not point:
-                    ic("Still no match, checking if name exists without who filter...")
+
                     name_exists = ResultName.objects.filter(
                         name__icontains=instance.result_fk_name.name
                     ).values_list('name', 'who', 'type', 'point_type')
-                    ic(f"Available ResultName records for this name: {list(name_exists)}")
+
                     point = ResultName.objects.filter(
                         name__icontains=instance.result_fk_name.name,
                     ).first()
-                    ic(f"Found with any who: {point}")
 
                 ic(point)
 
@@ -281,7 +303,17 @@ def on_update(sender, instance: Results,created, **kwargs):
                                 result=point,
                                 ball=subject.max_ball
                             )
-                            if subject.amount:
+                            finance = Finance.objects.create(
+                                casher=Casher.objects.filter(role="WEALTH").first(),
+                                action="EXPENSE",
+                                kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first(),
+                                amount=subject.amount,
+                                payment_method="Card",
+                                stuff=instance.teacher,
+                                comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                                "talabangiz natijasi"} uchun {subject.amount} sum qo'shildi!"
+                            )
+                            if finance.amount:
                                 Notification.objects.create(
                                     user=instance.teacher,
                                     comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
