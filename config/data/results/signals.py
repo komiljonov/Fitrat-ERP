@@ -8,6 +8,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from icecream import ic
+from rest_framework.exceptions import ValidationError
 
 from .models import Results
 from ..finances.compensation.models import MonitoringAsos4, Asos, ResultName, ResultSubjects
@@ -323,4 +324,4 @@ def on_update(sender, instance: Results,created, **kwargs):
                                         come_from=instance,
                                     )
             except Exception as e:
-                return "Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!"
+                raise ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
