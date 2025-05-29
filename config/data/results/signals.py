@@ -37,51 +37,31 @@ def on_update(sender, instance: Results,created, **kwargs):
         if instance.status == "Accepted":
 
             if instance.results == "Olimpiada":
-                if instance.who == "Mine":
-                    level = ResultSubjects.objects.filter(
-                        asos__name__icontains="ASOS_4",
-                    ).first()
-                    ic(level)
-                    asos = Asos.objects.filter(
-                        name__icontains="ASOS_4",
-                    ).first()
-                    ball = MonitoringAsos4.objects.create(
-                        creator=instance.teacher,
-                        asos=asos,
+                who = "Mine" if instance.who == "Mine" else "Student"
+                level = ResultSubjects.objects.filter(
+                    asos__name__icontains="ASOS_4",
+                    result_type = who,
+                    degree=instance.degree,
+                ).first()
+                ic(level)
+                asos = Asos.objects.filter(
+                    name__icontains="ASOS_4",
+                ).first()
+                ball = MonitoringAsos4.objects.create(
+                    creator=instance.teacher,
+                    asos=asos,
+                    user=instance.teacher,
+                    subject=level,
+                    result=None,
+                    ball=level.max_ball
+                )
+                if ball:
+                    Notification.objects.create(
                         user=instance.teacher,
-                        subject=level,
-                        result=None,
-                        ball=level.max_ball
+                        comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                        "talabangiz natijasi"} uchun {level.max_ball} ball qo'shildi!",
+                        come_from=instance,
                     )
-                    if ball:
-                        Notification.objects.create(
-                            user=instance.teacher,
-                            comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
-                            "talabangiz natijasi"} uchun {level.max_ball} ball qo'shildi!",
-                            come_from=instance,
-                        )
-                if instance.who == "Student":
-                    level = ResultSubjects.objects.filter(
-                        asos__name__icontains="ASOS_4",
-                    ).first()
-                    asos = Asos.objects.filter(
-                        name__icontains="ASOS_4",
-                    ).first()
-                    ball = MonitoringAsos4.objects.create(
-                        creator=instance.teacher,
-                        asos=asos,
-                        user=instance.teacher,
-                        subject=level,
-                        result=None,
-                        ball=level.max_ball
-                    )
-                    if ball:
-                        Notification.objects.create(
-                            user=instance.teacher,
-                            comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
-                            "talabangiz natijasi"} uchun {level.max_ball} ball qo'shildi!",
-                            come_from=instance,
-                        )
 
 
             if instance.results == "University":
