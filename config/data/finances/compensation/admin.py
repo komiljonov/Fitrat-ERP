@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from data.finances.compensation.models import Compensation, Bonus, Page, Asos, Monitoring, Point, Asos1_2, \
-    MonitoringAsos1_2
+    MonitoringAsos1_2, ResultSubjects, ResultName
 
 
 @admin.register(Compensation)
@@ -22,6 +22,18 @@ class PageAdmin(admin.ModelAdmin):
     search_fields = ("user__phone",'name')
     list_filter = ('is_editable','is_readable')
 
+
+@admin.register(ResultSubjects)
+class ResultSubjectsAdmin(admin.ModelAdmin):
+    list_display = ("asos__name","name", 'from_point','to_point','amount',"max_ball")
+    search_fields = ("asos__name",'name')
+    list_filter = ('asos__name',)
+
+@admin.register(ResultName)
+class ResultNameAdmin(admin.ModelAdmin):
+    list_display = ("name","point_type",'who','type',)
+    search_fields = ("name",'who')
+    list_filter = ('name',)
 
 @admin.register(Asos)
 class AsosAdmin(admin.ModelAdmin):
