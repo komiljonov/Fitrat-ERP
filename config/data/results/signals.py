@@ -38,10 +38,13 @@ def on_update(sender, instance: Results,created, **kwargs):
 
             if instance.results == "Olimpiada":
                 who = "Mine" if instance.who == "Mine" else "Student"
+                ic(who)
                 ic(instance.degree)
+                ic(instance.level)
                 asos = Asos.objects.filter(
                     name__icontains="ASOS_4",
                 ).first()
+                ic(asos)
 
                 level = ResultSubjects.objects.filter(
                     asos=asos,
