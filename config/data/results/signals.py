@@ -48,7 +48,6 @@ def on_update(sender, instance: Results,created, **kwargs):
 
                 level = ResultSubjects.objects.filter(
                     asos=asos,
-                    result_type=who,
                     level=instance.level,
                     degree=instance.degree,
                 ).first()
