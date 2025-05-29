@@ -26,9 +26,6 @@ class UniversityResultsViewSet(ListCreateAPIView):
 
         if status:
             queryset = queryset.filter(status=status)
-
-        if certification_type:
-            queryset = queryset.filter(certificate_type=certification_type)
         return queryset
 
 
