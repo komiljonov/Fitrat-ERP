@@ -16,7 +16,6 @@ class Results(BaseModel):
     results = models.CharField(choices=[
         ("University" , "entering to the university"),
         ("Certificate", "Geting certificate"),
-        ("National","Milliy sertificate"),
         ("Olimpiada", "Olimpiada natijalari")
     ],
     max_length=100,null=True,
@@ -54,19 +53,19 @@ class Results(BaseModel):
     ],
     max_length=100,null=True,blank=True)
 
-    certificate_type = models.CharField(choices=[
-        ("IELTS", "IELTS"),
-        ("CEFR", "CEFR"),
-        ("SAT","SAT"),
-        ("OTHER","OTHER"),
-    ],
-    max_length=100,null=True,blank=True
-    )
+    # certificate_type = models.CharField(choices=[
+    #     ("IELTS", "IELTS"),
+    #     ("CEFR", "CEFR"),
+    #     ("SAT","SAT"),
+    #     ("OTHER","OTHER"),
+    # ],
+    # max_length=100,null=True,blank=True
+    # )
     result_fk_name = models.ForeignKey("compensation.ResultName",on_delete=models.SET_NULL,
                                     null=True,blank=True, related_name="monitoring_result_name")
     band_score = models.FloatField(null=True,blank=True)
     reading_score = models.FloatField(null=True,blank=True)
-    lessoning_score = models.FloatField(null=True,blank=True)
+    listening_score = models.FloatField(null=True,blank=True)
     speaking_score = models.FloatField(null=True,blank=True)
     writing_score = models.FloatField(null=True,blank=True)
 
