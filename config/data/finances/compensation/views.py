@@ -460,6 +460,13 @@ class ResultsNameListCreateView(ListCreateAPIView):
         return Response(data)
 
 
+class ResultsNameRetrieveView(RetrieveUpdateDestroyAPIView):
+    queryset = ResultName.objects.all()
+    serializer_class = ResultsNameSerializer
+    permission_classes = [IsAuthenticated]
+
+
+
 class MonitoringAsosListCreateView(ListAPIView):
     queryset = MonitoringAsos4.objects.all()
     serializer_class = MonitoringAsos4Serializer

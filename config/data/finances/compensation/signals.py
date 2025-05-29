@@ -15,7 +15,7 @@ def on_create(sender, instance: Monitoring, created, **kwargs):
 @receiver(post_save, sender=MonitoringAsos4)
 def on_create(sender, instance: MonitoringAsos4, created, **kwargs):
     if created:
-        instance.user.monitoring += instance.ball
+        instance.user.monitoring += int(instance.ball)
         instance.user.save()
 
 
