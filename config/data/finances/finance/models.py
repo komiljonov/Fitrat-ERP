@@ -84,7 +84,7 @@ class Finance(BaseModel):
             ('Cash','Naqt pul'),
             ('Card','Card'),
             ('Money_send',"Pul o'tkazish")
-        ],default='Payme',max_length=100,null=True,blank=True
+        ],max_length=100,null=True,blank=True
     )
 
     attendance : "Attendance" = models.ForeignKey('attendance.Attendance',on_delete=models.SET_NULL,null=True,blank=True,
