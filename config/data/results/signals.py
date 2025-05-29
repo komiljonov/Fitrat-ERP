@@ -130,11 +130,39 @@ def on_update(sender, instance: Results,created, **kwargs):
                 who = "Mine" if instance.who == "Mine" else "Student"
 
                 ic(instance.result_fk_name.name)
-                ic(who)
+
+                # First, let's debug what we're looking for
+                ic(f"Looking for ResultName with name containing: {instance.result_fk_name.name}")
+                ic(f"Looking for who: {who}")
+
+                # Try exact match first
                 point = ResultName.objects.filter(
-                    name__icontains=instance.result_fk_name.name,
+                    name=instance.result_fk_name.name,
                     who=who,
                 ).first()
+
+                # If exact match fails, try icontains
+                if not point:
+                    ic("Exact match failed, trying icontains...")
+                    point = ResultName.objects.filter(
+                        name__icontains=instance.result_fk_name.name,
+                        who=who,
+                    ).first()
+
+                # If still no match, try without who filter to see if the name exists
+                if not point:
+                    ic("Still no match, checking if name exists without who filter...")
+                    name_exists = ResultName.objects.filter(
+                        name__icontains=instance.result_fk_name.name
+                    ).values_list('name', 'who', 'type', 'point_type')
+                    ic(f"Available ResultName records for this name: {list(name_exists)}")
+
+                    # Try with different who values
+                    point = ResultName.objects.filter(
+                        name__icontains=instance.result_fk_name.name,
+                    ).first()
+                    ic(f"Found with any who: {point}")
+
                 ic(point)
 
                 subject = None
