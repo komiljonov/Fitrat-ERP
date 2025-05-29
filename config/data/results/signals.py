@@ -39,16 +39,18 @@ def on_update(sender, instance: Results,created, **kwargs):
             if instance.results == "Olimpiada":
                 who = "Mine" if instance.who == "Mine" else "Student"
                 ic(instance.degree)
-
-                level = ResultSubjects.objects.filter(
-                    asos__name__icontains="ASOS_4",
-                    result_type=who,
-                    degree=instance.degree,
-                ).first()
-                ic(level)
                 asos = Asos.objects.filter(
                     name__icontains="ASOS_4",
                 ).first()
+
+                level = ResultSubjects.objects.filter(
+                    asos=asos,
+                    result_type=who,
+                    level=instance.level,
+                    degree=instance.degree,
+                ).first()
+                ic(level)
+
                 ball = MonitoringAsos4.objects.create(
                     creator=instance.teacher,
                     asos=asos,
