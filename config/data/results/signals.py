@@ -75,6 +75,85 @@ def on_update(sender, instance: Results,created, **kwargs):
 
             if instance.results == "University":
                 if instance.who == "Mine":
-                    pass
+                    entry = "Grant" if instance.university_entering_type == "Grant" else "Kontrakt"
+                    level = ResultSubjects.objects.filter(
+                        asos__name__icontains="ASOS_4",
+                        entry_type=entry
+                    ).first()
+                    ball = MonitoringAsos4.objects.filter(
+                        result__who="Mine",
+                        user=instance.teacher,
+                        subject=level,
+                        result=None,
+                        ball=level.max_ball
+                    )
+                    if ball:
+                        Notification.objects.create(
+                            user=instance.teacher,
+                            comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                            "talabangiz natijasi"} uchun {level.max_ball} ball qo'shildi!",
+                            come_from=instance,
+                        )
                 if instance.results == "Student":
-                    pass
+                    entry = "Grant" if instance.university_entering_type == "Grant" else "Kontrakt"
+                    level = ResultSubjects.objects.filter(
+                        asos__name__icontains="ASOS_4",
+                        entry_type=entry
+                    ).first()
+                    ball = MonitoringAsos4.objects.filter(
+                        result__who="Student",
+                        user=instance.teacher,
+                        subject=level,
+                        result=None,
+                        ball=level.max_ball
+                    )
+                    if ball:
+                        Notification.objects.create(
+                            user=instance.teacher,
+                            comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                            "talabangiz natijasi"} uchun {level.max_ball} ball qo'shildi!",
+                            come_from=instance,
+                        )
+
+
+            if instance.results == "Certificate":
+                if instance.who == "Mine":
+                    entry = "Grant" if instance.university_entering_type == "Grant" else "Kontrakt"
+                    level = ResultSubjects.objects.filter(
+                        asos__name__icontains="ASOS_4",
+                        entry_type=entry
+                    ).first()
+                    ball = MonitoringAsos4.objects.filter(
+                        result__who="Mine",
+                        user=instance.teacher,
+                        subject=level,
+                        result=None,
+                        ball=level.max_ball
+                    )
+                    if ball:
+                        Notification.objects.create(
+                            user=instance.teacher,
+                            comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                            "talabangiz natijasi"} uchun {level.max_ball} ball qo'shildi!",
+                            come_from=instance,
+                        )
+                if instance.results == "Student":
+                    entry = "Grant" if instance.university_entering_type == "Grant" else "Kontrakt"
+                    level = ResultSubjects.objects.filter(
+                        asos__name__icontains="ASOS_4",
+                        entry_type=entry
+                    ).first()
+                    ball = MonitoringAsos4.objects.filter(
+                        result__who="Student",
+                        user=instance.teacher,
+                        subject=level,
+                        result=None,
+                        ball=level.max_ball
+                    )
+                    if ball:
+                        Notification.objects.create(
+                            user=instance.teacher,
+                            comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
+                            "talabangiz natijasi"} uchun {level.max_ball} ball qo'shildi!",
+                            come_from=instance,
+                        )

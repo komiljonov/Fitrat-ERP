@@ -52,6 +52,10 @@ class Results(BaseModel):
         ("3","3"),
     ],
     max_length=100,null=True,blank=True)
+    level = models.CharField(choices=[
+        ("Region", "Region"),
+        ("Regional", "Regional"),
+    ], max_length=256, null=True, blank=True)
 
     # certificate_type = models.CharField(choices=[
     #     ("IELTS", "IELTS"),

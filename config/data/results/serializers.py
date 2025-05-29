@@ -199,6 +199,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
             'teacher',
             'student',
 #             'certificate_type',
+            "level",
             'result_name',
             'result_score',
             'subject_name',

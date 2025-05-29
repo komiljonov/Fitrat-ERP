@@ -396,11 +396,12 @@ class Asos4ListCreateView(ListCreateAPIView):
         name = self.request.query_params.get("name")
         level = self.request.GET.get("level")
         degree = self.request.GET.get("degree")
-
+        entry_type = self.request.GET.get("entry_type")
 
         queryset = ResultSubjects.objects.all()
 
-
+        if entry_type:
+            queryset = queryset.filter(entry_type=entry_type)
         if degree:
             queryset = queryset.filter(degree=degree)
         if level:
