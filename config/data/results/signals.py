@@ -280,7 +280,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                                 result_type=who,
                                 from_point__lte=band_score,
                             ).first()
-                        elif point.point_type == "Degree" and band_score in DEGREE_ORDER:
+                        elif point.point_type == "Degree" and band_score:
                             subject = ResultSubjects.objects.filter(
                                 asos__name__icontains="ASOS_4",
                                 result=point,
