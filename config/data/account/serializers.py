@@ -248,18 +248,14 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def get_ball_user(self, obj):
-        teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
-            name=Concat(F('first_name'), Value(' '), F('last_name')),
-            overall_point=F('monitoring')
-        )
-        return teachers.filter(id__in=[obj.id]).values_list("overall_point", flat=True)
+        if obj.role in ["TEACHER", "ASSISTANT"]:
+            return obj.monitoring
+
 
     def get_penalty(self, obj):
-        # Use .aggregate() to get the sum of the 'amount' field
         compensation = Compensation.objects.filter(user=obj).aggregate(total_penalty=Sum('amount'))
 
-        # Extract the sum value
-        total_penalty = compensation.get('total_penalty', 0)  # Defaults to 0 if there's no match
+        total_penalty = compensation.get('total_penalty', 0)
 
         return total_penalty
 
