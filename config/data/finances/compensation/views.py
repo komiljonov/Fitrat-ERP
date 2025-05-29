@@ -477,7 +477,7 @@ class MonitoringAsosListCreateView(ListAPIView):
         user = self.request.query_params.get("user")
         results = self.request.query_params.get("result")
         subject = self.request.query_params.get("subject")
-
+        teacher = self.request.GET.get("teacher")
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
 
@@ -486,7 +486,8 @@ class MonitoringAsosListCreateView(ListAPIView):
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
-
+        if teacher:
+            queryset = queryset.filter(user__id=teacher)
         if asos:
             queryset = queryset.filter(asos__id=asos)
         if user:
