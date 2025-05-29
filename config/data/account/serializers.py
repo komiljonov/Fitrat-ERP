@@ -1,4 +1,5 @@
-from django.db.models import Sum
+from django.db.models import Sum, F, Value
+from django.db.models.functions import Concat
 from icecream import ic
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
@@ -208,7 +209,7 @@ class UserSerializer(serializers.ModelSerializer):
     penalty = serializers.SerializerMethodField()
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
     is_linked = serializers.SerializerMethodField()
-
+    ball_user = serializers.SerializerMethodField()
 
     # def __init__(self, *args, **kwargs):
     #     fields_to_remove: list | None = kwargs.pop("remove_fields", None)
@@ -241,10 +242,17 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "is_linked","phone", "role", "penalty" ,"pages", "files",
-            "photo", "filial", "balance", "ball", "salary","extra_number","is_call_center","second_user",
+            "photo", "filial", "balance","ball_user","salary","extra_number","is_call_center","second_user",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation",
             "updated_at","is_archived"
         )
+
+    def get_ball_user(self, obj):
+        teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
+            name=Concat(F('first_name'), Value(' '), F('last_name')),
+            overall_point=F('monitoring')
+        )
+        return teachers.filter(id__in=obj.id).values_list("overall_point")
 
     def get_penalty(self, obj):
         # Use .aggregate() to get the sum of the 'amount' field
