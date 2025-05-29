@@ -1,5 +1,4 @@
-from django.db.models import Sum, F, Value
-from django.db.models.functions import Concat
+from django.db.models import Sum
 from icecream import ic
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
@@ -209,7 +208,7 @@ class UserSerializer(serializers.ModelSerializer):
     penalty = serializers.SerializerMethodField()
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
     is_linked = serializers.SerializerMethodField()
-    ball_user = serializers.SerializerMethodField()
+
 
     # def __init__(self, *args, **kwargs):
     #     fields_to_remove: list | None = kwargs.pop("remove_fields", None)
@@ -242,20 +241,17 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "is_linked","phone", "role", "penalty" ,"pages", "files",
-            "photo", "filial", "balance","ball_user","salary","extra_number","is_call_center","second_user",
-            "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation",
+            "photo", "filial", "balance","salary","extra_number","is_call_center","second_user",
+            "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation","monitoring",
             "updated_at","is_archived"
         )
 
-    def get_ball_user(self, obj):
-        if obj.role in ["TEACHER", "ASSISTANT"]:
-            return obj.monitoring
-
-
     def get_penalty(self, obj):
+        # Use .aggregate() to get the sum of the 'amount' field
         compensation = Compensation.objects.filter(user=obj).aggregate(total_penalty=Sum('amount'))
 
-        total_penalty = compensation.get('total_penalty', 0)
+        # Extract the sum value
+        total_penalty = compensation.get('total_penalty', 0)  # Defaults to 0 if there's no match
 
         return total_penalty
 
