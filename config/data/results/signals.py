@@ -69,7 +69,6 @@ def on_update(sender, instance: Results,created, **kwargs):
                     action="EXPENSE",
                     kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first(),
                     amount=level.amount,
-                    payment_method="Card",
                     stuff=instance.teacher,
                     comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
                     "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!"
@@ -117,7 +116,6 @@ def on_update(sender, instance: Results,created, **kwargs):
                         action="EXPENSE",
                         kind=Kind.objects.filter(action="EXPENSE",name__icontains="Bonus").first(),
                         amount=level.amount,
-                        payment_method="Card",
                         stuff=instance.teacher,
                         comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
                         "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!"
@@ -164,7 +162,6 @@ def on_update(sender, instance: Results,created, **kwargs):
                         action="EXPENSE",
                         kind=Kind.objects.filter(action="EXPENSE",name__icontains="Bonus").first(),
                         amount=level.amount,
-                        payment_method="Card",
                         stuff=instance.teacher,
                         comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
                         "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!"
@@ -309,7 +306,6 @@ def on_update(sender, instance: Results,created, **kwargs):
                                 action="EXPENSE",
                                 kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first(),
                                 amount=subject.amount,
-                                payment_method="Card",
                                 stuff=instance.teacher,
                                 comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
                                 "talabangiz natijasi"} uchun {subject.amount} sum qo'shildi!"
