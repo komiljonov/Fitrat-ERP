@@ -67,7 +67,7 @@ class Results(BaseModel):
     # )
     result_fk_name = models.ForeignKey("compensation.ResultName",on_delete=models.SET_NULL,
                                     null=True,blank=True, related_name="monitoring_result_name")
-    band_score = models.FloatField(null=True,blank=True)
+    band_score = models.CharField(max_length=10,null=True,blank=True)
     reading_score = models.FloatField(null=True,blank=True)
     listening_score = models.FloatField(null=True,blank=True)
     speaking_score = models.FloatField(null=True,blank=True)
