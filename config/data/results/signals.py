@@ -135,12 +135,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                     name=instance.result_fk_name.name,
                     who=who,
                 ).first()
-
                 ic(point)
-
-                if not point:
-                    # Handle case where point is not found
-                    return
 
                 subject = None
 
