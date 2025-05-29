@@ -25,7 +25,7 @@ class PageAdmin(admin.ModelAdmin):
 
 @admin.register(ResultSubjects)
 class ResultSubjectsAdmin(admin.ModelAdmin):
-    list_display = ("asos__name","name", 'from_point','to_point','amount',"max_ball")
+    list_display = ("asos__name","name","result__name",'from_point','to_point','amount',"max_ball")
     search_fields = ("asos__name",'name')
     list_filter = ('asos__name',)
 
