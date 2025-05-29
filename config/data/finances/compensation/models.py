@@ -181,6 +181,11 @@ class ResultSubjects(BaseModel):
         ("National", "National"),
     ], max_length=256, null=True, blank=True)
 
+    entry_type = models.CharField(choices=[
+        ("Grant", "Grant"),
+        ("Contract", "Contract"),
+    ],max_length=10,null=True, blank=True)
+
     from_point = models.CharField(max_length=10, null=True, blank=True)
     to_point = models.CharField(max_length=10, null=True, blank=True)
 
@@ -270,8 +275,7 @@ class StudentCatchingMonitoring(BaseModel):
     def __str__(self):
         return f"{self.name} {self.type}"
 
-
-
+#Done
 class Asos1_2(BaseModel):
     asos = models.CharField(choices=[
         ("asos1", "asos1"),
