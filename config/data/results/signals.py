@@ -87,17 +87,17 @@ def on_update(sender, instance: Results,created, **kwargs):
             if instance.results == "University":
 
                 if instance.who == "Mine":
-                    entry = "Grant" if instance.university_entering_type == "Grant" else "Kontrakt"
-
+                    entry = "Grant" if instance.university_entering_type == "Grant" else "Contract"
+                    ic(entry)
                     level = ResultSubjects.objects.filter(
                         asos__name__icontains="ASOS_4",
                         entry_type=entry,
-                        level="Personal" if instance.university_type == "Unofficial" else "National",
-                        university_type=instance.university_type,
+                        university_type="Personal" if instance.university_type == "Unofficial" else "National",
                     ).first()
 
+                    ic(level)
+
                     ball = MonitoringAsos4.objects.create(
-                        asos=level.asos,
                         creator=instance.teacher,
                         user=instance.teacher,
                         subject=level,
@@ -125,7 +125,6 @@ def on_update(sender, instance: Results,created, **kwargs):
                     ic(level)
 
                     ball = MonitoringAsos4.objects.create(
-                        asos=level.asos,
                         creator=instance.teacher,
                         user=instance.teacher,
                         subject=level,

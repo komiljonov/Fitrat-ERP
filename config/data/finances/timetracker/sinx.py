@@ -3,7 +3,6 @@ from decouple import config
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from data.lid.new_lid.signals import on_pre_save
 
 base_url = config('TT_URL')
 token = config('INTEGRATION_TOKEN')
