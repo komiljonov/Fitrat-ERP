@@ -280,6 +280,7 @@ class  ResultsSerializer(serializers.ModelSerializer):
             "who",
             'results',
             'teacher',
+            "level",
             'student',
             "national",
             'university_type',
