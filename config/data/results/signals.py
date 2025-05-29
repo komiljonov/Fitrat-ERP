@@ -196,7 +196,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                 ic(instance.result_fk_name.name)
 
                 point = ResultName.objects.filter(
-                    name=instance.result_fk_name.name,
+                    name__icontains=instance.result_fk_name.name,
                     who=who,
                 ).first()
 
