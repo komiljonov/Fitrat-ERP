@@ -252,7 +252,7 @@ class UserSerializer(serializers.ModelSerializer):
             name=Concat(F('first_name'), Value(' '), F('last_name')),
             overall_point=F('monitoring')
         )
-        return teachers.filter(id__in=obj.id).values_list("overall_point")
+        return teachers.filter(id__in=[obj.id]).values_list("overall_point", flat=True)
 
     def get_penalty(self, obj):
         # Use .aggregate() to get the sum of the 'amount' field
