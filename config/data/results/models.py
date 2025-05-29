@@ -91,6 +91,6 @@ class Results(BaseModel):
     updater : "CustomUser" = models.ForeignKey("account.CustomUser",on_delete=models.SET_NULL,related_name="updater_results",null=True,blank=True)
 
     def __str__(self):
-        return f"{self.results}"
+        return f"{self.results} -- {self.student.first_name}"
 
  

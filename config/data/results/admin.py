@@ -1,3 +1,11 @@
 from django.contrib import admin
 
-# Register your models here.
+from data.results.models import Results
+
+
+# # Register your models here.
+# @admin.register(Results)
+# class ResultAdmin(admin.ModelAdmin):
+#     list_display = ('results', 'teacher__full_name', 'student__first_name', 'student__last_name')
+#     list_filter = ('results', 'teacher__full_name')
+#     search_fields = ('results', 'teacher__full_name')
