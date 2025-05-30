@@ -132,16 +132,21 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        # Call parent validation first
         attrs = super().validate(attrs)
 
+        self._validate_certification(attrs)
+
+        return attrs
+    def _validate_certification(self, attrs):
+        """Validate certification-related fields"""
         if self.instance and self.instance.result_fk_name and self.instance.point:
+            ic("Running certification validation")
 
             rfk = ResultName.objects.filter(
                 id=self.instance.result_fk_name.id,
                 who=self.instance.who,
             ).first()
-
-            ic(rfk)
 
             if not rfk:
                 raise serializers.ValidationError("ResultName not found for validation!")
@@ -149,7 +154,8 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
             point_type = self.instance.point.point_type
             band_score = self.instance.band_score
 
-            ic(point_type, band_score)
+            ic(f"Point type: {point_type}, Band score: {band_score}")
+
             subject = None
 
             if point_type in ["Percentage", "Ball"]:
@@ -168,13 +174,10 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
                     from_point__icontains=band_score,
                 ).first()
 
-            ic(subject)
+            ic(f"Subject found: {subject}")
 
             if not subject:
                 raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
-
-        return attrs
-
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
