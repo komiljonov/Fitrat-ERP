@@ -20,8 +20,7 @@ def on_create(sender, instance: MonitoringAsos4, created, **kwargs):
         instance.user.save()
         mastering = MasteringTeachers.objects.create(
             teacher=instance.user,
-            reason=f"Sizga {"natijangiz" if instance.result.who == "Mine" else
-            "talabangiz natijasi"} uchun {instance.ball} sum qo'shildi!",
+            reason=f"Sizga natijangiz uchun {instance.ball} ball qo'shildi!",
             ball=instance.ball
         )
 

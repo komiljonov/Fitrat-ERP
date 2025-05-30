@@ -254,15 +254,17 @@ def on_update(sender, instance: Results, created, **kwargs):
                                 asos__name__icontains="ASOS_4",
                                 result=point,
                                 result_type=who,
-                                from_point__lte=band_score,
+                                from_point=band_score,
                             ).first()
+
                         elif point.point_type == "Ball":
                             subject = ResultSubjects.objects.filter(
                                 asos__name__icontains="ASOS_4",
                                 result=point,
                                 result_type=who,
-                                from_point__lte=band_score,
+                                from_point=band_score,
                             ).first()
+
                         elif point.point_type == "Degree" and band_score:
                             subject = ResultSubjects.objects.filter(
                                 asos__name__icontains="ASOS_4",
