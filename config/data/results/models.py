@@ -25,7 +25,7 @@ class Results(BaseModel):
     teacher : "CustomUser" = models.ForeignKey("account.CustomUser",
                             on_delete=models.CASCADE,related_name="teacher_results")
     student : "Student" = models.ForeignKey("student.Student",
-                            on_delete=models.CASCADE,related_name="student_results")
+                            on_delete=models.SET_NULL,null=True,blank=True,related_name="student_results")
 
 
     national = models.ForeignKey("subject.Subject",on_delete=models.SET_NULL,
