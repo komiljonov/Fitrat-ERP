@@ -5,6 +5,7 @@ import openpyxl
 import pandas as pd
 from django.db.models import Sum, Q
 from django.http import HttpResponse
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_date
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
@@ -429,8 +430,7 @@ class TeacherGroupFinanceAPIView(APIView):
                 "created_at": created_at,
             })
 
-        # Sort by created_at if available, otherwise by group_name
-        group_data_list.sort(key=lambda x: x['created_at'] or datetime.datetime.now(), reverse=True)
+        group_data_list.sort(key=lambda x: x['created_at'] or timezone.now(), reverse=True)
 
         # Paginate the group data
         paginator = self.pagination_class()
