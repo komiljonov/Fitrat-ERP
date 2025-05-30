@@ -65,6 +65,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         if instance.group:
             group_data = {
+                "group_is" : instance.group.id,
                 'group_name': instance.group.name,
                 'course': instance.group.course.name,
                 'teacher': instance.group.teacher.full_name if instance.group.teacher else None,
