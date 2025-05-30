@@ -1,12 +1,7 @@
-
-import datetime
 import logging
-from cmath import isnan
 
-from django.contrib.admin import action
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils import timezone
 from icecream import ic
 from rest_framework.exceptions import ValidationError
 
@@ -323,5 +318,6 @@ def on_update(sender, instance: Results,created, **kwargs):
                                         comment=f"Sizga {'natijangiz' if instance.who == who else 'talabangiz natijasi'} uchun {subject.max_ball} ball qo'shildi!",
                                         come_from=instance,
                                     )
+
             except Exception as e:
                 raise ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
