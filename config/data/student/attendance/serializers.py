@@ -5,6 +5,7 @@ from icecream import ic
 from rest_framework import serializers
 
 from .models import Attendance
+from ..groups.serializers import GroupSerializer
 from ..homeworks.models import Homework_history, Homework
 from ..mastering.models import Mastering
 from ..quiz.models import Quiz
@@ -176,6 +177,10 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         if instance.student:
             rep['student'] = StudentSerializer(instance.student, context=self.context).data
+
+        if instance.group:
+            rep['group'] = instance.group.name
+
         else:
             rep.pop('student', None)
 
