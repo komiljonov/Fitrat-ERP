@@ -44,9 +44,9 @@ class StudentsGroupList(ListCreateAPIView):
 
 
         if user.role == 'TEACHER':
-            queryset = StudentGroup.objects.filter(group__teacher__id=user.id)
+            queryset = StudentGroup.objects.filter(group__teacher__id=user.id,is_archived=False)
         else:
-            queryset = StudentGroup.objects.filter(group__filial__in=user.filial.all())
+            queryset = StudentGroup.objects.filter(group__filial__in=user.filial.all(), is_archived=False)
         if status:
             queryset = queryset.filter(group__status=status)
         # **Exclude students who have attended today**
@@ -97,7 +97,7 @@ class StudentGroupNopg(ListAPIView):
             return queryset
         else:
             queryset = StudentGroup.objects.filter(group__filial__in=self.request.user.filial.all())
-            return queryset
+            return queryset.filter(is_archived=False)
 
 
 class GroupStudentList(ListAPIView):
@@ -151,7 +151,7 @@ class GroupStudentList(ListAPIView):
 
         queryset = queryset.filter(Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids))
 
-        return queryset
+        return queryset.filter(is_archived=False)
 
     def get_paginated_response(self, data):
         """
@@ -171,7 +171,7 @@ class SecondaryGroupStudentList(ListAPIView):
         group_id = self.kwargs.get('pk')
         queryset = SecondaryStudentGroup.objects.filter(group__id=group_id)
 
-        return queryset
+        return queryset.filter(is_archived=False)
 
     def get_paginated_response(self, data):
         return Response(data)
@@ -265,7 +265,7 @@ class GroupStudentStatistics(APIView):
         group = get_object_or_404(Group, pk=pk)
 
         # Get total students in the group
-        students = StudentGroup.objects.filter(group=group).count()
+        students = StudentGroup.objects.filter(group=group,is_archived=False).count()
 
         # Get today's start and end time
         today = now().date()
@@ -315,7 +315,8 @@ class GroupAttendedStudents(ListAPIView):
 
         queryset =  Attendance.objects.filter(
             group=group,
-            created_at__gte=datetime.date.today()
+            created_at__gte=datetime.date.today(),
+            is_archived=False,
         )
 
         ic(reason)
@@ -345,7 +346,7 @@ class GroupStudentDetail(ListAPIView):
         id = self.kwargs.get('pk')
         print(id)
 
-        return StudentGroup.objects.filter(Q(student=id) | Q(lid=id))
+        return StudentGroup.objects.filter(Q(student=id) | Q(lid=id), is_archived=False)
 
 
 class SecondaryStudentList(ListCreateAPIView):
@@ -408,7 +409,7 @@ class StudentGroupStatistics(APIView):
         end_date = self.request.query_params.get("end_date")
 
         # Base queryset - fix the filial filter
-        base_queryset = StudentGroup.objects.all()
+        base_queryset = StudentGroup.objects.filter(is_archived=False)
 
         # Apply filial filter if provided
         if filial:
@@ -492,3 +493,22 @@ class SecondaryStudentCreate(ListCreateAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+# class StudentGroupUpdate(APIView):
+#     permission_classes = [IsAuthenticated]
+#
+#     def post(self, request, **kwargs):
+#         group = self.request.GET.get("group")
+#         student = self.request.GET.get("student")
+#         add_group = self.request.GET.get("add_group")
+#
+#         if group and student:
+#             st = StudentGroup.objects.filter(
+#                 student=student,
+#                 group=group,
+#             ).distinct().filter()
+#             if add_group and st:
+#                 st.is_archived = True
+#                 st.save()
+#
+
