@@ -288,6 +288,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
             # Check if the query returns any results
             query = ResultSubjects.objects.filter(
                 result__name__icontains="ASOS_4",
+                result_type=self.instance.who,
                 level=self.instance.level,
                 degree=self.instance.degree,
             )
