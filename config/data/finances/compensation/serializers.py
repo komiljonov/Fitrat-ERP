@@ -146,6 +146,7 @@ class ResultPointsSerializer(serializers.ModelSerializer):
     asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
 
     result = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
+    # results = serializers.SerializerMethodField()
 
     class Meta:
         model = ResultSubjects
@@ -162,11 +163,14 @@ class ResultPointsSerializer(serializers.ModelSerializer):
             "university_type",
             "from_point",
             "to_point",
+            # "results",
             "degree",
             "amount",
             "created_at",
             "updated_at"
         ]
+
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["asos"] = AsosSerializer(instance.asos).data

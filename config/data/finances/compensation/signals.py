@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Monitoring , MonitoringAsos4, Monitoring5,StudentCatchingMonitoring,StudentCountMonitoring
 from ...account.models import CustomUser
+from ...student.mastering.models import MasteringTeachers
 
 
 @receiver(post_save, sender=Monitoring)
@@ -17,6 +18,12 @@ def on_create(sender, instance: MonitoringAsos4, created, **kwargs):
     if created:
         instance.user.monitoring += int(instance.ball)
         instance.user.save()
+        mastering = MasteringTeachers.objects.create(
+            teacher=instance.user,
+            reason=f"Sizga {"natijangiz" if instance.result.who == "Mine" else
+            "talabangiz natijasi"} uchun {instance.ball} sum qo'shildi!",
+            ball=instance.ball
+        )
 
 
 @receiver(post_save, sender=Monitoring5)
