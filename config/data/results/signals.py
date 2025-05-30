@@ -31,6 +31,7 @@ def on_create(sender, instance: Results, created, **kwargs):
 @receiver(post_save, sender=Results)
 def on_update(sender, instance: Results, created, **kwargs):
     if not created:
+
         if instance.status == "Accepted":
 
             if instance.results == "Olimpiada":

@@ -5,7 +5,7 @@ from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, get_object_or_404, \
     UpdateAPIView
@@ -486,21 +486,37 @@ class SecondaryStudentCreate(ListCreateAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
-# class StudentGroupUpdate(APIView):
-#     permission_classes = [IsAuthenticated]
-#
-#     def post(self, request, **kwargs):
-#         group = self.request.GET.get("group")
-#         student = self.request.GET.get("student")
-#         add_group = self.request.GET.get("add_group")
-#
-#         if group and student:
-#             st = StudentGroup.objects.filter(
-#                 student=student,
-#                 group=group,
-#             ).distinct().filter()
-#             if add_group and st:
-#                 st.is_archived = True
-#                 st.save()
-#
+
+class StudentGroupUpdate(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, **kwargs):
+        group = self.request.GET.get("group")
+        student = self.request.GET.get("student")
+        add_group = self.request.GET.get("add_group")
+
+        if group and student and add_group:
+            try:
+                # Get the specific StudentGroup instance
+                st = StudentGroup.objects.get(
+                    student=student,
+                    group=add_group,
+                )
+                group = get_object_or_404(Group, group)
+                st.group = group
+                st.save()
+
+                return Response(
+                    {"message": "Student group updated successfully"},
+                    status=status.HTTP_200_OK
+                )
+
+            except StudentGroup.DoesNotExist:
+                raise NotFound("Student Group does not exist")
+        else:
+            return Response(
+                {"error": "Missing required parameters: group, student, and add_group"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
