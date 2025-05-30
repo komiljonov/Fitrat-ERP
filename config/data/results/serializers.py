@@ -36,16 +36,21 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
-    def validators(self):
+    def validate(self, attrs):
+        # Call parent validation first
+        attrs = super().validate(attrs)
+
         entry = "Grant" if self.instance.university_entering_type == "Grant" else "Contract"
         level = ResultSubjects.objects.filter(
             asos__name__icontains="ASOS_4",
             entry_type=entry,
             university_type="Personal" if self.instance.university_type == "Unofficial" else "National",
         ).first()
+
         if not level:
             raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
-        return super(UniversityResultsSerializer, self).validators()
+
+        return attrs
 
 
     def create(self, validated_data):
@@ -116,14 +121,20 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
-    def validators(self):
-        rfk = ResultName.objects.filter(
-            id=self.instance.result_fk_name.id,
-        ).first()
-        if not rfk:
-            raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
-        return super(CertificationResultsSerializer, self).validators()
+    def validate(self, attrs):
+        # Call parent validation first
+        attrs = super().validate(attrs)
 
+        # Check if instance exists (update scenario)
+        if self.instance and self.instance.result_fk_name:
+            rfk = ResultName.objects.filter(
+                id=self.instance.result_fk_name.id,
+            ).first()
+
+            if not rfk:
+                raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
+
+        return attrs
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["result_fk_name"] = ResultsNameSerializer(instance.result_fk_name).data if instance.result_fk_name else None
@@ -255,18 +266,24 @@ class OtherResultsSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
-    def validators(self):
-        validator = ResultSubjects.objects.filter(
-            result__name__icontains="ASOS_4",
-            level=self.instance.level,
-            degree=self.instance.degree,
-        ).first()
-        if not validator:
-            raise serializers.ValidationError(
-                "Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!"
-            )
-        return super(OtherResultsSerializer, self).validators()
+    def validate(self, attrs):
+        # Call parent validation first
+        attrs = super().validate(attrs)
 
+        # Check if instance exists (update scenario)
+        if self.instance:
+            validator = ResultSubjects.objects.filter(
+                result__name__icontains="ASOS_4",
+                level=self.instance.level,
+                degree=self.instance.degree,
+            ).first()
+
+            if not validator:
+                raise serializers.ValidationError(
+                    "Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!"
+                )
+
+        return attrs
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
