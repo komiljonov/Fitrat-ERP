@@ -331,6 +331,7 @@ class  ResultsSerializer(serializers.ModelSerializer):
             'university_entering_type',
             'university_entering_ball',
 #             'certificate_type',
+            "degree",
             'band_score',
             'reading_score',
             'listening_score',
