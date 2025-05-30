@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
-from data.finances.compensation.models import ResultName
+from data.finances.compensation.models import ResultName, ResultSubjects
 from data.finances.compensation.serializers import ResultsNameSerializer
 from data.results.models import Results
 from data.student.student.models import Student
@@ -35,6 +35,18 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+    def validators(self):
+        entry = "Grant" if self.instance.university_entering_type == "Grant" else "Contract"
+        level = ResultSubjects.objects.filter(
+            asos__name__icontains="ASOS_4",
+            entry_type=entry,
+            university_type="Personal" if self.instance.university_type == "Unofficial" else "National",
+        ).first()
+        if not level:
+            raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
+        return super(UniversityResultsSerializer, self).validators()
+
 
     def create(self, validated_data):
         # Pop the 'upload_file' field to handle it separately
@@ -103,6 +115,14 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+    def validators(self):
+        rfk = ResultName.objects.filter(
+            id=self.instance.result_fk_name.id,
+        ).first()
+        if not rfk:
+            raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
+        return super(CertificationResultsSerializer, self).validators()
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -235,6 +255,19 @@ class OtherResultsSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
+    def validators(self):
+        validator = ResultSubjects.objects.filter(
+            result__name__icontains="ASOS_4",
+            level=self.instance.level,
+            degree=self.instance.degree,
+        ).first()
+        if not validator:
+            raise serializers.ValidationError(
+                "Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!"
+            )
+        return super(OtherResultsSerializer, self).validators()
+
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['upload_file'] = FileUploadSerializer(
@@ -314,7 +347,7 @@ class NationalSerializer(serializers.ModelSerializer):
         return certificate
 
 
-class  ResultsSerializer(serializers.ModelSerializer):
+class ResultsSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     class Meta:
         model = Results
@@ -343,6 +376,7 @@ class  ResultsSerializer(serializers.ModelSerializer):
             'upload_file',
             'status',
             "updater",
+            "result_fk_name",
             'created_at',
             'updated_at',
         ]
@@ -362,6 +396,7 @@ class  ResultsSerializer(serializers.ModelSerializer):
         """ Remove fields that are None or empty """
 
         data = super().to_representation(instance)
+        data["result_fk_name"] = ResultsNameSerializer(instance.result_fk_name).data if instance.result_fk_name else None
         data["updater"] = UserListSerializer(instance.updater).data if instance.updater else None
         data['upload_file'] = FileUploadSerializer(instance.upload_file,context=self.context, many=True,).data
         data['student'] = StudentSerializer(instance.student,context=self.context).data

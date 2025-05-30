@@ -132,15 +132,13 @@ def on_update(sender, instance: Results,created, **kwargs):
 
                     if instance.who == "Student":
                         entry = "Grant" if instance.university_entering_type == "Grant" else "Contract"
-                        ic(entry)
-                        ic(instance.university_type)
+
                         level = ResultSubjects.objects.filter(
                             asos__name__icontains="ASOS_4",
                             entry_type=entry,
                             university_type="Personal" if instance.university_type == "Unofficial" else "National",
                         ).first()
 
-                        ic(level)
 
                         ball = MonitoringAsos4.objects.create(
                             creator=instance.teacher,

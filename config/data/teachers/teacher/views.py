@@ -1,4 +1,4 @@
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, Count
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -156,21 +156,25 @@ class TeachersGroupsView(ListAPIView):
     serializer_class = GroupSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
-    ordering_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
+    ordering_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status', 'student_count')
     filterser_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
 
     def get_queryset(self):
         status = self.request.GET.get("status")
         teacher_id = self.request.user.pk  # Get the teacher ID
+        ordering = self.request.GET.get("ordering")
 
-        queryset = Group.objects.filter(Q(teacher__id=teacher_id) | Q(secondary_teacher__id=teacher_id))  # First filter by teacher
+        queryset = Group.objects.filter(Q(teacher__id=teacher_id) | Q(secondary_teacher__id=teacher_id))
+
+        queryset = queryset.annotate(
+            student_count=Count('studentgroup')
+        )
 
         if status:
-            queryset = queryset.filter(status=status)  # Apply status filter if present
+            queryset = queryset.filter(status=status)
 
-        ordering = self.request.GET.get("ordering")
         if ordering:
-            queryset = queryset.order_by(ordering)  # Explicitly apply ordering
+            queryset = queryset.order_by(ordering)
 
         return queryset
 

@@ -85,7 +85,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         return data
 
-
     def create(self, validated_data):
         from django.db import transaction
         from django.db.models.signals import post_save
@@ -165,6 +164,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             created_instances.append(attendance)
 
         return created_instances
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
