@@ -327,6 +327,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     "Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!"
                 )
+
         return attrs
 
     def to_representation(self, instance):

@@ -496,6 +496,8 @@ class StudentGroupUpdate(APIView):
         student = self.request.GET.get("student")
         add_group = self.request.GET.get("add_group")
 
+        ic(group, student, add_group)
+
         if group and student and add_group:
             st = StudentGroup.objects.get(
                 student=student,
