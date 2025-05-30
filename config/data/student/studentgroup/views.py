@@ -345,7 +345,7 @@ class GroupStudentDetail(ListAPIView):
         id = self.kwargs.get('pk')
         print(id)
 
-        return StudentGroup.objects.filter(Q(student=id) | Q(lid=id), )
+        return StudentGroup.objects.filter(Q(student=id) | Q(lid=id),)
 
 
 class SecondaryStudentList(ListCreateAPIView):
@@ -501,7 +501,7 @@ class StudentGroupUpdate(APIView):
                 # Get the StudentGroup instance
                 st = StudentGroup.objects.get(
                     student=student,
-                    group=add_group,
+                    id=add_group,
                 )
 
                 # Get the new group object
