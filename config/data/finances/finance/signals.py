@@ -101,7 +101,7 @@ def on_create(sender, instance: KpiFinance, created, **kwargs):
             Finance.objects.create(
                 casher = Casher.objects.filter(filial__in=instance.user.filial.all(),
                                                role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
-                action = "EXPENSE",
+                action = "INCOME",
                 amount = instance.amount,
                 kind = Kind.objects.filter(name="Bonus").first(),
                 stuff = instance.user,
