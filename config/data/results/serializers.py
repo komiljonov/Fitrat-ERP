@@ -291,6 +291,7 @@ class OtherResultsSerializer(serializers.ModelSerializer):
                 result_type=self.instance.who,
                 level=self.instance.level,
                 degree=self.instance.degree,
+                from_point=self.instance.band_score,
             )
 
             ic(f"Query SQL: {query.query}")
