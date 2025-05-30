@@ -53,7 +53,6 @@ class TeacherMasteringList(ListAPIView):
 
     def get_queryset(self):
         id = self.kwargs.get('pk')
-        icecream.ic(id)
         if id:
             return MasteringTeachers.objects.filter(teacher__id=id)
         return MasteringTeachers.objects.none()

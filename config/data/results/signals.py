@@ -9,6 +9,7 @@ from .models import Results
 from ..finances.compensation.models import MonitoringAsos4, Asos, ResultName, ResultSubjects
 from ..finances.finance.models import Finance, Casher, Kind
 from ..notifications.models import Notification
+from ..student.mastering.models import MasteringTeachers
 
 
 @receiver(post_save, sender=Results)
@@ -64,6 +65,7 @@ def on_update(sender, instance: Results,created, **kwargs):
                         comment=f"Sizga {"natijangiz" if instance.who == "Mine" else
                         "talabangiz natijasi"} uchun {level.amount} sum qo'shildi!"
                     )
+
                     if finance.amount:
                         Notification.objects.create(
                             user=instance.teacher,

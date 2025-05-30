@@ -13,18 +13,16 @@ from ...lid.new_lid.models import Lid
 from ...notifications.models import Notification
 
 
-@receiver(post_save, sender=MasteringTeachers)
-def on_create(sender, instance: MasteringTeachers, created, **kwargs):
-    if created:
-        user = CustomUser.objects.filter(id=instance.teacher.id, role="TEACHER").first()
-        if user:
-            user.ball += instance.ball
-            user.save()
-            Notification.objects.create(
-                user=user,
-                comment=f"Sizning darajangiz {instance.ball} ball oshirildi ! ",
-                come_from=instance
-            )
+# @receiver(post_save, sender=MasteringTeachers)
+# def on_create(sender, instance: MasteringTeachers, created, **kwargs):
+#     if created:
+#         user = CustomUser.objects.filter(id=instance.teacher.id, role="TEACHER").first()
+#         if user:
+#             Notification.objects.create(
+#                 user=user,
+#                 comment=f"Sizning darajangiz {instance.ball} ball oshirildi ! ",
+#                 come_from=instance
+#             )
 
 #------------- Monitoring edits -----------#
 
