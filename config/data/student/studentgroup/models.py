@@ -15,7 +15,7 @@ class StudentGroup(BaseModel):
     lid: "Lid" = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name="lids_group")
 
-    is_archiver : bool = models.BooleanField(default=False)
+    # is_archiver : bool = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Add Group"
