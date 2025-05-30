@@ -138,10 +138,10 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
         self._validate_certification(attrs)
 
         return attrs
+
     def _validate_certification(self, attrs):
         """Validate certification-related fields"""
         if self.instance and self.instance.result_fk_name and self.instance.point:
-            ic("Running certification validation")
 
             rfk = ResultName.objects.filter(
                 id=self.instance.result_fk_name.id,
@@ -153,8 +153,6 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
 
             point_type = self.instance.point.point_type
             band_score = self.instance.band_score
-
-            ic(f"Point type: {point_type}, Band score: {band_score}")
 
             subject = None
 
