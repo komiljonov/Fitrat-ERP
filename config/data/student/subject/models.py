@@ -33,7 +33,7 @@ class Level(BaseModel):
 class Theme(BaseModel):
     subject = models.ForeignKey('subject.Subject', on_delete=models.CASCADE)
 
-    title = models.CharField(max_length=100)
+    title = models.TextField(null=True, blank=True)
     description = models.TextField()
 
     theme = models.CharField(
