@@ -492,11 +492,9 @@ class StudentGroupUpdate(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, **kwargs):
-        group = self.request.GET.get("group")
-        student = self.request.GET.get("student")
-        add_group = self.request.GET.get("add_group")
-
-        ic(group, student, add_group)
+        group = request.data.get("group")
+        student = request.data.get("student")
+        add_group = request.data.get("add_group")
 
         if group and student and add_group:
             st = StudentGroup.objects.get(
