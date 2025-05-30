@@ -21,7 +21,8 @@ def on_create(sender, instance: MonitoringAsos4, created, **kwargs):
         mastering = MasteringTeachers.objects.create(
             teacher=instance.user,
             reason=f"Sizga natijangiz uchun {instance.ball} ball qo'shildi!",
-            ball=instance.ball
+            ball=instance.ball,
+            bonus=True
         )
 
 

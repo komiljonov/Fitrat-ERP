@@ -29,6 +29,7 @@ class MasteringTeachers(BaseModel):
                                                null=True,blank=True,
                                                related_name='teacher_mastering')
     reason = models.TextField(blank=True,null=True)
+    bonus = models.BooleanField(default=False)
     ball = models.FloatField(max_length=255, default=0)
     def __str__(self):
         return f"{self.teacher.first_name} {self.ball}"

@@ -57,6 +57,7 @@ class StuffMasteringSerializer(serializers.ModelSerializer):
             "id",
             "teacher",
             "ball",
+            "bonus",
             'reason',
             'created_at',
             'updated_at',
