@@ -135,11 +135,13 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
         attrs = super().validate(attrs)
 
         if self.instance and self.instance.result_fk_name and self.instance.point:
-            # Validate ResultName exists
+
             rfk = ResultName.objects.filter(
                 id=self.instance.result_fk_name.id,
                 who=self.instance.who,
             ).first()
+
+            ic(rfk)
 
             if not rfk:
                 raise serializers.ValidationError("ResultName not found for validation!")
@@ -147,10 +149,10 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
             point_type = self.instance.point.point_type
             band_score = self.instance.band_score
 
+            ic(point_type, band_score)
             subject = None
 
             if point_type in ["Percentage", "Ball"]:
-                # Same logic for both Percentage and Ball
                 subject = ResultSubjects.objects.filter(
                     asos__name__icontains="ASOS_4",
                     result=self.instance.point,
@@ -165,6 +167,8 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
                     result_type=self.instance.who,
                     from_point__icontains=band_score,
                 ).first()
+
+            ic(subject)
 
             if not subject:
                 raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")

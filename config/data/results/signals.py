@@ -29,7 +29,6 @@ def on_create(sender, instance: Results, created, **kwargs):
         instance.save()
 
 
-
 @receiver(post_save, sender=Results)
 def on_update(sender, instance: Results,created, **kwargs):
     if not created:
