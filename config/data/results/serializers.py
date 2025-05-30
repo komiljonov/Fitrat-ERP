@@ -107,7 +107,7 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
 
 class CertificationResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     result_fk_name = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(), allow_null=True)
     upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     class Meta:
@@ -150,7 +150,7 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
         rep["result_fk_name"] = ResultsNameSerializer(instance.result_fk_name).data if instance.result_fk_name else None
         rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,context=self.context).data if instance.upload_file else None
         rep["teacher"] = UserListSerializer(instance.teacher).data
-        rep["student"] = StudentSerializer(instance.student).data
+        rep["student"] = StudentSerializer(instance.student).data if instance.student else None
         return rep
 
     def create(self, validated_data):
