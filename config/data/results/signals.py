@@ -314,3 +314,14 @@ def on_update(sender, instance: Results, created, **kwargs):
                                     comment=f"Sizga {'natijangiz' if instance.who == who else 'talabangiz natijasi'} uchun {subject.max_ball} ball qo'shildi!",
                                     come_from=instance,
                                 )
+
+
+@receiver(post_save, sender=Results)
+def send_notf(sender, instance : Results, created, **kwargs):
+    if not created:
+        if instance.status == "Rejected":
+            Notification.objects.create(
+                user=instance.teacher,
+                comment=f"Sizning {instance.band_score} ballik natijangiz bekor qilindi!",
+                come_from=instance,
+            )
