@@ -40,27 +40,37 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
         # Call parent validation first
         attrs = super().validate(attrs)
 
-        entry = "Grant" if self.instance.university_entering_type == "Grant" else "Contract"
-        level = ResultSubjects.objects.filter(
-            asos__name__icontains="ASOS_4",
-            entry_type=entry,
-            university_type="Personal" if self.instance.university_type == "Unofficial" else "National",
-        ).first()
+        # Get values from instance (update) or attrs (creation)
+        if self.instance:
+            # Update scenario
+            university_entering_type = self.instance.university_entering_type
+            university_type = self.instance.university_type
+        else:
+            # Creation scenario
+            university_entering_type = attrs.get('university_entering_type')
+            university_type = attrs.get('university_type')
 
-        if not level:
-            raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
+        # Only validate if we have the required fields
+        if university_entering_type and university_type:
+            entry = "Grant" if university_entering_type == "Grant" else "Contract"
+            mapped_university_type = "Personal" if university_type == "Unofficial" else "National"
+
+            level = ResultSubjects.objects.filter(
+                asos__name__icontains="ASOS_4",
+                entry_type=entry,
+                university_type=mapped_university_type,
+            ).first()
+
+            if not level:
+                raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
 
         return attrs
 
-
     def create(self, validated_data):
-        # Pop the 'upload_file' field to handle it separately
         upload_files = validated_data.pop('upload_file', [])
 
-        # Create the Results instance
         certificate = Results.objects.create(**validated_data)
 
-        # If 'upload_file' has data, assign the file instances to the Results instance
         if upload_files:
             certificate.upload_file.set(upload_files)
 
@@ -270,19 +280,35 @@ class OtherResultsSerializer(serializers.ModelSerializer):
         # Call parent validation first
         attrs = super().validate(attrs)
 
-        # Check if instance exists (update scenario)
         if self.instance:
-            validator = ResultSubjects.objects.filter(
+            ic("Instance exists, proceeding with validation")
+            ic(f"Instance level: {self.instance.level}")
+            ic(f"Instance degree: {self.instance.degree}")
+
+            # Check if the query returns any results
+            query = ResultSubjects.objects.filter(
                 result__name__icontains="ASOS_4",
                 level=self.instance.level,
                 degree=self.instance.degree,
-            ).first()
+            )
+
+            ic(f"Query SQL: {query.query}")
+            ic(f"Query count: {query.count()}")
+
+            validator = query.first()
+            ic(f"Validator result: {validator}")
 
             if not validator:
+                ic("About to raise ValidationError")
                 raise serializers.ValidationError(
                     "Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!"
                 )
+            else:
+                ic("Validator found, validation passed")
+        else:
+            ic("No instance found - creation scenario")
 
+        ic("Returning attrs")
         return attrs
 
     def to_representation(self, instance):
