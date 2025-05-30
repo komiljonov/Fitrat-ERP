@@ -87,7 +87,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
 
-        if attendances_count == 1:
+        if attendances_count <= 3 :
             stage = "BIRINCHI_DARS" if instance.reason == "IS_PRESENT" else "BIRINCHI_DARSGA_KELMAGAN"
             instance.student.new_student_stages = stage
             instance.student.save()
