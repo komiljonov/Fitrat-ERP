@@ -136,13 +136,12 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
         # Call parent validation first
         attrs = super().validate(attrs)
 
-        # Only validate if we have an instance with required fields
+
         if not (self.instance and self.instance.result_fk_name and
                 self.instance.point and self.instance.who):
             return attrs
 
         try:
-            # Check if ResultName exists
             result_name = ResultName.objects.filter(
                 id=self.instance.result_fk_name.id,
                 who=self.instance.who,
@@ -191,13 +190,10 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
         return rep
 
     def create(self, validated_data):
-        # Pop the 'upload_file' field to handle it separately
         upload_files = validated_data.pop('upload_file', [])
 
-        # Create the Results instance
         certificate = Results.objects.create(**validated_data)
 
-        # If 'upload_file' has data, assign the file instances to the Results instance
         if upload_files:
             certificate.upload_file.set(upload_files)
 
