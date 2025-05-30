@@ -24,7 +24,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'group',
             'lid',
             'student',
-            "is_archived",
+            # "is_archived",
         ]
 
     def validate(self, attrs):
