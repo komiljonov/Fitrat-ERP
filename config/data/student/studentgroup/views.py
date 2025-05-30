@@ -464,6 +464,7 @@ class StudentGroupStatistics(APIView):
             "orders": orders_count,
         })
 
+
 class SecondaryStudentCreate(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = SecondaryStudentGroup.objects.all()

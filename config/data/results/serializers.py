@@ -165,7 +165,7 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
             )
 
             if point_type in ["Percentage", "Ball"] and band_score is not None:
-                subject = base_query.filter(from_point__lte=band_score).first()
+                subject = base_query.filter(from_point=band_score).first()
 
             elif point_type == "Degree" and band_score:
                 subject = base_query.filter(from_point__icontains=band_score).first()
