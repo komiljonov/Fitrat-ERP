@@ -497,26 +497,39 @@ class StudentGroupUpdate(APIView):
         add_group = request.data.get("add_group")
 
         if group and student and add_group:
-            st = StudentGroup.objects.get(
-                student=student,
-                group=add_group,
-            )
+            try:
+                # Get the StudentGroup instance
+                st = StudentGroup.objects.get(
+                    student=student,
+                    group=add_group,
+                )
 
-            if not st:
-                raise ValidationError("Student Group does not exist")
+                # Get the new group object
+                new_group = get_object_or_404(Group, id=group)
 
-            group = get_object_or_404(Group, group)
-            st.group = group
-            st.save()
+                # Update the group
+                st.group = new_group
+                st.save()
 
-            return Response(
-                {"message": "Student group updated successfully"},
-                status=status.HTTP_200_OK
-            )
+                return Response(
+                    {"message": "Student group updated successfully"},
+                    status=status.HTTP_200_OK
+                )
+
+            except StudentGroup.DoesNotExist:
+                return Response(
+                    {"error": "Student Group does not exist"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            except Group.DoesNotExist:
+                return Response(
+                    {"error": "Target group does not exist"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
         else:
             return Response(
                 {"error": "Missing required parameters: group, student, and add_group"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
 
