@@ -162,7 +162,7 @@ class TeachersGroupsView(ListAPIView):
     def get_queryset(self):
         status = self.request.GET.get("status")
         teacher_id = self.request.user.pk  # Get the teacher ID
-        ordering = self.request.GET.get("ordering")
+        # ordering = self.request.GET.get("ordering")
 
         queryset = Group.objects.filter(
             Q(teacher__id=teacher_id) | Q(secondary_teacher__id=teacher_id)
@@ -172,10 +172,10 @@ class TeachersGroupsView(ListAPIView):
         if status:
             queryset = queryset.filter(status=status)
 
-        if ordering:
-            queryset = queryset.order_by(ordering)
+        # if ordering:
+        #     queryset = queryset.order_by(ordering)
 
-        return queryset
+        return queryset.order_by("student_count")
 
 
 class AssistantTeachersView(ListAPIView):
