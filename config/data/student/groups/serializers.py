@@ -113,7 +113,12 @@ class GroupSerializer(serializers.ModelSerializer):
         }
 
     def get_student_count(self, obj):
-        student_count = StudentGroup.objects.filter(group=obj, student__is_archived=False).count()
+        from django.db.models import Q
+
+        student_count = StudentGroup.objects.filter(
+            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+        ).count()
+
         return student_count
 
     def to_representation(self, instance):
