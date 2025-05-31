@@ -265,7 +265,11 @@ class GroupStudentStatistics(APIView):
         group = get_object_or_404(Group, pk=pk)
 
         # Get total students in the group
-        students = StudentGroup.objects.filter(group=group, student__is_archived=False).count()
+        from django.db.models import Q
+
+        student_count = StudentGroup.objects.filter(
+            Q(group=group) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+        ).count()
 
         # Get today's start and end time
         today = now().date()
@@ -408,7 +412,7 @@ class StudentGroupStatistics(APIView):
         end_date = self.request.query_params.get("end_date")
 
         # Base queryset - fix the filial filter
-        base_queryset = StudentGroup.objects.filter(student__is_archived=False)
+        base_queryset = StudentGroup.objects.filter(Q(student__is_archived=False) | Q(lid__is_archived=False))
 
         # Apply filial filter if provided
         if filial:
