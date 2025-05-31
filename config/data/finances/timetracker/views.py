@@ -31,7 +31,7 @@ class AttendanceList(ListCreateAPIView):
         if not employee_id:
             return Response({"detail": "Employee is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = get_object_or_404(CustomUser, pk=employee_id)
+        user = get_object_or_404(CustomUser, second_user=employee_id)
 
         check_in = data.get("check_in")
         check_out = data.get("check_out")
