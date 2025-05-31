@@ -430,6 +430,6 @@ def send_notf(sender, instance : Results, created, **kwargs):
         if instance.status == "Rejected":
             Notification.objects.create(
                 user=instance.teacher,
-                comment=f"Sizning {instance.band_score} ballik natijangiz bekor qilindi!",
+                comment=f"Sizning {instance.band_score if instance.band_score else instance.result_score} ballik natijangiz bekor qilindi!",
                 come_from=instance,
             )
