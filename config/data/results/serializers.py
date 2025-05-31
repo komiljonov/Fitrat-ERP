@@ -444,7 +444,7 @@ class ResultsSerializer(serializers.ModelSerializer):
             validated_data['updater'] = request.user
 
         # Call the parent update method to handle all field updates
-        return super().update(instance, -validated_data)
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
 
