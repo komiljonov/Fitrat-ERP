@@ -60,7 +60,3 @@ def on_update(sender, instance: ResultName, created, **kwargs):
             for item in subject:
                 item.is_archived = True
                 item.save()
-                # Notification.objects.create(
-                #     user=[user for user in CustomUser.objects.filter(role="DIRECTOR").all()],
-                #     comment = "Res"
-                # )
