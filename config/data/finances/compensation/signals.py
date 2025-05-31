@@ -54,7 +54,7 @@ def on_update(sender, instance: ResultName, created, **kwargs):
     if not created:
         if instance.is_archived == "True":
             subject = ResultSubjects.objects.filter(
-                asos__name__icontaines="ASOS_4",
+                asos__name__icontains="ASOS_4",
                 result=instance
             ).all()
             for item in subject:
