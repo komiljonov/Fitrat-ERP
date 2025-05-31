@@ -421,7 +421,7 @@ def on_update(sender, instance: Results, created, **kwargs):
 
             logging.error(f"Signal handler error: {str(e)}", exc_info=True)
 
-            Results.objects.filter(pk=instance.pk).update(status="Pending")
+            Results.objects.filter(pk=instance.pk).update(status="In_progress")
 
 
 @receiver(post_save, sender=Results)
