@@ -267,7 +267,7 @@ class GroupStudentStatistics(APIView):
         # Get total students in the group
         from django.db.models import Q
 
-        student_count = StudentGroup.objects.filter(
+        students = StudentGroup.objects.filter(
             Q(group=group) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
         ).count()
 
