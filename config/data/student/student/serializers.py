@@ -139,8 +139,9 @@ class StudentSerializer(serializers.ModelSerializer):
             created_at__gt=datetime.datetime.today(),
             created_at__lte=datetime.datetime.today() + datetime.timedelta(days=2),
         )
+        if homeworks and homeworks.first().mark >=75:
 
-        return homeworks.exists()
+            return homeworks.exists()
 
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(student=obj)

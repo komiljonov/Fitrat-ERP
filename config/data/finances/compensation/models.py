@@ -223,7 +223,6 @@ class MonitoringAsos4(BaseModel):
         verbose_name_plural = "Monitoring 4"
 
 
-
 class StudentCountMonitoring(BaseModel):
     asos: "Asos" = models.ForeignKey('compensation.Asos', on_delete=models.CASCADE)
     max_ball = models.DecimalField(decimal_places=2, max_digits=10)
