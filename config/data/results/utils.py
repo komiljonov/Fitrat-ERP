@@ -13,7 +13,7 @@ def validate_olimpiada_requirements(instance):
     if not asos:
         raise ValueError("ASOS_4 topilmadi! Avval ASOS_4 yarating.")
 
-    # Check if level exists
+
     level = ResultSubjects.objects.filter(
         asos=asos,
         level=instance.level,
@@ -23,7 +23,6 @@ def validate_olimpiada_requirements(instance):
         raise ValueError(
             f"Olimpiada uchun mos ResultSubjects topilmadi. Level: {instance.level}, Degree: {instance.degree}")
 
-    # Check if max_ball and amount exist
     if not hasattr(level, 'max_ball') or level.max_ball is None:
         raise ValueError(f"ResultSubjects uchun max_ball qiymati topilmadi. Level ID: {level.id}")
 
@@ -35,7 +34,7 @@ def validate_olimpiada_requirements(instance):
     # if not casher:
     #     raise ValueError("WEALTH rolidagi kasher topilmadi!")
 
-    # Check if bonus kind exists
+
     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
     if not bonus_kind:
         raise ValueError("Bonus turi topilmadi!")
@@ -224,9 +223,9 @@ def validate_certificate_requirements(instance):
                 from_point__icontains=band_score,
             ).first()
 
-    if not subject:
-        raise ValueError(
-            f"Band score '{band_score}' uchun mos ResultSubjects topilmadi! Point: {point.name}, Type: {point.type}, Point type: {point.point_type}")
+    # if not subject:
+    #     raise ValueError(
+    #         f"Band score '{band_score}' uchun mos ResultSubjects topilmadi! Point: {point.name}, Type: {point.type}, Point type: {point.point_type}")
 
     # Check if max_ball and amount exist
     if not hasattr(subject, 'max_ball') or subject.max_ball is None:
