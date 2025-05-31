@@ -1,3 +1,6 @@
+from data.finances.compensation.models import Asos, ResultSubjects, ResultName
+from data.finances.finance.models import Casher, Kind
+
 
 def validate_olimpiada_requirements(instance):
     """Validate Olimpiada requirements without creating records"""
