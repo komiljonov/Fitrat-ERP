@@ -57,7 +57,7 @@ class AttendanceList(ListCreateAPIView):
             }, status=status.HTTP_200_OK)
 
         new_attendance = Employee_attendance.objects.create(
-            employee=user,
+            employee=data.get("employee"),
             check_in=check_in,
             check_out=check_out,
             date=date,
