@@ -1,6 +1,5 @@
 from django.db.models import Q, Avg, Count
 from django_filters.rest_framework import DjangoFilterBackend
-from icecream import ic
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -10,15 +9,14 @@ from rest_framework.views import APIView
 from .serializers import TeacherSerializer
 from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
-from ...notifications.models import Complaint
 from ...results.models import Results
 from ...student.groups.models import Group, SecondaryGroup
 from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
-from ...student.homeworks.models import Homework, Homework_history
+from ...student.homeworks.models import Homework_history
 from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.mastering.models import Mastering, MasteringTeachers
-from ...student.mastering.serializers import StuffMasteringSerializer, MasteringSerializer
+from ...student.mastering.serializers import StuffMasteringSerializer
 from ...student.student.models import Student
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...student.studentgroup.serializers import StudentsGroupSerializer
