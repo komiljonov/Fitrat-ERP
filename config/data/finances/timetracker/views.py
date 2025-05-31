@@ -1,7 +1,9 @@
 from django.utils.dateparse import parse_datetime
-from rest_framework.generics import ListCreateAPIView
+from rest_framework import status
+from rest_framework.generics import ListCreateAPIView, get_object_or_404
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .models import Employee_attendance, UserTimeLine
 from .serializers import TimeTrackerSerializer
@@ -17,15 +19,46 @@ class AttendanceList(ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        if data.get('employee'):
-            user = CustomUser.objects.get(pk=data.get('employee'))
-            if user:
-                attendance = Employee_attendance.objects.filter(
-                    employee=user,
 
-                )
-                pass
+        employee_id = data.get('employee')
+        if not employee_id:
+            return Response({"detail": "Employee is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        user = get_object_or_404(CustomUser, pk=employee_id)
+
+        check_in = data.get("check_in")
+        check_out = data.get("check_out")
+        date = data.get("date")
+        not_marked = data.get("not_marked")
+
+        filters = {
+            "employee": user,
+            "check_in": check_in,
+            "date": date,
+        }
+
+        if check_out is not None:
+            filters["check_out"] = check_out
+        else:
+            filters["check_out__isnull"] = True
+
+        attendance = Employee_attendance.objects.filter(**filters).first()
+        if attendance:
+            return Response({"detail": "Attendance already exists."}, status=status.HTTP_200_OK)
+
+        # Create the attendance record
+        new_attendance = Employee_attendance.objects.create(
+            employee=user,
+            check_in=check_in,
+            check_out=check_out,
+            date=date,
+            not_marked=not_marked
+        )
+
+        return Response({
+            "detail": "Attendance created.",
+            "attendance_id": new_attendance.id
+        }, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
