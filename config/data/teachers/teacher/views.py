@@ -164,12 +164,11 @@ class TeachersGroupsView(ListAPIView):
         teacher_id = self.request.user.pk  # Get the teacher ID
         ordering = self.request.GET.get("ordering")
 
-        queryset = Group.objects.filter(Q(teacher__id=teacher_id) | Q(secondary_teacher__id=teacher_id))
-        #
-        # queryset = queryset.annotate(
-        #     student_count=Count('studentgroup')
-        # )
-
+        queryset = Group.objects.filter(
+            Q(teacher__id=teacher_id) | Q(secondary_teacher__id=teacher_id)
+        ).annotate(
+            student_count=Count("studentgroup")
+        )
         if status:
             queryset = queryset.filter(status=status)
 
