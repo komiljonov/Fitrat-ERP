@@ -175,7 +175,7 @@ class TeachersGroupsView(ListAPIView):
         # if ordering:
         #     queryset = queryset.order_by(ordering)
 
-        return queryset.order_by("student_count")
+        return queryset.order_by("-student_count")
 
 
 class AssistantTeachersView(ListAPIView):
