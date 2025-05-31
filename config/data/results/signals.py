@@ -104,7 +104,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                     # Check if casher exists
                     casher = Casher.objects.filter(role="WEALTH").first()
                     if not casher:
-                        raise ValueError("WEALTH rolidagi kasher topilmadi!")
+                        casher = None
 
                     # Check if bonus kind exists
                     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
@@ -165,7 +165,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                     # Check if casher exists
                     casher = Casher.objects.filter(role="WEALTH").first()
                     if not casher:
-                        raise ValueError("WEALTH rolidagi kasher topilmadi!")
+                        casher = None
 
                     # Check if bonus kind exists
                     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
