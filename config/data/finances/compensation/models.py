@@ -144,6 +144,7 @@ class ResultName(BaseModel):
         ("One", "One"),
         ("Two", "Two"),
     ], max_length=10, null=True, blank=True)
+    is_archived = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Natijalar"
@@ -190,6 +191,7 @@ class ResultSubjects(BaseModel):
     to_point = models.CharField(max_length=10, null=True, blank=True)
 
     amount = models.CharField(max_length=128, null=True, blank=True)
+    is_archived = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Monitoring"

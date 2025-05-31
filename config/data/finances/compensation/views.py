@@ -398,7 +398,7 @@ class Asos4ListCreateView(ListCreateAPIView):
         degree = self.request.GET.get("degree")
         entry_type = self.request.GET.get("entry_type")
 
-        queryset = ResultSubjects.objects.all()
+        queryset = ResultSubjects.objects.filter(is_archived=False)
 
         if entry_type:
             queryset = queryset.filter(entry_type=entry_type)
@@ -446,7 +446,7 @@ class StudentCountRetrieveView(RetrieveUpdateDestroyAPIView):
 
 
 class ResultsNameListCreateView(ListCreateAPIView):
-    queryset = ResultName.objects.all()
+    queryset = ResultName.objects.filter(is_archived=False)
     serializer_class = ResultsNameSerializer
     permission_classes = [IsAuthenticated]
 
@@ -454,7 +454,7 @@ class ResultsNameListCreateView(ListCreateAPIView):
         who = self.request.GET.get("who")
         if who:
             return ResultName.objects.filter(who=who)
-        return ResultName.objects.all()
+        return ResultName.objects.filter(is_archived=False)
 
     def get_paginated_response(self, data):
         return Response(data)
