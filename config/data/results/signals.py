@@ -384,11 +384,10 @@ def on_update(sender, instance: Results, created, **kwargs):
                     raise ValueError(f"Noma'lum results turi: {instance.results}")
 
         except Exception as e:
-            # Log the full error for debugging
+
             logging.error(f"Signal handler error: {str(e)}", exc_info=True)
 
-            # Raise a more descriptive error
-            raise ValueError(f"Ushbu natijani tasdiqlash uchun monitoring yaratilmagan! Xatolik: {str(e)}")
+            Results.objects.filter(pk=instance.pk).update(status="Pending")
 
 
 @receiver(post_save, sender=Results)
