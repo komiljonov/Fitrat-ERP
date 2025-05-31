@@ -33,14 +33,13 @@ class AttendanceList(ListCreateAPIView):
             return Response({"detail": "Employee is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         ic(data)
-        user = CustomUser.objects.filter(second_user=employee_id).first()
         check_in = data.get("check_in")
         check_out = data.get("check_out")
         date = data.get("date")
         not_marked = data.get("not_marked", False)  # Default to False if not provided
 
         filters = {
-            "employee": user,
+            "employee": data.get("employee"),
             "check_in": check_in,
             "date": date,
         }
