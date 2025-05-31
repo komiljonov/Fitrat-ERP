@@ -97,3 +97,8 @@ class HomeworksHistorySerializer(serializers.ModelSerializer):
             "mark",
             "created_at"
         ]
+
+    def update(self, instance, validated_data):
+        if instance:
+            instance.updater = self.context["request"].user
+            instance.save()

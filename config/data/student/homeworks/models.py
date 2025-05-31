@@ -1,5 +1,6 @@
 from django.db import models
 
+from data.account.models import CustomUser
 from data.command.models import BaseModel
 from data.student.subject.models import Theme
 from ...upload.models import File
@@ -42,7 +43,8 @@ class Homework_history(BaseModel):
     ], max_length=20,null=True,blank=True)
     is_active = models.BooleanField(default=False)
     mark = models.IntegerField(default=0)
-
+    updater : "CustomUser" = models.ForeignKey("account.CustomUser",on_delete=models.SET_NULL,
+                                        null=True,blank=True,related_name="homeworks_updater")
     description = models.TextField(null=True,blank=True)
 
     class Meta:
