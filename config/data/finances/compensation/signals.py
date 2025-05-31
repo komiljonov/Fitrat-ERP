@@ -1,8 +1,10 @@
 import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import Monitoring , MonitoringAsos4, Monitoring5,StudentCatchingMonitoring,StudentCountMonitoring
+from .models import Monitoring, MonitoringAsos4, Monitoring5, StudentCatchingMonitoring, StudentCountMonitoring, \
+    ResultName, ResultSubjects
 from ...account.models import CustomUser
+from ...notifications.models import Notification
 from ...student.mastering.models import MasteringTeachers
 
 
@@ -45,3 +47,20 @@ def on_create(sender, instance: StudentCountMonitoring, created, **kwargs):
     if created:
         instance.teacher.monitoring += int(instance.max_ball)
         instance.teacher.save()
+
+
+@receiver(post_save, sender=ResultName)
+def on_update(sender, instance: ResultName, created, **kwargs):
+    if not created:
+        if instance.is_archived == "True":
+            subject = ResultSubjects.objects.filter(
+                asos__name__icontaines="ASOS_4",
+                result=instance
+            ).all()
+            for item in subject:
+                item.is_archived = True
+                item.save()
+                # Notification.objects.create(
+                #     user=[user for user in CustomUser.objects.filter(role="DIRECTOR").all()],
+                #     comment = "Res"
+                # )

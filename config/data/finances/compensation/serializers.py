@@ -166,6 +166,7 @@ class ResultPointsSerializer(serializers.ModelSerializer):
             # "results",
             "degree",
             "amount",
+            "is_archived",
             "created_at",
             "updated_at"
         ]
@@ -208,6 +209,7 @@ class ResultsNameSerializer(serializers.ModelSerializer):
             "who",
             "point_type",
             "type",
+            "is_archived",
         ]
 
 
