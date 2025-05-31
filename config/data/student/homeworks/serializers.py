@@ -102,3 +102,4 @@ class HomeworksHistorySerializer(serializers.ModelSerializer):
         if instance:
             instance.updater = self.context["request"].user
             instance.save()
+        return instance
