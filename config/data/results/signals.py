@@ -1,5 +1,7 @@
 import logging
 
+from django.db.models import FloatField
+from django.db.models.functions import Cast
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from icecream import ic
@@ -281,13 +283,17 @@ def on_update(sender, instance: Results, created, **kwargs):
                         # For type "Two", filter using range (from_point to to_point)
                         if point.point_type == "Percentage":
                             try:
+                                band_score_float = float(band_score)
 
-                                subject = ResultSubjects.objects.filter(
+                                subject = ResultSubjects.objects.annotate(
+                                    from_point_float=Cast("from_point", FloatField()),
+                                    to_point_float=Cast("to_point", FloatField()),
+                                ).filter(
                                     asos__name__icontains="ASOS_4",
                                     result=point,
                                     result_type=who,
-                                    from_point__lte=band_score,
-                                    to_point__gte=band_score,
+                                    from_point_float__lte=band_score_float,
+                                    to_point_float__gte=band_score_float,
                                 ).first()
                             except (ValueError, TypeError):
                                 raise ValueError(f"Band score '{band_score}' percentage formatida emas!")
@@ -295,12 +301,17 @@ def on_update(sender, instance: Results, created, **kwargs):
                         elif point.point_type == "Ball":
                             try:
 
-                                subject = ResultSubjects.objects.filter(
+                                band_score_float = float(band_score)
+
+                                subject = ResultSubjects.objects.annotate(
+                                    from_point_float=Cast("from_point", FloatField()),
+                                    to_point_float=Cast("to_point", FloatField()),
+                                ).filter(
                                     asos__name__icontains="ASOS_4",
                                     result=point,
                                     result_type=who,
-                                    from_point__lte=band_score,
-                                    to_point__gte=band_score,
+                                    from_point_float__lte=band_score_float,
+                                    to_point_float__gte=band_score_float,
                                 ).first()
                             except (ValueError, TypeError):
                                 raise ValueError(f"Band score '{band_score}' ball formatida emas!")
@@ -333,23 +344,30 @@ def on_update(sender, instance: Results, created, **kwargs):
                     elif point.type == "One":
                         if point.point_type == "Percentage":
                             try:
-                                subject = ResultSubjects.objects.filter(
+                                band_score_float = float(band_score)
+
+                                subject = ResultSubjects.objects.annotate(
+                                    from_point_float=Cast("from_point", FloatField()),
+                                ).filter(
                                     asos__name__icontains="ASOS_4",
                                     result=point,
                                     result_type=who,
-                                    from_point__icontains=band_score,
+                                    from_point_float=band_score_float,
                                 ).first()
                             except (ValueError, TypeError):
                                 raise ValueError(f"Band score '{band_score}' percentage formatida emas!")
 
                         elif point.point_type == "Ball":
                             try:
+                                band_score_float = float(band_score)
 
-                                subject = ResultSubjects.objects.filter(
+                                subject = ResultSubjects.objects.annotate(
+                                    from_point_float=Cast("from_point", FloatField()),
+                                ).filter(
                                     asos__name__icontains="ASOS_4",
                                     result=point,
                                     result_type=who,
-                                    from_point=band_score,
+                                    from_point_float=band_score_float,
                                 ).first()
                             except (ValueError, TypeError):
                                 raise ValueError(f"Band score '{band_score}' ball formatida emas!")
@@ -359,11 +377,15 @@ def on_update(sender, instance: Results, created, **kwargs):
                                 raise ValueError(
                                     f"Band score '{band_score}' noto'g'ri degree formatida! Mumkin bo'lgan qiymatlar: {DEGREE_ORDER}")
 
-                            subject = ResultSubjects.objects.filter(
+                            band_score_float = float(band_score)
+
+                            subject = ResultSubjects.objects.annotate(
+                                from_point_float=Cast("from_point", FloatField()),
+                            ).filter(
                                 asos__name__icontains="ASOS_4",
                                 result=point,
                                 result_type=who,
-                                from_point__icontains=band_score,
+                                from_point_float=band_score_float,
                             ).first()
 
                     ic(subject)
