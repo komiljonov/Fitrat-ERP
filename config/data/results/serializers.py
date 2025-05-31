@@ -204,9 +204,7 @@ class StudentResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
-
     national = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
-
     result_fk_name = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
 
 
