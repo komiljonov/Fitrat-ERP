@@ -201,11 +201,14 @@ def validate_certificate_requirements(instance):
         if point.point_type == "Percentage":
             try:
                 band_score_float = float(band_score)
-                subject = ResultSubjects.objects.filter(
+
+                subject = ResultSubjects.objects.annotate(
+                    from_point_float=Cast("from_point", FloatField()),
+                ).filter(
                     asos__name__icontains="ASOS_4",
                     result=point,
                     result_type=who,
-                    from_point=band_score_float,
+                    from_point_float__lte=band_score_float,
                 ).first()
             except (ValueError, TypeError):
                 raise ValueError(f"Band score '{band_score}' percentage formatida emas!")
@@ -213,11 +216,14 @@ def validate_certificate_requirements(instance):
         elif point.point_type == "Ball":
             try:
                 band_score_float = float(band_score)
-                subject = ResultSubjects.objects.filter(
+
+                subject = ResultSubjects.objects.annotate(
+                    from_point_float=Cast("from_point", FloatField()),
+                ).filter(
                     asos__name__icontains="ASOS_4",
                     result=point,
                     result_type=who,
-                    from_point=band_score_float,
+                    from_point_float__lte=band_score_float,
                 ).first()
             except (ValueError, TypeError):
                 raise ValueError(f"Band score '{band_score}' ball formatida emas!")
