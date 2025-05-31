@@ -30,10 +30,10 @@ def validate_olimpiada_requirements(instance):
     if not hasattr(level, 'amount') or level.amount is None:
         raise ValueError(f"ResultSubjects uchun amount qiymati topilmadi. Level ID: {level.id}")
 
-    # Check if casher exists
-    casher = Casher.objects.filter(role="WEALTH").first()
-    if not casher:
-        raise ValueError("WEALTH rolidagi kasher topilmadi!")
+    # # Check if casher exists
+    # casher = Casher.objects.filter(role="WEALTH").first()
+    # if not casher:
+    #     raise ValueError("WEALTH rolidagi kasher topilmadi!")
 
     # Check if bonus kind exists
     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
@@ -57,10 +57,10 @@ def validate_university_requirements(instance):
     if not asos:
         raise ValueError("ASOS_4 topilmadi! Avval ASOS_4 yarating.")
 
-    # Check if casher exists
-    casher = Casher.objects.filter(role="WEALTH").first()
-    if not casher:
-        raise ValueError("WEALTH rolidagi kasher topilmadi!")
+    # # Check if casher exists
+    # casher = Casher.objects.filter(role="WEALTH").first()
+    # if not casher:
+    #     raise ValueError("WEALTH rolidagi kasher topilmadi!")
 
     # Check if bonus kind exists
     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
@@ -105,9 +105,9 @@ def validate_certificate_requirements(instance):
         raise ValueError("ASOS_4 topilmadi! Avval ASOS_4 yarating.")
 
     # Check if casher exists
-    casher = Casher.objects.filter(role="WEALTH").first()
-    if not casher:
-        raise ValueError("WEALTH rolidagi kasher topilmadi!")
+    # casher = Casher.objects.filter(role="WEALTH").first()
+    # if not casher:
+    #     raise ValueError("WEALTH rolidagi kasher topilmadi!")
 
     # Check if bonus kind exists
     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
