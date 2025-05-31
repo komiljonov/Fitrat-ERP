@@ -1,10 +1,11 @@
 import logging
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from icecream import ic
 
 from .models import Results
+from .utils import validate_olimpiada_requirements, validate_university_requirements, validate_certificate_requirements
 from ..finances.compensation.models import MonitoringAsos4, Asos, ResultName, ResultSubjects
 from ..finances.finance.models import Finance, Casher, Kind
 from ..notifications.models import Notification
@@ -26,6 +27,41 @@ def on_create(sender, instance: Results, created, **kwargs):
     if created and instance.teacher and instance.teacher.filial.exists():
         instance.filial = instance.teacher.filial.first()
         instance.save()
+
+
+@receiver(pre_save, sender=Results)
+def validate_before_acceptance(sender, instance: Results, **kwargs):
+    # Only process if status is being changed to "Accepted"
+    if instance.status == "Accepted":
+        try:
+            # Check if this is an update (not creation) and status is actually changing
+            if instance.pk:
+                try:
+                    original = Results.objects.get(pk=instance.pk)
+                    if original.status == "Accepted":
+                        return  # Status was already "Accepted", no need to process
+                except Results.DoesNotExist:
+                    pass  # New instance, continue processing
+
+            # Validate all requirements before allowing the save
+            if instance.results == "Olimpiada":
+                validate_olimpiada_requirements(instance)
+
+            elif instance.results == "University":
+                validate_university_requirements(instance)
+
+            elif instance.results == "Certificate":
+                validate_certificate_requirements(instance)
+
+            else:
+                raise ValueError(f"Noma'lum results turi: {instance.results}")
+
+        except Exception as e:
+            # Log the error
+            logging.error(f"Pre-save validation error: {str(e)}", exc_info=True)
+
+            # Prevent the save by raising an exception
+            raise ValueError(f"Ushbu natijani tasdiqlash uchun monitoring yaratilmagan! Xatolik: {str(e)}")
 
 
 @receiver(post_save, sender=Results)
