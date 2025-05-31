@@ -408,7 +408,7 @@ class StudentGroupStatistics(APIView):
         end_date = self.request.query_params.get("end_date")
 
         # Base queryset - fix the filial filter
-        base_queryset = StudentGroup.objects.all()
+        base_queryset = StudentGroup.objects.filter(student__is_archived=False)
 
         # Apply filial filter if provided
         if filial:
