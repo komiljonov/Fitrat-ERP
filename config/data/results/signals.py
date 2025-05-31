@@ -118,6 +118,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         user=instance.teacher,
                         subject=level,
                         result=None,
+                        type="Olimpiada",
                         ball=level.max_ball
                     )
 
@@ -199,6 +200,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             user=instance.teacher,
                             subject=level,
                             result=None,
+                            type="University",
                             ball=level.max_ball
                         )
 
@@ -409,6 +411,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         user=instance.teacher,
                         subject=subject,
                         result=point,
+                        type="Certificate",
                         ball=subject.max_ball
                     )
 

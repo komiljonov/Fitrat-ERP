@@ -229,6 +229,7 @@ class MonitoringAsos4Serializer(serializers.ModelSerializer):
             "result",
             "subject",
             "ball",
+            "type",
             "created_at",
         ]
 

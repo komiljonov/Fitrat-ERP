@@ -212,6 +212,12 @@ class MonitoringAsos4(BaseModel):
     subject = models.ForeignKey('compensation.ResultSubjects', on_delete=models.SET_NULL, null=True, blank=True)
     ball = models.CharField(max_length=128, null=True, blank=True)
 
+    type = models.CharField(choices=[
+        ("Olimpiada", "Olimpiada"),
+        ("Certificate", "Certificate"),
+        ("University", "University"),
+    ],null=True,blank=True,max_length=15)
+
     class Meta:
         verbose_name = "Monitoring 4"
         verbose_name_plural = "Monitoring 4"
