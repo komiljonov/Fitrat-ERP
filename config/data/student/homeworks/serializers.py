@@ -99,7 +99,7 @@ class HomeworksHistorySerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        if instance:
-            instance.updater = self.context["request"].user
-            instance.save()
+        instance = super().update(instance, validated_data)
+        instance.updater = self.context["request"].user
+        instance.save()
         return instance
