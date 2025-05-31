@@ -310,7 +310,7 @@ class StudentsAvgLearning(APIView):
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
-                    "updater" : homework_id.updater if homework_id else None,
+                    "updater" : homework_id.updater.full_name if homework_id else None,
                     "created_at": m.created_at
                 }
                 if m.test and m.test.type == "Offline":
