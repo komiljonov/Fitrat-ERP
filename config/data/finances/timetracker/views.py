@@ -11,6 +11,13 @@ from .serializers import UserTimeLineSerializer
 from ...account.models import CustomUser
 
 
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from rest_framework.generics import ListCreateAPIView
+from .models import Employee_attendance, CustomUser
+from .serializers import TimeTrackerSerializer
+
 class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
@@ -29,7 +36,7 @@ class AttendanceList(ListCreateAPIView):
         check_in = data.get("check_in")
         check_out = data.get("check_out")
         date = data.get("date")
-        not_marked = data.get("not_marked")
+        not_marked = data.get("not_marked", False)  # Default to False if not provided
 
         filters = {
             "employee": user,
@@ -42,11 +49,13 @@ class AttendanceList(ListCreateAPIView):
         else:
             filters["check_out__isnull"] = True
 
-        attendance = Employee_attendance.objects.filter(**filters).first()
-        if attendance:
-            return Response({"detail": "Attendance already exists."}, status=status.HTTP_200_OK)
+        existing_attendance = Employee_attendance.objects.filter(**filters).first()
+        if existing_attendance:
+            return Response({
+                "detail": "Attendance already exists.",
+                "attendance_id": existing_attendance.id
+            }, status=status.HTTP_200_OK)
 
-        # Create the attendance record
         new_attendance = Employee_attendance.objects.create(
             employee=user,
             check_in=check_in,
@@ -59,6 +68,7 @@ class AttendanceList(ListCreateAPIView):
             "detail": "Attendance created.",
             "attendance_id": new_attendance.id
         }, status=status.HTTP_201_CREATED)
+
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
