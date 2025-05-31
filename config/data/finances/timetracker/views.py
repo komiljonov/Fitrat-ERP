@@ -1,4 +1,5 @@
 from django.utils.dateparse import parse_datetime
+from icecream import ic
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, get_object_or_404
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
@@ -31,6 +32,7 @@ class AttendanceList(ListCreateAPIView):
         if not employee_id:
             return Response({"detail": "Employee is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        ic(data)
         user = CustomUser.objects.filter(second_user=employee_id).first()
         check_in = data.get("check_in")
         check_out = data.get("check_out")
