@@ -1,11 +1,9 @@
 from datetime import datetime, time
 
 from django.utils.timezone import now, make_aware
-from icecream import ic
 from rest_framework import serializers
 
 from .models import Attendance
-from ..groups.serializers import GroupSerializer
 from ..homeworks.models import Homework_history, Homework
 from ..mastering.models import Mastering
 from ..quiz.models import Quiz
@@ -61,7 +59,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
         start_datetime = make_aware(datetime.combine(today, time.min))
         end_datetime = make_aware(datetime.combine(today, time.max))
 
-
         # Check if attendance exists for student
         if student:
             existing_attendance = Attendance.objects.filter(
@@ -88,7 +85,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         from django.db import transaction
-        from django.db.models.signals import post_save
 
         # Extract themes from validated_data before creating the instance
         themes = validated_data.pop('theme', [])

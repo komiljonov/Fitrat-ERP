@@ -6,11 +6,26 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Employee_attendance, UserTimeLine
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
+from ...account.models import CustomUser
 
 
 class AttendanceList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        if data.get('employee'):
+            user = CustomUser.objects.get(pk=data.get('employee'))
+            if user:
+                attendance = Employee_attendance.objects.filter(
+                    employee=user,
+
+                )
+                pass
+
 
     def get_queryset(self):
         filial = self.request.query_params.get('filial')
