@@ -265,7 +265,7 @@ class GroupStudentStatistics(APIView):
         group = get_object_or_404(Group, pk=pk)
 
         # Get total students in the group
-        students = StudentGroup.objects.filter(group=group).count()
+        students = StudentGroup.objects.filter(group=group, student__is_archived=False).count()
 
         # Get today's start and end time
         today = now().date()
