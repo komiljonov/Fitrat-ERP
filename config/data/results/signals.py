@@ -242,9 +242,8 @@ def on_update(sender, instance: Results, created, **kwargs):
                     # Check if casher exists
                     casher = Casher.objects.filter(role="WEALTH").first()
                     if not casher:
-                        raise ValueError("WEALTH rolidagi kasher topilmadi!")
+                        casher = None
 
-                    # Check if bonus kind exists
                     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
                     if not bonus_kind:
                         raise ValueError("Bonus turi topilmadi!")
@@ -282,26 +281,26 @@ def on_update(sender, instance: Results, created, **kwargs):
                         # For type "Two", filter using range (from_point to to_point)
                         if point.point_type == "Percentage":
                             try:
-                                band_score_float = float(band_score)
+
                                 subject = ResultSubjects.objects.filter(
                                     asos__name__icontains="ASOS_4",
                                     result=point,
                                     result_type=who,
-                                    from_point__lte=band_score_float,
-                                    to_point__gte=band_score_float,
+                                    from_point__lte=band_score,
+                                    to_point__gte=band_score,
                                 ).first()
                             except (ValueError, TypeError):
                                 raise ValueError(f"Band score '{band_score}' percentage formatida emas!")
 
                         elif point.point_type == "Ball":
                             try:
-                                band_score_float = float(band_score)
+
                                 subject = ResultSubjects.objects.filter(
                                     asos__name__icontains="ASOS_4",
                                     result=point,
                                     result_type=who,
-                                    from_point__lte=band_score_float,
-                                    to_point__gte=band_score_float,
+                                    from_point__lte=band_score,
+                                    to_point__gte=band_score,
                                 ).first()
                             except (ValueError, TypeError):
                                 raise ValueError(f"Band score '{band_score}' ball formatida emas!")
@@ -334,24 +333,23 @@ def on_update(sender, instance: Results, created, **kwargs):
                     elif point.type == "One":
                         if point.point_type == "Percentage":
                             try:
-                                band_score_float = float(band_score)
                                 subject = ResultSubjects.objects.filter(
                                     asos__name__icontains="ASOS_4",
                                     result=point,
                                     result_type=who,
-                                    from_point=band_score_float,
+                                    from_point__icontains=band_score,
                                 ).first()
                             except (ValueError, TypeError):
                                 raise ValueError(f"Band score '{band_score}' percentage formatida emas!")
 
                         elif point.point_type == "Ball":
                             try:
-                                band_score_float = float(band_score)
+
                                 subject = ResultSubjects.objects.filter(
                                     asos__name__icontains="ASOS_4",
                                     result=point,
                                     result_type=who,
-                                    from_point=band_score_float,
+                                    from_point=band_score,
                                 ).first()
                             except (ValueError, TypeError):
                                 raise ValueError(f"Band score '{band_score}' ball formatida emas!")
