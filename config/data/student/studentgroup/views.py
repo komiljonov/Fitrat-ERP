@@ -185,6 +185,7 @@ class SecondaryGroupUpdate(APIView):
         group_id = request.GET.get('group_id')
         new_group_id = request.GET.get('new_group_id')
 
+
         if not group_id or not new_group_id:
             return Response({"error": "Both 'group_id' and 'new_group_id' are required."}, status=status.HTTP_400_BAD_REQUEST)
 

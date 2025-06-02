@@ -7,6 +7,7 @@ from django.utils.timezone import make_aware, is_aware
 from icecream import ic
 
 from data.account.models import CustomUser
+from data.finances.finance.models import Finance, Kind
 from data.finances.timetracker.models import UserTimeLine
 from data.student.groups.models import Group
 from data.student.studentgroup.models import StudentGroup
@@ -141,6 +142,16 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
             if late_minutes > 0:
                 penalty_amount = late_minutes * per_minute_salary
                 total_penalty += penalty_amount
+
+                bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                finance = Finance.objects.create(
+                    action="EXPENSE",
+                    kind=bonus_kind,
+                    amount=penalty_amount,
+                    stuff=user,
+                    comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun {penalty_amount} sum jarima yozildi! "
+                )
+
                 print(f"Late penalty for {user} at group {group.name}: {penalty_amount:.2f} ({late_minutes:.0f} min late)")
 
         # === Check-out Penalty
@@ -156,6 +167,15 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                     if early_minutes > 0:
                         penalty = early_minutes * per_minute_salary
                         early_penalties.append(penalty)
+
+                        bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                        finance = Finance.objects.create(
+                            action="EXPENSE",
+                            kind=bonus_kind,
+                            amount=penalty,
+                            stuff=user,
+                            comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun {penalty} sum jarima yozildi! "
+                        )
                         print(f"Early leave penalty for {user} from group {group.name}: {penalty:.2f} ({early_minutes:.0f} min early)")
 
             if early_penalties:
@@ -186,6 +206,15 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
             late_minutes = int((check_in - timeline_start_dt).total_seconds() // 60)
             penalty_amount = late_minutes * per_minute_salary
             total_penalty += penalty_amount
+
+            bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+            finance = Finance.objects.create(
+                action="EXPENSE",
+                kind=bonus_kind,
+                amount=penalty_amount,
+                stuff=user,
+                comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun {penalty_amount} sum jarima yozildi! "
+            )
             print(f"Employee late penalty: {penalty_amount:.2f} ({late_minutes} min late)")
 
         if check_out:
@@ -201,6 +230,14 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                     early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
                     penalty_amount = early_minutes * per_minute_salary
                     total_penalty += penalty_amount
+                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                    finance = Finance.objects.create(
+                        action="EXPENSE",
+                        kind=bonus_kind,
+                        amount=penalty_amount,
+                        stuff=user,
+                        comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun {penalty_amount} sum jarima yozildi! "
+                    )
                     print(f"Employee early leave penalty: {penalty_amount:.2f} ({early_minutes} min early)")
 
     return round(total_penalty, 2)
