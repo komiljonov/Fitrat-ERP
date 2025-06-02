@@ -94,8 +94,8 @@ class ResultsViewSet(ListCreateAPIView):
     queryset = Results.objects.all()
     serializer_class = StudentResultsSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend,SearchFilter)
-    search_fields = ["student__fist_name", "student__last_name","teacher__full_name"]
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    search_fields = ["student__fist_name", "student__last_name", "teacher__full_name"]
 
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
@@ -137,6 +137,7 @@ class ResultsViewSet(ListCreateAPIView):
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
         return queryset
+
 
 class OtherResultsViewSet(ListCreateAPIView):
     queryset = Results.objects.all()
@@ -212,7 +213,6 @@ class ResultsRetrieveAPIView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-
 class NationalSertificateApi(ListCreateAPIView):
     serializer_class = NationalSerializer
     permission_classes = [IsAuthenticated]
@@ -234,6 +234,7 @@ class ResultStudentListAPIView(ListAPIView):
     queryset = Results.objects.all()
     serializer_class = StudentResultsSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
 
         student = self.request.query_params.get('id')
@@ -245,11 +246,10 @@ class ResultStudentListAPIView(ListAPIView):
 
         queryset = Results.objects.all()
 
-
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
         if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date,created_at__lte=end_date)
+            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
         if filial:
             queryset = Results.objects.filter(filial__id=filial)
         if student:

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Employee_attendance, UserTimeLine
+from .models import Employee_attendance, UserTimeLine, Stuff_Attendance
 
 
 # Register your models here.
@@ -8,9 +8,14 @@ from .models import Employee_attendance, UserTimeLine
 
 @admin.register(Employee_attendance)
 class FinansAdmin(admin.ModelAdmin):
-    list_display = ('employee__full_name', 'check_in',"check_out","amount","status")
-    search_fields = ('employee__full_name', 'check_in',"check_out","amount","status")
-    list_filter = ('employee__full_name', 'check_in',"check_out","amount","status")
+    list_display = ('employee__full_name', "amount","status")
+    search_fields = ('employee__full_name', "amount","status")
+    list_filter = ('employee__full_name', "amount","status")
+
+
+@admin.register(Stuff_Attendance)
+class StuffAttendanceAdmin(admin.ModelAdmin):
+    list_display = ('employee__full_name','check_in',"check_out","not_marked","date", "amount","action")
 
 
 @admin.register(UserTimeLine)

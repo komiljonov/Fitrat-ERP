@@ -74,7 +74,7 @@ class UserList(ListAPIView):
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
                                 include_only=["id", "first_name", "last_name", "full_name", "phone", "balance",
-                                              "monitoring","role", "created_at"])
+                                              "monitoring","role","calculate_penalties", "created_at"])
 
     def get_queryset(self):
         user = self.request.user
@@ -232,7 +232,7 @@ class StuffRolesView(ListAPIView):
         return serializer_class(
             *args, **kwargs,
             include_only=[
-                "id", "first_name", "last_name", "full_name", "phone",
+                "id", "first_name", "last_name", "full_name", "phone","calculate_penalties",
                 "balance", "subject", "filial", "role", "is_call_operator"
             ]
         )
