@@ -59,7 +59,7 @@ def on_create(sender, instance: Stuff_Attendance, created, **kwargs):
     else:
         timeline = UserTimeLine.objects.filter(user=user, day=day_name).first()
         if timeline:
-            scheduled_time = datetime.combine(today, timeline.start_time)
+            scheduled_time = timezone.make_aware(datetime.combine(today, timeline.start_time))
             if instance.check_in > scheduled_time:
                 instance.status = "Late"
             else:

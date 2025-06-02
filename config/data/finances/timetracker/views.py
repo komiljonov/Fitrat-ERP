@@ -35,6 +35,7 @@ class TimeTrackerList(ListCreateAPIView):
             queryset = queryset.filter(date=parse_datetime(date))
         return queryset
 
+
 class AttendanceList(ListCreateAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
@@ -43,6 +44,8 @@ class AttendanceList(ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+
+        ic(data)
 
         employee = data.get('employee')
         if not employee:

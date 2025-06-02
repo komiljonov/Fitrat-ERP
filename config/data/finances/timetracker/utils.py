@@ -1,5 +1,5 @@
 import calendar
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from django.db.models import Q
 from django.utils.timezone import make_aware, is_aware, get_default_timezone
@@ -20,47 +20,76 @@ UZBEK_WEEKDAYS = {
     'Yakshanba': 6
 }
 
-
 def get_monthly_per_minute_salary(user_id):
     user = CustomUser.objects.select_related().filter(id=user_id).first()
-    if not user or user.role not in {"TEACHER", "ASSISTANT"} or not user.salary:
+    if not user or not user.salary:
         return {"total_minutes": 0, "per_minute_salary": 0}
 
     today = date.today()
     _, days_in_month = calendar.monthrange(today.year, today.month)
 
-    student_groups = StudentGroup.objects.filter(Q(group__teacher=user) | Q(group__secondary_teacher=user)).select_related('group')
-    group_ids = [sg.group.id for sg in student_groups]
-
-    groups = Group.objects.filter(id__in=group_ids).prefetch_related('scheduled_day_type')
-
     total_minutes = 0
 
-    for group in groups:
-        if not group.started_at or not group.ended_at:
-            continue
+    if user.role in {"TEACHER", "ASSISTANT"}:
+        student_groups = StudentGroup.objects.filter(
+            Q(group__teacher=user) | Q(group__secondary_teacher=user)
+        ).select_related('group')
 
-        session_start = datetime.combine(date.today(), group.started_at)
-        session_end = datetime.combine(date.today(), group.ended_at)
-        daily_minutes = int((session_end - session_start).total_seconds() / 60)
+        group_ids = [sg.group.id for sg in student_groups]
 
-        scheduled_days = group.scheduled_day_type.values_list('name', flat=True)
-        scheduled_indexes = {
-            UZBEK_WEEKDAYS[day] for day in scheduled_days if day in UZBEK_WEEKDAYS
-        }
+        groups = Group.objects.filter(id__in=group_ids).prefetch_related('scheduled_day_type')
 
-        session_count = sum(
-            1 for day in range(1, days_in_month + 1)
-            if date(today.year, today.month, day).weekday() in scheduled_indexes
-        )
+        for group in groups:
+            if not group.started_at or not group.ended_at:
+                continue
 
-        total_minutes += daily_minutes * session_count
+            session_start = datetime.combine(today, group.started_at)
+            session_end = datetime.combine(today, group.ended_at)
+            daily_minutes = int((session_end - session_start).total_seconds() / 60)
+
+            scheduled_days = group.scheduled_day_type.values_list('name', flat=True)
+            scheduled_indexes = {
+                UZBEK_WEEKDAYS[day] for day in scheduled_days if day in UZBEK_WEEKDAYS
+            }
+
+            session_count = sum(
+                1 for day in range(1, days_in_month + 1)
+                if date(today.year, today.month, day).weekday() in scheduled_indexes
+            )
+
+            total_minutes += daily_minutes * session_count
+
+    else:
+        # === Regular employee using timeline
+        timelines = UserTimeLine.objects.filter(user=user)
+
+        for timeline in timelines:
+            if not timeline.start_time or not timeline.end_time:
+                continue
+
+            # Normalize and validate timeline.day
+            day_normalized = timeline.day.strip().capitalize()
+            if day_normalized not in calendar.day_name:
+                continue  # Skip invalid day names
+
+            weekday_index = list(calendar.day_name).index(day_normalized)
+
+            # Calculate daily work duration in minutes
+            start_dt = datetime.combine(today, timeline.start_time)
+            end_dt = datetime.combine(today, timeline.end_time)
+            daily_minutes = int((end_dt - start_dt).total_seconds() / 60)
+
+            # Count matching weekdays in this month
+            work_days = [
+                date(today.year, today.month, d)
+                for d in range(1, days_in_month + 1)
+                if date(today.year, today.month, d).weekday() == weekday_index
+            ]
+
+            total_minutes += daily_minutes * len(work_days)
 
     per_minute_salary = round(user.salary / total_minutes, 2) if total_minutes else 0
-    ic(
-        "total_minutes", total_minutes,
-        "per_minute_salary", per_minute_salary
-    )
+
     return {
         "total_minutes": total_minutes,
         "per_minute_salary": per_minute_salary
@@ -144,38 +173,66 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
             if early_penalties:
                 total_penalty += max(early_penalties)  # only apply the most serious violation
 
-    # === CASE 2: Regular Employee
     else:
         timelines = UserTimeLine.objects.filter(user=user)
-        day_to_start = {
-            calendar.day_name.index(timeline.day): timeline.start_time for timeline in timelines
-        }
-        day_to_end = {
-            calendar.day_name.index(timeline.day): timeline.end_time for timeline in timelines
-        }
+        day_name_today = calendar.day_name[weekday_index]  # e.g., 'Monday'
+        ic(day_name_today.capitalize())
 
-        # Check-in Penalty
-        if weekday_index in day_to_start:
-            expected_start_time = day_to_start[weekday_index]
+        # Initialize for potential match
+        matched_timeline = None
+        min_diff = timedelta(hours=1)
+
+        for timeline in timelines:
+            if timeline.day != day_name_today.capitalize():
+                continue
+
+            timeline_start_dt = datetime.combine(check_in_date, timeline.start_time)
+            timeline_start_dt = make_aware(timeline_start_dt, timezone=tz) if not is_aware(
+                timeline_start_dt) else timeline_start_dt.astimezone(tz)
+
+            if check_in >= timeline_start_dt and (check_in - timeline_start_dt) <= min_diff:
+                time_diff = check_in - timeline_start_dt
+
+                if matched_timeline:
+                    prev_diff = check_in - datetime.combine(check_in_date, matched_timeline.start_time)
+                    if time_diff < prev_diff:
+                        matched_timeline = timeline
+                else:
+                    matched_timeline = timeline
+
+        # Calculate Check-in penalty if matched
+        if matched_timeline:
+            ic(matched_timeline)
+
+            expected_start_time = matched_timeline.start_time
             timeline_start_dt = datetime.combine(check_in_date, expected_start_time)
-            timeline_start_dt = make_aware(timeline_start_dt, timezone=tz) if not is_aware(timeline_start_dt) else timeline_start_dt.astimezone(tz)
+            timeline_start_dt = make_aware(timeline_start_dt, timezone=tz) if not is_aware(
+                timeline_start_dt) else timeline_start_dt.astimezone(tz)
 
-            if check_in > timeline_start_dt:
-                late_minutes = int((check_in - timeline_start_dt).total_seconds() // 60)
-                penalty_amount = late_minutes * per_minute_salary
-                total_penalty += penalty_amount
-                print(f"Employee late penalty: {penalty_amount:.2f} ({late_minutes} min late)")
+            late_minutes = int((check_in - timeline_start_dt).total_seconds() // 60)
+            ic(late_minutes)
 
-        # Check-out Penalty
-        if check_out and weekday_index in day_to_end:
-            expected_end_time = day_to_end[weekday_index]
+            penalty_amount = late_minutes * per_minute_salary
+            total_penalty += penalty_amount
+            ic(f"Employee late penalty: {penalty_amount:.2f} ({late_minutes} min late)")
+
+        # Check-out Penalty (same as before but ensure correct matching)
+        matched_checkout_timeline = next(
+            (t for t in timelines if t.day == day_name_today),
+            None
+        )
+
+        if check_out and matched_checkout_timeline:
+            expected_end_time = matched_checkout_timeline.end_time
             timeline_end_dt = datetime.combine(check_out.date(), expected_end_time)
-            timeline_end_dt = make_aware(timeline_end_dt, timezone=tz) if not is_aware(timeline_end_dt) else timeline_end_dt.astimezone(tz)
+            timeline_end_dt = make_aware(timeline_end_dt, timezone=tz) if not is_aware(
+                timeline_end_dt) else timeline_end_dt.astimezone(tz)
 
             if check_out < timeline_end_dt:
                 early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
                 penalty_amount = early_minutes * per_minute_salary
                 total_penalty += penalty_amount
                 print(f"Employee early leave penalty: {penalty_amount:.2f} ({early_minutes} min early)")
+
 
     return round(total_penalty, 2)
