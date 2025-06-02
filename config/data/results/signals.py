@@ -405,7 +405,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                     asos__name__icontains="ASOS_4",
                                     result=point,
                                     result_type=who,
-                                    from_point=band_score,
+                                    from_point__icontains=band_score,
                                 ).first()
                     ic(subject)
 
