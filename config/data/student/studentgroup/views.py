@@ -191,11 +191,10 @@ class SecondaryGroupUpdate(APIView):
 
         ic(group_id, student_id)
 
-        instance = get_object_or_404(
-            SecondaryStudentGroup,
+        instance = SecondaryStudentGroup.objects.filter(
             group__id=group_id,
             student__id=student_id
-        )
+        ).filter()
 
         serializer = self.serializer_class(instance, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
