@@ -99,15 +99,27 @@ class ResultsViewSet(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
-        status = self.request.query_params.get('status')
-        type = self.request.query_params.get('type')
-        filial = self.request.query_params.get('filial')
-        teacher = self.request.query_params.get('teacher')
+        status = self.request.GET.get('status')
+        type = self.request.GET.get('type')
+        filial = self.request.GET.get('filial')
+        teacher = self.request.GET.get('teacher')
         results = self.request.GET.get('results')
         nations = self.request.GET.get('nations')
         res_name = self.request.GET.get('res_name')
         who = self.request.GET.get('who')
+        university_type = self.request.GET.get('university_type')
+        university_entering_type = self.request.GET.get('university_entering_type')
+        degree = self.request.GET.get('degree')
+        level = self.request.GET.get('level')
 
+        if level:
+            queryset = queryset.filter(level=level)
+        if degree:
+            queryset = queryset.filter(degree=degree)
+        if university_type:
+            queryset = queryset.filter(university_type=university_type)
+        if university_entering_type:
+            queryset = queryset.filter(university_entering_type=university_entering_type)
         if who:
             queryset = queryset.filter(who=who)
         if res_name:
