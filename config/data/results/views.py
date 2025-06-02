@@ -100,15 +100,31 @@ class ResultsViewSet(ListCreateAPIView):
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
         status = self.request.query_params.get('status')
+        type = self.request.query_params.get('type')
+        filial = self.request.query_params.get('filial')
+        teacher = self.request.query_params.get('teacher')
+        results = self.request.GET.get('results')
+        nations = self.request.GET.get('nations')
+        res_name = self.request.GET.get('res_name')
+        who = self.request.GET.get('who')
+
+        if who:
+            queryset = queryset.filter(who=who)
+        if res_name:
+            queryset = queryset.filter(result_fk_name__id=res_name)
+        if nations:
+            queryset = queryset.filter(nations__id=nations)
+        if results:
+            queryset = queryset.filter(results=results)
         if status:
             queryset = queryset.filter(status=status)
-        certification_type = self.request.query_params.get('certificate_type')
-        if certification_type:
-            queryset = queryset.filter(certificate_type=certification_type)
-        if certification_type and status:
-            queryset = queryset.filter(status=status, certificate_type=certification_type)
+        if type:
+            queryset = queryset.filter(results=type)
+        if filial:
+            queryset = queryset.filter(filial__id__in=filial)
+        if teacher:
+            queryset = queryset.filter(teacher__id=teacher)
         return queryset
-
 
 class OtherResultsViewSet(ListCreateAPIView):
     queryset = Results.objects.all()
