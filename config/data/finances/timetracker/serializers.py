@@ -103,6 +103,7 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["employee"] = UserSerializer(instance.employee).data
         rep["attendance"] = Stuff_AttendanceSerializer(instance.attendance,many=True).data
         return rep
 
