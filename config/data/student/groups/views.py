@@ -88,7 +88,7 @@ class StudentGroupsView(ListCreateAPIView):
             queryset = queryset.exclude(status="INACTIVE")
 
         queryset = queryset.annotate(student_count=Count("student_groups"))
-        return queryset.order_by("student_count")
+        return queryset.order_by("-student_count")
 
 
 class GroupRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
