@@ -195,7 +195,7 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
 
             timeline_start_dt = localize(datetime.combine(check_in_date, timeline.start_time))
 
-            if check_in >= timeline_start_dt and (check_in - timeline_start_dt) <= min_diff:
+            if check_in >= timeline_start_dt :
                 time_diff = check_in - timeline_start_dt
                 if not matched_timeline or time_diff < (check_in - localize(datetime.combine(check_in_date, matched_timeline.start_time))):
                     matched_timeline = timeline
@@ -214,7 +214,8 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                 kind=bonus_kind,
                 amount=penalty_amount,
                 stuff=user,
-                comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun {penalty_amount} sum jarima yozildi! "
+                comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun"
+                        f" {penalty_amount} sum jarima yozildi! "
             )
             print(f"Employee late penalty: {penalty_amount:.2f} ({late_minutes} min late)")
 
@@ -237,7 +238,8 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                         kind=bonus_kind,
                         amount=penalty_amount,
                         stuff=user,
-                        comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun {penalty_amount} sum jarima yozildi! "
+                        comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun"
+                                f" {penalty_amount} sum jarima yozildi! "
                     )
                     print(f"Employee early leave penalty: {penalty_amount:.2f} ({early_minutes} min early)")
 
