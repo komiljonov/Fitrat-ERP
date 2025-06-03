@@ -236,6 +236,8 @@ class StudentResultsSerializer(serializers.ModelSerializer):
 
             'upload_file',
             'status',
+            "level",
+            "degree",
 
             "updater",
 

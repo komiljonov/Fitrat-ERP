@@ -15,6 +15,7 @@ from data.student.studentgroup.models import StudentGroup
 
 TASHKENT_TZ = pytz.timezone("Asia/Tashkent")
 
+
 UZBEK_WEEKDAYS = {
     'Dushanba': 0,
     'Seshanba': 1,
