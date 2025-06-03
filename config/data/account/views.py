@@ -52,8 +52,9 @@ class RegisterAPIView(CreateAPIView):
 
         tt = TimetrackerSinc()
         external_response = tt.create_data(external_data)
-        user.second_user = external_response.get("id")
-        user.save()
+        if external_response.get("id"):
+            user.second_user = external_response.get("id")
+            user.save()
 
         return Response({
             "success": True,
