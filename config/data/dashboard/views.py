@@ -668,8 +668,8 @@ class MonitoringView(APIView):
                 "results": results,
             })
 
-        return Response(teacher_data.sort(key=itemgetter("overall_point")), status=status.HTTP_200_OK)
-
+        sorted_data = sorted(teacher_data, key=itemgetter("overall_point"), reverse=True)
+        return Response(sorted_data, status=status.HTTP_200_OK)
 
 class GenerateExcelView(APIView):
     def get(self, request, *args, **kwargs):
