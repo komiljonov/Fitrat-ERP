@@ -246,9 +246,12 @@ class StuffRolesView(ListAPIView):
         filial = self.request.query_params.get('filial')
         role = self.request.query_params.get('role')
         is_call_operator = self.request.query_params.get('is_call_operator')
+        search = self.request.GET.get('search')
 
         queryset = CustomUser.objects.all().order_by('-created_at')
 
+        if search:
+            queryset = queryset.filter(full_name__icontains=search)
         if subject:
             queryset = queryset.filter(teachers_groups__course__subject_id=subject)
 
