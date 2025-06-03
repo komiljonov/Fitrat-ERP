@@ -169,7 +169,7 @@ class UserTimeLineList(ListCreateAPIView):
         user = self.request.GET.get('user')
         day = self.request.GET.get('day')
         if user:
-            queryset = queryset.filter(user_id=user)
+            queryset = queryset.filter(user__id=user)
 
         if day:
             queryset = queryset.filter(day=day)
