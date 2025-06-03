@@ -257,7 +257,7 @@ class StudentSerializer(serializers.ModelSerializer):
         )
 
         if group and group.group:
-            return {"id": group.id, "name": group.group.name}
+            return {"id": group.group.id, "name": group.group.name}
 
         return None
 
