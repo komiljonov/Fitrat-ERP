@@ -120,5 +120,8 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
             "day",
             "start_time",
             "end_time",
+            "is_weekend",
+            "penalty",
+            "bonus",
             "created_at",
         ]
