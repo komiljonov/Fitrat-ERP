@@ -205,7 +205,12 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
             timeline_start_dt = localize(datetime.combine(check_in_date, expected_start_time))
 
             late_minutes = int((check_in - timeline_start_dt).total_seconds() // 60)
-            penalty_amount = late_minutes * per_minute_salary
+
+            if matched_timeline.penalty and matched_timeline.bonus:
+                penalty_amount = matched_timeline.penalty * late_minutes
+            else:
+                penalty_amount = late_minutes * per_minute_salary
+
             total_penalty += penalty_amount
 
             bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
