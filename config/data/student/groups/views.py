@@ -86,7 +86,9 @@ class StudentGroupsView(ListCreateAPIView):
             queryset = queryset.filter(price_type=price_type)
         if not_added and not_added.lower() == "true":
             queryset = queryset.exclude(status="INACTIVE")
-        return queryset
+
+        queryset = queryset.annotate(student_count=Count("student_groups"))
+        return queryset.order_by("student_count")
 
 
 class GroupRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
