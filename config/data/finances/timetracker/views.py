@@ -26,6 +26,13 @@ class TimeTrackerList(ListCreateAPIView):
         employee = self.request.GET.get('employee')
         status = self.request.GET.get('status')
         date = self.request.GET.get('date')
+        from_date = self.request.GET.get('start_date')
+        to_date = self.request.GET.get('end_date')
+
+        if from_date:
+            queryset = queryset.filter(date__gte=from_date)
+        if from_date and to_date:
+            queryset = queryset.filter(date__gte=from_date,date__lte=to_date)
 
         if employee:
             queryset = queryset.filter(employee__id=employee)
