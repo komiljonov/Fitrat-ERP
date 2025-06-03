@@ -85,7 +85,7 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
                 result.append({
                     "started_at": i.start_time.strftime('%H:%M'),
                     "ended_at": i.end_time.strftime('%H:%M'),
-                    "days": i.day  # if this is a string like 'MONDAY', you can also translate it
+                    "days": i.day
                 })
 
         return result
