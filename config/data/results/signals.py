@@ -302,19 +302,28 @@ def on_update(sender, instance: Results, created, **kwargs):
 
                         elif point.point_type == "Ball":
                             try:
+                                if type(band_score) == float:
+                                    band_score_float = float(band_score)
 
-                                band_score_float = float(band_score)
+                                    subject = ResultSubjects.objects.annotate(
+                                        from_point_float=Cast("from_point", FloatField()),
+                                        to_point_float=Cast("to_point", FloatField()),
+                                    ).filter(
+                                        asos__name__icontains="ASOS_4",
+                                        result=point,
+                                        result_type=who,
+                                        from_point_float__lte=band_score_float,
+                                        to_point_float__gte=band_score_float,
+                                    ).first()
+                                else:
+                                    subject = ResultSubjects.objects.filter(
+                                        asos__name__icontains="ASOS_4",
+                                        result=point,
+                                        result_type=who,
+                                        from_point__icontains=band_score
+                                    )
 
-                                subject = ResultSubjects.objects.annotate(
-                                    from_point_float=Cast("from_point", FloatField()),
-                                    to_point_float=Cast("to_point", FloatField()),
-                                ).filter(
-                                    asos__name__icontains="ASOS_4",
-                                    result=point,
-                                    result_type=who,
-                                    from_point_float__lte=band_score_float,
-                                    to_point_float__gte=band_score_float,
-                                ).first()
+
                             except (ValueError, TypeError):
                                 raise ValueError(f"Band score '{band_score}' ball formatida emas!")
 
@@ -379,17 +388,25 @@ def on_update(sender, instance: Results, created, **kwargs):
                                 raise ValueError(
                                     f"Band score '{band_score}' noto'g'ri degree formatida! Mumkin bo'lgan qiymatlar: {DEGREE_ORDER}")
 
-                            band_score_float = float(band_score)
+                            if type(band_score) == float:
 
-                            subject = ResultSubjects.objects.annotate(
-                                from_point_float=Cast("from_point", FloatField()),
-                            ).filter(
-                                asos__name__icontains="ASOS_4",
-                                result=point,
-                                result_type=who,
-                                from_point_float=band_score_float,
-                            ).first()
+                                band_score_float = float(band_score)
 
+                                subject = ResultSubjects.objects.annotate(
+                                    from_point_float=Cast("from_point", FloatField()),
+                                ).filter(
+                                    asos__name__icontains="ASOS_4",
+                                    result=point,
+                                    result_type=who,
+                                    from_point_float=band_score_float,
+                                ).first()
+                            else:
+                                subject = ResultSubjects.objects.filter(
+                                    asos__name__icontains="ASOS_4",
+                                    result=point,
+                                    result_type=who,
+                                    from_point__icontains=band_score,
+                                ).first()
                     ic(subject)
 
                     if not subject:

@@ -78,11 +78,19 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
         instance.lid.save()
 
         #student = Lid.objects.filter(id=instance.lid.id).first()
+<<<<<<< HEAD
         #if student:
          #   student = Student.objects.filter(id=student.student.id).first()
           #  if student:
            #     student.new_student_stages="BIRINCHI_DARSGA_KELMAGAN"
             #    student.save()
+=======
+        # if student:
+        #     student = Student.objects.filter(id=student.student.id).first()
+        #     if student:
+        #         student.new_student_stages="BIRINCHI_DARSGA_KELMAGAN"
+        #         student.save()
+>>>>>>> 1f1c02891d07ea6b4087b5cdb765975f411551c9
 
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()

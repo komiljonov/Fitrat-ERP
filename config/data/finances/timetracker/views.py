@@ -1,82 +1,129 @@
+from datetime import timedelta
+
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from icecream import ic
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, get_object_or_404
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Employee_attendance, UserTimeLine
+from .models import Employee_attendance
+from .models import UserTimeLine, Stuff_Attendance
+from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from ...account.models import CustomUser
+from .utils import calculate_penalty
 
-
-from rest_framework.response import Response
-from rest_framework import status
-from django.shortcuts import get_object_or_404
-from rest_framework.generics import ListCreateAPIView
-from .models import Employee_attendance, CustomUser
-from .serializers import TimeTrackerSerializer
-
-class AttendanceList(ListCreateAPIView):
+class TimeTrackerList(ListCreateAPIView):
     queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
+
+    def get_queryset(self):
+        queryset = Employee_attendance.objects.all()
+
+        employee = self.request.GET.get('employee')
+        status = self.request.GET.get('status')
+        date = self.request.GET.get('date')
+
+        if employee:
+            queryset = queryset.filter(employee__id=employee)
+        if status:
+            queryset = queryset.filter(status=status)
+        if date:
+            queryset = queryset.filter(date=parse_datetime(date))
+        return queryset
+
+
+class AttendanceList(ListCreateAPIView):
+    queryset = Stuff_Attendance.objects.all()
+    serializer_class = Stuff_AttendanceSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        employee_id = data.get('employee')
-        if not employee_id:
+        ic(data)
+
+        employee = data.get('employee')
+        if not employee:
             return Response({"detail": "Employee is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        ic(data)
         check_in = data.get("check_in")
         check_out = data.get("check_out")
         date = data.get("date")
-        not_marked = data.get("not_marked", False)  # Default to False if not provided
+        not_marked = data.get("not_marked", False)
+        att_status = data.get("status", None)
 
-        filters = {
-            "employee": data.get("employee"),
-            "check_in": check_in,
-            "date": date,
-        }
+        if check_in and check_out is None:
+            att = Stuff_Attendance.objects.filter(check_in=check_in,employee=employee,date=date).exists()
+            if att:
+                return Response({
+                    "detail": "Attendance is already created."
+                })
 
-        if check_out is not None:
-            filters["check_out"] = check_out
-        else:
-            filters["check_out__isnull"] = True
+        elif check_in and check_out:
+            att = Stuff_Attendance.objects.filter(
+                check_in=check_in,
+                employee=employee,
+                date=date,
+                check_out=check_out,
+            ).exists()
+            if att:
+                return Response({
+                    "detail": "Attendance is already created."
+                })
 
-        existing_attendance = Employee_attendance.objects.filter(**filters).first()
-        if existing_attendance:
-            return Response({
-                "detail": "Attendance already exists.",
-                "attendance_id": existing_attendance.id
-            }, status=status.HTTP_200_OK)
-
-        new_attendance = Employee_attendance.objects.create(
-            employee=data.get("employee"),
+        attendance = Stuff_Attendance.objects.create(
+            employee=employee,
             check_in=check_in,
             check_out=check_out,
             date=date,
-            not_marked=not_marked
+            not_marked=not_marked,
+            status=att_status
         )
 
-        return Response({
-            "detail": "Attendance created.",
-            "attendance_id": new_attendance.id
-        }, status=status.HTTP_201_CREATED)
+        amount = calculate_penalty(
+            user_id=attendance.employee.id,
+            check_in=check_in ,
+            check_out=check_out
+
+        )
+        ic(amount)
+        attendance.amount = amount
+        attendance.save()
+        ic(attendance.amount)
+        today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        tomorrow = today + timedelta(days=1)
+
+        ic("------------------")
+        emp_attendance, created = Employee_attendance.objects.get_or_create(
+            employee=employee,
+            date=date,
+            defaults={"status": "In_office"},
+        )
+        emp_attendance.amount += attendance.amount
+        emp_attendance.save()
+        emp_attendance.attendance.add(attendance)
+
+        return Response(
+            {
+                "created": created,
+                "attendance": self.get_serializer(attendance).data,
+                "amount": attendance.amount
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 
     def get_queryset(self):
-        filial = self.request.query_params.get('filial')
-        user_id = self.request.query_params.get('id')
-        action = self.request.query_params.get('action')
-        type = self.request.query_params.get('type')
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        filial = self.request.GET.get('filial')
+        user_id = self.request.GET.get('id')
+        action = self.request.GET.get('action')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
 
         queryset = Employee_attendance.objects.all()
 
@@ -86,8 +133,6 @@ class AttendanceList(ListCreateAPIView):
             queryset = queryset.filter(date__gte=parse_datetime(start_date),
                                        date__lte=parse_datetime(end_date))
 
-        if type:
-            queryset = queryset.filter(type=type)
         if action:
             queryset = queryset.filter(action=action)
         if filial:

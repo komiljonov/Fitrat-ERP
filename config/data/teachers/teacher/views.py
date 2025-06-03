@@ -279,6 +279,7 @@ class StudentsAvgLearning(APIView):
                 student_record = mastering_records.filter(student__id=target_id)
                 name = {
                     'full_name': f"{sg.student.first_name} {sg.student.last_name}",
+                    "type": "student",
                     'is_archived': sg.student.is_archived,
                     'is_frozen': sg.student.is_frozen
                 }
@@ -287,6 +288,7 @@ class StudentsAvgLearning(APIView):
                 student_record = mastering_records.filter(lid__id=target_id)
                 name = {
                     'full_name': f"{sg.lid.first_name} {sg.lid.last_name}",
+                    'type': 'lid',
                     'is_archived': sg.lid.is_archived,
                     'is_frozen': sg.lid.is_frozen
                 }

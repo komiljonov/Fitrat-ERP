@@ -179,30 +179,36 @@ class SecondaryGroupStudentList(ListAPIView):
 
 class SecondaryGroupUpdate(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = SecondaryStudentsGroupSerializer
-
 
     def put(self, request, *args, **kwargs):
         student_id = self.kwargs.get('student_id')
-        group_id = self.request.GET.get('group_id')
+        group_id = request.GET.get('group_id')
+        new_group_id = request.GET.get('new_group_id')
 
-        if not group_id:
-            return Response({"error": "Group ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        ic(group_id, student_id)
+        if not group_id or not new_group_id:
+            return Response({"error": "Both 'group_id' and 'new_group_id' are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        instance = get_object_or_404(
-            SecondaryStudentGroup,
+        ic(group_id, new_group_id, student_id)
+
+        # Get the existing record
+        instance = SecondaryStudentGroup.objects.filter(
             group__id=group_id,
             student__id=student_id
-        )
+        ).first()
 
-        serializer = self.serializer_class(instance, data=request.data, partial=True, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not instance:
+            return Response({"error": "Secondary student group record not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Get the new secondary group
+        new_group = get_object_or_404(SecondaryGroup, id=new_group_id)
+
+        # Update and save
+        instance.group = new_group
+        instance.save()
+
+        serializer = SecondaryStudentsGroupSerializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class StudentGroupDelete(APIView):
     permission_classes = [IsAuthenticated]
