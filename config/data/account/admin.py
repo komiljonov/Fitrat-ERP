@@ -22,7 +22,7 @@ class CustomUserAdmin(UserAdmin):
             "classes": ("wide",),
             "fields": (
                 "phone", "password1", "is_staff",
-                "is_active", "name", "phone","confirmation_code"
+                "is_active", "name", "phone","calculate_penalties"
 
             )}
         ),

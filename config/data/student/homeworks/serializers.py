@@ -83,7 +83,6 @@ class HomeworkSerializer(serializers.ModelSerializer):
         return res
 
 
-
 class HomeworksHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Homework_history

@@ -1,7 +1,7 @@
 from django.urls import  path
 
 from .models import UserTimeLine
-from .views import AttendanceList, AttendanceDetail, UserTimeLineList, UserTimeLineDetail
+from .views import AttendanceList, AttendanceDetail, UserTimeLineList, UserTimeLineDetail, TimeTrackerList
 
 urlpatterns = [
     path("", AttendanceList.as_view()),
@@ -9,4 +9,6 @@ urlpatterns = [
 
     path("timeline/",UserTimeLineList.as_view()),
     path("timeline/<uuid:pk>",UserTimeLineDetail.as_view()),
+
+    path("all/",TimeTrackerList.as_view()),
 ]
