@@ -92,10 +92,9 @@ class AttendanceList(ListCreateAPIView):
             )
 
         # Case 2: Actions present
-        elif actions:
-            actions = actions.sort(key=lambda x: x['start'], reverse=True)
-
-            ic("sorted",actions)
+        if actions:
+            actions = sorted(actions, key=lambda x: x['start'], reverse=True)
+            ic("sorted", actions)
 
             first_action = actions[0]
             start = first_action.get("start")
