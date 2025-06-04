@@ -109,6 +109,13 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
         return rep
 
 
+class UserTimeLineBulkSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        return UserTimeLine.objects.bulk_create([
+            UserTimeLine(**item) for item in validated_data
+        ])
+
+
 class UserTimeLineSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.all(),allow_null=True
@@ -126,3 +133,6 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
             "bonus",
             "created_at",
         ]
+        list_serializer_class = UserTimeLineBulkSerializer
+
+

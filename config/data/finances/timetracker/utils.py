@@ -249,3 +249,12 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                     print(f"Employee early leave penalty: {penalty_amount:.2f} ({early_minutes} min early)")
 
     return round(total_penalty, 2)
+
+
+# def get_affective_time_amount(user_id,check_in, check_out):
+#     user = CustomUser.objects.filter(id=user_id).first()
+#
+#     if not user:
+#         return 0
+#
+#     user
