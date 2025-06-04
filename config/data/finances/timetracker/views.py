@@ -52,11 +52,12 @@ class AttendanceList(ListCreateAPIView):
     serializer_class = Stuff_AttendanceSerializer
 
     def create(self, request, *args, **kwargs):
+
+        ic(request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        ic(data)
 
         employee = data.get('employee')
         if not employee:
