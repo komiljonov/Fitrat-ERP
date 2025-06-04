@@ -28,8 +28,12 @@ def on_create(sender, instance: Stuff_Attendance, created, **kwargs):
     if not user:
         return
 
-    if user.calculate_penalties and user.role in {"TEACHER", "ASSISTANT"}:
+    # Make sure check_in is aware datetime for comparison
+    check_in = instance.check_in
+    if timezone.is_naive(check_in):
+        check_in = timezone.make_aware(check_in)
 
+    if user.calculate_penalties and user.role in {"TEACHER", "ASSISTANT"}:
         student_groups = StudentGroup.objects.filter(
             Q(group__teacher=user) | Q(group__secondary_teacher=user)
         ).select_related('group').prefetch_related('group__scheduled_day_type')
@@ -46,7 +50,7 @@ def on_create(sender, instance: Stuff_Attendance, created, **kwargs):
 
             if today_weekday in scheduled_indexes:
                 group_start_dt = timezone.make_aware(datetime.combine(today, group.started_at))
-                if instance.check_in > group_start_dt:
+                if check_in > group_start_dt:
                     instance.status = "Late"
                 else:
                     instance.status = "On_time"
@@ -57,7 +61,7 @@ def on_create(sender, instance: Stuff_Attendance, created, **kwargs):
         timeline = UserTimeLine.objects.filter(user=user, day=day_name).first()
         if timeline and timeline.is_weekend == False:
             scheduled_time = timezone.make_aware(datetime.combine(today, timeline.start_time))
-            if instance.check_in > scheduled_time:
+            if check_in > scheduled_time:
                 instance.status = "Late"
             else:
                 instance.status = "On_time"
