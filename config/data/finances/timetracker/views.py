@@ -44,7 +44,7 @@ class TimeTrackerList(ListCreateAPIView):
             queryset = queryset.filter(status=status)
         if date:
             queryset = queryset.filter(date=parse_datetime(date))
-        return queryset.order_by('date')
+        return queryset.order_by('-date')
 
 
 class AttendanceList(ListCreateAPIView):
