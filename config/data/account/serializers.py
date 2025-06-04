@@ -18,7 +18,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "phone", "role","calculate_penalties", "password", "salary",
+            "id", "full_name", "first_name", "last_name", "phone", "role","calculate_penalties","calculate_bonus", "password", "salary",
             "photo", "filial", "balance", "ball", "files","extra_number","is_call_center",
             "enter", "leave", "date_of_birth",
         )
@@ -113,7 +113,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ["id", "phone", "full_name", "first_name", "last_name","calculate_penalties", "password","is_archived",
+        fields = ["id", "phone", "full_name", "first_name", "last_name","calculate_penalties","calculate_bonus", "password","is_archived",
                   "role", "photo", "salary", "enter", "leave", "files","filial","extra_number","is_call_center",
                   "date_of_birth"]
 
@@ -168,7 +168,7 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name", "first_name","calculate_penalties", "last_name", 'role',"balance","monitoring",
+        fields = ['id', 'phone', "full_name", "first_name","calculate_penalties","calculate_bonus", "last_name", 'role',"balance","monitoring",
                   "salary", "pages", "files","is_archived","extra_number","is_call_center",
                   "photo", "filial", "bonus", "compensation","created_at" ]
 
@@ -244,7 +244,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "is_linked","calculate_penalties","phone", "role", "penalty" ,"pages", "files",
+            "id", "full_name", "first_name", "last_name", "is_linked","calculate_penalties","calculate_bonus","phone", "role", "penalty" ,"pages", "files",
             "photo", "filial", "balance","salary","extra_number","is_call_center","second_user",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation","monitoring",
             "updated_at","is_archived"
