@@ -12,7 +12,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import calculate_penalty
+from .utils import calculate_penalty, parse_datetime_string
 
 
 class TimeTrackerList(ListCreateAPIView):
@@ -96,6 +96,10 @@ class AttendanceList(ListCreateAPIView):
             first_action = actions[0]
             start = first_action.get("start")
             end = first_action.get("end")
+
+            if start and end:
+                start = parse_datetime_string(start)
+                end = parse_datetime_string(end)
 
             if not start:
                 return Response({"detail": "'start' required in first action."}, status=status.HTTP_400_BAD_REQUEST)

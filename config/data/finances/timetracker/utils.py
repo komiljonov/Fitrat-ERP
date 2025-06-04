@@ -5,6 +5,7 @@ import pytz
 from django.db.models import Q
 from django.utils.timezone import make_aware, is_aware
 from icecream import ic
+from rest_framework.exceptions import ValidationError
 
 from data.account.models import CustomUser
 from data.finances.finance.models import Finance, Kind
@@ -251,6 +252,13 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
     return round(total_penalty, 2)
 
 
+def parse_datetime_string(value):
+    try:
+        # Fix the format: replace underscore with dash if needed
+        value = value.replace('_', '-')
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+    except Exception as e:
+        raise ValidationError(f"Invalid datetime format: {value}") from e
 # def get_affective_time_amount(user_id,check_in, check_out):
 #     user = CustomUser.objects.filter(id=user_id).first()
 #
