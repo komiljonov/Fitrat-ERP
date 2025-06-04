@@ -45,7 +45,7 @@ class Stuff_Attendance(BaseModel):
     date = models.DateField(default=timezone.now().date())
 
     amount = models.FloatField(default=0)
-
+    actions = models.TextField(null=True, blank=True)
     action = models.CharField(
         choices=[
             ("In_side", "In_side"),

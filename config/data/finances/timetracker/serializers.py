@@ -22,6 +22,7 @@ class Stuff_AttendanceSerializer(serializers.ModelSerializer):
             "date",
             "amount",
             "action",
+            "actions",
             "created_at",
         ]
 

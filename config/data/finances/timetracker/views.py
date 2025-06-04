@@ -67,6 +67,9 @@ class AttendanceList(ListCreateAPIView):
         date = data.get("date")
         not_marked = data.get("not_marked", False)
         att_status = data.get("status", None)
+        actions = data.get("actions", None)
+
+        ic(actions)
 
         if check_in and check_out is None:
             att = Stuff_Attendance.objects.filter(check_in=check_in,employee=employee,date=date).exists()
