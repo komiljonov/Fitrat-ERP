@@ -187,10 +187,13 @@ class AttendanceList(ListCreateAPIView):
         )
 
 
+
+
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Employee_attendance.objects.all()
-    serializer_class = TimeTrackerSerializer
+    queryset = Stuff_Attendance.objects.all()
+    serializer_class = Stuff_AttendanceSerializer
     permission_classes = [IsAuthenticated]
+
 
 
 class UserTimeLineList(ListCreateAPIView):
