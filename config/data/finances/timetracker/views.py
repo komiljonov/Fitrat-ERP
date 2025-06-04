@@ -207,7 +207,8 @@ class UserTimeLineList(ListCreateAPIView):
 
         if day:
             queryset = queryset.filter(day=day)
-        return queryset
+
+        return queryset.order_by("start_time")
 
 
 class UserTimeLineDetail(RetrieveUpdateDestroyAPIView):
