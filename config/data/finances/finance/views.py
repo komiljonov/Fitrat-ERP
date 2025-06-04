@@ -370,7 +370,8 @@ class TeacherGroupFinanceAPIView(APIView):
             elif start_date:
                 finance_filters["created_at__gte"] = start_date
 
-            finance_records = Finance.objects.filter(**finance_filters,stuff__id=teacher_id).order_by("created_at")
+            kind=Kind.objects.filter(action="EXPENSE",name__icontains="Lesson payment").first()
+            finance_records = Finance.objects.filter(**finance_filters,stuff__id=teacher_id,kind=kind).order_by("created_at")
             created_at = finance_records.first().created_at if finance_records.exists() else None
             total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
 
@@ -404,7 +405,7 @@ class TeacherGroupFinanceAPIView(APIView):
                     first_attendance = student_attendances.first()
                     # Remove this line as it's too restrictive
                     # student_finance_filters["created_at__date"] = first_attendance.created_at.date()
-                    total_student_payment = Finance.objects.filter(**student_finance_filters).aggregate(Sum('amount'))[
+                    total_student_payment = Finance.objects.filter(**student_finance_filters,stuff__id=teacher_id,kind=kind).aggregate(Sum('amount'))[
                                                 'amount__sum'] or 0
                 else:
                     total_student_payment = 0
