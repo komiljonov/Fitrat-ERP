@@ -45,10 +45,7 @@ def on_create(sender, instance: Stuff_Attendance, created, **kwargs):
             }
 
             if today_weekday in scheduled_indexes:
-                dt = datetime.combine(today, group.started_at)
-                if timezone.is_naive(dt):
-                    dt = timezone.make_aware(dt)
-                group_start_dt = dt
+                group_start_dt = timezone.make_aware(datetime.combine(today, group.started_at))
                 if instance.check_in > group_start_dt:
                     instance.status = "Late"
                 else:
