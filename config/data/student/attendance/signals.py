@@ -146,11 +146,21 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
             bonus_amount, income_amount = calculate_bonus_and_income(final_price, bonus_percent)
 
-            instance.group.teacher.balance += bonus_amount
-            instance.group.teacher.save(update_fields=["balance"])
+            # instance.group.teacher.balance += bonus_amount
+            # instance.group.teacher.save(update_fields=["balance"])
 
             create_finance_record(
                 "EXPENSE",
+                bonus_amount,
+                teacher=instance.group.teacher,
+                kind=kind,
+                instance=instance,
+                student=instance.student,
+                is_first=is_first_income,
+            )
+
+            create_finance_record(
+                "INCOME",
                 income_amount,
                 kind,
                 instance,
@@ -201,11 +211,19 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
                 bonus_amount, income_amount = calculate_bonus_and_income(per_lesson_price, bonus_percent)
 
-                instance.group.teacher.balance += bonus_amount
-                instance.group.teacher.save(update_fields=["balance"])
-
+                # instance.group.teacher.balance += bonus_amount
+                # instance.group.teacher.save(update_fields=["balance"])
                 create_finance_record(
                     "EXPENSE",
+                    bonus_amount,
+                    teacher=instance.group.teacher,
+                    kind=kind,
+                    instance=instance,
+                    student=instance.student,
+                    is_first=is_first_income,
+                )
+                create_finance_record(
+                    "INCOME",
                     income_amount,
                     kind,
                     instance,
