@@ -28,7 +28,7 @@ def get_sale_for_instance(instance):
 
 
 def apply_discount(price, sale):
-    if sale and sale.sale and sale.sale.amount and sale.expire_date < datetime.date.today():
+    if sale and sale.sale and sale.sale.amount and sale.expire_date >= datetime.date.today():
         try:
             sale_percent = Decimal(sale.sale.amount)
             ic("sales_percent", sale_percent)
