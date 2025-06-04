@@ -342,6 +342,9 @@ class TeacherGroupFinanceAPIView(APIView):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
 
+
+        print("teacher" , teacher_id)
+
         group_filters = {"group__teacher_id": teacher_id}
         if start_date and end_date:
             group_filters["created_at__range"] = (start_date, end_date)
