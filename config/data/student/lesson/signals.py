@@ -30,7 +30,7 @@ def on_create(sender, instance: FirstLLesson, created, **kwargs):
 
         Notification.objects.create(
             user=instance.group.teacher,
-            commit=f"Sizning {instance.group.name} guruhingizga {instance.lid.first_name} {instance.lid.last_name} sinov darsi uchun qo'shildi!",
+            comment=f"Sizning {instance.group.name} guruhingizga {instance.lid.first_name} {instance.lid.last_name} sinov darsi uchun qo'shildi!",
             come_from=instance.lid
         )
 
