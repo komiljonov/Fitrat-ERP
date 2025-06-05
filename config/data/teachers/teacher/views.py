@@ -259,7 +259,7 @@ class StudentsAvgLearning(APIView):
 
         student_groups = StudentGroup.objects.filter(
             group__id=group_id,
-        ).select_related("student", "lid")
+        ).select_related("student", "lid").distinct()
 
         student_ids = [sg.student.id for sg in student_groups if sg.student]
         lid_ids = [sg.lid.id for sg in student_groups if sg.lid]
