@@ -130,7 +130,7 @@ class TT_Data(APIView):
                     if check:
                         custom_user = CustomUser.objects.get(phone=phone)
                         try:
-                            custom_user.second_user = user['employee']
+                            custom_user.second_user = user['id']
                             custom_user.save()
                         except Exception as e:
                             ic(e)
