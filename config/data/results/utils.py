@@ -208,7 +208,7 @@ def validate_certificate_requirements(instance):
                     asos__name__icontains="ASOS_4",
                     result=point,
                     result_type=who,
-                    from_point_float__lte=band_score_float,
+                    from_point_float=band_score_float,
                 ).first()
             except (ValueError, TypeError):
                 raise ValueError(f"Band score '{band_score}' percentage formatida emas!")
