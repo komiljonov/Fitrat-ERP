@@ -117,15 +117,17 @@ class TT_Data(APIView):
         tt = TimetrackerSinc()
         tt_data = tt.get_data()
 
+
         count = 0
         if tt_data:
 
             for user in tt_data:
                 ic(user)
+                phone = "+" + user["phone"] if not user["phone"].startswith('+') else user["phone"]
                 if user:
-                    check = CustomUser.objects.filter(full_name=user['name']).exists()
+                    check = CustomUser.objects.filter(phone=phone).exists()
                     if check:
-                        custom_user = CustomUser.objects.get(full_name=user['name'])
+                        custom_user = CustomUser.objects.get(phone=phone)
                         try:
                             custom_user.second_user = user['id']
                             custom_user.save()
