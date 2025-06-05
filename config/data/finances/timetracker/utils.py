@@ -213,12 +213,18 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
             # === Early Arrival Bonus
             if time_diff < 0:
                 early_minutes = abs(int(time_diff))
+                ic("early minutes: ", early_minutes)
+
                 if matched_timeline.bonus:
                     bonus_amount = early_minutes * matched_timeline.bonus
                 else:
                     bonus_amount = early_minutes * per_minute_salary
 
+                ic(bonus_amount)
+
                 total_penalty -= bonus_amount  # Subtract bonus from total penalty
+
+                ic(total_penalty)
                 Finance.objects.create(
                     action="EXPENSE",
                     kind=bonus_kind,
