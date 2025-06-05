@@ -62,6 +62,7 @@ class AttendanceList(ListCreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         data = serializer.validated_data
 
         employee = data.get('employee')
@@ -176,6 +177,7 @@ class AttendanceList(ListCreateAPIView):
         emp_attendance.amount += attendance.amount
         emp_attendance.save()
         emp_attendance.attendance.add(attendance)
+        print(serializer.errors)
 
         return Response(
             {
