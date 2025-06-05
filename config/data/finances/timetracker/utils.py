@@ -205,32 +205,48 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
             expected_start_time = matched_timeline.start_time
             timeline_start_dt = localize(datetime.combine(check_in_date, expected_start_time))
 
-            late_minutes = int((check_in - timeline_start_dt).total_seconds() // 60)
-
-            late_minutes += 23
-
-            if matched_timeline.penalty and matched_timeline.bonus:
-                penalty_amount = matched_timeline.penalty * late_minutes
-            else:
-                penalty_amount = late_minutes * per_minute_salary
-
-            ic("Timeline start time:", matched_timeline.start_time)
-            ic("check_in:", check_in)
-            ic("timeline_start_dt:", timeline_start_dt)
-            ic("late_minutes:", late_minutes)
-
-            total_penalty += penalty_amount
+            time_diff = (check_in - timeline_start_dt).total_seconds() // 60
 
             bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-            finance = Finance.objects.create(
-                action="EXPENSE",
-                kind=bonus_kind,
-                amount=penalty_amount,
-                stuff=user,
-                comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun"
-                        f" {penalty_amount} sum jarima yozildi! "
-            )
-            print(f"Employee late penalty: {penalty_amount:.2f} ({late_minutes} min late)")
+            penalty_kind = Kind.objects.filter(action="INCOME", name__icontains="Money back").first()
+
+            # === Early Arrival Bonus
+            if time_diff < 0:
+                early_minutes = abs(int(time_diff))
+                if matched_timeline.bonus:
+                    bonus_amount = early_minutes * matched_timeline.bonus
+                else:
+                    bonus_amount = early_minutes * per_minute_salary
+
+                total_penalty -= bonus_amount  # Subtract bonus from total penalty
+                Finance.objects.create(
+                    action="EXPENSE",
+                    kind=bonus_kind,
+                    amount=bonus_amount,
+                    stuff=user,
+                    comment=f"Bugun {check_in.time()} da ishga {early_minutes} minut erta kelganingiz uchun"
+                            f" {bonus_amount} sum bonus yozildi! "
+                )
+                print(f"Early arrival bonus for {user}: {bonus_amount:.2f} ({early_minutes} min early)")
+
+            # === Late Arrival Penalty
+            elif time_diff > 0:
+                late_minutes = int(time_diff)
+                if matched_timeline.penalty:
+                    penalty_amount = late_minutes * matched_timeline.penalty
+                else:
+                    penalty_amount = late_minutes * per_minute_salary
+
+                total_penalty += penalty_amount
+                Finance.objects.create(
+                    action="INCOME",
+                    kind=penalty_kind,
+                    amount=penalty_amount,
+                    stuff=user,
+                    comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun"
+                            f" {penalty_amount} sum jarima yozildi! "
+                )
+                print(f"Late penalty for {user}: {penalty_amount:.2f} ({late_minutes} min late)")
 
         if check_out:
             matched_checkout_timeline = next(
