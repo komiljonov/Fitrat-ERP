@@ -45,7 +45,6 @@ class TimeTrackerList(ListCreateAPIView):
         if employee:
             queryset = queryset.filter(employee__id=employee)
         if status:
-            ic(status)
             queryset = queryset.filter(status=status)
         if date:
             queryset = queryset.filter(date=parse_datetime(date))
