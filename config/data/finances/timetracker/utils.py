@@ -210,7 +210,7 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
             ic(time_diff)
 
             bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-            penalty_kind = Kind.objects.filter(action="INCOME", name__icontains="Money back").first()
+            penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
 
             # === Early Arrival Bonus
             if time_diff < 0:
