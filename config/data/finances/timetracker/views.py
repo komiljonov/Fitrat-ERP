@@ -81,12 +81,13 @@ class AttendanceList(ListCreateAPIView):
         attendance = None
 
         # Case 1: All empty – create check-in now
-        if not check_in and not check_out and not actions:
+        if check_in and not check_out and not actions:
             now = timezone.now()
             attendance = Stuff_Attendance.objects.create(
                 employee=employee,
-                check_in=now,
-                date=date or now.date(),
+                check_in=check_in,
+                date=date,
+                check_out=check_out,
                 not_marked=not_marked,
                 status=att_status
             )
