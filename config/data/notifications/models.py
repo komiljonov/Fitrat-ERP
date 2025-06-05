@@ -8,6 +8,16 @@ from ..command.models import BaseModel
 class Notification(BaseModel):
     user : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,blank=True)
     comment = models.TextField(null=True,blank=True)
+    choice = models.CharField(choices=[
+        ("TeacherFinance", "TeacherFinance"),
+        ("Bonus", "Bonus"),
+        ("New_Student", "New_Student"),
+        ("Tasks", "Tasks"),
+        ("Students", "Students"),
+        ("Comments", "Comments"),
+        ("Monitoring", "Monitoring"),
+        ("Results", "Results"),
+    ])
     come_from = models.TextField(null=True,blank=True)
     is_read = models.BooleanField(default=False)
     has_read = models.BooleanField(default=False)

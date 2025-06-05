@@ -13,6 +13,7 @@ class NotificationSerializer(serializers.ModelSerializer):
             'user',
             'comment',
             'come_from',
+            "choice",
             'is_read',
             'has_read',
             'created_at',

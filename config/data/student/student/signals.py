@@ -28,6 +28,7 @@ def on_create(sender, instance: Student, created, **kwargs):
                     comment=f"{instance.first_name} {instance.last_name} ning balance miqdori {instance.balance} sum,"
                             f" to'lov amalga oshirishi haqida eslating!",
                     come_from=instance,
+                    choice="Tasks",
                 )
                 if instance.balance_status == "ACTIVE":
                     instance.balance_status = "INACTIVE"

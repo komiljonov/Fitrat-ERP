@@ -72,6 +72,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 user=instance.lid.call_operator,
                 comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan !",
                 come_from=instance.lid,
+                choice="New_Student",
             )
 
         instance.lid.is_student = True
@@ -104,6 +105,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                     user=instance.student.sales_manager,
                     comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashmagan!",
                     come_from=instance.student,
+                    choice="New_Student",
                 )
 
 
