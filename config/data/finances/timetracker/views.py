@@ -13,6 +13,12 @@ from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
 from .utils import calculate_penalty, parse_datetime_string
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.generics import ListCreateAPIView
+from django.utils import timezone
+from datetime import timedelta
+from icecream import ic
 
 
 class TimeTrackerList(ListCreateAPIView):
@@ -45,12 +51,6 @@ class TimeTrackerList(ListCreateAPIView):
         return queryset.order_by('-date')
 
 
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.generics import ListCreateAPIView
-from django.utils import timezone
-from datetime import timedelta
-from icecream import ic
 
 
 class AttendanceList(ListCreateAPIView):
@@ -185,7 +185,6 @@ class AttendanceList(ListCreateAPIView):
             },
             status=status.HTTP_201_CREATED
         )
-
 
 
 
