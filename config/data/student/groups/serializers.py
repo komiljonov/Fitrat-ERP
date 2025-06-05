@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.db.models import Count, Q
+from icecream import ic
 from rest_framework import serializers
 
 from .lesson_date_calculator import calculate_lessons
@@ -308,6 +309,7 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
         return list(attendance)
 
     def get_student_count(self, obj):
+        ic(SecondaryStudentGroup.objects.filter(Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))))
         return SecondaryStudentGroup.objects.filter(Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))).count()
 
     def create(self, validated_data):
