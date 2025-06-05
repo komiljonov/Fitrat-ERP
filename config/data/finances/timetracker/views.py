@@ -159,6 +159,8 @@ class AttendanceList(ListCreateAPIView):
             return Response({"detail": "Invalid or incomplete data."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Compute and assign penalty
+        ic("------------")
+
         amount = calculate_penalty(
             user_id=attendance.employee.id,
             check_in=attendance.check_in,
