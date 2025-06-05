@@ -343,7 +343,7 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
         return rep
 
 
-class SecondarygroupModelSerializer(serializers.ModelSerializer):
+class SecondaryGroupModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecondaryGroup
         fields = ['id', 'name']

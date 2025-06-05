@@ -18,7 +18,7 @@ from .serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializ
 from ..attendance.models import Attendance
 from ..attendance.serializers import AttendanceSerializer
 from ..groups.models import SecondaryGroup, Group
-from ..groups.serializers import SecondarygroupModelSerializer
+from ..groups.serializers import SecondaryGroupModelSerializer
 
 
 class StudentsGroupList(ListCreateAPIView):
@@ -387,7 +387,7 @@ class SecondaryStudentList(ListCreateAPIView):
 
 
 class SecondaryGroupList(ListAPIView):
-    serializer_class = SecondarygroupModelSerializer
+    serializer_class = SecondaryGroupModelSerializer
     queryset = SecondaryGroup.objects.all()
     permission_classes = [IsAuthenticated]
 
