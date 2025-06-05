@@ -188,6 +188,7 @@ class AttendanceList(ListCreateAPIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
