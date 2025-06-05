@@ -357,8 +357,7 @@ class LidStatisticsView(ListAPIView):
         ordered_new = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                       ordered_stages="YANGI_BUYURTMA", **filter).count()
 
-        ordered_new_fix = queryset.filter(lid_stage_type="ORDERED_LID",
-                                      ordered_stages="YANGI_BUYURTMA", **filter).count()
+        ordered_new_fix = queryset.filter(ordered_date__isnull=False, **filter).count()
         ordered_leads_count = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, **filter).count()
         ordered_waiting_leads = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                                 ordered_stages="KUTULMOQDA", **filter).count()

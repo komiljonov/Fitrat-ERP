@@ -21,24 +21,20 @@ def calculate_lessons(start_date, end_date, lesson_type, holidays, days_off):
     start_date = datetime.strptime(start_date, "%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
-    # Filter out empty strings from holidays list
+
     holidays = set(datetime.strptime(date, "%Y-%m-%d") for date in holidays if date)
 
-    # Days off as numbers (Monday=0, Sunday=6)
     days_off_numbers = {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].index(day) for
                         day in days_off}
 
-    # Split the lesson_type into a list of days (e.g., "Monday,Wednesday,Friday" -> ["Monday", "Wednesday", "Friday"])
     lesson_days = [day.strip() for day in lesson_type.split(',')]
 
-    # Weekday mappings for lesson days
     lesson_day_numbers = {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].index(day) for
                           day in lesson_days}
 
-    # Generate all dates in the range
     all_dates = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
 
-    # Filter dates based on the lesson days (e.g., Monday, Wednesday, Friday)
+
     lesson_days_in_range = [date for date in all_dates if date.weekday() in lesson_day_numbers]
 
     # Filter out holidays and days off
