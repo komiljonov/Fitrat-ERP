@@ -308,7 +308,7 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
         return list(attendance)
 
     def get_student_count(self, obj):
-        return SecondaryStudentGroup.objects.filter(group=obj& (Q(student__is_archived=False) | Q(lid__is_archived=False))).count()
+        return SecondaryStudentGroup.objects.filter(group=obj & (Q(student__is_archived=False) | Q(lid__is_archived=False))).count()
 
     def create(self, validated_data):
         scheduled_day_types = validated_data.pop("scheduled_day_type", [])
