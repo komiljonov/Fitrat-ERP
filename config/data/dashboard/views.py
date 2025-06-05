@@ -671,6 +671,7 @@ class MonitoringView(APIView):
         sorted_data = sorted(teacher_data, key=itemgetter("overall_point"), reverse=True)
         return Response(sorted_data, status=status.HTTP_200_OK)
 
+
 class GenerateExcelView(APIView):
     def get(self, request, *args, **kwargs):
         wb = Workbook()
