@@ -135,6 +135,7 @@ class TT_Data(APIView):
                         except Exception as e:
                             continue
                         count += 1
+                        ic("updated")
                         if user:
                             continue
                 else:
