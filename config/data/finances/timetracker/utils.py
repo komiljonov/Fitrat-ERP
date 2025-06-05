@@ -207,10 +207,17 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
 
             late_minutes = int((check_in - timeline_start_dt).total_seconds() // 60)
 
+            late_minutes += 23
+
             if matched_timeline.penalty and matched_timeline.bonus:
                 penalty_amount = matched_timeline.penalty * late_minutes
             else:
                 penalty_amount = late_minutes * per_minute_salary
+
+            ic("Timeline start time:", matched_timeline.start_time)
+            ic("check_in:", check_in)
+            ic("timeline_start_dt:", timeline_start_dt)
+            ic("late_minutes:", late_minutes)
 
             total_penalty += penalty_amount
 
