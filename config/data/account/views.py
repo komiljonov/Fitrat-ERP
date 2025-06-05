@@ -133,6 +133,7 @@ class TT_Data(APIView):
                             custom_user.second_user = user['employee']
                             custom_user.save()
                         except Exception as e:
+                            ic(e)
                             continue
                         count += 1
                         ic("updated")
