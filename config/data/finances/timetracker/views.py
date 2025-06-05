@@ -51,8 +51,6 @@ class TimeTrackerList(ListCreateAPIView):
         return queryset.order_by('-date')
 
 
-
-
 class AttendanceList(ListCreateAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
@@ -92,6 +90,8 @@ class AttendanceList(ListCreateAPIView):
                 not_marked=not_marked,
                 status=att_status
             )
+            if attendance:
+                print(attendance)
 
         # Case 2: Actions present
         if actions:
@@ -190,12 +190,10 @@ class AttendanceList(ListCreateAPIView):
         )
 
 
-
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
     permission_classes = [IsAuthenticated]
-
 
 
 class UserTimeLineList(ListCreateAPIView):
