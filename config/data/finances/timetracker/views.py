@@ -56,141 +56,142 @@ class AttendanceList(ListCreateAPIView):
     serializer_class = Stuff_AttendanceSerializer
 
     def create(self, request, *args, **kwargs):
-        ic(request.data)
+        try:
+            ic(request.data)
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
 
-        data = serializer.validated_data
+            data = serializer.validated_data
 
-        employee = data.get('employee')
-        if not employee:
-            return Response({"detail": "Employee is required."}, status=status.HTTP_400_BAD_REQUEST)
+            employee = data.get('employee')
+            if not employee:
+                return Response({"detail": "Employee is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        check_in = data.get("check_in")
-        check_out = data.get("check_out")
-        date = data.get("date")
-        not_marked = data.get("not_marked", False)
-        att_status = data.get("status", None)
-        actions = data.get("actions", [])
+            check_in = data.get("check_in")
+            check_out = data.get("check_out")
+            date = data.get("date")
+            not_marked = data.get("not_marked", False)
+            att_status = data.get("status", None)
+            actions = data.get("actions", [])
 
-        ic(actions)
+            ic(actions)
 
-        updated = False
-        attendance = None
+            updated = False
+            attendance = None
 
-        # Case 1: All empty – create check-in now
-        if check_in and not check_out and not actions:
-            now = timezone.now()
-            attendance = Stuff_Attendance.objects.create(
-                employee=employee,
-                check_in=check_in,
-                date=date,
-                check_out=check_out,
-                not_marked=not_marked,
-                status=att_status
-            )
-            if attendance:
-                print(attendance)
-
-        # Case 2: Actions present
-        if actions:
-            actions = sorted(actions, key=lambda x: x['start'], reverse=True)
-            ic("sorted", actions)
-
-            first_action = actions[0]
-            start = first_action.get("start")
-            end = first_action.get("end")
-
-            if start and end:
-                start = parse_datetime_string(start)
-                end = parse_datetime_string(end)
-
-            if not start:
-                return Response({"detail": "'start' required in first action."}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Try to update existing attendance
-            att_qs = Stuff_Attendance.objects.filter(
-                check_in=start,
-                employee=employee,
-                date=date
-            )
-
-            if att_qs.exists():
-                attendance = att_qs.first()
-                if end:
-                    attendance.check_out = end
-                attendance.actions = actions
-                attendance.save()
-                updated = True
-            else:
-                # Create new attendance
+            # Case 1: All empty – create check-in now
+            if check_in and not check_out and not actions:
+                now = timezone.now()
                 attendance = Stuff_Attendance.objects.create(
                     employee=employee,
-                    check_in=start,
-                    check_out=end,
+                    check_in=check_in,
                     date=date,
+                    check_out=check_out,
                     not_marked=not_marked,
-                    status=att_status,
-                    actions=actions
+                    status=att_status
+                )
+                if attendance:
+                    print(attendance)
+
+            # Case 2: Actions present
+            if actions:
+                actions = sorted(actions, key=lambda x: x['start'], reverse=True)
+                ic("sorted", actions)
+
+                first_action = actions[0]
+                start = first_action.get("start")
+                end = first_action.get("end")
+
+                if start and end:
+                    start = parse_datetime_string(start)
+                    end = parse_datetime_string(end)
+
+                if not start:
+                    return Response({"detail": "'start' required in first action."}, status=status.HTTP_400_BAD_REQUEST)
+
+                # Try to update existing attendance
+                att_qs = Stuff_Attendance.objects.filter(
+                    check_in=start,
+                    employee=employee,
+                    date=date
                 )
 
-        # Case 3: Direct check_in + check_out
-        elif check_in and check_out:
-            exists = Stuff_Attendance.objects.filter(
-                check_in=check_in,
-                check_out=check_out,
-                employee=employee,
-                date=date
-            ).exists()
-            if exists:
-                return Response({"detail": "Attendance already exists."}, status=status.HTTP_400_BAD_REQUEST)
+                if att_qs.exists():
+                    attendance = att_qs.first()
+                    if end:
+                        attendance.check_out = end
+                    attendance.actions = actions
+                    attendance.save()
+                    updated = True
+                else:
+                    # Create new attendance
+                    attendance = Stuff_Attendance.objects.create(
+                        employee=employee,
+                        check_in=start,
+                        check_out=end,
+                        date=date,
+                        not_marked=not_marked,
+                        status=att_status,
+                        actions=actions
+                    )
 
-            attendance = Stuff_Attendance.objects.create(
-                employee=employee,
-                check_in=check_in,
-                check_out=check_out,
-                date=date,
-                not_marked=not_marked,
-                status=att_status
+            # Case 3: Direct check_in + check_out
+            elif check_in and check_out:
+                exists = Stuff_Attendance.objects.filter(
+                    check_in=check_in,
+                    check_out=check_out,
+                    employee=employee,
+                    date=date
+                ).exists()
+                if exists:
+                    return Response({"detail": "Attendance already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+                attendance = Stuff_Attendance.objects.create(
+                    employee=employee,
+                    check_in=check_in,
+                    check_out=check_out,
+                    date=date,
+                    not_marked=not_marked,
+                    status=att_status
+                )
+
+            else:
+                return Response({"detail": "Invalid or incomplete data."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Compute and assign penalty
+            ic("------------")
+
+            amount = calculate_penalty(
+                user_id=attendance.employee.id,
+                check_in=attendance.check_in,
+                check_out=attendance.check_out
             )
+            ic(amount)
+            attendance.amount = amount
+            attendance.save()
 
-        else:
-            return Response({"detail": "Invalid or incomplete data."}, status=status.HTTP_400_BAD_REQUEST)
+            # Update or create employee attendance summary
+            emp_attendance, created = Employee_attendance.objects.get_or_create(
+                employee=employee,
+                date=attendance.date,
+                defaults={"status": "In_office"},
+            )
+            emp_attendance.amount += attendance.amount
+            emp_attendance.save()
+            emp_attendance.attendance.add(attendance)
 
-        # Compute and assign penalty
-        ic("------------")
-
-        amount = calculate_penalty(
-            user_id=attendance.employee.id,
-            check_in=attendance.check_in,
-            check_out=attendance.check_out
-        )
-        ic(amount)
-        attendance.amount = amount
-        attendance.save()
-
-        # Update or create employee attendance summary
-        emp_attendance, created = Employee_attendance.objects.get_or_create(
-            employee=employee,
-            date=attendance.date,
-            defaults={"status": "In_office"},
-        )
-        emp_attendance.amount += attendance.amount
-        emp_attendance.save()
-        emp_attendance.attendance.add(attendance)
-        print(serializer.errors)
-
-        return Response(
-            {
-                "updated": updated,
-                "created": not updated,
-                "attendance": self.get_serializer(attendance).data,
-                "amount": attendance.amount
-            },
-            status=status.HTTP_201_CREATED
-        )
-
+            return Response(
+                {
+                    "updated": updated,
+                    "created": not updated,
+                    "attendance": self.get_serializer(attendance).data,
+                    "amount": attendance.amount
+                },
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()
