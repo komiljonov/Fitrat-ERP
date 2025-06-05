@@ -123,7 +123,7 @@ class TT_Data(APIView):
 
             for user in tt_data:
                 ic(user)
-                phone = "+" + user["phone"] if not user["phone"].startswith('+') else user["phone"]
+                phone = "+" + user["phone_number"] if not user["phone_number"].startswith('+') else user["phone_number"]
                 if user:
                     check = CustomUser.objects.filter(phone=phone).exists()
                     if check:
