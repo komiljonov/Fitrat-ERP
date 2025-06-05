@@ -80,7 +80,6 @@ class AttendanceList(ListCreateAPIView):
             updated = False
             attendance = None
 
-            # Case 1: All empty – create check-in now
             if check_in and not check_out and not actions:
                 now = timezone.now()
                 attendance = Stuff_Attendance.objects.create(
@@ -94,7 +93,7 @@ class AttendanceList(ListCreateAPIView):
                 if attendance:
                     print(attendance)
 
-            # Case 2: Actions present
+
             if actions:
                 actions = sorted(actions, key=lambda x: x['start'], reverse=True)
                 ic("sorted", actions)
@@ -136,7 +135,7 @@ class AttendanceList(ListCreateAPIView):
                         actions=actions
                     )
 
-            # Case 3: Direct check_in + check_out
+
             elif check_in and check_out:
                 exists = Stuff_Attendance.objects.filter(
                     check_in=check_in,
@@ -156,10 +155,6 @@ class AttendanceList(ListCreateAPIView):
                     status=att_status
                 )
 
-            else:
-                return Response({"detail": "Invalid or incomplete data."}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Compute and assign penalty
             ic("------------")
 
             amount = calculate_penalty(
