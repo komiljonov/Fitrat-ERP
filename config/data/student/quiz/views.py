@@ -1,3 +1,4 @@
+import datetime
 from re import search
 
 import pandas as pd
@@ -14,11 +15,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .check_serializers import QuizCheckSerializer
-from .models import Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam, QuizGaps, Answer
+from .models import Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam, QuizGaps, Answer, ExamRegistration
 from .models import Quiz, Question
 from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer, \
     VocabularySerializer, PairsSerializer, MatchPairsSerializer, ExamSerializer, \
-    QuizGapsSerializer, AnswerSerializer
+    QuizGapsSerializer, AnswerSerializer, ExamRegistrationSerializer
 from ..homeworks.models import Homework
 from ..mastering.models import Mastering
 from ..shop.models import Points
@@ -340,7 +341,6 @@ class ExamListView(ListCreateAPIView):
         quiz = serializer.save()
         self.update_students_count(quiz)
 
-
     def update_students_count(self, quiz):
         if quiz.students_xml and quiz.students_xml.file:
             try:
@@ -381,6 +381,7 @@ class ExamDetailsView(RetrieveUpdateDestroyAPIView):
             print(f"✅ ROWS COUNTED: {len(df)}")
         except Exception as e:
             print(f"❌ Failed to parse Excel for quiz {quiz.id}: {e}")
+
 
 class QuizGapsListView(ListCreateAPIView):
     queryset = QuizGaps.objects.all()
@@ -466,3 +467,11 @@ class ExcelQuizUploadAPIView(APIView):
             return Response({
                 "error": str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ExamRegistrationListCreateAPIView(ListCreateAPIView):
+    queryset = ExamRegistration.objects.all()
+    serializer_class = ExamRegistrationSerializer
+    permission_classes = [IsAuthenticated]
+
+

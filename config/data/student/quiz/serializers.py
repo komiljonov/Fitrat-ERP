@@ -1,8 +1,11 @@
-from icecream import ic
-from rest_framework import serializers
+from datetime import datetime
 
-from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary,  MatchPairs, Exam, Gaps, \
-    QuizGaps, Pairs
+from icecream import ic
+from rest_framework import serializers, status
+from rest_framework.response import Response
+
+from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, Exam, Gaps, \
+    QuizGaps, Pairs, ExamRegistration
 from ..homeworks.models import Homework
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
@@ -268,3 +271,38 @@ class ExamSerializer(serializers.ModelSerializer):
             StudentSerializer(instance.students.all(),include_only=["id","first_name", "last_name","phone"], many=True).data
         ) if instance.students else None
         return rep
+
+
+class ExamRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamRegistration
+        fields = [
+            "id",
+            "student",
+            "quiz",
+            "mark",
+            "created_at",
+        ]
+
+    def validate(self, attrs):
+        exam  = attrs.get("exam")
+        student = attrs.get("student")
+        exam = Exam.objects.filter(id=exam).first()
+
+        if not exam:
+            return Response({"error": "Imtihon topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+
+        now = datetime.now()
+        exam_end_datetime = datetime.combine(exam.date, exam.end_time)
+
+        if now > exam_end_datetime:
+            return Response(
+                {"error": "Imtihondan ro'yxatdan o'tish vaqti yakunlangan"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        exam_student = ExamRegistration.objects.filter(exam=exam,student__id=student).first()
+        if exam_student:
+            return Response({"error": "Talaba allaqachon imtihon uchun ro'yxatdan o'tgan."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return attrs
