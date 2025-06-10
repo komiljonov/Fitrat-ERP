@@ -136,7 +136,7 @@ class AttendanceList(ListCreateAPIView):
 
         # Validate employee exists
         try:
-            employee = CustomUser.objects.get(id=data['employee'])
+            employee = CustomUser.objects.get(second_user=data['employee'])
         except CustomUser.DoesNotExist:
             raise AttendanceError(
                 "Employee not found",
