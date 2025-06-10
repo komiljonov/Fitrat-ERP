@@ -373,13 +373,13 @@ class AttendanceList(ListCreateAPIView):
             # Find or create penalty kind
             penalty_kind = Kind.objects.filter(
                 action="EXPENSE",
-                name__icontains="Outside"
+                name__icontains="Bonus"
             ).first()
 
             if not penalty_kind:
                 penalty_kind = Kind.objects.filter(
                     action="EXPENSE",
-                    name__icontains="Penalty"
+                    name__icontains="Bonus"
                 ).first()
 
             comment = (
