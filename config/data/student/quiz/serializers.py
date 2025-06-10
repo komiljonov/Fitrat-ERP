@@ -279,7 +279,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "student",
-            "quiz",
+            "exam",
             "mark",
             "created_at",
         ]
