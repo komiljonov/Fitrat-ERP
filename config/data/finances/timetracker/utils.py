@@ -1,5 +1,7 @@
 import calendar
 from datetime import date, datetime, timedelta
+from decimal import Decimal, InvalidOperation
+from typing import List
 
 import pytz
 from django.db.models import Q
@@ -10,6 +12,7 @@ from rest_framework.exceptions import ValidationError
 from data.account.models import CustomUser
 from data.finances.finance.models import Finance, Kind
 from data.finances.timetracker.models import UserTimeLine
+from data.finances.timetracker.views import AttendanceError
 from data.student.groups.models import Group
 from data.student.studentgroup.models import StudentGroup
 
@@ -300,3 +303,65 @@ def parse_datetime_string(value):
 #         return 0
 #
 #     user
+
+
+# Utility functions for error handling
+def safe_decimal_conversion(value, field_name: str) -> Decimal:
+    """Safely convert value to Decimal with error handling"""
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError) as e:
+        raise AttendanceError(
+            f"Invalid numeric value for {field_name}",
+            "INVALID_NUMERIC_VALUE",
+            {'field': field_name, 'value': value, 'error': str(e)}
+        )
+
+
+def validate_time_sequence(actions: List[dict]) -> None:
+    """Validate that action times make logical sense"""
+    for i in range(len(actions) - 1):
+        current_end = actions[i]['end_datetime']
+        next_start = actions[i + 1]['start_datetime']
+
+        if current_end > next_start:
+            raise AttendanceError(
+                f"Time overlap detected between actions {i + 1} and {i + 2}",
+                "TIME_OVERLAP_ERROR",
+                {
+                    'action1_end': actions[i]['end'],
+                    'action2_start': actions[i + 1]['start']
+                }
+            )
+
+
+# Error handling middleware for attendance operations
+class AttendanceErrorHandler:
+    """Centralized error handling for attendance operations"""
+
+    @staticmethod
+    def handle_validation_error(error: ValidationError) -> dict:
+        """Handle DRF validation errors"""
+        return {
+            'error': 'Validation failed',
+            'error_code': 'VALIDATION_ERROR',
+            'details': error.detail if hasattr(error, 'detail') else str(error)
+        }
+
+    @staticmethod
+    def handle_database_error(error: Exception) -> dict:
+        """Handle database-related errors"""
+        return {
+            'error': 'Database operation failed',
+            'error_code': 'DATABASE_ERROR',
+            'details': {'message': str(error)}
+        }
+
+    @staticmethod
+    def handle_calculation_error(error: Exception) -> dict:
+        """Handle calculation-related errors"""
+        return {
+            'error': 'Calculation failed',
+            'error_code': 'CALCULATION_ERROR',
+            'details': {'message': str(error)}
+        }
