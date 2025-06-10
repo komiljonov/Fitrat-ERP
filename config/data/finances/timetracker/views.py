@@ -82,6 +82,19 @@ class AttendanceList(ListCreateAPIView):
 
             if check_in and not check_out and not actions:
                 now = timezone.now()
+
+                att = Stuff_Attendance.objects.filter(
+                    check_in=check_in,
+                    check_out=None,
+                    actions=None,
+                    date=date,
+                    employee=employee,
+                ).first()
+                if att:
+                    return Response(
+                        {"detail": "Attendance is already created."}, status=status.HTTP_400_BAD_REQUEST
+                    )
+
                 attendance = Stuff_Attendance.objects.create(
                     employee=employee,
                     check_in=check_in,
