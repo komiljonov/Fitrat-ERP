@@ -37,6 +37,10 @@ app.conf.beat_schedule = {
         "task": "data.student.groups.tasks.activate_group",
         "schedule": crontab(hour=0, minute=0),
     },
+    "check_exam_status": {
+        "task": "data.student.quiz.tasks.handle_task_creation",
+        "schedule": crontab(minute=0),
+    },
 
     # Monthly tasks (Runs on the 1st or 28th of the month)
     "check-monthly-extra-lessons": {
