@@ -331,8 +331,6 @@ class True_False_TestView(ListCreateAPIView):
     serializer_class = True_FalseSerializer
 
 
-
-
 class QuizListCreateView(ListCreateAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
