@@ -4,35 +4,18 @@ from data.command.models import BaseModel
 from data.student.homeworks.models import Homework
 from data.student.student.models import Student
 from data.student.subject.models import Subject
+from data.student.subject.models import Theme
 
 
 class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    theme: "Subject" = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL,
+    theme: "Theme" = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL,
                                          null=True, blank=True, related_name='quiz_theme')
-    type = models.CharField(choices=[
-        ("Online", "Online"),
-        ("Offline", "Offline"),
-        ("Theme", "Theme"),
-    ], max_length=255, null=True, blank=True)
+
     subject: "Subject" = models.ForeignKey('subject.Subject', on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='quiz_subject')
-    students_excel = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
-                                       related_name='quiz_students_excel')
-    results_excel = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
-                                      related_name='quiz_results_excel')
 
-    materials = models.ManyToManyField('upload.File', related_name='quiz_materials')
-
-    students_count = models.IntegerField(default=0)
-    date = models.DateField(null=True, blank=True)
-    start_time = models.TimeField(null=True, blank=True)
-    end_time = models.TimeField(null=True, blank=True)
-
-    is_homework = models.BooleanField(default=False)
-    homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL, null=True, blank=True,
-                                             related_name='homeworks_quiz')
 
     def __str__(self):
         return self.title
@@ -138,20 +121,44 @@ class MatchPairs(BaseModel):
 class Exam(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='exam_quiz')
+
+    choice = models.CharField(choices=[
+        ("Weekly", "Weekly"),
+        ("Monthly", "Monthly"),
+        ("Unit", "Unit"),
+        ("Mid_of_course", "Mid_of_course"),
+        ("Level","Level"),
+        ("Mock", "Mock"),
+        ("Homework", "Homework"),
+    ], max_length=255, null=True, blank=True)
+
     type = models.CharField(choices=[
         ("Online", "Online"),
         ("Offline", "Offline"),
     ], max_length=255, null=True, blank=True)
+
+    is_mandatory = models.BooleanField(default=False)
+
     students = models.ManyToManyField(Student)
+
     subject: "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='exam_subject')
+
     students_xml = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='exam_students_xml')
-    exam_materials = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
-                                       related_name='exam_materials')
+
     results = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='exam_results')
-    end_date = models.DateTimeField(null=True, blank=True)
+
+    materials = models.ManyToManyField('upload.File', related_name='quiz_materials')
+
+    students_count = models.IntegerField(default=0)
+    date = models.DateField(null=True, blank=True)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+
+    homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL, null=True, blank=True,
+                                             related_name='homeworks_quiz')
 
     def __str__(self):
         return f"{self.quiz.title}    {self.type}"
