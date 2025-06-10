@@ -36,7 +36,7 @@ def localize(dt):
 
 
 def get_monthly_per_minute_salary(user_id):
-    user = CustomUser.objects.select_related().filter(id=user_id).first()
+    user = CustomUser.objects.select_related().filter(second_user=user_id).first()
     if not user or not user.salary:
         return {"total_minutes": 0, "per_minute_salary": 0}
 
