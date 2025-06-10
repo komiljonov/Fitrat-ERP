@@ -98,10 +98,10 @@ class AttendanceList(ListCreateAPIView):
             try:
                 # Create/update attendance record
                 attendance_result = self._create_or_update_attendance(data)
-
+                user = CustomUser.objects.filter(second_user=data.get("employee")).first()
                 # Process individual action penalties/bonuses
                 penalty_result = self._process_action_penalties(
-                    data.get('employee'),
+                    user.id,
                     actions,
                     data.get('check_in'),
                     data.get('check_out')
