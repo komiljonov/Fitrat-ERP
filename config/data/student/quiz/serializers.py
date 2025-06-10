@@ -49,7 +49,7 @@ class QuizSerializer(serializers.ModelSerializer):
     match_pairs = serializers.SerializerMethodField()
 
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
-    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(),many=True,allow_null=True)
+    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(),allow_null=True)
 
     class Meta:
         model = Quiz
@@ -82,7 +82,7 @@ class QuizSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
         rep["theme"] = (
-            ThemeSerializer(instance.theme,include_only=["id","title"],many=True).data
+            ThemeSerializer(instance.theme,include_only=["id","title"]).data
         )
         return rep
 
