@@ -285,23 +285,19 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        exam  = attrs.get("exam")
+        exam = attrs.get("exam")
         student = attrs.get("student")
+
         if not exam:
-            return Response({"error": "Imtihon topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+            raise serializers.ValidationError({"exam": "Imtihon topilmadi."})
 
         now = datetime.now()
         exam_end_datetime = datetime.combine(exam.date, exam.end_time)
 
         if now > exam_end_datetime:
-            return Response(
-                {"error": "Imtihondan ro'yxatdan o'tish vaqti yakunlangan"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            raise serializers.ValidationError({"exam": "Imtihondan ro'yxatdan o'tish vaqti yakunlangan."})
 
-        exam_student = ExamRegistration.objects.filter(exam=exam,student=student).first()
-
-        if exam_student:
-            return Response({"error": "Talaba allaqachon imtihon uchun ro'yxatdan o'tgan."}, status=status.HTTP_400_BAD_REQUEST)
+        if ExamRegistration.objects.filter(exam=exam, student=student).exists():
+            raise serializers.ValidationError({"student": "Talaba allaqachon imtihon uchun ro'yxatdan o'tgan."})
 
         return attrs
