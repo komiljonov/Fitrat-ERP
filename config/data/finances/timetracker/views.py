@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from django.core.handlers.base import logger
 from django.db import transaction
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from icecream import ic
 from rest_framework import status
@@ -363,54 +364,75 @@ class AttendanceList(ListCreateAPIView):
                 {'action_index': action_index, 'error': str(e)}
             )
 
+    from django.utils import timezone
+    from django.utils.dateparse import parse_datetime
+
     def _create_penalty_finance_record(self, employee_id: str, amount: float,
                                        start_time: datetime, end_time: datetime,
                                        duration_minutes: float) -> None:
-        """Create finance record for penalty"""
+        """Create or update attendance and finance record for penalty."""
         try:
             user = CustomUser.objects.get(id=employee_id)
 
-            # Find or create penalty kind
+            # Ensure start and end times are timezone-aware
+            if timezone.is_naive(start_time):
+                start_time = timezone.make_aware(start_time)
+            if timezone.is_naive(end_time):
+                end_time = timezone.make_aware(end_time)
+
+            # Find or create penalty Kind
             penalty_kind = Kind.objects.filter(
                 action="EXPENSE",
                 name__icontains="Bonus"
             ).first()
 
             if not penalty_kind:
-                penalty_kind = Kind.objects.filter(
-                    action="EXPENSE",
-                    name__icontains="Bonus"
-                ).first()
+                raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
 
-            att = Stuff_Attendance.objects.filter(employee=user).first()
-            att.check_in=start_time
-            att.check_out=end_time
-            att.amount=amount
-            att.save()
-
-            employee_att = Employee_attendance.objects.filter(
+            # Check if attendance exists for this exact time range
+            att = Stuff_Attendance.objects.filter(
                 employee=user,
-                date=start_time.date(),
+                check_in=start_time,
+                check_out=end_time
             ).first()
 
-            if employee_att:
+            if att:
+                # Update existing attendance
+                att.amount = amount
+            else:
+                # Create new attendance
+                att = Stuff_Attendance.objects.create(
+                    employee=user,
+                    check_in=start_time,
+                    check_out=end_time,
+                    amount=amount,
+                    type="PENALTY",  # optional: customize as needed
+                    comment=f"Auto penalty for being outside"
+                )
+            att.save()
+
+            # Link to Employee_attendance
+            attendance_date = start_time.date()
+            employee_att, _ = Employee_attendance.objects.get_or_create(
+                employee=user,
+                date=attendance_date,
+                defaults={'amount': 0}
+            )
+
+            # Add this Stuff_Attendance if not already linked
+            if not employee_att.attendance.filter(id=att.id).exists():
                 employee_att.attendance.add(att)
                 employee_att.amount += amount
                 employee_att.save()
-            else:
-                # Optionally create a new record if one doesn't exist
-                employee_att = Employee_attendance.objects.create(
-                    employee=user,
-                    date=start_time.date(),
-                    amount=amount  # initialize with the given amount
-                )
-                employee_att.attendance.add(att)
+
+            # Build comment for finance record
             comment = (
                 f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
                 f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
                 f"{amount:.2f} sum jarima yozildi!"
             )
 
+            # Create finance penalty record
             Finance.objects.create(
                 action="EXPENSE",
                 kind=penalty_kind,
@@ -420,7 +442,7 @@ class AttendanceList(ListCreateAPIView):
             )
 
         except Exception as e:
-            logger.error(f"Failed to create finance record: {str(e)}")
+            logger.error(f"Failed to create penalty finance record: {str(e)}")
             raise
 
 
