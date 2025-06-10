@@ -382,7 +382,7 @@ class AttendanceList(ListCreateAPIView):
                     name__icontains="Bonus"
                 ).first()
 
-            att = Stuff_Attendance.objects.filter().first()
+            att = Stuff_Attendance.objects.filter(employee=user).first()
             att.check_in=start_time
             att.check_out=end_time
             att.amount=amount
