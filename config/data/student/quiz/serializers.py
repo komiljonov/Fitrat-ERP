@@ -59,6 +59,10 @@ class QuizSerializer(serializers.ModelSerializer):
             "description",
             "theme",
             "subject",
+            "questions",
+            "fill_gap",
+            "vocabularies",
+            "match_pairs",
             "created_at",
         ]
     def get_questions(self, obj):
