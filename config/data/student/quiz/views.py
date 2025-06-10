@@ -1,6 +1,3 @@
-import datetime
-from re import search
-
 import pandas as pd
 from django.db import transaction
 from drf_yasg import openapi
@@ -15,17 +12,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .check_serializers import QuizCheckSerializer
-from .models import Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam, QuizGaps, Answer, ExamRegistration
+from .models import Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam, QuizGaps, Answer, ExamRegistration, ObjectiveTest, \
+    Cloze_Test, ImageObjectiveTest, True_False
 from .models import Quiz, Question
 from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer, \
     VocabularySerializer, PairsSerializer, MatchPairsSerializer, ExamSerializer, \
-    QuizGapsSerializer, AnswerSerializer, ExamRegistrationSerializer
+    QuizGapsSerializer, AnswerSerializer, ExamRegistrationSerializer, ObjectiveTestSerializer, Cloze_TestSerializer, \
+    ImageObjectiveTestSerializer, True_FalseSerializer
 from ..homeworks.models import Homework
 from ..mastering.models import Mastering
 from ..shop.models import Points
 from ..student.models import Student
 from ..subject.models import Theme
-from ...finances.compensation.models import Point
 
 
 class QuizCheckAPIView(APIView):
@@ -52,6 +50,10 @@ class QuizCheckAPIView(APIView):
             "fill_gaps": {"correct": 0, "wrong": 0},
             "vocabularies": {"correct": 0, "wrong": 0},
             "match_pairs": {"correct": 0, "wrong": 0},
+            "objective_test": {"correct": 0, "wrong": 0},
+            "cloze_test": {"correct": 0, "wrong": 0},
+            "image_cloze_test": {"correct": 0, "wrong": 0},
+            "true_false": {"correct": 0, "wrong": 0},
         }
 
         results = {
@@ -60,6 +62,10 @@ class QuizCheckAPIView(APIView):
                 "fill_gaps": [],
                 "vocabularies": [],
                 "match_pairs": [],
+                "objective_test": [],
+                "cloze_test": [],
+                "image_cloze_test": [],
+                "true_false": [],
             }
         }
 
@@ -86,7 +92,7 @@ class QuizCheckAPIView(APIView):
                 "correct_answers": [str(a.id) for a in correct_answers]
             })
 
-        # 2. Fill Gaps (Repeat similar logic)
+        # 2. Fill Gaps
         for item in data.get("fill_gaps", []):
             fill = Fill_gaps.objects.get(id=item["fill_id"])
             correct_gaps = [gap.name for gap in fill.gaps.all()]
@@ -106,7 +112,7 @@ class QuizCheckAPIView(APIView):
                 "correct_gaps": correct_gaps
             })
 
-        # 3. Vocabulary (Repeat similar logic)
+        # 3. Vocabulary
         for item in data.get("vocabularies", []):
             vocab = Vocabulary.objects.get(id=item["vocab_id"])
             en = (item.get("english") or "").lower()
@@ -132,7 +138,7 @@ class QuizCheckAPIView(APIView):
                 "correct_uzbek": vocab.in_uzbek
             })
 
-        # 4. Match Pairs (Repeat similar logic)
+        # 4. Match Pairs
         for item in data.get("match_pairs", []):
             match = MatchPairs.objects.get(id=item["match_id"])
             correct_map = {p.pair: p.choice for p in match.pairs.all()}
@@ -159,6 +165,113 @@ class QuizCheckAPIView(APIView):
                 "wrong_items": wrong_items
             })
 
+        # 5. Objective Test (similar to multiple choice but all answers are correct)
+        for item in data.get("objective_test", []):
+            objective = ObjectiveTest.objects.get(id=item["objective_id"])
+            user_answers = set(item.get("answer_ids", []))
+            correct_answers = set(answer.id for answer in objective.answers.all())
+
+            # Check if user selected all correct answers
+            is_correct = user_answers == correct_answers
+
+            if is_correct:
+                total_correct += 1
+                section_counts["objective_test"]["correct"] += 1
+            else:
+                total_wrong += 1
+                section_counts["objective_test"]["wrong"] += 1
+
+            results["details"]["objective_test"].append({
+                "objective_id": str(item["objective_id"]),
+                "correct": is_correct,
+                "your_answers": list(user_answers),
+                "correct_answers": list(correct_answers),
+                "missing_answers": list(correct_answers - user_answers),
+                "extra_answers": list(user_answers - correct_answers)
+            })
+
+        # 6. Cloze Test (check word order/sequence)
+        for item in data.get("cloze_test", []):
+            cloze = Cloze_Test.objects.get(id=item["cloze_id"])
+            user_sequence = item.get("word_sequence", [])
+            correct_sequence = cloze.answer  # Assuming this contains the correct word order
+
+            # Convert to lowercase for comparison if they're strings
+            if isinstance(correct_sequence, str):
+                correct_sequence = correct_sequence.split()
+            if isinstance(user_sequence, str):
+                user_sequence = user_sequence.split()
+
+            # Normalize case for comparison
+            user_sequence_lower = [word.lower().strip() for word in user_sequence]
+            correct_sequence_lower = [word.lower().strip() for word in correct_sequence]
+
+            is_correct = user_sequence_lower == correct_sequence_lower
+
+            if is_correct:
+                total_correct += 1
+                section_counts["cloze_test"]["correct"] += 1
+            else:
+                total_wrong += 1
+                section_counts["cloze_test"]["wrong"] += 1
+
+            results["details"]["cloze_test"].append({
+                "cloze_id": str(item["cloze_id"]),
+                "correct": is_correct,
+                "your_sequence": user_sequence,
+                "correct_sequence": correct_sequence
+            })
+
+        # 7. Image Cloze Test (text answer comparison)
+        for item in data.get("image_cloze_test", []):
+            image_cloze = ImageCloze_Test.objects.get(id=item["image_cloze_id"])
+            user_answer = (item.get("answer") or "").lower().strip()
+            correct_answer = (image_cloze.answer or "").lower().strip()
+
+            is_correct = user_answer == correct_answer
+
+            if is_correct:
+                total_correct += 1
+                section_counts["image_cloze_test"]["correct"] += 1
+            else:
+                total_wrong += 1
+                section_counts["image_cloze_test"]["wrong"] += 1
+
+            results["details"]["image_cloze_test"].append({
+                "image_cloze_id": str(item["image_cloze_id"]),
+                "correct": is_correct,
+                "your_answer": item.get("answer"),
+                "correct_answer": image_cloze.answer
+            })
+
+        # 8. True/False
+        for item in data.get("true_false", []):
+            true_false = True_False.objects.get(id=item["true_false_id"])
+            user_choice = item.get("choice")  # Expecting True/False or "true"/"false"
+            correct_answer = true_false.answer
+
+            # Normalize boolean values
+            if isinstance(user_choice, str):
+                user_choice = user_choice.lower() == "true"
+            if isinstance(correct_answer, str):
+                correct_answer = correct_answer.lower() == "true"
+
+            is_correct = user_choice == correct_answer
+
+            if is_correct:
+                total_correct += 1
+                section_counts["true_false"]["correct"] += 1
+            else:
+                total_wrong += 1
+                section_counts["true_false"]["wrong"] += 1
+
+            results["details"]["true_false"].append({
+                "true_false_id": str(item["true_false_id"]),
+                "correct": is_correct,
+                "your_choice": user_choice,
+                "correct_answer": correct_answer
+            })
+
         total_questions = total_correct + total_wrong
         ball = round((total_correct / total_questions) * 100, 2) if total_questions > 0 else 0.0
 
@@ -166,7 +279,8 @@ class QuizCheckAPIView(APIView):
             "total_questions": total_questions,
             "correct_count": total_correct,
             "wrong_count": total_wrong,
-            "ball": ball
+            "ball": ball,
+            "section_breakdown": section_counts
         }
 
         student = Student.objects.filter(user=request.user).first()
@@ -197,6 +311,28 @@ class QuizCheckAPIView(APIView):
         return Response(results)
 
 
+class ObjectiveTestView(ListCreateAPIView):
+    queryset = ObjectiveTest.objects.all()
+    serializer_class = ObjectiveTestSerializer
+
+
+class Cloze_TestView(ListCreateAPIView):
+    queryset = Cloze_Test.objects.all()
+    serializer_class = Cloze_TestSerializer
+
+
+class ImageCloze_TestView(ListCreateAPIView):
+    queryset = ImageObjectiveTest.objects.all()
+    serializer_class = ImageObjectiveTestSerializer
+
+
+class True_False_TestView(ListCreateAPIView):
+    queryset = True_False
+    serializer_class = True_FalseSerializer
+
+
+
+
 class QuizListCreateView(ListCreateAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
@@ -216,11 +352,9 @@ class QuizListCreateView(ListCreateAPIView):
         return queryset
 
 
-
 class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
-
 
 
 class AnswerListCreateView(ListCreateAPIView):
@@ -473,5 +607,3 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
     queryset = ExamRegistration.objects.all()
     serializer_class = ExamRegistrationSerializer
     permission_classes = [IsAuthenticated]
-
-

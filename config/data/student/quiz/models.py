@@ -5,6 +5,7 @@ from data.student.homeworks.models import Homework
 from data.student.student.models import Student
 from data.student.subject.models import Subject
 from data.student.subject.models import Theme
+from data.upload.models import File
 
 
 class Quiz(BaseModel):
@@ -116,6 +117,52 @@ class MatchPairs(BaseModel):
 
     def __str__(self):
         return f"{self.quiz.title} "
+
+
+class ObjectiveTest(BaseModel):
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='objectivetest_quiz')
+    question : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,
+                                              related_name='objectivetest_question')
+    answers : "Answer" = models.ManyToManyField(Answer)
+    def __str__(self):
+        return f"{self.quiz.title}    {self.question.name}"
+
+
+class Cloze_Test(BaseModel):
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='clozetest_quiz')
+    questions : "QuizGaps" = models.ManyToManyField("quiz.QuizGaps", related_name='cloze_questions')
+    answer : "Answer" = models.ForeignKey("quiz.Answer", on_delete=models.SET_NULL, null=True, blank=True,
+                                          related_name='cloze_answer')
+    def __str__(self):
+        return f"{self.quiz.title}  {self.answer.text}"
+
+
+class ImageObjectiveTest(BaseModel):
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='image_cloze_quiz')
+    image : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='image_cloze_quiz')
+    answer : "Answer" = models.ForeignKey("quiz.Answer", on_delete=models.SET_NULL, null=True, blank=True,
+                                          related_name='image_cloze_answer')
+    def __str__(self):
+        return f"{self.quiz.title}  {self.answer.text}"
+
+
+class True_False(BaseModel):
+    quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='objectivetest_quiz')
+    question: "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,
+                                             related_name='objectivetest_question')
+    answer = models.CharField(choices=[
+        ("True", "True"),
+        ("False", "False"),
+        ("Not Given", "Not Given"),
+    ],max_length=15,null=True,blank=True)
+
+    def __str__(self):
+        return f"{self.quiz.title}  {self.answer.text}"
 
 
 class Exam(BaseModel):
