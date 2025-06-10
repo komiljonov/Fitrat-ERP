@@ -215,7 +215,7 @@ class ExamSerializer(serializers.ModelSerializer):
     students = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),many=True,allow_null=True)
     materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
     homework = serializers.PrimaryKeyRelatedField(queryset=Homework.objects.all(),allow_null=True)
-    students_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    students_xml = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     results = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
 
     def __init__(self, *args, **kwargs):
