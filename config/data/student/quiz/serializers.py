@@ -5,8 +5,9 @@ from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary,  MatchPairs, 
     QuizGaps, Pairs
 from ..homeworks.models import Homework
 from ..student.models import Student
-from ..subject.models import Subject
-from ..subject.serializers import SubjectSerializer
+from ..student.serializers import StudentSerializer
+from ..subject.models import Subject, Theme
+from ..subject.serializers import SubjectSerializer, ThemeSerializer
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
@@ -30,6 +31,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         rep["answers"] = AnswerSerializer(instance.answers.all(),many=True).data
         return rep
 
+
 class QuizGapsSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuizGaps
@@ -39,51 +41,35 @@ class QuizGapsSerializer(serializers.ModelSerializer):
             "created_at"
         ]
 
+
 class QuizSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
     fill_gap = serializers.SerializerMethodField()
     vocabularies = serializers.SerializerMethodField()
     match_pairs = serializers.SerializerMethodField()
 
-    students_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
-    results_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
-    materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
-    homework = serializers.PrimaryKeyRelatedField(queryset=Homework.objects.all(),allow_null=True)
+    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(),many=True,allow_null=True)
+
     class Meta:
         model = Quiz
         fields = [
             "id",
             "title",
-
-            "type",
-            "students_excel",
-            "results_excel",
-            "students_count",
-            "subject",
-            "materials",
-
-            "date",
-            "start_time",
-            "end_time",
-
             "description",
-            "questions",
-            "fill_gap",
-            "vocabularies",
-            "match_pairs",
-
-            "is_homework",
-            "homework",
-
+            "theme",
+            "subject",
             "created_at",
         ]
     def get_questions(self, obj):
         return QuestionSerializer(Question.objects.filter(quiz=obj), many=True).data
+
     def get_fill_gap(self, obj):
         return FillGapsSerializer(Fill_gaps.objects.filter(quiz=obj), many=True).data  # ✅ correct
+
     def get_vocabularies(self, obj):
         return VocabularySerializer(Vocabulary.objects.filter(quiz=obj),context=self.context ,many=True).data
+
     def get_match_pairs(self, obj):
         return MatchPairsSerializer(MatchPairs.objects.filter(quiz=obj), many=True).data
 
@@ -91,9 +77,9 @@ class QuizSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
-        rep["materials"] = FileUploadSerializer(instance.materials.all(),context=self.context,many=True).data
-        rep["students_excel"] = FileUploadSerializer(instance.students_excel, context=self.context).data
-        rep["results_excel"] = FileUploadSerializer(instance.results_excel, context=self.context).data
+        rep["theme"] = (
+            ThemeSerializer(instance.theme,include_only=["id","title"],many=True).data
+        )
         return rep
 
 class QuizImportSerializer(serializers.Serializer):
@@ -222,19 +208,59 @@ class MatchPairsSerializer(serializers.ModelSerializer):
 
 class ExamSerializer(serializers.ModelSerializer):
     quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(),allow_null=True)
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),many=True,allow_null=True)
+    students = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),many=True,allow_null=True)
+    materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
+    homework = serializers.PrimaryKeyRelatedField(queryset=Homework.objects.all(),allow_null=True)
+    students_excel = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    results = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+
+    def __init__(self, *args, **kwargs):
+        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        include_only: list | None = kwargs.pop("include_only", None)
+
+        if fields_to_remove and include_only:
+            raise ValueError(
+                "You cannot use 'remove_fields' and 'include_only' at the same time."
+            )
+
+        super(ExamSerializer, self).__init__(*args, **kwargs)
+
+        if include_only is not None:
+            allowed = set(include_only)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+        elif fields_to_remove:
+            for field_name in fields_to_remove:
+                self.fields.pop(field_name, None)
+
     class Meta:
         model = Exam
         fields = [
             "id",
             "quiz",
+            "choice",
             "type",
-            "student",
+            "is_mandatory",
+            "students",
             "subject",
             "students_xml",
-            "exam_materials",
+            "materials",
             "results",
-            "end_date",
+            "students_count",
+            "date",
+            "start_time",
+            "end_time",
+            "homework",
             "created_at",
         ]
 
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["results"] = FileUploadSerializer(instance.results).data
+        rep["students"] =(
+            StudentSerializer(instance.students.all(),include_only=["id","first_name", "last_name","phone"], many=True).data
+        ) if instance.students else None
+        return rep
