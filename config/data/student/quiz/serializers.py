@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from icecream import ic
 from rest_framework import serializers, status
@@ -292,9 +292,10 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"exam": "Imtihon topilmadi."})
 
         now = datetime.now()
-        exam_end_datetime = datetime.combine(exam.date, exam.end_time)
+        exam_start_datetime = datetime.combine(exam.date, exam.start_time)
 
-        if now > exam_end_datetime:
+        # If less than 12 hours remain before the exam starts
+        if exam_start_datetime - now < timedelta(hours=12):
             raise serializers.ValidationError({"exam": "Imtihondan ro'yxatdan o'tish vaqti yakunlangan."})
 
         if ExamRegistration.objects.filter(exam=exam, student=student).exists():
