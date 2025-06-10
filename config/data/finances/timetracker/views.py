@@ -382,6 +382,20 @@ class AttendanceList(ListCreateAPIView):
                     name__icontains="Bonus"
                 ).first()
 
+            att = Stuff_Attendance.objects.filter().first()
+            att.check_in=start_time
+            att.check_out=end_time
+            att.amount=amount
+            att.save()
+
+            employee_att = Employee_attendance.objects.filter(
+                employee=user,
+                date=start_time.date(),
+            ).first()
+            employee_att.attendance.add(att)
+            employee_att.amount+=amount
+            employee_att.save()
+
             comment = (
                 f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
                 f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
