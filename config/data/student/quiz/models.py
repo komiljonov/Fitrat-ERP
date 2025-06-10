@@ -152,9 +152,9 @@ class ImageObjectiveTest(BaseModel):
 
 class True_False(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
-                                     related_name='objectivetest_quiz')
+                                     related_name='True_False_test_quiz')
     question: "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,
-                                             related_name='objectivetest_question')
+                                             related_name='True_False_test_question')
     answer = models.CharField(choices=[
         ("True", "True"),
         ("False", "False"),

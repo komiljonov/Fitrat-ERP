@@ -52,7 +52,7 @@ class QuizCheckAPIView(APIView):
             "match_pairs": {"correct": 0, "wrong": 0},
             "objective_test": {"correct": 0, "wrong": 0},
             "cloze_test": {"correct": 0, "wrong": 0},
-            "image_cloze_test": {"correct": 0, "wrong": 0},
+            "image_objective_test": {"correct": 0, "wrong": 0},
             "true_false": {"correct": 0, "wrong": 0},
         }
 
@@ -64,7 +64,7 @@ class QuizCheckAPIView(APIView):
                 "match_pairs": [],
                 "objective_test": [],
                 "cloze_test": [],
-                "image_cloze_test": [],
+                "image_objective_test": [],
                 "true_false": [],
             }
         }
@@ -223,25 +223,25 @@ class QuizCheckAPIView(APIView):
             })
 
         # 7. Image Cloze Test (text answer comparison)
-        for item in data.get("image_cloze_test", []):
-            image_cloze = ImageCloze_Test.objects.get(id=item["image_cloze_id"])
+        for item in data.get("image_objective_test", []):
+            image_objective = ImageObjectiveTest.objects.get(id=item["image_objective_id"])
             user_answer = (item.get("answer") or "").lower().strip()
-            correct_answer = (image_cloze.answer or "").lower().strip()
+            correct_answer = (image_objective.answer or "").lower().strip()
 
             is_correct = user_answer == correct_answer
 
             if is_correct:
                 total_correct += 1
-                section_counts["image_cloze_test"]["correct"] += 1
+                section_counts["image_objective_test"]["correct"] += 1
             else:
                 total_wrong += 1
-                section_counts["image_cloze_test"]["wrong"] += 1
+                section_counts["image_objective_test"]["wrong"] += 1
 
-            results["details"]["image_cloze_test"].append({
-                "image_cloze_id": str(item["image_cloze_id"]),
+            results["details"]["image_objective_test"].append({
+                "image_objective_id": str(item["image_objective_id"]),
                 "correct": is_correct,
                 "your_answer": item.get("answer"),
-                "correct_answer": image_cloze.answer
+                "correct_answer": image_objective.answer
             })
 
         # 8. True/False
