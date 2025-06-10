@@ -12,13 +12,13 @@ from rest_framework.exceptions import ValidationError
 from data.account.models import CustomUser
 from data.finances.finance.models import Finance, Kind
 from data.finances.timetracker.models import UserTimeLine
-from data.finances.timetracker.views import AttendanceError
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from data.finances.timetracker.views import AttendanceError
 from data.student.groups.models import Group
 from data.student.studentgroup.models import StudentGroup
 
-
 TASHKENT_TZ = pytz.timezone("Asia/Tashkent")
-
 
 UZBEK_WEEKDAYS = {
     'Dushanba': 0,
@@ -157,7 +157,8 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                     comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun {penalty_amount} sum jarima yozildi! "
                 )
 
-                print(f"Late penalty for {user} at group {group.name}: {penalty_amount:.2f} ({late_minutes:.0f} min late)")
+                print(
+                    f"Late penalty for {user} at group {group.name}: {penalty_amount:.2f} ({late_minutes:.0f} min late)")
 
         # === Check-out Penalty
         if check_out:
@@ -181,7 +182,8 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                             stuff=user,
                             comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun {penalty} sum jarima yozildi! "
                         )
-                        print(f"Early leave penalty for {user} from group {group.name}: {penalty:.2f} ({early_minutes:.0f} min early)")
+                        print(
+                            f"Early leave penalty for {user} from group {group.name}: {penalty:.2f} ({early_minutes:.0f} min early)")
 
             if early_penalties:
                 total_penalty += max(early_penalties)
@@ -199,9 +201,10 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
 
             timeline_start_dt = localize(datetime.combine(check_in_date, timeline.start_time))
 
-            if check_in >= timeline_start_dt :
+            if check_in >= timeline_start_dt:
                 time_diff = check_in - timeline_start_dt
-                if not matched_timeline or time_diff < (check_in - localize(datetime.combine(check_in_date, matched_timeline.start_time))):
+                if not matched_timeline or time_diff < (
+                        check_in - localize(datetime.combine(check_in_date, matched_timeline.start_time))):
                     matched_timeline = timeline
 
         if matched_timeline:
@@ -296,6 +299,8 @@ def parse_datetime_string(value):
         return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
     except Exception as e:
         raise ValidationError(f"Invalid datetime format: {value}") from e
+
+
 # def get_affective_time_amount(user_id,check_in, check_out):
 #     user = CustomUser.objects.filter(id=user_id).first()
 #

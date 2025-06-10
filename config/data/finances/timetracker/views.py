@@ -1,9 +1,10 @@
+from datetime import datetime
 from typing import List, Optional
 
 from django.core.handlers.base import logger
 from django.db import transaction
 from django.utils.dateparse import parse_datetime
-from icecream import ic  # For debug logging
+from icecream import ic
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import ListCreateAPIView
@@ -16,14 +17,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import calculate_penalty, parse_datetime_string, get_monthly_per_minute_salary
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.generics import ListCreateAPIView
-from django.utils import timezone
-from datetime import timedelta, datetime
-from icecream import ic
-
+from .utils import get_monthly_per_minute_salary
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 
@@ -57,13 +51,16 @@ class TimeTrackerList(ListCreateAPIView):
             queryset = queryset.filter(date=parse_datetime(date))
         return queryset.order_by('-date')
 
+
 class AttendanceError(Exception):
     """Custom exception for attendance-related errors"""
+
     def __init__(self, message: str, error_code: str = None, details: dict = None):
         self.message = message
         self.error_code = error_code or "ATTENDANCE_ERROR"
         self.details = details or {}
         super().__init__(self.message)
+
 
 class AttendanceList(ListCreateAPIView):
     queryset = Stuff_Attendance.objects.all()
