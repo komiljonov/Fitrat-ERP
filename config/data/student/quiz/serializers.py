@@ -287,6 +287,8 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         exam  = attrs.get("exam")
         student = attrs.get("student")
+
+        ic(exam)
         exam = Exam.objects.filter(id=exam).first()
 
         if not exam:
@@ -302,6 +304,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             )
 
         exam_student = ExamRegistration.objects.filter(exam=exam,student__id=student).first()
+        ic(exam_student)
         if exam_student:
             return Response({"error": "Talaba allaqachon imtihon uchun ro'yxatdan o'tgan."}, status=status.HTTP_400_BAD_REQUEST)
 
