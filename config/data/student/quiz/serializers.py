@@ -1,3 +1,5 @@
+import random
+
 from icecream import ic
 from rest_framework import serializers
 
@@ -33,7 +35,12 @@ class QuestionSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["text"] = QuizGapsSerializer(instance.text).data
-        rep["answers"] = AnswerSerializer(instance.answers.all(), many=True).data
+
+        # Randomize answers for regular questions
+        answers_data = AnswerSerializer(instance.answers.all(), many=True).data
+        random.shuffle(answers_data)
+        rep["answers"] = answers_data
+
         return rep
 
 
@@ -62,6 +69,17 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
             "created_at"
         ]
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        # Randomize answers for objective tests
+        if instance.answers.exists():
+            answers_data = AnswerSerializer(instance.answers.all(), many=True).data
+            random.shuffle(answers_data)
+            rep["answers"] = answers_data
+
+        return rep
+
 
 class Cloze_TestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -86,6 +104,17 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
             "created_at"
         ]
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        # Randomize answers for image objective tests if they exist
+        if hasattr(instance, 'answers') and instance.answers.exists():
+            answers_data = AnswerSerializer(instance.answers.all(), many=True).data
+            random.shuffle(answers_data)
+            rep["answers"] = answers_data
+
+        return rep
+
 
 class True_FalseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -97,12 +126,28 @@ class True_FalseSerializer(serializers.ModelSerializer):
             "answer",
         ]
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        # For True/False, we can randomize the order of True/False options
+        # This assumes you have answer choices stored somewhere
+        if hasattr(instance, 'answers') and instance.answers.exists():
+            answers_data = AnswerSerializer(instance.answers.all(), many=True).data
+            random.shuffle(answers_data)
+            rep["answers"] = answers_data
+
+        return rep
+
 
 class QuizSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
     fill_gap = serializers.SerializerMethodField()
     vocabularies = serializers.SerializerMethodField()
     match_pairs = serializers.SerializerMethodField()
+    objective_test = serializers.SerializerMethodField()
+    cloze_test = serializers.SerializerMethodField()
+    image_objective_test = serializers.SerializerMethodField()
+    true_false = serializers.SerializerMethodField()
 
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
@@ -119,20 +164,56 @@ class QuizSerializer(serializers.ModelSerializer):
             "fill_gap",
             "vocabularies",
             "match_pairs",
+            "objective_test",
+            "cloze_test",
+            "image_objective_test",
+            "true_false",
             "created_at",
         ]
 
     def get_questions(self, obj):
-        return QuestionSerializer(Question.objects.filter(quiz=obj), many=True).data
+        questions_data = QuestionSerializer(Question.objects.filter(quiz=obj), many=True).data
+        # Regular questions - answers are already randomized in QuestionSerializer
+        return questions_data
 
     def get_fill_gap(self, obj):
-        return FillGapsSerializer(Fill_gaps.objects.filter(quiz=obj), many=True).data  # ✅ correct
+        fill_gaps_data = FillGapsSerializer(Fill_gaps.objects.filter(quiz=obj), many=True).data
+        # Fill gaps can have randomized order of gaps/choices if needed
+        return fill_gaps_data
 
     def get_vocabularies(self, obj):
-        return VocabularySerializer(Vocabulary.objects.filter(quiz=obj), context=self.context, many=True).data
+        vocab_data = VocabularySerializer(Vocabulary.objects.filter(quiz=obj), context=self.context, many=True).data
+        # Randomize vocabulary items order
+        random.shuffle(vocab_data)
+        return vocab_data
 
     def get_match_pairs(self, obj):
-        return MatchPairsSerializer(MatchPairs.objects.filter(quiz=obj), many=True).data
+        match_pairs_data = MatchPairsSerializer(MatchPairs.objects.filter(quiz=obj), many=True).data
+        # Randomize pairs order
+        random.shuffle(match_pairs_data)
+        return match_pairs_data
+
+    def get_objective_test(self, obj):
+        objective_data = ObjectiveTestSerializer(ObjectiveTest.objects.filter(quiz=obj), many=True).data
+        # Answers are already randomized in ObjectiveTestSerializer
+        return objective_data
+
+    def get_cloze_test(self, obj):
+        # RANDOMIZE CLOZE TEST QUESTIONS ORDER
+        cloze_questions = list(Cloze_Test.objects.filter(quiz=obj))
+        random.shuffle(cloze_questions)
+        cloze_data = Cloze_TestSerializer(cloze_questions, many=True).data
+        return cloze_data
+
+    def get_image_objective_test(self, obj):
+        image_objective_data = ImageObjectiveTestSerializer(ImageObjectiveTest.objects.filter(quiz=obj), many=True).data
+        # Answers are already randomized in ImageObjectiveTestSerializer
+        return image_objective_data
+
+    def get_true_false(self, obj):
+        true_false_data = True_FalseSerializer(True_False.objects.filter(quiz=obj), many=True).data
+        # Answers are already randomized in True_FalseSerializer
+        return true_false_data
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -140,6 +221,17 @@ class QuizSerializer(serializers.ModelSerializer):
         rep["theme"] = (
             ThemeSerializer(instance.theme, include_only=["id", "title"]).data
         )
+
+        # Remove empty question type fields
+        question_fields = [
+            "questions", "fill_gap", "vocabularies", "match_pairs",
+            "objective_test", "cloze_test", "image_objective_test", "true_false"
+        ]
+
+        for field in question_fields:
+            if field in rep and (not rep[field] or rep[field] == [] or rep[field] is None):
+                del rep[field]
+
         return rep
 
 
@@ -198,7 +290,7 @@ class FillGapsSerializer(serializers.ModelSerializer):
         quiz = validated_data.get("quiz")
 
         if question_obj:
-            for word in question_obj.name.split(" "):  # ✅ use .name
+            for word in question_obj.name.split(" "):
                 if word.startswith("[") and word.endswith("]"):
                     gap_word = word[1:-1]  # remove brackets
                     ic(gap_word)
@@ -220,7 +312,12 @@ class FillGapsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["question"] = QuizGapsSerializer(instance.question).data
-        rep["gaps"] = GapsSerializer(instance.gaps.all(), many=True).data  # ← FIXED HERE
+
+        # Randomize gaps order for fill-in-the-blanks
+        gaps_data = GapsSerializer(instance.gaps.all(), many=True).data
+        random.shuffle(gaps_data)
+        rep["gaps"] = gaps_data
+
         return rep
 
 
@@ -272,7 +369,12 @@ class MatchPairsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["pairs"] = PairsSerializer(instance.pairs.all(), many=True).data
+
+        # Randomize pairs for matching exercises
+        pairs_data = PairsSerializer(instance.pairs.all(), many=True).data
+        random.shuffle(pairs_data)
+        rep["pairs"] = pairs_data
+
         return rep
 
 
@@ -361,7 +463,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             Notification.objects.create(
                 user=student,
                 comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
-                        f" {attrs.get("student_comment")} sabab bilan inkor etdingiz.",
+                        f" {attrs.get('student_comment')} sabab bilan inkor etdingiz.",
                 choice="Examination",
                 come_from=attrs.get("id")
             )
@@ -371,7 +473,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                     Notification.objects.create(
                         user=parent,
                         comment=f"Farzandingiz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
-                                f" {attrs.get("student_comment")} sabab bilan inkor etdi.",
+                                f" {attrs.get('student_comment')} sabab bilan inkor etdi.",
                         choice="Examination",
                         come_from=attrs.get("id")
                     )
@@ -389,3 +491,4 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         instance = super().create(validated_data)
         handle_task_creation.delay(instance.exam.id)  # Pass exam ID to task
+        return instance
