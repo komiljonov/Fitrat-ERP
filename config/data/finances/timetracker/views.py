@@ -85,6 +85,85 @@ class AttendanceList(ListCreateAPIView):
                 'error_code': 'INTERNAL_ERROR'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    class AttendanceList(ListCreateAPIView):
+        # existing code...
+
+        def update(self, request, *args, **kwargs):
+            try:
+                data = request.data
+                attendance_id = data.get('id')
+                if not attendance_id:
+                    return Response({
+                        'error': 'Attendance id is required for update',
+                        'error_code': 'MISSING_ID'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+                with transaction.atomic():
+                    # Fetch existing attendance
+                    attendance_instance = Stuff_Attendance.objects.get(id=attendance_id)
+
+                    # Store previous amount for adjustment
+                    previous_amount = attendance_instance.amount or 0
+
+                    # Process update with your existing logic but adapted to update instance
+                    serializer = self.get_serializer(attendance_instance, data=data, partial=True)
+                    if not serializer.is_valid():
+                        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+                    updated_attendance = serializer.save()
+
+                    # Now reprocess penalties/actions
+                    actions = self._validate_and_parse_actions(data.get('actions', []))
+                    user = CustomUser.objects.filter(second_user=data.get("employee")).first()
+                    penalty_result = self._process_action_penalties(
+                        user.id,
+                        actions,
+                        data.get('check_in'),
+                        data.get('check_out')
+                    )
+
+                    # Adjust Employee_attendance amount (subtract old, add new)
+                    attendance_date = updated_attendance.check_in.date() if updated_attendance.check_in else None
+                    if attendance_date:
+                        employee_att, created = Employee_attendance.objects.get_or_create(
+                            employee=user,
+                            date=attendance_date,
+                            defaults={'amount': 0}
+                        )
+                        employee_att.amount -= previous_amount
+                        employee_att.amount += updated_attendance.amount or 0
+                        employee_att.save()
+
+                    # Optionally, adjust finance records similarly (you can implement logic to update linked finance penalty records)
+
+                    return Response({
+                        'success': True,
+                        'attendance': serializer.data,
+                        'penalty_calculation': penalty_result,
+                        'message': 'Attendance updated successfully'
+                    }, status=status.HTTP_200_OK)
+
+            except Stuff_Attendance.DoesNotExist:
+                return Response({
+                    'error': 'Attendance record not found',
+                    'error_code': 'NOT_FOUND'
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            except AttendanceError as e:
+                logger.error(f"Attendance error during update: {e.message}", extra=e.details)
+                return Response({
+                    'error': e.message,
+                    'error_code': e.error_code,
+                    'details': e.details
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            except Exception as e:
+                logger.error(f"Unexpected error in attendance update: {str(e)}")
+                return Response({
+                    'error': 'An unexpected error occurred',
+                    'error_code': 'INTERNAL_ERROR'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def _process_attendance_with_error_handling(self, data: dict) -> Response:
         """Process attendance data with comprehensive error handling"""
 
