@@ -392,10 +392,19 @@ class AttendanceList(ListCreateAPIView):
                 employee=user,
                 date=start_time.date(),
             ).first()
-            employee_att.attendance.add(att)
-            employee_att.amount+=amount
-            employee_att.save()
 
+            if employee_att:
+                employee_att.attendance.add(att)
+                employee_att.amount += amount
+                employee_att.save()
+            else:
+                # Optionally create a new record if one doesn't exist
+                employee_att = Employee_attendance.objects.create(
+                    employee=user,
+                    date=start_time.date(),
+                    amount=amount  # initialize with the given amount
+                )
+                employee_att.attendance.add(att)
             comment = (
                 f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
                 f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
