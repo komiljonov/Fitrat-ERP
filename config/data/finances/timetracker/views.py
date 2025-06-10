@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.utils.dateparse import parse_datetime
 from icecream import ic  # For debug logging
 from rest_framework import status
@@ -55,6 +56,53 @@ class AttendanceList(ListCreateAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
 
+    def get_queryset(self):
+        """
+        Filter queryset based on query parameters for created/updated status
+        """
+        queryset = super().get_queryset()
+
+        # Get query parameters
+        created_filter = self.request.query_params.get('created', None)
+        updated_filter = self.request.query_params.get('updated', None)
+        operation_type = self.request.query_params.get('operation_type', None)
+
+        # Filter by creation status (you'll need to add this field to your model)
+        if created_filter is not None:
+            if created_filter.lower() == 'true':
+                # Filter for newly created records (assuming you have a 'was_created' field)
+                queryset = queryset.filter(was_created=True)
+            elif created_filter.lower() == 'false':
+                queryset = queryset.filter(was_created=False)
+
+        # Filter by update status
+        if updated_filter is not None:
+            if updated_filter.lower() == 'true':
+                # Records that have been updated (check_out is not null or actions exist)
+                queryset = queryset.filter(
+                    Q(check_out__isnull=False) | Q(actions__isnull=False)
+                )
+            elif updated_filter.lower() == 'false':
+                # Records that haven't been updated
+                queryset = queryset.filter(check_out__isnull=True, actions__isnull=True)
+
+        # Filter by operation type (create/update)
+        if operation_type:
+            if operation_type.lower() == 'create':
+                # Recently created records (last 24 hours as example)
+                yesterday = timezone.now() - timezone.timedelta(days=1)
+                queryset = queryset.filter(
+                    created_at__gte=yesterday,
+                    check_out__isnull=True
+                )
+            elif operation_type.lower() == 'update':
+                # Records with check_out or actions (indicating updates)
+                queryset = queryset.filter(
+                    Q(check_out__isnull=False) | Q(actions__isnull=False)
+                )
+
+        return queryset
+
     def create(self, request, *args, **kwargs):
         try:
             ic(request.data)
@@ -78,8 +126,11 @@ class AttendanceList(ListCreateAPIView):
             ic(actions)
 
             updated = False
+            created = False
             attendance = None
+            operation_type = "none"
 
+            # SCENARIO 1: Check-in only (CREATE)
             if check_in and not check_out and not actions:
                 now = timezone.now()
 
@@ -90,9 +141,11 @@ class AttendanceList(ListCreateAPIView):
                     date=date,
                     employee=employee,
                 ).first()
+
                 if att:
                     return Response(
-                        {"detail": "Attendance is already created."}, status=status.HTTP_400_BAD_REQUEST
+                        {"detail": "Attendance is already created."},
+                        status=status.HTTP_400_BAD_REQUEST
                     )
 
                 attendance = Stuff_Attendance.objects.create(
@@ -101,13 +154,15 @@ class AttendanceList(ListCreateAPIView):
                     date=date,
                     check_out=check_out,
                     not_marked=not_marked,
-                    status=att_status
+                    status=att_status,
+                    was_created=True  # Mark as newly created
                 )
-                if attendance:
-                    print(attendance)
+                created = True
+                operation_type = "create"
+                ic("Created new attendance:", attendance)
 
-
-            if actions:
+            # SCENARIO 2: Actions provided (UPDATE or CREATE)
+            elif actions:
                 actions = sorted(actions, key=lambda x: x['start'], reverse=True)
                 ic("sorted", actions)
 
@@ -120,7 +175,10 @@ class AttendanceList(ListCreateAPIView):
                     end = parse_datetime_string(end)
 
                 if not start:
-                    return Response({"detail": "'start' required in first action."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {"detail": "'start' required in first action."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 # Try to update existing attendance
                 att_qs = Stuff_Attendance.objects.filter(
@@ -130,14 +188,18 @@ class AttendanceList(ListCreateAPIView):
                 )
 
                 if att_qs.exists():
+                    # UPDATE existing record
                     attendance = att_qs.first()
                     if end:
                         attendance.check_out = end
                     attendance.actions = actions
+                    attendance.was_created = False  # Mark as updated
                     attendance.save()
                     updated = True
+                    operation_type = "update"
+                    ic("Updated existing attendance:", attendance)
                 else:
-                    # Create new attendance
+                    # CREATE new record
                     attendance = Stuff_Attendance.objects.create(
                         employee=employee,
                         check_in=start,
@@ -145,10 +207,14 @@ class AttendanceList(ListCreateAPIView):
                         date=date,
                         not_marked=not_marked,
                         status=att_status,
-                        actions=actions
+                        actions=actions,
+                        was_created=True  # Mark as newly created
                     )
+                    created = True
+                    operation_type = "create"
+                    ic("Created new attendance with actions:", attendance)
 
-
+            # SCENARIO 3: Both check-in and check-out (CREATE)
             elif check_in and check_out:
                 exists = Stuff_Attendance.objects.filter(
                     check_in=check_in,
@@ -156,8 +222,12 @@ class AttendanceList(ListCreateAPIView):
                     employee=employee,
                     date=date
                 ).exists()
+
                 if exists:
-                    return Response({"detail": "Attendance already exists."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {"detail": "Attendance already exists."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 attendance = Stuff_Attendance.objects.create(
                     employee=employee,
@@ -165,22 +235,27 @@ class AttendanceList(ListCreateAPIView):
                     check_out=check_out,
                     date=date,
                     not_marked=not_marked,
-                    status=att_status
+                    status=att_status,
+                    was_created=True  # Mark as newly created
                 )
+                created = True
+                operation_type = "create"
+                ic("Created complete attendance:", attendance)
 
-            ic("------------")
+            ic("Operation completed:", operation_type)
 
+            # Calculate penalty amount
             amount = calculate_penalty(
                 user_id=attendance.employee.id,
                 check_in=attendance.check_in,
                 check_out=attendance.check_out
             )
-            ic(amount)
+            ic("Calculated amount:", amount)
             attendance.amount = amount
             attendance.save()
 
             # Update or create employee attendance summary
-            emp_attendance, created = Employee_attendance.objects.get_or_create(
+            emp_attendance, emp_created = Employee_attendance.objects.get_or_create(
                 employee=employee,
                 date=attendance.date,
                 defaults={"status": "In_office"},
@@ -192,14 +267,21 @@ class AttendanceList(ListCreateAPIView):
             return Response(
                 {
                     "updated": updated,
-                    "created": not updated,
+                    "created": created,
+                    "operation_type": operation_type,
                     "attendance": self.get_serializer(attendance).data,
-                    "amount": attendance.amount
+                    "amount": attendance.amount,
+                    "employee_attendance_created": emp_created
                 },
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
             )
+
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            ic("Error occurred:", str(e))
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
