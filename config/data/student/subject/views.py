@@ -26,7 +26,11 @@ class SubjectList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Subject.objects.all()
-        filial = self.request.query_params.get('filial', None)
+        filial = self.request.GET.get('filial', None)
+        is_language = self.request.GET.get('is_language', None)
+
+        if is_language:
+            queryset = queryset.filter(is_language=is_language.capitalize())
         if filial:
             queryset = queryset.filter(filial=filial)
         return queryset

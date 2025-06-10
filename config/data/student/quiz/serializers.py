@@ -1,11 +1,8 @@
-from datetime import datetime, timedelta
-
 from icecream import ic
-from rest_framework import serializers, status
-from rest_framework.response import Response
+from rest_framework import serializers
 
 from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, Exam, Gaps, \
-    QuizGaps, Pairs, ExamRegistration
+    QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest
 from .tasks import handle_task_creation
 from ..homeworks.models import Homework
 from ..student.models import Student
@@ -18,24 +15,25 @@ from ...parents.models import Relatives
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
+
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ["id", "text", "is_correct"]
 
+
 class QuestionSerializer(serializers.ModelSerializer):
     answers = serializers.PrimaryKeyRelatedField(many=True, queryset=Answer.objects.all())
     text = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all())
+
     class Meta:
         model = Question
-        fields = ["id","quiz" ,"text", "answers"]
-
-
+        fields = ["id", "quiz", "text", "answers"]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["text"] = QuizGapsSerializer(instance.text).data
-        rep["answers"] = AnswerSerializer(instance.answers.all(),many=True).data
+        rep["answers"] = AnswerSerializer(instance.answers.all(), many=True).data
         return rep
 
 
@@ -49,14 +47,65 @@ class QuizGapsSerializer(serializers.ModelSerializer):
         ]
 
 
+class ObjectiveTestSerializer(serializers.ModelSerializer):
+    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
+    question = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all(), allow_null=True)
+    answers = serializers.PrimaryKeyRelatedField(many=True, queryset=Answer.objects.all(), allow_null=True)
+
+    class Meta:
+        model = ObjectiveTest
+        fields = [
+            "id",
+            "quiz",
+            "question",
+            "answers",
+            "created_at"
+        ]
+
+
+class Cloze_TestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cloze_Test
+        fields = [
+            "id",
+            "quiz",
+            "questions",
+            "answer",
+            "created_at"
+        ]
+
+
+class ImageObjectiveTestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImageObjectiveTest
+        fields = [
+            "id",
+            "quiz",
+            "image",
+            "answer",
+            "created_at"
+        ]
+
+
+class True_FalseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = True_False
+        fields = [
+            "id",
+            "quiz",
+            "question",
+            "answer",
+        ]
+
+
 class QuizSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
     fill_gap = serializers.SerializerMethodField()
     vocabularies = serializers.SerializerMethodField()
     match_pairs = serializers.SerializerMethodField()
 
-    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
-    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(),allow_null=True)
+    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
+    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
 
     class Meta:
         model = Quiz
@@ -72,6 +121,7 @@ class QuizSerializer(serializers.ModelSerializer):
             "match_pairs",
             "created_at",
         ]
+
     def get_questions(self, obj):
         return QuestionSerializer(Question.objects.filter(quiz=obj), many=True).data
 
@@ -79,19 +129,19 @@ class QuizSerializer(serializers.ModelSerializer):
         return FillGapsSerializer(Fill_gaps.objects.filter(quiz=obj), many=True).data  # ✅ correct
 
     def get_vocabularies(self, obj):
-        return VocabularySerializer(Vocabulary.objects.filter(quiz=obj),context=self.context ,many=True).data
+        return VocabularySerializer(Vocabulary.objects.filter(quiz=obj), context=self.context, many=True).data
 
     def get_match_pairs(self, obj):
         return MatchPairsSerializer(MatchPairs.objects.filter(quiz=obj), many=True).data
-
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
         rep["theme"] = (
-            ThemeSerializer(instance.theme,include_only=["id","title"]).data
+            ThemeSerializer(instance.theme, include_only=["id", "title"]).data
         )
         return rep
+
 
 class QuizImportSerializer(serializers.Serializer):
     title = serializers.CharField()
@@ -118,9 +168,11 @@ class QuizImportSerializer(serializers.Serializer):
 
         return quiz
 
+
 class UserAnswerSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     answer_id = serializers.IntegerField()
+
 
 class GapsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -129,6 +181,7 @@ class GapsSerializer(serializers.ModelSerializer):
             "id",
             "name"
         ]
+
 
 class FillGapsSerializer(serializers.ModelSerializer):
     quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
@@ -164,16 +217,17 @@ class FillGapsSerializer(serializers.ModelSerializer):
 
         return fill_gaps_instance
 
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["question"] = QuizGapsSerializer(instance.question).data
         rep["gaps"] = GapsSerializer(instance.gaps.all(), many=True).data  # ← FIXED HERE
         return rep
 
+
 class VocabularySerializer(serializers.ModelSerializer):
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
-    voice = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    voice = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+
     class Meta:
         model = Vocabulary
         fields = [
@@ -185,11 +239,13 @@ class VocabularySerializer(serializers.ModelSerializer):
             "in_uzbek",
             "created_at",
         ]
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["photo"] = FileUploadSerializer(instance.photo,context=self.context).data
-        rep["voice"] = FileUploadSerializer(instance.voice,context=self.context).data
+        rep["photo"] = FileUploadSerializer(instance.photo, context=self.context).data
+        rep["voice"] = FileUploadSerializer(instance.voice, context=self.context).data
         return rep
+
 
 class PairsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -201,8 +257,10 @@ class PairsSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
 class MatchPairsSerializer(serializers.ModelSerializer):
-    pairs = serializers.PrimaryKeyRelatedField(queryset=Pairs.objects.all(),many=True,allow_null=True)
+    pairs = serializers.PrimaryKeyRelatedField(queryset=Pairs.objects.all(), many=True, allow_null=True)
+
     class Meta:
         model = MatchPairs
         fields = [
@@ -214,16 +272,17 @@ class MatchPairsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["pairs"] = PairsSerializer(instance.pairs.all(),many=True).data
+        rep["pairs"] = PairsSerializer(instance.pairs.all(), many=True).data
         return rep
 
+
 class ExamSerializer(serializers.ModelSerializer):
-    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(),allow_null=True)
-    students = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),many=True,allow_null=True)
-    materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
-    homework = serializers.PrimaryKeyRelatedField(queryset=Homework.objects.all(),allow_null=True)
-    students_xml = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
-    results = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
+    students = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=True, allow_null=True)
+    materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    homework = serializers.PrimaryKeyRelatedField(queryset=Homework.objects.all(), allow_null=True)
+    students_xml = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    results = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
 
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
@@ -267,12 +326,12 @@ class ExamSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["results"] = FileUploadSerializer(instance.results).data
-        rep["students"] =(
-            StudentSerializer(instance.students.all(),include_only=["id","first_name", "last_name","phone"], many=True).data
+        rep["students"] = (
+            StudentSerializer(instance.students.all(), include_only=["id", "first_name", "last_name", "phone"],
+                              many=True).data
         ) if instance.students else None
         return rep
 
