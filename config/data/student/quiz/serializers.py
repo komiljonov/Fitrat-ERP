@@ -288,8 +288,6 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
         exam  = attrs.get("exam")
         student = attrs.get("student")
 
-        ic(exam)
-        exam = Exam.objects.filter(id=exam).first()
 
         if not exam:
             return Response({"error": "Imtihon topilmadi."}, status=status.HTTP_404_NOT_FOUND)
