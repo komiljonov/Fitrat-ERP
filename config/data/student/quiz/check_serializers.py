@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from data.student.quiz.serializers import ObjectiveTestSerializer, Cloze_TestSerializer, True_FalseSerializer
-
 
 class MultipleChoiceSerializer(serializers.Serializer):
     question_id = serializers.UUIDField()
@@ -43,32 +41,37 @@ class MatchPairsSerializer(serializers.Serializer):
         ref_name = "Check_MatchPairsSerializer"
 
 
-class ObjectiveAnswerSerializer(serializers.Serializer):
-    question_id = serializers.UUIDField()
-    answer_id = serializers.UUIDField()
-
-    class Meta:
-        ref_name = "Check_ObjectiveAnswerSerializer"
-
-
-class Cloze_TestAnswerSerializer(serializers.Serializer):
-    question_ids = serializers.ListField(child=serializers.CharField())
-    answer_ids = serializers.UUIDField()
-
-    class Meta:
-        ref_name = "Check_Cloze_TestSerializer"
-
-
-class ImageObjectiveTestAnswerSerializer(serializers.Serializer):
-    answer_id = serializers.UUIDField()
+# NEW: Objective Test Answer Serializer (field-based)
+class ObjectiveTestAnswerSerializer(serializers.Serializer):
+    objective_id = serializers.UUIDField()
+    answer_ids = serializers.ListField(child=serializers.UUIDField())  # Multiple answers
 
     class Meta:
         ref_name = "Check_ObjectiveTestAnswerSerializer"
 
 
-class True_FalseAnswerSerializer(serializers.Serializer):
-    question_id = serializers.UUIDField()
-    answer = serializers.ChoiceField(choices=["True", "False", "Not Given"])
+# NEW: Cloze Test Answer Serializer (field-based)
+class ClozeTestAnswerSerializer(serializers.Serializer):
+    cloze_id = serializers.UUIDField()
+    word_sequence = serializers.ListField(child=serializers.CharField())  # Word order
+
+    class Meta:
+        ref_name = "Check_ClozeTestAnswerSerializer"
+
+
+# NEW: Image Objective Test Answer Serializer (field-based)
+class ImageObjectiveTestAnswerSerializer(serializers.Serializer):
+    image_objective_id = serializers.UUIDField()
+    answer = serializers.CharField()  # Text answer
+
+    class Meta:
+        ref_name = "Check_ImageObjectiveTestAnswerSerializer"
+
+
+# NEW: True/False Answer Serializer (field-based)
+class TrueFalseAnswerSerializer(serializers.Serializer):
+    true_false_id = serializers.UUIDField()
+    choice = serializers.BooleanField()  # True/False choice
 
     class Meta:
         ref_name = "Check_TrueFalseAnswerSerializer"
@@ -82,10 +85,12 @@ class QuizCheckSerializer(serializers.Serializer):
     vocabularies = VocabularyAnswerSerializer(many=True, required=False)
     listening = ListeningAnswerSerializer(many=True, required=False)
     match_pairs = MatchPairsSerializer(many=True, required=False)
-    objective = ObjectiveTestSerializer(many=True, required=False)
-    cloze = Cloze_TestSerializer(many=True, required=False)
-    image_objective = ImageObjectiveTestAnswerSerializer(many=True, required=False)
-    true_false = True_FalseSerializer(many=True, required=False)
+
+    # Updated to use field-based serializers
+    objective_test = ObjectiveTestAnswerSerializer(many=True, required=False)
+    cloze_test = ClozeTestAnswerSerializer(many=True, required=False)
+    image_objective_test = ImageObjectiveTestAnswerSerializer(many=True, required=False)
+    true_false = TrueFalseAnswerSerializer(many=True, required=False)
 
     class Meta:
         ref_name = "Check_QuizCheckSerializer"
