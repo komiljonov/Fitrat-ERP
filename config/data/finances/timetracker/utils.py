@@ -229,7 +229,7 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
 
                 ic(total_penalty)
                 Finance.objects.create(
-                    action="EXPENSE",
+                    action="INCOME",
                     kind=bonus_kind,
                     amount=bonus_amount,
                     stuff=user,
@@ -249,7 +249,7 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
 
                 total_penalty += penalty_amount
                 Finance.objects.create(
-                    action="INCOME",
+                    action="EXPENSE",
                     kind=penalty_kind,
                     amount=penalty_amount,
                     stuff=user,
