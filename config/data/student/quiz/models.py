@@ -170,6 +170,12 @@ class ExamRegistration(BaseModel):
                                            related_name='registrated_student')
     exam : "Exam" = models.ForeignKey("quiz.Exam", on_delete=models.SET_NULL, null=True, blank=True,
                                       related_name='registration_exam')
+    status = models.CharField(choices=[
+        ("Active", "Active"),
+        ("Inactive", "Inactive"),
+    ],max_length=255, null=True, blank=True)
+    is_participating = models.BooleanField(default=True)
     mark = models.CharField(max_length=255, null=True, blank=True)
+    student_comment = models.TextField(null=True, blank=True)
     def __str__(self):
         return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"

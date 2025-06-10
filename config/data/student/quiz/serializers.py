@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from icecream import ic
+from lxml.saxparser import comment
 from rest_framework import serializers, status
 from rest_framework.response import Response
 
@@ -11,6 +12,9 @@ from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ..subject.models import Subject, Theme
 from ..subject.serializers import SubjectSerializer, ThemeSerializer
+from ...account.models import CustomUser
+from ...notifications.models import Notification
+from ...parents.models import Relatives
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
@@ -280,7 +284,10 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "id",
             "student",
             "exam",
+            "status",
+            "is_participating",
             "mark",
+            "student_comment",
             "created_at",
         ]
 
@@ -291,11 +298,27 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
         if not exam:
             raise serializers.ValidationError({"exam": "Imtihon topilmadi."})
 
-        now = datetime.now()
-        exam_start_datetime = datetime.combine(exam.date, exam.start_time)
+        if attrs.get("is_participating") == False:
+            Notification.objects.create(
+                user=student,
+                comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
+                        f" {attrs.get("student_comment")} sabab bilan inkor etdingiz.",
+                choice="Examination",
+                come_from=attrs.get("id")
+            )
+            parents = CustomUser.objects.filter(phone__in=Relatives.objects.filter(student=student).all())
+            if parents:
+                for parent in parents:
+                    Notification.objects.create(
+                        user=parent,
+                        comment=f"Farzandingiz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
+                                f" {attrs.get("student_comment")} sabab bilan inkor etdi.",
+                        choice="Examination",
+                        come_from=attrs.get("id")
+                    )
 
         # If less than 12 hours remain before the exam starts
-        if exam_start_datetime - now < timedelta(hours=12):
+        if attrs.get("status") == "Inactive":
             raise serializers.ValidationError({"exam": "Imtihondan ro'yxatdan o'tish vaqti yakunlangan."})
 
         if ExamRegistration.objects.filter(exam=exam, student=student).exists():

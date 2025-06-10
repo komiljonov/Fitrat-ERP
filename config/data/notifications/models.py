@@ -17,6 +17,7 @@ class Notification(BaseModel):
         ("Comments", "Comments"),
         ("Monitoring", "Monitoring"),
         ("Results", "Results"),
+        ("Examination", "Examination"),
     ])
     come_from = models.TextField(null=True,blank=True)
     is_read = models.BooleanField(default=False)
