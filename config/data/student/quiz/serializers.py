@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from icecream import ic
-from lxml.saxparser import comment
 from rest_framework import serializers, status
 from rest_framework.response import Response
 
