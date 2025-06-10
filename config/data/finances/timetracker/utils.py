@@ -215,6 +215,7 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
             # === Early Arrival Bonus
             if time_diff < 0:
                 early_minutes = abs(int(time_diff))
+                early_minutes += 23
                 ic("early minutes: ", early_minutes)
 
                 if matched_timeline.bonus:
@@ -240,6 +241,7 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
             # === Late Arrival Penalty
             elif time_diff > 0:
                 late_minutes = int(time_diff)
+                late_minutes += 23
                 if matched_timeline.penalty:
                     penalty_amount = late_minutes * matched_timeline.penalty
                 else:
@@ -267,6 +269,7 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
 
                 if check_out < timeline_end_dt:
                     early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
+                    early_minutes += 23
                     penalty_amount = early_minutes * per_minute_salary
                     total_penalty += penalty_amount
                     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
