@@ -406,8 +406,6 @@ class AttendanceList(ListCreateAPIView):
                     check_in=start_time,
                     check_out=end_time,
                     amount=amount,
-                    type="PENALTY",  # optional: customize as needed
-                    comment=f"Auto penalty for being outside"
                 )
             att.save()
 
