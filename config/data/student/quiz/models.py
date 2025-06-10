@@ -161,7 +161,7 @@ class Exam(BaseModel):
                                              related_name='homeworks_quiz')
 
     def __str__(self):
-        return f"{self.quiz.title}    {self.type}"
+        return f"{self.quiz.title}   {self.type}"
 
 
 class ExamRegistration(BaseModel):
