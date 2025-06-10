@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, Exam, Gaps, \
     QuizGaps, Pairs, ExamRegistration
+from .tasks import handle_task_creation
 from ..homeworks.models import Homework
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
@@ -325,3 +326,8 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"student": "Talaba allaqachon imtihon uchun ro'yxatdan o'tgan."})
 
         return attrs
+
+    # In your serializer
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        handle_task_creation.delay(instance.exam.id)  # Pass exam ID to task
