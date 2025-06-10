@@ -56,52 +56,52 @@ class AttendanceList(ListCreateAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
 
-    def get_queryset(self):
-        """
-        Filter queryset based on query parameters for created/updated status
-        """
-        queryset = super().get_queryset()
+    # def get_queryset(self):
+    #     """
+    #     Filter queryset based on query parameters for created/updated status
+    #     """
+    #     queryset = super().get_queryset()
 
         # Get query parameters
-        created_filter = self.request.query_params.get('created', None)
-        updated_filter = self.request.query_params.get('updated', None)
-        operation_type = self.request.query_params.get('operation_type', None)
-
-        # Filter by creation status (you'll need to add this field to your model)
-        if created_filter is not None:
-            if created_filter.lower() == 'true':
-                # Filter for newly created records (assuming you have a 'was_created' field)
-                queryset = queryset.filter(was_created=True)
-            elif created_filter.lower() == 'false':
-                queryset = queryset.filter(was_created=False)
-
-        # Filter by update status
-        if updated_filter is not None:
-            if updated_filter.lower() == 'true':
-                # Records that have been updated (check_out is not null or actions exist)
-                queryset = queryset.filter(
-                    Q(check_out__isnull=False) | Q(actions__isnull=False)
-                )
-            elif updated_filter.lower() == 'false':
-                # Records that haven't been updated
-                queryset = queryset.filter(check_out__isnull=True, actions__isnull=True)
-
-        # Filter by operation type (create/update)
-        if operation_type:
-            if operation_type.lower() == 'create':
-                # Recently created records (last 24 hours as example)
-                yesterday = timezone.now() - timezone.timedelta(days=1)
-                queryset = queryset.filter(
-                    created_at__gte=yesterday,
-                    check_out__isnull=True
-                )
-            elif operation_type.lower() == 'update':
-                # Records with check_out or actions (indicating updates)
-                queryset = queryset.filter(
-                    Q(check_out__isnull=False) | Q(actions__isnull=False)
-                )
-
-        return queryset
+        # created_filter = self.request.query_params.get('created', None)
+        # updated_filter = self.request.query_params.get('updated', None)
+        # operation_type = self.request.query_params.get('operation_type', None)
+        #
+        # # Filter by creation status (you'll need to add this field to your model)
+        # if created_filter is not None:
+        #     if created_filter.lower() == 'true':
+        #         # Filter for newly created records (assuming you have a 'was_created' field)
+        #         queryset = queryset.filter(was_created=True)
+        #     elif created_filter.lower() == 'false':
+        #         queryset = queryset.filter(was_created=False)
+        #
+        # # Filter by update status
+        # if updated_filter is not None:
+        #     if updated_filter.lower() == 'true':
+        #         # Records that have been updated (check_out is not null or actions exist)
+        #         queryset = queryset.filter(
+        #             Q(check_out__isnull=False) | Q(actions__isnull=False)
+        #         )
+        #     elif updated_filter.lower() == 'false':
+        #         # Records that haven't been updated
+        #         queryset = queryset.filter(check_out__isnull=True, actions__isnull=True)
+        #
+        # # Filter by operation type (create/update)
+        # if operation_type:
+        #     if operation_type.lower() == 'create':
+        #         # Recently created records (last 24 hours as example)
+        #         yesterday = timezone.now() - timezone.timedelta(days=1)
+        #         queryset = queryset.filter(
+        #             created_at__gte=yesterday,
+        #             check_out__isnull=True
+        #         )
+        #     elif operation_type.lower() == 'update':
+        #         # Records with check_out or actions (indicating updates)
+        #         queryset = queryset.filter(
+        #             Q(check_out__isnull=False) | Q(actions__isnull=False)
+        #         )
+        #
+        # return queryset
 
     def create(self, request, *args, **kwargs):
         try:
