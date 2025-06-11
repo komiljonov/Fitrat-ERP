@@ -143,15 +143,14 @@ class QuizCheckAPIView(APIView):
             ball=ball
         )
 
-        if ball >= 75:
-            homework = Homework.objects.filter(theme=theme).first()
-            Points.objects.create(
-                point=20,
-                from_test=mastering,
-                from_homework=homework,
-                student=student,
-                comment=f"{homework.theme.title} mavzusining vazifalarini bajarganligi uchun 20 ball taqdim etildi!"
-            )
+        homework = Homework.objects.filter(theme=theme).first()
+        Points.objects.create(
+            point=ball,
+            from_test=mastering,
+            from_homework=homework,
+            student=student,
+            comment=f"{homework.theme.title} mavzusining vazifalarini bajarganligi uchun {ball} ball taqdim etildi!"
+        )
 
     # Type-specific checking methods remain the same as in your original
     # (check_standard, check_fill_gap, check_vocabulary, etc.)
