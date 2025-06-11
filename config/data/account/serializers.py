@@ -8,6 +8,7 @@ from ..account.permission import PhoneAuthBackend
 from ..department.filial.models import Filial
 from ..finances.compensation.models import Compensation, Bonus, Page
 from ..finances.finance.models import Casher
+from ..student.student.models import Student
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
@@ -212,6 +213,7 @@ class UserSerializer(serializers.ModelSerializer):
     penalty = serializers.SerializerMethodField()
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
     is_linked = serializers.SerializerMethodField()
+    student_id = serializers.SerializerMethodField()
 
     #
     # # def __init__(self, *args, **kwargs):
@@ -245,10 +247,13 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "is_linked","calculate_penalties","calculate_bonus","phone", "role", "penalty" ,"pages", "files",
-            "photo", "filial", "balance","salary","extra_number","is_call_center","second_user",
+            "photo", "filial", "balance","salary","extra_number","is_call_center","second_user","student_id",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation","monitoring",
             "updated_at","is_archived"
         )
+
+    def get_student_id(self, obj) :
+        return Student.objects.filter(user=obj).values_list("id", flat=True).first()
 
     def get_penalty(self, obj):
         # Use .aggregate() to get the sum of the 'amount' field
