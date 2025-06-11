@@ -805,22 +805,71 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
     def _calculate_outside_penalty(self, employee_id: str, action: dict,
                                    penalty_info: dict, action_index: int) -> dict:
-        """Calculate penalty for individual OUTSIDE action"""
+        """Calculate penalty for individual OUTSIDE action based on user timeline"""
         try:
-            duration_minutes = action['duration_seconds'] / 60
+            user = CustomUser.objects.get(id=employee_id)
+            action_date = action['start_datetime']
+            day_of_week = action_date.strftime('%A')
+
+            # Get the user's timeline for this day
+            try:
+                timeline = UserTimeLine.objects.get(
+                    user=user,
+                    day=day_of_week
+                )
+            except UserTimeLine.DoesNotExist:
+                # If no specific timeline for this day, use default working hours (9-18)
+                default_start = datetime.strptime('09:00', '%H:%M').time()
+                default_end = datetime.strptime('18:00', '%H:%M').time()
+                timeline = type('', (), {
+                    'start_time': default_start,
+                    'end_time': default_end,
+                    'is_weekend': False,
+                    'penalty': 0,
+                    'bonus': 0
+                })()
+
+            # Calculate time differences
+            action_start = action['start_datetime'].time()
+            action_end = action['end_datetime'].time()
+
+            # Calculate minutes outside working hours
+            outside_minutes = 0
+
+            # Before working hours
+            if action_start < timeline.start_time:
+                start = min(action_end, timeline.start_time)
+                outside_minutes += (datetime.combine(action_date, timeline.start_time) -
+                                    datetime.combine(action_date, action_start)).total_seconds() / 60
+
+            # After working hours
+            if action_end > timeline.end_time:
+                end = max(action_start, timeline.end_time)
+                outside_minutes += (datetime.combine(action_date, action_end) -
+                                    datetime.combine(action_date, timeline.end_time)).total_seconds() / 60
+
+            # If it's a weekend, all time is considered outside
+            if timeline.is_weekend:
+                outside_minutes = (action['end_datetime'] - action['start_datetime']).total_seconds() / 60
+
             per_minute_penalty = penalty_info.get('per_minute_salary', 0)
 
-            # Calculate penalty amount
-            penalty_amount = duration_minutes * per_minute_penalty
+            # Apply penalty rate from timeline if exists
+            if hasattr(timeline, 'penalty') and timeline.penalty > 0:
+                per_minute_penalty = timeline.penalty
 
-            # Create finance record for this specific outside period
+            # Calculate penalty amount
+            penalty_amount = outside_minutes * per_minute_penalty
+
+            # Create finance record
             try:
                 self._update_finance_records(
                     employee_id,
+                    action["start_datetime"].date(),
                     penalty_amount,
                     action['start_datetime'],
                     action['end_datetime'],
-                    duration_minutes
+                    outside_minutes
                 )
                 finance_created = True
             except Exception as e:
@@ -831,12 +880,23 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 'action_index': action_index,
                 'start_time': action['start'],
                 'end_time': action['end'],
-                'duration_minutes': round(duration_minutes, 2),
+                'duration_minutes': round(outside_minutes, 2),
                 'penalty_amount': round(penalty_amount, 2),
                 'per_minute_penalty': per_minute_penalty,
-                'finance_record_created': finance_created
+                'finance_record_created': finance_created,
+                'timeline_used': {
+                    'day': day_of_week,
+                    'working_hours': f"{timeline.start_time}-{timeline.end_time}",
+                    'is_weekend': timeline.is_weekend
+                }
             }
 
+        except CustomUser.DoesNotExist:
+            raise AttendanceError(
+                "Employee not found",
+                "EMPLOYEE_NOT_FOUND",
+                {'employee_id': employee_id}
+            )
         except Exception as e:
             raise AttendanceError(
                 f"Failed to calculate penalty for action {action_index}",
