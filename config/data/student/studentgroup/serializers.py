@@ -67,6 +67,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             group_data = {
                 "group_is" : instance.group.id,
                 'group_name': instance.group.name,
+                "level": instance.group.level.id,
                 'course': instance.group.course.name,
                 'teacher': instance.group.teacher.full_name if instance.group.teacher else None,
                 'room_number': instance.group.room_number.room_number,
