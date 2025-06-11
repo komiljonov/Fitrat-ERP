@@ -6,7 +6,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from icecream import ic
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
@@ -471,96 +471,52 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             with transaction.atomic():
-                # Get the existing attendance record
-                attendance_instance = self.get_object()
-                previous_amount = attendance_instance.amount or 0
-                previous_check_in = attendance_instance.check_in
-                previous_check_out = attendance_instance.check_out
+                # Get and update the attendance record
+                attendance = self.get_object()
+                previous_amount = attendance.amount or 0
 
-                # Get the user associated with this attendance
-                user = attendance_instance.employee
-
-                # Process update with serializer
-                serializer = self.get_serializer(attendance_instance, data=data, partial=True)
-                if not serializer.is_valid():
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+                serializer = self.get_serializer(attendance, data=data, partial=True)
+                serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
                 new_amount = updated_attendance.amount or 0
 
                 # Process actions if provided
-                actions = self._validate_and_parse_actions(data.get('actions', []))
-                penalty_result = self._process_action_penalties(
-                    user.id,
-                    actions,
+                penalty_result = {}
+                if 'actions' in data:
+                    actions = self._validate_and_parse_actions(data['actions'])
+                    penalty_result = self._process_action_penalties(
+                        attendance.employee.id,
+                        actions,
+                        updated_attendance.check_in,
+                        updated_attendance.check_out
+                    )
+
+                # Update Employee_attendance
+                if updated_attendance.check_in:
+                    self._update_employee_attendance(
+                        attendance.employee,
+                        updated_attendance.check_in.date(),
+                        updated_attendance,
+                        previous_amount,
+                        new_amount
+                    )
+
+                # Update Finance records
+                finance_updates = self._update_finance_records(
+                    attendance.employee,
+                    updated_attendance.check_in.date() if updated_attendance.check_in else None,
+                    previous_amount,
+                    new_amount,
                     updated_attendance.check_in,
                     updated_attendance.check_out
                 )
-
-                # Update Employee_attendance amount
-                attendance_date = updated_attendance.check_in.date() if updated_attendance.check_in else None
-                if attendance_date:
-                    try:
-                        # Get all Employee_attendance records that might be affected
-                        employee_atts = Employee_attendance.objects.filter(
-                            employee=user,
-                            date=attendance_date
-                        )
-
-                        for employee_att in employee_atts:
-                            # Subtract the previous amount and add the new amount
-                            employee_att.amount -= previous_amount
-                            employee_att.amount += new_amount
-                            employee_att.save()
-
-                            # Ensure the updated attendance is linked
-                            if not employee_att.attendance.filter(id=updated_attendance.id).exists():
-                                employee_att.attendance.add(updated_attendance)
-                    except Employee_attendance.DoesNotExist:
-                        # Create new if doesn't exist
-                        employee_att = Employee_attendance.objects.create(
-                            employee=user,
-                            date=attendance_date,
-                            amount=new_amount
-                        )
-                        employee_att.attendance.add(updated_attendance)
-
-                # Update existing Finance records
-                finance_records = Finance.objects.filter(
-                    stuff=user,
-                    action="EXPENSE",
-                    kind__action="EXPENSE",
-                    kind__name__icontains="Bonus",
-                    created_at__date=attendance_date
-                )
-
-                for finance in finance_records:
-                    # Update amount if it matches the previous amount
-                    if finance.amount == previous_amount:
-                        finance.amount = new_amount
-
-                        # Update comment with new times and amount
-                        check_in = updated_attendance.check_in
-                        check_out = updated_attendance.check_out
-                        duration_minutes = (check_out - check_in).total_seconds() / 60
-
-                        finance.comment = (
-                            f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
-                            f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-                            f"{new_amount:.2f} sum jarima yozildi!"
-                        )
-                        finance.save()
 
                 return Response({
                     'success': True,
                     'attendance': serializer.data,
                     'penalty_calculation': penalty_result,
                     'message': 'Attendance updated successfully',
-                    'financial_updates': {
-                        'previous_amount': previous_amount,
-                        'new_amount': new_amount,
-                        'finance_records_updated': finance_records.count()
-                    }
+                    'financial_updates': finance_updates
                 }, status=status.HTTP_200_OK)
 
         except Stuff_Attendance.DoesNotExist:
@@ -568,7 +524,12 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 'error': 'Attendance record not found',
                 'error_code': 'NOT_FOUND'
             }, status=status.HTTP_404_NOT_FOUND)
-
+        except serializers.ValidationError as e:
+            return Response({
+                'error': 'Invalid data',
+                'error_code': 'VALIDATION_ERROR',
+                'details': e.detail
+            }, status=status.HTTP_400_BAD_REQUEST)
         except AttendanceError as e:
             logger.error(f"Attendance error during update: {e.message}", extra=e.details)
             return Response({
@@ -576,7 +537,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 'error_code': e.error_code,
                 'details': e.details
             }, status=status.HTTP_400_BAD_REQUEST)
-
         except Exception as e:
             logger.error(f"Unexpected error in attendance update: {str(e)}", exc_info=True)
             return Response({
@@ -587,7 +547,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
     def _process_attendance_with_error_handling(self, data: dict) -> Response:
         """Process attendance data with comprehensive error handling"""
-
         # Validate required fields
         self._validate_required_fields(data)
 
@@ -597,9 +556,20 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         # Process attendance with transaction
         with transaction.atomic():
             try:
-                # Create/update attendance record
-                attendance_result = self._create_or_update_attendance(data)
+                # Create new attendance record
+                serializer = self.get_serializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                attendance = serializer.save()
+                attendance_result = serializer.data
+
                 user = CustomUser.objects.filter(second_user=data.get("employee")).first()
+                if not user:
+                    raise AttendanceError(
+                        "Employee not found",
+                        "EMPLOYEE_NOT_FOUND",
+                        {'employee_id': data.get('employee')}
+                    )
+
                 # Process individual action penalties/bonuses
                 penalty_result = self._process_action_penalties(
                     user.id,
@@ -608,6 +578,16 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     data.get('check_out')
                 )
 
+                # Update Employee_attendance
+                if attendance.check_in:
+                    self._update_employee_attendance(
+                        user,
+                        attendance.check_in.date(),
+                        attendance,
+                        0,  # No previous amount for new record
+                        attendance.amount or 0
+                    )
+
                 return Response({
                     'success': True,
                     'attendance': attendance_result,
@@ -615,6 +595,12 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     'message': 'Attendance processed successfully'
                 }, status=status.HTTP_201_CREATED)
 
+            except serializers.ValidationError as e:
+                raise AttendanceError(
+                    "Invalid attendance data",
+                    "VALIDATION_ERROR",
+                    {'errors': e.detail}
+                )
             except Exception as e:
                 logger.error(f"Transaction failed: {str(e)}")
                 raise AttendanceError(
@@ -741,27 +727,21 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
         raise ValueError(f"Unable to parse datetime: {datetime_str}")
 
-    def _create_or_update_attendance(self, data: dict) -> dict:
-        """Create or update attendance record with error handling"""
-        try:
-            serializer = self.get_serializer(data=data)
-            if serializer.is_valid():
-                attendance = serializer.save()
-                return serializer.data
-            else:
-                raise AttendanceError(
-                    "Invalid attendance data",
-                    "SERIALIZER_ERROR",
-                    {'validation_errors': serializer.errors}
-                )
-        except Exception as e:
-            if isinstance(e, AttendanceError):
-                raise
-            raise AttendanceError(
-                "Failed to create attendance record",
-                "ATTENDANCE_CREATION_ERROR",
-                {'error': str(e)}
-            )
+    def _update_employee_attendance(self, employee, date, attendance, prev_amount, new_amount):
+        """Update the employee's attendance record with the new amount"""
+        employee_att, created = Employee_attendance.objects.get_or_create(
+            employee=employee,
+            date=date,
+            defaults={'amount': new_amount}
+        )
+
+        if not created:
+            employee_att.amount -= prev_amount
+            employee_att.amount += new_amount
+            employee_att.save()
+
+        if not employee_att.attendance.filter(id=attendance.id).exists():
+            employee_att.attendance.add(attendance)
 
     def _process_action_penalties(self, employee_id: str, actions: List[dict],
                                   check_in: str, check_out: str) -> dict:
@@ -835,7 +815,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
             # Create finance record for this specific outside period
             try:
-                self._create_penalty_finance_record(
+                self._update_finance_records(
                     employee_id,
                     penalty_amount,
                     action['start_datetime'],
@@ -864,94 +844,39 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 {'action_index': action_index, 'error': str(e)}
             )
 
-    def _create_penalty_finance_record(self, employee_id: str, amount: float,
-                                       start_time: datetime, end_time: datetime,
-                                       duration_minutes: float) -> None:
-        """Create or update attendance and finance record for penalty."""
-        try:
-            user = CustomUser.objects.get(id=employee_id)
+    def _update_finance_records(self, employee, date, prev_amount, new_amount, check_in, check_out):
+        """Update related finance records with the new amount"""
+        if not date:
+            return {'updated': 0}
 
-            # Ensure start and end times are timezone-aware
-            if timezone.is_naive(start_time):
-                start_time = timezone.make_aware(start_time)
-            if timezone.is_naive(end_time):
-                end_time = timezone.make_aware(end_time)
+        finance_records = Finance.objects.filter(
+            stuff=employee,
+            action="EXPENSE",
+            kind__action="EXPENSE",
+            kind__name__icontains="Bonus",
+            created_at__date=date,
+            amount=prev_amount
+        )
 
-            # Check if identical attendance already exists
-            att = Stuff_Attendance.objects.filter(
-                employee=user,
-                check_in=start_time,
-                check_out=end_time,
-                amount=amount
-            ).first()
+        updated_count = 0
+        duration_minutes = (check_out - check_in).total_seconds() / 60 if check_in and check_out else 0
 
-            if att:
-                logger.info("Attendance record already exists — skipping creation.")
-                return  # Skip if exact attendance already exists
-
-            # Find or create penalty Kind
-            penalty_kind = Kind.objects.filter(
-                action="EXPENSE",
-                name__icontains="Bonus"
-            ).first()
-
-            if not penalty_kind:
-                raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
-
-            # Build comment for finance record
-            comment = (
-                f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
+        for finance in finance_records:
+            finance.amount = new_amount
+            finance.comment = (
+                f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
                 f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-                f"{amount:.2f} sum jarima yozildi!"
+                f"{new_amount:.2f} sum jarima yozildi!"
             )
+            finance.save()
+            updated_count += 1
 
-            # Check if a matching Finance record already exists
-            existing_finance = Finance.objects.filter(
-                action="EXPENSE",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            ).exists()
+        return {
+            'previous_amount': prev_amount,
+            'new_amount': new_amount,
+            'updated': updated_count
+        }
 
-            if existing_finance:
-                logger.info("Finance record already exists — skipping creation.")
-                return  # Skip if the same finance record exists
-
-            # Create new attendance
-            att = Stuff_Attendance.objects.create(
-                employee=user,
-                check_in=start_time,
-                check_out=end_time,
-                amount=amount,
-            )
-
-            # Link to Employee_attendance
-            attendance_date = start_time.date()
-            employee_att, _ = Employee_attendance.objects.get_or_create(
-                employee=user,
-                date=attendance_date,
-                defaults={'amount': 0}
-            )
-
-            # Add this Stuff_Attendance if not already linked
-            if not employee_att.attendance.filter(id=att.id).exists():
-                employee_att.attendance.add(att)
-                employee_att.amount += amount
-                employee_att.save()
-
-            # Create finance penalty record
-            Finance.objects.create(
-                action="EXPENSE",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            )
-
-        except Exception as e:
-            logger.error(f"Failed to create penalty finance record: {str(e)}")
-            raise
 
 class UserTimeLineList(ListCreateAPIView):
     queryset = UserTimeLine.objects.all()
