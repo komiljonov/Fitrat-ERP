@@ -2,7 +2,6 @@ import pandas as pd
 from django.db import transaction
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from icecream import ic
 from openpyxl.reader.excel import load_workbook
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404
@@ -154,6 +153,7 @@ class QuizCheckAPIView(APIView):
 
     # Type-specific checking methods remain the same as in your original
     # (check_standard, check_fill_gap, check_vocabulary, etc.)
+
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
