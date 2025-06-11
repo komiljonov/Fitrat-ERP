@@ -139,6 +139,8 @@ class True_FalseSerializer(serializers.ModelSerializer):
         return rep
 
 
+import random
+
 class QuizSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
 
@@ -155,11 +157,14 @@ class QuizSerializer(serializers.ModelSerializer):
             "homework",
             "subject",
             "questions",
+            "count",
+            "time",
             "created_at",
         ]
 
     def get_questions(self, obj):
-        # Get and tag each question type
+        count = self.data.get('count')
+
         questions = []
 
         for item in Question.objects.filter(quiz=obj):
@@ -202,15 +207,16 @@ class QuizSerializer(serializers.ModelSerializer):
             data["type"] = "true_false"
             questions.append(data)
 
-        # Randomize all question types together
+        # Shuffle and return up to `count` questions
         random.shuffle(questions)
-        return questions
+        return questions[:min(count, len(questions))]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
         rep["theme"] = ThemeSerializer(instance.theme, include_only=["id", "title"]).data
         return rep
+
 
 
 class QuizImportSerializer(serializers.Serializer):
