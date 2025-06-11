@@ -69,7 +69,7 @@ class Group(BaseModel):
     ended_at = models.TimeField(default=now)
 
     start_date = models.DateTimeField(default=timezone.now)
-    finish_date = models.DateTimeField(default=timezone.now)
+    finish_date = models.DateTimeField(null=True, blank=True)
 
     comment = models.TextField(null=True, blank=True)
 
