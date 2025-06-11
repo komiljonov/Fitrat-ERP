@@ -1,17 +1,22 @@
 import calendar
 from datetime import date, datetime, timedelta
+from decimal import Decimal, InvalidOperation
+from typing import List
 
 import pytz
 from django.db.models import Q
 from django.utils.timezone import make_aware, is_aware
 from icecream import ic
+from rest_framework.exceptions import ValidationError
 
 from data.account.models import CustomUser
 from data.finances.finance.models import Finance, Kind
 from data.finances.timetracker.models import UserTimeLine
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from data.finances.timetracker.views import AttendanceError
 from data.student.groups.models import Group
 from data.student.studentgroup.models import StudentGroup
-
 
 TASHKENT_TZ = pytz.timezone("Asia/Tashkent")
 
@@ -152,7 +157,8 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                     comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun {penalty_amount} sum jarima yozildi! "
                 )
 
-                print(f"Late penalty for {user} at group {group.name}: {penalty_amount:.2f} ({late_minutes:.0f} min late)")
+                print(
+                    f"Late penalty for {user} at group {group.name}: {penalty_amount:.2f} ({late_minutes:.0f} min late)")
 
         # === Check-out Penalty
         if check_out:
@@ -176,7 +182,8 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                             stuff=user,
                             comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun {penalty} sum jarima yozildi! "
                         )
-                        print(f"Early leave penalty for {user} from group {group.name}: {penalty:.2f} ({early_minutes:.0f} min early)")
+                        print(
+                            f"Early leave penalty for {user} from group {group.name}: {penalty:.2f} ({early_minutes:.0f} min early)")
 
             if early_penalties:
                 total_penalty += max(early_penalties)
@@ -194,28 +201,68 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
 
             timeline_start_dt = localize(datetime.combine(check_in_date, timeline.start_time))
 
-            if check_in >= timeline_start_dt and (check_in - timeline_start_dt) <= min_diff:
+            if check_in >= timeline_start_dt:
                 time_diff = check_in - timeline_start_dt
-                if not matched_timeline or time_diff < (check_in - localize(datetime.combine(check_in_date, matched_timeline.start_time))):
+                if not matched_timeline or time_diff < (
+                        check_in - localize(datetime.combine(check_in_date, matched_timeline.start_time))):
                     matched_timeline = timeline
 
         if matched_timeline:
             expected_start_time = matched_timeline.start_time
             timeline_start_dt = localize(datetime.combine(check_in_date, expected_start_time))
 
-            late_minutes = int((check_in - timeline_start_dt).total_seconds() // 60)
-            penalty_amount = late_minutes * per_minute_salary
-            total_penalty += penalty_amount
+            time_diff = (check_in - timeline_start_dt).total_seconds() // 60
+
+            ic(time_diff)
 
             bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-            finance = Finance.objects.create(
-                action="EXPENSE",
-                kind=bonus_kind,
-                amount=penalty_amount,
-                stuff=user,
-                comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun {penalty_amount} sum jarima yozildi! "
-            )
-            print(f"Employee late penalty: {penalty_amount:.2f} ({late_minutes} min late)")
+            penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
+
+            # === Early Arrival Bonus
+            if time_diff < 0:
+                early_minutes = abs(int(time_diff))
+                early_minutes += 23
+                ic("early minutes: ", early_minutes)
+
+                if matched_timeline.bonus:
+                    bonus_amount = early_minutes * matched_timeline.bonus
+                else:
+                    bonus_amount = early_minutes * per_minute_salary
+
+                ic(bonus_amount)
+
+                total_penalty -= bonus_amount  # Subtract bonus from total penalty
+
+                ic(total_penalty)
+                Finance.objects.create(
+                    action="INCOME",
+                    kind=bonus_kind,
+                    amount=bonus_amount,
+                    stuff=user,
+                    comment=f"Bugun {check_in.time()} da ishga {early_minutes} minut erta kelganingiz uchun"
+                            f" {bonus_amount} sum bonus yozildi! "
+                )
+                print(f"Early arrival bonus for {user}: {bonus_amount:.2f} ({early_minutes} min early)")
+
+            # === Late Arrival Penalty
+            elif time_diff > 0:
+                late_minutes = int(time_diff)
+                late_minutes += 23
+                if matched_timeline.penalty:
+                    penalty_amount = late_minutes * matched_timeline.penalty
+                else:
+                    penalty_amount = late_minutes * per_minute_salary
+
+                total_penalty += penalty_amount
+                Finance.objects.create(
+                    action="EXPENSE",
+                    kind=penalty_kind,
+                    amount=penalty_amount,
+                    stuff=user,
+                    comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun"
+                            f" {penalty_amount} sum jarima yozildi! "
+                )
+                print(f"Late penalty for {user}: {penalty_amount:.2f} ({late_minutes} min late)")
 
         if check_out:
             matched_checkout_timeline = next(
@@ -228,6 +275,7 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
 
                 if check_out < timeline_end_dt:
                     early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
+                    early_minutes += 23
                     penalty_amount = early_minutes * per_minute_salary
                     total_penalty += penalty_amount
                     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
@@ -236,8 +284,89 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
                         kind=bonus_kind,
                         amount=penalty_amount,
                         stuff=user,
-                        comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun {penalty_amount} sum jarima yozildi! "
+                        comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun"
+                                f" {penalty_amount} sum jarima yozildi! "
                     )
                     print(f"Employee early leave penalty: {penalty_amount:.2f} ({early_minutes} min early)")
 
     return round(total_penalty, 2)
+
+
+def parse_datetime_string(value):
+    try:
+        # Fix the format: replace underscore with dash if needed
+        value = value.replace('_', '-')
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+    except Exception as e:
+        raise ValidationError(f"Invalid datetime format: {value}") from e
+
+
+# def get_affective_time_amount(user_id,check_in, check_out):
+#     user = CustomUser.objects.filter(id=user_id).first()
+#
+#     if not user:
+#         return 0
+#
+#     user
+
+
+# Utility functions for error handling
+def safe_decimal_conversion(value, field_name: str) -> Decimal:
+    """Safely convert value to Decimal with error handling"""
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError) as e:
+        raise AttendanceError(
+            f"Invalid numeric value for {field_name}",
+            "INVALID_NUMERIC_VALUE",
+            {'field': field_name, 'value': value, 'error': str(e)}
+        )
+
+
+def validate_time_sequence(actions: List[dict]) -> None:
+    """Validate that action times make logical sense"""
+    for i in range(len(actions) - 1):
+        current_end = actions[i]['end_datetime']
+        next_start = actions[i + 1]['start_datetime']
+
+        if current_end > next_start:
+            raise AttendanceError(
+                f"Time overlap detected between actions {i + 1} and {i + 2}",
+                "TIME_OVERLAP_ERROR",
+                {
+                    'action1_end': actions[i]['end'],
+                    'action2_start': actions[i + 1]['start']
+                }
+            )
+
+
+# Error handling middleware for attendance operations
+class AttendanceErrorHandler:
+    """Centralized error handling for attendance operations"""
+
+    @staticmethod
+    def handle_validation_error(error: ValidationError) -> dict:
+        """Handle DRF validation errors"""
+        return {
+            'error': 'Validation failed',
+            'error_code': 'VALIDATION_ERROR',
+            'details': error.detail if hasattr(error, 'detail') else str(error)
+        }
+
+    @staticmethod
+    def handle_database_error(error: Exception) -> dict:
+        """Handle database-related errors"""
+        return {
+            'error': 'Database operation failed',
+            'error_code': 'DATABASE_ERROR',
+            'details': {'message': str(error)}
+        }
+
+    @staticmethod
+    def handle_calculation_error(error: Exception) -> dict:
+        """Handle calculation-related errors"""
+        return {
+            'error': 'Calculation failed',
+            'error_code': 'CALCULATION_ERROR',
+            'details': {'message': str(error)}
+        }

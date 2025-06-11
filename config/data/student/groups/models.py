@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -25,6 +26,8 @@ class Day(BaseModel):
     def __str__(self):
         return self.name
 
+def one_year_from_now():
+    return timezone.now() + timedelta(days=365)
 
 class Group(BaseModel):
     name = models.CharField(max_length=100)
@@ -65,11 +68,12 @@ class Group(BaseModel):
 
     is_secondary = models.BooleanField(default=False, help_text='Is there secondary group?')
 
-    started_at = models.TimeField(default=now)  # Use timezone-aware default
+    started_at = models.TimeField(default=now)
     ended_at = models.TimeField(default=now)
 
     start_date = models.DateTimeField(default=timezone.now)
-    finish_date = models.DateTimeField(default=timezone.now)
+
+    finish_date = models.DateTimeField(default=one_year_from_now)
 
     comment = models.TextField(null=True, blank=True)
 

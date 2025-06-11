@@ -8,7 +8,7 @@ from .models import Employee_attendance, UserTimeLine, Stuff_Attendance
 
 @admin.register(Employee_attendance)
 class FinansAdmin(admin.ModelAdmin):
-    list_display = ('employee__full_name', "amount","status")
+    list_display = ('employee__full_name', "amount","status","date")
     search_fields = ('employee__full_name', "amount","status")
     list_filter = ('employee__full_name', "amount","status")
 

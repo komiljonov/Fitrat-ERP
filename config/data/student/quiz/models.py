@@ -4,36 +4,23 @@ from data.command.models import BaseModel
 from data.student.homeworks.models import Homework
 from data.student.student.models import Student
 from data.student.subject.models import Subject
+from data.student.subject.models import Theme
+from data.upload.models import File
 
 
 class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    theme: "Subject" = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL,
+    theme: "Theme" = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL,
                                          null=True, blank=True, related_name='quiz_theme')
-    type = models.CharField(choices=[
-        ("Online", "Online"),
-        ("Offline", "Offline"),
-        ("Theme", "Theme"),
-    ], max_length=255, null=True, blank=True)
+
     subject: "Subject" = models.ForeignKey('subject.Subject', on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='quiz_subject')
-    students_excel = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
-                                       related_name='quiz_students_excel')
-    results_excel = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
-                                      related_name='quiz_results_excel')
 
-    materials = models.ManyToManyField('upload.File', related_name='quiz_materials')
+    homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL,null=True,blank=True,related_name="quiz_homework",)
 
-    students_count = models.IntegerField(default=0)
-    date = models.DateField(null=True, blank=True)
-    start_time = models.TimeField(null=True, blank=True)
-    end_time = models.TimeField(null=True, blank=True)
-
-    is_homework = models.BooleanField(default=False)
-    homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL, null=True, blank=True,
-                                             related_name='homeworks_quiz')
-
+    count = models.IntegerField(default=20)
+    time = models.IntegerField(default=60)
     def __str__(self):
         return self.title
 
@@ -56,6 +43,8 @@ class Question(BaseModel):
                                          null=True, blank=True, related_name="questions_gaps")
     answers: "Answer" = models.ManyToManyField("quiz.Answer", related_name="questions_answers")
 
+    comment = models.TextField(blank=True,null=True)
+
     def __str__(self):
         return self.text.name
 
@@ -69,6 +58,8 @@ class Vocabulary(BaseModel):
                               related_name='vocabulary_voice')
     in_english = models.CharField(max_length=255, null=True, blank=True)
     in_uzbek = models.CharField(max_length=255, null=True, blank=True)
+
+    comment = models.TextField(blank=True,null=True)
 
     def __str__(self):
         return f"{self.quiz.name}    {self.in_english}    {self.in_uzbek}"
@@ -91,6 +82,8 @@ class Fill_gaps(BaseModel):
                                              related_name='fill_gaps_question')
     gaps: "Gaps" = models.ManyToManyField("quiz.Gaps")
 
+    comment = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.quiz.title}    {self.question.name}"
 
@@ -110,6 +103,8 @@ class Listening(BaseModel):
 
     ])
     answers: "Answer" = models.ManyToManyField(Answer)
+
+    comment = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.quiz.title}    {self.question.name}"
@@ -131,27 +126,126 @@ class MatchPairs(BaseModel):
                                      related_name='match_pairs_quiz')
     pairs: "Pairs" = models.ManyToManyField("quiz.Pairs", related_name='match_pairs_pair')
 
+    comment = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.quiz.title} "
+
+
+class ObjectiveTest(BaseModel):
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='objectivetest_quiz')
+    question : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,
+                                              related_name='objectivetest_question')
+    answers : "Answer" = models.ManyToManyField(Answer)
+
+    comment = models.TextField(blank=True, null=True)
+    def __str__(self):
+        return f"{self.quiz.title}    {self.question.name}"
+
+
+class Cloze_Test(BaseModel):
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='clozetest_quiz')
+    questions : "QuizGaps" = models.ManyToManyField("quiz.QuizGaps", related_name='cloze_questions')
+    answer : "Answer" = models.ForeignKey("quiz.Answer", on_delete=models.SET_NULL, null=True, blank=True,
+                                          related_name='cloze_answer')
+
+    comment = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.quiz.title}  {self.answer.text}"
+
+
+class ImageObjectiveTest(BaseModel):
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='image_cloze_quiz')
+    image : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='image_cloze_quiz')
+    answer : "Answer" = models.ForeignKey("quiz.Answer", on_delete=models.SET_NULL, null=True, blank=True,
+                                          related_name='image_cloze_answer')
+
+    comment = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.quiz.title}  {self.answer.text}"
+
+
+class True_False(BaseModel):
+    quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='True_False_test_quiz')
+    question: "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,
+                                             related_name='True_False_test_question')
+    answer = models.CharField(choices=[
+        ("True", "True"),
+        ("False", "False"),
+        ("Not Given", "Not Given"),
+    ],max_length=15,null=True,blank=True)
+
+    comment = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.quiz.title}  {self.answer.text}"
 
 
 class Exam(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='exam_quiz')
+
+    choice = models.CharField(choices=[
+        ("Weekly", "Weekly"),
+        ("Monthly", "Monthly"),
+        ("Unit", "Unit"),
+        ("Mid_of_course", "Mid_of_course"),
+        ("Level","Level"),
+        ("Mock", "Mock"),
+        ("Homework", "Homework"),
+    ], max_length=255, null=True, blank=True)
+
     type = models.CharField(choices=[
         ("Online", "Online"),
         ("Offline", "Offline"),
     ], max_length=255, null=True, blank=True)
+
+    is_mandatory = models.BooleanField(default=False)
+
     students = models.ManyToManyField(Student)
+
     subject: "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='exam_subject')
+
     students_xml = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='exam_students_xml')
-    exam_materials = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
-                                       related_name='exam_materials')
+
     results = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='exam_results')
-    end_date = models.DateTimeField(null=True, blank=True)
+
+    materials = models.ManyToManyField('upload.File', related_name='quiz_materials')
+
+    students_count = models.IntegerField(default=0)
+    date = models.DateField(null=True, blank=True)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+
+    homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL, null=True, blank=True,
+                                             related_name='homeworks_quiz')
 
     def __str__(self):
-        return f"{self.quiz.title}    {self.type}"
+        return f"{self.quiz.title}   {self.type}"
+
+
+class ExamRegistration(BaseModel):
+
+    student: "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='registrated_student')
+    exam : "Exam" = models.ForeignKey("quiz.Exam", on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='registration_exam')
+    status = models.CharField(choices=[
+        ("Active", "Active"),
+        ("Inactive", "Inactive"),
+    ],max_length=255, null=True, blank=True)
+    is_participating = models.BooleanField(default=True)
+    mark = models.CharField(max_length=255, null=True, blank=True)
+    student_comment = models.TextField(null=True, blank=True)
+    def __str__(self):
+        return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"

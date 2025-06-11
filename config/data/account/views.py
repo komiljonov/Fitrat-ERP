@@ -23,6 +23,7 @@ from .serializers import UserCreateSerializer, UserUpdateSerializer, CheckNumber
 from .utils import build_weekly_schedule
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
 from ..finances.timetracker.sinx import TimetrackerSinc
+from ..student.student.models import Student
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -52,8 +53,12 @@ class RegisterAPIView(CreateAPIView):
 
         tt = TimetrackerSinc()
         external_response = tt.create_data(external_data)
-        user.second_user = external_response.get("id")
-        user.save()
+
+
+        if external_response and external_response.get("id"):
+            user.second_user = external_response.get("id")
+            user.save()
+
 
         return Response({
             "success": True,
@@ -85,7 +90,13 @@ class UserList(ListAPIView):
         is_archived = self.request.query_params.get('is_archived', None)
 
         subject = self.request.query_params.get('subject', None)
+
+        search = self.request.GET.get('search', None)
+
         queryset = CustomUser.objects.filter().exclude(role__in=["Student", "Parents"])
+
+        if search:
+            queryset = queryset.filter(full_name__icontains=search)
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
@@ -107,21 +118,26 @@ class TT_Data(APIView):
         tt = TimetrackerSinc()
         tt_data = tt.get_data()
 
+
         count = 0
         if tt_data:
 
             for user in tt_data:
                 ic(user)
+                phone = "+" + user["phone_number"] if not user["phone_number"].startswith('+') else user["phone_number"]
+                ic(phone)
                 if user:
-                    check = CustomUser.objects.filter(full_name=user['name']).exists()
+                    check = CustomUser.objects.filter(phone=phone).exists()
                     if check:
-                        custom_user = CustomUser.objects.get(full_name=user['name'])
+                        custom_user = CustomUser.objects.get(phone=phone)
                         try:
                             custom_user.second_user = user['id']
                             custom_user.save()
                         except Exception as e:
+                            ic(e)
                             continue
                         count += 1
+                        ic("updated")
                         if user:
                             continue
                 else:
@@ -150,11 +166,13 @@ class CustomAuthToken(TokenObtainPairView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
         filial = list(user.filial.values_list('pk', flat=True))  # Get a list of filial IDs
+        student_id = Student.objects.filter(user=user.id).values_list('id', flat=True).first()
 
         return Response({
             'access_token': access_token,
             'refresh_token': refresh_token,
             'user_id': user.pk,
+            "student_id": student_id,
             'phone': user.phone,
             'role': user.role,
             'filial': filial,
@@ -242,9 +260,12 @@ class StuffRolesView(ListAPIView):
         filial = self.request.query_params.get('filial')
         role = self.request.query_params.get('role')
         is_call_operator = self.request.query_params.get('is_call_operator')
+        search = self.request.GET.get('search')
 
         queryset = CustomUser.objects.all().order_by('-created_at')
 
+        if search:
+            queryset = queryset.filter(full_name__icontains=search)
         if subject:
             queryset = queryset.filter(teachers_groups__course__subject_id=subject)
 
