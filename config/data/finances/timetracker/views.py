@@ -148,13 +148,13 @@ class AttendanceList(ListCreateAPIView):
                     stuff=user,
                     action="EXPENSE",
                     amount=previous_amount,
-                    kind=Kind.objects.filter(action="EXPENSE",name__icontains="Bonus").first()
+                    kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
                 ).first()
 
                 if finance:
                     finance.amount = updated_attendance.amount or 0
                     finance.save()
-                    finance.comment=comment
+                    finance.comment = comment
                     finance.save()
 
                 return Response({
