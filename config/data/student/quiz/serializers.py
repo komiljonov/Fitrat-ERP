@@ -163,7 +163,7 @@ class QuizSerializer(serializers.ModelSerializer):
         ]
 
     def get_questions(self, obj):
-        count = self.data.get('count')
+        count = obj.count or 20
 
         questions = []
 
