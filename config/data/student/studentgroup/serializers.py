@@ -5,11 +5,12 @@ from ..groups.models import Group, SecondaryGroup
 from ..groups.serializers import SecondaryGroupSerializer
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
-from ..subject.models import Level
+from ..subject.models import Level, Subject
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
+from ...upload.models import File
 
 
 class StudentsGroupSerializer(serializers.ModelSerializer):
@@ -66,10 +67,17 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         if instance.group:
 
+            subject = instance.group.course.subject
+            subject_data = {
+                "name": subject.name,
+                "photo": subject.image.url if subject.image else None,
+            }
+
             group_data = {
                 "group_is" : instance.group.id,
                 'group_name': instance.group.name,
                 "level": instance.group.level.id if instance.group and instance.group.level else None,
+                "subject": subject_data if subject_data else None,
                 'course': instance.group.course.name,
                 'teacher': instance.group.teacher.full_name if instance.group.teacher else None,
                 'room_number': instance.group.room_number.room_number,
