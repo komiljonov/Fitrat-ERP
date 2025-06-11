@@ -92,8 +92,6 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         else:
             rep.pop('student', None)
 
-
-
         # Filter out unwanted values
         filtered_data = {key: value for key, value in rep.items() if value not in [{}, None, "", False]}
         return filtered_data
