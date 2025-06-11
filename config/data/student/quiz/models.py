@@ -17,7 +17,7 @@ class Quiz(BaseModel):
     subject: "Subject" = models.ForeignKey('subject.Subject', on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='quiz_subject')
 
-    homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL,related_name="quiz_homework",)
+    homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL,null=True,blank=True,related_name="quiz_homework",)
 
 
     def __str__(self):
