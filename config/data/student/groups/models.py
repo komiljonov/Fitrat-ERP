@@ -68,7 +68,7 @@ class Group(BaseModel):
 
     is_secondary = models.BooleanField(default=False, help_text='Is there secondary group?')
 
-    started_at = models.TimeField(default=now)  # Use timezone-aware default
+    started_at = models.TimeField(default=now)
     ended_at = models.TimeField(default=now)
 
     start_date = models.DateTimeField(default=timezone.now)
