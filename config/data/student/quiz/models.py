@@ -19,7 +19,8 @@ class Quiz(BaseModel):
 
     homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL,null=True,blank=True,related_name="quiz_homework",)
 
-
+    count = models.IntegerField(default=20)
+    time = models.IntegerField(default=60)
     def __str__(self):
         return self.title
 
