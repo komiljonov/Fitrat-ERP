@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -69,7 +70,7 @@ class Group(BaseModel):
     ended_at = models.TimeField(default=now)
 
     start_date = models.DateTimeField(default=timezone.now)
-    finish_date = models.DateTimeField(null=True, blank=True)
+    finish_date = models.DateTimeField(default=lambda: timezone.now() + timedelta(days=365))
 
     comment = models.TextField(null=True, blank=True)
 
