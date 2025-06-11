@@ -141,13 +141,6 @@ class True_FalseSerializer(serializers.ModelSerializer):
 
 class QuizSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
-    fill_gap = serializers.SerializerMethodField()
-    vocabularies = serializers.SerializerMethodField()
-    match_pairs = serializers.SerializerMethodField()
-    objective_test = serializers.SerializerMethodField()
-    cloze_test = serializers.SerializerMethodField()
-    image_objective_test = serializers.SerializerMethodField()
-    true_false = serializers.SerializerMethodField()
 
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
@@ -159,79 +152,64 @@ class QuizSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "theme",
+            "homework",
             "subject",
             "questions",
-            "fill_gap",
-            "vocabularies",
-            "match_pairs",
-            "objective_test",
-            "cloze_test",
-            "image_objective_test",
-            "true_false",
             "created_at",
         ]
 
     def get_questions(self, obj):
-        questions_data = QuestionSerializer(Question.objects.filter(quiz=obj), many=True).data
-        # Regular questions - answers are already randomized in QuestionSerializer
-        return questions_data
+        # Get and tag each question type
+        questions = []
 
-    def get_fill_gap(self, obj):
-        fill_gaps_data = FillGapsSerializer(Fill_gaps.objects.filter(quiz=obj), many=True).data
-        # Fill gaps can have randomized order of gaps/choices if needed
-        return fill_gaps_data
+        for item in Question.objects.filter(quiz=obj):
+            data = QuestionSerializer(item).data
+            data["type"] = "standard"
+            questions.append(data)
 
-    def get_vocabularies(self, obj):
-        vocab_data = VocabularySerializer(Vocabulary.objects.filter(quiz=obj), context=self.context, many=True).data
-        # Randomize vocabulary items order
-        random.shuffle(vocab_data)
-        return vocab_data
+        for item in Fill_gaps.objects.filter(quiz=obj):
+            data = FillGapsSerializer(item).data
+            data["type"] = "fill_gap"
+            questions.append(data)
 
-    def get_match_pairs(self, obj):
-        match_pairs_data = MatchPairsSerializer(MatchPairs.objects.filter(quiz=obj), many=True).data
-        # Randomize pairs order
-        random.shuffle(match_pairs_data)
-        return match_pairs_data
+        for item in Vocabulary.objects.filter(quiz=obj):
+            data = VocabularySerializer(item, context=self.context).data
+            data["type"] = "vocabulary"
+            questions.append(data)
 
-    def get_objective_test(self, obj):
-        objective_data = ObjectiveTestSerializer(ObjectiveTest.objects.filter(quiz=obj), many=True).data
-        # Answers are already randomized in ObjectiveTestSerializer
-        return objective_data
+        for item in MatchPairs.objects.filter(quiz=obj):
+            data = MatchPairsSerializer(item).data
+            data["type"] = "match_pair"
+            questions.append(data)
 
-    def get_cloze_test(self, obj):
-        # RANDOMIZE CLOZE TEST QUESTIONS ORDER
-        cloze_questions = list(Cloze_Test.objects.filter(quiz=obj))
-        random.shuffle(cloze_questions)
-        cloze_data = Cloze_TestSerializer(cloze_questions, many=True).data
-        return cloze_data
+        for item in ObjectiveTest.objects.filter(quiz=obj):
+            data = ObjectiveTestSerializer(item).data
+            data["type"] = "objective_test"
+            questions.append(data)
 
-    def get_image_objective_test(self, obj):
-        image_objective_data = ImageObjectiveTestSerializer(ImageObjectiveTest.objects.filter(quiz=obj), many=True).data
-        # Answers are already randomized in ImageObjectiveTestSerializer
-        return image_objective_data
+        for item in Cloze_Test.objects.filter(quiz=obj):
+            data = Cloze_TestSerializer(item).data
+            data["type"] = "cloze_test"
+            questions.append(data)
 
-    def get_true_false(self, obj):
-        true_false_data = True_FalseSerializer(True_False.objects.filter(quiz=obj), many=True).data
-        # Answers are already randomized in True_FalseSerializer
-        return true_false_data
+        for item in ImageObjectiveTest.objects.filter(quiz=obj):
+            data = ImageObjectiveTestSerializer(item).data
+            data["type"] = "image_objective"
+            questions.append(data)
+
+        for item in True_False.objects.filter(quiz=obj):
+            data = True_FalseSerializer(item).data
+            data["type"] = "true_false"
+            questions.append(data)
+
+        # Randomize all question types together
+        random.shuffle(questions)
+        return questions
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
-        rep["theme"] = (
-            ThemeSerializer(instance.theme, include_only=["id", "title"]).data
-        )
-
-        # Remove empty question type fields
-        question_fields = [
-            "questions", "fill_gap", "vocabularies", "match_pairs",
-            "objective_test", "cloze_test", "image_objective_test", "true_false"
-        ]
-
-        for field in question_fields:
-            if field in rep and (not rep[field] or rep[field] == [] or rep[field] is None):
-                del rep[field]
-
+        rep["theme"] = ThemeSerializer(instance.theme, include_only=["id", "title"]).data
         return rep
 
 
