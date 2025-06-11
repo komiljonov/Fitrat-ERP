@@ -43,6 +43,8 @@ class Question(BaseModel):
                                          null=True, blank=True, related_name="questions_gaps")
     answers: "Answer" = models.ManyToManyField("quiz.Answer", related_name="questions_answers")
 
+    comment = models.TextField(blank=True,null=True)
+
     def __str__(self):
         return self.text.name
 
@@ -56,6 +58,8 @@ class Vocabulary(BaseModel):
                               related_name='vocabulary_voice')
     in_english = models.CharField(max_length=255, null=True, blank=True)
     in_uzbek = models.CharField(max_length=255, null=True, blank=True)
+
+    comment = models.TextField(blank=True,null=True)
 
     def __str__(self):
         return f"{self.quiz.name}    {self.in_english}    {self.in_uzbek}"
@@ -78,6 +82,8 @@ class Fill_gaps(BaseModel):
                                              related_name='fill_gaps_question')
     gaps: "Gaps" = models.ManyToManyField("quiz.Gaps")
 
+    comment = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.quiz.title}    {self.question.name}"
 
@@ -97,6 +103,8 @@ class Listening(BaseModel):
 
     ])
     answers: "Answer" = models.ManyToManyField(Answer)
+
+    comment = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.quiz.title}    {self.question.name}"
@@ -118,6 +126,8 @@ class MatchPairs(BaseModel):
                                      related_name='match_pairs_quiz')
     pairs: "Pairs" = models.ManyToManyField("quiz.Pairs", related_name='match_pairs_pair')
 
+    comment = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.quiz.title} "
 
@@ -128,6 +138,8 @@ class ObjectiveTest(BaseModel):
     question : "QuizGaps" = models.ForeignKey("quiz.QuizGaps", on_delete=models.SET_NULL, null=True, blank=True,
                                               related_name='objectivetest_question')
     answers : "Answer" = models.ManyToManyField(Answer)
+
+    comment = models.TextField(blank=True, null=True)
     def __str__(self):
         return f"{self.quiz.title}    {self.question.name}"
 
@@ -138,6 +150,9 @@ class Cloze_Test(BaseModel):
     questions : "QuizGaps" = models.ManyToManyField("quiz.QuizGaps", related_name='cloze_questions')
     answer : "Answer" = models.ForeignKey("quiz.Answer", on_delete=models.SET_NULL, null=True, blank=True,
                                           related_name='cloze_answer')
+
+    comment = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.quiz.title}  {self.answer.text}"
 
@@ -149,6 +164,9 @@ class ImageObjectiveTest(BaseModel):
                                        related_name='image_cloze_quiz')
     answer : "Answer" = models.ForeignKey("quiz.Answer", on_delete=models.SET_NULL, null=True, blank=True,
                                           related_name='image_cloze_answer')
+
+    comment = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.quiz.title}  {self.answer.text}"
 
@@ -163,6 +181,8 @@ class True_False(BaseModel):
         ("False", "False"),
         ("Not Given", "Not Given"),
     ],max_length=15,null=True,blank=True)
+
+    comment = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.quiz.title}  {self.answer.text}"

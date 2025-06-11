@@ -30,7 +30,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ["id", "quiz", "text", "answers"]
+        fields = ["id", "quiz", "text", "answers","comment"]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -66,6 +66,7 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
             "quiz",
             "question",
             "answers",
+            "comment",
             "created_at"
         ]
 
@@ -89,6 +90,7 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
             "quiz",
             "questions",
             "answer",
+            "comment",
             "created_at"
         ]
 
@@ -101,6 +103,7 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
             "quiz",
             "image",
             "answer",
+            "comment",
             "created_at"
         ]
 
@@ -124,6 +127,7 @@ class True_FalseSerializer(serializers.ModelSerializer):
             "quiz",
             "question",
             "answer",
+            "comment",
         ]
 
     def to_representation(self, instance):
@@ -138,8 +142,6 @@ class True_FalseSerializer(serializers.ModelSerializer):
 
         return rep
 
-
-import random
 
 class QuizSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
@@ -218,38 +220,6 @@ class QuizSerializer(serializers.ModelSerializer):
         return rep
 
 
-
-class QuizImportSerializer(serializers.Serializer):
-    title = serializers.CharField()
-    description = serializers.CharField(required=False, allow_blank=True)
-    questions = QuestionSerializer(many=True)
-
-    def create(self, validated_data):
-        quiz, created = Quiz.objects.get_or_create(
-            title=validated_data['title'],
-            defaults={'description': validated_data.get('description', '')}
-        )
-
-        for question_data in validated_data['questions']:
-            question = Question.objects.create(
-                quiz=quiz, question_text=question_data['question_text']
-            )
-
-            # Create and add answers to the question
-            answers = [
-                Answer.objects.create(**answer_data)
-                for answer_data in question_data['answers']
-            ]
-            question.answers.set(answers)
-
-        return quiz
-
-
-class UserAnswerSerializer(serializers.Serializer):
-    question_id = serializers.IntegerField()
-    answer_id = serializers.IntegerField()
-
-
 class GapsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Gaps
@@ -266,7 +236,7 @@ class FillGapsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Fill_gaps
-        fields = ["id", "quiz", "question", "gaps"]
+        fields = ["id", "quiz", "question", "gaps","comment"]
 
     def create(self, validated_data):
         gaps_instances = []
@@ -318,6 +288,7 @@ class VocabularySerializer(serializers.ModelSerializer):
             "voice",
             "in_english",
             "in_uzbek",
+            "comment",
             "created_at",
         ]
 
@@ -348,6 +319,7 @@ class MatchPairsSerializer(serializers.ModelSerializer):
             "id",
             "quiz",
             "pairs",
+            "comment",
             "created_at",
         ]
 
