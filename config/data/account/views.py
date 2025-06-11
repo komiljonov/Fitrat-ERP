@@ -23,6 +23,7 @@ from .serializers import UserCreateSerializer, UserUpdateSerializer, CheckNumber
 from .utils import build_weekly_schedule
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
 from ..finances.timetracker.sinx import TimetrackerSinc
+from ..student.student.models import Student
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -165,11 +166,13 @@ class CustomAuthToken(TokenObtainPairView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
         filial = list(user.filial.values_list('pk', flat=True))  # Get a list of filial IDs
+        student_id = Student.objects.filter(user=user.id).values_list('id', flat=True).first()
 
         return Response({
             'access_token': access_token,
             'refresh_token': refresh_token,
             'user_id': user.pk,
+            "student_id": student_id,
             'phone': user.phone,
             'role': user.role,
             'filial': filial,
