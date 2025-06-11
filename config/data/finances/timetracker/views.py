@@ -85,106 +85,6 @@ class AttendanceList(ListCreateAPIView):
                 'error_code': 'INTERNAL_ERROR'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def update(self, request, *args, **kwargs):
-        try:
-            data = request.data
-            attendance_instance = Stuff_Attendance.objects.filter(
-                employee=data.get('employee'),
-                date=data.get('date'),
-                check_in=data.get('check_in'),
-                check_out=data.get('check_out')
-            ).first()
-
-            if not attendance_instance:
-                return Response({
-                    'error': 'Attendance id is required for update',
-                    'error_code': 'MISSING_ID'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            with transaction.atomic():
-
-                previous_amount = attendance_instance.amount or 0
-
-                # Process update with your existing logic but adapted to update instance
-                serializer = self.get_serializer(attendance_instance, data=data, partial=True)
-                if not serializer.is_valid():
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-                updated_attendance = serializer.save()
-
-                # Now reprocess penalties/actions
-                actions = self._validate_and_parse_actions(data.get('actions', []))
-                user = CustomUser.objects.filter(second_user=data.get("employee")).first()
-                penalty_result = self._process_action_penalties(
-                    user.id,
-                    actions,
-                    data.get('check_in'),
-                    data.get('check_out')
-                )
-
-                # Adjust Employee_attendance amount (subtract old, add new)
-                attendance_date = updated_attendance.check_in.date() if updated_attendance.check_in else None
-                if attendance_date:
-                    employee_att, created = Employee_attendance.objects.get_or_create(
-                        employee=user,
-                        date=attendance_date,
-                        defaults={'amount': 0}
-                    )
-                    employee_att.amount -= previous_amount
-                    employee_att.amount += updated_attendance.amount or 0
-                    employee_att.save()
-
-                check_in = data.get("check_in")
-                check_out = data.get("check_out")
-                duration_minutes = (check_out - check_in).total_seconds() / 60
-
-                comment = (
-                    f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
-                    f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-                    f"{updated_attendance.amount:.2f} sum jarima yozildi!"
-                )
-
-                finance = Finance.objects.filter(
-                    stuff=user,
-                    action="EXPENSE",
-                    amount=previous_amount,
-                    kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-                ).first()
-
-                if finance:
-                    finance.amount = updated_attendance.amount or 0
-                    finance.save()
-                    finance.comment = comment
-                    finance.save()
-
-                return Response({
-                    'success': True,
-                    'attendance': serializer.data,
-                    'penalty_calculation': penalty_result,
-                    'message': 'Attendance updated successfully'
-                }, status=status.HTTP_200_OK)
-
-        except Stuff_Attendance.DoesNotExist:
-            return Response({
-                'error': 'Attendance record not found',
-                'error_code': 'NOT_FOUND'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        except AttendanceError as e:
-            logger.error(f"Attendance error during update: {e.message}", extra=e.details)
-            return Response({
-                'error': e.message,
-                'error_code': e.error_code,
-                'details': e.details
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        except Exception as e:
-            logger.error(f"Unexpected error in attendance update: {str(e)}")
-            return Response({
-                'error': 'An unexpected error occurred',
-                'error_code': 'INTERNAL_ERROR'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     def _process_attendance_with_error_handling(self, data: dict) -> Response:
         """Process attendance data with comprehensive error handling"""
 
@@ -562,80 +462,105 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         try:
             data = request.data
-            attendance_instance = Stuff_Attendance.objects.filter(
-                employee=data.get('employee'),
-                date=data.get('date'),
-                check_in=data.get('check_in'),
-                check_out=data.get('check_out')
-            ).first()
+            attendance_id = data.get('id') or kwargs.get('pk')
 
-            if not attendance_instance:
+            if not attendance_id:
                 return Response({
                     'error': 'Attendance id is required for update',
                     'error_code': 'MISSING_ID'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             with transaction.atomic():
-
+                # Get the existing attendance record
+                attendance_instance = self.get_object()
                 previous_amount = attendance_instance.amount or 0
+                previous_check_in = attendance_instance.check_in
+                previous_check_out = attendance_instance.check_out
 
-                # Process update with your existing logic but adapted to update instance
+                # Get the user associated with this attendance
+                user = attendance_instance.employee
+
+                # Process update with serializer
                 serializer = self.get_serializer(attendance_instance, data=data, partial=True)
                 if not serializer.is_valid():
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
                 updated_attendance = serializer.save()
+                new_amount = updated_attendance.amount or 0
 
-                # Now reprocess penalties/actions
+                # Process actions if provided
                 actions = self._validate_and_parse_actions(data.get('actions', []))
-                user = CustomUser.objects.filter(second_user=data.get("employee")).first()
                 penalty_result = self._process_action_penalties(
                     user.id,
                     actions,
-                    data.get('check_in'),
-                    data.get('check_out')
+                    updated_attendance.check_in,
+                    updated_attendance.check_out
                 )
 
-                # Adjust Employee_attendance amount (subtract old, add new)
+                # Update Employee_attendance amount
                 attendance_date = updated_attendance.check_in.date() if updated_attendance.check_in else None
                 if attendance_date:
-                    employee_att, created = Employee_attendance.objects.get_or_create(
-                        employee=user,
-                        date=attendance_date,
-                        defaults={'amount': 0}
-                    )
-                    employee_att.amount -= previous_amount
-                    employee_att.amount += updated_attendance.amount or 0
-                    employee_att.save()
+                    try:
+                        # Get all Employee_attendance records that might be affected
+                        employee_atts = Employee_attendance.objects.filter(
+                            employee=user,
+                            date=attendance_date
+                        )
 
-                check_in = data.get("check_in")
-                check_out = data.get("check_out")
-                duration_minutes = (check_out - check_in).total_seconds() / 60
+                        for employee_att in employee_atts:
+                            # Subtract the previous amount and add the new amount
+                            employee_att.amount -= previous_amount
+                            employee_att.amount += new_amount
+                            employee_att.save()
 
-                comment = (
-                    f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
-                    f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-                    f"{updated_attendance.amount:.2f} sum jarima yozildi!"
-                )
+                            # Ensure the updated attendance is linked
+                            if not employee_att.attendance.filter(id=updated_attendance.id).exists():
+                                employee_att.attendance.add(updated_attendance)
+                    except Employee_attendance.DoesNotExist:
+                        # Create new if doesn't exist
+                        employee_att = Employee_attendance.objects.create(
+                            employee=user,
+                            date=attendance_date,
+                            amount=new_amount
+                        )
+                        employee_att.attendance.add(updated_attendance)
 
-                finance = Finance.objects.filter(
+                # Update existing Finance records
+                finance_records = Finance.objects.filter(
                     stuff=user,
                     action="EXPENSE",
-                    amount=previous_amount,
-                    kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-                ).first()
+                    kind__action="EXPENSE",
+                    kind__name__icontains="Bonus",
+                    created_at__date=attendance_date
+                )
 
-                if finance:
-                    finance.amount = updated_attendance.amount or 0
-                    finance.save()
-                    finance.comment = comment
-                    finance.save()
+                for finance in finance_records:
+                    # Update amount if it matches the previous amount
+                    if finance.amount == previous_amount:
+                        finance.amount = new_amount
+
+                        # Update comment with new times and amount
+                        check_in = updated_attendance.check_in
+                        check_out = updated_attendance.check_out
+                        duration_minutes = (check_out - check_in).total_seconds() / 60
+
+                        finance.comment = (
+                            f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
+                            f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
+                            f"{new_amount:.2f} sum jarima yozildi!"
+                        )
+                        finance.save()
 
                 return Response({
                     'success': True,
                     'attendance': serializer.data,
                     'penalty_calculation': penalty_result,
-                    'message': 'Attendance updated successfully'
+                    'message': 'Attendance updated successfully',
+                    'financial_updates': {
+                        'previous_amount': previous_amount,
+                        'new_amount': new_amount,
+                        'finance_records_updated': finance_records.count()
+                    }
                 }, status=status.HTTP_200_OK)
 
         except Stuff_Attendance.DoesNotExist:
@@ -653,10 +578,11 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            logger.error(f"Unexpected error in attendance update: {str(e)}")
+            logger.error(f"Unexpected error in attendance update: {str(e)}", exc_info=True)
             return Response({
                 'error': 'An unexpected error occurred',
-                'error_code': 'INTERNAL_ERROR'
+                'error_code': 'INTERNAL_ERROR',
+                'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def _process_attendance_with_error_handling(self, data: dict) -> Response:
@@ -1026,7 +952,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         except Exception as e:
             logger.error(f"Failed to create penalty finance record: {str(e)}")
             raise
-
 
 class UserTimeLineList(ListCreateAPIView):
     queryset = UserTimeLine.objects.all()
