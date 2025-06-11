@@ -351,8 +351,8 @@ class QuizListCreateView(ListCreateAPIView):
 
 
 class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
-    queryset = Exam.objects.all()
-    serializer_class = ExamSerializer
+    queryset = Quiz.objects.all()
+    serializer_class = QuizSerializer
 
 
 class AnswerListCreateView(ListCreateAPIView):
