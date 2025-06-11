@@ -259,7 +259,7 @@ class StudentsAvgLearning(APIView):
 
         student_groups = StudentGroup.objects.filter(
             group__id=group_id,
-        ).select_related("student", "lid")
+        ).select_related("student", "lid").distinct()
 
         student_ids = [sg.student.id for sg in student_groups if sg.student]
         lid_ids = [sg.lid.id for sg in student_groups if sg.lid]
@@ -281,7 +281,8 @@ class StudentsAvgLearning(APIView):
                     'full_name': f"{sg.student.first_name} {sg.student.last_name}",
                     "type": "student",
                     'is_archived': sg.student.is_archived,
-                    'is_frozen': sg.student.is_frozen
+                    'is_frozen': sg.student.is_frozen,
+                    'frozen_date': sg.student.frozen_days,
                 }
 
             else:
@@ -290,7 +291,7 @@ class StudentsAvgLearning(APIView):
                     'full_name': f"{sg.lid.first_name} {sg.lid.last_name}",
                     'type': 'lid',
                     'is_archived': sg.lid.is_archived,
-                    'is_frozen': sg.lid.is_frozen
+                    'is_frozen': sg.lid.is_frozen,
                 }
 
             exams = []

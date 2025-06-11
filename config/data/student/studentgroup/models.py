@@ -6,7 +6,6 @@ from data.student.groups.models import Group, SecondaryGroup
 from data.student.student.models import Student
 
 
-# Create your models here.
 class StudentGroup(BaseModel):
     group: "Group" = models.ForeignKey('groups.Group', on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name="student_groups")

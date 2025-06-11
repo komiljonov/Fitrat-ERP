@@ -1,7 +1,8 @@
 from django.urls import  path
 
 from .models import UserTimeLine
-from .views import AttendanceList, AttendanceDetail, UserTimeLineList, UserTimeLineDetail, TimeTrackerList
+from .views import AttendanceList, AttendanceDetail, UserTimeLineList, UserTimeLineDetail, TimeTrackerList, \
+    TimeLineBulkCreate
 
 urlpatterns = [
     path("", AttendanceList.as_view()),
@@ -11,4 +12,6 @@ urlpatterns = [
     path("timeline/<uuid:pk>",UserTimeLineDetail.as_view()),
 
     path("all/",TimeTrackerList.as_view()),
+
+    path("timeline/bulk",TimeLineBulkCreate.as_view()),
 ]

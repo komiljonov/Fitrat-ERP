@@ -28,7 +28,7 @@ def get_sale_for_instance(instance):
 
 
 def apply_discount(price, sale):
-    if sale and sale.sale and sale.sale.amount:
+    if sale and sale.sale and sale.sale.amount and sale.expire_date >= datetime.date.today():
         try:
             sale_percent = Decimal(sale.sale.amount)
             ic("sales_percent", sale_percent)
@@ -72,6 +72,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 user=instance.lid.call_operator,
                 comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan !",
                 come_from=instance.lid,
+                choice="New_Student",
             )
 
         instance.lid.is_student = True
@@ -112,6 +113,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                     user=instance.student.sales_manager,
                     comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashmagan!",
                     come_from=instance.student,
+                    choice="New_Student",
                 )
 
 
@@ -154,11 +156,21 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
             bonus_amount, income_amount = calculate_bonus_and_income(final_price, bonus_percent)
 
-            instance.group.teacher.balance += bonus_amount
-            instance.group.teacher.save(update_fields=["balance"])
+            # instance.group.teacher.balance += bonus_amount
+            # instance.group.teacher.save(update_fields=["balance"])
 
             create_finance_record(
                 "EXPENSE",
+                bonus_amount,
+                teacher=instance.group.teacher,
+                kind=kind,
+                instance=instance,
+                student=instance.student,
+                is_first=is_first_income,
+            )
+
+            create_finance_record(
+                "INCOME",
                 income_amount,
                 kind,
                 instance,
@@ -178,7 +190,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             lesson_days = ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
 
             holidays = []
-            days_off = ["Yakshanba"]
+            days_off = []
 
             lessons_per_month = calculate_lessons(
                 start_date=current_month.strftime("%Y-%m-%d"),
@@ -209,11 +221,19 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
                 bonus_amount, income_amount = calculate_bonus_and_income(per_lesson_price, bonus_percent)
 
-                instance.group.teacher.balance += bonus_amount
-                instance.group.teacher.save(update_fields=["balance"])
-
+                # instance.group.teacher.balance += bonus_amount
+                # instance.group.teacher.save(update_fields=["balance"])
                 create_finance_record(
                     "EXPENSE",
+                    bonus_amount,
+                    teacher=instance.group.teacher,
+                    kind=kind,
+                    instance=instance,
+                    student=instance.student,
+                    is_first=is_first_income,
+                )
+                create_finance_record(
+                    "INCOME",
                     income_amount,
                     kind,
                     instance,

@@ -19,6 +19,7 @@ from rest_framework.views import APIView
 
 from .models import Lid
 from .serializers import LidSerializer
+from ...student.lesson.models import FirstLLesson
 
 
 class LidListCreateView(ListCreateAPIView):
@@ -355,6 +356,8 @@ class LidStatisticsView(ListAPIView):
 
         ordered_new = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                       ordered_stages="YANGI_BUYURTMA", **filter).count()
+
+        ordered_new_fix = queryset.filter(ordered_date__isnull=False, **filter).count()
         ordered_leads_count = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, **filter).count()
         ordered_waiting_leads = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                                 ordered_stages="KUTULMOQDA", **filter).count()
@@ -367,6 +370,8 @@ class LidStatisticsView(ListAPIView):
         all_archived = queryset.filter(is_archived=True, is_student=False, **filter).count()
         archived_lid = queryset.filter(lid_stage_type="NEW_LID", is_student=False, is_archived=True, **filter).count()
 
+        first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID", **filter).count()
+
         response_data = {
             "new_lid_statistics": {
                 "leads_count": leads_count,
@@ -378,10 +383,12 @@ class LidStatisticsView(ListAPIView):
             "ordered_statistics": {
                 "ordered_leads_count": ordered_leads_count,
                 "ordered_new": ordered_new,
+                "ordered_new_fix" :ordered_new_fix,
                 "ordered_waiting_leads": ordered_waiting_leads,
                 "ordered_first_lesson_not_come": first_lesson_not,
                 "ordered_first_lesson": first_lesson,
                 "ordered_archived": ordered_archived,
+                "first_lesson_all":first_lesson_all
             },
             "lid_archived": {
                 "all": all_archived,

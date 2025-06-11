@@ -22,6 +22,7 @@ class CustomUser(AbstractUser):
     extra_number = models.CharField(max_length=255, blank=True, null=True)
     chat_id = models.CharField(max_length=255, blank=True, null=True)
     calculate_penalties = models.BooleanField(default=False)
+    calculate_bonus = models.BooleanField(default=False)
     photo : 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, blank=True, null=True)
 
     date_of_birth = models.DateField(blank=True, null=True)

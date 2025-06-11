@@ -28,6 +28,12 @@ def on_create(sender, instance: FirstLLesson, created, **kwargs):
         instance.lid.ordered_stages = "BIRINCHI_DARS_BELGILANGAN"
         instance.lid.save()
 
+        Notification.objects.create(
+            user=instance.group.teacher,
+            comment=f"Sizning {instance.group.name} guruhingizga {instance.lid.first_name} {instance.lid.last_name} sinov darsi uchun qo'shildi!",
+            come_from=instance.lid
+        )
+
 
 @receiver(post_save, sender=ExtraLessonGroup)
 def on_create(sender, instance: ExtraLessonGroup, created, **kwargs):

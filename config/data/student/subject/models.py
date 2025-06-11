@@ -12,6 +12,7 @@ class Subject(BaseModel):
     name = models.CharField(max_length=100)
     label = models.CharField(max_length=100, blank=True, null=True)
     image = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True)
+    is_language = models.BooleanField(default=False)
     has_level = models.BooleanField(default=False)
 
     def __str__(self):

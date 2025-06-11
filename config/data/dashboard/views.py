@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
+from operator import itemgetter
 
 import openpyxl
 from django.db.models import Case, When
@@ -667,7 +668,8 @@ class MonitoringView(APIView):
                 "results": results,
             })
 
-        return Response(teacher_data)
+        sorted_data = sorted(teacher_data, key=itemgetter("overall_point"), reverse=True)
+        return Response(sorted_data, status=status.HTTP_200_OK)
 
 
 class GenerateExcelView(APIView):

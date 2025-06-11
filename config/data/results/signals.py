@@ -137,6 +137,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             user=instance.teacher,
                             comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.amount} sum qo'shildi!",
                             come_from=instance,
+                            choice="Bonus",
                         )
                         logging.info(f"Sizga {level.amount} sum qo'shildi!")
 
@@ -145,6 +146,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             user=instance.teacher,
                             comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.max_ball} ball qo'shildi!",
                             come_from=instance,
+                            choice="Bonus",
                         )
 
                 elif instance.results == "University":
@@ -218,6 +220,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                 user=instance.teacher,
                                 comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.amount} sum qo'shildi!",
                                 come_from=instance,
+                                choice="Bonus",
                             )
                             logging.info(f"Sizga {level.amount} sum qo'shildi!")
 
@@ -225,7 +228,8 @@ def on_update(sender, instance: Results, created, **kwargs):
                             Notification.objects.create(
                                 user=instance.teacher,
                                 comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.max_ball} ball qo'shildi!",
-                                come_from=instance,
+                                come_from=instance.id,
+                                choice="Bonus",
                             )
 
                 elif instance.results == "Certificate":
@@ -446,6 +450,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             user=instance.teacher,
                             comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {subject.amount} sum qo'shildi!",
                             come_from=instance,
+                            choice="Bonus",
                         )
                         logging.info(f"Sizga {subject.amount} sum qo'shildi!")
 
@@ -454,6 +459,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             user=instance.teacher,
                             comment=f"Sizga {'natijangiz' if instance.who == who else 'talabangiz natijasi'} uchun {subject.max_ball} ball qo'shildi!",
                             come_from=instance,
+                            choice="Bonus",
                         )
 
                 else:
@@ -474,4 +480,5 @@ def send_notf(sender, instance : Results, created, **kwargs):
                 user=instance.teacher,
                 comment=f"Sizning {instance.band_score if instance.band_score else instance.result_score} ballik natijangiz bekor qilindi!",
                 come_from=instance,
+                choice="Bonus",
             )
