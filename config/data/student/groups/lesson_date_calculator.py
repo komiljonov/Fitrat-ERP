@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 from dateutil.utils import today
 
 
-def calculate_lessons(start_date, end_date=None, lesson_type="", holidays=[], days_off=[]):
+def calculate_lessons(start_date, end_date:None, lesson_type, holidays, days_off):
     """
     Calculate lesson schedule based on start and end dates, lesson type (specific weekdays), holidays, and days off.
 
@@ -26,6 +26,7 @@ def calculate_lessons(start_date, end_date=None, lesson_type="", holidays=[], da
         end_date = datetime.today() + timedelta(days=365)
     else:
         end_date = datetime.strptime(str(end_date), "%Y-%m-%d")
+
 
     holidays = set(datetime.strptime(date, "%Y-%m-%d") for date in holidays if date)
 
