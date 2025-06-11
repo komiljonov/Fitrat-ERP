@@ -5,6 +5,7 @@ from ..groups.models import Group, SecondaryGroup
 from ..groups.serializers import SecondaryGroupSerializer
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
+from ..subject.models import Level
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from ...lid.new_lid.models import Lid
@@ -64,10 +65,11 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         if instance.group:
+
             group_data = {
                 "group_is" : instance.group.id,
                 'group_name': instance.group.name,
-                "level": instance.group.level.id,
+                "level": instance.group.level.id if instance.group and instance.group.level else None,
                 'course': instance.group.course.name,
                 'teacher': instance.group.teacher.full_name if instance.group.teacher else None,
                 'room_number': instance.group.room_number.room_number,
