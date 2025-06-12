@@ -505,7 +505,7 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
 
 
 class ExamRegisteredStudentAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(

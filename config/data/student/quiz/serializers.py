@@ -372,7 +372,7 @@ class ExamSerializer(serializers.ModelSerializer):
             "choice",
             "type",
             "is_mandatory",
-            "students",
+            # "students",
             "subject",
             "students_xml",
             "materials",
