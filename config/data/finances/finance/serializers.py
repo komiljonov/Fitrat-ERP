@@ -9,6 +9,7 @@ from .models import Finance, Casher, Handover, Kind, PaymentMethod, KpiFinance, 
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
 from ...student.attendance.models import Attendance
+from ...student.groups.serializers import GroupSerializer
 from ...student.student.serializers import StudentSerializer
 
 
@@ -384,6 +385,7 @@ class SaleStudentSerializer(serializers.ModelSerializer):
             "sale",
             "filial",
             "student",
+            "group",
             "lid",
             "expire_date",
             "comment",
@@ -395,6 +397,7 @@ class SaleStudentSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
 
         data["sale"] = SalesSerializer(instance.sale).data
+        data["group"] = GroupSerializer(instance.group).data
         data['creator'] = UserListSerializer(instance.creator).data
         if instance.student:
             data['student'] = StudentSerializer(instance.student).data
