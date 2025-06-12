@@ -84,6 +84,8 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
 
 
 class Cloze_TestSerializer(serializers.ModelSerializer):
+
+    questions = serializers.PrimaryKeyRelatedField(many=True, queryset=QuizGaps.objects.all(), allow_null=True)
     class Meta:
         model = Cloze_Test
         fields = [
@@ -94,6 +96,11 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
             "comment",
             "created_at"
         ]
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["questions"] = QuizGapsSerializer(instance.questions.all(), many=True).data
+        return rep
+
 
 
 class ImageObjectiveTestSerializer(serializers.ModelSerializer):
