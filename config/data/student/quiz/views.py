@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
 
+import openpyxl
 import pandas as pd
 from django.db import transaction
+from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from openpyxl.reader.excel import load_workbook
+from openpyxl.utils import get_column_letter
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -499,3 +502,77 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
         if option:
             qs = qs.filter(option=option)
         return qs
+
+
+class ExamRegisteredStudentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    @swagger_auto_schema(
+        operation_summary="Export Registered Students to Excel",
+        operation_description="Download an Excel file containing registered students for a specific exam.",
+        manual_parameters=[
+            openapi.Parameter(
+                name='exam_id',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                required=True,
+                description="ID of the exam"
+            )
+        ],
+        responses={200: openapi.Response(description="Excel file with registered students")}
+    )
+    def get(self, request):
+        exam_id = request.GET.get("exam_id")
+        if not exam_id:
+            return Response({"detail": "Missing 'exam_id' parameter."}, status=400)
+
+        try:
+            exam = Exam.objects.get(id=exam_id)
+        except Exam.DoesNotExist:
+            return Response({"detail": "Exam not found."}, status=404)
+
+        registrations = ExamRegistration.objects.filter(exam=exam).select_related('student')
+
+        # Create Excel workbook
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Registered Students"
+
+        headers = [
+            "F.I.O", "Telefon raqami", "Ro'yxatdan o'tish", "Imtihonda qatnashadimi?",
+            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi"
+        ]
+        ws.append(headers)
+
+        for reg in registrations:
+            student = reg.student
+            row = [
+                f"{student.first_name} {student.last_name}",
+                student.phone if hasattr(student, "phone") else "",  # Handle nullable email
+                "Faol" if reg.status == "Active" else "Yakunlangan",
+                "Ha" if reg.is_participating == True else "Yo'q",
+                reg.mark,
+                reg.student_comment,
+                reg.option,
+                "Ha" if reg.has_certificate == True else "Yo'q"
+            ]
+            ws.append(row)
+
+        # Auto-adjust column widths
+        for column in ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            ws.column_dimensions[column_letter].width = max_length + 2
+
+        # Prepare response
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        filename = f"registered_students_exam_{exam.date}.xlsx"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        wb.save(response)
+        return response
