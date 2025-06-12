@@ -10,7 +10,7 @@ from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -204,6 +204,31 @@ class QuizListCreateView(ListCreateAPIView):
 
         return queryset
 
+
+class QuizListPgView(ListAPIView):
+    queryset = Quiz.objects.all()
+    serializer_class = QuizSerializer
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
+    pagination_class = None
+
+    def get_queryset(self):
+        queryset = Quiz.objects.all()
+        theme = self.request.GET.get("theme")
+        homework = self.request.GET.get("homework")
+        search = self.request.GET.get("search")
+
+        if homework:
+            queryset = queryset.filter(homework__id=homework)
+
+        if theme:
+            queryset = queryset.filter(theme__id=theme)
+
+        if search:
+            queryset = queryset.filter(title__icontains=search)
+
+        return queryset
+    def get_paginated_response(self, data):
+        return Response(data)
 
 class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Quiz.objects.all()
@@ -584,7 +609,7 @@ class ExamRegisteredStudentAPIView(APIView):
 
         # Prepare response
         response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            content_type="appl  ication/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
         filename = f"registered_students_exam_{exam.date}.xlsx"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
