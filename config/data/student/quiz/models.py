@@ -272,7 +272,7 @@ class ExamRegistration(BaseModel):
         ("6","6"),
     ],max_length=10, null=True, blank=True)
     has_certificate = models.BooleanField(default=False)
-    certificate : "File" = models.ForeignKey("Upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+    certificate : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name='certificate_of_student')
 
     def __str__(self):
