@@ -343,6 +343,7 @@ class ExamSerializer(serializers.ModelSerializer):
     students_xml = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     results = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
 
+    student_count = serializers.SerializerMethodField()
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
         include_only: list | None = kwargs.pop("include_only", None)
@@ -379,13 +380,20 @@ class ExamSerializer(serializers.ModelSerializer):
             "results",
             "lang_group",
             "is_language",
-            "students_count",
+            "student_count",
             "date",
             "start_time",
             "end_time",
             "homework",
             "created_at",
         ]
+
+    def get_student_count(self, instance):
+        count = ExamRegistration.objects.filter(
+            exam=instance,
+            is_participating=True,
+        ).count()
+        return count
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)

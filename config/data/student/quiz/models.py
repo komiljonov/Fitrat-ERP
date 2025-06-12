@@ -230,7 +230,6 @@ class Exam(BaseModel):
 
     is_language = models.BooleanField(default=False)
 
-    students_count = models.IntegerField(default=0)
     date = models.DateField(default=datetime.today() + timedelta(days=4))
     start_time = models.TimeField(null=True, blank=True)
     end_time = models.TimeField(null=True, blank=True)

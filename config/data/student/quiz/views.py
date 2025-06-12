@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from openpyxl.reader.excel import load_workbook
+from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404
@@ -504,6 +505,7 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
         return qs
 
 
+
 class ExamRegisteredStudentAPIView(APIView):
     # permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -534,6 +536,9 @@ class ExamRegisteredStudentAPIView(APIView):
 
         registrations = ExamRegistration.objects.filter(exam=exam).select_related('student')
 
+        # Sort by is_participating (True first)
+        registrations = sorted(registrations, key=lambda r: not r.is_participating)
+
         # Create Excel workbook
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -545,19 +550,28 @@ class ExamRegisteredStudentAPIView(APIView):
         ]
         ws.append(headers)
 
+        # Define fill styles
+        green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # light green
+        red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")    # light red
+
         for reg in registrations:
             student = reg.student
-            row = [
+            row_data = [
                 f"{student.first_name} {student.last_name}",
-                student.phone if hasattr(student, "phone") else "",  # Handle nullable email
+                getattr(student, 'phone', ''),
                 "Faol" if reg.status == "Active" else "Yakunlangan",
-                "Ha" if reg.is_participating == True else "Yo'q",
+                "Ha" if reg.is_participating else "Yo'q",
                 reg.mark,
                 reg.student_comment,
                 reg.option,
-                "Ha" if reg.has_certificate == True else "Yo'q"
+                "Ha" if reg.has_certificate else "Yo'q"
             ]
-            ws.append(row)
+            row = ws.append(row_data)
+
+            # Apply row coloring
+            fill = green_fill if reg.is_participating else red_fill
+            for col in range(1, len(row_data) + 1):
+                ws.cell(row=ws.max_row, column=col).fill = fill
 
         # Auto-adjust column widths
         for column in ws.columns:
