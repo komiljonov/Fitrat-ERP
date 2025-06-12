@@ -6,12 +6,14 @@ from .views import (
     LeftPairsListView, LeftPairsDetailsView, MatchPairsListView, MatchPairsDetailsView, ExamListView, ExamDetailsView,
     QuizGapsListView, QuizGapsDetailsView, QuestionsListCreateView, AnswerListCreateView,
     AnswerRetrieveUpdateDestroyView, QuizCheckAPIView, ExcelQuizUploadAPIView, ExamRegistrationListCreateAPIView,
-    ObjectiveTestView, Cloze_TestView, ImageCloze_TestView, ExamRegisteredStudentAPIView
+    ObjectiveTestView, Cloze_TestView, ImageCloze_TestView, ExamRegisteredStudentAPIView, QuizListPgView
 )
 
 urlpatterns = [
     path('', QuizListCreateView.as_view(), name='quiz-list'),
     path('<uuid:pk>/', QuizRetrieveUpdateDestroyView.as_view(), name='quiz-detail'),
+
+    path("no-pg/",QuizListPgView.as_view(), name='quiz-list-pg'),
 
     path("questions/", QuestionsListCreateView.as_view(), name="question-list"),
     path("questions/<uuid:pk>/", QuestionRetrieveUpdateDestroyView.as_view(), name="question-detail"),
