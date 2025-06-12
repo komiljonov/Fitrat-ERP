@@ -515,7 +515,7 @@ class ExamRegisteredStudentAPIView(APIView):
             openapi.Parameter(
                 name='exam_id',
                 in_=openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
+                type=openapi.TYPE_STRING,
                 required=True,
                 description="ID of the exam"
             )
