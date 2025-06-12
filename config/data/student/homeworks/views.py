@@ -16,7 +16,6 @@ class HomeworkListCreateView(ListCreateAPIView):
     def get_queryset(self):
         group = self.request.query_params.get('group')
         course = self.request.query_params.get('course')  # ✅ fix here
-
         theme = self.request.query_params.get('theme')
         choice = self.request.query_params.get('choice')
 
