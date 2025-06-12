@@ -63,8 +63,6 @@ class Vocabulary(BaseModel):
 
     comment = models.TextField(blank=True,null=True)
 
-    def __str__(self):
-        return f"{self.quiz.name}    {self.in_english}    {self.in_uzbek}"
 
 
 class Gaps(BaseModel):
