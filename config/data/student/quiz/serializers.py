@@ -75,6 +75,8 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
 
         # Randomize answers for objective tests
+        rep["question"] = QuizGapsSerializer(instance.question).data
+
         if instance.answers.exists():
             answers_data = AnswerSerializer(instance.answers.all(), many=True).data
             random.shuffle(answers_data)
@@ -128,6 +130,7 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
 
 
 class True_FalseSerializer(serializers.ModelSerializer):
+    question = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all(), allow_null=True)
     class Meta:
         model = True_False
         fields = [
@@ -141,13 +144,7 @@ class True_FalseSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        # For True/False, we can randomize the order of True/False options
-        # This assumes you have answer choices stored somewhere
-        if hasattr(instance, 'answers') and instance.answers.exists():
-            answers_data = AnswerSerializer(instance.answers.all(), many=True).data
-            random.shuffle(answers_data)
-            rep["answers"] = answers_data
-
+        rep["question"] = QuizGapsSerializer(instance.question).data
         return rep
 
 
