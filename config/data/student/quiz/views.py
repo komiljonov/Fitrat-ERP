@@ -291,9 +291,15 @@ class ExamListView(ListCreateAPIView):
         start_time = self.request.GET.get("start_time")
         end_time = self.request.GET.get("end_time")
         homework = self.request.GET.get("homework")
+        is_language = self.request.GET.get("is_language")
+        lang_group = self.request.GET.get("lang_group")
 
         queryset = Exam.objects.all()
 
+        if is_language:
+            queryset = queryset.filter(is_language=is_language.capitalize())
+        if lang_group:
+            queryset = queryset.filter(lang_group=lang_group)
         if quiz:
             queryset = queryset.filter(quiz__id=quiz)
         if choice:
@@ -305,7 +311,7 @@ class ExamListView(ListCreateAPIView):
         if students:
             queryset = queryset.filter(students__id__in=students)
         if subject:
-            queryset = queryset.filter(subject__id=subject)
+            queryset = queryset.filter(subject__id__in=subject)
         if date:
             queryset = queryset.filter(date=date)
         if start_time:

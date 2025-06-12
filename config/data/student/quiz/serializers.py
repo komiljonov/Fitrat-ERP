@@ -30,7 +30,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ["id", "quiz", "text", "answers","comment"]
+        fields = ["id", "quiz", "text", "answers", "comment"]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -236,7 +236,7 @@ class FillGapsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Fill_gaps
-        fields = ["id", "quiz", "question", "gaps","comment"]
+        fields = ["id", "quiz", "question", "gaps", "comment"]
 
     def create(self, validated_data):
         gaps_instances = []
@@ -336,7 +336,7 @@ class MatchPairsSerializer(serializers.ModelSerializer):
 
 class ExamSerializer(serializers.ModelSerializer):
     quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
-    students = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=True, allow_null=True)
+    # students = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=True, allow_null=True)
     materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     homework = serializers.PrimaryKeyRelatedField(queryset=Homework.objects.all(), allow_null=True)
     students_xml = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
@@ -376,6 +376,8 @@ class ExamSerializer(serializers.ModelSerializer):
             "students_xml",
             "materials",
             "results",
+            "lang_group",
+            "is_language",
             "students_count",
             "date",
             "start_time",
@@ -387,10 +389,10 @@ class ExamSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["results"] = FileUploadSerializer(instance.results).data
-        rep["students"] = (
-            StudentSerializer(instance.students.all(), include_only=["id", "first_name", "last_name", "phone"],
-                              many=True).data
-        ) if instance.students else None
+        # rep["students"] = (
+        #     StudentSerializer(instance.students.all(), include_only=["id", "first_name", "last_name", "phone"],
+        #                       many=True).data
+        # ) if instance.students else None
         return rep
 
 
