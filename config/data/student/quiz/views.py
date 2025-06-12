@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pandas as pd
 from django.db import transaction
 from drf_yasg import openapi
@@ -23,6 +25,7 @@ from ..mastering.models import Mastering
 from ..shop.models import Points
 from ..student.models import Student
 from ..subject.models import Theme
+from ...account.models import CustomUser
 
 
 class QuizCheckAPIView(APIView):
@@ -293,9 +296,22 @@ class ExamListView(ListCreateAPIView):
         homework = self.request.GET.get("homework")
         is_language = self.request.GET.get("is_language")
         lang_group = self.request.GET.get("lang_group")
+        options = self.request.GET.get("options")
 
         queryset = Exam.objects.all()
 
+        user = CustomUser.objects.filter(id=self.request.user.id).first()
+
+        if user.role == "TEACHER":
+            three_days_later = datetime.today() + timedelta(days=3)
+            queryset = queryset.filter(date__gt=three_days_later)
+
+        if user.role=="Student":
+            two_days_later = datetime.today() + timedelta(days=2)
+            queryset = queryset.filter(date__gt=two_days_later)
+
+        if options:
+            queryset = queryset.filter(options=options)
         if is_language:
             queryset = queryset.filter(is_language=is_language.capitalize())
         if lang_group:
@@ -459,3 +475,27 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
     queryset = ExamRegistration.objects.all()
     serializer_class = ExamRegistrationSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = ExamRegistration.objects.all()
+
+        student = self.request.GET.get("student")
+        exam = self.request.GET.get("exam")
+        status = self.request.GET.get("status")
+        is_participating = self.request.GET.get("is_participating")
+        option = self.request.GET.get("option")
+        has_certificate = self.request.GET.get("has_certificate")
+
+        if has_certificate:
+            qs = qs.filter(has_certificate=has_certificate.capitalize())
+        if student:
+            qs = qs.filter(student__id=student)
+        if exam:
+            qs = qs.filter(exam__id=exam)
+        if status:
+            qs = qs.filter(status=status)
+        if is_participating:
+            qs = qs.filter(is_participating=is_participating.capitalize())
+        if option:
+            qs = qs.filter(option=option)
+        return qs
