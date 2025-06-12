@@ -211,7 +211,7 @@ class Exam(BaseModel):
 
     is_mandatory = models.BooleanField(default=False)
 
-    students = models.ManyToManyField(Student)
+    # students = models.ManyToManyField(Student)
 
     subject: "Subject" = models.ManyToManyField("subject.Subject",related_name='exam_subject')
 
