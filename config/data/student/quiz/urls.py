@@ -6,7 +6,8 @@ from .views import (
     LeftPairsListView, LeftPairsDetailsView, MatchPairsListView, MatchPairsDetailsView, ExamListView, ExamDetailsView,
     QuizGapsListView, QuizGapsDetailsView, QuestionsListCreateView, AnswerListCreateView,
     AnswerRetrieveUpdateDestroyView, QuizCheckAPIView, ExcelQuizUploadAPIView, ExamRegistrationListCreateAPIView,
-    ObjectiveTestView, Cloze_TestView, ImageCloze_TestView, ExamRegisteredStudentAPIView, QuizListPgView
+    ObjectiveTestView, Cloze_TestView, ImageCloze_TestView, ExamRegisteredStudentAPIView, QuizListPgView,
+    True_False_TestView
 )
 
 urlpatterns = [
@@ -40,7 +41,7 @@ urlpatterns = [
     path("cloze/",Cloze_TestView.as_view(), name="cloze-test"),
 
     path("image-cloze/",ImageCloze_TestView.as_view(), name="image-cloze-test"),
-    path("true-false/",ExamListView.as_view(), name="true-false"),
+    path("true-false/",True_False_TestView.as_view(), name="true-false"),
 
     path("exam/",ExamListView.as_view(), name='exam'),
     path("exam/<uuid:pk>", ExamDetailsView.as_view(), name='exam-details'),
