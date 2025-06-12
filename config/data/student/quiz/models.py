@@ -187,7 +187,7 @@ class True_False(BaseModel):
     comment = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.quiz.title}  {self.answer.text}"
+        return f"{self.quiz.title}  {self.answer}"
 
 
 class Exam(BaseModel):

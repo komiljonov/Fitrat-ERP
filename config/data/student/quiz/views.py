@@ -178,7 +178,7 @@ class ImageCloze_TestView(ListCreateAPIView):
 
 
 class True_False_TestView(ListCreateAPIView):
-    queryset = True_False
+    queryset = True_False.objects.all()
     serializer_class = True_FalseSerializer
 
 
