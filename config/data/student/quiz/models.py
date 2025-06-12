@@ -108,8 +108,6 @@ class Listening(BaseModel):
 
     comment = models.TextField(blank=True, null=True)
 
-    def __str__(self):
-        return f"{self.quiz.title}    {self.question.name}"
 
 
 class Pairs(BaseModel):
