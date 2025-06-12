@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.db import models
 
 from data.command.models import BaseModel
@@ -205,14 +207,13 @@ class Exam(BaseModel):
     type = models.CharField(choices=[
         ("Online", "Online"),
         ("Offline", "Offline"),
-    ], max_length=255, null=True, blank=True)
+    ],default="Offline", max_length=255, null=True, blank=True)
 
     is_mandatory = models.BooleanField(default=False)
 
     students = models.ManyToManyField(Student)
 
-    subject: "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
-                                           related_name='exam_subject')
+    subject: "Subject" = models.ManyToManyField("subject.Subject",related_name='exam_subject')
 
     students_xml = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='exam_students_xml')
@@ -222,8 +223,15 @@ class Exam(BaseModel):
 
     materials = models.ManyToManyField('upload.File', related_name='quiz_materials')
 
+    lang_group = models.CharField(choices=[
+        ("Foreign", "Foreign"),
+        ("National", "National"),
+    ], max_length=255, null=True, blank=True)
+
+    is_language = models.BooleanField(default=False)
+
     students_count = models.IntegerField(default=0)
-    date = models.DateField(null=True, blank=True)
+    date = models.DateField(default=datetime.today() + timedelta(days=4))
     start_time = models.TimeField(null=True, blank=True)
     end_time = models.TimeField(null=True, blank=True)
 
