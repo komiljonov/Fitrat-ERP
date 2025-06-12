@@ -12,6 +12,7 @@ from ..student.serializers import StudentSerializer
 from ..subject.models import Subject, Theme
 from ..subject.serializers import SubjectSerializer, ThemeSerializer
 from ...account.models import CustomUser
+from ...finances.finance.models import Finance, Kind
 from ...notifications.models import Notification
 from ...parents.models import Relatives
 from ...upload.models import File
@@ -424,6 +425,18 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                         f" {attrs.get('student_comment')} sabab bilan inkor etdingiz.",
                 choice="Examination",
                 come_from=attrs.get("id")
+            )
+            kind = Kind.objects.get(name="Money back")
+
+            Finance.objects.create(
+                action="EXPENSE",
+                amount=50000,
+                kind=kind,
+                attendance=None,
+                student=student,
+                stuff=None,
+                comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
+                        f" {attrs.get('student_comment')} sabab bilan inkor etdingiz va 50000 so'm Jarima berildi.",
             )
             parents = CustomUser.objects.filter(phone__in=Relatives.objects.filter(student=student).all())
             if parents:

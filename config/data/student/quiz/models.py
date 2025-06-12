@@ -237,6 +237,14 @@ class Exam(BaseModel):
 
     homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL, null=True, blank=True,
                                              related_name='homeworks_quiz')
+    options = models.CharField(choices=[
+        ("1","1"),
+        ("2","2"),
+        ("3","3"),
+        ("4","4"),
+        ("5","5"),
+        ("6","6"),
+    ],max_length=10, null=True, blank=True)
 
     def __str__(self):
         return f"{self.quiz.title}   {self.type}"
@@ -255,5 +263,17 @@ class ExamRegistration(BaseModel):
     is_participating = models.BooleanField(default=True)
     mark = models.CharField(max_length=255, null=True, blank=True)
     student_comment = models.TextField(null=True, blank=True)
+    option = models.CharField(choices=[
+        ("1","1"),
+        ("2","2"),
+        ("3","3"),
+        ("4","4"),
+        ("5","5"),
+        ("6","6"),
+    ],max_length=10, null=True, blank=True)
+    has_certificate = models.BooleanField(default=False)
+    certificate : "File" = models.ForeignKey("Upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='certificate_of_student')
+
     def __str__(self):
         return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
