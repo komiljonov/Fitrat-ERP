@@ -50,7 +50,7 @@ class QuizCheckAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        logger.debug(f"Received data: {data}")
+        print(data)
 
         quiz = get_object_or_404(Quiz, id=data.get("quiz_id"))
         student = Student.objects.filter(user=request.user).first()
@@ -290,8 +290,6 @@ class QuizCheckAPIView(APIView):
                 "correct_answer": "Error processing correct sequence"
             }
 
-
-
     def check_image_objective_test(self, question, user_answer):
         correct_answer = question.get("answer")
         user_answer_value = user_answer.get("answer")  # Fixed: renamed to avoid conflict
@@ -301,7 +299,6 @@ class QuizCheckAPIView(APIView):
             "user_answer": user_answer_value,
             "correct_answer": correct_answer
         }
-
 
     def check_match_pairs(self, question, user_answer):
         try:
