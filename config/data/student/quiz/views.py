@@ -235,21 +235,25 @@ class QuizCheckAPIView(APIView):
 
     def check_objective_test(self, user_answer, qid):
         try:
-
             question = ObjectiveTest.objects.get(id=qid)
 
-            correct_answers = [ans.strip().lower() for ans in question.answers.is_correct]
+            # Get all correct answer texts (assuming .name is the field storing the answer text)
+            correct_answers = [
+                ans.name.strip().lower()
+                for ans in question.answers.filter(is_correct=True)
+            ]
 
-
+            # Get and normalize the user's submitted answer
             user_text = user_answer.get("answer", "").strip().lower()
 
+            # Compare
             is_correct = user_text in correct_answers
 
             return is_correct, {
                 "id": str(qid),
                 "correct": is_correct,
                 "user_answer": user_answer.get("answer"),
-                "correct_answer": question.is_correct,
+                "correct_answer": correct_answers,
             }
 
         except Exception as e:
