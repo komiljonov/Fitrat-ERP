@@ -328,31 +328,49 @@ class QuizCheckAPIView(APIView):
 
     def check_match_pairs(self, question, user_answer):
         try:
-
+            # Validate user_answer structure
             if not isinstance(user_answer, dict) or "pairs" not in user_answer:
                 raise ValueError("User answer must be a dictionary with 'pairs' key")
 
+            # Get the MatchPairs object from question
+            match_pairs_id = question.get("id")
+            if not match_pairs_id:
+                raise ValueError("Question must have an ID")
 
-            all_pairs = question.get("pairs", [])
-            left_items = [pair for pair in all_pairs if pair.get("choice") == "Left"]
-            right_items = [pair for pair in all_pairs if pair.get("choice") == "Right"]
+            # Fetch the MatchPairs object and its related pairs
+            from quiz.models import MatchPairs, Pairs
+
+            match_pairs = MatchPairs.objects.prefetch_related('pairs').get(id=match_pairs_id)
+            all_pairs = list(match_pairs.pairs.all())
+
+            if not all_pairs:
+                raise ValueError("No pairs found for this match question")
+
+            # Separate left and right items
+            left_items = [pair for pair in all_pairs if pair.choice == "Left"]
+            right_items = [pair for pair in all_pairs if pair.choice == "Right"]
 
             if not left_items or not right_items:
                 raise ValueError("Question must contain both left and right pairs")
 
+            if len(left_items) != len(right_items):
+                raise ValueError("Number of left and right items must be equal")
 
-            left_map = {str(item["id"]): item["pair"] for item in left_items}
-            right_map = {str(item["id"]): item["pair"] for item in right_items}
+            # Create mappings for easy lookup
+            left_map = {str(item.id): item.pair for item in left_items}
+            right_map = {str(item.id): item.pair for item in right_items}
 
-
-            correct_pairs = list(zip(left_items, right_items))
+            # Create correct pairing based on the order they were created/stored
+            # Assuming pairs are stored in correct order (first left matches first right, etc.)
+            left_items_sorted = sorted(left_items, key=lambda x: x.created_at)
+            right_items_sorted = sorted(right_items, key=lambda x: x.created_at)
 
             correct_mapping = {
-                str(left["id"]): str(right["id"])
-                for left, right in correct_pairs
-                if str(left["id"]) in left_map and str(right["id"]) in right_map
+                str(left.id): str(right.id)
+                for left, right in zip(left_items_sorted, right_items_sorted)
             }
 
+            # Get user pairs
             user_pairs = user_answer.get("pairs", [])
             if not user_pairs:
                 return False, self._build_match_response(
@@ -365,19 +383,34 @@ class QuizCheckAPIView(APIView):
                     right_map
                 )
 
+            # Validate that user submitted all required pairs
+            if len(user_pairs) != len(left_items):
+                return False, self._build_match_response(
+                    question["id"],
+                    False,
+                    f"Expected {len(left_items)} pairs, got {len(user_pairs)}",
+                    user_pairs,
+                    correct_mapping,
+                    left_map,
+                    right_map
+                )
+
             # Check each user pair
             all_correct = True
             results = []
+            used_left_ids = set()
+            used_right_ids = set()
 
             for user_pair in user_pairs:
-                left_id = str(user_pair.get("left_id"))
-                right_id = str(user_pair.get("right_id"))
+                left_id = str(user_pair.get("left_id", ""))
+                right_id = str(user_pair.get("right_id", ""))
 
                 # Validate IDs exist
                 if left_id not in left_map:
                     results.append({
                         "left_id": left_id,
-                        "error": "Invalid left item",
+                        "right_id": right_id,
+                        "error": "Invalid left item ID",
                         "is_correct": False
                     })
                     all_correct = False
@@ -385,15 +418,41 @@ class QuizCheckAPIView(APIView):
 
                 if right_id not in right_map:
                     results.append({
+                        "left_id": left_id,
                         "right_id": right_id,
-                        "error": "Invalid right item",
+                        "error": "Invalid right item ID",
                         "is_correct": False
                     })
                     all_correct = False
                     continue
 
+                # Check for duplicate usage
+                if left_id in used_left_ids:
+                    results.append({
+                        "left_id": left_id,
+                        "right_id": right_id,
+                        "error": "Left item used multiple times",
+                        "is_correct": False
+                    })
+                    all_correct = False
+                    continue
+
+                if right_id in used_right_ids:
+                    results.append({
+                        "left_id": left_id,
+                        "right_id": right_id,
+                        "error": "Right item used multiple times",
+                        "is_correct": False
+                    })
+                    all_correct = False
+                    continue
+
+                used_left_ids.add(left_id)
+                used_right_ids.add(right_id)
+
                 # Check if the pairing is correct
                 is_correct = correct_mapping.get(left_id) == right_id
+
                 if not is_correct:
                     all_correct = False
 
@@ -421,7 +480,7 @@ class QuizCheckAPIView(APIView):
         except Exception as e:
             logger.error(f"Error checking match pairs: {str(e)}", exc_info=True)
             return False, {
-                "id": question["id"],
+                "id": question.get("id"),
                 "correct": False,
                 "error": str(e),
                 "user_answer": user_answer.get("pairs", []),
@@ -435,12 +494,15 @@ class QuizCheckAPIView(APIView):
             "id": question_id,
             "correct": is_correct,
             "user_answer": user_pairs,
-            "correct_answer": [{
-                "left_id": left_id,
-                "left_text": left_map.get(left_id),
-                "right_id": right_id,
-                "right_text": right_map.get(right_id)
-            } for left_id, right_id in correct_mapping.items()]
+            "correct_answer": [
+                {
+                    "left_id": left_id,
+                    "left_text": left_map.get(left_id),
+                    "right_id": right_id,
+                    "right_text": right_map.get(right_id)
+                }
+                for left_id, right_id in correct_mapping.items()
+            ]
         }
 
         if error:
