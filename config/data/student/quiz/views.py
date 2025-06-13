@@ -300,13 +300,15 @@ class QuizCheckAPIView(APIView):
             # Get correct answer text
             correct_answer = question.get("answer", "")
 
+            correct_answer = Answer.objects.filter(id=correct_answer).first()
+
             # Get user's text answer
             user_answer_text = user_answer.get("answer", "")
 
-            ic(user_answer_text,correct_answer)
+            ic(user_answer_text,correct_answer.text)
 
             # Compare answers case-insensitively and with stripped whitespace
-            is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
+            is_correct = str(user_answer_text).strip().lower() == str(correct_answer.text).strip().lower()
 
             return is_correct, {
                 "id": question["id"],
