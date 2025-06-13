@@ -16,7 +16,7 @@ def new_created_order(sender, instance: Points, created, **kwargs):
         if hasattr(instance, 'student') and instance.student:
             user = Student.objects.filter(pk=instance.student.pk).first()
             if user:
-                user.points += instance.point
+                user.points += str(instance.point)
                 user.save()
     except Exception as e:
         logger.error(f"Error in points signal handler: {str(e)}")
