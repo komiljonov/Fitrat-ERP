@@ -233,34 +233,32 @@ class QuizCheckAPIView(APIView):
             "correct_answer": correct_gaps
         }
 
-    def check_objective_test(self, question, user_answer):
+    def check_objective_test(self, user_answer, qid):
         try:
-            # Handle both single answer and multiple correct answers
-            if isinstance(question.get("answer"), list):
-                correct_answer_ids = question["answer"]
-            else:
-                correct_answer_ids = [question.get("answer")]
+            # Retrieve the question instance from DB or context
+            question = ObjectiveTest.objects.get(id=qid)
 
-            user_answer_ids = user_answer.get("answer_ids", [])
+            # Assume question.correct_answers is a list of correct strings (e.g., ["apple", "Apple"])
+            correct_answers = [ans.strip().lower() for ans in question.correct_answers]
 
-            # Convert to sets for comparison (order doesn't matter)
-            correct_set = set(str(id) for id in correct_answer_ids)
-            user_set = set(str(id) for id in user_answer_ids)
+            # User-provided answer from serializer
+            user_text = user_answer.get("answer", "").strip().lower()
 
-            is_correct = user_set == correct_set
+            is_correct = user_text in correct_answers
 
             return is_correct, {
-                "id": question["id"],
+                "id": str(qid),
                 "correct": is_correct,
-                "user_answer": user_answer_ids,
-                "correct_answer": correct_answer_ids
+                "user_answer": user_answer.get("answer"),
+                "correct_answer": question.correct_answers
             }
+
         except Exception as e:
             return False, {
-                "id": question["id"],
+                "id": str(qid),
                 "correct": False,
                 "error": str(e),
-                "user_answer": user_answer.get("answer_ids", []),
+                "user_answer": user_answer.get("answer", ""),
                 "correct_answer": "Error processing correct answers"
             }
 
