@@ -301,50 +301,102 @@ class QuizCheckAPIView(APIView):
         }
 
     def check_match_pairs(self, question, user_answer):
-
-        print(question,user_answer)
-
         try:
-            # Extract correct pairs from question
-            left_items = [pair for pair in question.get("pairs", []) if pair.get("choice") == "Left"]
-            right_items = [pair for pair in question.get("pairs", []) if pair.get("choice") == "Right"]
+            # Validate input
+            if not isinstance(user_answer, dict) or "pairs" not in user_answer:
+                raise ValueError("User answer must be a dictionary with 'pairs' key")
 
-            # Create correct pairing (assuming order matches)
-            correct_pairs = list(zip(
-                sorted(left_items, key=lambda x: x["id"]),
-                sorted(right_items, key=lambda x: x["id"])
-            ))
+            # Get all pairs and split into left/right
+            all_pairs = question.get("pairs", [])
+            left_items = [pair for pair in all_pairs if pair.get("choice") == "Left"]
+            right_items = [pair for pair in all_pairs if pair.get("choice") == "Right"]
 
-            # Get user pairs
-            user_pairs = user_answer.get("pairs", [])
+            if not left_items or not right_items:
+                raise ValueError("Question must contain both left and right pairs")
 
-            # Verify all pairs match
-            if len(user_pairs) != len(correct_pairs):
-                return False, {
-                    "id": question["id"],
-                    "correct": False,
-                    "user_answer": user_pairs,
-                    "correct_answer": [{"left": l["pair"], "right": r["pair"]} for l, r in correct_pairs]
-                }
+            # Create mappings for quick lookup
+            left_map = {str(item["id"]): item["pair"] for item in left_items}
+            right_map = {str(item["id"]): item["pair"] for item in right_items}
 
-            # Check each pair
-            all_correct = True
-            for user_pair, correct_pair in zip(user_pairs, correct_pairs):
-                left_correct = correct_pair[0]["pair"]
-                right_correct = correct_pair[1]["pair"]
+            # Get correct pairs (assuming they're in matching order)
+            # If you have another way to determine correct pairs, modify this
+            correct_pairs = list(zip(left_items, right_items))
 
-                if (user_pair.get("left") != left_correct or
-                        user_pair.get("right") != right_correct):
-                    all_correct = False
-                    break
-
-            return all_correct, {
-                "id": question["id"],
-                "correct": all_correct,
-                "user_answer": user_pairs,
-                "correct_answer": [{"left": l["pair"], "right": r["pair"]} for l, r in correct_pairs]
+            # Build correct mapping {left_id: right_id}
+            correct_mapping = {
+                str(left["id"]): str(right["id"])
+                for left, right in correct_pairs
+                if str(left["id"]) in left_map and str(right["id"]) in right_map
             }
+
+            # Validate user pairs
+            user_pairs = user_answer.get("pairs", [])
+            if not user_pairs:
+                return False, self._build_match_response(
+                    question["id"],
+                    False,
+                    "No pairs submitted",
+                    [],
+                    correct_mapping,
+                    left_map,
+                    right_map
+                )
+
+            # Check each user pair
+            all_correct = True
+            results = []
+
+            for user_pair in user_pairs:
+                left_id = str(user_pair.get("left_id"))
+                right_id = str(user_pair.get("right_id"))
+
+                # Validate IDs exist
+                if left_id not in left_map:
+                    results.append({
+                        "left_id": left_id,
+                        "error": "Invalid left item",
+                        "is_correct": False
+                    })
+                    all_correct = False
+                    continue
+
+                if right_id not in right_map:
+                    results.append({
+                        "right_id": right_id,
+                        "error": "Invalid right item",
+                        "is_correct": False
+                    })
+                    all_correct = False
+                    continue
+
+                # Check if the pairing is correct
+                is_correct = correct_mapping.get(left_id) == right_id
+                if not is_correct:
+                    all_correct = False
+
+                results.append({
+                    "left_id": left_id,
+                    "left_text": left_map[left_id],
+                    "user_right_id": right_id,
+                    "user_right_text": right_map[right_id],
+                    "correct_right_id": correct_mapping.get(left_id),
+                    "correct_right_text": right_map.get(correct_mapping.get(left_id, "")),
+                    "is_correct": is_correct
+                })
+
+            return all_correct, self._build_match_response(
+                question["id"],
+                all_correct,
+                None,
+                user_pairs,
+                correct_mapping,
+                left_map,
+                right_map,
+                results
+            )
+
         except Exception as e:
+            logger.error(f"Error checking match pairs: {str(e)}", exc_info=True)
             return False, {
                 "id": question["id"],
                 "correct": False,
@@ -352,6 +404,28 @@ class QuizCheckAPIView(APIView):
                 "user_answer": user_answer.get("pairs", []),
                 "correct_answer": "Error processing correct pairs"
             }
+
+    def _build_match_response(self, question_id, is_correct, error, user_pairs, correct_mapping, left_map, right_map,
+                              pair_results=None):
+        """Build consistent response format with all needed information"""
+        response = {
+            "id": question_id,
+            "correct": is_correct,
+            "user_answer": user_pairs,
+            "correct_answer": [{
+                "left_id": left_id,
+                "left_text": left_map.get(left_id),
+                "right_id": right_id,
+                "right_text": right_map.get(right_id)
+            } for left_id, right_id in correct_mapping.items()]
+        }
+
+        if error:
+            response["error"] = error
+        if pair_results:
+            response["pair_results"] = pair_results
+
+        return response
 
     def _create_mastering_record(self, theme, student, quiz, ball):
         """Create mastering record and award points if eligible"""

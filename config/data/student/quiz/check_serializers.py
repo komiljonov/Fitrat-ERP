@@ -25,17 +25,18 @@ class ListeningAnswerSerializer(serializers.Serializer):
     answer_id = serializers.UUIDField()
 
 
-class MatchPairItemSerializer(serializers.Serializer):
-    left = serializers.CharField()
-    right = serializers.CharField()
+class MatchPairAnswerSerializer(serializers.Serializer):
+    left_id = serializers.UUIDField()
+    right_id = serializers.UUIDField()
+    left_text = serializers.CharField(required=False)
+    right_text = serializers.CharField(required=False)
 
     class Meta:
-        ref_name = "Check_MatchPairItemSerializer"
-
+        ref_name = "Check_MatchPairAnswerSerializer"
 
 class MatchPairsSerializer(serializers.Serializer):
     match_id = serializers.UUIDField()
-    pairs = MatchPairItemSerializer(many=True)
+    pairs = MatchPairAnswerSerializer(many=True)
 
     class Meta:
         ref_name = "Check_MatchPairsSerializer"
