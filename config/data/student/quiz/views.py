@@ -123,7 +123,7 @@ class QuizCheckAPIView(APIView):
             'match_pairs': 'match_id',
             'objective_test': 'objective_id',
             'cloze_test': 'cloze_id',
-            'image_objective': 'image_objective_id',
+            'image_objective_test': 'image_objective_id',  # Fixed: was 'image_objective'
             'true_false': 'true_false_id'
         }
 
@@ -290,15 +290,18 @@ class QuizCheckAPIView(APIView):
                 "correct_answer": "Error processing correct sequence"
             }
 
+
+
     def check_image_objective_test(self, question, user_answer):
         correct_answer = question.get("answer")
-        user_answer = user_answer.get("answer")
-        return str(user_answer) == str(correct_answer), {
+        user_answer_value = user_answer.get("answer")  # Fixed: renamed to avoid conflict
+        return str(user_answer_value) == str(correct_answer), {
             "id": question["id"],
-            "correct": str(user_answer) == str(correct_answer),
-            "user_answer": user_answer,
+            "correct": str(user_answer_value) == str(correct_answer),
+            "user_answer": user_answer_value,
             "correct_answer": correct_answer
         }
+
 
     def check_match_pairs(self, question, user_answer):
         try:
