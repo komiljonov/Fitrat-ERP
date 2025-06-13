@@ -110,6 +110,7 @@ class QuizCheckAPIView(APIView):
 
     def _find_user_answer(self, data, qtype, qid):
         if qtype not in data:
+            logger.debug(f"Question type '{qtype}' not found in submitted data. Available types: {list(data.keys())}")
             return None
 
         id_fields = {
@@ -122,15 +123,21 @@ class QuizCheckAPIView(APIView):
             'objective_test': 'objective_id',
             'cloze_test': 'cloze_id',
             'image_objective_test': 'image_objective_id',
-            'image_objective': 'image_objective_id',  # Add this mapping too
+            'image_objective': 'image_objective_id',
             'true_false': 'true_false_id'
         }
 
         id_field = id_fields.get(qtype, 'question_id')
+        logger.debug(f"Looking for {qtype} question {qid} using field '{id_field}'")
 
         for answer in data[qtype]:
-            if str(answer.get(id_field)) == str(qid):
+            answer_id = str(answer.get(id_field))
+            logger.debug(f"Comparing {answer_id} with {qid}")
+            if answer_id == str(qid):
+                logger.debug(f"Found matching answer for {qtype} question {qid}")
                 return answer
+
+        logger.debug(f"No matching answer found for {qtype} question {qid}")
         return None
 
     def _record_missing_answer(self, results, qtype, qid):
@@ -336,13 +343,15 @@ class QuizCheckAPIView(APIView):
             if not match_pairs_id:
                 raise ValueError("Question must have an ID")
 
+            # Debug logging
+            logger.debug(f"Processing match pairs for question ID: {match_pairs_id}")
+            logger.debug(f"User answer structure: {user_answer}")
 
-
+            # Fetch the MatchPairs object and its related pairs
             match_pairs = MatchPairs.objects.prefetch_related('pairs').get(id=match_pairs_id)
             all_pairs = list(match_pairs.pairs.all())
 
-            ic(match_pairs_id, all_pairs)
-            ic(question, user_answer)
+            logger.debug(f"Found {len(all_pairs)} pairs for match question {match_pairs_id}")
 
             if not all_pairs:
                 raise ValueError("No pairs found for this match question")
@@ -351,18 +360,20 @@ class QuizCheckAPIView(APIView):
             left_items = [pair for pair in all_pairs if pair.choice == "Left"]
             right_items = [pair for pair in all_pairs if pair.choice == "Right"]
 
+            logger.debug(f"Left items: {len(left_items)}, Right items: {len(right_items)}")
+
             if not left_items or not right_items:
                 raise ValueError("Question must contain both left and right pairs")
 
             if len(left_items) != len(right_items):
-                raise ValueError("Number of left and right items must be equal")
+                raise ValueError(
+                    f"Number of left ({len(left_items)}) and right ({len(right_items)}) items must be equal")
 
             # Create mappings for easy lookup
             left_map = {str(item.id): item.pair for item in left_items}
             right_map = {str(item.id): item.pair for item in right_items}
 
             # Create correct pairing based on the order they were created/stored
-            # Assuming pairs are stored in correct order (first left matches first right, etc.)
             left_items_sorted = sorted(left_items, key=lambda x: x.created_at)
             right_items_sorted = sorted(right_items, key=lambda x: x.created_at)
 
@@ -370,6 +381,8 @@ class QuizCheckAPIView(APIView):
                 str(left.id): str(right.id)
                 for left, right in zip(left_items_sorted, right_items_sorted)
             }
+
+            logger.debug(f"Correct mapping: {correct_mapping}")
 
             # Get user pairs
             user_pairs = user_answer.get("pairs", [])
@@ -383,6 +396,8 @@ class QuizCheckAPIView(APIView):
                     left_map,
                     right_map
                 )
+
+            logger.debug(f"User submitted {len(user_pairs)} pairs")
 
             # Validate that user submitted all required pairs
             if len(user_pairs) != len(left_items):
@@ -402,12 +417,15 @@ class QuizCheckAPIView(APIView):
             used_left_ids = set()
             used_right_ids = set()
 
-            for user_pair in user_pairs:
+            for i, user_pair in enumerate(user_pairs):
                 left_id = str(user_pair.get("left_id", ""))
                 right_id = str(user_pair.get("right_id", ""))
 
+                logger.debug(f"Processing pair {i + 1}: left_id={left_id}, right_id={right_id}")
+
                 # Validate IDs exist
                 if left_id not in left_map:
+                    logger.debug(f"Invalid left_id: {left_id}. Available: {list(left_map.keys())}")
                     results.append({
                         "left_id": left_id,
                         "right_id": right_id,
@@ -418,6 +436,7 @@ class QuizCheckAPIView(APIView):
                     continue
 
                 if right_id not in right_map:
+                    logger.debug(f"Invalid right_id: {right_id}. Available: {list(right_map.keys())}")
                     results.append({
                         "left_id": left_id,
                         "right_id": right_id,
@@ -453,6 +472,8 @@ class QuizCheckAPIView(APIView):
 
                 # Check if the pairing is correct
                 is_correct = correct_mapping.get(left_id) == right_id
+                logger.debug(
+                    f"Pair {i + 1} correct: {is_correct} (expected {correct_mapping.get(left_id)}, got {right_id})")
 
                 if not is_correct:
                     all_correct = False
@@ -467,6 +488,8 @@ class QuizCheckAPIView(APIView):
                     "is_correct": is_correct
                 })
 
+            logger.debug(f"Final result: all_correct={all_correct}")
+
             return all_correct, self._build_match_response(
                 question["id"],
                 all_correct,
@@ -478,6 +501,15 @@ class QuizCheckAPIView(APIView):
                 results
             )
 
+        except MatchPairs.DoesNotExist:
+            logger.error(f"MatchPairs with ID {match_pairs_id} not found")
+            return False, {
+                "id": question.get("id"),
+                "correct": False,
+                "error": "Match pairs question not found",
+                "user_answer": user_answer.get("pairs", []),
+                "correct_answer": "Error: Question not found"
+            }
         except Exception as e:
             logger.error(f"Error checking match pairs: {str(e)}", exc_info=True)
             return False, {
