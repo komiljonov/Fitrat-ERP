@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import openpyxl
 import pandas as pd
 from django.db import transaction
+from django.dispatch.dispatcher import logger
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -141,22 +142,29 @@ class QuizCheckAPIView(APIView):
 
     def _create_mastering_record(self, theme, student, quiz, ball):
         """Create mastering record and award points if eligible"""
-        mastering = Mastering.objects.create(
-            theme=theme,
-            lid=None,
-            student=student,
-            test=quiz,
-            ball=ball
-        )
+        if not student:
+            return  # Skip if no student
 
-        homework = Homework.objects.filter(theme=theme).first()
-        Points.objects.create(
-            point=ball,
-            from_test=mastering,
-            from_homework=homework,
-            student=student,
-            comment=f"{homework.theme.title} mavzusining vazifalarini bajarganligi uchun {ball} ball taqdim etildi!"
-        )
+        try:
+            mastering = Mastering.objects.create(
+                theme=theme,
+                lid=None,
+                student=student,
+                test=quiz,
+                ball=ball
+            )
+
+            homework = Homework.objects.filter(theme=theme).first()
+            if homework:  # Only create points if homework exists
+                Points.objects.create(
+                    point=ball,
+                    from_test=mastering,
+                    from_homework=homework,
+                    student=student,
+                    comment=f"{homework.theme.title} mavzusining vazifalarini bajarganligi uchun {ball} ball taqdim etildi!"
+                )
+        except Exception as e:
+            logger.error(f"Error creating mastering record: {str(e)}")
 
     # Type-specific checking methods remain the same as in your original
     # (check_standard, check_fill_gap, check_vocabulary, etc.)

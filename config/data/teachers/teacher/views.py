@@ -294,6 +294,7 @@ class StudentsAvgLearning(APIView):
                     'is_frozen': sg.lid.is_frozen,
                 }
 
+
             exams = []
             homeworks = []
             for m in student_record:
