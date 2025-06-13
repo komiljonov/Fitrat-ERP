@@ -12,4 +12,4 @@ urlpatterns = [
     path("history/", HomeworkHistoryListCreateView.as_view()),
     path("history/<uuid:pk>",HomeworkHistoryView.as_view()),
 
-]
+]    
