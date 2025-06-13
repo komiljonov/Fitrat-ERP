@@ -77,16 +77,19 @@ class TrueFalseAnswerSerializer(serializers.Serializer):
         ref_name = "Check_TrueFalseAnswerSerializer"
 
 
+class StandardAnswerSerializer(serializers.Serializer):
+    question_id = serializers.UUIDField()
+    answer_id = serializers.UUIDField()
+
 class QuizCheckSerializer(serializers.Serializer):
     theme = serializers.UUIDField(required=False)
     quiz_id = serializers.UUIDField()
+    standard = StandardAnswerSerializer(many=True, required=False)  # Add this line
     multiple_choice = MultipleChoiceSerializer(many=True, required=False)
     fill_gaps = FillGapsSerializer(many=True, required=False)
     vocabularies = VocabularyAnswerSerializer(many=True, required=False)
     listening = ListeningAnswerSerializer(many=True, required=False)
     match_pairs = MatchPairsSerializer(many=True, required=False)
-
-    # Updated to use field-based serializers
     objective_test = ObjectiveTestAnswerSerializer(many=True, required=False)
     cloze_test = ClozeTestAnswerSerializer(many=True, required=False)
     image_objective_test = ImageObjectiveTestAnswerSerializer(many=True, required=False)

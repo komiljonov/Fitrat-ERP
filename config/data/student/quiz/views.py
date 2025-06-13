@@ -50,7 +50,7 @@ class QuizCheckAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        print(data)
+        logger.debug(f"Received data: {data}")
 
         quiz = get_object_or_404(Quiz, id=data.get("quiz_id"))
         student = Student.objects.filter(user=request.user).first()
@@ -67,15 +67,13 @@ class QuizCheckAPIView(APIView):
             }
         }
 
-        # Pre-fetch all questions at once
         quiz_questions = QuizSerializer(quiz).data["questions"]
+        logger.debug(f"Quiz contains these question types: {set(q['type'] for q in quiz_questions)}")
 
-        # Process each question
         for question in quiz_questions:
             qtype = question["type"]
             qid = question["id"]
 
-            # Initialize section data if not exists
             if qtype not in results["details"]:
                 results["details"][qtype] = []
                 results["summary"]["section_breakdown"][qtype] = {
@@ -83,17 +81,16 @@ class QuizCheckAPIView(APIView):
                     "wrong": 0
                 }
 
-            # Find user's answer for this question
             user_answer = self._find_user_answer(data, qtype, qid)
+            logger.debug(f"For {qtype} question {qid}, found answer: {user_answer}")
 
             if not user_answer:
                 self._record_missing_answer(results, qtype, qid)
                 continue
 
-            # Check the answer
             is_correct, result_data = self._check_answer(question, user_answer)
+            logger.debug(f"Question {qid} result: {is_correct}")
 
-            # Update results
             if is_correct:
                 results["summary"]["correct_count"] += 1
                 results["summary"]["section_breakdown"][qtype]["correct"] += 1
@@ -103,24 +100,20 @@ class QuizCheckAPIView(APIView):
 
             results["details"][qtype].append(result_data)
 
-        # Calculate final score
         total = results["summary"]["correct_count"] + results["summary"]["wrong_count"]
         results["summary"]["total_questions"] = total
         results["summary"]["ball"] = round(
             (results["summary"]["correct_count"] / total * 100), 2
         ) if total > 0 else 0.0
 
-        # Save mastering record
         self._create_mastering_record(theme, student, quiz, results["summary"]["ball"])
 
         return Response(results)
 
     def _find_user_answer(self, data, qtype, qid):
-        """Helper to find user's answer for a specific question"""
         if qtype not in data:
             return None
 
-        # Map question types to their ID fields
         id_fields = {
             'standard': 'question_id',
             'multiple_choice': 'question_id',
@@ -130,7 +123,7 @@ class QuizCheckAPIView(APIView):
             'match_pairs': 'match_id',
             'objective_test': 'objective_id',
             'cloze_test': 'cloze_id',
-            'image_objective_test': 'image_objective_id',
+            'image_objective': 'image_objective_id',
             'true_false': 'true_false_id'
         }
 
@@ -142,7 +135,6 @@ class QuizCheckAPIView(APIView):
         return None
 
     def _record_missing_answer(self, results, qtype, qid):
-        """Record when user didn't answer a question"""
         results["summary"]["wrong_count"] += 1
         results["summary"]["section_breakdown"][qtype]["wrong"] += 1
         results["details"][qtype].append({
@@ -152,56 +144,65 @@ class QuizCheckAPIView(APIView):
         })
 
     def _check_answer(self, question, user_answer):
-        """Dispatch to appropriate checking method"""
         qtype = question["type"]
-        qid = question["id"]
-
         checker = getattr(self, f"check_{qtype}", None)
         if not checker:
-            return False, {"error": "Unsupported question type", "id": str(qid)}
+            return False, {"error": "Unsupported question type", "id": question["id"]}
 
         try:
             return checker(question, user_answer)
         except Exception as e:
-            return False, {"error": str(e), "id": str(qid)}
+            logger.error(f"Error checking {qtype} question: {str(e)}")
+            return False, {"error": str(e), "id": question["id"]}
 
     def check_standard(self, question, user_answer):
+        try:
+            # Get correct answer ID
+            correct_answer_id = None
+            if "answer" in question:
+                correct_answer_id = question["answer"]
+            elif "answers" in question:
+                correct_answer = next(
+                    (a for a in question["answers"] if a.get("is_correct")),
+                    None
+                )
+                if correct_answer:
+                    correct_answer_id = correct_answer["id"]
 
-        ic(question, user_answer)
+            user_answer_id = user_answer.get("answer_id")
+            is_correct = str(user_answer_id) == str(correct_answer_id)
 
-        correct_answer_id = None
-        if "answer" in question:
-            correct_answer_id = question["answer"]
+            response_data = {
+                "id": question["id"],
+                "correct": is_correct,
+                "user_answer": user_answer_id,
+                "correct_answer": correct_answer_id,
+                "question_text": question.get("text", {}).get("name") or
+                               question.get("question", {}).get("name")
+            }
 
-            ic(correct_answer_id)
+            if not is_correct and correct_answer_id and "answers" in question:
+                correct_answer = next(
+                    (a for a in question["answers"] if str(a["id"]) == str(correct_answer_id)),
+                    None
+                )
+                if correct_answer:
+                    response_data["correct_answer_text"] = correct_answer.get("text")
 
-        else:
-            for answer in question.get("answers", []):
-                if answer.get("is_correct"):
+            return is_correct, response_data
 
-                    ic(answer["id"])
-
-                    correct_answer_id = answer["id"]
-                    break
-
-        user_answer_id = user_answer.get("answer_id")
-
-        ic(user_answer_id)
-
-        is_correct = str(user_answer_id) == str(correct_answer_id)
-
-        ic(is_correct)
-
-        return is_correct, {
-            "id": question["id"],
-            "correct": is_correct,
-            "user_answer": user_answer_id,
-            "correct_answer": correct_answer_id,
-            "question_text": question.get("text", {}).get("name") or question.get("question", {}).get("name")
-        }
+        except Exception as e:
+            logger.error(f"Error processing standard question: {str(e)}")
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": str(e),
+                "user_answer": user_answer.get("answer_id"),
+                "correct_answer": "Error processing correct answer"
+            }
 
     def check_multiple_choice(self, question, user_answer):
-        return self.check_standard(question, user_answer)  # Same logic as standard
+        return self.check_standard(question, user_answer)
 
     def check_true_false(self, question, user_answer):
         correct_answer = question.get("answer").lower() == "true"
