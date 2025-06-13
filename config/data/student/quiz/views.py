@@ -121,7 +121,8 @@ class QuizCheckAPIView(APIView):
             'match_pairs': 'match_id',
             'objective_test': 'objective_id',
             'cloze_test': 'cloze_id',
-            'image_objective_test': 'image_objective_id',  # Fixed: was 'image_objective'
+            'image_objective_test': 'image_objective_id',
+            'image_objective': 'image_objective_id',  # Add this mapping too
             'true_false': 'true_false_id'
         }
 
@@ -143,8 +144,14 @@ class QuizCheckAPIView(APIView):
 
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
+
+        # Handle image_objective as image_objective_test
+        if qtype == "image_objective":
+            qtype = "image_objective_test"
+
         checker = getattr(self, f"check_{qtype}", None)
         if not checker:
+            logger.error(f"No checker found for question type: {qtype}")
             return False, {"error": "Unsupported question type", "id": question["id"]}
 
         try:
