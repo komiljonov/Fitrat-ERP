@@ -163,15 +163,27 @@ class QuizCheckAPIView(APIView):
         except Exception as e:
             return False, {"error": str(e), "id": str(qid)}
 
-    # Type-specific checking methods
     def check_standard(self, question, user_answer):
-        correct_answer_id = question.get("answer")
+        # Get correct answer ID - check both direct answer field and answers array
+        correct_answer_id = None
+        if "answer" in question:
+            correct_answer_id = question["answer"]
+        else:
+            for answer in question.get("answers", []):
+                if answer.get("is_correct"):
+                    correct_answer_id = answer["id"]
+                    break
+
         user_answer_id = user_answer.get("answer_id")
-        return str(user_answer_id) == str(correct_answer_id), {
+
+        is_correct = str(user_answer_id) == str(correct_answer_id)
+
+        return is_correct, {
             "id": question["id"],
-            "correct": str(user_answer_id) == str(correct_answer_id),
+            "correct": is_correct,
             "user_answer": user_answer_id,
-            "correct_answer": correct_answer_id
+            "correct_answer": correct_answer_id,
+            "question_text": question.get("text", {}).get("name") or question.get("question", {}).get("name")
         }
 
     def check_multiple_choice(self, question, user_answer):
@@ -210,33 +222,60 @@ class QuizCheckAPIView(APIView):
         }
 
     def check_objective_test(self, question, user_answer):
-        correct_answer_ids = [question.get("answer")]
-        user_answer_ids = user_answer.get("answer_ids", [])
+        try:
+            # Handle both single answer and multiple correct answers
+            if isinstance(question.get("answer"), list):
+                correct_answer_ids = question["answer"]
+            else:
+                correct_answer_ids = [question.get("answer")]
 
-        # Convert both to sets for comparison
-        correct_set = set(str(id) for id in correct_answer_ids)
-        user_set = set(str(id) for id in user_answer_ids)
+            user_answer_ids = user_answer.get("answer_ids", [])
 
-        return user_set == correct_set, {
-            "id": question["id"],
-            "correct": user_set == correct_set,
-            "user_answer": user_answer_ids,
-            "correct_answer": correct_answer_ids
-        }
+            # Convert to sets for comparison (order doesn't matter)
+            correct_set = set(str(id) for id in correct_answer_ids)
+            user_set = set(str(id) for id in user_answer_ids)
+
+            is_correct = user_set == correct_set
+
+            return is_correct, {
+                "id": question["id"],
+                "correct": is_correct,
+                "user_answer": user_answer_ids,
+                "correct_answer": correct_answer_ids
+            }
+        except Exception as e:
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": str(e),
+                "user_answer": user_answer.get("answer_ids", []),
+                "correct_answer": "Error processing correct answers"
+            }
 
     def check_cloze_test(self, question, user_answer):
-        correct_sequence = [q["name"] for q in question.get("questions", [])]
+        try:
+            # Get correct sequence (reversed from DB storage)
+            db_sequence = [q["name"] for q in question.get("questions", [])]
+            correct_sequence = db_sequence[::-1]  # Reverse to get correct order
 
-        correct_sequence = correct_sequence[::-1]
+            user_sequence = user_answer.get("word_sequence", [])
 
-        user_sequence = user_answer.get("word_sequence", [])
+            is_correct = user_sequence == correct_sequence
 
-        return user_sequence == correct_sequence, {
-            "id": question["id"],
-            "correct": user_sequence == correct_sequence,
-            "user_answer": user_sequence,
-            "correct_answer": correct_sequence
-        }
+            return is_correct, {
+                "id": question["id"],
+                "correct": is_correct,
+                "user_answer": user_sequence,
+                "correct_answer": correct_sequence
+            }
+        except Exception as e:
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": str(e),
+                "user_answer": user_answer.get("word_sequence", []),
+                "correct_answer": "Error processing correct sequence"
+            }
 
     def check_image_objective_test(self, question, user_answer):
         correct_answer = question.get("answer")
@@ -249,22 +288,54 @@ class QuizCheckAPIView(APIView):
         }
 
     def check_match_pairs(self, question, user_answer):
-        correct_pairs = []
-        left_items = [pair for pair in question.get("pairs", []) if pair["choice"] == "Left"]
-        right_items = [pair for pair in question.get("pairs", []) if pair["choice"] == "Right"]
+        try:
+            # Extract correct pairs from question
+            left_items = [pair for pair in question.get("pairs", []) if pair.get("choice") == "Left"]
+            right_items = [pair for pair in question.get("pairs", []) if pair.get("choice") == "Right"]
 
-        # This assumes pairs are already matched correctly in the question data
-        # You might need to adjust based on how your data is structured
-        user_pairs = user_answer.get("pairs", [])
+            # Create correct pairing (assuming order matches)
+            correct_pairs = list(zip(
+                sorted(left_items, key=lambda x: x["id"]),
+                sorted(right_items, key=lambda x: x["id"])
+            ))
 
-        # Simple check - count matches
-        # You might need a more sophisticated matching algorithm
-        return len(user_pairs) == min(len(left_items), len(right_items)), {
-            "id": question["id"],
-            "correct": len(user_pairs) == min(len(left_items), len(right_items)),
-            "user_answer": user_pairs,
-            "correct_answer": list(zip(left_items, right_items))
-        }
+            # Get user pairs
+            user_pairs = user_answer.get("pairs", [])
+
+            # Verify all pairs match
+            if len(user_pairs) != len(correct_pairs):
+                return False, {
+                    "id": question["id"],
+                    "correct": False,
+                    "user_answer": user_pairs,
+                    "correct_answer": [{"left": l["pair"], "right": r["pair"]} for l, r in correct_pairs]
+                }
+
+            # Check each pair
+            all_correct = True
+            for user_pair, correct_pair in zip(user_pairs, correct_pairs):
+                left_correct = correct_pair[0]["pair"]
+                right_correct = correct_pair[1]["pair"]
+
+                if (user_pair.get("left") != left_correct or
+                        user_pair.get("right") != right_correct):
+                    all_correct = False
+                    break
+
+            return all_correct, {
+                "id": question["id"],
+                "correct": all_correct,
+                "user_answer": user_pairs,
+                "correct_answer": [{"left": l["pair"], "right": r["pair"]} for l, r in correct_pairs]
+            }
+        except Exception as e:
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": str(e),
+                "user_answer": user_answer.get("pairs", []),
+                "correct_answer": "Error processing correct pairs"
+            }
 
     def _create_mastering_record(self, theme, student, quiz, ball):
         """Create mastering record and award points if eligible"""
