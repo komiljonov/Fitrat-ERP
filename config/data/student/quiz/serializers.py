@@ -106,6 +106,7 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
 
 
 class ImageObjectiveTestSerializer(serializers.ModelSerializer):
+    image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     class Meta:
         model = ImageObjectiveTest
         fields = [
