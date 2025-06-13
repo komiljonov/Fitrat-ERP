@@ -305,7 +305,6 @@ class QuizCheckAPIView(APIView):
             # Get user's text answer
             user_answer_text = user_answer.get("answer", "")
 
-            ic(user_answer_text,correct_answer.text)
 
             # Compare answers case-insensitively and with stripped whitespace
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer.text).strip().lower()
@@ -336,9 +335,6 @@ class QuizCheckAPIView(APIView):
             match_pairs_id = question.get("id")
             if not match_pairs_id:
                 raise ValueError("Question must have an ID")
-
-            # Fetch the MatchPairs object and its related pairs
-            from quiz.models import MatchPairs, Pairs
 
             match_pairs = MatchPairs.objects.prefetch_related('pairs').get(id=match_pairs_id)
             all_pairs = list(match_pairs.pairs.all())
