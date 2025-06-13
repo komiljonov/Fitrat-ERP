@@ -7,6 +7,7 @@ from django.dispatch.dispatcher import logger
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from icecream import ic
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
@@ -64,8 +65,11 @@ class QuizCheckAPIView(APIView):
             }
         }
 
+        # Pre-fetch all questions at once
+        quiz_questions = QuizSerializer(quiz).data["questions"]
+
         # Process each question
-        for question in QuizSerializer(quiz).data["questions"]:
+        for question in quiz_questions:
             qtype = question["type"]
             qid = question["id"]
 
@@ -85,7 +89,7 @@ class QuizCheckAPIView(APIView):
                 continue
 
             # Check the answer
-            is_correct, result_data = self._check_answer(qtype, user_answer, qid)
+            is_correct, result_data = self._check_answer(question, user_answer)
 
             # Update results
             if is_correct:
@@ -114,8 +118,24 @@ class QuizCheckAPIView(APIView):
         if qtype not in data:
             return None
 
+        # Map question types to their ID fields
+        id_fields = {
+            'standard': 'question_id',
+            'multiple_choice': 'question_id',
+            'fill_gaps': 'fill_id',
+            'vocabularies': 'vocab_id',
+            'listening': 'listening_id',
+            'match_pairs': 'match_id',
+            'objective_test': 'objective_id',
+            'cloze_test': 'cloze_id',
+            'image_objective_test': 'image_objective_id',
+            'true_false': 'true_false_id'
+        }
+
+        id_field = id_fields.get(qtype, 'question_id')
+
         for answer in data[qtype]:
-            if str(answer.get("question_id")) == str(qid):
+            if str(answer.get(id_field)) == str(qid):
                 return answer
         return None
 
@@ -129,21 +149,124 @@ class QuizCheckAPIView(APIView):
             "error": "No answer submitted"
         })
 
-    def _check_answer(self, qtype, user_answer, qid):
+    def _check_answer(self, question, user_answer):
         """Dispatch to appropriate checking method"""
+        qtype = question["type"]
+        qid = question["id"]
+
         checker = getattr(self, f"check_{qtype}", None)
         if not checker:
             return False, {"error": "Unsupported question type", "id": str(qid)}
 
         try:
-            return checker(user_answer, qid)
+            return checker(question, user_answer)
         except Exception as e:
             return False, {"error": str(e), "id": str(qid)}
+
+    # Type-specific checking methods
+    def check_standard(self, question, user_answer):
+        correct_answer_id = question.get("answer")
+        user_answer_id = user_answer.get("answer_id")
+        return str(user_answer_id) == str(correct_answer_id), {
+            "id": question["id"],
+            "correct": str(user_answer_id) == str(correct_answer_id),
+            "user_answer": user_answer_id,
+            "correct_answer": correct_answer_id
+        }
+
+    def check_multiple_choice(self, question, user_answer):
+        return self.check_standard(question, user_answer)  # Same logic as standard
+
+    def check_true_false(self, question, user_answer):
+        correct_answer = question.get("answer").lower() == "true"
+        user_choice = user_answer.get("choice")
+        return user_choice == correct_answer, {
+            "id": question["id"],
+            "correct": user_choice == correct_answer,
+            "user_answer": user_choice,
+            "correct_answer": correct_answer
+        }
+
+    def check_fill_gaps(self, question, user_answer):
+        correct_gaps = [gap["name"] for gap in question.get("gaps", [])]
+        user_gaps = user_answer.get("gaps", [])
+
+        if len(correct_gaps) != len(user_gaps):
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "user_answer": user_gaps,
+                "correct_answer": correct_gaps
+            }
+
+        all_correct = all(str(user_gap).lower() == str(correct_gap).lower()
+                          for user_gap, correct_gap in zip(user_gaps, correct_gaps))
+
+        return all_correct, {
+            "id": question["id"],
+            "correct": all_correct,
+            "user_answer": user_gaps,
+            "correct_answer": correct_gaps
+        }
+
+    def check_objective_test(self, question, user_answer):
+        correct_answer_ids = [question.get("answer")]
+        user_answer_ids = user_answer.get("answer_ids", [])
+
+        # Convert both to sets for comparison
+        correct_set = set(str(id) for id in correct_answer_ids)
+        user_set = set(str(id) for id in user_answer_ids)
+
+        return user_set == correct_set, {
+            "id": question["id"],
+            "correct": user_set == correct_set,
+            "user_answer": user_answer_ids,
+            "correct_answer": correct_answer_ids
+        }
+
+    def check_cloze_test(self, question, user_answer):
+        correct_sequence = [q["name"] for q in question.get("questions", [])]
+        user_sequence = user_answer.get("word_sequence", [])
+
+        return user_sequence == correct_sequence, {
+            "id": question["id"],
+            "correct": user_sequence == correct_sequence,
+            "user_answer": user_sequence,
+            "correct_answer": correct_sequence
+        }
+
+    def check_image_objective_test(self, question, user_answer):
+        correct_answer = question.get("answer")
+        user_answer = user_answer.get("answer")
+        return str(user_answer) == str(correct_answer), {
+            "id": question["id"],
+            "correct": str(user_answer) == str(correct_answer),
+            "user_answer": user_answer,
+            "correct_answer": correct_answer
+        }
+
+    def check_match_pairs(self, question, user_answer):
+        correct_pairs = []
+        left_items = [pair for pair in question.get("pairs", []) if pair["choice"] == "Left"]
+        right_items = [pair for pair in question.get("pairs", []) if pair["choice"] == "Right"]
+
+        # This assumes pairs are already matched correctly in the question data
+        # You might need to adjust based on how your data is structured
+        user_pairs = user_answer.get("pairs", [])
+
+        # Simple check - count matches
+        # You might need a more sophisticated matching algorithm
+        return len(user_pairs) == min(len(left_items), len(right_items)), {
+            "id": question["id"],
+            "correct": len(user_pairs) == min(len(left_items), len(right_items)),
+            "user_answer": user_pairs,
+            "correct_answer": list(zip(left_items, right_items))
+        }
 
     def _create_mastering_record(self, theme, student, quiz, ball):
         """Create mastering record and award points if eligible"""
         if not student:
-            return  # Skip if no student
+            return
 
         try:
             mastering = Mastering.objects.create(
@@ -154,8 +277,7 @@ class QuizCheckAPIView(APIView):
                 ball=ball
             )
 
-            homework = Homework.objects.filter(theme=theme).first()
-            if homework:  # Only create points if homework exists
+            if homework := Homework.objects.filter(theme=theme).first():
                 Points.objects.create(
                     point=ball,
                     from_test=mastering,
@@ -165,10 +287,6 @@ class QuizCheckAPIView(APIView):
                 )
         except Exception as e:
             logger.error(f"Error creating mastering record: {str(e)}")
-
-    # Type-specific checking methods remain the same as in your original
-    # (check_standard, check_fill_gap, check_vocabulary, etc.)
-
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
