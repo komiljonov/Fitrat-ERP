@@ -303,6 +303,8 @@ class QuizCheckAPIView(APIView):
             # Get user's text answer
             user_answer_text = user_answer.get("answer", "")
 
+            ic(user_answer_text,correct_answer)
+
             # Compare answers case-insensitively and with stripped whitespace
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
 
