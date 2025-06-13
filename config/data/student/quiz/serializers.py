@@ -196,7 +196,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
         for item in MatchPairs.objects.filter(quiz=obj):
             data = MatchPairsSerializer(item).data
-            data["type"] = "match_pair"
+            data["type"] = "match_pairs"
             questions.append(data)
 
         for item in ObjectiveTest.objects.filter(quiz=obj):
