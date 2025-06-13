@@ -301,6 +301,9 @@ class QuizCheckAPIView(APIView):
         }
 
     def check_match_pairs(self, question, user_answer):
+
+        ic(question,user_answer)
+
         try:
             # Extract correct pairs from question
             left_items = [pair for pair in question.get("pairs", []) if pair.get("choice") == "Left"]
