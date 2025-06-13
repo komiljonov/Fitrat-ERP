@@ -121,8 +121,14 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep["image"] = FileUploadSerializer(instance.image,context=self.context).data
-        # Randomize answers for image objective tests if they exist
+        if instance.image:
+            # Get the request from context to build full URLs
+            request = self.context.get('request')
+            file_context = {'request': request} if request else self.context
+            rep["image"] = FileUploadSerializer(instance.image, context=file_context).data
+        else:
+            rep["image"] = None
+
         if hasattr(instance, 'answers') and instance.answers.exists():
             answers_data = AnswerSerializer(instance.answers.all(), many=True).data
             random.shuffle(answers_data)
