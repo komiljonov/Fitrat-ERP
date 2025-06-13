@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.autoreload import logger
@@ -16,7 +18,8 @@ def new_created_order(sender, instance: Points, created, **kwargs):
         if hasattr(instance, 'student') and instance.student:
             user = Student.objects.filter(pk=instance.student.pk).first()
             if user:
-                user.points += str(instance.point)
+                # Ensure instance.point is treated as Decimal
+                user.points += Decimal(str(instance.point))
                 user.save()
     except Exception as e:
         logger.error(f"Error in points signal handler: {str(e)}")
