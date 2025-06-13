@@ -336,156 +336,91 @@ class QuizCheckAPIView(APIView):
     def check_match_pairs(self, question, user_answer):
         try:
             match_pairs_id = question.get("id")
-
             match_pairs = MatchPairs.objects.prefetch_related('pairs').get(id=match_pairs_id)
             all_pairs = list(match_pairs.pairs.all())
 
+            # Split into left and right items
             left_items = [pair for pair in all_pairs if pair.choice == "Left"]
             right_items = [pair for pair in all_pairs if pair.choice == "Right"]
 
+            # Validate pairs
             if not left_items or not right_items:
                 raise ValueError("Question must contain both left and right pairs")
-
             if len(left_items) != len(right_items):
-                raise ValueError(
-                    f"Number of left ({len(left_items)}) and right ({len(right_items)}) items must be equal")
+                raise ValueError("Left and right items must be equal in number")
 
-            # Create mappings for easy lookup
+            # Create mappings
             left_map = {str(item.id): item.pair for item in left_items}
             right_map = {str(item.id): item.pair for item in right_items}
 
-            # Create correct pairing based on the order they were created/stored
-            left_items_sorted = sorted(left_items, key=lambda x: x.created_at)
-            right_items_sorted = sorted(right_items, key=lambda x: x.created_at)
-
+            # Default correct mapping (assumes pairs are ordered by creation time)
             correct_mapping = {
                 str(left.id): str(right.id)
-                for left, right in zip(left_items_sorted, right_items_sorted)
+                for left, right in zip(
+                    sorted(left_items, key=lambda x: x.created_at),
+                    sorted(right_items, key=lambda x: x.created_at)
+                )
             }
 
+            # Validate user input
             user_pairs = user_answer.get("pairs", [])
             if not user_pairs:
                 return False, self._build_match_response(
-                    question["id"],
-                    False,
-                    "No pairs submitted",
-                    [],
-                    correct_mapping,
-                    left_map,
-                    right_map
+                    question["id"], False, "No pairs submitted", [], correct_mapping, left_map, right_map
                 )
 
             if len(user_pairs) != len(left_items):
                 return False, self._build_match_response(
-                    question["id"],
-                    False,
-                    f"Expected {len(left_items)} pairs, got {len(user_pairs)}",
-                    user_pairs,
-                    correct_mapping,
-                    left_map,
+                    question["id"], False, f"Expected {len(left_items)} pairs", user_pairs, correct_mapping, left_map,
                     right_map
                 )
 
-            # Check each user pair
-            all_correct = True
+            # Check each pair
             results = []
-            used_left_ids = set()
-            used_right_ids = set()
+            used_left = set()
+            used_right = set()
+            all_correct = True
 
-            for i, user_pair in enumerate(user_pairs):
-                left_id = str(user_pair.get("left_id", ""))
-                right_id = str(user_pair.get("right_id", ""))
+            for pair in user_pairs:
+                left_id = str(pair.get("left_id", ""))
+                right_id = str(pair.get("right_id", ""))
+                is_correct = False
+                error = None
 
+                # Validate IDs
                 if left_id not in left_map:
+                    error = "Invalid left_id"
+                elif right_id not in right_map:
+                    error = "Invalid right_id"
+                elif left_id in used_left:
+                    error = "Duplicate left_id"
+                elif right_id in used_right:
+                    error = "Duplicate right_id"
+                else:
+                    used_left.add(left_id)
+                    used_right.add(right_id)
+                    is_correct = (correct_mapping.get(left_id) == right_id)
 
-                    results.append({
-                        "left_id": left_id,
-                        "right_id": right_id,
-                        "error": "Invalid left item ID",
-                        "is_correct": False
-                    })
-                    all_correct = False
-                    continue
-
-                if right_id not in right_map:
-
-                    results.append({
-                        "left_id": left_id,
-                        "right_id": right_id,
-                        "error": "Invalid right item ID",
-                        "is_correct": False
-                    })
-                    all_correct = False
-                    continue
-
-                # Check for duplicate usage
-                if left_id in used_left_ids:
-                    results.append({
-                        "left_id": left_id,
-                        "right_id": right_id,
-                        "error": "Left item used multiple times",
-                        "is_correct": False
-                    })
-                    all_correct = False
-                    continue
-
-                if right_id in used_right_ids:
-                    results.append({
-                        "left_id": left_id,
-                        "right_id": right_id,
-                        "error": "Right item used multiple times",
-                        "is_correct": False
-                    })
-                    all_correct = False
-                    continue
-
-                used_left_ids.add(left_id)
-                used_right_ids.add(right_id)
-
-                # Check if the pairing is correct
-                is_correct = correct_mapping.get(left_id) == right_id
-
-                if not is_correct:
+                if error or not is_correct:
                     all_correct = False
 
                 results.append({
                     "left_id": left_id,
-                    "left_text": left_map[left_id],
-                    "user_right_id": right_id,
-                    "user_right_text": right_map[right_id],
-                    "correct_right_id": correct_mapping.get(left_id),
-                    "correct_right_text": right_map.get(correct_mapping.get(left_id, "")),
-                    "is_correct": is_correct
+                    "left_text": left_map.get(left_id),
+                    "right_id": right_id,
+                    "right_text": right_map.get(right_id),
+                    "is_correct": is_correct,
+                    **({"error": error} if error else {})
                 })
 
             return all_correct, self._build_match_response(
-                question["id"],
-                all_correct,
-                None,
-                user_pairs,
-                correct_mapping,
-                left_map,
-                right_map,
-                results
+                question["id"], all_correct, None, user_pairs, correct_mapping, left_map, right_map, results
             )
 
         except MatchPairs.DoesNotExist:
-            return False, {
-                "id": question.get("id"),
-                "correct": False,
-                "error": "Match pairs question not found",
-                "user_answer": user_answer.get("pairs", []),
-                "correct_answer": "Error: Question not found"
-            }
+            return False, {"error": "Question not found"}
         except Exception as e:
-            logger.error(f"Error checking match pairs: {str(e)}", exc_info=True)
-            return False, {
-                "id": question.get("id"),
-                "correct": False,
-                "error": str(e),
-                "user_answer": user_answer.get("pairs", []),
-                "correct_answer": "Error processing correct pairs"
-            }
+            return False, {"error": str(e)}
 
     def _build_match_response(self, question_id, is_correct, error, user_pairs, correct_mapping, left_map, right_map,
                               pair_results=None):
