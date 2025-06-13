@@ -235,36 +235,33 @@ class QuizCheckAPIView(APIView):
             "correct_answer": correct_gaps
         }
 
-    def check_objective_test(self, user_answer, qid):
+    def check_objective_test(self, question, user_answer):
         try:
-            question = ObjectiveTest.objects.get(id=qid)
+            # Get correct answer text
+            correct_answer = question.get("answer", "")
+            if not correct_answer and "answers" in question:
+                correct_answer = next(
+                    (a["text"] for a in question["answers"] if a.get("is_correct")),
+                    ""
+                )
 
-            # Get all correct answer texts (assuming .name is the field storing the answer text)
-            correct_answers = [
-                ans.name.strip().lower()
-                for ans in question.answers.filter(is_correct=True)
-            ]
+            user_answer_text = user_answer.get("answer", "")
 
-            # Get and normalize the user's submitted answer
-            user_text = user_answer.get("answer", "").strip().lower()
-
-            # Compare
-            is_correct = user_text in correct_answers
+            is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
 
             return is_correct, {
-                "id": str(qid),
+                "id": question["id"],
                 "correct": is_correct,
-                "user_answer": user_answer.get("answer"),
-                "correct_answer": correct_answers,
+                "user_answer": user_answer_text,
+                "correct_answer": correct_answer
             }
-
         except Exception as e:
             return False, {
-                "id": str(qid),
+                "id": question["id"],
                 "correct": False,
                 "error": str(e),
                 "user_answer": user_answer.get("answer", ""),
-                "correct_answer": "Error processing correct answers"
+                "correct_answer": "Error processing correct answer"
             }
 
     def check_cloze_test(self, question, user_answer):
@@ -379,6 +376,8 @@ class QuizCheckAPIView(APIView):
                 )
         except Exception as e:
             logger.error(f"Error creating mastering record: {str(e)}")
+
+
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
