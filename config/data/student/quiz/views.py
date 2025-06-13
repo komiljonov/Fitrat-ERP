@@ -336,8 +336,13 @@ class QuizCheckAPIView(APIView):
             if not match_pairs_id:
                 raise ValueError("Question must have an ID")
 
+
+
             match_pairs = MatchPairs.objects.prefetch_related('pairs').get(id=match_pairs_id)
             all_pairs = list(match_pairs.pairs.all())
+
+            ic(match_pairs_id, all_pairs)
+            ic(question, user_answer)
 
             if not all_pairs:
                 raise ValueError("No pairs found for this match question")
