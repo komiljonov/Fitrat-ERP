@@ -314,7 +314,7 @@ class QuizCheckAPIView(APIView):
                 "id": question["id"],
                 "correct": is_correct,
                 "user_answer": user_answer_text,
-                "correct_answer": correct_answer
+                "correct_answer": correct_answer.text
             }
         except Exception as e:
             logger.error(f"Error processing image objective test question: {str(e)}")
