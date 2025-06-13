@@ -122,10 +122,7 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
 
         if instance.image:
-            # Get the request from context to build full URLs
-            request = self.context.get('request')
-            file_context = {'request': request} if request else self.context
-            rep["image"] = FileUploadSerializer(instance.image, context=file_context).data
+            rep["image"] = FileUploadSerializer(instance.image, context=self.context).data
         else:
             rep["image"] = None
 
