@@ -290,7 +290,10 @@ class QuizCheckAPIView(APIView):
 
     def check_image_objective_test(self, question, user_answer):
         correct_answer = question.get("answer")
-        user_answer_value = user_answer.get("answer")  # Fixed: renamed to avoid conflict
+        user_answer_value = user_answer.get("answer")
+
+        ic(question["id"])
+        ic(correct_answer,user_answer_value)
         return str(user_answer_value) == str(correct_answer), {
             "id": question["id"],
             "correct": str(user_answer_value) == str(correct_answer),

@@ -219,7 +219,7 @@ class QuizSerializer(serializers.ModelSerializer):
             data["type"] = "true_false"
             questions.append(data)
 
-        # Shuffle and return up to `count` questions
+
         random.shuffle(questions)
         return questions[:min(count, len(questions))]
 
