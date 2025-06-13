@@ -164,19 +164,31 @@ class QuizCheckAPIView(APIView):
             return False, {"error": str(e), "id": str(qid)}
 
     def check_standard(self, question, user_answer):
-        # Get correct answer ID - check both direct answer field and answers array
+
+        ic(question, user_answer)
+
         correct_answer_id = None
         if "answer" in question:
             correct_answer_id = question["answer"]
+
+            ic(correct_answer_id)
+
         else:
             for answer in question.get("answers", []):
                 if answer.get("is_correct"):
+
+                    ic(answer["id"])
+
                     correct_answer_id = answer["id"]
                     break
 
         user_answer_id = user_answer.get("answer_id")
 
+        ic(user_answer_id)
+
         is_correct = str(user_answer_id) == str(correct_answer_id)
+
+        ic(is_correct)
 
         return is_correct, {
             "id": question["id"],
