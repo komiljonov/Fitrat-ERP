@@ -245,7 +245,7 @@ class QuizCheckAPIView(APIView):
                     ""
                 )
 
-            user_answer_text = user_answer.get("answer", "")
+            user_answer_text = user_answer.get("answer_ids", "")
 
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
 
