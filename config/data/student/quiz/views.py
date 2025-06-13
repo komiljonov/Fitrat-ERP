@@ -226,6 +226,9 @@ class QuizCheckAPIView(APIView):
 
     def check_cloze_test(self, question, user_answer):
         correct_sequence = [q["name"] for q in question.get("questions", [])]
+
+        correct_sequence = correct_sequence[::-1]
+
         user_sequence = user_answer.get("word_sequence", [])
 
         return user_sequence == correct_sequence, {
