@@ -210,7 +210,7 @@ class QuizSerializer(serializers.ModelSerializer):
             questions.append(data)
 
         for item in ImageObjectiveTest.objects.filter(quiz=obj):
-            data = ImageObjectiveTestSerializer(item).data
+            data = ImageObjectiveTestSerializer(item,context=self.context).data
             data["type"] = "image_objective"
             questions.append(data)
 
