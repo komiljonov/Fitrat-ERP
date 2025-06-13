@@ -85,7 +85,7 @@ class StandardAnswerSerializer(serializers.Serializer):
 class QuizCheckSerializer(serializers.Serializer):
     theme = serializers.UUIDField(required=False)
     quiz_id = serializers.UUIDField()
-    standard = StandardAnswerSerializer(many=True, required=False)  # Add this line
+    standard = StandardAnswerSerializer(many=True, required=False)
     multiple_choice = MultipleChoiceSerializer(many=True, required=False)
     fill_gaps = FillGapsSerializer(many=True, required=False)
     vocabularies = VocabularyAnswerSerializer(many=True, required=False)
@@ -94,6 +94,7 @@ class QuizCheckSerializer(serializers.Serializer):
     objective_test = ObjectiveTestAnswerSerializer(many=True, required=False)
     cloze_test = ClozeTestAnswerSerializer(many=True, required=False)
     image_objective_test = ImageObjectiveTestAnswerSerializer(many=True, required=False)
+    image_objective = ImageObjectiveTestAnswerSerializer(many=True, required=False)  # Add this line
     true_false = TrueFalseAnswerSerializer(many=True, required=False)
 
     class Meta:
