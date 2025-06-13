@@ -289,25 +289,39 @@ class QuizCheckAPIView(APIView):
             }
 
     def check_image_objective_test(self, question, user_answer):
-        correct_answer = question.get("answer")
-        user_answer_value = user_answer.get("answer")
+        try:
+            # Get correct answer text
+            correct_answer = question.get("answer", "")
 
-        ic(question["id"])
-        ic(correct_answer,user_answer_value)
-        return str(user_answer_value) == str(correct_answer), {
-            "id": question["id"],
-            "correct": str(user_answer_value) == str(correct_answer),
-            "user_answer": user_answer_value,
-            "correct_answer": correct_answer
-        }
+            # Get user's text answer
+            user_answer_text = user_answer.get("answer", "")
+
+            # Compare answers case-insensitively and with stripped whitespace
+            is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
+
+            return is_correct, {
+                "id": question["id"],
+                "correct": is_correct,
+                "user_answer": user_answer_text,
+                "correct_answer": correct_answer
+            }
+        except Exception as e:
+            logger.error(f"Error processing image objective test question: {str(e)}")
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": str(e),
+                "user_answer": user_answer.get("answer", ""),
+                "correct_answer": "Error processing correct answer"
+            }
 
     def check_match_pairs(self, question, user_answer):
         try:
-            # Validate input
+
             if not isinstance(user_answer, dict) or "pairs" not in user_answer:
                 raise ValueError("User answer must be a dictionary with 'pairs' key")
 
-            # Get all pairs and split into left/right
+
             all_pairs = question.get("pairs", [])
             left_items = [pair for pair in all_pairs if pair.get("choice") == "Left"]
             right_items = [pair for pair in all_pairs if pair.get("choice") == "Right"]
@@ -315,22 +329,19 @@ class QuizCheckAPIView(APIView):
             if not left_items or not right_items:
                 raise ValueError("Question must contain both left and right pairs")
 
-            # Create mappings for quick lookup
+
             left_map = {str(item["id"]): item["pair"] for item in left_items}
             right_map = {str(item["id"]): item["pair"] for item in right_items}
 
-            # Get correct pairs (assuming they're in matching order)
-            # If you have another way to determine correct pairs, modify this
+
             correct_pairs = list(zip(left_items, right_items))
 
-            # Build correct mapping {left_id: right_id}
             correct_mapping = {
                 str(left["id"]): str(right["id"])
                 for left, right in correct_pairs
                 if str(left["id"]) in left_map and str(right["id"]) in right_map
             }
 
-            # Validate user pairs
             user_pairs = user_answer.get("pairs", [])
             if not user_pairs:
                 return False, self._build_match_response(
