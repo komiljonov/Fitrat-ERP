@@ -44,7 +44,7 @@ class MatchPairsSerializer(serializers.Serializer):
 # NEW: Objective Test Answer Serializer (field-based)
 class ObjectiveTestAnswerSerializer(serializers.Serializer):
     objective_id = serializers.UUIDField()
-    answer_ids = serializers.ListField(child=serializers.UUIDField())  # Multiple answers
+    answer_ids = serializers.CharField()  # Multiple answers
 
     class Meta:
         ref_name = "Check_ObjectiveTestAnswerSerializer"
