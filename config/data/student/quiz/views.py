@@ -302,7 +302,7 @@ class QuizCheckAPIView(APIView):
 
     def check_match_pairs(self, question, user_answer):
 
-        ic(question,user_answer)
+        print(question,user_answer)
 
         try:
             # Extract correct pairs from question
