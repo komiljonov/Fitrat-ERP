@@ -235,13 +235,12 @@ class QuizCheckAPIView(APIView):
 
     def check_objective_test(self, user_answer, qid):
         try:
-            # Retrieve the question instance from DB or context
+
             question = ObjectiveTest.objects.get(id=qid)
 
-            # Assume question.correct_answers is a list of correct strings (e.g., ["apple", "Apple"])
-            correct_answers = [ans.strip().lower() for ans in question.correct_answers]
+            correct_answers = [ans.strip().lower() for ans in question.answers.is_correct]
 
-            # User-provided answer from serializer
+
             user_text = user_answer.get("answer", "").strip().lower()
 
             is_correct = user_text in correct_answers
@@ -250,7 +249,7 @@ class QuizCheckAPIView(APIView):
                 "id": str(qid),
                 "correct": is_correct,
                 "user_answer": user_answer.get("answer"),
-                "correct_answer": question.correct_answers
+                "correct_answer": question.is_correct,
             }
 
         except Exception as e:
