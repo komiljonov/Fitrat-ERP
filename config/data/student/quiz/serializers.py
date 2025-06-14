@@ -28,10 +28,11 @@ class AnswerSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     answers = serializers.PrimaryKeyRelatedField(many=True, queryset=Answer.objects.all())
     text = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all())
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
 
     class Meta:
         model = Question
-        fields = ["id", "quiz", "text", "answers", "comment"]
+        fields = ["id", "quiz", "text","file", "answers", "comment"]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -41,7 +42,8 @@ class QuestionSerializer(serializers.ModelSerializer):
         answers_data = AnswerSerializer(instance.answers.all(), many=True).data
         random.shuffle(answers_data)
         rep["answers"] = answers_data
-
+        if instance.file:
+            rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
         return rep
 
 
@@ -59,6 +61,7 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
     quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
     question = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all(), allow_null=True)
     answers = serializers.PrimaryKeyRelatedField(many=True, queryset=Answer.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
 
     class Meta:
         model = ObjectiveTest
@@ -68,6 +71,7 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
             "question",
             "answers",
             "comment",
+            "file",
             "created_at"
         ]
 
@@ -81,13 +85,15 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
             answers_data = AnswerSerializer(instance.answers.all(), many=True).data
             random.shuffle(answers_data)
             rep["answers"] = answers_data
-
+        if instance.file:
+            rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
         return rep
 
 
 class Cloze_TestSerializer(serializers.ModelSerializer):
 
     questions = serializers.PrimaryKeyRelatedField(many=True, queryset=QuizGaps.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     class Meta:
         model = Cloze_Test
         fields = [
@@ -96,17 +102,21 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
             "questions",
             "answer",
             "comment",
+            "file",
             "created_at"
         ]
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["questions"] = QuizGapsSerializer(instance.questions.all(), many=True).data
+        if instance.file:
+            rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
         return rep
 
 
 
 class ImageObjectiveTestSerializer(serializers.ModelSerializer):
     image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     class Meta:
         model = ImageObjectiveTest
         fields = [
@@ -115,7 +125,8 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
             "image",
             "answer",
             "comment",
-            "created_at"
+            "created_at",
+            "file"
         ]
 
     def to_representation(self, instance):
@@ -130,12 +141,14 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
             answers_data = AnswerSerializer(instance.answers.all(), many=True).data
             random.shuffle(answers_data)
             rep["answers"] = answers_data
-
+        if instance.file:
+            rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
         return rep
 
 
 class True_FalseSerializer(serializers.ModelSerializer):
     question = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     class Meta:
         model = True_False
         fields = [
@@ -144,12 +157,15 @@ class True_FalseSerializer(serializers.ModelSerializer):
             "question",
             "answer",
             "comment",
+            "file"
         ]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
         rep["question"] = QuizGapsSerializer(instance.question).data
+        if instance.file:
+            rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
         return rep
 
 
