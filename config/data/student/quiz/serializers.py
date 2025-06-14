@@ -507,6 +507,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                 student=instance.student,
                 exam=instance.exam,
                 status = "Pending",
+                expire_date=instance.certificate_expire_date,
                 certificate=validated_data.get("certificate"),
             )
 
