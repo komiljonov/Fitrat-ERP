@@ -7,7 +7,6 @@ from django.dispatch.dispatcher import logger
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from icecream import ic
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
@@ -106,7 +105,6 @@ class QuizCheckAPIView(APIView):
 
     def _find_user_answer(self, data, qtype, qid):
         if qtype not in data:
-
             return None
 
         id_fields = {
@@ -181,7 +179,7 @@ class QuizCheckAPIView(APIView):
                 "correct_answer": correct_answer_id,
                 "answers": question["answers"],
                 "question_text": question.get("text", {}).get("name") or
-                               question.get("question", {}).get("name")
+                                 question.get("question", {}).get("name")
             }
 
             if not is_correct and correct_answer_id and "answers" in question:
@@ -303,7 +301,6 @@ class QuizCheckAPIView(APIView):
 
             # Get user's text answer
             user_answer_text = user_answer.get("answer", "")
-
 
             # Compare answers case-insensitively and with stripped whitespace
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer.text).strip().lower()
@@ -461,6 +458,7 @@ class QuizCheckAPIView(APIView):
             response["pair_results"] = pair_results
 
         return response
+
     def _create_mastering_record(self, theme, student, quiz, ball):
         """Create mastering record and award points if eligible"""
         if not student:
@@ -485,7 +483,6 @@ class QuizCheckAPIView(APIView):
                 )
         except Exception as e:
             logger.error(f"Error creating mastering record: {str(e)}")
-
 
 
 class ObjectiveTestView(ListCreateAPIView):
@@ -553,8 +550,10 @@ class QuizListPgView(ListAPIView):
             queryset = queryset.filter(title__icontains=search)
 
         return queryset
+
     def get_paginated_response(self, data):
         return Response(data)
+
 
 class QuizRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = Quiz.objects.all()
@@ -661,7 +660,7 @@ class ExamListView(ListCreateAPIView):
             three_days_later = datetime.today() + timedelta(days=3)
             queryset = queryset.filter(date__gt=three_days_later)
 
-        if user.role=="Student":
+        if user.role == "Student":
             two_days_later = datetime.today() + timedelta(days=2)
             queryset = queryset.filter(date__gt=two_days_later)
 
@@ -856,7 +855,6 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
         return qs
 
 
-
 class ExamRegisteredStudentAPIView(APIView):
     # permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -903,7 +901,7 @@ class ExamRegisteredStudentAPIView(APIView):
 
         # Define fill styles
         green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # light green
-        red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")    # light red
+        red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")  # light red
 
         for reg in registrations:
             student = reg.student
