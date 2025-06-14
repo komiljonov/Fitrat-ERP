@@ -319,7 +319,7 @@ class QuizCheckAPIView(APIView):
             return is_correct, {
                 "id": question["id"],
                 "correct": is_correct,
-                "image":image.image if image else None,
+                "image": image.image.url if image and image.image else None,
                 "user_answer": user_answer_text,
                 "correct_answer": correct_answer.text
             }
@@ -328,6 +328,7 @@ class QuizCheckAPIView(APIView):
             return False, {
                 "id": question["id"],
                 "correct": False,
+                "image": image.image.url if image and image.image else None,
                 "error": str(e),
                 "user_answer": user_answer.get("answer", ""),
                 "correct_answer": "Error processing correct answer"
