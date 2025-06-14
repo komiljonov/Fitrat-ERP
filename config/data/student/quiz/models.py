@@ -47,6 +47,8 @@ class Question(BaseModel):
 
     comment = models.TextField(blank=True,null=True)
 
+    file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True, related_name="question_file")
+
     def __str__(self):
         return self.text.name
 
@@ -62,6 +64,8 @@ class Vocabulary(BaseModel):
     in_uzbek = models.CharField(max_length=255, null=True, blank=True)
 
     comment = models.TextField(blank=True,null=True)
+    file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name="question_vocab_file")
 
 
 
@@ -84,6 +88,8 @@ class Fill_gaps(BaseModel):
 
     comment = models.TextField(blank=True, null=True)
 
+    file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name="question_fill_file")
     def __str__(self):
         return f"{self.quiz.title}    {self.question.name}"
 
@@ -106,6 +112,8 @@ class Listening(BaseModel):
 
     comment = models.TextField(blank=True, null=True)
 
+    file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name="question_lesson_file")
 
 
 class Pairs(BaseModel):
@@ -126,6 +134,9 @@ class MatchPairs(BaseModel):
 
     comment = models.TextField(blank=True, null=True)
 
+    file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name="question_match_file")
+
     def __str__(self):
         return f"{self.quiz.title} "
 
@@ -138,6 +149,10 @@ class ObjectiveTest(BaseModel):
     answers : "Answer" = models.ManyToManyField(Answer)
 
     comment = models.TextField(blank=True, null=True)
+
+    file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name="question_objective_file")
+
     def __str__(self):
         return f"{self.quiz.title}    {self.question.name}"
 
@@ -150,6 +165,9 @@ class Cloze_Test(BaseModel):
                                           related_name='cloze_answer')
 
     comment = models.TextField(blank=True, null=True)
+
+    file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name="question_cloze_file")
 
     def __str__(self):
         return f"{self.quiz.title}  {self.answer.text}"
@@ -164,6 +182,9 @@ class ImageObjectiveTest(BaseModel):
                                           related_name='image_cloze_answer')
 
     comment = models.TextField(blank=True, null=True)
+
+    file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name="question_image_file")
 
     def __str__(self):
         return f"{self.quiz.title}  {self.answer.text}"
@@ -181,6 +202,9 @@ class True_False(BaseModel):
     ],max_length=15,null=True,blank=True)
 
     comment = models.TextField(blank=True, null=True)
+
+    file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name="question_boolen_file")
 
     def __str__(self):
         return f"{self.quiz.title}  {self.answer}"
