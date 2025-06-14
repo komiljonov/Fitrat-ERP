@@ -91,6 +91,7 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
 class Cloze_TestSerializer(serializers.ModelSerializer):
     questions = serializers.PrimaryKeyRelatedField(many=True, queryset=QuizGaps.objects.all(), allow_null=True)
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    answer = serializers.PrimaryKeyRelatedField(queryset=Answer.objects.all(), allow_null=True)
 
     class Meta:
         model = Cloze_Test
@@ -109,6 +110,10 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
         rep["questions"] = QuizGapsSerializer(instance.questions.all(), many=True).data
         if instance.file:
             rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
+
+        if instance.answer:
+            rep["answer"] = AnswerSerializer(instance.answer).data
+
         return rep
 
 
