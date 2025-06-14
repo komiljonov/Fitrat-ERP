@@ -212,7 +212,7 @@ class True_False(BaseModel):
         return f"{self.quiz.title}  {self.answer}"
 
 class ExamSubject(BaseModel):
-    subject = models.ForeignKey("quiz.Subject", on_delete=models.SET_NULL, null=True, blank=True,
+    subject = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='exam_subject_quiz')
 
     options = models.CharField(choices=[
