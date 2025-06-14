@@ -299,3 +299,21 @@ class ExamRegistration(BaseModel):
 
     def __str__(self):
         return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
+
+
+class ExamCertificate(BaseModel):
+    student: "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='registrated_student_certificate')
+    exam: "Exam" = models.ForeignKey("quiz.Exam", on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='registration_exam_certificate')
+    certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='registered_certificate_of_student')
+    status = models.CharField(choices=[
+        ("Accepted", "Accepted"),
+        ("Rejected", "Rejected"),
+        ("Pending", "Pending"),
+    ],max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.student.first_name}  {self.status}"
+

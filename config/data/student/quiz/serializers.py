@@ -4,7 +4,7 @@ from icecream import ic
 from rest_framework import serializers
 
 from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, Exam, Gaps, \
-    QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest
+    QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest, ExamCertificate
 from .tasks import handle_task_creation
 from ..homeworks.models import Homework
 from ..subject.models import Subject, Theme
@@ -446,6 +446,8 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "is_participating",
             "mark",
             "student_comment",
+            "has_certificate",
+            "certificate",
             "created_at",
         ]
 
@@ -496,8 +498,16 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    # In your serializer
     def create(self, validated_data):
         instance = super().create(validated_data)
-        handle_task_creation.delay(instance.exam.id)  # Pass exam ID to task
+        handle_task_creation.delay(instance.exam.id)
+
+        if validated_data.get("has_certificate") == True and validated_data.get("certificate"):
+            ExamCertificate.objects.create(
+                student=instance.student,
+                exam=instance.exam,
+                status = "Pending",
+                certificate=validated_data.get("certificate"),
+            )
+
         return instance
