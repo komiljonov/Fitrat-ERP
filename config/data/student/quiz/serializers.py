@@ -210,28 +210,28 @@ class QuizSerializer(serializers.ModelSerializer):
             data["type"] = "vocabulary"
             questions.append(data)
 
-        for item in MatchPairs.objects.filter(quiz=obj,context=self.context):
-            data = MatchPairsSerializer(item).data
+        for item in MatchPairs.objects.filter(quiz=obj):
+            data = MatchPairsSerializer(item,context=self.context).data
             data["type"] = "match_pairs"
             questions.append(data)
 
-        for item in ObjectiveTest.objects.filter(quiz=obj,context=self.context):
-            data = ObjectiveTestSerializer(item).data
+        for item in ObjectiveTest.objects.filter(quiz=obj):
+            data = ObjectiveTestSerializer(item,context=self.context).data
             data["type"] = "objective_test"
             questions.append(data)
 
-        for item in Cloze_Test.objects.filter(quiz=obj,context=self.context):
-            data = Cloze_TestSerializer(item).data
+        for item in Cloze_Test.objects.filter(quiz=obj):
+            data = Cloze_TestSerializer(item,context=self.context).data
             data["type"] = "cloze_test"
             questions.append(data)
 
-        for item in ImageObjectiveTest.objects.filter(quiz=obj,context=self.context):
+        for item in ImageObjectiveTest.objects.filter(quiz=obj):
             data = ImageObjectiveTestSerializer(item,context=self.context).data
             data["type"] = "image_objective"
             questions.append(data)
 
-        for item in True_False.objects.filter(quiz=obj,context=self.context):
-            data = True_FalseSerializer(item).data
+        for item in True_False.objects.filter(quiz=obj):
+            data = True_FalseSerializer(item,context=self.context).data
             data["type"] = "true_false"
             questions.append(data)
 
