@@ -351,14 +351,24 @@ class QuizCheckAPIView(APIView):
             left_map = {str(item.id): item.pair for item in left_items}
             right_map = {str(item.id): item.pair for item in right_items}
 
-            # Default correct mapping (assumes pairs are ordered by creation time)
-            correct_mapping = {
-                str(left.id): str(right.id)
-                for left, right in zip(
-                    sorted(left_items, key=lambda x: x.created_at),
-                    sorted(right_items, key=lambda x: x.created_at)
-                )
-            }
+            # Create key mappings for validation
+            left_key_map = {str(item.id): item.key for item in left_items}
+            right_key_map = {str(item.id): item.key for item in right_items}
+
+            # Build correct mapping based on matching keys
+            # Group left and right items by their keys
+            left_by_key = {item.key: str(item.id) for item in left_items}
+            right_by_key = {item.key: str(item.id) for item in right_items}
+
+            # Create correct mapping: left_id -> right_id for items with same key
+            correct_mapping = {}
+            for key in left_by_key.keys():
+                if key in right_by_key:
+                    correct_mapping[left_by_key[key]] = right_by_key[key]
+
+            # Validate that all keys have matches
+            if len(correct_mapping) != len(left_items):
+                raise ValueError("Not all left items have corresponding right items with matching keys")
 
             # Validate user input
             user_pairs = user_answer.get("pairs", [])
@@ -397,7 +407,10 @@ class QuizCheckAPIView(APIView):
                 else:
                     used_left.add(left_id)
                     used_right.add(right_id)
-                    is_correct = (correct_mapping.get(left_id) == right_id)
+                    # Check if the keys match (this is the key change)
+                    left_key = left_key_map.get(left_id)
+                    right_key = right_key_map.get(right_id)
+                    is_correct = (left_key == right_key)
 
                 if error or not is_correct:
                     all_correct = False
@@ -405,8 +418,10 @@ class QuizCheckAPIView(APIView):
                 results.append({
                     "left_id": left_id,
                     "left_text": left_map.get(left_id),
+                    "left_key": left_key_map.get(left_id),
                     "right_id": right_id,
                     "right_text": right_map.get(right_id),
+                    "right_key": right_key_map.get(right_id),
                     "is_correct": is_correct,
                     **({"error": error} if error else {})
                 })
@@ -444,7 +459,6 @@ class QuizCheckAPIView(APIView):
             response["pair_results"] = pair_results
 
         return response
-
     def _create_mastering_record(self, theme, student, quiz, ball):
         """Create mastering record and award points if eligible"""
         if not student:

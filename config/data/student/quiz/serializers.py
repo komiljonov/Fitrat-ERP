@@ -332,6 +332,7 @@ class PairsSerializer(serializers.ModelSerializer):
             "id",
             "pair",
             "choice",
+            "key",
             "created_at",
         ]
 
