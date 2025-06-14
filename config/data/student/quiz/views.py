@@ -179,6 +179,7 @@ class QuizCheckAPIView(APIView):
                 "correct": is_correct,
                 "user_answer": user_answer_id,
                 "correct_answer": correct_answer_id,
+                "answers": question["answers"],
                 "question_text": question.get("text", {}).get("name") or
                                question.get("question", {}).get("name")
             }
