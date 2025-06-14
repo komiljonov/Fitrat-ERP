@@ -130,29 +130,28 @@ class QuizCheckAPIView(APIView):
 
         return None
 
-    def _record_missing_answer(self, results, qtype, qid):
-        results["summary"]["wrong_count"] += 1
-        results["summary"]["section_breakdown"][qtype]["wrong"] += 1
-        results["details"][qtype].append({
-            "id": qid,
-            "correct": False,
-            "error": "No answer submitted"
-        })
-
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
+
+        # Add debug logging to see what's happening
+        print(f"Checking question type: {qtype}")
+        print(f"Looking for method: check_{qtype}")
 
         # Handle image_objective as image_objective_test
         if qtype == "image_objective":
             qtype = "image_objective_test"
 
         checker = getattr(self, f"check_{qtype}", None)
+        print(f"Found checker: {checker}")
+
         if not checker:
-            return False, {"error": "Unsupported question type", "id": question["id"]}
+            print(f"No checker found for type: {qtype}")
+            return False, {"error": f"Unsupported question type: {qtype}", "id": question["id"]}
 
         try:
             return checker(question, user_answer)
         except Exception as e:
+            print(f"Error in checker: {str(e)}")
             return False, {"error": str(e), "id": question["id"]}
 
     def check_standard(self, question, user_answer):
