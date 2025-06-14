@@ -19,12 +19,12 @@ from rest_framework.views import APIView
 
 from .check_serializers import QuizCheckSerializer
 from .models import Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam, QuizGaps, Answer, ExamRegistration, ObjectiveTest, \
-    Cloze_Test, ImageObjectiveTest, True_False
+    Cloze_Test, ImageObjectiveTest, True_False, ExamCertificate
 from .models import Quiz, Question
 from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer, \
     VocabularySerializer, PairsSerializer, MatchPairsSerializer, ExamSerializer, \
     QuizGapsSerializer, AnswerSerializer, ExamRegistrationSerializer, ObjectiveTestSerializer, Cloze_TestSerializer, \
-    ImageObjectiveTestSerializer, True_FalseSerializer
+    ImageObjectiveTestSerializer, True_FalseSerializer, ExamCertificateSerializer
 from ..homeworks.models import Homework
 from ..mastering.models import Mastering
 from ..shop.models import Points
@@ -942,3 +942,27 @@ class ExamRegisteredStudentAPIView(APIView):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         wb.save(response)
         return response
+
+
+class ExamCertificateAPIView(ListCreateAPIView):
+    queryset = ExamCertificate.objects.all()
+    serializer_class = ExamCertificateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = ExamCertificate.objects.all()
+
+        student = self.request.GET.get("student")
+        exam = self.request.GET.get("exam")
+        expire_date = self.request.GET.get("expire_date")
+        status = self.request.GET.get("status")
+
+        if student:
+            qs = qs.filter(student__id=student)
+        if exam:
+            qs = qs.filter(exam__id=exam)
+        if expire_date:
+            qs = qs.filter(expire_date__gte=expire_date)
+        if status:
+            qs = qs.filter(status=status)
+        return qs
