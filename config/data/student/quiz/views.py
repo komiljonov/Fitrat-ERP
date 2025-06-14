@@ -167,6 +167,8 @@ class QuizCheckAPIView(APIView):
                 )
                 if correct_answer:
                     correct_answer_id = correct_answer["id"]
+            elif "sentence" in question:
+                correct_answer_id = question["sentence"]
 
             user_answer_id = user_answer.get("answer_id")
             is_correct = str(user_answer_id) == str(correct_answer_id)

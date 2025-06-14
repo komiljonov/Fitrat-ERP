@@ -165,7 +165,7 @@ class Cloze_Test(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='clozetest_quiz')
     questions: "QuizGaps" = models.ManyToManyField("quiz.QuizGaps", related_name='cloze_questions')
-    answer: "Answer" = models.ForeignKey("quiz.Answer", on_delete=models.SET_NULL, null=True, blank=True,
+    sentence: "Answer" = models.ForeignKey("quiz.Answer", on_delete=models.SET_NULL, null=True, blank=True,
                                          related_name='cloze_answer')
 
     comment = models.TextField(blank=True, null=True)
