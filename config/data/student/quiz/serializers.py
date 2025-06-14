@@ -4,7 +4,8 @@ from icecream import ic
 from rest_framework import serializers
 
 from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, Exam, Gaps, \
-    QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest, ExamCertificate
+    QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest, ExamCertificate, \
+    ExamSubject
 from .tasks import handle_task_creation
 from ..homeworks.models import Homework
 from ..subject.models import Subject, Theme
@@ -379,6 +380,8 @@ class ExamSerializer(serializers.ModelSerializer):
 
     student_count = serializers.SerializerMethodField()
 
+    options = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(), many=True,allow_null=True)
+
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
         include_only: list | None = kwargs.pop("include_only", None)
@@ -409,7 +412,6 @@ class ExamSerializer(serializers.ModelSerializer):
             "type",
             "is_mandatory",
             # "students",
-            "subject",
             "students_xml",
             "materials",
             "results",
@@ -420,6 +422,7 @@ class ExamSerializer(serializers.ModelSerializer):
             "start_time",
             "end_time",
             "homework",
+            "options",
             "created_at",
         ]
 
@@ -433,10 +436,10 @@ class ExamSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["results"] = FileUploadSerializer(instance.results).data
-        # rep["students"] = (
-        #     StudentSerializer(instance.students.all(), include_only=["id", "first_name", "last_name", "phone"],
-        #                       many=True).data
-        # ) if instance.students else None
+        rep["options"] = {
+            "subject":instance.subject.name,
+            "option":instance.options,
+        }
         return rep
 
 

@@ -211,6 +211,21 @@ class True_False(BaseModel):
     def __str__(self):
         return f"{self.quiz.title}  {self.answer}"
 
+class ExamSubject(BaseModel):
+    subject = models.ForeignKey("quiz.Subject", on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='exam_subject_quiz')
+
+    options = models.CharField(choices=[
+        ("1", "1"),
+        ("2", "2"),
+        ("3", "3"),
+        ("4", "4"),
+        ("5", "5"),
+        ("6", "6"),
+    ], max_length=1, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.subject.title}"
 
 class Exam(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
@@ -234,9 +249,6 @@ class Exam(BaseModel):
     is_mandatory = models.BooleanField(default=False)
 
     # students = models.ManyToManyField(Student)
-
-    subject: "Subject" = models.ManyToManyField("subject.Subject", related_name='exam_subject')
-
     students_xml = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='exam_students_xml')
 
@@ -245,10 +257,8 @@ class Exam(BaseModel):
 
     materials = models.ManyToManyField('upload.File', related_name='quiz_materials')
 
-    lang_group = models.CharField(choices=[
-        ("Foreign", "Foreign"),
-        ("National", "National"),
-    ], max_length=255, null=True, blank=True)
+    lang_foreign = models.BooleanField(default=False)
+    lang_national = models.BooleanField(default=False)
 
     is_language = models.BooleanField(default=False)
 
@@ -258,14 +268,7 @@ class Exam(BaseModel):
 
     homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL, null=True, blank=True,
                                              related_name='homeworks_quiz')
-    options = models.CharField(choices=[
-        ("1", "1"),
-        ("2", "2"),
-        ("3", "3"),
-        ("4", "4"),
-        ("5", "5"),
-        ("6", "6"),
-    ], max_length=10, null=True, blank=True)
+    options = models.ManyToManyField("quiz.ExamSubject", related_name='exam_subject_options')
 
     def __str__(self):
         return f"{self.quiz.title}   {self.type}"
