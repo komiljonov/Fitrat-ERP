@@ -96,13 +96,13 @@ class AttendanceList(ListCreateAPIView):
         # Extract and validate actions
         actions = self._validate_and_parse_actions(data.get('actions', []))
 
-        # Process attendance with transaction
+
         with transaction.atomic():
             try:
-                # Create/update attendance record
+
                 attendance_result = self._create_or_update_attendance(data)
                 user = CustomUser.objects.filter(second_user=data.get("employee")).first()
-                # Process individual action penalties/bonuses
+
                 penalty_result = self._process_action_penalties(
                     user.id,
                     actions,
@@ -687,6 +687,7 @@ class AttendanceList(ListCreateAPIView):
         except Exception as e:
             logger.error(f"Failed to create penalty finance record: {str(e)}")
             raise
+
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()
