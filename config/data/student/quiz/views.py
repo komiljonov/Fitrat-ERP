@@ -82,7 +82,6 @@ class QuizCheckAPIView(APIView):
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
-            logger.debug(f"Question {qid} result: {is_correct}")
 
             if is_correct:
                 results["summary"]["correct_count"] += 1
@@ -142,30 +141,22 @@ class QuizCheckAPIView(APIView):
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
 
-        # Add debug logging to see what's happening
-        print(f"Checking question type: {qtype}")
-        print(f"Looking for method: check_{qtype}")
-
-        # Handle image_objective as image_objective_test
         if qtype == "image_objective":
             qtype = "image_objective_test"
 
         checker = getattr(self, f"check_{qtype}", None)
-        print(f"Found checker: {checker}")
 
         if not checker:
-            print(f"No checker found for type: {qtype}")
             return False, {"error": f"Unsupported question type: {qtype}", "id": question["id"]}
 
         try:
             return checker(question, user_answer)
         except Exception as e:
-            print(f"Error in checker: {str(e)}")
+            logger.error(f"Error in {qtype} checker: {str(e)}")
             return False, {"error": str(e), "id": question["id"]}
 
     def check_standard(self, question, user_answer):
         try:
-            # Get correct answer ID
             correct_answer_id = None
             if "answer" in question:
                 correct_answer_id = question["answer"]
@@ -214,12 +205,14 @@ class QuizCheckAPIView(APIView):
         return self.check_standard(question, user_answer)
 
     def check_true_false(self, question, user_answer):
-        correct_answer = question.get("answer").lower() == "true"
+        correct_answer = question.get("answer", "").lower() == "true"
         user_choice = user_answer.get("choice")
-        return user_choice == correct_answer, {
+        is_correct = user_choice == correct_answer
+
+        return is_correct, {
             "id": question["id"],
             "question_text": question.get("text", {}).get("name"),
-            "correct": user_choice == correct_answer,
+            "correct": is_correct,
             "user_answer": user_choice,
             "correct_answer": correct_answer
         }
@@ -248,7 +241,6 @@ class QuizCheckAPIView(APIView):
 
     def check_objective_test(self, question, user_answer):
         try:
-            # Get correct answer text
             correct_answer = question.get("answer", "")
             if not correct_answer and "answers" in question:
                 correct_answer = next(
@@ -257,7 +249,6 @@ class QuizCheckAPIView(APIView):
                 )
 
             user_answer_text = user_answer.get("answer_ids", "")
-
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
 
             return is_correct, {
@@ -267,22 +258,20 @@ class QuizCheckAPIView(APIView):
                 "correct_answer": correct_answer
             }
         except Exception as e:
+            logger.error(f"Error processing objective test question: {str(e)}")
             return False, {
                 "id": question["id"],
                 "correct": False,
                 "error": str(e),
-                "user_answer": user_answer.get("answer", ""),
+                "user_answer": user_answer.get("answer_ids", ""),
                 "correct_answer": "Error processing correct answer"
             }
 
     def check_cloze_test(self, question, user_answer):
         try:
-            # Get correct sequence (reversed from DB storage)
             db_sequence = [q["name"] for q in question.get("questions", [])]
-            correct_sequence = db_sequence[::-1]  # Reverse to get correct order
-
+            correct_sequence = db_sequence[::-1]
             user_sequence = user_answer.get("word_sequence", [])
-
             is_correct = user_sequence == correct_sequence
 
             return is_correct, {
@@ -292,6 +281,7 @@ class QuizCheckAPIView(APIView):
                 "correct_answer": correct_sequence
             }
         except Exception as e:
+            logger.error(f"Error processing cloze test question: {str(e)}")
             return False, {
                 "id": question["id"],
                 "correct": False,
@@ -302,19 +292,17 @@ class QuizCheckAPIView(APIView):
 
     def check_image_objective_test(self, question, user_answer):
         try:
-            # Get correct answer text
-            correct_answer = question.get("answer", "")
+            correct_answer_id = question.get("answer", "")
+            correct_answer = Answer.objects.filter(id=correct_answer_id).first()
 
-            correct_answer = Answer.objects.filter(id=correct_answer).first()
+            if not correct_answer:
+                raise ValueError("Correct answer not found")
 
-            # Get user's text answer
             user_answer_text = user_answer.get("answer", "")
-
-            # Compare answers case-insensitively and with stripped whitespace
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer.text).strip().lower()
 
             image = ImageObjectiveTest.objects.filter(answer=correct_answer).first()
-            print(image)
+
             return is_correct, {
                 "id": question["id"],
                 "correct": is_correct,
@@ -324,19 +312,27 @@ class QuizCheckAPIView(APIView):
             }
         except Exception as e:
             logger.error(f"Error processing image objective test question: {str(e)}")
-            correct_answer = question.get("answer", "")
+            try:
+                correct_answer_id = question.get("answer", "")
+                correct_answer = Answer.objects.filter(id=correct_answer_id).first()
+                image = ImageObjectiveTest.objects.filter(answer=correct_answer).first() if correct_answer else None
 
-            correct_answer = Answer.objects.filter(id=correct_answer).first()
-            image = ImageObjectiveTest.objects.filter(answer=correct_answer).first()
-            print(image)
-            return False, {
-                "id": question["id"],
-                "correct": False,
-                "image": image.image.url if image and image.image else None,
-                "error": str(e),
-                "user_answer": user_answer.get("answer", ""),
-                "correct_answer": "Error processing correct answer"
-            }
+                return False, {
+                    "id": question["id"],
+                    "correct": False,
+                    "image": image.image.url if image and image.image else None,
+                    "error": str(e),
+                    "user_answer": user_answer.get("answer", ""),
+                    "correct_answer": "Error processing correct answer"
+                }
+            except:
+                return False, {
+                    "id": question["id"],
+                    "correct": False,
+                    "error": str(e),
+                    "user_answer": user_answer.get("answer", ""),
+                    "correct_answer": "Error processing correct answer"
+                }
 
     def check_match_pairs(self, question, user_answer):
         try:
@@ -344,40 +340,30 @@ class QuizCheckAPIView(APIView):
             match_pairs = MatchPairs.objects.prefetch_related('pairs').get(id=match_pairs_id)
             all_pairs = list(match_pairs.pairs.all())
 
-            # Split into left and right items
             left_items = [pair for pair in all_pairs if pair.choice == "Left"]
             right_items = [pair for pair in all_pairs if pair.choice == "Right"]
 
-            # Validate pairs
             if not left_items or not right_items:
                 raise ValueError("Question must contain both left and right pairs")
             if len(left_items) != len(right_items):
                 raise ValueError("Left and right items must be equal in number")
 
-            # Create mappings
             left_map = {str(item.id): item.pair for item in left_items}
             right_map = {str(item.id): item.pair for item in right_items}
-
-            # Create key mappings for validation
             left_key_map = {str(item.id): item.key for item in left_items}
             right_key_map = {str(item.id): item.key for item in right_items}
 
-            # Build correct mapping based on matching keys
-            # Group left and right items by their keys
             left_by_key = {item.key: str(item.id) for item in left_items}
             right_by_key = {item.key: str(item.id) for item in right_items}
 
-            # Create correct mapping: left_id -> right_id for items with same key
             correct_mapping = {}
             for key in left_by_key.keys():
                 if key in right_by_key:
                     correct_mapping[left_by_key[key]] = right_by_key[key]
 
-            # Validate that all keys have matches
             if len(correct_mapping) != len(left_items):
                 raise ValueError("Not all left items have corresponding right items with matching keys")
 
-            # Validate user input
             user_pairs = user_answer.get("pairs", [])
             if not user_pairs:
                 return False, self._build_match_response(
@@ -390,7 +376,6 @@ class QuizCheckAPIView(APIView):
                     right_map
                 )
 
-            # Check each pair
             results = []
             used_left = set()
             used_right = set()
@@ -402,7 +387,6 @@ class QuizCheckAPIView(APIView):
                 is_correct = False
                 error = None
 
-                # Validate IDs
                 if left_id not in left_map:
                     error = "Invalid left_id"
                 elif right_id not in right_map:
@@ -414,7 +398,6 @@ class QuizCheckAPIView(APIView):
                 else:
                     used_left.add(left_id)
                     used_right.add(right_id)
-                    # Check if the keys match (this is the key change)
                     left_key = left_key_map.get(left_id)
                     right_key = right_key_map.get(right_id)
                     is_correct = (left_key == right_key)
@@ -438,13 +421,13 @@ class QuizCheckAPIView(APIView):
             )
 
         except MatchPairs.DoesNotExist:
-            return False, {"error": "Question not found"}
+            return False, {"error": "Question not found", "id": question["id"]}
         except Exception as e:
-            return False, {"error": str(e)}
+            logger.error(f"Error processing match pairs question: {str(e)}")
+            return False, {"error": str(e), "id": question["id"]}
 
     def _build_match_response(self, question_id, is_correct, error, user_pairs, correct_mapping, left_map, right_map,
                               pair_results=None):
-        """Build consistent response format with all needed information"""
         response = {
             "id": question_id,
             "correct": is_correct,
@@ -468,7 +451,6 @@ class QuizCheckAPIView(APIView):
         return response
 
     def _create_mastering_record(self, theme, student, quiz, ball):
-        """Create mastering record and award points if eligible"""
         if not student:
             return
 
@@ -481,7 +463,8 @@ class QuizCheckAPIView(APIView):
                 ball=ball
             )
 
-            if homework := Homework.objects.filter(theme=theme).first():
+            homework = Homework.objects.filter(theme=theme).first()
+            if homework:
                 Points.objects.create(
                     point=ball,
                     from_test=mastering,
@@ -491,7 +474,6 @@ class QuizCheckAPIView(APIView):
                 )
         except Exception as e:
             logger.error(f"Error creating mastering record: {str(e)}")
-
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
