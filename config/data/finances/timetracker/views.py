@@ -302,6 +302,11 @@ class AttendanceList(ListCreateAPIView):
                         })
                 if action['type'] == 'INSIDE':
                     try:
+                        # if check_in and check_out:
+                        #     Stuff_Attendance.objects.filter(
+                        #
+                        #     )
+
                         bonus_results = self._calculate_work_bonus(
                             employee_id,
                             action,

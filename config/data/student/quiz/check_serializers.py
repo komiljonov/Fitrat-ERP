@@ -87,7 +87,7 @@ class QuizCheckSerializer(serializers.Serializer):
     quiz_id = serializers.UUIDField()
     standard = StandardAnswerSerializer(many=True, required=False)
     multiple_choice = MultipleChoiceSerializer(many=True, required=False)
-    fill_gaps = FillGapsSerializer(many=True, required=False)
+    # fill_gaps = FillGapsSerializer(many=True, required=False)
     vocabularies = VocabularyAnswerSerializer(many=True, required=False)
     listening = ListeningAnswerSerializer(many=True, required=False)
     match_pairs = MatchPairsSerializer(many=True, required=False)
