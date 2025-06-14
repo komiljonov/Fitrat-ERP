@@ -315,7 +315,7 @@ class QuizCheckAPIView(APIView):
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer.text).strip().lower()
 
             image = ImageObjectiveTest.objects.filter(answer=correct_answer).first()
-
+            print(image)
             return is_correct, {
                 "id": question["id"],
                 "correct": is_correct,
@@ -325,6 +325,11 @@ class QuizCheckAPIView(APIView):
             }
         except Exception as e:
             logger.error(f"Error processing image objective test question: {str(e)}")
+            correct_answer = question.get("answer", "")
+
+            correct_answer = Answer.objects.filter(id=correct_answer).first()
+            image = ImageObjectiveTest.objects.filter(answer=correct_answer).first()
+            print(image)
             return False, {
                 "id": question["id"],
                 "correct": False,
