@@ -488,6 +488,10 @@ class Cloze_TestView(ListCreateAPIView):
     queryset = Cloze_Test.objects.all()
     serializer_class = Cloze_TestSerializer
 
+class Cloze_TestUpdate(RetrieveUpdateDestroyAPIView):
+    queryset = Cloze_Test.objects.all()
+    serializer_class = Cloze_TestSerializer
+
 
 class ImageCloze_TestView(ListCreateAPIView):
     queryset = ImageObjectiveTest.objects.all()
