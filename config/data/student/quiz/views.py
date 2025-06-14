@@ -314,9 +314,12 @@ class QuizCheckAPIView(APIView):
             # Compare answers case-insensitively and with stripped whitespace
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer.text).strip().lower()
 
+            image = ImageObjectiveTest.objects.filter(id=question["id"]).first()
+
             return is_correct, {
                 "id": question["id"],
                 "correct": is_correct,
+                "image":image.image if image else None,
                 "user_answer": user_answer_text,
                 "correct_answer": correct_answer.text
             }
