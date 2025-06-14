@@ -7,8 +7,6 @@ from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, E
     QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest
 from .tasks import handle_task_creation
 from ..homeworks.models import Homework
-from ..student.models import Student
-from ..student.serializers import StudentSerializer
 from ..subject.models import Subject, Theme
 from ..subject.serializers import SubjectSerializer, ThemeSerializer
 from ...account.models import CustomUser
@@ -28,11 +26,11 @@ class AnswerSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     answers = serializers.PrimaryKeyRelatedField(many=True, queryset=Answer.objects.all())
     text = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all())
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
 
     class Meta:
         model = Question
-        fields = ["id", "quiz", "text","file", "answers", "comment"]
+        fields = ["id", "quiz", "text", "file", "answers", "comment"]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -91,9 +89,9 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
 
 
 class Cloze_TestSerializer(serializers.ModelSerializer):
-
     questions = serializers.PrimaryKeyRelatedField(many=True, queryset=QuizGaps.objects.all(), allow_null=True)
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+
     class Meta:
         model = Cloze_Test
         fields = [
@@ -105,6 +103,7 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
             "file",
             "created_at"
         ]
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["questions"] = QuizGapsSerializer(instance.questions.all(), many=True).data
@@ -113,10 +112,10 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
         return rep
 
 
-
 class ImageObjectiveTestSerializer(serializers.ModelSerializer):
     image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+
     class Meta:
         model = ImageObjectiveTest
         fields = [
@@ -149,6 +148,7 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
 class True_FalseSerializer(serializers.ModelSerializer):
     question = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all(), allow_null=True)
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+
     class Meta:
         model = True_False
         fields = [
@@ -373,6 +373,7 @@ class ExamSerializer(serializers.ModelSerializer):
     results = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
 
     student_count = serializers.SerializerMethodField()
+
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
         include_only: list | None = kwargs.pop("include_only", None)
