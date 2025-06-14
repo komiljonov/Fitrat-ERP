@@ -184,10 +184,10 @@ class QuizSerializer(serializers.ModelSerializer):
             data["type"] = "standard"
             questions.append(data)
 
-        for item in Fill_gaps.objects.filter(quiz=obj):
-            data = FillGapsSerializer(item).data
-            data["type"] = "fill_gap"
-            questions.append(data)
+        # for item in Fill_gaps.objects.filter(quiz=obj):
+        #     data = FillGapsSerializer(item).data
+        #     data["type"] = "fill_gap"
+        #     questions.append(data)
 
         for item in Vocabulary.objects.filter(quiz=obj):
             data = VocabularySerializer(item, context=self.context).data
