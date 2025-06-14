@@ -173,8 +173,6 @@ class Cloze_Test(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_cloze_file")
 
-    def __str__(self):
-        return f"{self.quiz.title}  {self.answer.text}"
 
 
 class ImageObjectiveTest(BaseModel):
