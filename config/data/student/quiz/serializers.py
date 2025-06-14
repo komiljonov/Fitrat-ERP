@@ -517,3 +517,23 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             )
 
         return instance
+
+
+class ExamCertificateSerializer(serializers.ModelSerializer):
+    certificate = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(),allow_null=True,
+    )
+    class Meta:
+        model = ExamCertificate
+        fields = [
+            "id",
+            "student",
+            "exam",
+            "status",
+            "certificate",
+            "created_at",
+        ]
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["certificate"] = FileUploadSerializer(instance.certificate,context=self.context).data
+        return rep
