@@ -65,7 +65,6 @@ class QuizCheckAPIView(APIView):
             }
         }
         quiz_questions = QuizSerializer(quiz).data["questions"]
-        logger.debug(f"Quiz contains these question types: {set(q['type'] for q in quiz_questions)}")
 
         for question in quiz_questions:
             qtype = question["type"]
@@ -108,7 +107,6 @@ class QuizCheckAPIView(APIView):
     def _find_user_answer(self, data, qtype, qid):
         if qtype not in data:
 
-            print(f"Question type '{qtype}' not found in submitted data. Available types: {list(data.keys())}")
             return None
 
         id_fields = {
@@ -126,16 +124,12 @@ class QuizCheckAPIView(APIView):
         }
 
         id_field = id_fields.get(qtype, 'question_id')
-        print(f"Looking for {qtype} question {qid} using field '{id_field}'")
 
         for answer in data[qtype]:
             answer_id = str(answer.get(id_field))
-            print(f"Comparing {answer_id} with {qid}")
             if answer_id == str(qid):
-                print(f"Found matching answer for {qtype} question {qid}")
                 return answer
 
-        print(f"No matching answer found for {qtype} question {qid}")
         return None
 
     def _record_missing_answer(self, results, qtype, qid):
@@ -156,13 +150,11 @@ class QuizCheckAPIView(APIView):
 
         checker = getattr(self, f"check_{qtype}", None)
         if not checker:
-            logger.error(f"No checker found for question type: {qtype}")
             return False, {"error": "Unsupported question type", "id": question["id"]}
 
         try:
             return checker(question, user_answer)
         except Exception as e:
-            logger.error(f"Error checking {qtype} question: {str(e)}")
             return False, {"error": str(e), "id": question["id"]}
 
     def check_standard(self, question, user_answer):
