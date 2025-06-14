@@ -194,7 +194,6 @@ class QuizSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         query_count = request.query_params.get("count") if request else None
 
-        # Determine if count is set to "false"
         if query_count is not None and query_count.lower() == "false":
             count = None
         else:
