@@ -191,19 +191,21 @@ class QuizSerializer(serializers.ModelSerializer):
         ]
 
     def get_questions(self, obj):
-        count = obj.count or 20
+        request = self.context.get("request")
+        query_count = request.query_params.get("count") if request else None
+
+        # Determine if count is set to "false"
+        if query_count is not None and query_count.lower() == "false":
+            count = None
+        else:
+            count = obj.count or 20
 
         questions = []
 
         for item in Question.objects.filter(quiz=obj):
-            data = QuestionSerializer(item,context=self.context).data
+            data = QuestionSerializer(item, context=self.context).data
             data["type"] = "standard"
             questions.append(data)
-
-        # for item in Fill_gaps.objects.filter(quiz=obj):
-        #     data = FillGapsSerializer(item).data
-        #     data["type"] = "fill_gap"
-        #     questions.append(data)
 
         for item in Vocabulary.objects.filter(quiz=obj):
             data = VocabularySerializer(item, context=self.context).data
@@ -211,33 +213,35 @@ class QuizSerializer(serializers.ModelSerializer):
             questions.append(data)
 
         for item in MatchPairs.objects.filter(quiz=obj):
-            data = MatchPairsSerializer(item,context=self.context).data
+            data = MatchPairsSerializer(item, context=self.context).data
             data["type"] = "match_pairs"
             questions.append(data)
 
         for item in ObjectiveTest.objects.filter(quiz=obj):
-            data = ObjectiveTestSerializer(item,context=self.context).data
+            data = ObjectiveTestSerializer(item, context=self.context).data
             data["type"] = "objective_test"
             questions.append(data)
 
         for item in Cloze_Test.objects.filter(quiz=obj):
-            data = Cloze_TestSerializer(item,context=self.context).data
+            data = Cloze_TestSerializer(item, context=self.context).data
             data["type"] = "cloze_test"
             questions.append(data)
 
         for item in ImageObjectiveTest.objects.filter(quiz=obj):
-            data = ImageObjectiveTestSerializer(item,context=self.context).data
+            data = ImageObjectiveTestSerializer(item, context=self.context).data
             data["type"] = "image_objective"
             questions.append(data)
 
         for item in True_False.objects.filter(quiz=obj):
-            data = True_FalseSerializer(item,context=self.context).data
+            data = True_FalseSerializer(item, context=self.context).data
             data["type"] = "true_false"
             questions.append(data)
 
-
         random.shuffle(questions)
-        return questions[:min(count, len(questions))]
+
+        if count is not None:
+            return questions[:min(count, len(questions))]
+        return questions
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
