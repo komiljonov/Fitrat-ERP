@@ -212,6 +212,7 @@ class QuizCheckAPIView(APIView):
         user_choice = user_answer.get("choice")
         return user_choice == correct_answer, {
             "id": question["id"],
+            "question_text": question.get("text", {}).get("name"),
             "correct": user_choice == correct_answer,
             "user_answer": user_choice,
             "correct_answer": correct_answer
