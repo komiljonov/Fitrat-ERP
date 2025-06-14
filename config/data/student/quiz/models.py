@@ -296,7 +296,7 @@ class ExamRegistration(BaseModel):
     has_certificate = models.BooleanField(default=False)
     certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                             related_name='certificate_of_student')
-
+    certificate_expire_date = models.DateField(null=True, blank=True)
     def __str__(self):
         return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
 
@@ -308,6 +308,9 @@ class ExamCertificate(BaseModel):
                                      related_name='registration_exam_certificate')
     certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                             related_name='registered_certificate_of_student')
+
+    expire_date = models.DateField(null=True, blank=True)
+
     status = models.CharField(choices=[
         ("Accepted", "Accepted"),
         ("Rejected", "Rejected"),
