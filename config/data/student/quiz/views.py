@@ -64,9 +64,6 @@ class QuizCheckAPIView(APIView):
                 "section_breakdown": {}
             }
         }
-
-
-
         quiz_questions = QuizSerializer(quiz).data["questions"]
         logger.debug(f"Quiz contains these question types: {set(q['type'] for q in quiz_questions)}")
 
