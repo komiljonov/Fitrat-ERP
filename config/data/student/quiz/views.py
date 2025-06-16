@@ -482,7 +482,8 @@ class QuizCheckAPIView(APIView):
                 lid=None,
                 student=student,
                 test=quiz,
-                ball=ball
+                ball=ball,
+                choice="Test"
             )
 
             homework = Homework.objects.filter(theme=theme).first()
