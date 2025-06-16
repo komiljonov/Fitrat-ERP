@@ -18,6 +18,7 @@ class MasteringSerializer(serializers.ModelSerializer):
             "lid",
             "student",
             "test",
+            "choice",
             "theme",
             "ball",
             "created_at",
