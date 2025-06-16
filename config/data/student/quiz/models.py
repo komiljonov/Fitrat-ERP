@@ -215,17 +215,7 @@ class ExamSubject(BaseModel):
     subject = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='exam_subject_quiz')
 
-    options = models.CharField(choices=[
-        ("1", "1"),
-        ("2", "2"),
-        ("3", "3"),
-        ("4", "4"),
-        ("5", "5"),
-        ("6", "6"),
-    ], max_length=1, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.subject.title}"
+    options = models.CharField(max_length=2, null=True, blank=True)
 
 class Exam(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
