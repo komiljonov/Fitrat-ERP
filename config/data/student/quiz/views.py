@@ -78,7 +78,7 @@ class QuizCheckAPIView(APIView):
 
             user_answer = self._find_user_answer(data, qtype, qid)
             if not user_answer:
-                self._record_missing_answer(results, qtype, qid,question)
+                self._record_missing_answer(results, qtype, qid,question,user_answer)
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
@@ -129,16 +129,16 @@ class QuizCheckAPIView(APIView):
 
         return None
 
-    def _record_missing_answer(self, results, qtype, qid, question):
+    def _record_missing_answer(self, results, qtype, qid, question,user_answer):
         results["summary"]["wrong_count"] += 1
         results["summary"]["section_breakdown"][qtype]["wrong"] += 1
         results["details"][qtype].append({
             "id": qid,
             "data": question,
+            "user_answer": user_answer,
             "correct": False,
             "error": "No answer submitted"
         })
-
 
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
