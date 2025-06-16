@@ -97,6 +97,7 @@ class QuizCheckAPIView(APIView):
         quiz = Quiz.objects.filter(id=data.get("quiz_id")).first()
         if quiz:
             total = quiz.count
+            results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
 
         results["summary"]["total_questions"] = total
         results["summary"]["ball"] = round(
