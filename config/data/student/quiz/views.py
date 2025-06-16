@@ -214,16 +214,29 @@ class QuizCheckAPIView(APIView):
         return self.check_standard(question, user_answer)
 
     def check_true_false(self, question, user_answer):
-        correct_answer = question.get("answer", "").lower() == "true"
-        user_choice = user_answer.get("choice")
-        is_correct = user_choice == correct_answer
+        # Get the correct answer from the question (should be "True", "False", or potentially "Not Given")
+        correct_answer_str = question.get("answer", "").lower()
+
+        # Get user's choice (should be "True", "False", or "Not Given")
+        user_choice_str = user_answer.get("choice", "").lower()
+
+        # Determine if the answer is correct
+        if user_choice_str == "not given":
+            # Handle "Not Given" case - you might want different logic here
+            # For example, you might consider it correct only if the correct answer is also "not given"
+            is_correct = (correct_answer_str == "not given")
+        else:
+            # For True/False answers
+            correct_answer_bool = correct_answer_str == "true"
+            user_choice_bool = user_choice_str == "true"
+            is_correct = (user_choice_bool == correct_answer_bool)
 
         return is_correct, {
             "id": question["id"],
-            "question_text": question.get("text", {}).get("name"),
+            "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
-            "user_answer": user_choice,
-            "correct_answer": correct_answer
+            "user_answer": user_choice_str,
+            "correct_answer": correct_answer_str
         }
 
     def check_fill_gaps(self, question, user_answer):
