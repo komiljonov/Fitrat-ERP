@@ -95,10 +95,10 @@ class QuizCheckAPIView(APIView):
         total = results["summary"]["correct_count"] + results["summary"]["wrong_count"]
 
         quiz = Quiz.objects.filter(id=data.get("quiz_id")).first()
-        if quiz.count:
+        if quiz:
             total = quiz.count
-        else:
-            results["summary"]["total_questions"] = total
+
+        results["summary"]["total_questions"] = total
         results["summary"]["ball"] = round(
             (results["summary"]["correct_count"] / total * 100), 2
         ) if total > 0 else 0.0
