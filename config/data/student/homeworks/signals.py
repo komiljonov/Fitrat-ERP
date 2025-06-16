@@ -16,6 +16,7 @@ def on_create(sender, instance: Homework_history, created, **kwargs):
                 student=instance.student,
                 theme=instance.homework.theme,
                 test=quiz,
+                choice="Homework",
                 ball=instance.mark
             )
             if mastering:
@@ -37,12 +38,14 @@ def on_update(sender, instance: Homework_history, created, **kwargs):
         quiz = Quiz.objects.filter(
             homework=instance.homework,
             theme=instance.homework.theme,
+            choice="Homework",
         ).first()
 
         mastering = Mastering.objects.filter(
             student=instance.student,
             theme=instance.homework.theme,
             test=quiz or None,
+            choice="Homework",
         ).first()
 
         if mastering:

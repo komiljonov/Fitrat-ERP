@@ -17,7 +17,11 @@ class Mastering(BaseModel):
     student : "Student" = models.ForeignKey('student.Student', on_delete=models.SET_NULL , null=True,blank=True)
     test : "Quiz" =  models.ForeignKey('quiz.Quiz', on_delete=models.SET_NULL , null=True,blank=True)
 
-
+    choice = models.CharField(choices=[
+        ("Homework", "Homework"),
+        ("Test", "Test"),
+        ("Speaking", "Speaking"),
+    ],default="Homework",null=True,blank=True)
 
     ball = models.FloatField(default=0)
 
