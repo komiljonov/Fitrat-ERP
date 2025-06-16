@@ -313,11 +313,11 @@ class StudentsAvgLearning(APIView):
                     "homework_id": homework_id.id if homework_id else None,
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
-                    "type": m.test.homework.choice if m.test.homework else "unknown",
+                    "type": m.test.type if m.test else "unknown",
                     "updater" : homework_id.updater.full_name if homework_id.updater else None,
                     "created_at": m.created_at
                 }
-                if m.test and m.test.homework.choice == "Offline":
+                if m.test and m.test.type == "Offline":
                     exams.append(item)
                 else:
                     homeworks.append(item)
