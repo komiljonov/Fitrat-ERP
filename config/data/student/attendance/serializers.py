@@ -118,6 +118,14 @@ class AttendanceSerializer(serializers.ModelSerializer):
                                 test=quiz,
                                 ball=0
                             )
+                        elif homework is None and quiz is None:
+                            Mastering.objects.create(
+                                student=student,
+                                theme=theme,
+                                test=None,
+                                choice="Speaking",
+                                ball=0
+                            )
                         else:
                             print(f"No homework found for theme: {theme}")
                     except Exception as e:
