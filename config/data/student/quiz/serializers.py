@@ -416,7 +416,7 @@ class ExamSerializer(serializers.ModelSerializer):
             "materials",
             "results",
             "lang_foreign",
-            "lang_national"
+            "lang_national",
             "is_language",
             "student_count",
             "date",
