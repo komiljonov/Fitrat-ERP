@@ -255,6 +255,73 @@ class QuizSerializer(serializers.ModelSerializer):
         return rep
 
 
+class QuizCheckingSerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+
+    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
+    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
+
+    class Meta:
+        model = Quiz
+        fields = [
+            "id",
+            "title",
+            "description",
+            "theme",
+            "homework",
+            "subject",
+            "questions",
+            "count",
+            "time",
+            "created_at",
+        ]
+
+    def get_questions(self, obj):
+        request = self.context.get("request")
+        questions = []
+
+        for item in Question.objects.filter(quiz=obj):
+            data = QuestionSerializer(item, context=self.context).data
+            data["type"] = "standard"
+            questions.append(data)
+
+        for item in Vocabulary.objects.filter(quiz=obj):
+            data = VocabularySerializer(item, context=self.context).data
+            data["type"] = "vocabulary"
+            questions.append(data)
+
+        for item in MatchPairs.objects.filter(quiz=obj):
+            data = MatchPairsSerializer(item, context=self.context).data
+            data["type"] = "match_pairs"
+            questions.append(data)
+
+        for item in ObjectiveTest.objects.filter(quiz=obj):
+            data = ObjectiveTestSerializer(item, context=self.context).data
+            data["type"] = "objective_test"
+            questions.append(data)
+
+        for item in Cloze_Test.objects.filter(quiz=obj):
+            data = Cloze_TestSerializer(item, context=self.context).data
+            data["type"] = "cloze_test"
+            questions.append(data)
+
+        for item in ImageObjectiveTest.objects.filter(quiz=obj):
+            data = ImageObjectiveTestSerializer(item, context=self.context).data
+            data["type"] = "image_objective"
+            questions.append(data)
+
+        for item in True_False.objects.filter(quiz=obj):
+            data = True_FalseSerializer(item, context=self.context).data
+            data["type"] = "true_false"
+            questions.append(data)
+        return questions
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["subject"] = SubjectSerializer(instance.subject).data
+        rep["theme"] = ThemeSerializer(instance.theme, include_only=["id", "title"]).data
+        return rep
+
 class GapsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Gaps

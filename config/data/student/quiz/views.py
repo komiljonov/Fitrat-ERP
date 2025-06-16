@@ -24,7 +24,7 @@ from .models import Quiz, Question
 from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer, \
     VocabularySerializer, PairsSerializer, MatchPairsSerializer, ExamSerializer, \
     QuizGapsSerializer, AnswerSerializer, ExamRegistrationSerializer, ObjectiveTestSerializer, Cloze_TestSerializer, \
-    ImageObjectiveTestSerializer, True_FalseSerializer, ExamCertificateSerializer
+    ImageObjectiveTestSerializer, True_FalseSerializer, ExamCertificateSerializer, QuizCheckingSerializer
 from ..homeworks.models import Homework
 from ..mastering.models import Mastering
 from ..shop.models import Points
@@ -63,7 +63,7 @@ class QuizCheckAPIView(APIView):
                 "section_breakdown": {}
             }
         }
-        quiz_questions = QuizSerializer(quiz).data["questions"]
+        quiz_questions = QuizCheckingSerializer(quiz).data["questions"]
 
         for question in quiz_questions:
             qtype = question["type"]
