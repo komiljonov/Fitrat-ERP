@@ -288,6 +288,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
         # courses = (StudentGroup.objects.filter(student=obj)
         courses = obj.students_group.values(
+            "group__id",
             "group__name",
             "group__status",
             "group__started_at",

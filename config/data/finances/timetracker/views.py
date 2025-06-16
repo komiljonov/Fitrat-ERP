@@ -1,10 +1,12 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Optional
 
 from django.core.handlers.base import logger
 from django.db import transaction
+from django.db.models import Min
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.utils.timezone import now
 from icecream import ic
 from rest_framework import status, serializers
 from rest_framework.generics import CreateAPIView
@@ -94,13 +96,13 @@ class AttendanceList(ListCreateAPIView):
         # Extract and validate actions
         actions = self._validate_and_parse_actions(data.get('actions', []))
 
-        # Process attendance with transaction
+
         with transaction.atomic():
             try:
-                # Create/update attendance record
+
                 attendance_result = self._create_or_update_attendance(data)
                 user = CustomUser.objects.filter(second_user=data.get("employee")).first()
-                # Process individual action penalties/bonuses
+
                 penalty_result = self._process_action_penalties(
                     user.id,
                     actions,
@@ -302,6 +304,99 @@ class AttendanceList(ListCreateAPIView):
                         })
                 if action['type'] == 'INSIDE':
                     try:
+                        if check_in and check_out:
+                            today = now().date()
+
+                            earliest_check_in = Stuff_Attendance.objects.filter(
+                                employee__id=employee_id,
+                                check_in__date=today
+                            ).aggregate(Min('check_in'))['check_in__min']
+
+                            attendance = Stuff_Attendance.objects.filter(
+                                employee__id=employee_id,
+                                check_in=earliest_check_in
+                            ).first()
+
+                            if attendance:
+                                today = date.today()
+                                day_name = today.strftime('%A')
+
+                                timeline = UserTimeLine.objects.filter(
+                                    user=attendance.employee,  # assuming attendance.employee is the user
+                                    day=day_name
+                                ).order_by('start_time').first()
+
+                                if timeline:
+                                    # Get actual check-in time (only time part)
+                                    actual_check_in_time = attendance.check_in.time()
+                                    scheduled_start_time = timeline.start_time
+
+                                    # Calculate the difference
+                                    from datetime import datetime, timedelta
+
+                                    # Convert times to datetime objects for comparison
+                                    today_datetime = datetime.combine(today, datetime.min.time())
+                                    actual_datetime = datetime.combine(today, actual_check_in_time)
+                                    scheduled_datetime = datetime.combine(today, scheduled_start_time)
+
+                                    # Calculate time difference in minutes
+                                    time_difference = (actual_datetime - scheduled_datetime).total_seconds() / 60
+
+                                    if time_difference < 0:
+
+                                        early_minutes = abs(time_difference)
+
+                                        amount = early_minutes * penalty_info['penalty_amount']
+
+                                        total_bonuses += amount
+                                        employee = timeline.user
+                                        comment = f"{employee.full_name} ning ishga {early_minutes} minut erta kelganligi uchun {amount} sum bonus"
+
+                                        penalty_kind = Kind.objects.filter(
+                                            action="EXPENSE",
+                                            name__icontains="Bonus"
+                                        ).first()
+
+                                        Finance.objects.create(
+                                            action="EXPENSE",
+                                            kind=penalty_kind,
+                                            amount=amount,
+                                            stuff=employee,
+                                            comment=comment
+                                        )
+
+                                        penalty_details.append(total_bonuses)
+                                    elif time_difference > 0:
+                                        # User was late
+                                        late_minutes = time_difference
+
+                                        amount = late_minutes * penalty_info['penalty_amount']
+
+                                        total_penalty += amount
+                                        employee = timeline.user
+                                        comment = f"{employee.full_name} ning ishga {late_minutes} minut kech kelganligi uchun {amount} sum jarima"
+
+                                        penalty_kind = Kind.objects.filter(
+                                            action="EXPENSE",
+                                            name__icontains="Money back"
+                                        ).first()
+
+                                        Finance.objects.create(
+                                            action="INCOME",
+                                            kind=penalty_kind,
+                                            amount=amount,
+                                            stuff=employee,
+                                            comment=comment
+                                        )
+
+                                        penalty_details.append(total_penalty)
+                                    else:
+                                        # User was on time
+                                        print("User was on time")
+                                        status = "on_time"
+                                        minutes_difference = 0
+
+
                         bonus_results = self._calculate_work_bonus(
                             employee_id,
                             action,
@@ -592,6 +687,7 @@ class AttendanceList(ListCreateAPIView):
         except Exception as e:
             logger.error(f"Failed to create penalty finance record: {str(e)}")
             raise
+
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()

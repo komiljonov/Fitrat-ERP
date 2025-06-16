@@ -3,7 +3,7 @@ from django.urls import path
 from .views import StudentGroupDetail, StudentGroupNopg, StudentsGroupList, GroupStudentList, GroupStudentDetail, \
     SecondaryStudentList, SecondaryGroupList, GroupStudentStatistics, GroupAttendedStudents, StudentGroupDelete, \
     SecondaryGroupStudentList, SecondaryStudentGroupDelete, StudentGroupStatistics, SecondaryStudentCreate, \
-    SecondaryGroupUpdate, StudentGroupUpdate
+    SecondaryGroupUpdate, StudentGroupUpdate, GroupStudentNoPgDetail
 from ...teachers.teacher.views import Teacher_StudentsView
 
 urlpatterns = [
@@ -21,6 +21,7 @@ urlpatterns = [
     path('is_attendant/<uuid:pk>/', GroupAttendedStudents.as_view()),
 
     path('student/<uuid:pk>/', GroupStudentDetail.as_view()),
+    path("student-pg/<uuid:pk>", GroupStudentNoPgDetail.as_view()),
     path('students/',Teacher_StudentsView.as_view()),
 
     path('secondary/',SecondaryStudentList.as_view()),

@@ -236,6 +236,9 @@ class SaleStudent(BaseModel):
         blank=True,
     )
 
+    group = models.ForeignKey("groups.Group",on_delete=models.SET_NULL,null=True,blank=True,
+                              related_name='finances_group_sale_student')
+
     expire_date = models.DateField(null=True,blank=True)
     comment = models.TextField(null=True, blank=True)
 
