@@ -21,6 +21,10 @@ class Quiz(BaseModel):
 
     homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL, null=True, blank=True,
                                              related_name="quiz_homework", )
+    type = models.CharField(choices=[
+        ("Online", "Online"),
+        ("Offline", "Offline"),
+    ], default="Offline", max_length=255, null=True, blank=True)
 
     count = models.IntegerField(default=20)
     time = models.IntegerField(default=60)
