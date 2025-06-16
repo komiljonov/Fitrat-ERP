@@ -215,7 +215,7 @@ class ExamSubject(BaseModel):
     subject = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='exam_subject_quiz')
 
-    options = models.CharField(max_length=2, null=True, blank=True)
+    options = models.CharField(default=1,max_length=2, null=True, blank=True)
 
 class Exam(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
