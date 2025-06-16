@@ -1,3 +1,5 @@
+from random import choices
+
 from rest_framework import serializers
 
 
@@ -25,17 +27,18 @@ class ListeningAnswerSerializer(serializers.Serializer):
     answer_id = serializers.UUIDField()
 
 
-class MatchPairItemSerializer(serializers.Serializer):
-    left = serializers.CharField()
-    right = serializers.CharField()
+class MatchPairAnswerSerializer(serializers.Serializer):
+    left_id = serializers.UUIDField()
+    right_id = serializers.UUIDField()
+    left_text = serializers.CharField(required=False)
+    right_text = serializers.CharField(required=False)
 
     class Meta:
-        ref_name = "Check_MatchPairItemSerializer"
-
+        ref_name = "Check_MatchPairAnswerSerializer"
 
 class MatchPairsSerializer(serializers.Serializer):
     match_id = serializers.UUIDField()
-    pairs = MatchPairItemSerializer(many=True)
+    pairs = MatchPairAnswerSerializer(many=True)
 
     class Meta:
         ref_name = "Check_MatchPairsSerializer"
@@ -44,7 +47,7 @@ class MatchPairsSerializer(serializers.Serializer):
 # NEW: Objective Test Answer Serializer (field-based)
 class ObjectiveTestAnswerSerializer(serializers.Serializer):
     objective_id = serializers.UUIDField()
-    answer_ids = serializers.ListField(child=serializers.UUIDField())  # Multiple answers
+    answer_ids = serializers.CharField()  # Multiple answers
 
     class Meta:
         ref_name = "Check_ObjectiveTestAnswerSerializer"
@@ -71,25 +74,29 @@ class ImageObjectiveTestAnswerSerializer(serializers.Serializer):
 # NEW: True/False Answer Serializer (field-based)
 class TrueFalseAnswerSerializer(serializers.Serializer):
     true_false_id = serializers.UUIDField()
-    choice = serializers.BooleanField()  # True/False choice
+    choice = serializers.CharField()
 
     class Meta:
         ref_name = "Check_TrueFalseAnswerSerializer"
 
 
+class StandardAnswerSerializer(serializers.Serializer):
+    question_id = serializers.UUIDField()
+    answer_id = serializers.UUIDField()
+
 class QuizCheckSerializer(serializers.Serializer):
     theme = serializers.UUIDField(required=False)
     quiz_id = serializers.UUIDField()
+    standard = StandardAnswerSerializer(many=True, required=False)
     multiple_choice = MultipleChoiceSerializer(many=True, required=False)
-    fill_gaps = FillGapsSerializer(many=True, required=False)
+    # fill_gaps = FillGapsSerializer(many=True, required=False)
     vocabularies = VocabularyAnswerSerializer(many=True, required=False)
     listening = ListeningAnswerSerializer(many=True, required=False)
     match_pairs = MatchPairsSerializer(many=True, required=False)
-
-    # Updated to use field-based serializers
     objective_test = ObjectiveTestAnswerSerializer(many=True, required=False)
     cloze_test = ClozeTestAnswerSerializer(many=True, required=False)
     image_objective_test = ImageObjectiveTestAnswerSerializer(many=True, required=False)
+    image_objective = ImageObjectiveTestAnswerSerializer(many=True, required=False)  # Add this line
     true_false = TrueFalseAnswerSerializer(many=True, required=False)
 
     class Meta:

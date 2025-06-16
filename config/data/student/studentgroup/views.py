@@ -357,6 +357,19 @@ class GroupStudentDetail(ListAPIView):
 
         return StudentGroup.objects.filter(Q(student=id) | Q(lid=id),)
 
+class GroupStudentNoPgDetail(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = StudentsGroupSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        id = self.kwargs.get('pk')
+        print(id)
+
+        return StudentGroup.objects.filter(Q(student=id) | Q(lid=id),)
+    def get_paginated_response(self, data):
+        return Response(data)
+
 
 class SecondaryStudentList(ListCreateAPIView):
     serializer_class = SecondaryStudentsGroupSerializer

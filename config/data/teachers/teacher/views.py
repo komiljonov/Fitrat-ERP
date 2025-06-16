@@ -294,8 +294,10 @@ class StudentsAvgLearning(APIView):
                     'is_frozen': sg.lid.is_frozen,
                 }
 
+
             exams = []
             homeworks = []
+            speaking = []
             for m in student_record:
                 homework_id = Homework_history.objects.filter(
                     homework__theme=m.theme,
@@ -313,11 +315,13 @@ class StudentsAvgLearning(APIView):
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
-                    "updater" : homework_id.updater.full_name if homework_id.updater else None,
+                    "updater" : homework_id.updater.full_name if homework_id and homework_id.updater else None,
                     "created_at": m.created_at
                 }
-                if m.test and m.test.type == "Offline":
+                if m.test and m.test.type == "Offline" and m.choice=="Test":
                     exams.append(item)
+                elif m.choice=="Speaking":
+                    speaking.append(item)
                 else:
                     homeworks.append(item)
 
@@ -327,7 +331,8 @@ class StudentsAvgLearning(APIView):
 
             overall_exam = sum(x['ball'] for x in exams) / len(exams) if exams else 0
             overall_homework = sum(x['ball'] for x in homeworks) / len(homeworks) if homeworks else 0
-            overall = round((overall_exam + overall_homework) / 2, 2) if exams or homeworks else 0
+            overall_speaking = sum(x['ball'] for x in speaking) / len(speaking) if speaking else 0
+            overall = round((overall_exam + overall_homework + overall_speaking) / 3, 2) if exams or homeworks or speaking else 0
 
             first_ball = Student.objects.filter(id=sg.student.id).first() if sg.student else None
 
@@ -342,6 +347,10 @@ class StudentsAvgLearning(APIView):
                 "homeworks": {
                     "items": homeworks,
                     "overall": round(overall_homework, 2)
+                },
+                "speaking": {
+                    "items": speaking,
+                    "overall": round(overall_speaking, 2)
                 },
                 "overall": overall
             })
