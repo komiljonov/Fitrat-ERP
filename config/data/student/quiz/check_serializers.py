@@ -1,3 +1,5 @@
+from random import choices
+
 from rest_framework import serializers
 
 
@@ -72,7 +74,7 @@ class ImageObjectiveTestAnswerSerializer(serializers.Serializer):
 # NEW: True/False Answer Serializer (field-based)
 class TrueFalseAnswerSerializer(serializers.Serializer):
     true_false_id = serializers.UUIDField()
-    choice = serializers.BooleanField()  # True/False choice
+    choice = serializers.CharField()
 
     class Meta:
         ref_name = "Check_TrueFalseAnswerSerializer"
