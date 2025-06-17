@@ -59,7 +59,7 @@ class QuizCheckAPIView(APIView):
                 "correct_count": 0,
                 "wrong_count": 0,
                 "ball": 0.0,
-                "section_breakdown": {}
+                # "section_breakdown": {}
             }
         }
 
@@ -175,8 +175,8 @@ class QuizCheckAPIView(APIView):
         qtype = question["type"]
 
         # Handle any type aliases
-        if qtype == "image_objective":
-            qtype = "image_objective_test"
+        if qtype in ["image_objective", "image_objective_test"]:
+            qtype = "image_objective"  # Standardize to one type
 
         checker = getattr(self, f"check_{qtype}", None)
 
