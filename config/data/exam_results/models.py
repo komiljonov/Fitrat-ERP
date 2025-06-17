@@ -1,7 +1,7 @@
 from django.db import models
 
 from ..command.models import BaseModel
-from ..student.quiz.models import Quiz,Exam,Question,MatchPairs,True_False,Vocabulary,ObjectiveTest,ImageObjectiveTest,Listening
+from ..student.quiz.models import Quiz,Exam,Question,MatchPairs,True_False,Vocabulary,ObjectiveTest,ImageObjectiveTest,Listening,Cloze_Test
 from ..student.student.models import Student
 
 class QuizResult(BaseModel):
@@ -12,6 +12,7 @@ class QuizResult(BaseModel):
     true_false : "True_False" = models.ManyToManyField("quiz.True_False", related_name="quiz_result_true_false")
     vocabulary : "Vocabulary" = models.ManyToManyField("quiz.Vocabulary", related_name="quiz_result_vocabulary")
     objective : "ObjectiveTest" = models.ManyToManyField("quiz.ObjectiveTest", related_name="quiz_result_objective_test")
+    cloze_test : "Cloze_Test" = models.ManyToManyField("quiz.Cloze_Test", related_name="quiz_result_cloze_test")
     image_objective : "ImageObjectiveTest" = models.ManyToManyField("quiz.ImageObjectiveTest", related_name="quiz_result_image_objective_test")
     Listening : "Listening" = models.ManyToManyField("quiz.Listening", related_name="quiz_result_listening")
 
