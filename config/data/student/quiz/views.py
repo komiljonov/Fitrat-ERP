@@ -40,9 +40,7 @@ class QuizCheckAPIView(APIView):
         operation_summary="Check Quiz Answers",
         operation_description="Submit answers to a quiz and get results.",
         request_body=QuizCheckSerializer,
-        responses={200: openapi.Response(
-            description="Quiz result summary with section breakdown."
-        )}
+        responses={200: openapi.Response(description="Quiz result summary with section breakdown.")}
     )
     def post(self, request):
         serializer = QuizCheckSerializer(data=request.data)
@@ -61,34 +59,30 @@ class QuizCheckAPIView(APIView):
                 "wrong_count": 0,
                 "ball": 0.0,
                 "section_breakdown": {}
-            }
+            },
+            "questions": []
         }
+
         quiz_questions = QuizCheckingSerializer(quiz).data["questions"]
 
         for question in quiz_questions:
             qtype = question["type"]
             qid = question["id"]
+            question_data = self._prepare_question_data(question)
+            results["questions"].append(question_data)
 
             user_answer = self._find_user_answer(data, qtype, qid)
-            if not user_answer:
-                # Only count missing answers in summary, don't add to details
-                if qtype not in results["summary"]["section_breakdown"]:
-                    results["summary"]["section_breakdown"][qtype] = {
-                        "correct": 0,
-                        "wrong": 0
-                    }
-                results["summary"]["wrong_count"] += 1
-                results["summary"]["section_breakdown"][qtype]["wrong"] += 1
-                continue
 
-            # Initialize section in details and summary only when there's an actual answer
             if qtype not in results["details"]:
                 results["details"][qtype] = []
             if qtype not in results["summary"]["section_breakdown"]:
-                results["summary"]["section_breakdown"][qtype] = {
-                    "correct": 0,
-                    "wrong": 0
-                }
+                results["summary"]["section_breakdown"][qtype] = {"correct": 0, "wrong": 0}
+
+            if not user_answer:
+                results["summary"]["wrong_count"] += 1
+                results["summary"]["section_breakdown"][qtype]["wrong"] += 1
+                results["details"][qtype].append({"id": qid, "correct": False, "user_answer": None})
+                continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
 
@@ -99,380 +93,125 @@ class QuizCheckAPIView(APIView):
                 results["summary"]["wrong_count"] += 1
                 results["summary"]["section_breakdown"][qtype]["wrong"] += 1
 
-            # Only add to details if there was an actual user answer
             results["details"][qtype].append(result_data)
 
-        total = results["summary"]["correct_count"] + results["summary"]["wrong_count"]
-
-        quiz = Quiz.objects.filter(id=data.get("quiz_id")).first()
-        if quiz:
-            total = quiz.count
-            results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
-
+        total = quiz.count if quiz else len(quiz_questions)
         results["summary"]["total_questions"] = total
-        results["summary"]["ball"] = round(
-            (results["summary"]["correct_count"] / total * 100), 2
-        ) if total > 0 else 0.0
+        results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
+        results["summary"]["ball"] = round((results["summary"]["correct_count"] / total * 100), 2) if total > 0 else 0.0
 
         self._create_mastering_record(theme, student, quiz, results["summary"]["ball"])
 
         return Response(results)
 
-    def _find_user_answer(self, data, qtype, qid):
-        if qtype not in data:
-            return None
+    def _prepare_question_data(self, question):
+        qtype = question["type"]
+        handler = getattr(self, f"_prepare_{qtype}", None)
+        return handler(question) if handler else {"id": question["id"], "type": qtype}
 
+    def _prepare_standard(self, question):
+        return {
+            "id": question["id"],
+            "type": "standard",
+            "text": question.get("text", {}).get("name") or question.get("question", {}).get("name"),
+            "answers": [{"id": a["id"], "text": a.get("text")} for a in question.get("answers", [])],
+            "correct_answer": next((a["id"] for a in question.get("answers", []) if a.get("is_correct")), None)
+        }
+
+    def _prepare_true_false(self, question):
+        return {
+            "id": question["id"],
+            "type": "true_false",
+            "question_text": question.get("question", {}).get("name"),
+            "correct_answer": question.get("answer", "")
+        }
+
+    def _prepare_match_pairs(self, question):
+        return {
+            "id": question["id"],
+            "type": "match_pairs",
+            "pairs": [
+                {"left": pair["left"], "right": pair["right"]}
+                for pair in question.get("pairs", [])
+            ]
+        }
+
+    def _prepare_cloze_test(self, question):
+        return {
+            "id": question["id"],
+            "type": "cloze_test",
+            "correct_sequence": [q["name"] for q in question.get("questions", [])]
+        }
+
+    def _find_user_answer(self, data, qtype, qid):
         id_fields = {
             'standard': 'question_id',
-            'multiple_choice': 'question_id',
-            'fill_gaps': 'fill_id',
-            'vocabularies': 'vocab_id',
-            'listening': 'listening_id',
             'match_pairs': 'match_id',
             'objective_test': 'objective_id',
             'cloze_test': 'cloze_id',
-            'image_objective_test': 'image_objective_id',
             'image_objective': 'image_objective_id',
             'true_false': 'true_false_id'
         }
 
         id_field = id_fields.get(qtype, 'question_id')
-
-        for answer in data[qtype]:
-            answer_id = str(answer.get(id_field))
-            if answer_id == str(qid):
-                return answer
-
-        return None
-
-    # Removed _record_missing_answer method since we're not using it anymore
+        return next((a for a in data.get(qtype, []) if str(a.get(id_field)) == str(qid)), None)
 
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
-
-        if qtype == "image_objective":
-            qtype = "image_objective_test"
-
         checker = getattr(self, f"check_{qtype}", None)
-
         if not checker:
             return False, {"error": f"Unsupported question type: {qtype}", "id": question["id"]}
-
-        try:
-            return checker(question, user_answer)
-        except Exception as e:
-            logger.error(f"Error in {qtype} checker: {str(e)}")
-            return False, {"error": str(e), "id": question["id"]}
+        return checker(question, user_answer)
 
     def check_standard(self, question, user_answer):
-        try:
-            correct_answer_id = None
-            if "answer" in question:
-                correct_answer_id = question["answer"]
-            elif "answers" in question:
-                correct_answer = next(
-                    (a for a in question["answers"] if a.get("is_correct")),
-                    None
-                )
-                if correct_answer:
-                    correct_answer_id = correct_answer["id"]
-            elif "sentence" in question:
-                correct_answer_id = question["sentence"]
-
-            user_answer_id = user_answer.get("answer_id")
-            is_correct = str(user_answer_id) == str(correct_answer_id)
-
-            response_data = {
-                "id": question["id"],
-                "correct": is_correct,
-                "user_answer": user_answer_id,
-                "correct_answer": correct_answer_id,
-                "answers": question["answers"],
-                "question_text": question.get("text", {}).get("name") or
-                                 question.get("question", {}).get("name")
-            }
-
-            if not is_correct and correct_answer_id and "answers" in question:
-                correct_answer = next(
-                    (a for a in question["answers"] if str(a["id"]) == str(correct_answer_id)),
-                    None
-                )
-                if correct_answer:
-                    response_data["correct_answer_text"] = correct_answer.get("text")
-
-            return is_correct, response_data
-
-        except Exception as e:
-            logger.error(f"Error processing standard question: {str(e)}")
-            return False, {
-                "id": question["id"],
-                "correct": False,
-                "error": str(e),
-                "user_answer": user_answer.get("answer_id"),
-                "correct_answer": "Error processing correct answer"
-            }
-
-    def check_multiple_choice(self, question, user_answer):
-        return self.check_standard(question, user_answer)
-
-    def check_true_false(self, question, user_answer):
-        # Get the correct answer from the question (should be "True", "False", or potentially "Not Given")
-        correct_answer_str = question.get("answer", "").lower()
-
-        # Get user's choice (should be "True", "False", or "Not Given")
-        user_choice_str = user_answer.get("choice", "").lower()
-
-        # Determine if the answer is correct
-        if user_choice_str == "not given":
-            # Handle "Not Given" case - you might want different logic here
-            # For example, you might consider it correct only if the correct answer is also "not given"
-            is_correct = (correct_answer_str == "not given")
-        else:
-            # For True/False answers
-            correct_answer_bool = correct_answer_str == "true"
-            user_choice_bool = user_choice_str == "true"
-            is_correct = (user_choice_bool == correct_answer_bool)
+        correct_answer_id = next((a["id"] for a in question.get("answers", []) if a.get("is_correct")), None)
+        user_answer_id = user_answer.get("answer_id")
+        is_correct = str(user_answer_id) == str(correct_answer_id)
 
         return is_correct, {
             "id": question["id"],
-            "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
-            "user_answer": user_choice_str,
-            "correct_answer": correct_answer_str
+            "user_answer": user_answer_id,
+            "correct_answer": correct_answer_id
         }
 
-    def check_fill_gaps(self, question, user_answer):
-        correct_gaps = [gap["name"] for gap in question.get("gaps", [])]
-        user_gaps = user_answer.get("gaps", [])
+    def check_true_false(self, question, user_answer):
+        correct_answer = question.get("answer", "").lower()
+        user_choice = user_answer.get("choice", "").lower()
+        is_correct = (user_choice == correct_answer)
 
-        if len(correct_gaps) != len(user_gaps):
-            return False, {
-                "id": question["id"],
-                "correct": False,
-                "user_answer": user_gaps,
-                "correct_answer": correct_gaps
-            }
+        return is_correct, {
+            "id": question["id"],
+            "correct": is_correct,
+            "user_answer": user_choice,
+            "correct_answer": correct_answer
+        }
 
-        all_correct = all(str(user_gap).lower() == str(correct_gap).lower()
-                          for user_gap, correct_gap in zip(user_gaps, correct_gaps))
+    def check_match_pairs(self, question, user_answer):
+        correct_pairs = {str(p["left"]["id"]): str(p["right"]["id"]) for p in question.get("pairs", [])}
+        user_pairs = user_answer.get("pairs", [])
+        all_correct = True
+        pair_results = []
+
+        for pair in user_pairs:
+            left_id = str(pair.get("left_id"))
+            right_id = str(pair.get("right_id"))
+            is_correct = correct_pairs.get(left_id) == right_id
+            if not is_correct:
+                all_correct = False
+
+            pair_results.append({
+                "left_id": left_id,
+                "right_id": right_id,
+                "is_correct": is_correct
+            })
 
         return all_correct, {
             "id": question["id"],
             "correct": all_correct,
-            "user_answer": user_gaps,
-            "correct_answer": correct_gaps
+            "pair_results": pair_results,
+            "correct_mapping": correct_pairs
         }
-
-    def check_objective_test(self, question, user_answer):
-        try:
-            correct_answer = question.get("answer", "")
-            if not correct_answer and "answers" in question:
-                correct_answer = next(
-                    (a["text"] for a in question["answers"] if a.get("is_correct")),
-                    ""
-                )
-
-            user_answer_text = user_answer.get("answer_ids", "")
-            is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
-
-            return is_correct, {
-                "id": question["id"],
-                "correct": is_correct,
-                "user_answer": user_answer_text,
-                "correct_answer": correct_answer
-            }
-        except Exception as e:
-            logger.error(f"Error processing objective test question: {str(e)}")
-            return False, {
-                "id": question["id"],
-                "correct": False,
-                "error": str(e),
-                "user_answer": user_answer.get("answer_ids", ""),
-                "correct_answer": "Error processing correct answer"
-            }
-
-    def check_cloze_test(self, question, user_answer):
-        try:
-            db_sequence = [q["name"] for q in question.get("questions", [])]
-            correct_sequence = db_sequence[::-1]
-            user_sequence = user_answer.get("word_sequence", [])
-            is_correct = user_sequence == correct_sequence
-
-            return is_correct, {
-                "id": question["id"],
-                "correct": is_correct,
-                "user_answer": user_sequence,
-                "correct_answer": correct_sequence
-            }
-        except Exception as e:
-            logger.error(f"Error processing cloze test question: {str(e)}")
-            return False, {
-                "id": question["id"],
-                "correct": False,
-                "error": str(e),
-                "user_answer": user_answer.get("word_sequence", []),
-                "correct_answer": "Error processing correct sequence"
-            }
-
-    def check_image_objective_test(self, question, user_answer):
-        try:
-            correct_answer_id = question.get("answer", "")
-            correct_answer = Answer.objects.filter(id=correct_answer_id).first()
-
-            if not correct_answer:
-                raise ValueError("Correct answer not found")
-
-            user_answer_text = user_answer.get("answer", "")
-            is_correct = str(user_answer_text).strip().lower() == str(correct_answer.text).strip().lower()
-
-            image = ImageObjectiveTest.objects.filter(answer=correct_answer).first()
-
-            return is_correct, {
-                "id": question["id"],
-                "correct": is_correct,
-                "image": image.image.url if image and image.image else None,
-                "user_answer": user_answer_text,
-                "correct_answer": correct_answer.text
-            }
-        except Exception as e:
-            logger.error(f"Error processing image objective test question: {str(e)}")
-            try:
-                correct_answer_id = question.get("answer", "")
-                correct_answer = Answer.objects.filter(id=correct_answer_id).first()
-                image = ImageObjectiveTest.objects.filter(answer=correct_answer).first() if correct_answer else None
-
-                return False, {
-                    "id": question["id"],
-                    "correct": False,
-                    "image": image.image.url if image and image.image else None,
-                    "error": str(e),
-                    "user_answer": user_answer.get("answer", ""),
-                    "correct_answer": "Error processing correct answer"
-                }
-            except:
-                return False, {
-                    "id": question["id"],
-                    "correct": False,
-                    "error": str(e),
-                    "user_answer": user_answer.get("answer", ""),
-                    "correct_answer": "Error processing correct answer"
-                }
-
-    def check_match_pairs(self, question, user_answer):
-        try:
-            match_pairs_id = question.get("id")
-            match_pairs = MatchPairs.objects.prefetch_related('pairs').get(id=match_pairs_id)
-            all_pairs = list(match_pairs.pairs.all())
-
-            left_items = [pair for pair in all_pairs if pair.choice == "Left"]
-            right_items = [pair for pair in all_pairs if pair.choice == "Right"]
-
-            if not left_items or not right_items:
-                raise ValueError("Question must contain both left and right pairs")
-            if len(left_items) != len(right_items):
-                raise ValueError("Left and right items must be equal in number")
-
-            left_map = {str(item.id): item.pair for item in left_items}
-            right_map = {str(item.id): item.pair for item in right_items}
-            left_key_map = {str(item.id): item.key for item in left_items}
-            right_key_map = {str(item.id): item.key for item in right_items}
-
-            left_by_key = {item.key: str(item.id) for item in left_items}
-            right_by_key = {item.key: str(item.id) for item in right_items}
-
-            correct_mapping = {}
-            for key in left_by_key.keys():
-                if key in right_by_key:
-                    correct_mapping[left_by_key[key]] = right_by_key[key]
-
-            if len(correct_mapping) != len(left_items):
-                raise ValueError("Not all left items have corresponding right items with matching keys")
-
-            user_pairs = user_answer.get("pairs", [])
-            if not user_pairs:
-                return False, self._build_match_response(
-                    question["id"], False, "No pairs submitted", [], correct_mapping, left_map, right_map
-                )
-
-            if len(user_pairs) != len(left_items):
-                return False, self._build_match_response(
-                    question["id"], False, f"Expected {len(left_items)} pairs", user_pairs, correct_mapping, left_map,
-                    right_map
-                )
-
-            results = []
-            used_left = set()
-            used_right = set()
-            all_correct = True
-
-            for pair in user_pairs:
-                left_id = str(pair.get("left_id", ""))
-                right_id = str(pair.get("right_id", ""))
-                is_correct = False
-                error = None
-
-                if left_id not in left_map:
-                    error = "Invalid left_id"
-                elif right_id not in right_map:
-                    error = "Invalid right_id"
-                elif left_id in used_left:
-                    error = "Duplicate left_id"
-                elif right_id in used_right:
-                    error = "Duplicate right_id"
-                else:
-                    used_left.add(left_id)
-                    used_right.add(right_id)
-                    left_key = left_key_map.get(left_id)
-                    right_key = right_key_map.get(right_id)
-                    is_correct = (left_key == right_key)
-
-                if error or not is_correct:
-                    all_correct = False
-
-                results.append({
-                    "left_id": left_id,
-                    "left_text": left_map.get(left_id),
-                    "left_key": left_key_map.get(left_id),
-                    "right_id": right_id,
-                    "right_text": right_map.get(right_id),
-                    "right_key": right_key_map.get(right_id),
-                    "is_correct": is_correct,
-                    **({"error": error} if error else {})
-                })
-
-            return all_correct, self._build_match_response(
-                question["id"], all_correct, None, user_pairs, correct_mapping, left_map, right_map, results
-            )
-
-        except MatchPairs.DoesNotExist:
-            return False, {"error": "Question not found", "id": question["id"]}
-        except Exception as e:
-            logger.error(f"Error processing match pairs question: {str(e)}")
-            return False, {"error": str(e), "id": question["id"]}
-
-    def _build_match_response(self, question_id, is_correct, error, user_pairs, correct_mapping, left_map, right_map,
-                              pair_results=None):
-        response = {
-            "id": question_id,
-            "correct": is_correct,
-            "user_answer": user_pairs,
-            "correct_answer": [
-                {
-                    "left_id": left_id,
-                    "left_text": left_map.get(left_id),
-                    "right_id": right_id,
-                    "right_text": right_map.get(right_id)
-                }
-                for left_id, right_id in correct_mapping.items()
-            ]
-        }
-
-        if error:
-            response["error"] = error
-        if pair_results:
-            response["pair_results"] = pair_results
-
-        return response
 
     def _create_mastering_record(self, theme, student, quiz, ball):
         if not student:
@@ -481,7 +220,6 @@ class QuizCheckAPIView(APIView):
         try:
             mastering = Mastering.objects.create(
                 theme=theme,
-                lid=None,
                 student=student,
                 test=quiz,
                 ball=ball,
@@ -495,10 +233,10 @@ class QuizCheckAPIView(APIView):
                     from_test=mastering,
                     from_homework=homework,
                     student=student,
-                    comment=f"{homework.theme.title} mavzusining vazifalarini bajarganligi uchun {ball} ball taqdim etildi!"
+                    comment=f"{homework.theme.title} test results"
                 )
-        except Exception as e:
-            logger.error(f"Error creating mastering record: {str(e)}")
+        except Exception:
+            pass
 
 
 class ObjectiveTestView(ListCreateAPIView):
@@ -509,6 +247,7 @@ class ObjectiveTestView(ListCreateAPIView):
 class Cloze_TestView(ListCreateAPIView):
     queryset = Cloze_Test.objects.all()
     serializer_class = Cloze_TestSerializer
+
 
 class Cloze_TestUpdate(RetrieveUpdateDestroyAPIView):
     queryset = Cloze_Test.objects.all()
