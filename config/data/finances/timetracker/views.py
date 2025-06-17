@@ -1112,20 +1112,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             # Calculate penalty amount
             penalty_amount = outside_minutes * per_minute_penalty
 
-            # Create finance record
-            try:
-                self._update_finance_records(
-                    employee_id,
-                    action["start_datetime"].date(),
-                    penalty_amount,
-                    action['start_datetime'],
-                    action['end_datetime'],
-                    outside_minutes
-                )
-                finance_created = True
-            except Exception as e:
-                logger.error(f"Failed to create finance record: {str(e)}")
-                finance_created = False
+            print(penalty_amount)
 
             return {
                 'action_index': action_index,
@@ -1134,7 +1121,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 'duration_minutes': round(outside_minutes, 2),
                 'penalty_amount': round(penalty_amount, 2),
                 'per_minute_penalty': per_minute_penalty,
-                'finance_record_created': finance_created,
                 'timeline_used': {
                     'day': day_of_week,
                     'working_hours': f"{timeline.start_time}-{timeline.end_time}",
