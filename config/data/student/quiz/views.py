@@ -166,10 +166,94 @@ class QuizCheckAPIView(APIView):
 
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
+
+        # Handle any type aliases
+        if qtype == "image_objective":
+            qtype = "image_objective_test"
+
         checker = getattr(self, f"check_{qtype}", None)
+
         if not checker:
             return False, {"error": f"Unsupported question type: {qtype}", "id": question["id"]}
-        return checker(question, user_answer)
+
+        try:
+            return checker(question, user_answer)
+        except Exception as e:
+            logger.error(f"Error in {qtype} checker: {str(e)}")
+            return False, {"error": str(e), "id": question["id"]}
+
+    def check_objective_test(self, question, user_answer):
+        try:
+            correct_answer = question.get("answer", "")
+            if not correct_answer and "answers" in question:
+                correct_answer = next(
+                    (a["text"] for a in question["answers"] if a.get("is_correct")),
+                    ""
+                )
+
+            user_answer_text = user_answer.get("answer_ids", "")
+            is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
+
+            return is_correct, {
+                "id": question["id"],
+                "correct": is_correct,
+                "user_answer": user_answer_text,
+                "correct_answer": correct_answer
+            }
+        except Exception as e:
+            logger.error(f"Error processing objective test: {str(e)}")
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": str(e),
+                "user_answer": user_answer.get("answer_ids", ""),
+                "correct_answer": "Error processing correct answer"
+            }
+
+    def check_cloze_test(self, question, user_answer):
+        try:
+            correct_sequence = [q["name"] for q in question.get("questions", [])]
+            user_sequence = user_answer.get("word_sequence", [])
+            is_correct = user_sequence == correct_sequence
+
+            return is_correct, {
+                "id": question["id"],
+                "correct": is_correct,
+                "user_answer": user_sequence,
+                "correct_answer": correct_sequence
+            }
+        except Exception as e:
+            logger.error(f"Error processing cloze test: {str(e)}")
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": str(e),
+                "user_answer": user_answer.get("word_sequence", []),
+                "correct_answer": "Error processing correct sequence"
+            }
+
+    def check_image_objective(self, question, user_answer):
+        try:
+            correct_answer_id = question.get("answer", "")
+            user_answer_id = user_answer.get("answer", "")
+            is_correct = str(user_answer_id) == str(correct_answer_id)
+
+            return is_correct, {
+                "id": question["id"],
+                "correct": is_correct,
+                "user_answer": user_answer_id,
+                "correct_answer": correct_answer_id,
+                "image_url": question.get("image_url", "")
+            }
+        except Exception as e:
+            logger.error(f"Error processing image objective: {str(e)}")
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": str(e),
+                "user_answer": user_answer.get("answer", ""),
+                "correct_answer": "Error processing correct answer"
+            }
 
     def check_standard(self, question, user_answer):
         correct_answer_id = next((a["id"] for a in question.get("answers", []) if a.get("is_correct")), None)
