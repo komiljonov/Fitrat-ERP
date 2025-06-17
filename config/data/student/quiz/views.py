@@ -202,7 +202,15 @@ class QuizCheckAPIView(APIView):
         }
 
     def check_match_pairs(self, question, user_answer):
-        correct_pairs = {str(p["left"]["id"]): str(p["right"]["id"]) for p in question.get("pairs", [])}
+
+        left_items = {p["key"]: p["id"] for p in question.get("pairs", []) if p.get("choice") == "Left"}
+        right_items = {p["key"]: p["id"] for p in question.get("pairs", []) if p.get("choice") == "Right"}
+
+        correct_mapping = {
+            key: (left_items[key], right_items[key])
+            for key in left_items if key in right_items
+        }
+
         user_pairs = user_answer.get("pairs", [])
         all_correct = True
         pair_results = []
@@ -210,7 +218,12 @@ class QuizCheckAPIView(APIView):
         for pair in user_pairs:
             left_id = str(pair.get("left_id"))
             right_id = str(pair.get("right_id"))
-            is_correct = correct_pairs.get(left_id) == right_id
+
+            is_correct = any(
+                str(correct_left) == left_id and str(correct_right) == right_id
+                for correct_left, correct_right in correct_mapping.values()
+            )
+
             if not is_correct:
                 all_correct = False
 
@@ -224,7 +237,10 @@ class QuizCheckAPIView(APIView):
             "id": question["id"],
             "correct": all_correct,
             "pair_results": pair_results,
-            "correct_mapping": correct_pairs
+            "correct_mapping": {
+                key: {"left_id": left, "right_id": right}
+                for key, (left, right) in correct_mapping.items()
+            }
         }
 
     def _create_mastering_record(self, theme, student, quiz, ball):
