@@ -127,20 +127,24 @@ class QuizCheckAPIView(APIView):
         }
 
     def _prepare_match_pairs(self, question):
+        left_items = [p for p in question.get("pairs", []) if p.get("choice") == "Left"]
+        right_items = [p for p in question.get("pairs", []) if p.get("choice") == "Right"]
 
-        print(question.get("pairs",[]))
+        pairs = []
+        for left in left_items:
+            right = next((r for r in right_items if r["key"] == left["key"]), None)
+            if right:
+                pairs.append({
+                    "left_id": left["id"],
+                    "left_text": left.get("pair"),
+                    "right_id": right["id"],
+                    "right_text": right.get("pair")
+                })
+
         return {
             "id": question["id"],
             "type": "match_pairs",
-            "pairs": [
-                {
-                    "left_id": pair["left_id"],
-                    "left_text": pair.get("left_text", pair["left_id"]),
-                    "right_id": pair["right_id"],
-                    "right_text": pair.get("right_text", pair["right_id"])
-                }
-                for pair in question.get("pairs", [])
-            ]
+            "pairs": pairs
         }
 
     def _prepare_cloze_test(self, question):
