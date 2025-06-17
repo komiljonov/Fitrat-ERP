@@ -312,6 +312,7 @@ class StudentsAvgLearning(APIView):
                 item = {
                     "theme" : theme_data,
                     "homework_id": homework_id.id if homework_id else None,
+                    "mastering_id": m.id if m.choice == "Speaking" else None,
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
