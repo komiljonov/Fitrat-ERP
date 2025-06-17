@@ -7,7 +7,6 @@ from django.dispatch.dispatcher import logger
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from icecream import ic
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
@@ -68,9 +67,8 @@ class QuizCheckAPIView(APIView):
         for question in quiz_questions:
             qtype = question["type"]
             qid = question["id"]
-            question_data = self._prepare_question_data(data)
+            question_data = self._prepare_question_data([quid for quid in data.get("questions", [])])
             ic(question_data)
-
             user_answer = self._find_user_answer(data, qtype, qid)
 
             if qtype not in results["details"]:
