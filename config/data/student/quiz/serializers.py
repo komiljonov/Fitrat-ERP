@@ -510,11 +510,15 @@ class ExamSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["results"] = FileUploadSerializer(instance.results).data
-        rep["options"] = {
-            "subject":instance.subject.name,
-            "option":instance.options,
-        }
+        rep["results"] = FileUploadSerializer(instance.results).data if instance.results else None
+
+        rep["options"] = [
+            {
+                "subject": option.subject.name if option.subject else None,
+                "option": option.options,
+            }
+            for option in instance.options.all()
+        ]
         return rep
 
 
