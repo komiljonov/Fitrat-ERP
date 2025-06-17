@@ -118,7 +118,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                                 test=quiz,
                                 ball=0
                             )
-                        elif homework is None and quiz is None:
+
                             Mastering.objects.create(
                                 student=student,
                                 theme=theme,
