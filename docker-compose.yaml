@@ -21,7 +21,7 @@ services:
     environment:
       - POSTGRES_DB=fitrat
       - POSTGRES_USER=fitrat_user
-      - POSTGRES_PASSWORD=your_secure_password
+      - POSTGRES_PASSWORD=fitrat_erp_password
       - TZ=Etc/GMT+5
     ports:
       - "5432:5432"
