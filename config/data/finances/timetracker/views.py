@@ -710,10 +710,14 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 attendance = self.get_object()
                 previous_amount = attendance.amount or 0
 
+                print(previous_amount)
+
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
                 new_amount = updated_attendance.amount or 0
+
+                print(new_amount)
 
                 # Process actions if provided
                 penalty_result = {}
