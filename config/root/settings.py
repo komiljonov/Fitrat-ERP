@@ -36,6 +36,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://api.fitrat.sector-soft.ru',
     'https://api.ilm.fitrat.sector-soft.ru',
     'https://ilm.fitrat.sector-soft.ru',
+    "https://api.ft.sector-soft.ru",
 ]
 #
 
@@ -254,7 +255,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://api.fitrat.sector-soft.ru",
     "https://ilm.fitrat.sector-soft.ru",
     "https://api.ilm.fitrat.sector-soft.ru",
-
+    "https://api.ft.sector-soft.ru",
+    "https://ft.sector-soft.ru"
 ]
 
 # INTERNAL_IPS = [
