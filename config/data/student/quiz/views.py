@@ -59,8 +59,7 @@ class QuizCheckAPIView(APIView):
                 "wrong_count": 0,
                 "ball": 0.0,
                 "section_breakdown": {}
-            },
-            "questions": []
+            }
         }
 
         quiz_questions = QuizCheckingSerializer(quiz).data["questions"]
@@ -69,7 +68,6 @@ class QuizCheckAPIView(APIView):
             qtype = question["type"]
             qid = question["id"]
             question_data = self._prepare_question_data(question)
-            results["questions"].append(question_data)
 
             user_answer = self._find_user_answer(data, qtype, qid)
 
