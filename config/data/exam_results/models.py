@@ -1,0 +1,18 @@
+from django.db import models
+
+from ..command.models import BaseModel
+from ..student.quiz.models import Quiz,Exam,Question,MatchPairs,True_False,Vocabulary,ObjectiveTest,ImageObjectiveTest,Listening
+from ..student.student.models import Student
+
+class QuizResult(BaseModel):
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,related_name="quiz_result")
+    student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True)
+    questions : "Question" = models.ManyToManyField("quiz.Question", related_name="quiz_result")
+    match_pair : "MatchPairs" = models.ManyToManyField("quiz.MatchPair", related_name="quiz_result_match_pair")
+    true_false : "True_False" = models.ManyToManyField("quiz.True_False", related_name="quiz_result_true_false")
+    vocabulary : "Vocabulary" = models.ManyToManyField("quiz.Vocabulary", related_name="quiz_result_vocabulary")
+    objective : "ObjectiveTest" = models.ManyToManyField("quiz.ObjectiveTest", related_name="quiz_result_objective_test")
+    image_objective : "ImageObjectiveTest" = models.ManyToManyField("quiz.ImageObjectiveTest", related_name="quiz_result_image_objective_test")
+    Listening : "Listening" = models.ManyToManyField("quiz.Listening", related_name="quiz_result_listening")
+
+    point = models.IntegerField(default=0)
