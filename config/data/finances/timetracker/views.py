@@ -20,7 +20,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary, calculate_penalty, _update_penalty
+from .utils import get_monthly_per_minute_salary, calculate_penalty, update_calculate
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 
@@ -755,7 +755,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 check_in = updated_attendance.check_in
                 check_out = updated_attendance.check_out
 
-                amount = _update_penalty(
+                amount = update_calculate(
                     updated_attendance.employee.id,
                     check_in,
                     check_out,
