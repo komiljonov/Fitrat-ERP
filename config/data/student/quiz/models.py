@@ -215,11 +215,19 @@ class True_False(BaseModel):
     def __str__(self):
         return f"{self.quiz.title}  {self.answer}"
 
+
 class ExamSubject(BaseModel):
-    subject = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
+    subject : "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='exam_subject_quiz')
 
     options = models.CharField(default=1,max_length=2, null=True, blank=True)
+
+    lang_foreign = models.BooleanField(default=False)
+    lang_national = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.subject.name}  --- {self.options}"
+
 
 class Exam(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
