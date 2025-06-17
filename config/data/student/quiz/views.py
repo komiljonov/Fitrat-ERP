@@ -64,31 +64,40 @@ class QuizCheckAPIView(APIView):
         }
 
         quiz_questions = QuizCheckingSerializer(quiz).data["questions"]
+        user_question_ids = data.get("questions", [])
 
-        for question in quiz_questions:
+        # Process only questions that exist in both quiz and user's submission
+        for qid in user_question_ids:
+            question = next((q for q in quiz_questions if str(q["id"]) == str(qid)), None)
+            if not question:
+                continue
+
             qtype = question["type"]
-            qid = question["id"]
-            question_ids = data.get("questions", [])
-            for qid in question_ids:
-
-                question = next((q for q in quiz_questions if q["id"] == qid), None)
-                if question:
-                    question_data = self._prepare_question_data(question)
-                    print(question_data)
-
             user_answer = self._find_user_answer(data, qtype, qid)
 
+            # Initialize section data if not exists
             if qtype not in results["details"]:
                 results["details"][qtype] = []
             if qtype not in results["summary"]["section_breakdown"]:
                 results["summary"]["section_breakdown"][qtype] = {"correct": 0, "wrong": 0}
 
+            # Prepare question data
+            question_data = self._prepare_question_data(question)
+
             if not user_answer:
                 results["summary"]["wrong_count"] += 1
                 results["summary"]["section_breakdown"][qtype]["wrong"] += 1
+                results["details"][qtype].append({
+                    "id": qid,
+                    "correct": False,
+                    "user_answer": None,
+                    "status": "unanswered"
+                })
                 continue
 
+            # Check answer
             is_correct, result_data = self._check_answer(question, user_answer)
+            result_data["status"] = "correct" if is_correct else "incorrect"
 
             if is_correct:
                 results["summary"]["correct_count"] += 1
@@ -99,10 +108,12 @@ class QuizCheckAPIView(APIView):
 
             results["details"][qtype].append(result_data)
 
-        total = quiz.count if quiz else len(quiz_questions)
+        # Calculate final results
+        total = len(user_question_ids)  # Only count questions user attempted
         results["summary"]["total_questions"] = total
-        results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
-        results["summary"]["ball"] = round((results["summary"]["correct_count"] / total * 100), 2) if total > 0 else 0.0
+        results["summary"]["ball"] = round(
+            (results["summary"]["correct_count"] / total * 100), 2
+        ) if total > 0 else 0.0
 
         self._create_mastering_record(theme, student, quiz, results["summary"]["ball"])
 
