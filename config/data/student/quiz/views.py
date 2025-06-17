@@ -81,7 +81,6 @@ class QuizCheckAPIView(APIView):
             if not user_answer:
                 results["summary"]["wrong_count"] += 1
                 results["summary"]["section_breakdown"][qtype]["wrong"] += 1
-                results["details"][qtype].append({"id": qid, "correct": False, "user_answer": None})
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
