@@ -178,7 +178,6 @@ class Cloze_Test(BaseModel):
                              related_name="question_cloze_file")
 
 
-
 class ImageObjectiveTest(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='image_cloze_quiz')
