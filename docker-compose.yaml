@@ -35,9 +35,9 @@ services:
     container_name: "django_fitrat1"
     build:
       context: ./config
-    command: gunicorn root.wsgi:application --bind 0.0.0.0:8000 --workers 8
+ #   command: gunicorn root.wsgi:application --bind 0.0.0.0:8000 --workers 8
 
-
+    command: python manage.py runserver 0.0.0.0:8000
     volumes: &shared_volumes
       - ./config:/usr/src/app
       - ./utils:/usr/src/app/utils
