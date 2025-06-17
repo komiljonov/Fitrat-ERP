@@ -80,22 +80,22 @@ class QuizCheckAPIView(APIView):
 
             if qtype not in results["details"]:
                 results["details"][qtype] = []
-            if qtype not in results["summary"]["section_breakdown"]:
-                results["summary"]["section_breakdown"][qtype] = {"correct": 0, "wrong": 0}
+            # if qtype not in results["summary"]["section_breakdown"]:
+            #     results["summary"]["section_breakdown"][qtype] = {"correct": 0, "wrong": 0}
 
             if not user_answer:
                 results["summary"]["wrong_count"] += 1
-                results["summary"]["section_breakdown"][qtype]["wrong"] += 1
+                # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
 
             if is_correct:
                 results["summary"]["correct_count"] += 1
-                results["summary"]["section_breakdown"][qtype]["correct"] += 1
+                # results["summary"]["section_breakdown"][qtype]["correct"] += 1
             else:
                 results["summary"]["wrong_count"] += 1
-                results["summary"]["section_breakdown"][qtype]["wrong"] += 1
+                # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
 
             results["details"][qtype].append(result_data)
 
