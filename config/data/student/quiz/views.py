@@ -68,39 +68,35 @@ class QuizCheckAPIView(APIView):
             qtype = question["type"]
             qid = question["id"]
             question_ids = data.get("questions", [])
-
-            if qtype not in results["details"]:
-                results["details"][qtype] = []
-
             for qid in question_ids:
 
                 question = next((q for q in quiz_questions if q["id"] == qid), None)
                 if question:
                     question_data = self._prepare_question_data(question)
                     print(question_data)
-                    results["details"][qtype] = [question_data]
 
             user_answer = self._find_user_answer(data, qtype, qid)
 
+            if qtype not in results["details"]:
+                results["details"][qtype] = []
+            if qtype not in results["summary"]["section_breakdown"]:
+                results["summary"]["section_breakdown"][qtype] = {"correct": 0, "wrong": 0}
 
-            # if qtype not in results["summary"]["section_breakdown"]:
-            #     results["summary"]["section_breakdown"][qtype] = {"correct": 0, "wrong": 0}
-
-            # if not user_answer:
-            #     results["summary"]["wrong_count"] += 1
-            #     results["summary"]["section_breakdown"][qtype]["wrong"] += 1
-            #     continue
+            if not user_answer:
+                results["summary"]["wrong_count"] += 1
+                results["summary"]["section_breakdown"][qtype]["wrong"] += 1
+                continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
 
-            # if is_correct:
-            #     results["summary"]["correct_count"] += 1
-            #     results["summary"]["section_breakdown"][qtype]["correct"] += 1
-            # else:
-            #     results["summary"]["wrong_count"] += 1
-            #     results["summary"]["section_breakdown"][qtype]["wrong"] += 1
+            if is_correct:
+                results["summary"]["correct_count"] += 1
+                results["summary"]["section_breakdown"][qtype]["correct"] += 1
+            else:
+                results["summary"]["wrong_count"] += 1
+                results["summary"]["section_breakdown"][qtype]["wrong"] += 1
 
-            # results["details"][qtype].append(result_data)
+            results["details"][qtype].append(result_data)
 
         total = quiz.count if quiz else len(quiz_questions)
         results["summary"]["total_questions"] = total
