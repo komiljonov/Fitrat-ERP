@@ -21,7 +21,7 @@ class QuizResult(BaseModel):
 
 
 class UnitTest(BaseModel):
-    theme_after : "Theme" = models.ForeignKey("subject.Theme", on_delete=models.SET_NULL, null=True, blank=True,related_name="unit_test__theme")
+    theme_after : "Theme" = models.ForeignKey("subject.Theme", on_delete=models.SET_NULL, null=True, blank=True,related_name="unit_test_theme")
     themes : "Theme" = models.ManyToManyField("subject.Theme", related_name="unit_test_theme")
     quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True)
 
