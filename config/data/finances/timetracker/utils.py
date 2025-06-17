@@ -104,7 +104,7 @@ def get_monthly_per_minute_salary(user_id):
     }
 
 
-def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = None) -> float:
+def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = None) -> float:
     user = CustomUser.objects.filter(id=user_id).first()
     if not user or not user.salary or not check_in:
         return 0
