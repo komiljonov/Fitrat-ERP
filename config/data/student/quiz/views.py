@@ -132,8 +132,10 @@ class QuizCheckAPIView(APIView):
             "type": "match_pairs",
             "pairs": [
                 {
-                    "left": pair["left_item"],
-                    "right": pair["right_item"]
+                    "left_id": pair["left_id"],
+                    "left_text": pair.get("left_text", pair["left_id"]),
+                    "right_id": pair["right_id"],
+                    "right_text": pair.get("right_text", pair["right_id"])
                 }
                 for pair in question.get("pairs", [])
             ]
