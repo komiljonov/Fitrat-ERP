@@ -20,7 +20,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary
+from .utils import get_monthly_per_minute_salary, calculate_penalty
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 
@@ -715,9 +715,16 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
-                new_amount = updated_attendance.amount or 0
 
-                print(new_amount)
+                penalty_amount = calculate_penalty(
+                    updated_attendance.employee.id,
+                    updated_attendance.check_in,
+                    updated_attendance.check_out,
+                )
+
+                ic(penalty_amount)
+
+                new_amount = updated_attendance.amount or 0
 
                 # Process actions if provided
                 penalty_result = {}
@@ -741,6 +748,9 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     )
 
                 # Update Finance records
+
+                ic(updated_attendance)
+
                 finance_updates = self._update_finance_records(
                     attendance.employee,
                     updated_attendance.check_in.date() if updated_attendance.check_in else None,
