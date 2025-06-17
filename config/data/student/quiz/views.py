@@ -59,6 +59,7 @@ class QuizCheckAPIView(APIView):
                 "correct_count": 0,
                 "wrong_count": 0,
                 "ball": 0.0,
+                "section_breakdown": {}
             }
         }
 
