@@ -127,33 +127,16 @@ class QuizCheckAPIView(APIView):
         }
 
     def _prepare_match_pairs(self, question):
-        pairs = []
-
-        # Handle different possible pair structures
-        for pair in question.get("pairs", []):
-            if "left" in pair and "right" in pair:
-                # Standard format with left/right keys
-                pairs.append({
-                    "left": pair["left"],
-                    "right": pair["right"]
-                })
-            elif "left_id" in pair and "right_id" in pair:
-                # Alternative format with left_id/right_id
-                pairs.append({
-                    "left": pair.get("left_text", pair["left_id"]),
-                    "right": pair.get("right_text", pair["right_id"])
-                })
-            elif len(pair) == 2:
-                # Simple tuple-like format
-                pairs.append({
-                    "left": pair[0],
-                    "right": pair[1]
-                })
-
         return {
             "id": question["id"],
             "type": "match_pairs",
-            "pairs": pairs
+            "pairs": [
+                {
+                    "left": pair["left_item"],
+                    "right": pair["right_item"]
+                }
+                for pair in question.get("pairs", [])
+            ]
         }
 
     def _prepare_cloze_test(self, question):
