@@ -20,7 +20,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary, calculate_penalty
+from .utils import get_monthly_per_minute_salary, calculate_penalty, _update_penalty
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 
@@ -747,18 +747,20 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                         new_amount
                     )
 
-                # Update Finance records
-
-                ic(updated_attendance)
-
-                finance_updates = self._update_finance_records(
-                    attendance.employee,
-                    updated_attendance.check_in.date() if updated_attendance.check_in else None,
-                    previous_amount,
-                    new_amount,
-                    updated_attendance.check_in,
-                    updated_attendance.check_out
+                finance_updates = []
+                per_minute_salary = get_monthly_per_minute_salary(
+                    updated_attendance.employee.id,
                 )
+                ic(per_minute_salary)
+                check_in = updated_attendance.check_in
+                check_out = updated_attendance.check_out
+
+                amount = _update_penalty(
+                    updated_attendance.employee.id,
+                    check_in,
+                    check_out,
+                )
+                ic(amount)
 
                 return Response({
                     'success': True,
