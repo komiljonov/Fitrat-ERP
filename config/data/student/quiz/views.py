@@ -127,6 +127,8 @@ class QuizCheckAPIView(APIView):
         }
 
     def _prepare_match_pairs(self, question):
+
+        print(question.get("pairs",[]))
         return {
             "id": question["id"],
             "type": "match_pairs",
