@@ -130,6 +130,9 @@ class QuizCheckAPIView(APIView):
         left_items = [p for p in question.get("pairs", []) if p.get("choice") == "Left"]
         right_items = [p for p in question.get("pairs", []) if p.get("choice") == "Right"]
 
+        print(left_items)
+        print(right_items)
+
         pairs = []
         for left in left_items:
             right = next((r for r in right_items if r["key"] == left["key"]), None)
@@ -140,7 +143,7 @@ class QuizCheckAPIView(APIView):
                     "right_id": right["id"],
                     "right_text": right.get("pair")
                 })
-
+        print(pairs)
         return {
             "id": question["id"],
             "type": "match_pairs",
