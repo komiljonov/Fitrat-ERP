@@ -360,6 +360,22 @@ class ExamSubjectListCreate(ListCreateAPIView):
     queryset = ExamSubject.objects.all()
     serializer_class = ExamSubjectSerializer
 
+    def get_queryset(self):
+        queryset = ExamSubject.objects.all()
+
+        options = self.request.GET.get("options")
+        lang_foreign = self.request.GET.get("lang_foreign")
+        lang_national = self.request.GET.get("lang_national")
+
+        if options:
+            queryset = queryset.filter(options=options)
+        if lang_foreign:
+            queryset = queryset.filter(lang_foreign=lang_foreign)
+        if lang_national:
+            queryset = queryset.filter(lang_national=lang_national)
+        return queryset
+
+
 class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = ExamSubject.objects.all()
     serializer_class = ExamSubjectSerializer
