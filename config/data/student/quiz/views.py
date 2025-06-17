@@ -68,7 +68,7 @@ class QuizCheckAPIView(APIView):
         for question in quiz_questions:
             qtype = question["type"]
             qid = question["id"]
-            question_data = self._prepare_question_data(data.get["questions"][qid])
+            question_data = self._prepare_question_data(data)
             ic(question_data)
 
             user_answer = self._find_user_answer(data, qtype, qid)
