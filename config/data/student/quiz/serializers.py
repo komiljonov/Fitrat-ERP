@@ -438,6 +438,8 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             "id",
             "subject",
             "options",
+            "lang_foreign",
+            "lang_national",
             "created_at",
         ]
 
