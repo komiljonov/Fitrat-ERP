@@ -37,8 +37,7 @@ def on_update(sender, instance: Homework_history, created, **kwargs):
         print("🔔 Signal triggered")
         quiz = Quiz.objects.filter(
             homework=instance.homework,
-            theme=instance.homework.theme,
-            choice="Homework",
+            theme=instance.homework.theme
         ).first()
 
         mastering = Mastering.objects.filter(
