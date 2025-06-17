@@ -431,6 +431,17 @@ class MatchPairsSerializer(serializers.ModelSerializer):
         return rep
 
 
+class ExamSubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamSubject
+        fields = [
+            "id",
+            "subject",
+            "options",
+            "created_at",
+        ]
+
+
 class ExamSerializer(serializers.ModelSerializer):
     quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
     # students = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=True, allow_null=True)
