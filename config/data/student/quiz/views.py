@@ -68,13 +68,14 @@ class QuizCheckAPIView(APIView):
         for question in quiz_questions:
             qtype = question["type"]
             qid = question["id"]
-            question_ids = data.get("questions", [])  # This is a list of IDs
+            question_ids = data.get("questions", [])
             for qid in question_ids:
-                # Find the full question in quiz_questions
+
                 question = next((q for q in quiz_questions if q["id"] == qid), None)
                 if question:
                     question_data = self._prepare_question_data(question)
-                    ic(question_data)
+                    print(question_data)
+
             user_answer = self._find_user_answer(data, qtype, qid)
 
             if qtype not in results["details"]:
