@@ -69,17 +69,26 @@ class QuizCheckAPIView(APIView):
             qtype = question["type"]
             qid = question["id"]
 
+            user_answer = self._find_user_answer(data, qtype, qid)
+            if not user_answer:
+                # Only count missing answers in summary, don't add to details
+                if qtype not in results["summary"]["section_breakdown"]:
+                    results["summary"]["section_breakdown"][qtype] = {
+                        "correct": 0,
+                        "wrong": 0
+                    }
+                results["summary"]["wrong_count"] += 1
+                results["summary"]["section_breakdown"][qtype]["wrong"] += 1
+                continue
+
+            # Initialize section in details and summary only when there's an actual answer
             if qtype not in results["details"]:
                 results["details"][qtype] = []
+            if qtype not in results["summary"]["section_breakdown"]:
                 results["summary"]["section_breakdown"][qtype] = {
                     "correct": 0,
                     "wrong": 0
                 }
-
-            user_answer = self._find_user_answer(data, qtype, qid)
-            if not user_answer:
-                self._record_missing_answer(results, qtype, qid,question,user_answer)
-                continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
 
@@ -90,6 +99,7 @@ class QuizCheckAPIView(APIView):
                 results["summary"]["wrong_count"] += 1
                 results["summary"]["section_breakdown"][qtype]["wrong"] += 1
 
+            # Only add to details if there was an actual user answer
             results["details"][qtype].append(result_data)
 
         total = results["summary"]["correct_count"] + results["summary"]["wrong_count"]
@@ -135,16 +145,7 @@ class QuizCheckAPIView(APIView):
 
         return None
 
-    def _record_missing_answer(self, results, qtype, qid, question,user_answer):
-        results["summary"]["wrong_count"] += 1
-        results["summary"]["section_breakdown"][qtype]["wrong"] += 1
-        results["details"][qtype].append({
-            "id": qid,
-            "data": question,
-            "user_answer": user_answer,
-            "correct": False,
-            "error": "No answer submitted"
-        })
+    # Removed _record_missing_answer method since we're not using it anymore
 
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
@@ -498,6 +499,7 @@ class QuizCheckAPIView(APIView):
                 )
         except Exception as e:
             logger.error(f"Error creating mastering record: {str(e)}")
+
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
