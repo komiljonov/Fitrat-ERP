@@ -11,6 +11,7 @@ from ..homeworks.models import Homework
 from ..subject.models import Subject, Theme
 from ..subject.serializers import SubjectSerializer, ThemeSerializer
 from ...account.models import CustomUser
+from ...exam_results.models import QuizResult
 from ...finances.finance.models import Finance, Kind
 from ...notifications.models import Notification
 from ...parents.models import Relatives
@@ -177,28 +178,20 @@ class True_FalseSerializer(serializers.ModelSerializer):
 
 class QuizSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
-
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
 
     class Meta:
         model = Quiz
         fields = [
-            "id",
-            "title",
-            "description",
-            "theme",
-            "homework",
-            "subject",
-            "questions",
-            "count",
-            "time",
-            "created_at",
+            "id", "title", "description", "theme", "homework", "subject",
+            "questions", "count", "time", "created_at",
         ]
 
     def get_questions(self, obj):
         request = self.context.get("request")
         query_count = request.query_params.get("count") if request else None
+        student = request.user.student if request and hasattr(request.user, 'student') else None
 
         if query_count is not None and query_count.lower() == "false":
             count = None
@@ -206,46 +199,48 @@ class QuizSerializer(serializers.ModelSerializer):
             count = obj.count or 20
 
         questions = []
+        quiz_result = None
 
-        for item in Question.objects.filter(quiz=obj):
-            data = QuestionSerializer(item, context=self.context).data
-            data["type"] = "standard"
-            questions.append(data)
+        # Create or get QuizResult instance if student exists
+        if student:
+            quiz_result, created = QuizResult.objects.get_or_create(
+                quiz=obj,
+                student=student,
+                defaults={'point': 0}
+            )
 
-        for item in Vocabulary.objects.filter(quiz=obj):
-            data = VocabularySerializer(item, context=self.context).data
-            data["type"] = "vocabulary"
-            questions.append(data)
+        # Process each question type and update QuizResult
+        question_types = [
+            (Question, QuestionSerializer, "standard", "questions"),
+            (Vocabulary, VocabularySerializer, "vocabulary", "vocabulary"),
+            (MatchPairs, MatchPairsSerializer, "match_pairs", "match_pair"),
+            (ObjectiveTest, ObjectiveTestSerializer, "objective_test", "objective"),
+            (Cloze_Test, Cloze_TestSerializer, "cloze_test", None),  # No direct M2M for cloze
+            (ImageObjectiveTest, ImageObjectiveTestSerializer, "image_objective", "image_objective"),
+            (True_False, True_FalseSerializer, "true_false", "true_false"),
+        ]
 
-        for item in MatchPairs.objects.filter(quiz=obj):
-            data = MatchPairsSerializer(item, context=self.context).data
-            data["type"] = "match_pairs"
-            questions.append(data)
+        for model, serializer_class, qtype, relation_field in question_types:
+            items = model.objects.filter(quiz=obj)
+            for item in items:
+                data = serializer_class(item, context=self.context).data
+                data["type"] = qtype
+                questions.append(data)
 
-        for item in ObjectiveTest.objects.filter(quiz=obj):
-            data = ObjectiveTestSerializer(item, context=self.context).data
-            data["type"] = "objective_test"
-            questions.append(data)
-
-        for item in Cloze_Test.objects.filter(quiz=obj):
-            data = Cloze_TestSerializer(item, context=self.context).data
-            data["type"] = "cloze_test"
-            questions.append(data)
-
-        for item in ImageObjectiveTest.objects.filter(quiz=obj):
-            data = ImageObjectiveTestSerializer(item, context=self.context).data
-            data["type"] = "image_objective"
-            questions.append(data)
-
-        for item in True_False.objects.filter(quiz=obj):
-            data = True_FalseSerializer(item, context=self.context).data
-            data["type"] = "true_false"
-            questions.append(data)
+                if student and quiz_result and relation_field:
+                    m2m_field = getattr(quiz_result, relation_field)
+                    m2m_field.add(item)
 
         random.shuffle(questions)
 
         if count is not None:
-            return questions[:min(count, len(questions))]
+            questions = questions[:min(count, len(questions))]
+
+        # Update question count in QuizResult if it exists
+        if student and quiz_result:
+            quiz_result.point = len(questions)  # Or calculate based on your logic
+            quiz_result.save()
+
         return questions
 
     def to_representation(self, instance):
@@ -253,7 +248,6 @@ class QuizSerializer(serializers.ModelSerializer):
         rep["subject"] = SubjectSerializer(instance.subject).data
         rep["theme"] = ThemeSerializer(instance.theme, include_only=["id", "title"]).data
         return rep
-
 
 class QuizCheckingSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
