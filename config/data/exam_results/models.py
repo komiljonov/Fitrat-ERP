@@ -8,7 +8,7 @@ class QuizResult(BaseModel):
     quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,related_name="quiz_result")
     student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True)
     questions : "Question" = models.ManyToManyField("quiz.Question", related_name="quiz_result")
-    match_pair : "MatchPairs" = models.ManyToManyField("quiz.MatchPair", related_name="quiz_result_match_pair")
+    match_pair : "MatchPairs" = models.ManyToManyField("quiz.MatchPairs", related_name="quiz_result_match_pair")
     true_false : "True_False" = models.ManyToManyField("quiz.True_False", related_name="quiz_result_true_false")
     vocabulary : "Vocabulary" = models.ManyToManyField("quiz.Vocabulary", related_name="quiz_result_vocabulary")
     objective : "ObjectiveTest" = models.ManyToManyField("quiz.ObjectiveTest", related_name="quiz_result_objective_test")
