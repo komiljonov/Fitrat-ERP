@@ -3,6 +3,7 @@ from django.db import models
 from ..command.models import BaseModel
 from ..student.quiz.models import Quiz,Exam,Question,MatchPairs,True_False,Vocabulary,ObjectiveTest,ImageObjectiveTest,Listening,Cloze_Test
 from ..student.student.models import Student
+from ..student.subject.models import Theme
 
 class QuizResult(BaseModel):
     quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,related_name="quiz_result")
@@ -17,3 +18,16 @@ class QuizResult(BaseModel):
     Listening : "Listening" = models.ManyToManyField("quiz.Listening", related_name="quiz_result_listening")
 
     point = models.IntegerField(default=0)
+
+
+class UnitTest(BaseModel):
+    theme_after : "Theme" = models.ForeignKey("subject.Theme", on_delete=models.SET_NULL, null=True, blank=True,related_name="unit_test__theme")
+    themes : "Theme" = models.ManyToManyField("subject.Theme", related_name="unit_test_theme")
+    quiz : "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True)
+
+
+class UnitTestResult(BaseModel):
+    student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True)
+    unit : "UnitTest" = models.ForeignKey("unit.UnitTest", on_delete=models.SET_NULL, null=True, blank=True)
+    point = models.IntegerField(default=0)
+

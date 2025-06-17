@@ -12,7 +12,8 @@ from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView, \
+    RetrieveAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -20,12 +21,13 @@ from rest_framework.views import APIView
 
 from .check_serializers import QuizCheckSerializer
 from .models import Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam, QuizGaps, Answer, ExamRegistration, ObjectiveTest, \
-    Cloze_Test, ImageObjectiveTest, True_False, ExamCertificate
+    Cloze_Test, ImageObjectiveTest, True_False, ExamCertificate, ExamSubject
 from .models import Quiz, Question
 from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer, \
     VocabularySerializer, PairsSerializer, MatchPairsSerializer, ExamSerializer, \
     QuizGapsSerializer, AnswerSerializer, ExamRegistrationSerializer, ObjectiveTestSerializer, Cloze_TestSerializer, \
-    ImageObjectiveTestSerializer, True_FalseSerializer, ExamCertificateSerializer, QuizCheckingSerializer
+    ImageObjectiveTestSerializer, True_FalseSerializer, ExamCertificateSerializer, QuizCheckingSerializer, \
+    ExamSubjectSerializer
 from ..homeworks.models import Homework
 from ..mastering.models import Mastering
 from ..shop.models import Points
@@ -352,6 +354,16 @@ class QuizCheckAPIView(APIView):
                 )
         except Exception:
             pass
+
+
+class ExamSubjectListCreate(ListCreateAPIView):
+    queryset = ExamSubject.objects.all()
+    serializer_class = ExamSubjectSerializer
+
+class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
+    queryset = ExamSubject.objects.all()
+    serializer_class = ExamSubjectSerializer
+
 
 
 class ObjectiveTestView(ListCreateAPIView):
