@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, date
 
 from celery import shared_task
 
@@ -29,14 +29,12 @@ def check_daily_tasks():
     logging.info("Celery task completed: Checked daily tasks.")
 
 
-
 @shared_task
 def check_today_tasks():
-    tasks = Task.objects.filter(
-        status="SOON"
-    ).all()
+    today = date.today()
+    tasks = Task.objects.filter(status="SOON", date_of_expired__date=today)
+
     for task in tasks:
-        if datetime.today() == task.date_of_expired.date():
-            task.status = "ONGOING"
-            task.save()
-        logging.info(f"For task status changed for today to ongoing !")
+        task.status = "ONGOING"
+        task.save()
+        logging.info(f"Task {task.id} status changed to ONGOING for today.")
