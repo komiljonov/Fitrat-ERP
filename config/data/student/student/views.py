@@ -62,6 +62,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             **kwargs,
             include_only=[
                 "id",
+                "photo",
                 "first_name",
                 "last_name",
                 "middle_name",
