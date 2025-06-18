@@ -274,9 +274,6 @@ class Exam(BaseModel):
                                              related_name='homeworks_quiz')
     options = models.ManyToManyField("quiz.ExamSubject", related_name='exam_subject_options')
 
-    def __str__(self):
-        return f"{self.quiz.title}   {self.type}"
-
 
 class ExamRegistration(BaseModel):
     student: "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True,
