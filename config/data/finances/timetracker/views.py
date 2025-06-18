@@ -8,8 +8,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now
 from icecream import ic
-from pyasn1_modules.rfc7906 import aa_manifest
-from rest_framework import status, serializers
+from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
@@ -21,7 +20,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary, calculate_penalty, update_calculate
+from .utils import get_monthly_per_minute_salary, calculate_penalty
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 
@@ -96,7 +95,6 @@ class AttendanceList(ListCreateAPIView):
 
         # Extract and validate actions
         actions = self._validate_and_parse_actions(data.get('actions', []))
-
 
         with transaction.atomic():
             try:
@@ -397,7 +395,6 @@ class AttendanceList(ListCreateAPIView):
                                         status = "on_time"
                                         minutes_difference = 0
 
-
                         bonus_results = self._calculate_work_bonus(
                             employee_id,
                             action,
@@ -437,8 +434,8 @@ class AttendanceList(ListCreateAPIView):
             logger.error(f"Error getting penalty info for employee {employee_id}: {str(e)}")
             return None
 
-    def _calculate_work_bonus(self,employee_id: str, action: dict,
-                                   penalty_info: dict, action_index: int):
+    def _calculate_work_bonus(self, employee_id: str, action: dict,
+                              penalty_info: dict, action_index: int):
         try:
             duration_minutes = action['duration_seconds'] / 60
             per_minute_bonus = penalty_info.get('per_minute_salary', 0)
@@ -452,7 +449,7 @@ class AttendanceList(ListCreateAPIView):
                     action['end_datetime'],
                     duration_minutes
                 )
-                finance_created=True
+                finance_created = True
             except Exception as e:
                 logger.error(f"Error creating bonus record: {str(e)}")
                 finance_created = False
@@ -602,8 +599,8 @@ class AttendanceList(ListCreateAPIView):
             logger.error(f"Failed to create penalty finance record: {str(e)}")
             raise
 
-    def _create_bonus_finance_record(self, employee_id: str, amount: float,start_time: datetime, end_time: datetime,
-                                       duration_minutes: float) -> None:
+    def _create_bonus_finance_record(self, employee_id: str, amount: float, start_time: datetime, end_time: datetime,
+                                     duration_minutes: float) -> None:
         try:
             user = CustomUser.objects.get(id=employee_id)
 
@@ -713,69 +710,47 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 previous_check_out = attendance.check_out
                 previous_amount = attendance.amount or 0
 
-                # Calculate previous per-minute amount if check-in/out existed
-                previous_per_minute_amount = 0
-                if previous_check_in and previous_check_out:
+                # 1. First remove existing financial impact
+                self._remove_existing_financial_impact(attendance)
 
-                    amount = calculate_penalty(
-                        user_id=attendance.employee.id,
-                        check_in=data.get("check_in"),
-                        check_out=data.get("check_out"),
-                    )
+                # Parse incoming datetime strings if they exist
+                new_check_in = self._parse_datetime_safe(data.get('check_in')) if data.get('check_in') else None
+                new_check_out = self._parse_datetime_safe(data.get('check_out')) if data.get('check_out') else None
 
-                    print(amount)
-
-                    previous_per_minute_amount = update_calculate(
-                        attendance.employee.id,
-                        previous_check_in,
-                        previous_check_out
-                    ) / max(1, (previous_check_out - previous_check_in).total_seconds() / 60)
-
-                # Update the attendance record
+                # Update the attendance record with parsed datetimes
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
 
                 # Calculate new penalty amount
-                new_penalty = update_calculate(
+                new_penalty = calculate_penalty(
                     updated_attendance.employee.id,
                     updated_attendance.check_in,
                     updated_attendance.check_out
-                )
+                ) if updated_attendance.check_in and updated_attendance.check_out else 0
 
-                # Calculate per-minute amount for new check-in/out
-                new_per_minute_amount = 0
-                if updated_attendance.check_in and updated_attendance.check_out:
-                    new_per_minute_amount = new_penalty / max(1, (
-                                updated_attendance.check_out - updated_attendance.check_in).total_seconds() / 60)
-
-                # Calculate difference from previous amount
-                amount_difference = new_penalty - previous_amount
-
-                # Update the attendance amount
                 updated_attendance.amount = new_penalty
                 updated_attendance.save()
 
-                # Update related finance records if needed
-                if amount_difference != 0:
-                    self._update_finance_records(
-                        employee=updated_attendance.employee,
-                        date=updated_attendance.check_in.date() if updated_attendance.check_in else None,
-                        prev_amount=previous_amount,
-                        new_amount=new_penalty,
-                        check_in=updated_attendance.check_in,
-                        check_out=updated_attendance.check_out
-                    )
+                em_att, created = Employee_attendance.objects.get_or_create(
+                    employee=updated_attendance.employee,
+                    date=updated_attendance.date,
+                    defaults={'amount': 0}  # Initialize with 0 if creating new
+                )
 
-                # Update Employee_attendance
-                if updated_attendance.check_in:
-                    self._update_employee_attendance(
-                        updated_attendance.employee,
-                        updated_attendance.check_in.date(),
-                        updated_attendance,
-                        previous_amount,
-                        new_penalty
-                    )
+                # Add the attendance record to the many-to-many relationship
+                if not em_att.attendance.filter(id=updated_attendance.id).exists():
+                    em_att.attendance.add(updated_attendance)
+
+                # Update the amount by first subtracting the previous amount and adding the new penalty
+                em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
+                em_att.save()
+
+                print({
+                        'previous_amount': previous_amount,
+                        'new_amount': new_penalty,
+                        'difference': new_penalty - previous_amount,
+                    })
 
                 return Response({
                     'success': True,
@@ -783,71 +758,64 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     'penalty_calculation': {
                         'previous_amount': previous_amount,
                         'new_amount': new_penalty,
-                        'difference': amount_difference,
-                        'previous_per_minute_amount': round(previous_per_minute_amount, 4),
-                        'new_per_minute_amount': round(new_per_minute_amount, 4),
-                        'per_minute_difference': round(new_per_minute_amount - previous_per_minute_amount, 4)
+                        'difference': new_penalty - previous_amount,
                     },
                     'message': 'Attendance updated successfully',
                 }, status=status.HTTP_200_OK)
 
         except Exception as e:
+            logger.error(f"Error updating attendance: {str(e)}", exc_info=True)
             return Response({
                 'error': str(e),
                 'error_code': 'UPDATE_ERROR'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-    def _update_employee_attendance(self, employee, date, attendance, prev_amount, new_amount):
-        """Update the employee's attendance record with the new amount"""
-        employee_att, created = Employee_attendance.objects.get_or_create(
-            employee=employee,
-            date=date,
-            defaults={'amount': new_amount}
-        )
+    def _remove_existing_financial_impact(self, attendance):
+        """Remove all financial impact of the existing attendance record"""
+        if not attendance.check_in:
+            return
 
-        if not created:
-            employee_att.amount -= prev_amount
-            employee_att.amount += new_amount
+        date = attendance.check_in.date()
+        employee = attendance.employee
+
+        # 1. Remove from Employee_attendance
+        try:
+            employee_att = Employee_attendance.objects.get(
+                employee=employee,
+                date=date
+            )
+            employee_att.amount -= attendance.amount or 0
             employee_att.save()
 
-        if not employee_att.attendance.filter(id=attendance.id).exists():
-            employee_att.attendance.add(attendance)
+            # Remove the attendance record from the relationship
+            employee_att.attendance.remove(attendance)
 
-    def _update_finance_records(self, employee, date, prev_amount, new_amount, check_in, check_out):
-        """Update related finance records with the new amount"""
-        if not date:
-            return {'updated': 0}
+            # Delete if no more attendance records and amount is zero
+            if employee_att.amount == 0 and not employee_att.attendance.exists():
+                employee_att.delete()
+        except Employee_attendance.DoesNotExist:
+            pass
 
-        # More flexible matching - look for records close to the previous amount
-        finance_records = Finance.objects.filter(
+        # 2. Delete related finance records
+        Finance.objects.filter(
             stuff=employee,
-            action="EXPENSE",
-            kind__action="EXPENSE",
-            kind__name__icontains="Bonus",
             created_at__date=date,
-            amount=prev_amount,
-        ).order_by('-created_at')
+            comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
+        ).delete()
 
-        updated_count = 0
-        duration_minutes = (check_out - check_in).total_seconds() / 60 if check_in and check_out else 0
+    def _parse_datetime_safe(self, datetime_str):
+        """Parse datetime string with timezone support"""
+        if isinstance(datetime_str, datetime):
+            return datetime_str
 
-
-        if finance_records.exists():
-            finance = finance_records.first()
-            finance.amount = new_amount
-            finance.comment = (
-                f"Updated: {check_in.strftime('%H:%M')} to {check_out.strftime('%H:%M')} "
-                f"({duration_minutes:.0f} minutes) penalty adjusted from "
-                f"{prev_amount:.2f} to {new_amount:.2f}"
-            )
-            finance.save()
-            updated_count = 1
-
-        return {
-            'previous_amount': prev_amount,
-            'new_amount': new_amount,
-            'updated': updated_count
-        }
+        try:
+            # Handle ISO format with timezone
+            if '+' in datetime_str or '-' in datetime_str.split('T')[-1]:
+                return datetime.fromisoformat(datetime_str)
+            # Handle simple format
+            return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
+        except ValueError as e:
+            raise ValueError(f"Invalid datetime format: {datetime_str}") from e
 
 
 class UserTimeLineList(ListCreateAPIView):

@@ -29,6 +29,10 @@ app.conf.beat_schedule = {
         "task": "data.finances.timetracker.tasks.check_daily_user_attendance",
         "schedule": crontab(hour=0, minute=0),
     },
+    "check_today_task":{
+        "task":"data.tasks.tasks.check_today_task",
+        "schedule": crontab(hour=0, minute=0),
+    },
     "send_daily_excel_report": {
         "task": "data.dashboard.tasks.send_daily_excel_report",
         "schedule": crontab(hour=9, minute=0),
