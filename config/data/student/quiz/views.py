@@ -890,7 +890,93 @@ class ExamCertificateAPIView(ListCreateAPIView):
 
 
 class ExamOptionsUpdate(APIView):
+    """
+    Update exam options for specific students in an exam and group
+    """
+
     def patch(self, request, *args, **kwargs):
-        exam_id = self.request.GET.get("exam_id")
-        group_id = self.request.GET.get("group_id")
-        pass
+
+        exam_id = request.GET.get("exam_id")
+        group_id = request.GET.get("group_id")
+
+        # Validate required parameters
+        if not exam_id:
+            return Response(
+                {'error': 'exam_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get data from request
+        students = request.data.get("students")
+        option = request.data.get("option")
+
+        # Validate request data
+        if not students:
+            return Response(
+                {'error': 'students list is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not isinstance(students, list):
+            return Response(
+                {'error': 'students must be a list of student IDs'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if option is None:
+            return Response(
+                {'error': 'option is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        count = 0
+        errors = []
+
+        # Build base filter
+        filter_kwargs = {'exam_id': exam_id}
+        if group_id:
+            filter_kwargs['group_id'] = group_id
+
+        # Get all registered students for this exam and group
+        registered_students = ExamRegistration.objects.filter(**filter_kwargs)
+
+        # Update each student's option
+        for student_id in students:
+            try:
+                # Find the specific student registration
+                student_registration = registered_students.filter(student_id=student_id).first()
+
+                if student_registration:
+                    student_registration.option = option
+                    student_registration.save()
+                    count += 1
+                else:
+                    errors.append({
+                        'student_id': student_id,
+                        'error': 'Student registration not found for this exam and group'
+                    })
+            except Exception as e:
+                errors.append({
+                    'student_id': student_id,
+                    'error': str(e)
+                })
+
+        # Prepare response
+        response_data = {
+            'count': count,
+            'total_students': len(students),
+            'updated_successfully': count,
+            'option_set': option
+        }
+
+        if errors:
+            response_data['errors'] = errors
+            response_data['errors_count'] = len(errors)
+
+        # Return appropriate status code
+        if count == 0:
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        elif errors:
+            return Response(response_data, status=status.HTTP_207_MULTI_STATUS)
+        else:
+            return Response(response_data, status=status.HTTP_200_OK)
