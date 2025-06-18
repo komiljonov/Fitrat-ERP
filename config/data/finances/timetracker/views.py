@@ -8,8 +8,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now
 from icecream import ic
-from pyasn1_modules.rfc7906 import aa_manifest
-from rest_framework import status, serializers
+from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
@@ -21,7 +20,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary, calculate_penalty, update_calculate
+from .utils import get_monthly_per_minute_salary, calculate_penalty
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 
@@ -96,7 +95,6 @@ class AttendanceList(ListCreateAPIView):
 
         # Extract and validate actions
         actions = self._validate_and_parse_actions(data.get('actions', []))
-
 
         with transaction.atomic():
             try:
@@ -397,7 +395,6 @@ class AttendanceList(ListCreateAPIView):
                                         status = "on_time"
                                         minutes_difference = 0
 
-
                         bonus_results = self._calculate_work_bonus(
                             employee_id,
                             action,
@@ -437,8 +434,8 @@ class AttendanceList(ListCreateAPIView):
             logger.error(f"Error getting penalty info for employee {employee_id}: {str(e)}")
             return None
 
-    def _calculate_work_bonus(self,employee_id: str, action: dict,
-                                   penalty_info: dict, action_index: int):
+    def _calculate_work_bonus(self, employee_id: str, action: dict,
+                              penalty_info: dict, action_index: int):
         try:
             duration_minutes = action['duration_seconds'] / 60
             per_minute_bonus = penalty_info.get('per_minute_salary', 0)
@@ -452,7 +449,7 @@ class AttendanceList(ListCreateAPIView):
                     action['end_datetime'],
                     duration_minutes
                 )
-                finance_created=True
+                finance_created = True
             except Exception as e:
                 logger.error(f"Error creating bonus record: {str(e)}")
                 finance_created = False
@@ -602,8 +599,8 @@ class AttendanceList(ListCreateAPIView):
             logger.error(f"Failed to create penalty finance record: {str(e)}")
             raise
 
-    def _create_bonus_finance_record(self, employee_id: str, amount: float,start_time: datetime, end_time: datetime,
-                                       duration_minutes: float) -> None:
+    def _create_bonus_finance_record(self, employee_id: str, amount: float, start_time: datetime, end_time: datetime,
+                                     duration_minutes: float) -> None:
         try:
             user = CustomUser.objects.get(id=employee_id)
 
@@ -735,19 +732,29 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 updated_attendance.amount = new_penalty
                 updated_attendance.save()
 
-                em_att, created = Employee_attendance.objects.get_or_create(
-                    employee=updated_attendance.employee,
-                    date=updated_attendance.date,
-                    defaults={'amount': 0}  # Initialize with 0 if creating new
-                )
+                with transaction.atomic():
+                    # Get or create Employee_attendance record
+                    em_att, created = Employee_attendance.objects.get_or_create(
+                        employee=updated_attendance.employee,
+                        date=updated_attendance.date,
+                        defaults={'amount': 0}
+                    )
 
-                # Add the attendance record to the many-to-many relationship
-                if not em_att.attendance.filter(id=updated_attendance.id).exists():
+                    if not created:
+                        previous_attendance = em_att.attendance.filter(
+                            employee=updated_attendance.employee,
+                            date=updated_attendance.date
+                        ).first()
+
+                        if previous_attendance:
+                            # Subtract the previous amount from the total
+                            em_att.amount -= previous_attendance.amount or 0
+                            em_att.attendance.remove(previous_attendance)
+
+                    # 2. Add the new attendance record
                     em_att.attendance.add(updated_attendance)
-
-                # Update the amount by first subtracting the previous amount and adding the new penalty
-                em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
-                em_att.save()
+                    em_att.amount += updated_attendance.amount or 0
+                    em_att.save()
 
                 return Response({
                     'success': True,
