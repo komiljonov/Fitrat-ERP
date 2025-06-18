@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now
 from icecream import ic
+from pyasn1_modules.rfc7906 import aa_manifest
 from rest_framework import status, serializers
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import ListCreateAPIView
@@ -715,6 +716,15 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 # Calculate previous per-minute amount if check-in/out existed
                 previous_per_minute_amount = 0
                 if previous_check_in and previous_check_out:
+
+                    amount = calculate_penalty(
+                        user_id=attendance.employee.id,
+                        check_in=data.get("check_in"),
+                        check_out=data.get("check_out"),
+                    )
+
+                    print(amount)
+
                     previous_per_minute_amount = update_calculate(
                         attendance.employee.id,
                         previous_check_in,
