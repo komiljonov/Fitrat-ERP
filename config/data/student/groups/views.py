@@ -735,6 +735,6 @@ class StudentSaleGroupListCreateAPIView(ListCreateAPIView):
             qs = qs.filter(student__id=student)
         return qs
 
-class StudentSaleGroupDetailAPIView(RetrieveAPIView):
+class StudentSaleGroupDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = GroupSaleStudent.objects.all()
     serializer_class = GroupSaleStudentSerializer
