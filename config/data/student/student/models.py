@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.utils import timezone
 
-from ..groups.models import Group
+
 from ..subject.models import Level
 from ...account.models import CustomUser
 from ...command.models import BaseModel
@@ -17,6 +17,7 @@ from ...upload.models import File
 if TYPE_CHECKING:
     from ...lid.new_lid.models import Lid
     from ..studentgroup.models import StudentGroup
+    from ..groups.models import Group
 
 
 
