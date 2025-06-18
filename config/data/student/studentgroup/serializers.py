@@ -53,7 +53,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         total_lessons = Theme.objects.filter(course=obj.group.course).count()
 
         attended_lessons = (
-            Attendance.objects.filter(group=obj)
+            Attendance.objects.filter(group=obj.group)
             .values("theme")  # Group by lesson
             .annotate(attended_count=Count("id"))  # Count attendance per lesson
             .count()  # Count unique lessons with attendance records
