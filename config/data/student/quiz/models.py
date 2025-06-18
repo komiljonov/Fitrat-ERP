@@ -8,7 +8,7 @@ from data.student.student.models import Student
 from data.student.subject.models import Subject
 from data.student.subject.models import Theme
 from data.upload.models import File
-
+from data.student.groups.models import Group
 
 class Quiz(BaseModel):
     title = models.CharField(max_length=255)
@@ -290,6 +290,8 @@ class ExamRegistration(BaseModel):
     is_participating = models.BooleanField(default=True)
     mark = models.CharField(max_length=255, null=True, blank=True)
     student_comment = models.TextField(null=True, blank=True)
+    group : "Group" = models.ForeignKey("group.Group", on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='registration_group')
     option = models.CharField(choices=[
         ("1", "1"),
         ("2", "2"),
