@@ -960,9 +960,10 @@ class ExamOptionCreate(APIView):
                 continue
 
             try:
-                student = Student.objects.get(id=student_id)
-                exam = Exam.objects.get(id=exam_id)
-                group = Group.objects.get(id=group_id) if group_id else None
+                ic("-")
+                student = Student.objects.filter(id=student_id).first()
+                exam = Exam.objects.filter(id=exam_id).first()
+                group = Group.objects.filter(id=group_id).first() if group_id else None
 
                 ic(student, exam, group)
 
