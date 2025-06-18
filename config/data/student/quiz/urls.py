@@ -9,7 +9,7 @@ from .views import (
     AnswerRetrieveUpdateDestroyView, QuizCheckAPIView, ExcelQuizUploadAPIView, ExamRegistrationListCreateAPIView,
     ObjectiveTestView, Cloze_TestView, ImageCloze_TestView, ExamRegisteredStudentAPIView, QuizListPgView,
     True_False_TestView, True_False_TestRetriveView, Cloze_TestUpdate, ExamCertificateAPIView, ExamSubjectListCreate,
-    ExamSubjectDetail, ExamOptionsUpdate, ExamOptionCreate
+    ExamSubjectDetail, ExamOptionCreate
 )
 
 urlpatterns = [
