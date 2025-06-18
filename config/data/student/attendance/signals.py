@@ -8,6 +8,7 @@ from icecream import ic
 
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
+from ..groups.models import GroupSaleStudent
 from ..homeworks.models import Homework_history, Homework
 from ..student.models import Student
 from ..subject.models import Theme
@@ -132,7 +133,16 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         bonus_percent = Decimal(bonus["amount"]) if bonus else Decimal("0.0")
 
-        price = Decimal(instance.group.price)
+        group_sale_price = GroupSaleStudent.objects.filter(
+            student=instance.student,
+            group=instance.group,
+        ).first()
+
+        if group_sale_price:
+            price = Decimal(group_sale_price.amount)
+        else:
+            price = Decimal(instance.group.price)
+
         sale = get_sale_for_instance(instance)
 
         if instance.group.price_type == "DAILY":
