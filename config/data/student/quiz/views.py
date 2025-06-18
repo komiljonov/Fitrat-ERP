@@ -891,4 +891,6 @@ class ExamCertificateAPIView(ListCreateAPIView):
 
 class ExamOptionsUpdate(APIView):
     def patch(self, request, *args, **kwargs):
+        exam_id = self.request.GET.get("exam_id")
+        group_id = self.request.GET.get("group_id")
         pass
