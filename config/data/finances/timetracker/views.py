@@ -713,25 +713,20 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 previous_check_out = attendance.check_out
                 previous_amount = attendance.amount or 0
 
+                # Parse incoming datetime strings if they exist
+                new_check_in = self._parse_datetime_safe(data.get('check_in')) if data.get('check_in') else None
+                new_check_out = self._parse_datetime_safe(data.get('check_out')) if data.get('check_out') else None
+
                 # Calculate previous per-minute amount if check-in/out existed
                 previous_per_minute_amount = 0
                 if previous_check_in and previous_check_out:
-
-                    amount = calculate_penalty(
-                        user_id=attendance.employee.id,
-                        check_in=data.get("check_in"),
-                        check_out=data.get("check_out"),
-                    )
-
-                    print(amount)
-
                     previous_per_minute_amount = update_calculate(
                         attendance.employee.id,
                         previous_check_in,
                         previous_check_out
                     ) / max(1, (previous_check_out - previous_check_in).total_seconds() / 60)
 
-                # Update the attendance record
+                # Update the attendance record with parsed datetimes
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
@@ -741,13 +736,13 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     updated_attendance.employee.id,
                     updated_attendance.check_in,
                     updated_attendance.check_out
-                )
+                ) if updated_attendance.check_in and updated_attendance.check_out else 0
 
                 # Calculate per-minute amount for new check-in/out
                 new_per_minute_amount = 0
                 if updated_attendance.check_in and updated_attendance.check_out:
                     new_per_minute_amount = new_penalty / max(1, (
-                                updated_attendance.check_out - updated_attendance.check_in).total_seconds() / 60)
+                            updated_attendance.check_out - updated_attendance.check_in).total_seconds() / 60)
 
                 # Calculate difference from previous amount
                 amount_difference = new_penalty - previous_amount
@@ -757,10 +752,10 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 updated_attendance.save()
 
                 # Update related finance records if needed
-                if amount_difference != 0:
+                if amount_difference != 0 and updated_attendance.check_in:
                     self._update_finance_records(
                         employee=updated_attendance.employee,
-                        date=updated_attendance.check_in.date() if updated_attendance.check_in else None,
+                        date=updated_attendance.check_in.date(),
                         prev_amount=previous_amount,
                         new_amount=new_penalty,
                         check_in=updated_attendance.check_in,
@@ -792,10 +787,25 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 }, status=status.HTTP_200_OK)
 
         except Exception as e:
+            logger.error(f"Error updating attendance: {str(e)}", exc_info=True)
             return Response({
                 'error': str(e),
                 'error_code': 'UPDATE_ERROR'
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    def _parse_datetime_safe(self, datetime_str):
+        """Parse datetime string with timezone support"""
+        if isinstance(datetime_str, datetime):
+            return datetime_str
+
+        try:
+            # Handle ISO format with timezone
+            if '+' in datetime_str or '-' in datetime_str.split('T')[-1]:
+                return datetime.fromisoformat(datetime_str)
+            # Handle simple format
+            return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
+        except ValueError as e:
+            raise ValueError(f"Invalid datetime format: {datetime_str}") from e
 
     def _update_employee_attendance(self, employee, date, attendance, prev_amount, new_amount):
         """Update the employee's attendance record with the new amount"""
