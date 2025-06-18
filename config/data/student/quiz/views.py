@@ -934,7 +934,7 @@ class ExamCertificateAPIView(ListCreateAPIView):
 
 class ExamOptionCreate(APIView):
     """
-    Bulk create ExamRegistration entries using ordinary field objects.
+    Bulk create or update ExamRegistration entries using ordinary field objects.
     """
 
     def post(self, request, *args, **kwargs):
@@ -944,50 +944,63 @@ class ExamOptionCreate(APIView):
             return Response({'error': 'Body must be a list of registration objects'}, status=400)
 
         registrations_to_create = []
+        registrations_to_update = []
         errors = []
 
-        for entry in data:
-            student_id = entry.get("student")
-            exam_id = entry.get("exam")
-            group_id = entry.get("group")
-            option = entry.get("option")
+        with transaction.atomic():  # Wrap everything in a transaction
+            for entry in data:
+                student_id = entry.get("student")
+                exam_id = entry.get("exam")
+                group_id = entry.get("group")
+                option = entry.get("option")
 
-            ic(entry)
-
-            # Required fields check
-            if not student_id or not exam_id or option is None:
-                errors.append({'entry': entry, 'error': 'Missing required fields'})
-                continue
-
-            try:
-                ic("-")
-                student = Student.objects.filter(id=student_id).first()
-                exam = Exam.objects.filter(id=exam_id).first()
-                group = Group.objects.filter(id=group_id).first() if group_id else None
-
-                ic(student, exam, group)
-
-                # Prevent duplicates
-                if ExamRegistration.objects.filter(student=student, exam=exam, group=group).exists():
-                    ic(ExamRegistration.objects.filter(student=student, exam=exam, group=group).first())
+                # Required fields check
+                if not student_id or not exam_id or option is None:
+                    errors.append({'entry': entry, 'error': 'Missing required fields'})
                     continue
 
-                registrations_to_create.append(ExamRegistration(
-                    student=student,
-                    exam=exam,
-                    group=group,
-                    option=option
-                ))
+                try:
+                    student = Student.objects.get(id=student_id)
+                    exam = Exam.objects.get(id=exam_id)
+                    group = Group.objects.get(id=group_id) if group_id else None
 
-                ic(registrations_to_create)
+                    # Check if registration already exists
+                    existing_registration = ExamRegistration.objects.filter(
+                        student=student,
+                        exam=exam,
+                        group=group
+                    ).first()
 
-            except (Student.DoesNotExist, Exam.DoesNotExist, Group.DoesNotExist) as e:
-                errors.append({'entry': entry, 'error': str(e)})
+                    if existing_registration:
+                        # Update existing record
+                        existing_registration.option = option
+                        registrations_to_update.append(existing_registration)
+                    else:
+                        # Create new record
+                        registrations_to_create.append(ExamRegistration(
+                            student=student,
+                            exam=exam,
+                            group=group,
+                            option=option
+                        ))
 
-        ExamRegistration.objects.bulk_create(registrations_to_create)
+                except (Student.DoesNotExist, Exam.DoesNotExist, Group.DoesNotExist) as e:
+                    errors.append({'entry': entry, 'error': str(e)})
+                except Exception as e:
+                    errors.append({'entry': entry, 'error': f"Unexpected error: {str(e)}"})
 
-        return Response({
+            # Perform bulk operations
+            if registrations_to_create:
+                ExamRegistration.objects.bulk_create(registrations_to_create)
+
+            if registrations_to_update:
+                ExamRegistration.objects.bulk_update(registrations_to_update, ['option'])
+
+        response_data = {
             'created': len(registrations_to_create),
+            'updated': len(registrations_to_update),
             'errors': errors,
             'errors_count': len(errors)
-        }, status=207 if errors else 200)
+        }
+
+        return Response(response_data, status=207 if errors else 200)
