@@ -9,18 +9,16 @@ from ..groups.models import Group, SecondaryGroup
 from ..groups.serializers import SecondaryGroupSerializer
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
-from ..subject.models import Level, Subject, Theme
-from ...account.models import CustomUser
+from ..subject.models import Theme
 from ...account.serializers import UserSerializer
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
-from ...upload.models import File
 
 
 class StudentsGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
 
     lesson_count = serializers.SerializerMethodField()
     current_theme = serializers.SerializerMethodField()
@@ -63,7 +61,6 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             "lessons": total_lessons,  # Total lessons in the group
             "attended": attended_lessons,  # Lessons that have attendance records
         }
-
 
     def validate(self, attrs):
         student = attrs.get("student")
@@ -110,7 +107,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             }
 
             group_data = {
-                "group_is" : instance.group.id,
+                "group_is": instance.group.id,
                 'group_name': instance.group.name,
                 "level": instance.group.level.id if instance.group and instance.group.level else None,
                 "subject": subject_data if subject_data else None,
@@ -172,8 +169,7 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SecondaryStudentGroup
-        fields = ['id', 'group', 'lid',"main_teacher" ,'student']
-
+        fields = ['id', 'group', 'lid', "main_teacher", 'student']
 
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
