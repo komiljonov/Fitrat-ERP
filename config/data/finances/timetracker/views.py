@@ -814,16 +814,14 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             action="EXPENSE",
             kind__action="EXPENSE",
             kind__name__icontains="Bonus",
-            created_at__date=date
-        ).filter(
-            amount__gte=prev_amount * 0.9,  # Within 10% of previous amount
-            amount__lte=prev_amount * 1.1
-        ).order_by('-created_at')  # Get most recent first
+            created_at__date=date,
+            amount=prev_amount,
+        ).order_by('-created_at')
 
         updated_count = 0
         duration_minutes = (check_out - check_in).total_seconds() / 60 if check_in and check_out else 0
 
-        # Only update the most recent matching record
+
         if finance_records.exists():
             finance = finance_records.first()
             finance.amount = new_amount
