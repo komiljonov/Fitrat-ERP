@@ -726,39 +726,28 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 updated_attendance = serializer.save()
 
                 # Calculate new penalty amount
-                new_penalty = update_calculate(
+                new_penalty = calculate_penalty(
                     updated_attendance.employee.id,
                     updated_attendance.check_in,
                     updated_attendance.check_out
                 ) if updated_attendance.check_in and updated_attendance.check_out else 0
 
-                # Calculate per-minute amounts for reporting
-                previous_per_minute_amount = 0
-                new_per_minute_amount = 0
-
-                if previous_check_in and previous_check_out:
-                    previous_per_minute_amount = previous_amount / max(1,
-                                                                       (
-                                                                                   previous_check_out - previous_check_in).total_seconds() / 60)
-
-                if updated_attendance.check_in and updated_attendance.check_out:
-                    new_per_minute_amount = new_penalty / max(1,
-                                                              (
-                                                                          updated_attendance.check_out - updated_attendance.check_in).total_seconds() / 60)
-
-                # Update the attendance amount
                 updated_attendance.amount = new_penalty
                 updated_attendance.save()
 
-                # 2. Create new financial records with fresh calculation
-                if updated_attendance.check_in:
-                    self._create_new_financial_records(
-                        employee=updated_attendance.employee,
-                        date=updated_attendance.check_in.date(),
-                        amount=new_penalty,
-                        check_in=updated_attendance.check_in,
-                        check_out=updated_attendance.check_out
-                    )
+                em_att, created = Employee_attendance.objects.get_or_create(
+                    employee=updated_attendance.employee,
+                    date=updated_attendance.date,
+                    defaults={'amount': 0}  # Initialize with 0 if creating new
+                )
+
+                # Add the attendance record to the many-to-many relationship
+                if not em_att.attendance.filter(id=updated_attendance.id).exists():
+                    em_att.attendance.add(updated_attendance)
+
+                # Update the amount by first subtracting the previous amount and adding the new penalty
+                em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
+                em_att.save()
 
                 return Response({
                     'success': True,
@@ -767,9 +756,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                         'previous_amount': previous_amount,
                         'new_amount': new_penalty,
                         'difference': new_penalty - previous_amount,
-                        'previous_per_minute_amount': round(previous_per_minute_amount, 4),
-                        'new_per_minute_amount': round(new_per_minute_amount, 4),
-                        'per_minute_difference': round(new_per_minute_amount - previous_per_minute_amount, 4)
                     },
                     'message': 'Attendance updated successfully',
                 }, status=status.HTTP_200_OK)
@@ -814,45 +800,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
         ).delete()
 
-    def _create_new_financial_records(self, employee, date, amount, check_in, check_out):
-        """Create new financial records with fresh calculation"""
-        if not date or amount == 0:
-            return
-
-        duration_minutes = (check_out - check_in).total_seconds() / 60
-
-        # 1. Update Employee_attendance
-        employee_att, _ = Employee_attendance.objects.get_or_create(
-            employee=employee,
-            date=date,
-            defaults={'amount': amount}
-        )
-
-        if not employee_att.amount == amount:  # Only update if different
-            employee_att.amount = amount
-            employee_att.save()
-
-        # 2. Create finance record
-        penalty_kind = Kind.objects.filter(
-            action="EXPENSE",
-            name__icontains="Bonus"
-        ).first()
-
-        if penalty_kind:
-            comment = (
-                f"Updated: {check_in.strftime('%H:%M')} to {check_out.strftime('%H:%M')} "
-                f"({duration_minutes:.0f} minutes) penalty {amount:.2f}"
-            )
-
-            Finance.objects.create(
-                action="EXPENSE",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=employee,
-                comment=comment,
-                created_at=timezone.now()
-            )
-
     def _parse_datetime_safe(self, datetime_str):
         """Parse datetime string with timezone support"""
         if isinstance(datetime_str, datetime):
@@ -866,6 +813,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
         except ValueError as e:
             raise ValueError(f"Invalid datetime format: {datetime_str}") from e
+
 
 class UserTimeLineList(ListCreateAPIView):
     queryset = UserTimeLine.objects.all()
