@@ -964,8 +964,11 @@ class ExamOptionCreate(APIView):
                 exam = Exam.objects.get(id=exam_id)
                 group = Group.objects.get(id=group_id) if group_id else None
 
+                ic(student, exam, group)
+
                 # Prevent duplicates
                 if ExamRegistration.objects.filter(student=student, exam=exam, group=group).exists():
+                    ic(ExamRegistration.objects.filter(student=student, exam=exam, group=group).first())
                     continue
 
                 registrations_to_create.append(ExamRegistration(
@@ -974,6 +977,8 @@ class ExamOptionCreate(APIView):
                     group=group,
                     option=option
                 ))
+
+                ic(registrations_to_create)
 
             except (Student.DoesNotExist, Exam.DoesNotExist, Group.DoesNotExist) as e:
                 errors.append({'entry': entry, 'error': str(e)})
