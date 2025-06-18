@@ -951,6 +951,9 @@ class ExamOptionsUpdate(APIView):
                     ic(student_registration)
 
                     if student_registration:
+
+                        ic(option)
+
                         student_registration.option = option
                         student_registration.save()
                         count += 1
