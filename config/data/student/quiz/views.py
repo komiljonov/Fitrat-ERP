@@ -28,6 +28,7 @@ from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer,
     QuizGapsSerializer, AnswerSerializer, ExamRegistrationSerializer, ObjectiveTestSerializer, Cloze_TestSerializer, \
     ImageObjectiveTestSerializer, True_FalseSerializer, ExamCertificateSerializer, QuizCheckingSerializer, \
     ExamSubjectSerializer
+from ..groups.models import Group
 from ..homeworks.models import Homework
 from ..mastering.models import Mastering
 from ..shop.models import Points
@@ -583,7 +584,7 @@ class ExamListView(ListCreateAPIView):
             queryset = queryset.filter(date__gt=three_days_later)
 
         if user.role == "Student":
-            two_days_later = datetime.today() + timedelta(days=2)
+            two_days_later = datetime.today() + timedelta(days=3)
             queryset = queryset.filter(date__gt=two_days_later)
 
         if options:
@@ -893,94 +894,54 @@ class ExamCertificateAPIView(ListCreateAPIView):
         return qs
 
 
-class ExamOptionsUpdate(APIView):
+class ExamOptionCreate(APIView):
     """
-    Update exam options for specific students in an exam and group
+    Bulk create ExamRegistration entries using ordinary field objects.
     """
 
-    def patch(self, request, *args, **kwargs):
-        exam_id = request.GET.get("exam_id")
-        group_id = request.GET.get("group_id")
-
-        if not exam_id:
-            return Response(
-                {'error': 'exam_id is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        data = request.data  # This is expected to be a list of {"students": [...], "option": ...}
+    def post(self, request, *args, **kwargs):
+        data = request.data  # Expecting a list of dicts like [{student, exam, group, option, ...}]
 
         if not isinstance(data, list):
-            return Response(
-                {'error': 'Request body must be a list of student-option objects'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Body must be a list of registration objects'}, status=400)
 
-        count = 0
+        registrations_to_create = []
         errors = []
 
-        # Build base filter
-
-        ic(exam_id,group_id)
-
-        filter_kwargs = {'exam__id': exam_id}
-        if group_id:
-            filter_kwargs['group__id'] = group_id
-
-        # Get all registered students for this exam and group once
-        registered_students = ExamRegistration.objects.filter(**filter_kwargs)
-
-        ic(registered_students)
-
         for entry in data:
-            students = entry.get("students")
+            student_id = entry.get("student")
+            exam_id = entry.get("exam")
+            group_id = entry.get("group")
             option = entry.get("option")
 
-            if not students or not isinstance(students, list):
-                errors.append({'entry': entry, 'error': 'Invalid or missing students list'})
+            # Required fields check
+            if not student_id or not exam_id or option is None:
+                errors.append({'entry': entry, 'error': 'Missing required fields'})
                 continue
 
-            if option is None:
-                errors.append({'entry': entry, 'error': 'Missing option'})
-                continue
+            try:
+                student = Student.objects.get(id=student_id)
+                exam = Exam.objects.get(id=exam_id)
+                group = Group.objects.get(id=group_id) if group_id else None
 
-            for student_id in students:
-                try:
-                    student_registration = registered_students.filter(student__id=student_id).first()
+                # Prevent duplicates
+                if ExamRegistration.objects.filter(student=student, exam=exam, group=group).exists():
+                    continue
 
-                    ic(student_registration)
+                registrations_to_create.append(ExamRegistration(
+                    student=student,
+                    exam=exam,
+                    group=group,
+                    option=option
+                ))
 
-                    if student_registration:
+            except (Student.DoesNotExist, Exam.DoesNotExist, Group.DoesNotExist) as e:
+                errors.append({'entry': entry, 'error': str(e)})
 
-                        ic(option)
+        ExamRegistration.objects.bulk_create(registrations_to_create)
 
-                        student_registration.option = option
-                        student_registration.save()
-                        count += 1
-                    else:
-                        errors.append({
-                            'student_id': student_id,
-                            'error': 'Student registration not found for this exam and group'
-                        })
-                except Exception as e:
-                    errors.append({
-                        'student_id': student_id,
-                        'error': str(e)
-                    })
-
-        response_data = {
-            'count': count,
-            'updated_successfully': count,
-            'total_students': sum(len(entry.get("students", [])) for entry in data),
-        }
-
-        if errors:
-            response_data['errors'] = errors
-            response_data['errors_count'] = len(errors)
-
-        if count == 0:
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-        elif errors:
-            return Response(response_data, status=status.HTTP_207_MULTI_STATUS)
-        else:
-            return Response(response_data, status=status.HTTP_200_OK)
+        return Response({
+            'created': len(registrations_to_create),
+            'errors': errors,
+            'errors_count': len(errors)
+        }, status=207 if errors else 200)
