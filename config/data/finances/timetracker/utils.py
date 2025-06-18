@@ -20,6 +20,8 @@ from data.student.studentgroup.models import StudentGroup
 
 TASHKENT_TZ = pytz.timezone("Asia/Tashkent")
 
+
+
 UZBEK_WEEKDAYS = {
     'Dushanba': 0,
     'Seshanba': 1,
@@ -31,8 +33,10 @@ UZBEK_WEEKDAYS = {
 }
 
 
+
 def localize(dt):
     return make_aware(dt, timezone=TASHKENT_TZ) if not is_aware(dt) else dt.astimezone(TASHKENT_TZ)
+
 
 
 def get_monthly_per_minute_salary(user_id):
@@ -104,7 +108,8 @@ def get_monthly_per_minute_salary(user_id):
     }
 
 
-def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = None) -> float:
+
+def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = None) -> float:
     user = CustomUser.objects.filter(id=user_id).first()
     if not user or not user.salary or not check_in:
         return 0
@@ -292,6 +297,7 @@ def calculate_penalty(user_id: int, check_in: datetime, check_out: datetime = No
     return round(total_penalty, 2)
 
 
+
 def parse_datetime_string(value):
     try:
         # Fix the format: replace underscore with dash if needed
@@ -323,6 +329,7 @@ def safe_decimal_conversion(value, field_name: str) -> Decimal:
         )
 
 
+
 def validate_time_sequence(actions: List[dict]) -> None:
     """Validate that action times make logical sense"""
     for i in range(len(actions) - 1):
@@ -340,7 +347,7 @@ def validate_time_sequence(actions: List[dict]) -> None:
             )
 
 
-# Error handling middleware for attendance operations
+
 class AttendanceErrorHandler:
     """Centralized error handling for attendance operations"""
 
@@ -370,3 +377,134 @@ class AttendanceErrorHandler:
             'error_code': 'CALCULATION_ERROR',
             'details': {'message': str(error)}
         }
+
+
+
+def update_calculate(user_id: str, check_in: datetime, check_out: datetime = None) -> float:
+    user = CustomUser.objects.filter(id=user_id).first()
+    if not user or not user.salary or not check_in:
+        return 0
+
+    check_in = localize(check_in)
+    if check_out:
+        check_out = localize(check_out)
+
+    check_in_date = check_in.date()
+    weekday_index = check_in.weekday()
+    total_penalty = 0
+    per_minute_salary = get_monthly_per_minute_salary(user_id).get('per_minute_salary', 0)
+
+    REVERSE_UZBEK_WEEKDAYS = {v: k for k, v in UZBEK_WEEKDAYS.items()}
+    today_uzbek_day = REVERSE_UZBEK_WEEKDAYS.get(weekday_index)
+
+    # === CASE 1: Teacher / Assistant
+    if user.role in ["TEACHER", "ASSISTANT"] and user.calculate_penalties:
+        student_groups = StudentGroup.objects.filter(
+            Q(group__teacher=user) | Q(group__secondary_teacher=user),
+            group__scheduled_day_type__name=today_uzbek_day
+        ).select_related('group').prefetch_related('group__scheduled_day_type')
+
+        matching_groups = []
+
+        for sg in student_groups:
+            group = sg.group
+            group_start_dt = localize(datetime.combine(check_in.date(), group.started_at))
+            delta_minutes = (check_in - group_start_dt).total_seconds() / 60
+            if delta_minutes < 0:
+                delta_minutes = 0
+
+            if delta_minutes <= 60:
+                matching_groups.append((group_start_dt, group, delta_minutes))
+
+        if matching_groups:
+            matching_groups.sort(key=lambda x: x[2])  # by lateness
+            group_start_dt, group, late_minutes = matching_groups[0]
+
+            if late_minutes > 0:
+                penalty_amount = late_minutes * per_minute_salary
+                total_penalty += penalty_amount
+
+        if check_out:
+            early_penalties = []
+
+            for sg in student_groups:
+                group = sg.group
+                group_end_dt = localize(datetime.combine(check_out.date(), group.ended_at))
+
+                if check_out < group_end_dt:
+                    early_minutes = (group_end_dt - check_out).total_seconds() / 60
+                    if early_minutes > 0:
+                        penalty = early_minutes * per_minute_salary
+                        early_penalties.append(penalty)
+
+            if early_penalties:
+                total_penalty += max(early_penalties)
+
+    else:
+        timelines = UserTimeLine.objects.filter(user=user)
+        day_name_today = calendar.day_name[weekday_index]
+
+        matched_timeline = None
+        min_diff = timedelta(hours=1)
+
+        for timeline in timelines:
+            if timeline.day != day_name_today.capitalize():
+                continue
+
+            timeline_start_dt = localize(datetime.combine(check_in_date, timeline.start_time))
+
+            if check_in >= timeline_start_dt:
+                time_diff = check_in - timeline_start_dt
+                if not matched_timeline or time_diff < (
+                        check_in - localize(datetime.combine(check_in_date, matched_timeline.start_time))):
+                    matched_timeline = timeline
+
+        if matched_timeline:
+            expected_start_time = matched_timeline.start_time
+            timeline_start_dt = localize(datetime.combine(check_in_date, expected_start_time))
+
+            time_diff = (check_in - timeline_start_dt).total_seconds() // 60
+
+            if time_diff < 0:
+                early_minutes = abs(int(time_diff))
+                early_minutes += 23
+                ic("early minutes: ", early_minutes)
+
+                if matched_timeline.bonus:
+                    bonus_amount = early_minutes * matched_timeline.bonus
+                else:
+                    bonus_amount = early_minutes * per_minute_salary
+
+                ic(bonus_amount)
+
+                total_penalty -= bonus_amount
+
+
+            elif time_diff > 0:
+                late_minutes = int(time_diff)
+                late_minutes += 23
+                if matched_timeline.penalty:
+                    penalty_amount = late_minutes * matched_timeline.penalty
+                else:
+                    penalty_amount = late_minutes * per_minute_salary
+
+                total_penalty += penalty_amount
+
+
+        if check_out:
+            matched_checkout_timeline = next(
+                (t for t in timelines if t.day == day_name_today.capitalize()), None
+            )
+
+            if matched_checkout_timeline:
+                expected_end_time = matched_checkout_timeline.end_time
+                timeline_end_dt = localize(datetime.combine(check_out.date(), expected_end_time))
+
+                if check_out < timeline_end_dt:
+                    early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
+                    early_minutes += 23
+                    penalty_amount = early_minutes * per_minute_salary
+                    total_penalty += penalty_amount
+
+
+    return round(total_penalty, 2)

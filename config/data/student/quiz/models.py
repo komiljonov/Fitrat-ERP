@@ -8,7 +8,7 @@ from data.student.student.models import Student
 from data.student.subject.models import Subject
 from data.student.subject.models import Theme
 from data.upload.models import File
-
+from data.student.groups.models import Group
 
 class Quiz(BaseModel):
     title = models.CharField(max_length=255)
@@ -178,7 +178,6 @@ class Cloze_Test(BaseModel):
                              related_name="question_cloze_file")
 
 
-
 class ImageObjectiveTest(BaseModel):
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='image_cloze_quiz')
@@ -215,13 +214,24 @@ class True_False(BaseModel):
     def __str__(self):
         return f"{self.quiz.title}  {self.answer}"
 
+
 class ExamSubject(BaseModel):
-    subject = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
+    subject : "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='exam_subject_quiz')
 
     options = models.CharField(default=1,max_length=2, null=True, blank=True)
 
+    lang_foreign = models.BooleanField(default=False)
+    lang_national = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.subject.name}  --- {self.options}"
+
+
 class Exam(BaseModel):
+
+    name = models.CharField(default="Test imtihoni", null=False, blank=False)
+
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
                                      related_name='exam_quiz')
 
@@ -264,9 +274,6 @@ class Exam(BaseModel):
                                              related_name='homeworks_quiz')
     options = models.ManyToManyField("quiz.ExamSubject", related_name='exam_subject_options')
 
-    def __str__(self):
-        return f"{self.quiz.title}   {self.type}"
-
 
 class ExamRegistration(BaseModel):
     student: "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True,
@@ -280,6 +287,8 @@ class ExamRegistration(BaseModel):
     is_participating = models.BooleanField(default=True)
     mark = models.CharField(max_length=255, null=True, blank=True)
     student_comment = models.TextField(null=True, blank=True)
+    group : "Group" = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='registration_group')
     option = models.CharField(choices=[
         ("1", "1"),
         ("2", "2"),
