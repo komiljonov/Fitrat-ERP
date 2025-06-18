@@ -28,3 +28,15 @@ def check_daily_tasks():
 
     logging.info("Celery task completed: Checked daily tasks.")
 
+
+
+@shared_task
+def check_today_tasks():
+    tasks = Task.objects.filter(
+        status="SOON"
+    ).all()
+    for task in tasks:
+        if datetime.today() == task.date_of_expired.date():
+            task.status = "ONGOING"
+            task.save()
+        logging.info(f"For task status changed for today to ongoing !")
