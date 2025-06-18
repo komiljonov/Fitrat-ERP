@@ -8,6 +8,7 @@ from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, E
     ExamSubject
 from .tasks import handle_task_creation
 from ..homeworks.models import Homework
+from ..student.serializers import StudentSerializer
 from ..subject.models import Subject, Theme
 from ..subject.serializers import SubjectSerializer, ThemeSerializer
 from ...account.models import CustomUser
@@ -602,6 +603,11 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             )
 
         return instance
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["student"] = StudentSerializer(instance.student, include_only=["id","first_name","last_name"]).data
+        return rep
 
 
 class ExamCertificateSerializer(serializers.ModelSerializer):
