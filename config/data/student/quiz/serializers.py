@@ -536,6 +536,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "group",
             "is_participating",
             "mark",
+            "option",
             "student_comment",
             "has_certificate",
             "certificate",
