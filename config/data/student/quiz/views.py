@@ -952,6 +952,8 @@ class ExamOptionCreate(APIView):
             group_id = entry.get("group")
             option = entry.get("option")
 
+            ic(entry)
+
             # Required fields check
             if not student_id or not exam_id or option is None:
                 errors.append({'entry': entry, 'error': 'Missing required fields'})
