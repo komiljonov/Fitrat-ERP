@@ -481,6 +481,7 @@ class ExamSerializer(serializers.ModelSerializer):
         model = Exam
         fields = [
             "id",
+            "name",
             "quiz",
             "choice",
             "type",
@@ -514,6 +515,7 @@ class ExamSerializer(serializers.ModelSerializer):
 
         rep["options"] = [
             {
+                "id": option.subject.id if option.subject else None,
                 "subject": option.subject.name if option.subject else None,
                 "option": option.options,
             }
