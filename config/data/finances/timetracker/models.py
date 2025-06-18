@@ -74,6 +74,7 @@ class UserTimeLine(BaseModel):
         ("Saturday", "Saturday"),
         ("Sunday", "Sunday"),
     ], max_length=120, null=True, blank=True)
+
     is_weekend = models.BooleanField(default=False)
 
     penalty = models.FloatField(default=0)
