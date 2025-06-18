@@ -206,7 +206,7 @@ class QuizCheckAPIView(APIView):
             return is_correct, {
                 "id": question["id"],
                 # "file": question.get("file", ""),
-                "question": question["question"]["question"]["name"],
+                "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_text,
                 "correct_answer": correct_answer
@@ -230,7 +230,7 @@ class QuizCheckAPIView(APIView):
             return is_correct, {
                 "id": question["id"],
 #                 "file": question.get("file", ""),
-                "question": question["question"]["question"]["name"],
+                "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_sequence,
                 "correct_answer": correct_sequence
@@ -254,7 +254,7 @@ class QuizCheckAPIView(APIView):
             return is_correct, {
                 "id": question["id"],
 #                 "file": question.get("file", ""),
-                "question": question["question"]["question"]["name"],
+                "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_id,
                 "correct_answer": correct_answer_id,
@@ -278,7 +278,7 @@ class QuizCheckAPIView(APIView):
         return is_correct, {
             "id": question["id"],
 #             "file": question.get("file", ""),
-            "question": question["question"]["question"]["name"],
+            "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
             "user_answer": user_answer_id,
             "correct_answer": correct_answer_id
@@ -292,7 +292,7 @@ class QuizCheckAPIView(APIView):
         return is_correct, {
             "id": question["id"],
 #             "file": question.get("file", ""),
-            "question": question["question"]["question"]["name"],
+            "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
             "user_answer": user_choice,
             "correct_answer": correct_answer
