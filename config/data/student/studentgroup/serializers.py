@@ -49,7 +49,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
 
         return list(attendance)
 
-    def get_lessons_count(self, obj):
+    def get_lesson_count(self, obj):
         total_lessons = Theme.objects.filter(course=obj.course).count()
 
         attended_lessons = (
