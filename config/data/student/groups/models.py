@@ -4,11 +4,13 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.utils import timezone
 from django.utils.timezone import now
-from ..student.models import Student
+
 from ...command.models import BaseModel
 
 if TYPE_CHECKING:
     from ..course.models import Course
+    from ..student.models import Student
+
 from ...account.models import CustomUser
 from ..subject.models import Level
 
