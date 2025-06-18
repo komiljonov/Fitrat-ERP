@@ -40,7 +40,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
     def get_group_price(self, obj):
         price = GroupSaleStudent.objects.filter(group=obj.group,student=obj.student).first()
 
-        return price.amount
+        return price.amount if price else 0
 
     def get_current_theme(self, obj):
         today = date.today()
