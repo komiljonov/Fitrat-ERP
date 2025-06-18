@@ -42,5 +42,5 @@ urlpatterns = [
     path('days/no-pg',DaysNoPG.as_view(), name='days-no-pg-list'),
 
     path("group-sale/",StudentSaleGroupListCreateAPIView.as_view(), name='group-sale-list'),
-    path("group-sale/<uuid:pk>/",StudentSaleGroupDetailAPIView.as_view(), name='group-sale-detail'),
+    path("group-sale/<uuid:pk>",StudentSaleGroupDetailAPIView.as_view(), name='group-sale-detail'),
 ]
