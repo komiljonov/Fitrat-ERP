@@ -9,7 +9,7 @@ from .views import (
     AnswerRetrieveUpdateDestroyView, QuizCheckAPIView, ExcelQuizUploadAPIView, ExamRegistrationListCreateAPIView,
     ObjectiveTestView, Cloze_TestView, ImageCloze_TestView, ExamRegisteredStudentAPIView, QuizListPgView,
     True_False_TestView, True_False_TestRetriveView, Cloze_TestUpdate, ExamCertificateAPIView, ExamSubjectListCreate,
-    ExamSubjectDetail, ExamOptionCreate
+    ExamSubjectDetail, ExamOptionCreate, ExamRegistrationNoPgAPIView
 )
 
 urlpatterns = [
@@ -55,6 +55,8 @@ urlpatterns = [
     path("import-quiz/", ExcelQuizUploadAPIView.as_view(), name='import-quiz'),
 
     path("exam-registration/", ExamRegistrationListCreateAPIView.as_view(), name='exam-registration'),
+    path("registration/no-pg/", ExamRegistrationNoPgAPIView.as_view(), name='registration'),
+
 
     path("exam-students/", ExamRegisteredStudentAPIView.as_view(), name='exam-students'),
 
