@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from .models import StudentGroup, SecondaryStudentGroup
 from ..attendance.models import Attendance
-from ..groups.models import Group, SecondaryGroup
+from ..groups.models import Group, SecondaryGroup, GroupSaleStudent
 from ..groups.serializers import SecondaryGroupSerializer
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
@@ -23,6 +23,8 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
     lesson_count = serializers.SerializerMethodField()
     current_theme = serializers.SerializerMethodField()
 
+    group_price = serializers.SerializerMethodField()
+
     class Meta:
         model = StudentGroup
         fields = [
@@ -32,8 +34,13 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'student',
             "lesson_count",
             "current_theme",
+            "group_price",
             # "is_archived",
         ]
+    def get_group_price(self, obj):
+        price = GroupSaleStudent.objects.filter(group=obj.group,student=obj.student).first()
+
+        return price.amount
 
     def get_current_theme(self, obj):
         today = date.today()
