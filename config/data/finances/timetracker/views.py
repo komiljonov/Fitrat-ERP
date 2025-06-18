@@ -712,6 +712,15 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 previous_check_out = attendance.check_out
                 previous_amount = attendance.amount or 0
 
+                # Calculate previous per-minute amount if check-in/out existed
+                previous_per_minute_amount = 0
+                if previous_check_in and previous_check_out:
+                    previous_per_minute_amount = update_calculate(
+                        attendance.employee.id,
+                        previous_check_in,
+                        previous_check_out
+                    ) / max(1, (previous_check_out - previous_check_in).total_seconds() / 60)
+
                 # Update the attendance record
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
@@ -723,6 +732,12 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     updated_attendance.check_in,
                     updated_attendance.check_out
                 )
+
+                # Calculate per-minute amount for new check-in/out
+                new_per_minute_amount = 0
+                if updated_attendance.check_in and updated_attendance.check_out:
+                    new_per_minute_amount = new_penalty / max(1, (
+                                updated_attendance.check_out - updated_attendance.check_in).total_seconds() / 60)
 
                 # Calculate difference from previous amount
                 amount_difference = new_penalty - previous_amount
@@ -758,218 +773,19 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     'penalty_calculation': {
                         'previous_amount': previous_amount,
                         'new_amount': new_penalty,
-                        'difference': amount_difference
+                        'difference': amount_difference,
+                        'previous_per_minute_amount': round(previous_per_minute_amount, 4),
+                        'new_per_minute_amount': round(new_per_minute_amount, 4),
+                        'per_minute_difference': round(new_per_minute_amount - previous_per_minute_amount, 4)
                     },
                     'message': 'Attendance updated successfully',
                 }, status=status.HTTP_200_OK)
 
-        except Stuff_Attendance.DoesNotExist:
-            return Response({
-                'error': 'Attendance record not found',
-                'error_code': 'NOT_FOUND'
-            }, status=status.HTTP_404_NOT_FOUND)
-        except serializers.ValidationError as e:
-            return Response({
-                'error': 'Invalid data',
-                'error_code': 'VALIDATION_ERROR',
-                'details': e.detail
-            }, status=status.HTTP_400_BAD_REQUEST)
-        except AttendanceError as e:
-            logger.error(f"Attendance error during update: {e.message}", extra=e.details)
-            return Response({
-                'error': e.message,
-                'error_code': e.error_code,
-                'details': e.details
-            }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error(f"Unexpected error in attendance update: {str(e)}", exc_info=True)
             return Response({
-                'error': 'An unexpected error occurred',
-                'error_code': 'INTERNAL_ERROR',
-                'details': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def _process_attendance_with_error_handling(self, data: dict) -> Response:
-        """Process attendance data with comprehensive error handling"""
-        # Validate required fields
-        self._validate_required_fields(data)
-
-        # Extract and validate actions
-        actions = self._validate_and_parse_actions(data.get('actions', []))
-
-        # Process attendance with transaction
-        with transaction.atomic():
-            try:
-                # Create new attendance record
-                serializer = self.get_serializer(data=data)
-                serializer.is_valid(raise_exception=True)
-                attendance = serializer.save()
-                attendance_result = serializer.data
-
-                user = CustomUser.objects.filter(second_user=data.get("employee")).first()
-                if not user:
-                    raise AttendanceError(
-                        "Employee not found",
-                        "EMPLOYEE_NOT_FOUND",
-                        {'employee_id': data.get('employee')}
-                    )
-
-                # Process individual action penalties/bonuses
-                penalty_result = self._process_action_penalties(
-                    user.id,
-                    actions,
-                    data.get('check_in'),
-                    data.get('check_out')
-                )
-
-                # Update Employee_attendance
-                if attendance.check_in:
-                    self._update_employee_attendance(
-                        user,
-                        attendance.check_in.date(),
-                        attendance,
-                        0,  # No previous amount for new record
-                        attendance.amount or 0
-                    )
-
-                return Response({
-                    'success': True,
-                    'attendance': attendance_result,
-                    'penalty_calculation': penalty_result,
-                    'message': 'Attendance processed successfully'
-                }, status=status.HTTP_201_CREATED)
-
-            except serializers.ValidationError as e:
-                raise AttendanceError(
-                    "Invalid attendance data",
-                    "VALIDATION_ERROR",
-                    {'errors': e.detail}
-                )
-            except Exception as e:
-                logger.error(f"Transaction failed: {str(e)}")
-                raise AttendanceError(
-                    "Failed to process attendance data",
-                    "TRANSACTION_ERROR",
-                    {'original_error': str(e)}
-                )
-
-    def _validate_required_fields(self, data: dict) -> None:
-        """Validate required fields in attendance data"""
-        required_fields = ['employee', 'date']
-        missing_fields = [field for field in required_fields if not data.get(field)]
-
-        if missing_fields:
-            raise AttendanceError(
-                f"Missing required fields: {', '.join(missing_fields)}",
-                "MISSING_FIELDS",
-                {'missing_fields': missing_fields}
-            )
-
-        # Validate employee exists
-        try:
-            employee = CustomUser.objects.get(second_user=data['employee'])
-        except CustomUser.DoesNotExist:
-            raise AttendanceError(
-                "Employee not found",
-                "EMPLOYEE_NOT_FOUND",
-                {'employee_id': data['employee']}
-            )
-
-    def _validate_and_parse_actions(self, actions: List[dict]) -> List[dict]:
-        """Validate and parse actions data with error handling"""
-        if not actions:
-            return []
-
-        validated_actions = []
-
-        for i, action in enumerate(actions):
-            try:
-                # Validate required action fields
-                required_action_fields = ['start', 'end', 'type', 'duration']
-                missing_fields = [field for field in required_action_fields if field not in action]
-
-                if missing_fields:
-                    raise AttendanceError(
-                        f"Action {i + 1} missing fields: {', '.join(missing_fields)}",
-                        "INVALID_ACTION_DATA",
-                        {'action_index': i, 'missing_fields': missing_fields}
-                    )
-
-                # Parse and validate datetime strings
-                try:
-                    start_time = self._parse_datetime_safe(action['start'])
-                    end_time = self._parse_datetime_safe(action['end'])
-                except ValueError as e:
-                    raise AttendanceError(
-                        f"Invalid datetime format in action {i + 1}",
-                        "INVALID_DATETIME",
-                        {'action_index': i, 'error': str(e)}
-                    )
-
-                # Validate duration consistency
-                calculated_duration = (end_time - start_time).total_seconds()
-                provided_duration = float(action['duration'])
-
-                if abs(calculated_duration - provided_duration) > 60:  # Allow 1 minute tolerance
-                    logger.warning(
-                        f"Duration mismatch in action {i + 1}: calculated={calculated_duration}, provided={provided_duration}")
-
-                # Validate action type
-                valid_types = ['INSIDE', 'OUTSIDE']
-                if action['type'] not in valid_types:
-                    raise AttendanceError(
-                        f"Invalid action type '{action['type']}' in action {i + 1}",
-                        "INVALID_ACTION_TYPE",
-                        {'action_index': i, 'valid_types': valid_types}
-                    )
-
-                validated_actions.append({
-                    **action,
-                    'start_datetime': start_time,
-                    'end_datetime': end_time,
-                    'duration_seconds': calculated_duration
-                })
-
-            except AttendanceError:
-                raise
-            except Exception as e:
-                raise AttendanceError(
-                    f"Error processing action {i + 1}: {str(e)}",
-                    "ACTION_PROCESSING_ERROR",
-                    {'action_index': i, 'error': str(e)}
-                )
-
-        # Sort actions by start time
-        try:
-            validated_actions.sort(key=lambda x: x['start_datetime'])
-        except Exception as e:
-            raise AttendanceError(
-                "Failed to sort actions by time",
-                "SORT_ERROR",
-                {'error': str(e)}
-            )
-
-        return validated_actions
-
-    def _parse_datetime_safe(self, datetime_str: str) -> datetime:
-        """Safely parse datetime string with multiple format support"""
-        datetime_formats = [
-            "%Y_%m-%d %H:%M:%S",
-            "%Y-%m-%d %H:%M:%S",
-            "%Y-%m-%dT%H:%M:%S",
-            "%Y-%m-%d %H:%M",
-        ]
-
-        # Clean the string
-        cleaned_str = datetime_str.replace('_', '-').strip()
-
-        for fmt in datetime_formats:
-            try:
-                return datetime.strptime(cleaned_str, fmt)
-            except ValueError:
-                continue
-
-        raise ValueError(f"Unable to parse datetime: {datetime_str}")
+                'error': str(e),
+                'error_code': 'UPDATE_ERROR'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
     def _update_employee_attendance(self, employee, date, attendance, prev_amount, new_amount):
         """Update the employee's attendance record with the new amount"""
@@ -987,224 +803,34 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         if not employee_att.attendance.filter(id=attendance.id).exists():
             employee_att.attendance.add(attendance)
 
-    def _process_action_penalties(self, employee_id: str, actions: List[dict],
-                                  check_in: str, check_out: str) -> dict:
-        """Process penalties/bonuses for individual actions"""
-        try:
-            if not actions:
-                return {'total_penalty': 0, 'details': []}
-
-            # Get user salary info
-            penalty_info = self._get_penalty_calculation_info(employee_id)
-            if not penalty_info:
-                return {'total_penalty': 0, 'details': [], 'warning': 'No salary info found'}
-
-            total_penalty = 0
-            penalty_details = []
-
-            # Process each OUTSIDE action individually
-            for i, action in enumerate(actions):
-                if action['type'] == 'OUTSIDE' and action.get('usable', True):
-                    try:
-                        penalty_result = self._calculate_outside_penalty(
-                            employee_id,
-                            action,
-                            penalty_info,
-                            i + 1
-                        )
-
-                        total_penalty += penalty_result['penalty_amount']
-                        penalty_details.append(penalty_result)
-
-                    except Exception as e:
-                        logger.error(f"Error calculating penalty for action {i + 1}: {str(e)}")
-                        penalty_details.append({
-                            'action_index': i + 1,
-                            'error': f"Failed to calculate penalty: {str(e)}",
-                            'penalty_amount': 0
-                        })
-
-            return {
-                'total_penalty': round(total_penalty, 2),
-                'details': penalty_details,
-                'penalty_info': penalty_info
-            }
-
-        except Exception as e:
-            logger.error(f"Error in penalty processing: {str(e)}")
-            return {
-                'total_penalty': 0,
-                'details': [],
-                'error': f"Penalty calculation failed: {str(e)}"
-            }
-
-    def _get_penalty_calculation_info(self, employee_id: str) -> Optional[dict]:
-        """Get penalty calculation information for employee"""
-        try:
-            penalty_info = get_monthly_per_minute_salary(employee_id)
-            return penalty_info if penalty_info.get('per_minute_salary', 0) > 0 else None
-        except Exception as e:
-            logger.error(f"Error getting penalty info for employee {employee_id}: {str(e)}")
-            return None
-
-    def _calculate_outside_penalty(self, employee_id: str, action: dict,
-                                   penalty_info: dict, action_index: int) -> dict:
-        """Calculate penalty for individual OUTSIDE action based on user timeline"""
-        try:
-            user = CustomUser.objects.get(id=employee_id)
-            action_date = action['start_datetime']
-            day_of_week = action_date.strftime('%A')
-
-            # Get the user's timeline for this day
-            try:
-                timeline = UserTimeLine.objects.get(
-                    user=user,
-                    day=day_of_week
-                )
-            except UserTimeLine.DoesNotExist:
-                # If no specific timeline for this day, use default working hours (9-18)
-                default_start = datetime.strptime('09:00', '%H:%M').time()
-                default_end = datetime.strptime('18:00', '%H:%M').time()
-                timeline = type('', (), {
-                    'start_time': default_start,
-                    'end_time': default_end,
-                    'is_weekend': False,
-                    'penalty': 0,
-                    'bonus': 0
-                })()
-
-            # Calculate time differences
-            action_start = action['start_datetime'].time()
-            action_end = action['end_datetime'].time()
-
-            # Calculate minutes outside working hours
-            outside_minutes = 0
-
-            # Before working hours
-            if action_start < timeline.start_time:
-                start = min(action_end, timeline.start_time)
-                outside_minutes += (datetime.combine(action_date, timeline.start_time) -
-                                    datetime.combine(action_date, action_start)).total_seconds() / 60
-
-            # After working hours
-            if action_end > timeline.end_time:
-                end = max(action_start, timeline.end_time)
-                outside_minutes += (datetime.combine(action_date, action_end) -
-                                    datetime.combine(action_date, timeline.end_time)).total_seconds() / 60
-
-            # If it's a weekend, all time is considered outside
-            if timeline.is_weekend:
-                outside_minutes = (action['end_datetime'] - action['start_datetime']).total_seconds() / 60
-
-            per_minute_penalty = penalty_info.get('per_minute_salary', 0)
-
-            # Apply penalty rate from timeline if exists
-            if hasattr(timeline, 'penalty') and timeline.penalty > 0:
-                per_minute_penalty = timeline.penalty
-
-            # Calculate penalty amount
-            penalty_amount = outside_minutes * per_minute_penalty
-
-            print(penalty_amount)
-
-            return {
-                'action_index': action_index,
-                'start_time': action['start'],
-                'end_time': action['end'],
-                'duration_minutes': round(outside_minutes, 2),
-                'penalty_amount': round(penalty_amount, 2),
-                'per_minute_penalty': per_minute_penalty,
-                'timeline_used': {
-                    'day': day_of_week,
-                    'working_hours': f"{timeline.start_time}-{timeline.end_time}",
-                    'is_weekend': timeline.is_weekend
-                }
-            }
-
-        except CustomUser.DoesNotExist:
-            raise AttendanceError(
-                "Employee not found",
-                "EMPLOYEE_NOT_FOUND",
-                {'employee_id': employee_id}
-            )
-        except Exception as e:
-            raise AttendanceError(
-                f"Failed to calculate penalty for action {action_index}",
-                "PENALTY_CALCULATION_ERROR",
-                {'action_index': action_index, 'error': str(e)}
-            )
-
     def _update_finance_records(self, employee, date, prev_amount, new_amount, check_in, check_out):
         """Update related finance records with the new amount"""
         if not date:
             return {'updated': 0}
 
-        # Find and update existing finance records
+        # More flexible matching - look for records close to the previous amount
         finance_records = Finance.objects.filter(
             stuff=employee,
+            action="EXPENSE",
+            kind__action="EXPENSE",
+            kind__name__icontains="Bonus",
             created_at__date=date,
-            amount=prev_amount
-        )
+            amount=prev_amount,
+        ).order_by('-created_at')
 
         updated_count = 0
         duration_minutes = (check_out - check_in).total_seconds() / 60 if check_in and check_out else 0
 
-        for finance in finance_records:
-            # Determine the type of record (penalty or bonus)
-            if "jarima" in finance.comment.lower():
-                action_type = "penalty"
-                new_comment = (
-                    f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
-                    f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-                    f"{new_amount:.2f} sum jarima yozildi!"
-                )
-            else:
-                action_type = "bonus"
-                new_comment = (
-                    f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
-                    f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
-                    f"{new_amount:.2f} sum bonus yozildi!"
-                )
 
+        if finance_records.exists():
+            finance = finance_records.first()
             finance.amount = new_amount
-            finance.comment = new_comment
+            finance.comment = (
+                f"Updated: {check_in.strftime('%H:%M')} to {check_out.strftime('%H:%M')} "
+                f"({duration_minutes:.0f} minutes) penalty adjusted from "
+                f"{prev_amount:.2f} to {new_amount:.2f}"
+            )
             finance.save()
-            updated_count += 1
-
-        # If no existing records found, create new ones if there's a penalty/bonus
-        if updated_count == 0 and new_amount != 0:
-            if new_amount > 0:  # Penalty
-                penalty_kind = Kind.objects.filter(
-                    action="EXPENSE",
-                    name__icontains="Money back"
-                ).first()
-                Finance.objects.create(
-                    action="EXPENSE",
-                    kind=penalty_kind,
-                    amount=new_amount,
-                    stuff=employee,
-                    comment=(
-                        f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
-                        f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-                        f"{new_amount:.2f} sum jarima yozildi!"
-                    )
-                )
-            else:  # Bonus
-                bonus_kind = Kind.objects.filter(
-                    action="EXPENSE",
-                    name__icontains="Bonus"
-                ).first()
-                Finance.objects.create(
-                    action="EXPENSE",
-                    kind=bonus_kind,
-                    amount=abs(new_amount),
-                    stuff=employee,
-                    comment=(
-                        f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
-                        f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
-                        f"{abs(new_amount):.2f} sum bonus yozildi!"
-                    )
-                )
             updated_count = 1
 
         return {
@@ -1212,6 +838,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             'new_amount': new_amount,
             'updated': updated_count
         }
+
 
 class UserTimeLineList(ListCreateAPIView):
     queryset = UserTimeLine.objects.all()

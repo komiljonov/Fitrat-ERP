@@ -784,6 +784,44 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
         return qs
 
 
+class ExamRegistrationNoPgAPIView(ListCreateAPIView):
+    queryset = ExamRegistration.objects.all()
+    serializer_class = ExamRegistrationSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+
+
+    def get_queryset(self):
+        qs = ExamRegistration.objects.all()
+
+        student = self.request.GET.get("student")
+        exam = self.request.GET.get("exam")
+        status = self.request.GET.get("status")
+        is_participating = self.request.GET.get("is_participating")
+        option = self.request.GET.get("option")
+        has_certificate = self.request.GET.get("has_certificate")
+        group = self.request.GET.get("group")
+
+
+        if group:
+            qs = qs.filter(group__id=group)
+        if has_certificate:
+            qs = qs.filter(has_certificate=has_certificate.capitalize())
+        if student:
+            qs = qs.filter(student__id=student)
+        if exam:
+            qs = qs.filter(exam__id=exam)
+        if status:
+            qs = qs.filter(status=status)
+        if is_participating:
+            qs = qs.filter(is_participating=is_participating.capitalize())
+        if option:
+            qs = qs.filter(option=option)
+        return qs
+    def get_paginated_response(self, data):
+        return Response(data)
+
+
 class ExamRegisteredStudentAPIView(APIView):
     # permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
