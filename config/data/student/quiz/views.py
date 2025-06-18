@@ -35,6 +35,7 @@ from ..shop.models import Points
 from ..student.models import Student
 from ..subject.models import Theme
 from ...account.models import CustomUser
+from ...exam_results.models import QuizResult
 from ...lid.new_lid.views import BulkUpdate
 
 
@@ -51,9 +52,6 @@ class QuizCheckAPIView(APIView):
         serializer = QuizCheckSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-
-        quiz_data = data.get('quiz_data')
-        ic(quiz_data)
 
         quiz = get_object_or_404(Quiz, id=data.get("quiz_id"))
         student = Student.objects.filter(user=request.user).first()
@@ -103,6 +101,10 @@ class QuizCheckAPIView(APIView):
             else:
                 results["summary"]["wrong_count"] += 1
                 # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
+
+            # result = QuizResult.objects.filter(
+            #
+            # )
 
             results["details"][qtype].append(result_data)
 
