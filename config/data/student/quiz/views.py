@@ -895,37 +895,20 @@ class ExamOptionsUpdate(APIView):
     """
 
     def patch(self, request, *args, **kwargs):
-
         exam_id = request.GET.get("exam_id")
         group_id = request.GET.get("group_id")
 
-        # Validate required parameters
         if not exam_id:
             return Response(
                 {'error': 'exam_id is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Get data from request
-        students = request.data
-        option = request.data.get("option")
+        data = request.data  # This is expected to be a list of {"students": [...], "option": ...}
 
-        # Validate request data
-        if not students:
+        if not isinstance(data, list):
             return Response(
-                {'error': 'students list is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if not isinstance(students, list):
-            return Response(
-                {'error': 'students must be a list of student IDs'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if option is None:
-            return Response(
-                {'error': 'option is required'},
+                {'error': 'Request body must be a list of student-option objects'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -937,43 +920,49 @@ class ExamOptionsUpdate(APIView):
         if group_id:
             filter_kwargs['group_id'] = group_id
 
-        # Get all registered students for this exam and group
+        # Get all registered students for this exam and group once
         registered_students = ExamRegistration.objects.filter(**filter_kwargs)
 
-        # Update each student's option
-        for student_id in students:
-            try:
-                # Find the specific student registration
-                student_registration = registered_students.filter(student_id=student_id).first()
+        for entry in data:
+            students = entry.get("students")
+            option = entry.get("option")
 
-                if student_registration:
-                    student_registration.option = option
-                    student_registration.save()
-                    count += 1
-                else:
+            if not students or not isinstance(students, list):
+                errors.append({'entry': entry, 'error': 'Invalid or missing students list'})
+                continue
+
+            if option is None:
+                errors.append({'entry': entry, 'error': 'Missing option'})
+                continue
+
+            for student_id in students:
+                try:
+                    student_registration = registered_students.filter(student_id=student_id).first()
+                    if student_registration:
+                        student_registration.option = option
+                        student_registration.save()
+                        count += 1
+                    else:
+                        errors.append({
+                            'student_id': student_id,
+                            'error': 'Student registration not found for this exam and group'
+                        })
+                except Exception as e:
                     errors.append({
                         'student_id': student_id,
-                        'error': 'Student registration not found for this exam and group'
+                        'error': str(e)
                     })
-            except Exception as e:
-                errors.append({
-                    'student_id': student_id,
-                    'error': str(e)
-                })
 
-        # Prepare response
         response_data = {
             'count': count,
-            'total_students': len(students),
             'updated_successfully': count,
-            'option_set': option
+            'total_students': sum(len(entry.get("students", [])) for entry in data),
         }
 
         if errors:
             response_data['errors'] = errors
             response_data['errors_count'] = len(errors)
 
-        # Return appropriate status code
         if count == 0:
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
         elif errors:
