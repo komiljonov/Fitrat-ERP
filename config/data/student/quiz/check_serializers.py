@@ -85,7 +85,6 @@ class StandardAnswerSerializer(serializers.Serializer):
     answer_id = serializers.UUIDField()
 
 class QuizCheckSerializer(serializers.Serializer):
-    quiz_data = serializers.ListField()
     theme = serializers.UUIDField(required=False)
     quiz_id = serializers.UUIDField()
     standard = StandardAnswerSerializer(many=True, required=False)
