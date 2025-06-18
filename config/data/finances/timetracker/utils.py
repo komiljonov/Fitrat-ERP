@@ -185,7 +185,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                             kind=bonus_kind,
                             amount=penalty,
                             stuff=user,
-                            comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun {penalty} sum jarima yozildi! "
+                            comment=f"Bugun {check_out.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun {penalty} sum jarima yozildi! "
                         )
                         print(
                             f"Early leave penalty for {user} from group {group.name}: {penalty:.2f} ({early_minutes:.0f} min early)")

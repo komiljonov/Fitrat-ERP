@@ -732,29 +732,19 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 updated_attendance.amount = new_penalty
                 updated_attendance.save()
 
-                with transaction.atomic():
-                    # Get or create Employee_attendance record
-                    em_att, created = Employee_attendance.objects.get_or_create(
-                        employee=updated_attendance.employee,
-                        date=updated_attendance.date,
-                        defaults={'amount': 0}
-                    )
+                em_att, created = Employee_attendance.objects.get_or_create(
+                    employee=updated_attendance.employee,
+                    date=updated_attendance.date,
+                    defaults={'amount': 0}  # Initialize with 0 if creating new
+                )
 
-                    if not created:
-                        previous_attendance = em_att.attendance.filter(
-                            employee=updated_attendance.employee,
-                            date=updated_attendance.date
-                        ).first()
-
-                        if previous_attendance:
-                            # Subtract the previous amount from the total
-                            em_att.amount -= previous_attendance.amount or 0
-                            em_att.attendance.remove(previous_attendance)
-
-                    # 2. Add the new attendance record
+                # Add the attendance record to the many-to-many relationship
+                if not em_att.attendance.filter(id=updated_attendance.id).exists():
                     em_att.attendance.add(updated_attendance)
-                    em_att.amount += updated_attendance.amount or 0
-                    em_att.save()
+
+                # Update the amount by first subtracting the previous amount and adding the new penalty
+                em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
+                em_att.save()
 
                 return Response({
                     'success': True,
