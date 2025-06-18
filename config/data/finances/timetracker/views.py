@@ -746,6 +746,12 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
                 em_att.save()
 
+                print({
+                        'previous_amount': previous_amount,
+                        'new_amount': new_penalty,
+                        'difference': new_penalty - previous_amount,
+                    })
+
                 return Response({
                     'success': True,
                     'attendance': serializer.data,
