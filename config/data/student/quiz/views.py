@@ -34,6 +34,7 @@ from ..shop.models import Points
 from ..student.models import Student
 from ..subject.models import Theme
 from ...account.models import CustomUser
+from ...lid.new_lid.views import BulkUpdate
 
 
 class QuizCheckAPIView(APIView):
@@ -886,3 +887,8 @@ class ExamCertificateAPIView(ListCreateAPIView):
         if status:
             qs = qs.filter(status=status)
         return qs
+
+
+class ExamOptionsUpdate(APIView):
+    def patch(self, request, *args, **kwargs):
+        pass

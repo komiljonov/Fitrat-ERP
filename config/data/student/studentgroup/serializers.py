@@ -1,11 +1,15 @@
+from datetime import date
+
+from django.db.models import Count
 from rest_framework import serializers
 
 from .models import StudentGroup, SecondaryStudentGroup
+from ..attendance.models import Attendance
 from ..groups.models import Group, SecondaryGroup
 from ..groups.serializers import SecondaryGroupSerializer
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
-from ..subject.models import Level, Subject
+from ..subject.models import Level, Subject, Theme
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from ...lid.new_lid.models import Lid
@@ -18,6 +22,8 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
 
+    lesson_count = serializers.SerializerMethodField()
+    current_theme = serializers.SerializerMethodField()
 
     class Meta:
         model = StudentGroup
@@ -26,8 +32,38 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'group',
             'lid',
             'student',
+            "lesson_count",
+            "current_theme",
             # "is_archived",
         ]
+
+    def get_current_theme(self, obj):
+        today = date.today()
+
+        # Ensures we compare only the date and remove duplicate themes
+        attendance = (
+            Attendance.objects.filter(group=obj, created_at__date=today)
+            .values("theme", "repeated")
+            .distinct()  # Remove duplicates
+        )
+
+        return list(attendance)
+
+    def get_lessons_count(self, obj):
+        total_lessons = Theme.objects.filter(course=obj.course).count()
+
+        attended_lessons = (
+            Attendance.objects.filter(group=obj)
+            .values("theme")  # Group by lesson
+            .annotate(attended_count=Count("id"))  # Count attendance per lesson
+            .count()  # Count unique lessons with attendance records
+        )
+
+        return {
+            "lessons": total_lessons,  # Total lessons in the group
+            "attended": attended_lessons,  # Lessons that have attendance records
+        }
+
 
     def validate(self, attrs):
         student = attrs.get("student")
@@ -79,6 +115,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
                 "level": instance.group.level.id if instance.group and instance.group.level else None,
                 "subject": subject_data if subject_data else None,
                 'course': instance.group.course.name,
+                "price": instance.group.price,
                 'teacher': instance.group.teacher.full_name if instance.group.teacher else None,
                 'room_number': instance.group.room_number.room_number,
                 'course_id': instance.group.course.id,

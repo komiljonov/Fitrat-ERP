@@ -20,6 +20,8 @@ from data.student.studentgroup.models import StudentGroup
 
 TASHKENT_TZ = pytz.timezone("Asia/Tashkent")
 
+
+
 UZBEK_WEEKDAYS = {
     'Dushanba': 0,
     'Seshanba': 1,
@@ -31,8 +33,10 @@ UZBEK_WEEKDAYS = {
 }
 
 
+
 def localize(dt):
     return make_aware(dt, timezone=TASHKENT_TZ) if not is_aware(dt) else dt.astimezone(TASHKENT_TZ)
+
 
 
 def get_monthly_per_minute_salary(user_id):
@@ -102,6 +106,7 @@ def get_monthly_per_minute_salary(user_id):
         "total_minutes": total_minutes,
         "per_minute_salary": per_minute_salary
     }
+
 
 
 def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = None) -> float:
@@ -292,6 +297,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
     return round(total_penalty, 2)
 
 
+
 def parse_datetime_string(value):
     try:
         # Fix the format: replace underscore with dash if needed
@@ -323,6 +329,7 @@ def safe_decimal_conversion(value, field_name: str) -> Decimal:
         )
 
 
+
 def validate_time_sequence(actions: List[dict]) -> None:
     """Validate that action times make logical sense"""
     for i in range(len(actions) - 1):
@@ -340,7 +347,7 @@ def validate_time_sequence(actions: List[dict]) -> None:
             )
 
 
-# Error handling middleware for attendance operations
+
 class AttendanceErrorHandler:
     """Centralized error handling for attendance operations"""
 
