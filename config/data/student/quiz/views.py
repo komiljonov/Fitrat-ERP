@@ -920,12 +920,17 @@ class ExamOptionsUpdate(APIView):
         errors = []
 
         # Build base filter
-        filter_kwargs = {'exam_id': exam_id}
+
+        ic(exam_id,group_id)
+
+        filter_kwargs = {'exam__id': exam_id}
         if group_id:
-            filter_kwargs['group_id'] = group_id
+            filter_kwargs['group__id'] = group_id
 
         # Get all registered students for this exam and group once
         registered_students = ExamRegistration.objects.filter(**filter_kwargs)
+
+        ic(registered_students)
 
         for entry in data:
             students = entry.get("students")
@@ -942,6 +947,9 @@ class ExamOptionsUpdate(APIView):
             for student_id in students:
                 try:
                     student_registration = registered_students.filter(student__id=student_id).first()
+
+                    ic(student_registration)
+
                     if student_registration:
                         student_registration.option = option
                         student_registration.save()
