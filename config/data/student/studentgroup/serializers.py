@@ -42,7 +42,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
 
         # Ensures we compare only the date and remove duplicate themes
         attendance = (
-            Attendance.objects.filter(group=obj, created_at__date=today)
+            Attendance.objects.filter(group=obj.group, created_at__date=today)
             .values("theme", "repeated")
             .distinct()  # Remove duplicates
         )
