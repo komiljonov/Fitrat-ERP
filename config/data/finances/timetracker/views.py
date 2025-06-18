@@ -713,18 +713,12 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 previous_check_out = attendance.check_out
                 previous_amount = attendance.amount or 0
 
+                # 1. First remove existing financial impact
+                self._remove_existing_financial_impact(attendance)
+
                 # Parse incoming datetime strings if they exist
                 new_check_in = self._parse_datetime_safe(data.get('check_in')) if data.get('check_in') else None
                 new_check_out = self._parse_datetime_safe(data.get('check_out')) if data.get('check_out') else None
-
-                # Calculate previous per-minute amount if check-in/out existed
-                previous_per_minute_amount = 0
-                if previous_check_in and previous_check_out:
-                    previous_per_minute_amount = update_calculate(
-                        attendance.employee.id,
-                        previous_check_in,
-                        previous_check_out
-                    ) / max(1, (previous_check_out - previous_check_in).total_seconds() / 60)
 
                 # Update the attendance record with parsed datetimes
                 serializer = self.get_serializer(attendance, data=data, partial=True)
@@ -738,38 +732,32 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     updated_attendance.check_out
                 ) if updated_attendance.check_in and updated_attendance.check_out else 0
 
-                # Calculate per-minute amount for new check-in/out
+                # Calculate per-minute amounts for reporting
+                previous_per_minute_amount = 0
                 new_per_minute_amount = 0
-                if updated_attendance.check_in and updated_attendance.check_out:
-                    new_per_minute_amount = new_penalty / max(1, (
-                            updated_attendance.check_out - updated_attendance.check_in).total_seconds() / 60)
 
-                # Calculate difference from previous amount
-                amount_difference = new_penalty - previous_amount
+                if previous_check_in and previous_check_out:
+                    previous_per_minute_amount = previous_amount / max(1,
+                                                                       (
+                                                                                   previous_check_out - previous_check_in).total_seconds() / 60)
+
+                if updated_attendance.check_in and updated_attendance.check_out:
+                    new_per_minute_amount = new_penalty / max(1,
+                                                              (
+                                                                          updated_attendance.check_out - updated_attendance.check_in).total_seconds() / 60)
 
                 # Update the attendance amount
                 updated_attendance.amount = new_penalty
                 updated_attendance.save()
 
-                # Update related finance records if needed
-                if amount_difference != 0 and updated_attendance.check_in:
-                    self._update_finance_records(
+                # 2. Create new financial records with fresh calculation
+                if updated_attendance.check_in:
+                    self._create_new_financial_records(
                         employee=updated_attendance.employee,
                         date=updated_attendance.check_in.date(),
-                        prev_amount=previous_amount,
-                        new_amount=new_penalty,
+                        amount=new_penalty,
                         check_in=updated_attendance.check_in,
                         check_out=updated_attendance.check_out
-                    )
-
-                # Update Employee_attendance
-                if updated_attendance.check_in:
-                    self._update_employee_attendance(
-                        updated_attendance.employee,
-                        updated_attendance.check_in.date(),
-                        updated_attendance,
-                        previous_amount,
-                        new_penalty
                     )
 
                 return Response({
@@ -778,7 +766,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     'penalty_calculation': {
                         'previous_amount': previous_amount,
                         'new_amount': new_penalty,
-                        'difference': amount_difference,
+                        'difference': new_penalty - previous_amount,
                         'previous_per_minute_amount': round(previous_per_minute_amount, 4),
                         'new_per_minute_amount': round(new_per_minute_amount, 4),
                         'per_minute_difference': round(new_per_minute_amount - previous_per_minute_amount, 4)
@@ -793,6 +781,78 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 'error_code': 'UPDATE_ERROR'
             }, status=status.HTTP_400_BAD_REQUEST)
 
+    def _remove_existing_financial_impact(self, attendance):
+        """Remove all financial impact of the existing attendance record"""
+        if not attendance.check_in:
+            return
+
+        date = attendance.check_in.date()
+        employee = attendance.employee
+
+        # 1. Remove from Employee_attendance
+        try:
+            employee_att = Employee_attendance.objects.get(
+                employee=employee,
+                date=date
+            )
+            employee_att.amount -= attendance.amount or 0
+            employee_att.save()
+
+            # Remove the attendance record from the relationship
+            employee_att.attendance.remove(attendance)
+
+            # Delete if no more attendance records and amount is zero
+            if employee_att.amount == 0 and not employee_att.attendance.exists():
+                employee_att.delete()
+        except Employee_attendance.DoesNotExist:
+            pass
+
+        # 2. Delete related finance records
+        Finance.objects.filter(
+            stuff=employee,
+            created_at__date=date,
+            comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
+        ).delete()
+
+    def _create_new_financial_records(self, employee, date, amount, check_in, check_out):
+        """Create new financial records with fresh calculation"""
+        if not date or amount == 0:
+            return
+
+        duration_minutes = (check_out - check_in).total_seconds() / 60
+
+        # 1. Update Employee_attendance
+        employee_att, _ = Employee_attendance.objects.get_or_create(
+            employee=employee,
+            date=date,
+            defaults={'amount': amount}
+        )
+
+        if not employee_att.amount == amount:  # Only update if different
+            employee_att.amount = amount
+            employee_att.save()
+
+        # 2. Create finance record
+        penalty_kind = Kind.objects.filter(
+            action="EXPENSE",
+            name__icontains="Bonus"
+        ).first()
+
+        if penalty_kind:
+            comment = (
+                f"Updated: {check_in.strftime('%H:%M')} to {check_out.strftime('%H:%M')} "
+                f"({duration_minutes:.0f} minutes) penalty {amount:.2f}"
+            )
+
+            Finance.objects.create(
+                action="EXPENSE",
+                kind=penalty_kind,
+                amount=amount,
+                stuff=employee,
+                comment=comment,
+                created_at=timezone.now()
+            )
+
     def _parse_datetime_safe(self, datetime_str):
         """Parse datetime string with timezone support"""
         if isinstance(datetime_str, datetime):
@@ -806,59 +866,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
         except ValueError as e:
             raise ValueError(f"Invalid datetime format: {datetime_str}") from e
-
-    def _update_employee_attendance(self, employee, date, attendance, prev_amount, new_amount):
-        """Update the employee's attendance record with the new amount"""
-        employee_att, created = Employee_attendance.objects.get_or_create(
-            employee=employee,
-            date=date,
-            defaults={'amount': new_amount}
-        )
-
-        if not created:
-            employee_att.amount -= prev_amount
-            employee_att.amount += new_amount
-            employee_att.save()
-
-        if not employee_att.attendance.filter(id=attendance.id).exists():
-            employee_att.attendance.add(attendance)
-
-    def _update_finance_records(self, employee, date, prev_amount, new_amount, check_in, check_out):
-        """Update related finance records with the new amount"""
-        if not date:
-            return {'updated': 0}
-
-        # More flexible matching - look for records close to the previous amount
-        finance_records = Finance.objects.filter(
-            stuff=employee,
-            action="EXPENSE",
-            kind__action="EXPENSE",
-            kind__name__icontains="Bonus",
-            created_at__date=date,
-            amount=prev_amount,
-        ).order_by('-created_at')
-
-        updated_count = 0
-        duration_minutes = (check_out - check_in).total_seconds() / 60 if check_in and check_out else 0
-
-
-        if finance_records.exists():
-            finance = finance_records.first()
-            finance.amount = new_amount
-            finance.comment = (
-                f"Updated: {check_in.strftime('%H:%M')} to {check_out.strftime('%H:%M')} "
-                f"({duration_minutes:.0f} minutes) penalty adjusted from "
-                f"{prev_amount:.2f} to {new_amount:.2f}"
-            )
-            finance.save()
-            updated_count = 1
-
-        return {
-            'previous_amount': prev_amount,
-            'new_amount': new_amount,
-            'updated': updated_count
-        }
-
 
 class UserTimeLineList(ListCreateAPIView):
     queryset = UserTimeLine.objects.all()
