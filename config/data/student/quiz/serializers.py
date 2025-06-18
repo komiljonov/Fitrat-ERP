@@ -532,6 +532,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "student",
             "exam",
             "status",
+            "group",
             "is_participating",
             "mark",
             "student_comment",
