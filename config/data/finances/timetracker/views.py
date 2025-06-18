@@ -20,7 +20,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary
+from .utils import get_monthly_per_minute_salary, calculate_penalty, update_calculate
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 
@@ -706,52 +706,61 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             with transaction.atomic():
-                # Get and update the attendance record
+                # Get the attendance record
                 attendance = self.get_object()
+                previous_check_in = attendance.check_in
+                previous_check_out = attendance.check_out
                 previous_amount = attendance.amount or 0
 
+                # Update the attendance record
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
-                new_amount = updated_attendance.amount or 0
 
-                # Process actions if provided
-                penalty_result = {}
-                if 'actions' in data:
-                    actions = self._validate_and_parse_actions(data['actions'])
-                    penalty_result = self._process_action_penalties(
-                        attendance.employee.id,
-                        actions,
-                        updated_attendance.check_in,
-                        updated_attendance.check_out
+                # Calculate new penalty amount
+                new_penalty = update_calculate(
+                    updated_attendance.employee.id,
+                    updated_attendance.check_in,
+                    updated_attendance.check_out
+                )
+
+                # Calculate difference from previous amount
+                amount_difference = new_penalty - previous_amount
+
+                # Update the attendance amount
+                updated_attendance.amount = new_penalty
+                updated_attendance.save()
+
+                # Update related finance records if needed
+                if amount_difference != 0:
+                    self._update_finance_records(
+                        employee=updated_attendance.employee,
+                        date=updated_attendance.check_in.date() if updated_attendance.check_in else None,
+                        prev_amount=previous_amount,
+                        new_amount=new_penalty,
+                        check_in=updated_attendance.check_in,
+                        check_out=updated_attendance.check_out
                     )
 
                 # Update Employee_attendance
                 if updated_attendance.check_in:
                     self._update_employee_attendance(
-                        attendance.employee,
+                        updated_attendance.employee,
                         updated_attendance.check_in.date(),
                         updated_attendance,
                         previous_amount,
-                        new_amount
+                        new_penalty
                     )
-
-                # Update Finance records
-                finance_updates = self._update_finance_records(
-                    attendance.employee,
-                    updated_attendance.check_in.date() if updated_attendance.check_in else None,
-                    previous_amount,
-                    new_amount,
-                    updated_attendance.check_in,
-                    updated_attendance.check_out
-                )
 
                 return Response({
                     'success': True,
                     'attendance': serializer.data,
-                    'penalty_calculation': penalty_result,
+                    'penalty_calculation': {
+                        'previous_amount': previous_amount,
+                        'new_amount': new_penalty,
+                        'difference': amount_difference
+                    },
                     'message': 'Attendance updated successfully',
-                    'financial_updates': finance_updates
                 }, status=status.HTTP_200_OK)
 
         except Stuff_Attendance.DoesNotExist:
@@ -1096,20 +1105,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             # Calculate penalty amount
             penalty_amount = outside_minutes * per_minute_penalty
 
-            # Create finance record
-            try:
-                self._update_finance_records(
-                    employee_id,
-                    action["start_datetime"].date(),
-                    penalty_amount,
-                    action['start_datetime'],
-                    action['end_datetime'],
-                    outside_minutes
-                )
-                finance_created = True
-            except Exception as e:
-                logger.error(f"Failed to create finance record: {str(e)}")
-                finance_created = False
+            print(penalty_amount)
 
             return {
                 'action_index': action_index,
@@ -1118,7 +1114,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 'duration_minutes': round(outside_minutes, 2),
                 'penalty_amount': round(penalty_amount, 2),
                 'per_minute_penalty': per_minute_penalty,
-                'finance_record_created': finance_created,
                 'timeline_used': {
                     'day': day_of_week,
                     'working_hours': f"{timeline.start_time}-{timeline.end_time}",
@@ -1144,11 +1139,9 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         if not date:
             return {'updated': 0}
 
+        # Find and update existing finance records
         finance_records = Finance.objects.filter(
             stuff=employee,
-            action="EXPENSE",
-            kind__action="EXPENSE",
-            kind__name__icontains="Bonus",
             created_at__date=date,
             amount=prev_amount
         )
@@ -1157,21 +1150,68 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         duration_minutes = (check_out - check_in).total_seconds() / 60 if check_in and check_out else 0
 
         for finance in finance_records:
+            # Determine the type of record (penalty or bonus)
+            if "jarima" in finance.comment.lower():
+                action_type = "penalty"
+                new_comment = (
+                    f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
+                    f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
+                    f"{new_amount:.2f} sum jarima yozildi!"
+                )
+            else:
+                action_type = "bonus"
+                new_comment = (
+                    f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
+                    f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
+                    f"{new_amount:.2f} sum bonus yozildi!"
+                )
+
             finance.amount = new_amount
-            finance.comment = (
-                f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
-                f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-                f"{new_amount:.2f} sum jarima yozildi!"
-            )
+            finance.comment = new_comment
             finance.save()
             updated_count += 1
+
+        # If no existing records found, create new ones if there's a penalty/bonus
+        if updated_count == 0 and new_amount != 0:
+            if new_amount > 0:  # Penalty
+                penalty_kind = Kind.objects.filter(
+                    action="EXPENSE",
+                    name__icontains="Money back"
+                ).first()
+                Finance.objects.create(
+                    action="EXPENSE",
+                    kind=penalty_kind,
+                    amount=new_amount,
+                    stuff=employee,
+                    comment=(
+                        f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
+                        f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
+                        f"{new_amount:.2f} sum jarima yozildi!"
+                    )
+                )
+            else:  # Bonus
+                bonus_kind = Kind.objects.filter(
+                    action="EXPENSE",
+                    name__icontains="Bonus"
+                ).first()
+                Finance.objects.create(
+                    action="EXPENSE",
+                    kind=bonus_kind,
+                    amount=abs(new_amount),
+                    stuff=employee,
+                    comment=(
+                        f"Bugun {check_in.strftime('%H:%M')} dan {check_out.strftime('%H:%M')} "
+                        f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
+                        f"{abs(new_amount):.2f} sum bonus yozildi!"
+                    )
+                )
+            updated_count = 1
 
         return {
             'previous_amount': prev_amount,
             'new_amount': new_amount,
             'updated': updated_count
         }
-
 
 class UserTimeLineList(ListCreateAPIView):
     queryset = UserTimeLine.objects.all()

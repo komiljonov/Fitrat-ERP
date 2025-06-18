@@ -8,7 +8,8 @@ from .views import (
     QuizGapsListView, QuizGapsDetailsView, QuestionsListCreateView, AnswerListCreateView,
     AnswerRetrieveUpdateDestroyView, QuizCheckAPIView, ExcelQuizUploadAPIView, ExamRegistrationListCreateAPIView,
     ObjectiveTestView, Cloze_TestView, ImageCloze_TestView, ExamRegisteredStudentAPIView, QuizListPgView,
-    True_False_TestView, True_False_TestRetriveView, Cloze_TestUpdate, ExamCertificateAPIView
+    True_False_TestView, True_False_TestRetriveView, Cloze_TestUpdate, ExamCertificateAPIView, ExamSubjectListCreate,
+    ExamSubjectDetail, ExamOptionCreate
 )
 
 urlpatterns = [
@@ -58,4 +59,10 @@ urlpatterns = [
     path("exam-students/", ExamRegisteredStudentAPIView.as_view(), name='exam-students'),
 
     path("exam-certificats/",ExamCertificateAPIView.as_view(), name='exam-certificates'),
+
+
+    path("exam-subject/",ExamSubjectListCreate.as_view(), name='exam-subject'),
+    path("exam-subject/<uuid:pk>/",ExamSubjectDetail.as_view()),
+
+    path("student-option/",ExamOptionCreate.as_view(), name='student-option'),
 ]

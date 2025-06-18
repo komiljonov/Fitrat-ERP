@@ -9,6 +9,8 @@ from ...command.models import BaseModel
 
 if TYPE_CHECKING:
     from ..course.models import Course
+    from ..student.models import Student
+
 from ...account.models import CustomUser
 from ..subject.models import Level
 
@@ -79,6 +81,11 @@ class Group(BaseModel):
 
     def __str__(self):
         return f"{self.name} - {self.price_type}"
+
+class GroupSaleStudent(BaseModel):
+    group: 'Group' = models.ForeignKey('groups.Group', on_delete=models.CASCADE,related_name='sale_student_group')
+    student: "Student" = models.ForeignKey('student.Student', on_delete=models.CASCADE,related_name='sale_student_student')
+    amount = models.FloatField(default=0, null=True, blank=True)
 
 
 class SecondaryGroup(BaseModel):

@@ -7,15 +7,15 @@ from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import ListAPIView, get_object_or_404
+from rest_framework.generics import ListAPIView, get_object_or_404, RetrieveAPIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Group, Room, SecondaryGroup, Day
+from .models import Group, Room, SecondaryGroup, Day, GroupSaleStudent
 from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer, \
-    DaySerializer, RoomFilterSerializer
+    DaySerializer, RoomFilterSerializer, GroupSaleStudentSerializer
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
 from ..studentgroup.models import SecondaryStudentGroup
@@ -717,3 +717,24 @@ class StudentGroupIsActiveNowAPIView(APIView):
                     })
 
         return Response({"is_scheduled_now": False, "group_id": None})
+
+
+class StudentSaleGroupListCreateAPIView(ListCreateAPIView):
+    queryset = GroupSaleStudent.objects.all()
+    serializer_class = GroupSaleStudentSerializer
+
+    def get_queryset(self):
+        qs = GroupSaleStudent.objects.all()
+
+        group = self.request.GET.get('group', None)
+        student = self.request.GET.get('student', None)
+
+        if group:
+            qs = qs.filter(group__id=group)
+        if student:
+            qs = qs.filter(student__id=student)
+        return qs
+
+class StudentSaleGroupDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = GroupSaleStudent.objects.all()
+    serializer_class = GroupSaleStudentSerializer

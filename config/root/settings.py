@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'data.finances.compensation',
     'data.finances.timetracker',
     'data.notifications',
+    'data.exam_results',
 
     'data.lid.archived',
     'data.lid.new_lid',
