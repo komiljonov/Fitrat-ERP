@@ -205,6 +205,8 @@ class QuizCheckAPIView(APIView):
 
             return is_correct, {
                 "id": question["id"],
+                "file": question.get("file", ""),
+                "question": question["question"]["question"]["name"],
                 "correct": is_correct,
                 "user_answer": user_answer_text,
                 "correct_answer": correct_answer
@@ -227,6 +229,8 @@ class QuizCheckAPIView(APIView):
 
             return is_correct, {
                 "id": question["id"],
+                "file": question.get("file", ""),
+                "question": question["question"]["question"]["name"],
                 "correct": is_correct,
                 "user_answer": user_sequence,
                 "correct_answer": correct_sequence
@@ -249,6 +253,8 @@ class QuizCheckAPIView(APIView):
 
             return is_correct, {
                 "id": question["id"],
+                "file": question.get("file", ""),
+                "question": question["question"]["question"]["name"],
                 "correct": is_correct,
                 "user_answer": user_answer_id,
                 "correct_answer": correct_answer_id,
@@ -271,6 +277,8 @@ class QuizCheckAPIView(APIView):
 
         return is_correct, {
             "id": question["id"],
+            "file": question.get("file", ""),
+            "question": question["question"]["question"]["name"],
             "correct": is_correct,
             "user_answer": user_answer_id,
             "correct_answer": correct_answer_id
@@ -283,6 +291,7 @@ class QuizCheckAPIView(APIView):
 
         return is_correct, {
             "id": question["id"],
+            "file": question.get("file", ""),
             "question": question["question"]["question"]["name"],
             "correct": is_correct,
             "user_answer": user_choice,
@@ -324,6 +333,7 @@ class QuizCheckAPIView(APIView):
         return all_correct, {
             "id": question["id"],
             "correct": all_correct,
+            "file": question.get("file", ""),
             "pair_results": pair_results,
             "correct_mapping": {
                 key: {"left_id": left, "right_id": right}
