@@ -763,7 +763,11 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
         is_participating = self.request.GET.get("is_participating")
         option = self.request.GET.get("option")
         has_certificate = self.request.GET.get("has_certificate")
+        group = self.request.GET.get("group")
 
+
+        if group:
+            qs = qs.filter(group__id=group)
         if has_certificate:
             qs = qs.filter(has_certificate=has_certificate.capitalize())
         if student:
@@ -937,7 +941,7 @@ class ExamOptionsUpdate(APIView):
 
             for student_id in students:
                 try:
-                    student_registration = registered_students.filter(student_id=student_id).first()
+                    student_registration = registered_students.filter(student__id=student_id).first()
                     if student_registration:
                         student_registration.option = option
                         student_registration.save()
