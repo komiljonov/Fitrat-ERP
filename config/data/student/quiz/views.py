@@ -907,7 +907,7 @@ class ExamOptionsUpdate(APIView):
             )
 
         # Get data from request
-        students = request.data.get("students")
+        students = request.data
         option = request.data.get("option")
 
         # Validate request data
