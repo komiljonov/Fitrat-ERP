@@ -5,7 +5,7 @@ from icecream import ic
 from rest_framework import serializers
 
 from .lesson_date_calculator import calculate_lessons
-from .models import Group, Day, Room, SecondaryGroup
+from .models import Group, Day, Room, SecondaryGroup, GroupSaleStudent
 from .room_filings_calculate import calculate_room_filling_statistics
 from ..attendance.models import Attendance, SecondaryAttendance
 from ..course.models import Course
@@ -347,3 +347,14 @@ class SecondaryGroupModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecondaryGroup
         fields = ['id', 'name']
+
+
+class GroupSaleStudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupSaleStudent
+        fields = [
+            "id",
+            "group",
+            "student",
+            "amount",
+        ]

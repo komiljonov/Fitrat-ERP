@@ -4,7 +4,8 @@ from .views import StudentGroupsView, GroupRetrieveUpdateDestroyAPIView, GroupLi
     RoomListAPIView, RoomRetrieveUpdateDestroyAPIView, RoomNoPG, SecondaryGroupsView, \
     SecondaryGroupRetrieveUpdateDestroyAPIView, SecondaryNoPG, DaysNoPG, DaysAPIView, LessonScheduleListApi, \
     GroupLessonScheduleView, LessonScheduleWebListApi, RoomFilterView, CheckRoomLessonScheduleView, \
-    GroupIsActiveNowAPIView, SecondaryGroupIsActiveNowAPIView, StudentGroupIsActiveNowAPIView
+    GroupIsActiveNowAPIView, SecondaryGroupIsActiveNowAPIView, StudentGroupIsActiveNowAPIView, \
+    StudentSaleGroupListCreateAPIView, StudentSaleGroupDetailAPIView
 from ..lesson.views import ExtraLessonScheduleView
 
 urlpatterns = [
@@ -39,4 +40,7 @@ urlpatterns = [
 
     path('days',DaysAPIView.as_view(), name='days-list'),
     path('days/no-pg',DaysNoPG.as_view(), name='days-no-pg-list'),
+
+    path("group-sale/",StudentSaleGroupListCreateAPIView.as_view(), name='group-sale-list'),
+    path("group-sale/<uuid:pk>/",StudentSaleGroupDetailAPIView.as_view(), name='group-sale-detail'),
 ]
