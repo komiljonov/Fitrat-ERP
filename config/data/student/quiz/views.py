@@ -104,7 +104,7 @@ class QuizCheckAPIView(APIView):
         existing_results = QuizResult.objects.filter(
             quiz=quiz,
             student=student,
-            question__id__in=[q["id"] for q in quiz_questions]
+            questions__id__in=[q["id"] for q in quiz_questions]
         )
 
         results["existing_results"] = QuizResultSerializer(existing_results, many=True).data
