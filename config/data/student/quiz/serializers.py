@@ -526,6 +526,9 @@ class ExamSerializer(serializers.ModelSerializer):
 
 
 class ExamRegistrationSerializer(serializers.ModelSerializer):
+    option = serializers.PrimaryKeyRelatedField(
+        queryset=ExamSubject.objects.all(),many=True,allow_null=True
+    )
     class Meta:
         model = ExamRegistration
         fields = [
@@ -607,6 +610,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["option"] = ExamSubjectSerializer(instance.option,many=True).data
         rep["student"] = StudentSerializer(instance.student, include_only=["id","first_name","last_name"]).data
         return rep
 
