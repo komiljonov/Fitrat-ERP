@@ -1,7 +1,7 @@
 
 from rest_framework import serializers
 
-from .models import UnitTest, UnitTestResult
+from .models import UnitTest, UnitTestResult, QuizResult
 from ..student.subject.models import Theme
 from ..student.subject.serializers import ThemeSerializer
 
@@ -31,6 +31,23 @@ class UnitTestResultSerializer(serializers.ModelSerializer):
             "id",
             "student",
             "unit",
+            "point",
+            "created_at"
+        ]
+
+class QuizResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuizResult
+        fields = [
+            "id",
+            "student",
+            "questions",
+            "match_pair",
+            "true_false",
+            "vocabulary",
+            "objective",
+            "cloze_test",
+            "image_objective",
             "point",
             "created_at"
         ]

@@ -33,6 +33,8 @@ from ..shop.models import Points
 from ..student.models import Student
 from ..subject.models import Theme
 from ...account.models import CustomUser
+from ...exam_results.models import QuizResult
+from ...exam_results.serializers import QuizResultSerializer
 
 
 class QuizCheckAPIView(APIView):
@@ -97,12 +99,15 @@ class QuizCheckAPIView(APIView):
             else:
                 results["summary"]["wrong_count"] += 1
                 # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
-
-            # result = QuizRe sult.objects.filter(
-            #
-            # )
-
             results["details"][qtype].append(result_data)
+
+        existing_results = QuizResult.objects.filter(
+            quiz=quiz,
+            student=student,
+            question_id__in=[q["id"] for q in quiz_questions]
+        )
+
+        results["existing_results"] = QuizResultSerializer(existing_results, many=True).data
 
         total = quiz.count if quiz else len(quiz_questions)
         results["summary"]["total_questions"] = total
