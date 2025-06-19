@@ -7,13 +7,11 @@ from django.dispatch.dispatcher import logger
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from icecream import ic
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView, \
-    RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -35,8 +33,6 @@ from ..shop.models import Points
 from ..student.models import Student
 from ..subject.models import Theme
 from ...account.models import CustomUser
-from ...exam_results.models import QuizResult
-from ...lid.new_lid.views import BulkUpdate
 
 
 class QuizCheckAPIView(APIView):
@@ -102,7 +98,7 @@ class QuizCheckAPIView(APIView):
                 results["summary"]["wrong_count"] += 1
                 # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
 
-            # result = QuizResult.objects.filter(
+            # result = QuizRe sult.objects.filter(
             #
             # )
 
@@ -236,7 +232,7 @@ class QuizCheckAPIView(APIView):
 
             return is_correct, {
                 "id": question["id"],
-#                 "file": question.get("file", ""),
+                #                 "file": question.get("file", ""),
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_sequence,
@@ -260,7 +256,7 @@ class QuizCheckAPIView(APIView):
 
             return is_correct, {
                 "id": question["id"],
-#                 "file": question.get("file", ""),
+                #                 "file": question.get("file", ""),
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_id,
@@ -300,7 +296,7 @@ class QuizCheckAPIView(APIView):
 
         return is_correct, {
             "id": question["id"],
-#             "file": question.get("file", ""),
+            #             "file": question.get("file", ""),
             "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
             "user_answer": user_choice,
@@ -342,7 +338,7 @@ class QuizCheckAPIView(APIView):
         return all_correct, {
             "id": question["id"],
             "correct": all_correct,
-#             "file": question.get("file", ""),
+            #             "file": question.get("file", ""),
             "pair_results": pair_results,
             "correct_mapping": {
                 key: {"left_id": left, "right_id": right}
@@ -399,7 +395,6 @@ class ExamSubjectListCreate(ListCreateAPIView):
 class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = ExamSubject.objects.all()
     serializer_class = ExamSubjectSerializer
-
 
 
 class ObjectiveTestView(ListCreateAPIView):
@@ -771,7 +766,6 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
         has_certificate = self.request.GET.get("has_certificate")
         group = self.request.GET.get("group")
 
-
         if group:
             qs = qs.filter(group__id=group)
         if has_certificate:
@@ -795,7 +789,6 @@ class ExamRegistrationNoPgAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     pagination_class = None
 
-
     def get_queryset(self):
         qs = ExamRegistration.objects.all()
 
@@ -806,7 +799,6 @@ class ExamRegistrationNoPgAPIView(ListCreateAPIView):
         option = self.request.GET.get("option")
         has_certificate = self.request.GET.get("has_certificate")
         group = self.request.GET.get("group")
-
 
         if group:
             qs = qs.filter(group__id=group)
@@ -823,6 +815,7 @@ class ExamRegistrationNoPgAPIView(ListCreateAPIView):
         if option:
             qs = qs.filter(option=option)
         return qs
+
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -976,17 +969,22 @@ class ExamOptionCreate(APIView):
                         group=group
                     ).first()
 
+                    # Normalize the incoming option(s)
+                    incoming_options = option if isinstance(option, list) else [option]
+
                     if existing_registration:
-                        # Update existing record
-                        existing_registration.option = option
-                        registrations_to_update.append(existing_registration)
+                        existing_options = existing_registration.option or []
+                        merged_options = list(set(existing_options).union(set(incoming_options)))
+
+                        if set(existing_options) != set(merged_options):
+                            existing_registration.option = merged_options
+                            registrations_to_update.append(existing_registration)
                     else:
-                        # Create new record
                         registrations_to_create.append(ExamRegistration(
                             student=student,
                             exam=exam,
                             group=group,
-                            option=option
+                            option=incoming_options
                         ))
 
                 except (Student.DoesNotExist, Exam.DoesNotExist, Group.DoesNotExist) as e:
