@@ -224,6 +224,13 @@ class ExamSubject(BaseModel):
     lang_foreign = models.BooleanField(default=False)
     lang_national = models.BooleanField(default=False)
 
+    order = models.IntegerField(null=True, blank=True)
+
+    has_certificate = models.BooleanField(default=False)
+    certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='certificate_of_student')
+    certificate_expire_date = models.DateField(null=True, blank=True)
+
     def __str__(self):
         return f"{self.subject.name}  --- {self.options}"
 
@@ -290,10 +297,7 @@ class ExamRegistration(BaseModel):
     group : "Group" = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True,
                                         related_name='registration_group')
     option : "ExamSubject" = models.ManyToManyField("quiz.ExamSubject",related_name='registration_option_subjects')
-    has_certificate = models.BooleanField(default=False)
-    certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
-                                            related_name='certificate_of_student')
-    certificate_expire_date = models.DateField(null=True, blank=True)
+
     def __str__(self):
         return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
 
