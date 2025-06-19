@@ -55,6 +55,9 @@ class QuizCheckAPIView(APIView):
         student = Student.objects.filter(user=request.user).first()
         theme = get_object_or_404(Theme, id=data.get("theme"))
 
+
+
+
         results = {
             "details": {},
             "summary": {
