@@ -1,3 +1,4 @@
+import logging
 import random
 
 from icecream import ic
@@ -8,6 +9,7 @@ from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, E
     ExamSubject
 from .tasks import handle_task_creation
 from ..homeworks.models import Homework
+from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ..subject.models import Subject, Theme
 from ..subject.serializers import SubjectSerializer, ThemeSerializer
@@ -441,8 +443,39 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             "options",
             "lang_foreign",
             "lang_national",
+            "order",
+            "has_certificate",
+            "certificate",
+            "certificate_expire_date",
             "created_at",
         ]
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        user = request.user
+        student = Student.objects.filter(user=user).first()
+        exam = ExamRegistration.objects.filter(
+            student=student,
+            option__in=validated_data.get("id")
+        ).first()
+
+
+        if validated_data.get("has_certificate") == True and validated_data.get("certificate"):
+            ExamCertificate.objects.create(
+                student=student,
+                certificate=validated_data.get("certificate"),
+                exam=exam
+            )
+            logging.info("Exam Certificate created")
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["subject"] = {
+            "id" : instance.subject.id,
+            "name" : instance.subject.name,
+            "is_language": instance.subject.is_language,
+        }
+        return rep
 
 
 class ExamSerializer(serializers.ModelSerializer):
@@ -541,8 +574,6 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "mark",
             "option",
             "student_comment",
-            "has_certificate",
-            "certificate",
             "created_at",
         ]
 
@@ -593,26 +624,15 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def create(self, validated_data):
-        instance = super().create(validated_data)
-        handle_task_creation.delay(instance.exam.id)
-
-        if validated_data.get("has_certificate") == True and validated_data.get("certificate"):
-            ExamCertificate.objects.create(
-                student=instance.student,
-                exam=instance.exam,
-                status = "Pending",
-                expire_date=instance.certificate_expire_date,
-                certificate=validated_data.get("certificate"),
-            )
-
-        return instance
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["exam"] = {
             "id": instance.exam.id,
             "name": instance.exam.name,
+            "choice": instance.exam.choice,
+            "type": instance.exam.type,
+            "is_mandatory": instance.exam.is_mandatory,
         }
         rep["option"] = ExamSubjectSerializer(instance.option,many=True).data
         rep["student"] = StudentSerializer(instance.student, include_only=["id","first_name","last_name"]).data
