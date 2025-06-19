@@ -779,7 +779,7 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
         if has_certificate:
             qs = qs.filter(has_certificate=has_certificate.capitalize())
         if student:
-            qs = qs.filter(student__id=student)
+            qs = qs.filter(student__user__id=student)
         if exam:
             qs = qs.filter(exam__id=exam)
         if status:
