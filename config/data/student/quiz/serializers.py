@@ -610,6 +610,10 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["exam"] = {
+            "id": instance.exam.id,
+            "name": instance.exam.name,
+        }
         rep["option"] = ExamSubjectSerializer(instance.option,many=True).data
         rep["student"] = StudentSerializer(instance.student, include_only=["id","first_name","last_name"]).data
         return rep
