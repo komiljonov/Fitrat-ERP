@@ -289,14 +289,7 @@ class ExamRegistration(BaseModel):
     student_comment = models.TextField(null=True, blank=True)
     group : "Group" = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True,
                                         related_name='registration_group')
-    option = models.CharField(choices=[
-        ("1", "1"),
-        ("2", "2"),
-        ("3", "3"),
-        ("4", "4"),
-        ("5", "5"),
-        ("6", "6"),
-    ], max_length=10, null=True, blank=True)
+    option : "ExamSubject" = models.ManyToManyField("quiz.ExamSubject",related_name='registration_option_subjects')
     has_certificate = models.BooleanField(default=False)
     certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                             related_name='certificate_of_student')
@@ -312,6 +305,9 @@ class ExamCertificate(BaseModel):
                                      related_name='registration_exam_certificate')
     certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                             related_name='registered_certificate_of_student')
+
+    subject : "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='certificate_of_student_subject')
 
     expire_date = models.DateField(null=True, blank=True)
 
