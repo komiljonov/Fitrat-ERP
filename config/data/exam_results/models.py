@@ -1,9 +1,8 @@
 from django.db import models
 
 from ..command.models import BaseModel
-from ..student.quiz.models import Quiz,Exam,Question,MatchPairs,True_False,Vocabulary,ObjectiveTest,ImageObjectiveTest,Listening,Cloze_Test
-from ..student.student.models import Student
-from ..student.subject.models import Theme
+
+
 class QuizResult(BaseModel):
     quiz = models.ForeignKey(
         "quiz.Quiz",
