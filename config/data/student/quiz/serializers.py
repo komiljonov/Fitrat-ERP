@@ -455,13 +455,17 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
         user = request.user
         student = Student.objects.filter(user=user).first()
 
-        option_ids = validated_data.get("id") or []
+        # Create the ExamSubject object
+        exam_subject = ExamSubject.objects.create(**validated_data)
 
+        # Fetch related ExamRegistration
+        option_ids = [exam_subject.id]  # since `id` is the primary key of the created object
         exam = ExamRegistration.objects.filter(
             student=student,
             option__in=option_ids
         ).first()
 
+        # If there's a certificate to attach
         if validated_data.get("has_certificate") and validated_data.get("certificate"):
             ExamCertificate.objects.create(
                 student=student,
@@ -470,7 +474,7 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             )
             logging.info("Exam Certificate created")
 
-        return exam
+        return exam_subject  # ✅ Return the correct instance
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
