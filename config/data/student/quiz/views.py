@@ -404,6 +404,27 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = ExamSubject.objects.all()
     serializer_class = ExamSubjectSerializer
 
+    def update(self, request, *args, **kwargs):
+        # Bulk update logic
+        if isinstance(request.data, list):
+            response_data = []
+            for item in request.data:
+                try:
+                    instance = ExamSubject.objects.get(id=item.get("id"))
+                except ExamSubject.DoesNotExist:
+                    continue  # or collect errors if needed
+
+                serializer = self.get_serializer(instance, data=item, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                response_data.append(serializer.data)
+
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        # Regular single-object update
+        return super().update(request, *args, **kwargs)
+
+
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
