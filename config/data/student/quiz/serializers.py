@@ -470,6 +470,7 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             )
             logging.info("Exam Certificate created")
 
+        return exam
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
