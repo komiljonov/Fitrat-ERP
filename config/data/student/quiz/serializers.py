@@ -483,6 +483,8 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             "name" : instance.subject.name,
             "is_language": instance.subject.is_language,
         }
+        rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data
+
         return rep
 
 
