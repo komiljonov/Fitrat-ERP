@@ -454,19 +454,22 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = request.user
         student = Student.objects.filter(user=user).first()
+
+        option_ids = validated_data.get("id") or []
+
         exam = ExamRegistration.objects.filter(
             student=student,
-            option__in=validated_data.get("id")
+            option__in=option_ids
         ).first()
 
-
-        if validated_data.get("has_certificate") == True and validated_data.get("certificate"):
+        if validated_data.get("has_certificate") and validated_data.get("certificate"):
             ExamCertificate.objects.create(
                 student=student,
-                certificate=validated_data.get("certificate"),
+                certificate=validated_data["certificate"],
                 exam=exam
             )
             logging.info("Exam Certificate created")
+
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
