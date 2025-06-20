@@ -479,9 +479,9 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = {
-            "id" : instance.subject.id,
-            "name" : instance.subject.name,
-            "is_language": instance.subject.is_language,
+            "id" : instance.subject.id if instance.subject else None,
+            "name" : instance.subject.name if instance.subject else None,
+            "is_language": instance.subject.is_language if instance.subject else None,
         }
         rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data
 
