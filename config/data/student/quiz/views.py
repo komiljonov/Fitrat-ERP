@@ -404,7 +404,7 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = ExamSubjectSerializer
 
     allowed_bulk_fields = {
-        "order", "has_certificate", "certificate", "certificate_expire_date"
+        "order", "has_certificate", "certificate"
     }
 
     def update(self, request, *args, **kwargs):
