@@ -392,9 +392,9 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
             # === Bonus for being in office (Working Minutes Bonus)
 
-            inside_att = att.objects.filter()
+            ic("--------------------------------")
 
-
+            ic(total_working_minutes)
             if total_working_minutes > 0:
                 if matched_timeline and matched_timeline.bonus:
                     bonus_amount = total_working_minutes * matched_timeline.bonus
