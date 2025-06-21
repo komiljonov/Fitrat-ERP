@@ -998,7 +998,7 @@ class ExamCertificateAPIView(ListCreateAPIView):
 
 
 
-class   ExamOptionCreate(APIView):
+class  ExamOptionCreate(APIView):
     """
     Bulk create or update ExamRegistration entries using ordinary field objects.
     """
@@ -1041,7 +1041,7 @@ class   ExamOptionCreate(APIView):
                     existing_registration = ExamRegistration.objects.filter(
                         student=student,
                         exam=exam,
-                        group=group
+                        group=group,
                     ).first()
 
                     if existing_registration:
@@ -1058,12 +1058,14 @@ class   ExamOptionCreate(APIView):
 
             # Create new registrations and set M2M options
             for student, exam, group, option_ids in registrations_to_create:
-                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group)
+                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group,status="Waiting")
                 reg.option.set(option_ids)
 
             # Update existing registrations' options
             for reg, option_ids in registrations_to_update:
                 reg.option.set(option_ids)
+                reg.status = "Waiting"
+                reg.save()
 
 
         print((registrations_to_create),(registrations_to_update),(errors))
