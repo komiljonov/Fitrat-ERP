@@ -725,7 +725,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
                 ic(new_penalty)
 
-                updated_attendance.amount = new_penalty.get("amount")
+                updated_attendance.amount = new_penalty
                 updated_attendance.save()
 
                 em_att, created = Employee_attendance.objects.get_or_create(
@@ -739,7 +739,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     em_att.attendance.add(updated_attendance)
 
                 # Update the amount by first subtracting the previous amount and adding the new penalty
-                em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty.get("amount") or 0)
+                em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
                 em_att.save()
 
                 return Response({
@@ -747,8 +747,8 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     'attendance': serializer.data,
                     'penalty_calculation': {
                         'previous_amount': previous_amount,
-                        'new_amount': new_penalty.get("amount"),
-                        'difference': new_penalty.get("amount") - previous_amount,
+                        'new_amount': new_penalty,
+                        'difference': new_penalty - previous_amount,
                     },
                     'message': 'Attendance updated successfully',
                 }, status=status.HTTP_200_OK)
