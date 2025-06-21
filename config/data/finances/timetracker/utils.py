@@ -123,6 +123,9 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
     total_penalty = 0
     per_minute_salary = get_monthly_per_minute_salary(user_id).get('per_minute_salary', 0)
 
+
+    print(per_minute_salary)
+
     REVERSE_UZBEK_WEEKDAYS = {v: k for k, v in UZBEK_WEEKDAYS.items()}
     today_uzbek_day = REVERSE_UZBEK_WEEKDAYS.get(weekday_index)
 
