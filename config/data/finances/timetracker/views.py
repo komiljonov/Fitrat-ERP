@@ -746,7 +746,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     'penalty_calculation': {
                         'previous_amount': previous_amount,
                         'new_amount': new_penalty,
-                        'difference': new_penalty - previous_amount,
+                        'difference': new_penalty.get("amount") - previous_amount,
                     },
                     'message': 'Attendance updated successfully',
                 }, status=status.HTTP_200_OK)
