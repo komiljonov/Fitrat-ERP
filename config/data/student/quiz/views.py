@@ -986,6 +986,7 @@ class ExamCertificateAPIView(ListCreateAPIView):
         return qs
 
 
+
 class ExamOptionCreate(APIView):
     """
     Bulk create or update ExamRegistration entries using ordinary field objects.
@@ -1001,7 +1002,7 @@ class ExamOptionCreate(APIView):
         registrations_to_update = []
         errors = []
 
-        with transaction.atomic():  # Wrap everything in a transaction
+        with transaction.atomic():
             for entry in data:
                 student_id = entry.get("student")
                 exam_id = entry.get("exam")
@@ -1018,43 +1019,37 @@ class ExamOptionCreate(APIView):
                     exam = Exam.objects.get(id=exam_id)
                     group = Group.objects.get(id=group_id) if group_id else None
 
-                    # Check if registration already exists
+                    incoming_options = option if isinstance(option, list) else [option]
+
                     existing_registration = ExamRegistration.objects.filter(
                         student=student,
                         exam=exam,
                         group=group
                     ).first()
 
-                    # Normalize the incoming option(s)
-                    incoming_options = option if isinstance(option, list) else [option]
-
                     if existing_registration:
-                        existing_options = existing_registration.option or []
-                        merged_options = list(set(existing_options).union(set(incoming_options)))
+                        existing_option_ids = list(existing_registration.option.values_list("id", flat=True))
+                        merged_option_ids = list(set(existing_option_ids).union(set(incoming_options)))
 
-                        if set(existing_options) != set(merged_options):
-                            existing_registration.option = merged_options
-                            registrations_to_update.append(existing_registration)
+                        if set(existing_option_ids) != set(merged_option_ids):
+                            registrations_to_update.append((existing_registration, merged_option_ids))
                     else:
-                        registrations_to_create.append(ExamRegistration(
-                            student=student,
-                            exam=exam,
-                            group=group,
-                            option=incoming_options
-                        ))
+                        registrations_to_create.append((student, exam, group, incoming_options))
 
                 except (Student.DoesNotExist, Exam.DoesNotExist, Group.DoesNotExist) as e:
                     errors.append({'entry': entry, 'error': str(e)})
                 except Exception as e:
                     errors.append({'entry': entry, 'error': f"Unexpected error: {str(e)}"})
 
-            # Perform bulk operations
-            if registrations_to_create:
-                ExamRegistration.objects.bulk_create(registrations_to_create)
+            # Create new registrations and set M2M options
+            for student, exam, group, option_ids in registrations_to_create:
+                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group)
+                reg.option.set(option_ids)
 
-            if registrations_to_update:
-                ExamRegistration.objects.bulk_update(registrations_to_update, ['option'])
-            print(errors)
+            # Update existing registrations' options
+            for reg, option_ids in registrations_to_update:
+                reg.option.set(option_ids)
+
         response_data = {
             'created': len(registrations_to_create),
             'updated': len(registrations_to_update),
