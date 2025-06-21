@@ -1054,7 +1054,7 @@ class ExamOptionCreate(APIView):
 
             if registrations_to_update:
                 ExamRegistration.objects.bulk_update(registrations_to_update, ['option'])
-
+            print(errors)
         response_data = {
             'created': len(registrations_to_create),
             'updated': len(registrations_to_update),
