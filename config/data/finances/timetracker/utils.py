@@ -295,7 +295,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
                     finance = Finance.objects.create(
                         action="EXPENSE",
-                        kind=bonus_kind,
+                        kind=penalty_kind,
                         amount=penalty_amount,
                         stuff=user,
                         comment=f"Bugun {check_out.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun"
