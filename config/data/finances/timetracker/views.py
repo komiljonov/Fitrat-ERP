@@ -17,6 +17,7 @@ from rest_framework.response import Response
 
 from .models import Employee_attendance
 from .models import UserTimeLine, Stuff_Attendance
+from .recalculation import recalculate
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
@@ -53,6 +54,7 @@ class TimeTrackerList(ListCreateAPIView):
         if date:
             queryset = queryset.filter(date=parse_datetime(date))
         return queryset.order_by('-date')
+
 
 
 class AttendanceError(Exception):
@@ -687,6 +689,7 @@ class AttendanceList(ListCreateAPIView):
             raise
 
 
+
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
@@ -706,21 +709,21 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             with transaction.atomic():
                 # Get the attendance record
                 attendance = self.get_object()
-                previous_check_in = attendance.check_in
-                previous_check_out = attendance.check_out
+
+                ic(attendance)
+
                 previous_amount = attendance.amount or 0
 
-                # 1. First remove existing financial impact
+                ic(attendance.amount)
+                ic(previous_amount)
+
                 self._remove_existing_financial_impact(attendance)
 
-                # Parse incoming datetime strings if they exist
-                new_check_in = self._parse_datetime_safe(data.get('check_in')) if data.get('check_in') else None
-                new_check_out = self._parse_datetime_safe(data.get('check_out')) if data.get('check_out') else None
-
-                # Update the attendance record with parsed datetimes
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
+
+                ic(updated_attendance.amount)
 
                 # Calculate new penalty amount
                 new_penalty = calculate_penalty(
@@ -729,8 +732,13 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     updated_attendance.check_out
                 ) if updated_attendance.check_in and updated_attendance.check_out else 0
 
+                ic(new_penalty)
+
+
                 updated_attendance.amount = new_penalty
                 updated_attendance.save()
+
+                ic(updated_attendance.amount)
 
                 em_att, created = Employee_attendance.objects.get_or_create(
                     employee=updated_attendance.employee,
@@ -738,13 +746,16 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     defaults={'amount': 0}  # Initialize with 0 if creating new
                 )
 
-                # Add the attendance record to the many-to-many relationship
+                ic(em_att,created)
+
+
                 if not em_att.attendance.filter(id=updated_attendance.id).exists():
                     em_att.attendance.add(updated_attendance)
 
-                # Update the amount by first subtracting the previous amount and adding the new penalty
                 em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
                 em_att.save()
+
+                ic(em_att.amount)
 
                 print({
                         'previous_amount': previous_amount,
@@ -784,6 +795,10 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 employee=employee,
                 date=date
             )
+
+            ic(employee_att.amount)
+            ic(attendance.amount)
+
             employee_att.amount -= attendance.amount or 0
             employee_att.save()
 
@@ -796,7 +811,13 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         except Employee_attendance.DoesNotExist:
             pass
 
-        # 2. Delete related finance records
+        ic(Finance.objects.filter(
+            stuff=employee,
+            created_at__date=date,
+            comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
+        ).first())
+
+
         Finance.objects.filter(
             stuff=employee,
             created_at__date=date,
@@ -816,6 +837,10 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
         except ValueError as e:
             raise ValueError(f"Invalid datetime format: {datetime_str}") from e
+
+
+
+
 
 
 class UserTimeLineList(ListCreateAPIView):
