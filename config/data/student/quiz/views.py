@@ -416,8 +416,6 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
 
             for item in request.data:
 
-                print(request.data)
-
                 item_id = item.get("id")
                 if not item_id:
                     errors.append({"error": "Missing ID", "item": item})
@@ -438,8 +436,6 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
                     response_data.append(serializer.data)
-
-                    print("response",response_data)
 
                 except ValidationError as ve:
                     errors.append({"id": item_id, "validation_error": ve.detail})
