@@ -293,6 +293,8 @@ class AttendanceList(ListCreateAPIView):
                             i + 1
                         )
 
+                        ic()
+
                         total_penalty += penalty_result['penalty_amount']
                         penalty_details.append(penalty_result)
 
@@ -348,6 +350,8 @@ class AttendanceList(ListCreateAPIView):
                                         early_minutes = abs(time_difference)
 
                                         amount = early_minutes * penalty_info['penalty_amount']
+
+                                        print(penalty_info["penalty_amount"])
 
                                         total_bonuses += amount
                                         employee = timeline.user
