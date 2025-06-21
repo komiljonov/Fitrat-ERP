@@ -247,9 +247,7 @@ class AttendanceList(ListCreateAPIView):
         """Create or update attendance record with error handling"""
         try:
             serializer = self.get_serializer(data=data)
-            if data.get("action"):
-                print(serializer)
-                serializer.data['action'] = data['action']
+
             if serializer.is_valid():
                 attendance = serializer.save()
                 return serializer.data
@@ -574,6 +572,7 @@ class AttendanceList(ListCreateAPIView):
                 check_in=start_time,
                 check_out=end_time,
                 amount=amount,
+                action="Outside"
             )
 
             # Link to Employee_attendance
@@ -661,6 +660,7 @@ class AttendanceList(ListCreateAPIView):
                 check_in=start_time,
                 check_out=end_time,
                 amount=amount,
+                action="Inside"
             )
 
             # Link to Employee_attendance
