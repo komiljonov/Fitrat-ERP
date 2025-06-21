@@ -786,7 +786,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
         # 2. Delete related finance records
 
-        print(Finance.objects.filter(
+        print("finance logs",Finance.objects.filter(
             stuff=employee,
             amount=attendance.amount,
         ).first())
