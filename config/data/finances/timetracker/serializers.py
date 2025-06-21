@@ -26,36 +26,36 @@ class Stuff_AttendanceSerializer(serializers.ModelSerializer):
             "actions",
             "created_at",
         ]
-
-    def update(self, instance, validated_data):
-        check_in = validated_data.get("check_in")
-        check_out = validated_data.get("check_out")
-
-        if check_in or check_out:
-            instance.check_in = check_in or instance.check_in
-            instance.check_out = check_out or instance.check_out
-
-            new_penalty = calculate_penalty(instance.employee.id, instance.check_in, instance.check_out)
-            previous_penalty = instance.amount
-
-            if new_penalty != previous_penalty:
-                timetracker = Employee_attendance.objects.filter(
-                    employee=instance.employee,
-                    date=instance.date,
-                ).first()
-
-                if timetracker:
-                    timetracker.amount = timetracker.amount - previous_penalty + new_penalty
-                    timetracker.save()
-
-            instance.amount = new_penalty
-
-        # Update any other fields if needed
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-        return instance
+    #
+    # def update(self, instance, validated_data):
+    #     check_in = validated_data.get("check_in")
+    #     check_out = validated_data.get("check_out")
+    #
+    #     if check_in or check_out:
+    #         instance.check_in = check_in or instance.check_in
+    #         instance.check_out = check_out or instance.check_out
+    #
+    #         new_penalty = calculate_penalty(instance.employee.id, instance.check_in, instance.check_out)
+    #         previous_penalty = instance.amount
+    #
+    #         if new_penalty != previous_penalty:
+    #             timetracker = Employee_attendance.objects.filter(
+    #                 employee=instance.employee,
+    #                 date=instance.date,
+    #             ).first()
+    #
+    #             if timetracker:
+    #                 timetracker.amount = timetracker.amount - previous_penalty + new_penalty
+    #                 timetracker.save()
+    #
+    #         instance.amount = new_penalty
+    #
+    #     # Update any other fields if needed
+    #     for attr, value in validated_data.items():
+    #         setattr(instance, attr, value)
+    #
+    #     instance.save()
+    #     return instance
 
 
 class TimeTrackerSerializer(serializers.ModelSerializer):
