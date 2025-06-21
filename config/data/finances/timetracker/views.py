@@ -790,6 +790,10 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             stuff=employee,
             amount=attendance.amount,
         ).first())
+
+        print(employee)
+        print(attendance.amount)
+
         Finance.objects.filter(
             stuff=employee,
             created_at__date=date,
