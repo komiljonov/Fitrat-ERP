@@ -745,7 +745,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     'attendance': serializer.data,
                     'penalty_calculation': {
                         'previous_amount': previous_amount,
-                        'new_amount': new_penalty,
+                        'new_amount': new_penalty.get("amount"),
                         'difference': new_penalty.get("amount") - previous_amount,
                     },
                     'message': 'Attendance updated successfully',
