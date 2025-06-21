@@ -244,12 +244,20 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
             if latest_before_checkin.check_out:
                 check_in = max(check_in, latest_before_checkin.check_out)
 
-        for timeline in timelines:
-            for action in user_attendance:
-                if (action.check_in or action.check_out) in [timeline.start_time, timeline.end_time]:
-                    matching_timelines.append((action, timeline))
 
-                    print(matching_timelines)
+        for timeline in timelines:
+
+            timeline_start_dt = localize(datetime.combine(check_in_date, timeline.start_time))
+            timeline_end_dt = localize(datetime.combine(check_in_date, timeline.end_time))
+
+            for action in user_attendance:
+                if action.check_in and action.check_out:
+                    attendance_start = action.check_in
+                    attendance_end = action.check_out
+
+                    # Check if intervals overlap
+                    if attendance_end > timeline_start_dt and attendance_start < timeline_end_dt:
+                        matching_timelines.append((action, timeline))
 
         for action, timeline in matching_timelines:
             check_in_time = action.check_in
