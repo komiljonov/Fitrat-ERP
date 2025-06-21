@@ -19,6 +19,10 @@ if TYPE_CHECKING:
 from data.student.groups.models import Group
 from data.student.studentgroup.models import StudentGroup
 
+
+from django.utils import timezone
+
+
 TASHKENT_TZ = pytz.timezone("Asia/Tashkent")
 
 UZBEK_WEEKDAYS = {
@@ -276,7 +280,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
             if matched_checkout_timeline:
                 expected_end_time = matched_checkout_timeline.end_time
-                timeline_end_dt = datetime.combine(check_out.date(), expected_end_time)
+                timeline_end_dt = timezone.make_aware(datetime.combine(check_out.date(), expected_end_time))
 
                 if check_out < timeline_end_dt:
 
