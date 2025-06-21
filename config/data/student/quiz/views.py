@@ -399,30 +399,39 @@ class ExamSubjectListCreate(ListCreateAPIView):
             queryset = queryset.filter(lang_national=lang_national)
         return queryset
 
-
 class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = ExamSubject.objects.all()
     serializer_class = ExamSubjectSerializer
 
+    allowed_bulk_fields = {
+        "order", "has_certificate", "certificate", "certificate_expire_date"
+    }
+
     def update(self, request, *args, **kwargs):
-        # Bulk update logic
+        # Handle bulk update (list of items)
         if isinstance(request.data, list):
             response_data = []
+
             for item in request.data:
                 try:
                     instance = ExamSubject.objects.get(id=item.get("id"))
                 except ExamSubject.DoesNotExist:
-                    continue  # or collect errors if needed
+                    continue  # Optionally collect and return errors
 
-                serializer = self.get_serializer(instance, data=item, partial=True)
+                filtered_data = {
+                    k: v for k, v in item.items() if k in self.allowed_bulk_fields
+                }
+
+                serializer = self.get_serializer(instance, data=filtered_data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
                 response_data.append(serializer.data)
 
             return Response(response_data, status=status.HTTP_200_OK)
 
-        # Regular single-object update
+        # Single-object update: allow full serializer behavior
         return super().update(request, *args, **kwargs)
+
 
 
 
