@@ -354,9 +354,9 @@ class AttendanceList(ListCreateAPIView):
 
                                         early_minutes = abs(time_difference)
 
-                                        ic(penalty_info["penalty_amount"])
+                                        ic(penalty_info["per_minute_salary"])
 
-                                        amount = early_minutes * penalty_info['penalty_amount']
+                                        amount = early_minutes * penalty_info['per_minute_salary']
 
                                         total_bonuses += amount
                                         employee = timeline.user
@@ -381,9 +381,9 @@ class AttendanceList(ListCreateAPIView):
                                         late_minutes = time_difference
 
 
-                                        print(penalty_info["penalty_amount"])
+                                        print(penalty_info["per_minute_salary"])
 
-                                        amount = late_minutes * penalty_info['penalty_amount']
+                                        amount = late_minutes * penalty_info['per_minute_salary']
 
                                         total_penalty += amount
                                         employee = timeline.user
