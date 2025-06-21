@@ -239,9 +239,8 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
             total_working_minutes = 0
 
             for att in Stuff_Attendance.objects.filter(employee=user, date=check_in_date):
-
-                total_working_minutes += check_out - check_in if att.action == "INCOME" else 0
-
+                if att.check_in and att.check_out:
+                    total_working_minutes += (att.check_out - att.check_in).total_seconds() // 60
                 for time_field in [att.check_in, att.check_out]:
 
                     if not time_field:
@@ -392,9 +391,6 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
             # === Bonus for being in office (Working Minutes Bonus)
 
-            ic("--------------------------------")
-
-            ic(total_working_minutes)
             if total_working_minutes > 0:
                 if matched_timeline and matched_timeline.bonus:
                     bonus_amount = total_working_minutes * matched_timeline.bonus
