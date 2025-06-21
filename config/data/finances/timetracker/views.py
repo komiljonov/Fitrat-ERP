@@ -777,7 +777,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             employee_att.save()
 
             # Remove the attendance record from the relationship
-            employee_att.attendance.delete(attendance)
+            employee_att.attendance.remove(attendance)
 
             # Delete if no more attendance records and amount is zero
             if employee_att.amount == 0 and not employee_att.attendance.exists():
