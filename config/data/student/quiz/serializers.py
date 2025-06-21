@@ -481,7 +481,6 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = {
-            "instance_id" : instance.id,
             "id": instance.subject.id,
             "name": instance.subject.name,
             "is_language": instance.subject.is_language,
@@ -562,6 +561,7 @@ class ExamSerializer(serializers.ModelSerializer):
 
         rep["options"] = [
             {
+                "instance_id": option.id,
                 "id": option.subject.id if option.subject else None,
                 "subject": option.subject.name if option.subject else None,
                 "option": option.options,
