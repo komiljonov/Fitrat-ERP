@@ -941,7 +941,10 @@ class ExamRegisteredStudentAPIView(APIView):
                 reg.student_comment,
                 "\n".join([f"{o.subject.name} - {o.options} variant" for o in reg.option.all() if o.subject]),
                 "Ha" if has_certificate else "Yo'q"
-                "\n".join([f"{"Uzbek" if o.subject.lang_national else "Euro" if o.subject.lang_foreign else "Tanlanmagan"}" for o in reg.option.all() if o.subject]),
+                "\n".join([
+                "Uzbek" if o.lang_national else "Euro" if o.lang_foreign else "Tanlanmagan"
+                for o in reg.option.all()
+                ])
             ]
 
             row = ws.append(row_data)
