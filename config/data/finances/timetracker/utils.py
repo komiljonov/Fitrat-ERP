@@ -341,7 +341,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                 print(f"Late penalty for {user}: {penalty_amount:.2f} ({late_minutes} min late)")
 
-# === Early Checkout Penalty
+            # === Early Checkout Penalty
 
             if check_out:
 
@@ -385,6 +385,36 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                         )
 
                         print(f"Employee early leave penalty: {penalty_amount:.2f} ({early_minutes} min early)")
+
+            # === Bonus for being in office (Working Minutes Bonus)
+
+            total_working_minutes = 0
+
+            attendances = Stuff_Attendance.objects.filter(employee=user, date=check_in_date)
+
+            for att in attendances:
+                if att.check_in and att.check_out and att.check_out > att.check_in:
+                    working_minutes = int((att.check_out - att.check_in).total_seconds() // 60)
+                    total_working_minutes += working_minutes
+
+            if total_working_minutes > 0:
+                if matched_timeline and matched_timeline.bonus:
+                    bonus_amount = total_working_minutes * matched_timeline.bonus
+                else:
+                    bonus_amount = total_working_minutes * per_minute_salary
+
+                total_penalty -= bonus_amount  # Subtracting bonus from penalties
+
+                Finance.objects.create(
+                    action="INCOME",
+                    kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first(),
+                    amount=bonus_amount,
+                    stuff=user,
+                    comment=f"Bugun {total_working_minutes} daqiqa ishda bo'lganingiz uchun {bonus_amount} sum bonus yozildi!"
+                )
+
+                print(f"Bonus for being in office: {bonus_amount:.2f} ({total_working_minutes} minutes worked)")
+
 
     return round(total_penalty, 2)
 
