@@ -288,6 +288,7 @@ class ExamRegistration(BaseModel):
     status = models.CharField(choices=[
         ("Active", "Active"),
         ("Inactive", "Inactive"),
+        ("Waiting","Waiting"),
     ], max_length=255, null=True, blank=True)
     is_participating = models.BooleanField(default=True)
     mark = models.CharField(max_length=255, null=True, blank=True)

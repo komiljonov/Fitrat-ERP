@@ -925,6 +925,9 @@ class ExamRegisteredStudentAPIView(APIView):
         red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")  # light red
 
         for reg in registrations:
+
+            certificate = ExamCertificate.objects.filter(exam=exam,student=reg.student).first()
+
             student = reg.student
             row_data = [
                 f"{student.first_name} {student.last_name}",
@@ -934,7 +937,7 @@ class ExamRegisteredStudentAPIView(APIView):
                 reg.mark,
                 reg.student_comment,
                 reg.option,
-                "Ha" if reg.has_certificate else "Yo'q"
+                "Ha" if certificate.certificate else "Yo'q"
             ]
             row = ws.append(row_data)
 
