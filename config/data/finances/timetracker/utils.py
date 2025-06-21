@@ -218,31 +218,31 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
             employee=user,
             date=check_in_date,
             check_in__lt=check_in
-        ).order_by('-check_in').all()
+        ).order_by('-check_in').first()
 
-        action = ""
-
-
-        calculating_type = latest_before_checkin.count() // 2
-        if calculating_type == 1:
-            action = "INSIDE"
-
-        else:
-            action = "OUTSIDE"
-
-
-        latest_before_checkin = latest_before_checkin.first()
-
-        if latest_before_checkin:
-            if latest_before_checkin.check_out and latest_before_checkin.check_out > check_in:
-                return {
-                    "action": "EXPENSE",
-                    "amount": 0,
-                    "stuff": user,
-                    "details": []
-                }
-            if latest_before_checkin.check_out:
-                check_in = max(check_in, latest_before_checkin.check_out)
+        # action = ""
+        #
+        #
+        # calculating_type = latest_before_checkin.count() // 2
+        # if calculating_type == 1:
+        #     action = "INSIDE"
+        #
+        # else:
+        #     action = "OUTSIDE"
+        #
+        #
+        # latest_before_checkin = latest_before_checkin.first()
+        #
+        # if latest_before_checkin:
+        #     if latest_before_checkin.check_out and latest_before_checkin.check_out > check_in:
+        #         return {
+        #             "action": "EXPENSE",
+        #             "amount": 0,
+        #             "stuff": user,
+        #             "details": []
+        #         }
+        #     if latest_before_checkin.check_out:
+        #         check_in = max(check_in, latest_before_checkin.check_out)
 
 
         for timeline in timelines:
