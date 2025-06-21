@@ -247,7 +247,6 @@ class AttendanceList(ListCreateAPIView):
         """Create or update attendance record with error handling"""
         try:
             serializer = self.get_serializer(data=data)
-
             if serializer.is_valid():
                 attendance = serializer.save()
                 return serializer.data
@@ -292,8 +291,6 @@ class AttendanceList(ListCreateAPIView):
                             penalty_info,
                             i + 1
                         )
-
-                        ic()
 
                         total_penalty += penalty_result['penalty_amount']
                         penalty_details.append(penalty_result)
@@ -350,8 +347,6 @@ class AttendanceList(ListCreateAPIView):
                                         early_minutes = abs(time_difference)
 
                                         amount = early_minutes * penalty_info['penalty_amount']
-
-                                        print(penalty_info["penalty_amount"])
 
                                         total_bonuses += amount
                                         employee = timeline.user
@@ -576,7 +571,6 @@ class AttendanceList(ListCreateAPIView):
                 check_in=start_time,
                 check_out=end_time,
                 amount=amount,
-                action="Outside"
             )
 
             # Link to Employee_attendance
@@ -664,7 +658,6 @@ class AttendanceList(ListCreateAPIView):
                 check_in=start_time,
                 check_out=end_time,
                 amount=amount,
-                action="Inside"
             )
 
             # Link to Employee_attendance
@@ -693,7 +686,6 @@ class AttendanceList(ListCreateAPIView):
         except Exception as e:
             logger.error(f"Failed to create penalty finance record: {str(e)}")
             raise
-
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()
