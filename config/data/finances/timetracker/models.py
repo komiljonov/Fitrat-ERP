@@ -76,15 +76,17 @@ class Stuff_Attendance(BaseModel):
     def work_time_opt(self) -> bool:
         return self.work_time is not None
 
-    @property
-    def work_time_start_datetime(self) -> Optional[datetime]:
-        if not self.work_time:
-            return None
-        return datetime.combine(self.date, self.work_time.start_time)
+    # @property
+    # def work_time_start_datetime(self) -> Optional[datetime]:
+    #     if not self.work_time:
+    #         return None
+    #     return datetime.combine(self.date, self.work_time.start_time)
 
     @property
     def bonus(self) -> float:
         return self.work_time.bonus if self.work_time else 0.0
+
+
 
 class UserTimeLine(BaseModel):
     user: "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name="user_timeline")
