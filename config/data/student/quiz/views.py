@@ -438,6 +438,9 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
                     response_data.append(serializer.data)
+
+                    print(response_data)
+
                 except ValidationError as ve:
                     errors.append({"id": item_id, "validation_error": ve.detail})
                 except Exception as e:
