@@ -214,6 +214,36 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
         timelines = UserTimeLine.objects.filter(user=user)
         matching_timelines = []
 
+        latest_before_checkin = Stuff_Attendance.objects.filter(
+            employee=user,
+            date=check_in_date,
+            check_in__lt=check_in
+        ).order_by('-check_in').all()
+
+        action = ""
+
+
+        calculating_type = latest_before_checkin.count() // 2
+        if calculating_type == 1:
+            action = "INSIDE"
+
+        else:
+            action = "OUTSIDE"
+
+
+        latest_before_checkin = latest_before_checkin.first()
+
+        if latest_before_checkin:
+            if latest_before_checkin.check_out and latest_before_checkin.check_out > check_in:
+                return {
+                    "action": "EXPENSE",
+                    "amount": 0,
+                    "stuff": user,
+                    "details": []
+                }
+            if latest_before_checkin.check_out:
+                check_in = max(check_in, latest_before_checkin.check_out)
+
         for timeline in timelines:
             for action in user_attendance:
                 if (action.check_in or action.check_out) in [timeline.start_time, timeline.end_time]:
@@ -228,18 +258,30 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
             scheduled_start = localize(datetime.combine(check_in_time.date(), timeline.start_time))
             scheduled_end = localize(datetime.combine(check_out_time.date(), timeline.end_time))
 
+
+            if latest_before_checkin and latest_before_checkin.check_out:
+                last_checkout = latest_before_checkin.check_out
+
+                # Check if user came late *after* last checkout (e.g., left at 15:30, came back at 16:01)
+                if check_in_time > last_checkout:
+                    # Penalize time spent outside
+                    outside_duration_minutes = (check_in_time - last_checkout).total_seconds() / 60
+                    penalty = outside_duration_minutes * per_minute_salary
+                    total_penalty += penalty
+
+                    penalty_logs.append({
+                        "type": "outside_gap",
+                        "minutes": round(outside_duration_minutes, 2),
+                        "amount": round(penalty, 2),
+                        "from": last_checkout.time().isoformat(timespec="minutes"),
+                        "to": check_in_time.time().isoformat(timespec="minutes"),
+                    })
+
+            # Standard late check-in
             if check_in_time > scheduled_start:
                 late_minutes = (check_in_time - scheduled_start).total_seconds() / 60
                 penalty = late_minutes * per_minute_salary
                 total_penalty += penalty
-
-                # Finance.objects.create(
-                #     action="INCOME",
-                #     kind=Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first(),
-                #     amount=penalty,
-                #     stuff=user,
-                #     comment=f"{user.full_name} {late_minutes:.0f} minut kech kelganligi uchun {penalty:.2f} sum jarima."
-                # )
 
                 penalty_logs.append({
                     "type": "late_checkin",
@@ -247,24 +289,18 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     "amount": round(penalty, 2),
                 })
 
+            # Early check-out
             if check_out_time and check_out_time < scheduled_end:
                 early_minutes = (scheduled_end - check_out_time).total_seconds() / 60
                 penalty = early_minutes * per_minute_salary
                 total_penalty += penalty
-
-                # Finance.objects.create(
-                #     action="INCOME",
-                #     kind=Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first(),
-                #     amount=penalty,
-                #     stuff=user,
-                #     comment=f"{user.full_name} {early_minutes:.0f} minut erta ketganligi uchun {penalty:.2f} sum jarima."
-                # )
 
                 penalty_logs.append({
                     "type": "early_checkout",
                     "minutes": round(early_minutes, 2),
                     "amount": round(penalty, 2),
                 })
+
 
     return {
         "action": "EXPENSE",
