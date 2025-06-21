@@ -939,9 +939,10 @@ class ExamRegisteredStudentAPIView(APIView):
                 "Ha" if reg.is_participating else "Yo'q",
                 reg.mark,
                 reg.student_comment,
-                reg.option,
+                ", ".join([str(o) for o in reg.option.all()]),  # ✅ FIX HERE
                 "Ha" if has_certificate else "Yo'q"
             ]
+
             row = ws.append(row_data)
 
             # Apply row coloring
