@@ -236,7 +236,11 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
             smallest_diff = None
 
+            total_working_minutes = 0
+
             for att in Stuff_Attendance.objects.filter(employee=user, date=check_in_date):
+
+                total_working_minutes += att.action == "INCOME"
 
                 for time_field in [att.check_in, att.check_out]:
 
@@ -388,14 +392,8 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
             # === Bonus for being in office (Working Minutes Bonus)
 
-            total_working_minutes = 0
+            inside_att = att.objects.filter()
 
-            attendances = Stuff_Attendance.objects.filter(employee=user, date=check_in_date)
-
-            for att in attendances:
-                if att.check_in and att.check_out and att.check_out > att.check_in:
-                    working_minutes = int((att.check_out - att.check_in).total_seconds() // 60)
-                    total_working_minutes += working_minutes
 
             if total_working_minutes > 0:
                 if matched_timeline and matched_timeline.bonus:
