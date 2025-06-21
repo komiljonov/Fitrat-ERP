@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 import openpyxl
@@ -11,6 +12,7 @@ from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
@@ -404,34 +406,48 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = ExamSubjectSerializer
 
     allowed_bulk_fields = {
-        "order", "has_certificate", "certificate"
+        "order", "has_certificate", "certificate", "certificate_expire_date"
     }
 
     def update(self, request, *args, **kwargs):
-        # Handle bulk update (list of items)
         if isinstance(request.data, list):
             response_data = []
+            errors = []
 
             for item in request.data:
+                item_id = item.get("id")
+                if not item_id:
+                    errors.append({"error": "Missing ID", "item": item})
+                    continue
+
                 try:
-                    instance = ExamSubject.objects.get(id=item.get("id"))
+                    instance = ExamSubject.objects.get(id=item_id)
                 except ExamSubject.DoesNotExist:
-                    continue  # Optionally collect and return errors
+                    errors.append({"error": f"ExamSubject with id={item_id} not found."})
+                    continue
 
                 filtered_data = {
                     k: v for k, v in item.items() if k in self.allowed_bulk_fields
                 }
 
                 serializer = self.get_serializer(instance, data=filtered_data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                response_data.append(serializer.data)
+                try:
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                    response_data.append(serializer.data)
+                except ValidationError as ve:
+                    errors.append({"id": item_id, "validation_error": ve.detail})
+                except Exception as e:
+                    logging.exception(f"Unexpected error while updating ExamSubject {item_id}: {e}")
+                    errors.append({"id": item_id, "error": str(e)})
 
-            return Response(response_data, status=status.HTTP_200_OK)
+            return Response({
+                "updated": response_data,
+                "errors": errors
+            }, status=status.HTTP_207_MULTI_STATUS)
 
-        # Single-object update: allow full serializer behavior
+        # Regular update
         return super().update(request, *args, **kwargs)
-
 
 
 
