@@ -280,7 +280,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                 if check_out < timeline_end_dt:
 
-
+                    print(timeline_end_dt, check_out)
                     early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
                     # early_minutes += 23
 
