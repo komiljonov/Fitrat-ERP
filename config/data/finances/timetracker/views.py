@@ -710,7 +710,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 previous_amount = attendance.amount or 0
 
 
-                self._remove_existing_financial_impact(attendance)
+                self._remove_existing_financial_impact(attendance, previous_amount)
 
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
@@ -758,7 +758,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 'error_code': 'UPDATE_ERROR'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-    def _remove_existing_financial_impact(self, attendance):
+    def _remove_existing_financial_impact(self, attendance,previs_amount):
         """Remove all financial impact of the existing attendance record"""
         if not attendance.check_in:
             return
@@ -788,15 +788,16 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
         print("finance logs",Finance.objects.filter(
             stuff=employee,
-            amount=attendance.amount,
+            amount=previs_amount,
         ).first())
 
         print(employee)
-        print(attendance.amount)
+        print(previs_amount)
 
         Finance.objects.filter(
             stuff=employee,
             created_at__date=date,
+            amount=previs_amount,
             comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
         ).delete()
 
