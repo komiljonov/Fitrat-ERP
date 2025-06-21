@@ -785,6 +785,12 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             pass
 
         # 2. Delete related finance records
+
+        print(Finance.objects.filter(
+            stuff=employee,
+            created_at__date=date,
+            comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
+        ).first())
         Finance.objects.filter(
             stuff=employee,
             created_at__date=date,
