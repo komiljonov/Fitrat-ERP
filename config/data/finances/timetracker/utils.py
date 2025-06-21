@@ -13,14 +13,13 @@ from data.account.models import CustomUser
 from data.finances.finance.models import Finance, Kind
 from data.finances.timetracker.models import UserTimeLine
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from data.finances.timetracker.views import AttendanceError
 from data.student.groups.models import Group
 from data.student.studentgroup.models import StudentGroup
 
 TASHKENT_TZ = pytz.timezone("Asia/Tashkent")
-
-
 
 UZBEK_WEEKDAYS = {
     'Dushanba': 0,
@@ -33,14 +32,12 @@ UZBEK_WEEKDAYS = {
 }
 
 
-
 def localize(dt):
     return make_aware(dt, timezone=TASHKENT_TZ) if not is_aware(dt) else dt.astimezone(TASHKENT_TZ)
 
 
-
 def get_monthly_per_minute_salary(user_id):
-    user = CustomUser.objects.select_related().filter(id=user_id).first()
+    user = CustomUser.objects.filter(id=user_id).first()
     if not user or not user.salary:
         return {"total_minutes": 0, "per_minute_salary": 0}
 
@@ -101,12 +98,13 @@ def get_monthly_per_minute_salary(user_id):
 
             total_minutes += daily_minutes * len(work_days)
 
+    ic("Total minutesssssssss: ", total_minutes)
+
     per_minute_salary = round(user.salary / total_minutes, 2) if total_minutes else 0
     return {
         "total_minutes": total_minutes,
         "per_minute_salary": per_minute_salary
     }
-
 
 
 def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = None) -> float:
@@ -122,7 +120,6 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
     weekday_index = check_in.weekday()
     total_penalty = 0
     per_minute_salary = get_monthly_per_minute_salary(user_id).get('per_minute_salary', 0)
-
 
     print(per_minute_salary)
 
@@ -300,7 +297,6 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
     return round(total_penalty, 2)
 
 
-
 def parse_datetime_string(value):
     try:
         # Fix the format: replace underscore with dash if needed
@@ -332,7 +328,6 @@ def safe_decimal_conversion(value, field_name: str) -> Decimal:
         )
 
 
-
 def validate_time_sequence(actions: List[dict]) -> None:
     """Validate that action times make logical sense"""
     for i in range(len(actions) - 1):
@@ -348,7 +343,6 @@ def validate_time_sequence(actions: List[dict]) -> None:
                     'action2_start': actions[i + 1]['start']
                 }
             )
-
 
 
 class AttendanceErrorHandler:
@@ -380,7 +374,6 @@ class AttendanceErrorHandler:
             'error_code': 'CALCULATION_ERROR',
             'details': {'message': str(error)}
         }
-
 
 
 def update_calculate(user_id: str, check_in: datetime, check_out: datetime = None) -> float:
@@ -493,7 +486,6 @@ def update_calculate(user_id: str, check_in: datetime, check_out: datetime = Non
 
                 total_penalty += penalty_amount
 
-
         if check_out:
             matched_checkout_timeline = next(
                 (t for t in timelines if t.day == day_name_today.capitalize()), None
@@ -508,6 +500,5 @@ def update_calculate(user_id: str, check_in: datetime, check_out: datetime = Non
                     early_minutes += 23
                     penalty_amount = early_minutes * per_minute_salary
                     total_penalty += penalty_amount
-
 
     return round(total_penalty, 2)
