@@ -595,7 +595,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
         ]
 
     def get_date(self, instance):
-        exam = Exam.objects.filter(date=instance.date).first()
+        exam = Exam.objects.filter(date=instance.exam.date).first()
         return exam.date if exam else None
 
     def validate(self, attrs):
