@@ -481,7 +481,6 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = {
-            "instance_id" : instance.id,
             "id": instance.subject.id,
             "name": instance.subject.name,
             "is_language": instance.subject.is_language,
