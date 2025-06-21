@@ -576,6 +576,8 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
         queryset=ExamSubject.objects.all(), many=True, allow_null=True
     )
 
+    date = serializers.SerializerMethodField()
+
     class Meta:
         model = ExamRegistration
         fields = [
@@ -588,8 +590,13 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "mark",
             "option",
             "student_comment",
+            "date",
             "created_at",
         ]
+
+    def get_date(self, instance):
+        exam = Exam.objects.filter(date=instance.date).first()
+        return exam.date if exam else None
 
     def validate(self, attrs):
         exam = attrs.get("exam")
