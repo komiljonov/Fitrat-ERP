@@ -277,6 +277,8 @@ class AttendanceList(ListCreateAPIView):
             if not penalty_info:
                 return {'total_penalty': 0, 'details': [], 'warning': 'No salary info found'}
 
+            ic(penalty_info)
+
             total_penalty = 0
             total_bonuses = 0
             penalty_details = []
@@ -377,6 +379,9 @@ class AttendanceList(ListCreateAPIView):
                                     elif time_difference > 0:
                                         # User was late
                                         late_minutes = time_difference
+
+
+                                        print(penalty_info["penalty_amount"])
 
                                         amount = late_minutes * penalty_info['penalty_amount']
 
