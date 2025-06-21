@@ -927,6 +927,9 @@ class ExamRegisteredStudentAPIView(APIView):
         for reg in registrations:
 
             certificate = ExamCertificate.objects.filter(exam=exam,student=reg.student).first()
+            has_certificate = False
+            if certificate and certificate.certificate:
+                has_certificate = True
 
             student = reg.student
             row_data = [
@@ -937,7 +940,7 @@ class ExamRegisteredStudentAPIView(APIView):
                 reg.mark,
                 reg.student_comment,
                 reg.option,
-                "Ha" if certificate.certificate else "Yo'q"
+                "Ha" if has_certificate else "Yo'q"
             ]
             row = ws.append(row_data)
 
