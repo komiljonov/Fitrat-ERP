@@ -263,6 +263,9 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     penalty_amount = late_minutes * per_minute_salary
 
                 total_penalty += penalty_amount
+
+                print("---------calculate finance------------")
+
                 Finance.objects.create(
                     action="INCOME",
                     kind=penalty_kind,
@@ -293,6 +296,9 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     penalty_amount = early_minutes * per_minute_salary
                     total_penalty += penalty_amount
                     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
+
+                    print("---------calculate finance 2------------")
+
                     finance = Finance.objects.create(
                         action="INCOME",
                         kind=bonus_kind,
