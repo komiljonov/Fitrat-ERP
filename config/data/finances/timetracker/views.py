@@ -349,6 +349,8 @@ class AttendanceList(ListCreateAPIView):
 
                                         early_minutes = abs(time_difference)
 
+                                        print(penalty_info["penalty_amount"])
+
                                         amount = early_minutes * penalty_info['penalty_amount']
 
                                         total_bonuses += amount
