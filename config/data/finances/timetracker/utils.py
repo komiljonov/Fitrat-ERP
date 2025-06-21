@@ -14,6 +14,8 @@ from data.finances.finance.models import Finance, Kind
 from data.finances.timetracker.models import UserTimeLine, Stuff_Attendance
 from typing import TYPE_CHECKING
 
+from data.student import attendance
+
 if TYPE_CHECKING:
     from data.finances.timetracker.views import AttendanceError
 from data.student.groups.models import Group
@@ -199,41 +201,85 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 total_penalty += max(early_penalties)
 
     else:
+
         timelines = UserTimeLine.objects.filter(user=user)
+
         day_name_today = calendar.day_name[weekday_index]
 
         matched_timeline = None
+
         latest_before_checkin = None
 
         for timeline in timelines:
+
             if timeline.day != day_name_today.capitalize():
                 continue
 
             timeline_start_dt = timezone.make_aware(datetime.combine(check_in_date, timeline.start_time))
 
             if timeline_start_dt <= check_in:
+
                 if not latest_before_checkin or timeline_start_dt > latest_before_checkin:
                     matched_timeline = timeline
+
                     latest_before_checkin = timeline_start_dt
 
         if matched_timeline:
+
             expected_start_time = matched_timeline.start_time
+
             timeline_start_dt = timezone.make_aware(datetime.combine(check_in_date, expected_start_time))
-            time_diff = (check_in - timeline_start_dt).total_seconds() // 60
+
+            # === Find the closest attendance for that day
+
+            closest_att_time = None
+
+            smallest_diff = None
+
+            for att in Stuff_Attendance.objects.filter(employee=user, date=check_in_date):
+
+                for time_field in [att.check_in, att.check_out]:
+
+                    if not time_field:
+                        continue
+
+                    diff = abs((check_in - time_field).total_seconds())
+
+                    if smallest_diff is None or diff < smallest_diff:
+                        smallest_diff = diff
+
+                        closest_att_time = time_field
+
+            # === Determine actual time_diff
+
+            if closest_att_time:
+
+                time_diff = (check_in - closest_att_time).total_seconds() // 60
+
+            else:
+
+                time_diff = (check_in - timeline_start_dt).total_seconds() // 60
+
             ic(time_diff)
 
             bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+
             penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
 
             # === Early Arrival Bonus
+
             if time_diff < 0:
+
                 early_minutes = abs(int(time_diff))
-                # early_minutes += 23
+
                 ic("early minutes: ", early_minutes)
 
                 if matched_timeline.bonus:
+
                     bonus_amount = early_minutes * matched_timeline.bonus
+
                 else:
+
                     bonus_amount = early_minutes * per_minute_salary
 
                 ic(bonus_amount)
@@ -241,65 +287,104 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 total_penalty -= bonus_amount  # Subtract bonus from total penalty
 
                 ic(total_penalty)
+
                 Finance.objects.create(
+
                     action="INCOME",
+
                     kind=bonus_kind,
+
                     amount=bonus_amount,
+
                     stuff=user,
+
                     comment=f"Bugun {check_out.time()} da ishga {early_minutes} minut erta kelganingiz uchun"
+        
                             f" {bonus_amount} sum bonus yozildi! "
+
                 )
+
                 print(f"Early arrival bonus for {user}: {bonus_amount:.2f} ({early_minutes} min early)")
 
+
             # === Late Arrival Penalty
+
             elif time_diff > 0:
+
                 late_minutes = int(time_diff)
-                # late_minutes += 23
+
                 if matched_timeline.penalty:
+
                     penalty_amount = late_minutes * matched_timeline.penalty
+
                 else:
+
                     penalty_amount = late_minutes * per_minute_salary
 
                 total_penalty += penalty_amount
+
                 Finance.objects.create(
+
                     action="EXPENSE",
+
                     kind=penalty_kind,
+
                     amount=penalty_amount,
+
                     stuff=user,
+
                     comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun"
+        
                             f" {penalty_amount} sum jarima yozildi! "
+
                 )
+
                 print(f"Late penalty for {user}: {penalty_amount:.2f} ({late_minutes} min late)")
 
-        if check_out:
-            matched_checkout_timeline = next(
-                (t for t in timelines if t.day == day_name_today.capitalize()), None
-            )
+# === Early Checkout Penalty
 
-            if matched_checkout_timeline:
-                expected_end_time = matched_checkout_timeline.end_time
-                timeline_end_dt = timezone.make_aware(datetime.combine(check_out.date(), expected_end_time))
+            if check_out:
 
-                if check_out < timeline_end_dt:
+                matched_checkout_timeline = next(
 
-                    print(timeline_end_dt, check_out)
-                    early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
-                    # early_minutes += 23
+                    (t for t in timelines if t.day == day_name_today.capitalize()), None
 
+                )
 
+                if matched_checkout_timeline:
 
-                    penalty_amount = early_minutes * per_minute_salary
-                    total_penalty += penalty_amount
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
-                    finance = Finance.objects.create(
-                        action="EXPENSE",
-                        kind=bonus_kind,
-                        amount=penalty_amount,
-                        stuff=user,
-                        comment=f"Bugun {check_out.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun"
-                                f" {penalty_amount} sum jarima yozildi! "
-                    )
-                    print(f"Employee early leave penalty: {penalty_amount:.2f} ({early_minutes} min early)")
+                    expected_end_time = matched_checkout_timeline.end_time
+
+                    timeline_end_dt = timezone.make_aware(datetime.combine(check_out.date(), expected_end_time))
+
+                    if check_out < timeline_end_dt:
+                        print(timeline_end_dt, check_out)
+
+                        early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
+
+                        penalty_amount = early_minutes * per_minute_salary
+
+                        total_penalty += penalty_amount
+
+                        bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
+
+                        Finance.objects.create(
+
+                            action="EXPENSE",
+
+                            kind=bonus_kind,
+
+                            amount=penalty_amount,
+
+                            stuff=user,
+
+                            comment=f"Bugun {check_out.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun"
+            
+                                    f" {penalty_amount} sum jarima yozildi! "
+
+                        )
+
+                        print(f"Employee early leave penalty: {penalty_amount:.2f} ({early_minutes} min early)")
 
     return round(total_penalty, 2)
 
