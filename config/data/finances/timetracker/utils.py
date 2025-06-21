@@ -226,7 +226,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
             # === Early Arrival Bonus
             if time_diff < 0:
                 early_minutes = abs(int(time_diff))
-                early_minutes += 23
+                # early_minutes += 23
                 ic("early minutes: ", early_minutes)
 
                 if matched_timeline.bonus:
@@ -244,7 +244,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     kind=bonus_kind,
                     amount=bonus_amount,
                     stuff=user,
-                    comment=f"Bugun {check_in.time()} da ishga {early_minutes} minut erta kelganingiz uchun"
+                    comment=f"Bugun {check_out.time()} da ishga {early_minutes} minut erta kelganingiz uchun"
                             f" {bonus_amount} sum bonus yozildi! "
                 )
                 print(f"Early arrival bonus for {user}: {bonus_amount:.2f} ({early_minutes} min early)")
@@ -252,7 +252,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
             # === Late Arrival Penalty
             elif time_diff > 0:
                 late_minutes = int(time_diff)
-                late_minutes += 23
+                # late_minutes += 23
                 if matched_timeline.penalty:
                     penalty_amount = late_minutes * matched_timeline.penalty
                 else:
@@ -279,8 +279,13 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 timeline_end_dt = localize(datetime.combine(check_out.date(), expected_end_time))
 
                 if check_out < timeline_end_dt:
+
+
                     early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
-                    early_minutes += 23
+                    # early_minutes += 23
+
+
+
                     penalty_amount = early_minutes * per_minute_salary
                     total_penalty += penalty_amount
                     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
@@ -289,7 +294,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                         kind=bonus_kind,
                         amount=penalty_amount,
                         stuff=user,
-                        comment=f"Bugun {check_in.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun"
+                        comment=f"Bugun {check_out.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun"
                                 f" {penalty_amount} sum jarima yozildi! "
                     )
                     print(f"Employee early leave penalty: {penalty_amount:.2f} ({early_minutes} min early)")
