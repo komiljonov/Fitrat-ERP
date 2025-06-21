@@ -1054,6 +1054,8 @@ class ExamOptionCreate(APIView):
             for reg, option_ids in registrations_to_update:
                 reg.option.set(option_ids)
 
+
+        print((registrations_to_create),(registrations_to_update),(errors))
         response_data = {
             'created': len(registrations_to_create),
             'updated': len(registrations_to_update),
