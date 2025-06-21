@@ -276,7 +276,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
             if matched_checkout_timeline:
                 expected_end_time = matched_checkout_timeline.end_time
-                timeline_end_dt = localize(datetime.combine(check_out.date(), expected_end_time))
+                timeline_end_dt = datetime.combine(check_out.date(), expected_end_time)
 
                 if check_out < timeline_end_dt:
 
