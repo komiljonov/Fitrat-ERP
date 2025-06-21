@@ -441,6 +441,8 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
                     logging.exception(f"Unexpected error while updating ExamSubject {item_id}: {e}")
                     errors.append({"id": item_id, "error": str(e)})
 
+            print(errors)
+
             return Response({
                 "updated": response_data,
                 "errors": errors
