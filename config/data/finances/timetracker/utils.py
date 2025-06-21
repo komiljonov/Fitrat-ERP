@@ -141,7 +141,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
         for sg in student_groups:
             group = sg.group
-            group_start_dt = localize(datetime.combine(check_in.date(), group.started_at))
+            group_start_dt = timezone.make_aware(datetime.combine(check_in.date(), group.started_at))
             delta_minutes = (check_in - group_start_dt).total_seconds() / 60
             if delta_minutes < 0:
                 delta_minutes = 0
@@ -208,17 +208,17 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
             if timeline.day != day_name_today.capitalize():
                 continue
 
-            timeline_start_dt = localize(datetime.combine(check_in_date, timeline.start_time))
+            timeline_start_dt = timezone.make_aware(datetime.combine(check_in_date, timeline.start_time))
 
             if check_in >= timeline_start_dt:
                 time_diff = check_in - timeline_start_dt
                 if not matched_timeline or time_diff < (
-                        check_in - localize(datetime.combine(check_in_date, matched_timeline.start_time))):
+                        check_in - timezone.make_aware(datetime.combine(check_in_date, matched_timeline.start_time))):
                     matched_timeline = timeline
 
         if matched_timeline:
             expected_start_time = matched_timeline.start_time
-            timeline_start_dt = localize(datetime.combine(check_in_date, expected_start_time))
+            timeline_start_dt = timezone.make_aware(datetime.combine(check_in_date, expected_start_time))
 
             time_diff = (check_in - timeline_start_dt).total_seconds() // 60
 
