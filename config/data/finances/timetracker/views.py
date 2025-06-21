@@ -737,7 +737,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     em_att.attendance.add(updated_attendance)
 
                 # Update the amount by first subtracting the previous amount and adding the new penalty
-                em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
+                em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty.get("amount") or 0)
                 em_att.save()
 
                 return Response({
