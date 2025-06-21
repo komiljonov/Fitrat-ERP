@@ -561,6 +561,7 @@ class ExamSerializer(serializers.ModelSerializer):
 
         rep["options"] = [
             {
+                "instance_id": option.id,
                 "id": option.subject.id if option.subject else None,
                 "subject": option.subject.name if option.subject else None,
                 "option": option.options,
