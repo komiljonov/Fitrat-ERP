@@ -292,10 +292,10 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                     penalty_amount = early_minutes * per_minute_salary
                     total_penalty += penalty_amount
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
                     finance = Finance.objects.create(
                         action="EXPENSE",
-                        kind=penalty_kind,
+                        kind=bonus_kind,
                         amount=penalty_amount,
                         stuff=user,
                         comment=f"Bugun {check_out.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun"
