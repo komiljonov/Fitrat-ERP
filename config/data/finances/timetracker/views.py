@@ -292,6 +292,8 @@ class AttendanceList(ListCreateAPIView):
                             i + 1
                         )
 
+                        ic(penalty_result,penalty_result.get('penalty_amount'))
+
                         total_penalty += penalty_result['penalty_amount']
 
                         print(penalty_result)
@@ -305,6 +307,7 @@ class AttendanceList(ListCreateAPIView):
                             'error': f"Failed to calculate penalty: {str(e)}",
                             'penalty_amount': 0
                         })
+
                 if action['type'] == 'INSIDE':
                     try:
                         if check_in and check_out:
@@ -349,7 +352,7 @@ class AttendanceList(ListCreateAPIView):
 
                                         early_minutes = abs(time_difference)
 
-                                        print(penalty_info["penalty_amount"])
+                                        ic(penalty_info["penalty_amount"])
 
                                         amount = early_minutes * penalty_info['penalty_amount']
 
