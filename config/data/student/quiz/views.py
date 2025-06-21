@@ -939,7 +939,7 @@ class ExamRegisteredStudentAPIView(APIView):
                 "Ha" if reg.is_participating else "Yo'q",
                 reg.mark,
                 reg.student_comment,
-                "\n".join([f"{o.subject.name} - {o.name} variant" for o in reg.option.all() if o.subject]),
+                "\n".join([f"{o.subject.name} - {o.options} variant" for o in reg.option.all() if o.subject]),
                 "Ha" if has_certificate else "Yo'q"
             ]
 
