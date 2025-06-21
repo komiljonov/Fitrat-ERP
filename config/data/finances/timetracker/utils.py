@@ -219,6 +219,8 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 if (action.check_in or action.check_out) in [timeline.start_time, timeline.end_time]:
                     matching_timelines.append((action, timeline))
 
+                    print(matching_timelines)
+
         for action, timeline in matching_timelines:
             check_in_time = action.check_in
             check_out_time = action.check_out
@@ -231,13 +233,13 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 penalty = late_minutes * per_minute_salary
                 total_penalty += penalty
 
-                Finance.objects.create(
-                    action="INCOME",
-                    kind=Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first(),
-                    amount=penalty,
-                    stuff=user,
-                    comment=f"{user.full_name} {late_minutes:.0f} minut kech kelganligi uchun {penalty:.2f} sum jarima."
-                )
+                # Finance.objects.create(
+                #     action="INCOME",
+                #     kind=Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first(),
+                #     amount=penalty,
+                #     stuff=user,
+                #     comment=f"{user.full_name} {late_minutes:.0f} minut kech kelganligi uchun {penalty:.2f} sum jarima."
+                # )
 
                 penalty_logs.append({
                     "type": "late_checkin",
@@ -250,13 +252,13 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 penalty = early_minutes * per_minute_salary
                 total_penalty += penalty
 
-                Finance.objects.create(
-                    action="INCOME",
-                    kind=Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first(),
-                    amount=penalty,
-                    stuff=user,
-                    comment=f"{user.full_name} {early_minutes:.0f} minut erta ketganligi uchun {penalty:.2f} sum jarima."
-                )
+                # Finance.objects.create(
+                #     action="INCOME",
+                #     kind=Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first(),
+                #     amount=penalty,
+                #     stuff=user,
+                #     comment=f"{user.full_name} {early_minutes:.0f} minut erta ketganligi uchun {penalty:.2f} sum jarima."
+                # )
 
                 penalty_logs.append({
                     "type": "early_checkout",
