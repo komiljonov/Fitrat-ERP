@@ -203,7 +203,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
         day_name_today = calendar.day_name[weekday_index]
 
         matched_timeline = None
-        min_diff = timedelta(hours=1)
+        latest_before_checkin = None
 
         for timeline in timelines:
             if timeline.day != day_name_today.capitalize():
@@ -211,18 +211,15 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
             timeline_start_dt = timezone.make_aware(datetime.combine(check_in_date, timeline.start_time))
 
-            if check_in >= timeline_start_dt:
-                time_diff = check_in - timeline_start_dt
-                if not matched_timeline or time_diff < (
-                        check_in - timezone.make_aware(datetime.combine(check_in_date, matched_timeline.start_time))):
+            if timeline_start_dt <= check_in:
+                if not latest_before_checkin or timeline_start_dt > latest_before_checkin:
                     matched_timeline = timeline
+                    latest_before_checkin = timeline_start_dt
 
         if matched_timeline:
             expected_start_time = matched_timeline.start_time
             timeline_start_dt = timezone.make_aware(datetime.combine(check_in_date, expected_start_time))
-
             time_diff = (check_in - timeline_start_dt).total_seconds() // 60
-
             ic(time_diff)
 
             bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
