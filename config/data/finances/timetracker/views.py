@@ -689,7 +689,6 @@ class AttendanceList(ListCreateAPIView):
             raise
 
 
-
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
@@ -707,23 +706,16 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             with transaction.atomic():
-                # Get the attendance record
                 attendance = self.get_object()
-
-                ic(attendance)
 
                 previous_amount = attendance.amount or 0
 
-                ic(attendance.amount)
-                ic(previous_amount)
 
                 self._remove_existing_financial_impact(attendance)
 
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
-
-                ic(updated_attendance.amount)
 
                 # Calculate new penalty amount
                 new_penalty = calculate_penalty(
@@ -732,13 +724,8 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     updated_attendance.check_out
                 ) if updated_attendance.check_in and updated_attendance.check_out else 0
 
-                ic(new_penalty)
-
-
                 updated_attendance.amount = new_penalty
                 updated_attendance.save()
-
-                ic(updated_attendance.amount)
 
                 em_att, created = Employee_attendance.objects.get_or_create(
                     employee=updated_attendance.employee,
@@ -746,22 +733,13 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     defaults={'amount': 0}  # Initialize with 0 if creating new
                 )
 
-                ic(em_att,created)
-
-
+                # Add the attendance record to the many-to-many relationship
                 if not em_att.attendance.filter(id=updated_attendance.id).exists():
                     em_att.attendance.add(updated_attendance)
 
+                # Update the amount by first subtracting the previous amount and adding the new penalty
                 em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
                 em_att.save()
-
-                ic(em_att.amount)
-
-                print({
-                        'previous_amount': previous_amount,
-                        'new_amount': new_penalty,
-                        'difference': new_penalty - previous_amount,
-                    })
 
                 return Response({
                     'success': True,
@@ -795,15 +773,11 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 employee=employee,
                 date=date
             )
-
-            ic(employee_att.amount)
-            ic(attendance.amount)
-
             employee_att.amount -= attendance.amount or 0
             employee_att.save()
 
             # Remove the attendance record from the relationship
-            employee_att.attendance.remove(attendance)
+            employee_att.attendance.delete(attendance)
 
             # Delete if no more attendance records and amount is zero
             if employee_att.amount == 0 and not employee_att.attendance.exists():
@@ -811,13 +785,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         except Employee_attendance.DoesNotExist:
             pass
 
-        ic(Finance.objects.filter(
-            stuff=employee,
-            created_at__date=date,
-            comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
-        ).first())
-
-
+        # 2. Delete related finance records
         Finance.objects.filter(
             stuff=employee,
             created_at__date=date,
@@ -837,7 +805,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
         except ValueError as e:
             raise ValueError(f"Invalid datetime format: {datetime_str}") from e
-
 
 
 
