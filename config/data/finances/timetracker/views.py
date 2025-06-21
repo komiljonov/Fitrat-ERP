@@ -723,6 +723,8 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                     updated_attendance.check_out
                 ) if updated_attendance.check_in and updated_attendance.check_out else 0
 
+                ic(new_penalty)
+
                 updated_attendance.amount = new_penalty.get("amount")
                 updated_attendance.save()
 
