@@ -916,7 +916,7 @@ class ExamRegisteredStudentAPIView(APIView):
 
         headers = [
             "F.I.O", "Telefon raqami", "Ro'yxatdan o'tish", "Imtihonda qatnashadimi?",
-            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi"
+            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi","Ta'lim tili"
         ]
         ws.append(headers)
 
@@ -941,6 +941,7 @@ class ExamRegisteredStudentAPIView(APIView):
                 reg.student_comment,
                 "\n".join([f"{o.subject.name} - {o.options} variant" for o in reg.option.all() if o.subject]),
                 "Ha" if has_certificate else "Yo'q"
+                "\n".join([f"{"Uzbek" if o.subject.lang_national else "Euro" if o.subject.lang_foreign else "Tanlanmagan"}" for o in reg.option.all() if o.subject]),
             ]
 
             row = ws.append(row_data)
