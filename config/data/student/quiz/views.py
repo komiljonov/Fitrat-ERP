@@ -993,7 +993,7 @@ class ExamOptionCreate(APIView):
     """
 
     def post(self, request, *args, **kwargs):
-        data = request.data  # Expecting a list of dicts like [{student, exam, group, option, ...}]
+        data = request.data
 
         if not isinstance(data, list):
             return Response({'error': 'Body must be a list of registration objects'}, status=400)
@@ -1009,7 +1009,6 @@ class ExamOptionCreate(APIView):
                 group_id = entry.get("group")
                 option = entry.get("option")
 
-                # Required fields check
                 if not student_id or not exam_id or option is None:
                     errors.append({'entry': entry, 'error': 'Missing required fields'})
                     continue
@@ -1021,6 +1020,13 @@ class ExamOptionCreate(APIView):
 
                     incoming_options = option if isinstance(option, list) else [option]
 
+                    # Ensure all ExamSubject instances exist
+                    existing_subjects = ExamSubject.objects.filter(id__in=incoming_options)
+                    if existing_subjects.count() != len(incoming_options):
+                        missing_ids = set(incoming_options) - set(str(s.id) for s in existing_subjects)
+                        errors.append({'entry': entry, 'error': f"Invalid ExamSubject ID(s): {list(missing_ids)}"})
+                        continue
+
                     existing_registration = ExamRegistration.objects.filter(
                         student=student,
                         exam=exam,
@@ -1030,9 +1036,7 @@ class ExamOptionCreate(APIView):
                     if existing_registration:
                         existing_option_ids = list(existing_registration.option.values_list("id", flat=True))
                         merged_option_ids = list(set(existing_option_ids).union(set(incoming_options)))
-
-                        if set(existing_option_ids) != set(merged_option_ids):
-                            registrations_to_update.append((existing_registration, merged_option_ids))
+                        registrations_to_update.append((existing_registration, merged_option_ids))
                     else:
                         registrations_to_create.append((student, exam, group, incoming_options))
 
