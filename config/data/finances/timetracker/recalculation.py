@@ -1,33 +1,16 @@
 from data.account.models import CustomUser
-from data.finances.timetracker.models import UserTimeLine
+from data.finances.timetracker.models import UserTimeLine, Stuff_Attendance
 
 
-# def recalculate(user,check_in,check_out:None):
-#
-#     date = check_in.date()
-#
-#     timeline = UserTimeLine.objects.filter(
-#         user__id=user,
-#         day=date.isoweekday(),
-#     ).all()
-#
-#     user = CustomUser.objects.filter(user__id=user).first()
-#
-#     if user in ["TEACHER" , "ASSISTANT"] and (user.calculate_penalties or user.calculate_bonus):
-#         if timeline:
-#             for item in timeline:
-#                 start_time = item.start_time
-#                 end_time = item.end_time
-#                 is_weekend = item.is_weekend
-#                 penalty = item.penalty
-#                 bonus = item.bonus
-#
-#                 if is_weekend:
-#                     return {
-#                         "bonus": 0,
-#                         "penalty": 0,
-#                     }
-#
-#                 if check_in and check_out is None:
-#
+
+def recalculate(check_in,check_out : None,employee_id):
+    if check_in and check_out is None:
+        date = check_in.date()
+
+        staff_att = Stuff_Attendance.objects.filter(employee__id=employee_id,date=date).all()
+        if staff_att:
+            for att in staff_att.order_by("check_in"):
+                pass
+
+
 
