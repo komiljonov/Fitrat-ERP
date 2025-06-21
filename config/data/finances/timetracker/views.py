@@ -716,7 +716,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
-
+                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAisdfhugoidsfhugodisfhugsdfg")
                 # Calculate new penalty amount
                 new_penalty = calculate_penalty(
                     updated_attendance.employee.id,
