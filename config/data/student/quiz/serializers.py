@@ -252,6 +252,7 @@ class QuizSerializer(serializers.ModelSerializer):
         rep["theme"] = ThemeSerializer(instance.theme, include_only=["id", "title"]).data
         return rep
 
+
 class QuizCheckingSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
 
@@ -318,6 +319,7 @@ class QuizCheckingSerializer(serializers.ModelSerializer):
         rep["subject"] = SubjectSerializer(instance.subject).data
         rep["theme"] = ThemeSerializer(instance.theme, include_only=["id", "title"]).data
         return rep
+
 
 class GapsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -479,11 +481,11 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = {
-            "id" : instance.subject.id if instance.subject else None,
-            "name" : instance.subject.name if instance.subject else None,
-            "is_language": instance.subject.is_language if instance.subject else None,
-        }
-        rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data
+            "id": instance.subject.id,
+            "name": instance.subject.name,
+            "is_language": instance.subject.is_language,
+        } if instance.subject else None
+        rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data if instance.certificate else None
 
         return rep
 
@@ -498,7 +500,7 @@ class ExamSerializer(serializers.ModelSerializer):
 
     student_count = serializers.SerializerMethodField()
 
-    options = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(), many=True,allow_null=True)
+    options = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(), many=True, allow_null=True)
 
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
@@ -570,8 +572,9 @@ class ExamSerializer(serializers.ModelSerializer):
 
 class ExamRegistrationSerializer(serializers.ModelSerializer):
     option = serializers.PrimaryKeyRelatedField(
-        queryset=ExamSubject.objects.all(),many=True,allow_null=True
+        queryset=ExamSubject.objects.all(), many=True, allow_null=True
     )
+
     class Meta:
         model = ExamRegistration
         fields = [
@@ -634,7 +637,6 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
 
         return attrs
 
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["exam"] = {
@@ -644,15 +646,16 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "type": instance.exam.type,
             "is_mandatory": instance.exam.is_mandatory,
         }
-        rep["option"] = ExamSubjectSerializer(instance.option,many=True).data
-        rep["student"] = StudentSerializer(instance.student, include_only=["id","first_name","last_name"]).data
+        rep["option"] = ExamSubjectSerializer(instance.option, many=True).data
+        rep["student"] = StudentSerializer(instance.student, include_only=["id", "first_name", "last_name"]).data
         return rep
 
 
 class ExamCertificateSerializer(serializers.ModelSerializer):
     certificate = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(),allow_null=True,
+        queryset=File.objects.all(), allow_null=True,
     )
+
     class Meta:
         model = ExamCertificate
         fields = [
@@ -663,7 +666,8 @@ class ExamCertificateSerializer(serializers.ModelSerializer):
             "certificate",
             "created_at",
         ]
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["certificate"] = FileUploadSerializer(instance.certificate,context=self.context).data
+        rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data
         return rep
