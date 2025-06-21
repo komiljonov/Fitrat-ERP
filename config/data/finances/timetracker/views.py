@@ -247,6 +247,9 @@ class AttendanceList(ListCreateAPIView):
         """Create or update attendance record with error handling"""
         try:
             serializer = self.get_serializer(data=data)
+            if data.get("action"):
+                print(serializer)
+                serializer.data['action'] = data['action']
             if serializer.is_valid():
                 attendance = serializer.save()
                 return serializer.data
