@@ -259,6 +259,8 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
             scheduled_end = localize(datetime.combine(check_out_time.date(), timeline.end_time))
 
 
+            print("timeline", scheduled_start, scheduled_end)
+
             if latest_before_checkin and latest_before_checkin.check_out:
                 last_checkout = latest_before_checkin.check_out
 
@@ -268,6 +270,8 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     outside_duration_minutes = (check_in_time - last_checkout).total_seconds() / 60
                     penalty = outside_duration_minutes * per_minute_salary
                     total_penalty += penalty
+
+                    print("total_penalty", total_penalty)
 
                     penalty_logs.append({
                         "type": "outside_gap",
@@ -283,6 +287,8 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 penalty = late_minutes * per_minute_salary
                 total_penalty += penalty
 
+                print(penalty_logs,total_penalty)
+
                 penalty_logs.append({
                     "type": "late_checkin",
                     "minutes": round(late_minutes, 2),
@@ -294,6 +300,10 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 early_minutes = (scheduled_end - check_out_time).total_seconds() / 60
                 penalty = early_minutes * per_minute_salary
                 total_penalty += penalty
+
+
+
+                print(penalty_logs,total_penalty,total_penalty)
 
                 penalty_logs.append({
                     "type": "early_checkout",
