@@ -293,6 +293,9 @@ class AttendanceList(ListCreateAPIView):
                         )
 
                         total_penalty += penalty_result['penalty_amount']
+
+                        print(penalty_result)
+
                         penalty_details.append(penalty_result)
 
                     except Exception as e:
