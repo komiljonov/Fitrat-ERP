@@ -788,8 +788,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
         print(Finance.objects.filter(
             stuff=employee,
-            created_at__date=date,
-            comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
+            amount=attendance.amount,
         ).first())
         Finance.objects.filter(
             stuff=employee,
