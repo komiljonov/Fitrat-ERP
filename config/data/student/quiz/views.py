@@ -987,7 +987,7 @@ class ExamCertificateAPIView(ListCreateAPIView):
 
 
 
-class ExamOptionCreate(APIView):
+class   ExamOptionCreate(APIView):
     """
     Bulk create or update ExamRegistration entries using ordinary field objects.
     """
