@@ -17,7 +17,6 @@ from rest_framework.response import Response
 
 from .models import Employee_attendance
 from .models import UserTimeLine, Stuff_Attendance
-from .recalculation import recalculate
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
