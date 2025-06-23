@@ -155,7 +155,7 @@ class QuizCheckAPIView(APIView):
             "correct_answer": question.get("answer", "")
         }
 
-    def _prepare_match_pairs(self, question):
+    def _prepare_match_pair(self, question):
         left_items = [p for p in question.get("pairs", []) if p.get("choice") == "Left"]
         right_items = [p for p in question.get("pairs", []) if p.get("choice") == "Right"]
 
@@ -172,7 +172,7 @@ class QuizCheckAPIView(APIView):
 
         return {
             "id": question["id"],
-            "type": "match_pairs",
+            "type": "match_pair",
             "pairs": pairs
         }
 
