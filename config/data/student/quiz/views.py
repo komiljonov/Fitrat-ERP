@@ -296,16 +296,12 @@ class QuizCheckAPIView(APIView):
 
     def check_standard(self, question, user_answer):
 
-        print(user_answer,question)
-
         correct_answer_id = next((a["id"] for a in question.get("answers", []) if a.get("is_correct")), None)
-
-        print(correct_answer_id)
 
         user_answer_id = user_answer.get("answer_id")
         is_correct = str(user_answer_id) == str(correct_answer_id)
 
-        print(question)
+        print(question.get("answers", []))
         correct_answer = next(
             (a["text"] for a in question.get("answers", []) if a.get("is_correct")),
             None
@@ -318,6 +314,7 @@ class QuizCheckAPIView(APIView):
             "correct": is_correct,
             "user_answer": user_answer,
             "correct_answer": correct_answer,
+            "answers": question.get("answers", []),
         }
 
     def check_true_false(self, question, user_answer):
