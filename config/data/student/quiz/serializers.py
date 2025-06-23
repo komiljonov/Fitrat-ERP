@@ -191,61 +191,6 @@ class QuizSerializer(serializers.ModelSerializer):
             "questions", "count", "time", "created_at",
         ]
 
-    def get_questions(self, obj):
-        request = self.context.get("request")
-        query_count = request.query_params.get("count") if request else None
-        student = request.user.student if request and hasattr(request.user, 'student') else None
-
-        if query_count is not None and query_count.lower() == "false":
-            count = None
-        else:
-            count = obj.count or 20
-
-        questions = []
-        quiz_result = None
-
-        # Create or get QuizResult instance if student exists
-        if student:
-            quiz_result, created = QuizResult.objects.get_or_create(
-                quiz=obj,
-                student=student,
-                defaults={'point': 0}
-            )
-
-        # Process each question type and update QuizResult
-        question_types = [
-            (Question, QuestionSerializer, "standard", "questions"),
-            (Vocabulary, VocabularySerializer, "vocabulary", "vocabulary"),
-            (MatchPairs, MatchPairsSerializer, "match_pairs", "match_pair"),
-            (ObjectiveTest, ObjectiveTestSerializer, "objective_test", "objective"),
-            (Cloze_Test, Cloze_TestSerializer, "cloze_test", None),  # No direct M2M for cloze
-            (ImageObjectiveTest, ImageObjectiveTestSerializer, "image_objective", "image_objective"),
-            (True_False, True_FalseSerializer, "true_false", "true_false"),
-        ]
-
-        for model, serializer_class, qtype, relation_field in question_types:
-            items = model.objects.filter(quiz=obj)
-            for item in items:
-                data = serializer_class(item, context=self.context).data
-                data["type"] = qtype
-                questions.append(data)
-
-                if student and quiz_result and relation_field:
-                    m2m_field = getattr(quiz_result, relation_field)
-                    m2m_field.add(item)
-
-        random.shuffle(questions)
-
-        if count is not None:
-            questions = questions[:min(count, len(questions))]
-
-        # Update question count in QuizResult if it exists
-        if student and quiz_result:
-            quiz_result.point = len(questions)  # Or calculate based on your logic
-            quiz_result.save()
-
-        return questions
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
