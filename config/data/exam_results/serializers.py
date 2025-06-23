@@ -50,7 +50,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuizResult
         fields = [
-            "id", "student", "point", "created_at",
+            "id", "student", "point", "created_at","quiz",
             "standard", "match_pairs", "true_false", "vocabulary",
             "objective_test", "cloze_test", "image_objective"
         ]
