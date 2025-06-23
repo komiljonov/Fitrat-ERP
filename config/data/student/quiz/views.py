@@ -278,6 +278,8 @@ class QuizCheckAPIView(APIView):
             user_answer_id = user_answer.get("answer", "")
             is_correct = str(user_answer_id) == str(correct_answer_id)
 
+            print(question.get("question", {}).get("file",""))
+
             return is_correct, {
                 "id": question["id"],
                 #                 "file": question.get("file", ""),
