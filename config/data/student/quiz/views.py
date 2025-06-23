@@ -71,7 +71,13 @@ class QuizCheckAPIView(APIView):
         for question in quiz_questions:
             qtype = question["type"]
             qid = question["id"]
+
+            print(qtype,qid)
+
             user_answer = self._find_user_answer(data, qtype, qid)
+
+            print("USER_ANSWER:", user_answer)
+
 
             if qtype not in results["details"]:
                 results["details"][qtype] = []
@@ -192,6 +198,7 @@ class QuizCheckAPIView(APIView):
             'image_objective': 'image_objective_id',
             'true_false': 'true_false_id'
         }
+
 
         id_field = id_fields.get(qtype, 'question_id')
         return next((a for a in data.get(qtype, []) if str(a.get(id_field)) == str(qid)), None)
