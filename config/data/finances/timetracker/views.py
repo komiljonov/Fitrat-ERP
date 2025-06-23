@@ -119,6 +119,7 @@ class AttendanceList(ListCreateAPIView):
                         "attendance exists",
                         status=status.HTTP_400_BAD_REQUEST
                     )
+
             return self._process_attendance_with_error_handling(request.data)
         except AttendanceError as e:
             logger.error(f"Attendance error: {e.message}", extra=e.details)
