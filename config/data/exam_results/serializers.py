@@ -40,6 +40,10 @@ class UnitTestResultSerializer(serializers.ModelSerializer):
 
 class QuizResultSerializer(serializers.ModelSerializer):
     # Write-only fields for incoming UUID lists
+
+    student = serializers.CharField(write_only=True, required=False)
+
+
     match_pair = serializers.ListField(write_only=True, required=False)
     true_false = serializers.ListField(write_only=True, required=False)
     questions = serializers.ListField(write_only=True, required=False)
@@ -69,13 +73,17 @@ class QuizResultSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        student = validated_data.get("student", None)
+        request = self.context.get("request")
+        student_input = validated_data.pop("student", None)
 
-        print(student)
+        student = None
+        if student_input:
+            student = Student.objects.filter(user__id=student_input).first()
+        elif request and hasattr(request.user, "student"):
+            student = Student.objects.filter(user=request.user).first()
 
-        if student:
-            student = Student.objects.filter(user__id=student).first()
-
+        if not student:
+            raise serializers.ValidationError("Valid student could not be resolved from input or request.")
 
         quiz = validated_data["quiz"]
         quiz_result = QuizResult.objects.create(student=student, quiz=quiz)
