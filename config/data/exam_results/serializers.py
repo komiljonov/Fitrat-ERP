@@ -85,7 +85,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
         if not student:
             raise serializers.ValidationError("Valid student could not be resolved from input or request.")
 
-        quiz = validated_data["quiz"]
+        quiz = validated_data["quiz_id"]
         quiz_result = QuizResult.objects.create(student=student, quiz=quiz)
 
         # Assign M2M fields if provided
