@@ -72,12 +72,12 @@ class QuizResultSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         student = validated_data.get("student")
 
-        print(student)
+        print("student",student)
 
         if not student and request and hasattr(request.user, 'student'):
             student = Student.objects.filter(user=request.user).first()
 
-            print(student)
+            print("finded",student)
 
         quiz = validated_data["quiz"]
         quiz_result = QuizResult.objects.create(student=student, quiz=quiz)
