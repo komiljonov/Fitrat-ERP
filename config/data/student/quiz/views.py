@@ -312,10 +312,22 @@ class QuizCheckAPIView(APIView):
             }
         except Exception as e:
             logger.error(f"Error processing image objective: {str(e)}")
+            file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
+
+            print(file)
+            context = {
+                'request': self.request,
+                'user': self.request.user,
+                'custom_data': 'some_value'
+            }
+
+            url = FileUploadSerializer(file,context=context).data
+            print(url)
             return False, {
                 "id": question["id"],
                 "correct": False,
                 "error": str(e),
+                "image_url": url.get("file") or None,
                 "user_answer": user_answer.get("answer", ""),
                 "correct_answer": "Error processing correct answer"
             }
