@@ -319,7 +319,7 @@ class QuizCheckAPIView(APIView):
             "file": question.get("file", {}),
             "question_text": question.get("text", {}).get("name"),
             "correct": is_correct,
-            "user_answer": user_answer,
+            "user_answer": user_answer_id,
             "correct_answer": correct_answer,
             "answers": question.get("answers", []),
         }
