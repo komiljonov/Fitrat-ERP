@@ -97,7 +97,7 @@ class QuizCheckAPIView(APIView):
             "match_pair_result": "match_pair",
             "true_false_result": "true_false",
             "vocabulary_result": "vocabulary",
-            "objective_result": "objective",
+            "objective_result": "objective_test",
             "cloze_test_result": "cloze_test",
             "image_objective_result": "image_objective",
             "standard": "standard",
@@ -301,7 +301,7 @@ class QuizCheckAPIView(APIView):
         user_answer_id = user_answer.get("answer_id")
         is_correct = str(user_answer_id) == str(correct_answer_id)
 
-        print(question.get("answers", []))
+
         correct_answer = next(
             (a["text"] for a in question.get("answers", []) if a.get("is_correct")),
             None
