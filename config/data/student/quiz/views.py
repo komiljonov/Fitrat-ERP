@@ -363,7 +363,8 @@ class QuizCheckAPIView(APIView):
 
         user_pairs = user_answer.get("pairs", [])
 
-        # Check if user provided the expected number of pairs
+        print(left_items,right_items)
+
         expected_pairs_count = len(correct_mapping)
         if len(user_pairs) != expected_pairs_count:
             return False, {
@@ -398,11 +399,15 @@ class QuizCheckAPIView(APIView):
 
 
             print(pair)
+
+            left_text = Pairs.objects.filter(id=pair.get("id")).first().pair
+            right_text = Pairs.objects.filter(id=pair.get("id")).first().pair
+
             pair_results.append({
                 "left_id": left_id,
-                "left_text": pair.get("left_text"),
+                "left_text": left_text,
                 "right_id": right_id,
-                "right_text": pair.get("right_text"),
+                "right_text": right_text,
                 "is_correct": is_correct
             })
 
