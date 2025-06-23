@@ -92,8 +92,6 @@ class QuizCheckAPIView(APIView):
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
         existing_data = QuizResultSerializer(existing_results).data if existing_results else None
 
-        for question in existing_data:
-            print(question)
 
         RESULT_FIELDS_MAP = {
             "match_pair_result": "match_pair",
@@ -102,7 +100,7 @@ class QuizCheckAPIView(APIView):
             "objective_result": "objective",
             "cloze_test_result": "cloze_test",
             "image_objective_result": "image_objective",
-            "standard": "questions",
+            "standard": "standard",
         }
 
         merged_details = {}
@@ -116,6 +114,7 @@ class QuizCheckAPIView(APIView):
 
         # Merge with new incoming answers (overwrite duplicates)
         for qtype, entries in results["details"].items():
+            print(qtype, entries)
             if qtype not in merged_details:
                 merged_details[qtype] = {}
             for entry in entries:
