@@ -283,9 +283,10 @@ class QuizCheckAPIView(APIView):
                 #                 "file": question.get("file", ""),
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
-                "user_answer": user_answer_id,
+                "user_answer": Answer.objects.filter(id=user_answer_id).first().text,
                 "correct_answer": correct_answer_id,
-                "image_url": question.get("image_url", "")
+                "comment": question.get("comment", ""),
+                "image_url": question.get("question", {})
             }
         except Exception as e:
             logger.error(f"Error processing image objective: {str(e)}")
