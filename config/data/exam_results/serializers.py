@@ -39,30 +39,68 @@ class UnitTestResultSerializer(serializers.ModelSerializer):
         ]
 
 class QuizResultSerializer(serializers.ModelSerializer):
+    match_pair = serializers.ListField(write_only=True, required=False)
+    true_false = serializers.ListField(write_only=True, required=False)
+    questions = serializers.ListField(write_only=True, required=False)
+    cloze_test = serializers.ListField(write_only=True, required=False)
+    objective = serializers.ListField(write_only=True, required=False)
+    image_objective = serializers.ListField(write_only=True, required=False)
+    vocabulary = serializers.ListField(write_only=True, required=False)
+
     standard = serializers.SerializerMethodField()
     match_pairs = serializers.SerializerMethodField()
-    true_false = serializers.SerializerMethodField()
-    vocabulary = serializers.SerializerMethodField()
+    true_false_result = serializers.SerializerMethodField()
+    vocabulary_result = serializers.SerializerMethodField()
     objective_test = serializers.SerializerMethodField()
-    cloze_test = serializers.SerializerMethodField()
-    image_objective = serializers.SerializerMethodField()
+    cloze_test_result = serializers.SerializerMethodField()
+    image_objective_result = serializers.SerializerMethodField()
 
     class Meta:
         model = QuizResult
         fields = [
-            "id", "student", "point", "created_at","quiz",
-            "standard", "match_pairs", "true_false", "vocabulary",
-            "objective_test", "cloze_test", "image_objective"
+            "id", "student", "point", "created_at", "quiz",
+            "questions", "match_pair", "true_false", "vocabulary",
+            "objective", "cloze_test", "image_objective",
+            "standard", "match_pairs", "true_false_result",
+            "vocabulary_result", "objective_test",
+            "cloze_test_result", "image_objective_result"
         ]
 
     def create(self, validated_data):
+        request = self.context.get("request")
+        student = validated_data.get("student")
 
-        print(validated_data)
-        if not validated_data.get("student"):
-            request = self.context.get("request")
-            if request and hasattr(request.user, 'student'):
-                validated_data["student"] = Student.objects.filter(user=request.user).first()
-        return QuizResult.objects.create(**validated_data)
+        if not student and request and hasattr(request.user, 'student'):
+            student = Student.objects.filter(user=request.user).first()
+
+        quiz = validated_data["quiz"]
+
+        quiz_result = QuizResult.objects.create(student=student, quiz=quiz)
+
+        # Assign M2M fields if provided
+        if "match_pair" in validated_data:
+            quiz_result.match_pair.set(validated_data["match_pair"])
+
+        if "true_false" in validated_data:
+            quiz_result.true_false.set(validated_data["true_false"])
+
+        if "questions" in validated_data:
+            quiz_result.questions.set(validated_data["questions"])
+
+        if "cloze_test" in validated_data:
+            quiz_result.cloze_test.set(validated_data["cloze_test"])
+
+        if "objective" in validated_data:
+            quiz_result.objective.set(validated_data["objective"])
+
+        if "image_objective" in validated_data:
+            quiz_result.image_objective.set(validated_data["image_objective"])
+
+        if "vocabulary" in validated_data:
+            quiz_result.vocabulary.set(validated_data["vocabulary"])
+
+        return quiz_result
+
 
     def get_standard(self, obj):
         # Replace with actual logic and serializer
