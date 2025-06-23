@@ -278,7 +278,7 @@ class QuizCheckAPIView(APIView):
             user_answer_id = user_answer.get("answer", "")
             is_correct = str(user_answer_id) == str(correct_answer_id)
 
-            print(question.get("question", {}).get("file",""))
+            print(question.get("question", {}).get("image",""))
 
             return is_correct, {
                 "id": question["id"],
@@ -288,7 +288,7 @@ class QuizCheckAPIView(APIView):
                 "user_answer": Answer.objects.filter(id=user_answer_id).first().text,
                 "correct_answer": correct_answer_id,
                 "comment": question.get("comment", ""),
-                "image_url": question.get("question", {}).get("file","")
+                "image_url": question.get("image", {}).get("url","")
             }
         except Exception as e:
             logger.error(f"Error processing image objective: {str(e)}")
