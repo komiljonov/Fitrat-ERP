@@ -202,6 +202,7 @@ class QuizSerializer(serializers.ModelSerializer):
             count = obj.count or 20
 
         questions = []
+        seen_questions = set()  # Track (type, id) tuples to avoid duplicates
         quiz_result = None
 
         # Create or get QuizResult instance if student exists
@@ -212,13 +213,13 @@ class QuizSerializer(serializers.ModelSerializer):
                 defaults={'point': 0}
             )
 
-        # Process each question type and update QuizResult
+        # Define question types and associated serializers & M2M fields
         question_types = [
             (Question, QuestionSerializer, "standard", "questions"),
             (Vocabulary, VocabularySerializer, "vocabulary", "vocabulary"),
             (MatchPairs, MatchPairsSerializer, "match_pairs", "match_pair"),
             (ObjectiveTest, ObjectiveTestSerializer, "objective_test", "objective"),
-            (Cloze_Test, Cloze_TestSerializer, "cloze_test", None),  # No direct M2M for cloze
+            (Cloze_Test, Cloze_TestSerializer, "cloze_test", None),  # No M2M for cloze
             (ImageObjectiveTest, ImageObjectiveTestSerializer, "image_objective", "image_objective"),
             (True_False, True_FalseSerializer, "true_false", "true_false"),
         ]
@@ -226,6 +227,11 @@ class QuizSerializer(serializers.ModelSerializer):
         for model, serializer_class, qtype, relation_field in question_types:
             items = model.objects.filter(quiz=obj)
             for item in items:
+                key = (qtype, item.id)
+                if key in seen_questions:
+                    continue  # Skip if already seen
+                seen_questions.add(key)
+
                 data = serializer_class(item, context=self.context).data
                 data["type"] = qtype
                 questions.append(data)
@@ -241,10 +247,11 @@ class QuizSerializer(serializers.ModelSerializer):
 
         # Update question count in QuizResult if it exists
         if student and quiz_result:
-            quiz_result.point = len(questions)  # Or calculate based on your logic
+            quiz_result.point = len(questions)  # Or use your own logic
             quiz_result.save()
 
         return questions
+
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
