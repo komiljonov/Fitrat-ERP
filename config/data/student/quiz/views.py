@@ -72,7 +72,12 @@ class QuizCheckAPIView(APIView):
             qtype = question["type"]
             qid = question["id"]
 
+            print(qtype)
+            print(qid)
+
             user_answer = self._find_user_answer(data, qtype, qid)
+
+            print(user_answer)
 
             if qtype not in results["details"]:
                 results["details"][qtype] = []
@@ -81,6 +86,8 @@ class QuizCheckAPIView(APIView):
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
+
+            print(result_data)
 
             if is_correct:
                 results["summary"]["correct_count"] += 1
