@@ -109,16 +109,14 @@ class QuizCheckAPIView(APIView):
             student=student
         ).first()
 
-        print("results1",existing_results)
-
         existing_data = QuizResultSerializer(existing_results).data if existing_results else None
-
-        print("results2",existing_data)
 
         merged_details = {}
 
         for qtype, entries in results["details"].items():
             merged_details[qtype] = {entry["id"]: entry for entry in entries}
+
+        print(merged_details)
 
 
         if existing_data and "details" in existing_data:
