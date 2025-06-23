@@ -396,11 +396,13 @@ class QuizCheckAPIView(APIView):
             if not is_correct:
                 all_correct = False
 
+
+            print(pair)
             pair_results.append({
                 "left_id": left_id,
-                "left_text": left_items[left_id],
+                "left_text": pair.get("left_text"),
                 "right_id": right_id,
-                "right_text": right_items[right_id],
+                "right_text": pair.get("right_text"),
                 "is_correct": is_correct
             })
 
