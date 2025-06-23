@@ -72,12 +72,7 @@ class QuizCheckAPIView(APIView):
             qtype = question["type"]
             qid = question["id"]
 
-            print(qtype)
-            print(qid)
-
             user_answer = self._find_user_answer(data, qtype, qid)
-
-            print(user_answer)
 
             if qtype not in results["details"]:
                 results["details"][qtype] = []
@@ -86,8 +81,6 @@ class QuizCheckAPIView(APIView):
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
-
-            print(result_data)
 
             if is_correct:
                 results["summary"]["correct_count"] += 1
@@ -121,7 +114,7 @@ class QuizCheckAPIView(APIView):
 
         # Merge with new incoming answers (overwrite duplicates)
         for qtype, entries in results["details"].items():
-            print(qtype, entries)
+
             if qtype not in merged_details:
                 merged_details[qtype] = {}
             for entry in entries:
@@ -206,8 +199,6 @@ class QuizCheckAPIView(APIView):
 
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
-
-        print(qtype)
 
         # Handle any type aliases
         if qtype in ["image_objective", "image_objective_test"]:
