@@ -216,7 +216,7 @@ class QuizSerializer(serializers.ModelSerializer):
         question_types = [
             (Question, QuestionSerializer, "standard", "questions"),
             (Vocabulary, VocabularySerializer, "vocabulary", "vocabulary"),
-            (MatchPairs, MatchPairsSerializer, "match_pairs", "match_pair"),
+            (MatchPairs, MatchPairsSerializer, "match_pair", "match_pair"),
             (ObjectiveTest, ObjectiveTestSerializer, "objective_test", "objective"),
             (Cloze_Test, Cloze_TestSerializer, "cloze_test", None),  # No M2M for cloze
             (ImageObjectiveTest, ImageObjectiveTestSerializer, "image_objective", "image_objective"),
