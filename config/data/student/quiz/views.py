@@ -94,7 +94,7 @@ class QuizCheckAPIView(APIView):
 
 
         RESULT_FIELDS_MAP = {
-            "match_pair_result": "match_pairs",
+            "match_pair_result": "match_pair",
             "true_false_result": "true_false",
             "vocabulary_result": "vocabulary",
             "objective_result": "objective",
@@ -323,7 +323,7 @@ class QuizCheckAPIView(APIView):
             "correct_answer": correct_answer
         }
 
-    def check_match_pairs(self, question, user_answer):
+    def check_match_pair(self, question, user_answer):
 
         left_items = {p["key"]: p["id"] for p in question.get("pairs", []) if p.get("choice") == "Left"}
         right_items = {p["key"]: p["id"] for p in question.get("pairs", []) if p.get("choice") == "Right"}
