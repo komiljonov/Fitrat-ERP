@@ -78,23 +78,47 @@ class AttendanceList(ListCreateAPIView):
             check_out = request.data.get('check_out')
             date = request.data.get('date')
             employee = request.data.get('employee')
+            actions = request.data.get('actions')
 
             filters = {}
             if check_out:
                 filters['check_out'] = check_out
-
-            att = Stuff_Attendance.objects.filter(
-                employee__id=employee,
-                date=date,
-                check_in=check_in,
-                **filters
-            )
-            if att:
-                return Response(
-                    "attendance exists",
-                    status=status.HTTP_400_BAD_REQUEST
+            if actions is None:
+                att = Stuff_Attendance.objects.filter(
+                    employee__id=employee,
+                    date=date,
+                    check_in=check_in,
+                    **filters
                 )
-
+                if att:
+                    return Response(
+                        "attendance exists",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            elif check_in and actions and check_out is None:
+                att = Stuff_Attendance.objects.filter(
+                    employee__id=employee,
+                    date=date,
+                    check_in=actions.get('start'),
+                    check_out=actions.get('end'),
+                ).first()
+                if att:
+                    return Response(
+                        "attendance exists",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            elif check_in and actions and check_out:
+                att = Stuff_Attendance.objects.filter(
+                    employee__id=employee,
+                    date=date,
+                    check_in=actions.get('start'),
+                    check_out=actions.get('end'),
+                ).first()
+                if att:
+                    return Response(
+                        "attendance exists",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             return self._process_attendance_with_error_handling(request.data)
         except AttendanceError as e:
             logger.error(f"Attendance error: {e.message}", extra=e.details)
