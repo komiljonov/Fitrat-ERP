@@ -46,9 +46,10 @@ class QuizCheckAPIView(APIView):
         operation_summary="Check Quiz Answers",
         operation_description="Submit answers to a quiz and get results.",
         request_body=QuizCheckSerializer,
-        responses={200: openapi.Response(description="Quiz result summary with section breakdown.")},
+        responses={200: openapi.Response(description="Quiz result summary with section breakdown.")}
     )
     def post(self, request):
+
         serializer = QuizCheckSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -57,6 +58,7 @@ class QuizCheckAPIView(APIView):
         student = Student.objects.filter(user__id=data.get("student")).first()
         theme = get_object_or_404(Theme, id=data.get("theme"))
 
+
         results = {
             "details": {},
             "summary": {
@@ -64,50 +66,58 @@ class QuizCheckAPIView(APIView):
                 "correct_count": 0,
                 "wrong_count": 0,
                 "ball": 0.0,
+                # "section_breakdown": {}
             }
         }
 
-        # Get all quiz questions
         quiz_questions = QuizCheckingSerializer(quiz).data["questions"]
-        question_ids = data.get("questions", [])
 
-        for qid in question_ids:
-            question = next((q for q in quiz_questions if q["id"] == qid), None)
-            if not question:
-                continue
-
+        for question in quiz_questions:
             qtype = question["type"]
+            qid = question["id"]
+            question_ids = data.get("questions", [])
+            for qid in question_ids:
+
+                question = next((q for q in quiz_questions if q["id"] == qid), None)
+                if question:
+                    question_data = self._prepare_question_data(question)
+
             user_answer = self._find_user_answer(data, qtype, qid)
 
             if qtype not in results["details"]:
                 results["details"][qtype] = []
+            # if qtype not in results["summary"]["section_breakdown"]:
+            #     results["summary"]["section_breakdown"][qtype] = {"correct": 0, "wrong": 0}
 
             if not user_answer:
                 results["summary"]["wrong_count"] += 1
+                # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
 
             if is_correct:
                 results["summary"]["correct_count"] += 1
+                # results["summary"]["section_breakdown"][qtype]["correct"] += 1
             else:
                 results["summary"]["wrong_count"] += 1
-
+                # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
             results["details"][qtype].append(result_data)
 
-        # Fetch existing result (if user previously submitted)
-        existing_result = QuizResult.objects.filter(
+        existing_results = QuizResult.objects.filter(
             quiz=quiz,
             student=student
         ).first()
 
-        existing_data = QuizResultSerializer(existing_result).data if existing_result else None
+        existing_data = QuizResultSerializer(existing_results).data if existing_results else None
 
-        # Merge new and old results
         merged_details = {}
 
         for qtype, entries in results["details"].items():
             merged_details[qtype] = {entry["id"]: entry for entry in entries}
+
+        print(merged_details)
+
 
         if existing_data and "details" in existing_data:
             for qtype, entries in existing_data["details"].items():
@@ -117,20 +127,19 @@ class QuizCheckAPIView(APIView):
                     if entry["id"] not in merged_details[qtype]:
                         merged_details[qtype][entry["id"]] = entry
 
-        # Final result construction
         results["details"] = {k: list(v.values()) for k, v in merged_details.items()}
 
-        total = quiz.count if quiz.count else len(quiz_questions)
-        correct = results["summary"]["correct_count"]
-        results["summary"]["total_questions"] = total
-        results["summary"]["wrong_count"] = total - correct
-        results["summary"]["ball"] = round((correct / total * 100), 2) if total > 0 else 0.0
+        if "existing_results" in results:
+            del results["existing_results"]
 
-        # Save progress
+        total = quiz.count if quiz else len(quiz_questions)
+        results["summary"]["total_questions"] = total
+        results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
+        results["summary"]["ball"] = round((results["summary"]["correct_count"] / total * 100), 2) if total > 0 else 0.0
+
         self._create_mastering_record(theme, student, quiz, results["summary"]["ball"])
 
         return Response(results)
-
 
     def _prepare_question_data(self, question):
         qtype = question["type"]
