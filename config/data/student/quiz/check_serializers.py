@@ -93,7 +93,7 @@ class QuizCheckSerializer(serializers.Serializer):
     # fill_gaps = FillGapsSerializer(many=True, required=False)
     vocabularies = VocabularyAnswerSerializer(many=True, required=False)
     listening = ListeningAnswerSerializer(many=True, required=False)
-    match_pairs = MatchPairsSerializer(many=True, required=False)
+    match_pair = MatchPairsSerializer(many=True, required=False)
     objective_test = ObjectiveTestAnswerSerializer(many=True, required=False)
     cloze_test = ClozeTestAnswerSerializer(many=True, required=False)
     image_objective_test = ImageObjectiveTestAnswerSerializer(many=True, required=False)
