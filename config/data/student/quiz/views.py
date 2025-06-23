@@ -372,7 +372,7 @@ class QuizCheckAPIView(APIView):
                 "error": f"Expected {expected_pairs_count} pairs, got {len(user_pairs)}",
                 "pair_results": [],
                 "correct_mapping": {
-                    key: {"left_id": left, "right_id": right}
+                    key: {"left_id": left,"left_text":left_items[left], "right_id": right,"right_text":right_items[right]}
                     for key, (left, right) in correct_mapping.items()
                 }
             }
@@ -398,7 +398,9 @@ class QuizCheckAPIView(APIView):
 
             pair_results.append({
                 "left_id": left_id,
+                "left_text": left_items[left_id],
                 "right_id": right_id,
+                "right_text": right_items[right_id],
                 "is_correct": is_correct
             })
 
