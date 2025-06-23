@@ -88,9 +88,13 @@ class QuizCheckAPIView(APIView):
                 results["summary"]["wrong_count"] += 1
 
             results["details"][qtype].append(result_data)
-
+        context = {
+            'request': request,
+            'user': request.user,
+            'custom_data': 'some_value'
+        }
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
-        existing_data = QuizResultSerializer(existing_results).data if existing_results else None
+        existing_data = QuizResultSerializer(existing_results,context=context).data if existing_results else None
 
 
         RESULT_FIELDS_MAP = {
