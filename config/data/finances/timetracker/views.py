@@ -96,11 +96,15 @@ class AttendanceList(ListCreateAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             elif check_in and actions and check_out is None:
+
+                sorted_actions = sorted(actions, key=lambda x: x['start'])
+                sorted_actions = sorted_actions[0]
+
                 att = Stuff_Attendance.objects.filter(
                     employee__id=employee,
                     date=date,
-                    check_in=actions.get('start'),
-                    check_out=actions.get('end'),
+                    check_in=sorted_actions.get('start'),
+                    check_out=sorted_actions.get('end'),
                 ).first()
                 if att:
                     return Response(
