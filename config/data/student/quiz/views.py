@@ -1,4 +1,5 @@
 import logging
+import this
 from datetime import datetime, timedelta
 
 import openpyxl
@@ -363,7 +364,8 @@ class QuizCheckAPIView(APIView):
 
         user_pairs = user_answer.get("pairs", [])
 
-        print(left_items,right_items)
+        pairs = MatchPairs.objects.filter(id=question["id"]).first()
+        pairs = MatchPairsSerializer(pairs, many=True).data
 
         expected_pairs_count = len(correct_mapping)
         if len(user_pairs) != expected_pairs_count:
@@ -372,10 +374,7 @@ class QuizCheckAPIView(APIView):
                 "correct": False,
                 "error": f"Expected {expected_pairs_count} pairs, got {len(user_pairs)}",
                 "pair_results": [],
-                "correct_mapping": {
-                    key: {"left_id": left,"left_text":left_items[left], "right_id": right,"right_text":right_items[right]}
-                    for key, (left, right) in correct_mapping.items()
-                }
+                "pairs" : pairs
             }
 
         all_correct = True
@@ -397,19 +396,9 @@ class QuizCheckAPIView(APIView):
             if not is_correct:
                 all_correct = False
 
+        pairs = MatchPairs.objects.filter(id=question["id"]).first()
+        pairs = MatchPairsSerializer(pairs, many=True).data
 
-            print(pair)
-
-            left_text = Pairs.objects.filter(id=pair.get("id")).first().pair
-            right_text = Pairs.objects.filter(id=pair.get("id")).first().pair
-
-            pair_results.append({
-                "left_id": left_id,
-                "left_text": left_text,
-                "right_id": right_id,
-                "right_text": right_text,
-                "is_correct": is_correct
-            })
 
         # Ensure all correct pairs were matched (no duplicates)
         if len(matched_correct_pairs) != len(correct_mapping):
@@ -418,11 +407,7 @@ class QuizCheckAPIView(APIView):
         return all_correct, {
             "id": question["id"],
             "correct": all_correct,
-            "pair_results": pair_results,
-            "correct_mapping": {
-                key: {"left_id": left, "right_id": right}
-                for key, (left, right) in correct_mapping.items()
-            }
+            "pairs": pairs,
         }
 
     def _create_mastering_record(self, theme, student, quiz, ball):
