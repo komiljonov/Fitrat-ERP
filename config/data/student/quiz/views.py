@@ -58,8 +58,6 @@ class QuizCheckAPIView(APIView):
         theme = get_object_or_404(Theme, id=data.get("theme"))
 
 
-
-
         results = {
             "details": {},
             "summary": {
@@ -108,11 +106,29 @@ class QuizCheckAPIView(APIView):
 
         existing_results = QuizResult.objects.filter(
             quiz=quiz,
-            student=student,
-            questions__id__in=[q["id"] for q in quiz_questions]
-        )
+            student=student
+        ).first()
 
-        results["existing_results"] = QuizResultSerializer(existing_results, many=True).data
+        existing_data = QuizResultSerializer(existing_results).data if existing_results else None
+
+        merged_details = {}
+
+        for qtype, entries in results["details"].items():
+            merged_details[qtype] = {entry["id"]: entry for entry in entries}
+
+
+        if existing_data and "details" in existing_data:
+            for qtype, entries in existing_data["details"].items():
+                if qtype not in merged_details:
+                    merged_details[qtype] = {}
+                for entry in entries:
+                    if entry["id"] not in merged_details[qtype]:
+                        merged_details[qtype][entry["id"]] = entry
+
+        results["details"] = {k: list(v.values()) for k, v in merged_details.items()}
+
+        if "existing_results" in results:
+            del results["existing_results"]
 
         total = quiz.count if quiz else len(quiz_questions)
         results["summary"]["total_questions"] = total
