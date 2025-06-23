@@ -1,29 +1,17 @@
 import calendar
-from datetime import date, datetime, timedelta
-from decimal import Decimal, InvalidOperation
-from typing import List
+from datetime import date, datetime
 
 import pytz
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.timezone import make_aware, is_aware
 from icecream import ic
-from rest_framework.exceptions import ValidationError
 
 from data.account.models import CustomUser
 from data.finances.finance.models import Finance, Kind
 from data.finances.timetracker.models import UserTimeLine, Stuff_Attendance
-from typing import TYPE_CHECKING
-
-from data.student import attendance
-
-if TYPE_CHECKING:
-    from data.finances.timetracker.views import AttendanceError
 from data.student.groups.models import Group
 from data.student.studentgroup.models import StudentGroup
-
-
-from django.utils import timezone
-
 
 TASHKENT_TZ = pytz.timezone("Asia/Tashkent")
 
@@ -111,7 +99,6 @@ def get_monthly_per_minute_salary(user_id):
         "total_minutes": total_minutes,
         "per_minute_salary": per_minute_salary
     }
-
 
 
 def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = None) -> float:
@@ -302,7 +289,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     stuff=user,
 
                     comment=f"Bugun {check_out.time()} da ishga {early_minutes} minut erta kelganingiz uchun"
-        
+
                             f" {bonus_amount} sum bonus yozildi! "
 
                 )
@@ -337,7 +324,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     stuff=user,
 
                     comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun"
-        
+
                             f" {penalty_amount} sum jarima yozildi! "
 
                 )
@@ -382,7 +369,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                             stuff=user,
 
                             comment=f"Bugun {check_out.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun"
-            
+
                                     f" {penalty_amount} sum jarima yozildi! "
 
                         )
@@ -409,7 +396,4 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                 print(f"Bonus for being in office: {bonus_amount:.2f} ({total_working_minutes} minutes worked)")
 
-
     return round(total_penalty, 2)
-
-
