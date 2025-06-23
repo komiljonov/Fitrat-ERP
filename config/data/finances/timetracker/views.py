@@ -118,9 +118,13 @@ class AttendanceList(ListCreateAPIView):
                     )
             elif check_in and actions and check_out:
 
+                print(actions)
+
                 sorted_actions = sorted(actions, key=lambda x: x['start'])
+
+                print(sorted_actions)
                 sorted_actions = sorted_actions[0]
-                ic(sorted_actions)
+
 
                 att = Stuff_Attendance.objects.filter(
                     employee__id=employee,
