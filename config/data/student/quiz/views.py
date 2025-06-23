@@ -19,6 +19,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from root import settings
 from .check_serializers import QuizCheckSerializer
 from .models import Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam, QuizGaps, Answer, ExamRegistration, ObjectiveTest, \
     Cloze_Test, ImageObjectiveTest, True_False, ExamCertificate, ExamSubject
@@ -292,7 +293,7 @@ class QuizCheckAPIView(APIView):
                 "user_answer": Answer.objects.filter(id=user_answer_id).first().text,
                 "correct_answer": correct_answer_id,
                 "comment": question.get("comment", ""),
-                "image_url": question.get("image", {}).get("file","")
+                "image_url": f"{settings.MEDIA_URL}{question.get("image", {}).get("file","")}"
             }
         except Exception as e:
             logger.error(f"Error processing image objective: {str(e)}")
