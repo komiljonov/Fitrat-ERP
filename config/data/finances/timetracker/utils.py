@@ -290,7 +290,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                 Finance.objects.create(
 
-                    action="INCOME",
+                    action="EXPENSE",
 
                     kind=bonus_kind,
 
@@ -325,7 +325,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                 Finance.objects.create(
 
-                    action="EXPENSE",
+                    action="INCOME",
 
                     kind=penalty_kind,
 
@@ -370,7 +370,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                         Finance.objects.create(
 
-                            action="EXPENSE",
+                            action="INCOME",
 
                             kind=bonus_kind,
 
@@ -397,7 +397,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 total_penalty -= bonus_amount  # Subtracting bonus from penalties
 
                 Finance.objects.create(
-                    action="INCOME",
+                    action="EXPENSE",
                     kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first(),
                     amount=bonus_amount,
                     stuff=user,
