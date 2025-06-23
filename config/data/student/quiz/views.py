@@ -284,6 +284,8 @@ class QuizCheckAPIView(APIView):
         try:
             correct_answer_id = question.get("answer", "")
             user_answer_id = user_answer.get("answer", "")
+            print(user_answer_id)
+
             is_correct = str(user_answer_id) == str(correct_answer_id)
 
             context = {
