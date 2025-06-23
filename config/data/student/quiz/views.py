@@ -295,13 +295,13 @@ class QuizCheckAPIView(APIView):
             file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
 
             url = FileUploadSerializer(file,context=context).data
-            print(user_answer_id)
+            correct_answer = Answer.objects.filter(id=correct_answer_id).first().text
             return is_correct, {
                 "id": question["id"],
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_id,
-                "correct_answer": correct_answer_id,
+                "correct_answer": correct_answer,
                 "comment": question.get("comment", ""),
                 "image_url": url or None
             }
@@ -316,6 +316,8 @@ class QuizCheckAPIView(APIView):
             }
 
             url = FileUploadSerializer(file,context=context).data
+            correct_answer_id = question.get("answer", "")
+            correct_answer = Answer.objects.filter(id=correct_answer_id).first().text
 
             return False, {
                 "id": question["id"],
@@ -323,7 +325,7 @@ class QuizCheckAPIView(APIView):
                 "error": str(e),
                 "image_url": url or None,
                 "user_answer": user_answer.get("answer", ""),
-                "correct_answer": "Error processing correct answer"
+                "correct_answer": correct_answer
             }
 
     def check_standard(self, question, user_answer):
