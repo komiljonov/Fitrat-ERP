@@ -74,7 +74,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
 
         print("student",student)
 
-        if not student and request and hasattr(request.user, 'student'):
+        if student is None:
             student = Student.objects.filter(user=request.user).first()
 
             print("finded",student)
