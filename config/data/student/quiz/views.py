@@ -204,6 +204,9 @@ class QuizCheckAPIView(APIView):
         if qtype in ["image_objective", "image_objective_test"]:
             qtype = "image_objective"  # Standardize to one type
 
+        if qtype in ["objective_test","objective","objective_result"]:
+            qtype = "objective_test"
+
         checker = getattr(self, f"check_{qtype}", None)
 
         if not checker:
