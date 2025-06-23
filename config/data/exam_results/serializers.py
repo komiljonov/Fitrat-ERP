@@ -56,6 +56,8 @@ class QuizResultSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+
+        print(validated_data)
         if not validated_data.get("student"):
             request = self.context.get("request")
             if request and hasattr(request.user, 'student'):
