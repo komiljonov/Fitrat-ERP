@@ -284,7 +284,7 @@ class QuizCheckAPIView(APIView):
             user_answer_id = user_answer.get("answer", "")
             is_correct = str(user_answer_id) == str(correct_answer_id)
 
-            print(question.get("question", {}).get("image",""))
+            print(question.get("file", {}))
 
             context = {
                 'request': self.request,
