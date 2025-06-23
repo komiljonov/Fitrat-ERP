@@ -300,7 +300,7 @@ class QuizCheckAPIView(APIView):
 
             url = FileUploadSerializer(file,context=context).data
 
-            print(url)
+            print(url.get("file"))
             return is_correct, {
                 "id": question["id"],
                 "question_text": question.get("question", {}).get("name"),
