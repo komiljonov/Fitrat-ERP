@@ -38,7 +38,6 @@ from ...account.models import CustomUser
 from ...exam_results.models import QuizResult
 from ...exam_results.serializers import QuizResultSerializer
 
-
 class QuizCheckAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -49,7 +48,6 @@ class QuizCheckAPIView(APIView):
         responses={200: openapi.Response(description="Quiz result summary with section breakdown.")}
     )
     def post(self, request):
-
         serializer = QuizCheckSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -58,7 +56,6 @@ class QuizCheckAPIView(APIView):
         student = Student.objects.filter(user__id=data.get("student")).first()
         theme = get_object_or_404(Theme, id=data.get("theme"))
 
-
         results = {
             "details": {},
             "summary": {
@@ -66,7 +63,6 @@ class QuizCheckAPIView(APIView):
                 "correct_count": 0,
                 "wrong_count": 0,
                 "ball": 0.0,
-                # "section_breakdown": {}
             }
         }
 
@@ -75,63 +71,57 @@ class QuizCheckAPIView(APIView):
         for question in quiz_questions:
             qtype = question["type"]
             qid = question["id"]
-            question_ids = data.get("questions", [])
-            for qid in question_ids:
-
-                question = next((q for q in quiz_questions if q["id"] == qid), None)
-                if question:
-                    question_data = self._prepare_question_data(question)
-
             user_answer = self._find_user_answer(data, qtype, qid)
 
             if qtype not in results["details"]:
                 results["details"][qtype] = []
-            # if qtype not in results["summary"]["section_breakdown"]:
-            #     results["summary"]["section_breakdown"][qtype] = {"correct": 0, "wrong": 0}
 
             if not user_answer:
                 results["summary"]["wrong_count"] += 1
-                # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
 
             if is_correct:
                 results["summary"]["correct_count"] += 1
-                # results["summary"]["section_breakdown"][qtype]["correct"] += 1
             else:
                 results["summary"]["wrong_count"] += 1
-                # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
+
             results["details"][qtype].append(result_data)
 
-        existing_results = QuizResult.objects.filter(
-            quiz=quiz,
-            student=student
-        ).first()
-
+        # Load existing results if any
+        existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
         existing_data = QuizResultSerializer(existing_results).data if existing_results else None
 
+        # Map serializer result fields to question types
+        RESULT_FIELDS_MAP = {
+            "match_pair_result": "match_pair",
+            "true_false_result": "true_false",
+            "vocabulary_result": "vocabulary",
+            "objective_result": "objective",
+            "cloze_test_result": "cloze_test",
+            "image_objective_result": "image_objective",
+            "standard": "questions",
+        }
 
         merged_details = {}
 
-        if existing_data and "details" in existing_data:
-            for qtype, entries in existing_data["details"].items():
-                print("existing_data_details",existing_data["details"])
-                merged_details[qtype] = {entry["id"]: entry for entry in entries}
-                # print("existing_data_merged",merged_details[qtype])
+        # Add existing results first
+        if existing_data:
+            for field, qtype in RESULT_FIELDS_MAP.items():
+                entries = existing_data.get(field)
+                if entries:
+                    merged_details[qtype] = {entry["id"]: entry for entry in entries}
 
-        # Now overwrite or add from new results
+        # Merge with new incoming answers (overwrite duplicates)
         for qtype, entries in results["details"].items():
             if qtype not in merged_details:
                 merged_details[qtype] = {}
             for entry in entries:
-                merged_details[qtype][entry["id"]] = entry  # Overwrite or insert
+                merged_details[qtype][entry["id"]] = entry  # new entry overwrites old
 
-        # Reconstruct merged details
+        # Final merged details to be returned
         results["details"] = {k: list(v.values()) for k, v in merged_details.items()}
-
-        if "existing_results" in results:
-            del results["existing_results"]
 
         total = quiz.count if quiz else len(quiz_questions)
         results["summary"]["total_questions"] = total
@@ -141,6 +131,7 @@ class QuizCheckAPIView(APIView):
         self._create_mastering_record(theme, student, quiz, results["summary"]["ball"])
 
         return Response(results)
+
 
     def _prepare_question_data(self, question):
         qtype = question["type"]
