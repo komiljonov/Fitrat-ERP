@@ -186,7 +186,7 @@ class QuizCheckAPIView(APIView):
     def _find_user_answer(self, data, qtype, qid):
         id_fields = {
             'standard': 'question_id',
-            'match_pairs': 'match_id',
+            'match_pair': 'match_id',
             'objective_test': 'objective_id',
             'cloze_test': 'cloze_id',
             'image_objective': 'image_objective_id',
