@@ -306,14 +306,18 @@ class QuizCheckAPIView(APIView):
         is_correct = str(user_answer_id) == str(correct_answer_id)
 
         print(question)
-
+        correct_answer = next(
+            (a["text"] for a in question.get("answers", []) if a.get("is_correct")),
+            None
+        )
+        user_answer = Answer.objects.filter(id=user_answer_id).first().text
         return is_correct, {
             "id": question["id"],
             "file": question.get("file", {}),
             "question_text": question.get("text", {}).get("name"),
             "correct": is_correct,
-            "user_answer": user_answer_id,
-            "correct_answer": correct_answer_id
+            "user_answer": user_answer,
+            "correct_answer": correct_answer,
         }
 
     def check_true_false(self, question, user_answer):
