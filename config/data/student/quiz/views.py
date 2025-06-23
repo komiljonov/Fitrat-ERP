@@ -295,12 +295,12 @@ class QuizCheckAPIView(APIView):
             file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
 
             url = FileUploadSerializer(file,context=context).data
-
+            print(user_answer_id)
             return is_correct, {
                 "id": question["id"],
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
-                "user_answer": Answer.objects.filter(id=user_answer_id).first().text,
+                "user_answer": user_answer_id,
                 "correct_answer": correct_answer_id,
                 "comment": question.get("comment", ""),
                 "image_url": url or None
