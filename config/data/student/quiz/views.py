@@ -94,7 +94,7 @@ class QuizCheckAPIView(APIView):
 
 
         RESULT_FIELDS_MAP = {
-            "match_pair_result": "match_pair",
+            "match_pair_result": "match_pairs",
             "true_false_result": "true_false",
             "vocabulary_result": "vocabulary",
             "objective_result": "objective",
