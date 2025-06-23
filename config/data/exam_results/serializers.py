@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from .models import UnitTest, UnitTestResult, QuizResult
+from ..student.quiz.models import Quiz
 from ..student.quiz.serializers import QuestionSerializer, MatchPairsSerializer, True_FalseSerializer, \
     VocabularySerializer, ObjectiveTestSerializer, Cloze_TestSerializer, ImageObjectiveTestSerializer
 from ..student.student.models import Student
@@ -43,6 +44,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
 
     student = serializers.CharField(write_only=True, required=False)
 
+    quiz_id = serializers.CharField(write_only=True, required=False)
 
     match_pair = serializers.ListField(write_only=True, required=False)
     true_false = serializers.ListField(write_only=True, required=False)
@@ -64,7 +66,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuizResult
         fields = [
-            "id", "student", "point", "created_at", "quiz",
+            "id", "student", "point", "created_at", "quiz_id",
             "questions", "match_pair", "true_false", "vocabulary",
             "objective", "cloze_test", "image_objective",
             "standard", "match_pair_result", "true_false_result",
@@ -82,10 +84,12 @@ class QuizResultSerializer(serializers.ModelSerializer):
         elif request and hasattr(request.user, "student"):
             student = Student.objects.filter(user=request.user).first()
 
+        quiz = validated_data.pop("quiz_id", None)
+        quiz = Quiz.objects.filter(id=quiz).first()
+
         if not student:
             raise serializers.ValidationError("Valid student could not be resolved from input or request.")
 
-        quiz = validated_data["quiz_id"]
         quiz_result = QuizResult.objects.create(student=student, quiz=quiz)
 
         # Assign M2M fields if provided
