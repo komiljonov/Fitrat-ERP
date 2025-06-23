@@ -235,22 +235,29 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                     diff = abs((check_in - time_field).total_seconds())
 
+                    print(diff,check_in,time_field)
+
                     if smallest_diff is None or diff < smallest_diff:
                         smallest_diff = diff
 
+                        print("smallest",smallest_diff)
+
                         closest_att_time = time_field
+
+                        print("closest",closest_att_time)
 
             # === Determine actual time_diff
 
             if closest_att_time:
 
                 time_diff = (check_in - closest_att_time).total_seconds() // 60
+                print("after_closest",time_diff)
 
             else:
 
                 time_diff = (check_in - timeline_start_dt).total_seconds() // 60
 
-            ic(time_diff)
+                print("time_diff",time_diff)
 
             bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
 
@@ -262,7 +269,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                 early_minutes = abs(int(time_diff))
 
-                ic("early minutes: ", early_minutes)
+                print("early minutes: ", early_minutes)
 
                 if matched_timeline.bonus:
 
