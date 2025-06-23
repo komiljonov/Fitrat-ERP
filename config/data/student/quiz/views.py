@@ -286,8 +286,6 @@ class QuizCheckAPIView(APIView):
             user_answer_id = user_answer.get("answer", "")
             is_correct = str(user_answer_id) == str(correct_answer_id)
 
-            print(question.get("image", {}).get("id", ""))
-
             context = {
                 'request': self.request,
                 'user': self.request.user,
@@ -296,11 +294,8 @@ class QuizCheckAPIView(APIView):
 
             file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
 
-            print(file)
-
             url = FileUploadSerializer(file,context=context).data
 
-            print(url.get("file"))
             return is_correct, {
                 "id": question["id"],
                 "question_text": question.get("question", {}).get("name"),
@@ -314,7 +309,6 @@ class QuizCheckAPIView(APIView):
             logger.error(f"Error processing image objective: {str(e)}")
             file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
 
-            print(file)
             context = {
                 'request': self.request,
                 'user': self.request.user,
@@ -322,7 +316,7 @@ class QuizCheckAPIView(APIView):
             }
 
             url = FileUploadSerializer(file,context=context).data
-            print(url)
+
             return False, {
                 "id": question["id"],
                 "correct": False,
