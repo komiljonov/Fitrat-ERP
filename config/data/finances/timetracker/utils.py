@@ -26,10 +26,6 @@ UZBEK_WEEKDAYS = {
 }
 
 
-def parse_custom_datetime(dt_str):
-    # Replace underscore with dash to match the correct format
-    clean_str = dt_str.replace('_', '-')
-    return datetime.strptime(clean_str, "%Y-%m-%d %H:%M:%S")
 
 def localize(dt):
     return make_aware(dt, timezone=TASHKENT_TZ) if not is_aware(dt) else dt.astimezone(TASHKENT_TZ)
