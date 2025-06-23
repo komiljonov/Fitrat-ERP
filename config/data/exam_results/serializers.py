@@ -4,6 +4,7 @@ from rest_framework import serializers
 from .models import UnitTest, UnitTestResult, QuizResult
 from ..student.quiz.serializers import QuestionSerializer, MatchPairsSerializer, True_FalseSerializer, \
     VocabularySerializer, ObjectiveTestSerializer, Cloze_TestSerializer, ImageObjectiveTestSerializer
+from ..student.student.models import Student
 from ..student.subject.models import Theme
 from ..student.subject.serializers import ThemeSerializer
 
@@ -53,6 +54,13 @@ class QuizResultSerializer(serializers.ModelSerializer):
             "standard", "match_pairs", "true_false", "vocabulary",
             "objective_test", "cloze_test", "image_objective"
         ]
+
+    def create(self, validated_data):
+        if not validated_data.get("student"):
+            request = self.context.get("request")
+            if request and hasattr(request.user, 'student'):
+                validated_data["student"] = Student.objects.filter(user=request.user).first()
+        return QuizResult.objects.create(**validated_data)
 
     def get_standard(self, obj):
         # Replace with actual logic and serializer
