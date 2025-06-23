@@ -103,7 +103,7 @@ class QuizCheckAPIView(APIView):
                 # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
             results["details"][qtype].append(result_data)
 
-        print(quiz,student)
+        print(quiz,"student",student)
 
         existing_results = QuizResult.objects.filter(
             quiz=quiz,
