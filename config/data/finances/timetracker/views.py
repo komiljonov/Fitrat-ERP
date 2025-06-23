@@ -729,7 +729,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
                 print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAisdfhugoidsfhugodisfhugsdfg")
-                # Calculate new penalty amount
+
                 new_penalty = calculate_penalty(
                     updated_attendance.employee.id,
                     updated_attendance.check_in,
@@ -744,10 +744,9 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 em_att, created = Employee_attendance.objects.get_or_create(
                     employee=updated_attendance.employee,
                     date=updated_attendance.date,
-                    defaults={'amount': 0}  # Initialize with 0 if creating new
+                    defaults={'amount': 0}
                 )
 
-                # Add the attendance record to the many-to-many relationship
                 if not em_att.attendance.filter(id=updated_attendance.id).exists():
                     em_att.attendance.add(updated_attendance)
 
