@@ -71,8 +71,10 @@ class QuizResultSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         student = validated_data.get("student", None)
 
+        print(student)
+
         if student:
-            student = Student.objects.filter(id=student).first()
+            student = Student.objects.filter(user__id=student).first()
 
 
         quiz = validated_data["quiz"]
