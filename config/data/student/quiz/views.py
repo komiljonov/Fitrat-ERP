@@ -37,6 +37,7 @@ from ..subject.models import Theme
 from ...account.models import CustomUser
 from ...exam_results.models import QuizResult
 from ...exam_results.serializers import QuizResultSerializer
+from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
 
@@ -292,7 +293,8 @@ class QuizCheckAPIView(APIView):
                 'custom_data': 'some_value'
             }
 
-            url = FileUploadSerializer(question.get("image", {}).get("id",""),context=context).data
+            file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
+            url = FileUploadSerializer(file,context=context).data
             return is_correct, {
                 "id": question["id"],
                 "question_text": question.get("question", {}).get("name"),
