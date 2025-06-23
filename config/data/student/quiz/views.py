@@ -352,27 +352,46 @@ class QuizCheckAPIView(APIView):
         }
 
     def check_match_pair(self, question, user_answer):
-
         left_items = {p["key"]: p["id"] for p in question.get("pairs", []) if p.get("choice") == "Left"}
         right_items = {p["key"]: p["id"] for p in question.get("pairs", []) if p.get("choice") == "Right"}
 
+        # Create correct mapping
         correct_mapping = {
             key: (left_items[key], right_items[key])
             for key in left_items if key in right_items
         }
 
         user_pairs = user_answer.get("pairs", [])
+
+        # Check if user provided the expected number of pairs
+        expected_pairs_count = len(correct_mapping)
+        if len(user_pairs) != expected_pairs_count:
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": f"Expected {expected_pairs_count} pairs, got {len(user_pairs)}",
+                "pair_results": [],
+                "correct_mapping": {
+                    key: {"left_id": left, "right_id": right}
+                    for key, (left, right) in correct_mapping.items()
+                }
+            }
+
         all_correct = True
         pair_results = []
+        matched_correct_pairs = set()  # Track which correct pairs have been matched
 
         for pair in user_pairs:
             left_id = str(pair.get("left_id"))
             right_id = str(pair.get("right_id"))
 
-            is_correct = any(
-                str(correct_left) == left_id and str(correct_right) == right_id
-                for correct_left, correct_right in correct_mapping.values()
-            )
+            # Find if this pair matches any correct mapping
+            is_correct = False
+            for key, (correct_left, correct_right) in correct_mapping.items():
+                if str(correct_left) == left_id and str(correct_right) == right_id:
+                    is_correct = True
+                    matched_correct_pairs.add(key)
+                    break
 
             if not is_correct:
                 all_correct = False
@@ -383,10 +402,13 @@ class QuizCheckAPIView(APIView):
                 "is_correct": is_correct
             })
 
+        # Ensure all correct pairs were matched (no duplicates)
+        if len(matched_correct_pairs) != len(correct_mapping):
+            all_correct = False
+
         return all_correct, {
             "id": question["id"],
             "correct": all_correct,
-            #             "file": question.get("file", ""),
             "pair_results": pair_results,
             "correct_mapping": {
                 key: {"left_id": left, "right_id": right}
