@@ -119,8 +119,6 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
     total_penalty = 0
     per_minute_salary = get_monthly_per_minute_salary(user_id).get('per_minute_salary', 0)
 
-    print(per_minute_salary)
-
     REVERSE_UZBEK_WEEKDAYS = {v: k for k, v in UZBEK_WEEKDAYS.items()}
     today_uzbek_day = REVERSE_UZBEK_WEEKDAYS.get(weekday_index)
 
@@ -233,8 +231,6 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                 if att.check_in and att.check_out:
                     total_working_minutes += (att.check_out - att.check_in).total_seconds() // 60
 
-                    print("timefield",att.check_in,att.check_out)
-
                 for time_field in [att.check_in, att.check_out]:
 
                     if not time_field:
@@ -242,29 +238,20 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                     diff = abs((check_in - time_field).total_seconds())
 
-                    print(diff,check_in,time_field)
-
                     if smallest_diff is None or diff < smallest_diff:
                         smallest_diff = diff
 
-                        print("smallest",smallest_diff)
-
                         closest_att_time = time_field
-
-                        print("closest",closest_att_time)
 
             # === Determine actual time_diff
 
             if closest_att_time:
 
                 time_diff = (check_in - closest_att_time).total_seconds() // 60
-                print("after_closest",time_diff)
 
             else:
 
                 time_diff = (check_in - timeline_start_dt).total_seconds() // 60
-
-                print("time_diff",time_diff)
 
             bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
 
@@ -286,11 +273,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                     bonus_amount = early_minutes * per_minute_salary
 
-                ic(bonus_amount)
-
                 total_penalty -= bonus_amount  # Subtract bonus from total penalty
-
-                ic(total_penalty)
 
                 Finance.objects.create(
 
@@ -337,8 +320,8 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                     stuff=user,
 
-                    comment=f"{check_in.date()} - {check_in.time()} da ishga {late_minutes:.2f} minut kechikib kelganingiz uchun"
-
+                    comment=f"{check_in.date()} - {check_in.time()} da ishga {late_minutes:.2f} minut"
+                            f" kechikib kelganingiz uchun"
                             f" {penalty_amount:.2f} sum jarima yozildi! "
 
                 )
@@ -362,7 +345,6 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     timeline_end_dt = timezone.make_aware(datetime.combine(check_out.date(), expected_end_time))
 
                     if check_out < timeline_end_dt:
-                        print(timeline_end_dt, check_out)
 
                         early_minutes = int((timeline_end_dt - check_out).total_seconds() // 60)
 
