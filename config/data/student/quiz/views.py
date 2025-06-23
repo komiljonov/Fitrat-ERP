@@ -207,6 +207,8 @@ class QuizCheckAPIView(APIView):
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
 
+        print(qtype)
+
         # Handle any type aliases
         if qtype in ["image_objective", "image_objective_test"]:
             qtype = "image_objective"  # Standardize to one type
