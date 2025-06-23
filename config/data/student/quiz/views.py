@@ -19,7 +19,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from root import settings
 from .check_serializers import QuizCheckSerializer
 from .models import Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam, QuizGaps, Answer, ExamRegistration, ObjectiveTest, \
     Cloze_Test, ImageObjectiveTest, True_False, ExamCertificate, ExamSubject
@@ -38,6 +37,8 @@ from ..subject.models import Theme
 from ...account.models import CustomUser
 from ...exam_results.models import QuizResult
 from ...exam_results.serializers import QuizResultSerializer
+from ...upload.serializers import FileUploadSerializer
+
 
 class QuizCheckAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -285,15 +286,21 @@ class QuizCheckAPIView(APIView):
 
             print(question.get("question", {}).get("image",""))
 
+            context = {
+                'request': self.request,
+                'user': self.request.user,
+                'custom_data': 'some_value'
+            }
+
+            url = FileUploadSerializer(question.get("question", {}).get("image",""),context=context).data
             return is_correct, {
                 "id": question["id"],
-                #                 "file": question.get("file", ""),
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": Answer.objects.filter(id=user_answer_id).first().text,
                 "correct_answer": correct_answer_id,
                 "comment": question.get("comment", ""),
-                "image_url": f"{settings.MEDIA_URL}{question.get("image", {}).get("file","")}"
+                "image_url": url or None
             }
         except Exception as e:
             logger.error(f"Error processing image objective: {str(e)}")
