@@ -49,12 +49,15 @@ class QuizCheckAPIView(APIView):
         responses={200: openapi.Response(description="Quiz result summary with section breakdown.")}
     )
     def post(self, request):
+
+        print(request.data)
+
         serializer = QuizCheckSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         quiz = get_object_or_404(Quiz, id=data.get("quiz_id"))
-        student = Student.objects.filter(user=request.user).first()
+        student = Student.objects.filter(id=data.get("student")).first()
         theme = get_object_or_404(Theme, id=data.get("theme"))
 
 
@@ -102,10 +105,6 @@ class QuizCheckAPIView(APIView):
                 results["summary"]["wrong_count"] += 1
                 # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
             results["details"][qtype].append(result_data)
-
-        student=Student.objects.filter(user=request.user).first()
-
-        print(student)
 
         existing_results = QuizResult.objects.filter(
             quiz=quiz,
