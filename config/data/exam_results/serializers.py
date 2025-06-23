@@ -70,14 +70,17 @@ class QuizResultSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get("request")
-        student = validated_data.get("student")
+        student = validated_data.get("student", None)
 
-        print("student",student)
-
-        if student is None:
+        # If no student was sent in payload, try to find from request.user
+        if not student and request and hasattr(request.user, "student"):
             student = Student.objects.filter(user=request.user).first()
+            print("🔁 Student fetched from request.user:", student)
+        else:
+            print("✅ Student provided in data:", student)
 
-            print("finded",student)
+        if not student:
+            raise serializers.ValidationError("Student must be provided or resolvable from request.user.")
 
         quiz = validated_data["quiz"]
         quiz_result = QuizResult.objects.create(student=student, quiz=quiz)
