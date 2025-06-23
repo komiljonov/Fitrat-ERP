@@ -7,7 +7,6 @@ from rest_framework import serializers
 from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, Exam, Gaps, \
     QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest, ExamCertificate, \
     ExamSubject
-from .tasks import handle_task_creation
 from ..homeworks.models import Homework
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
@@ -252,7 +251,6 @@ class QuizSerializer(serializers.ModelSerializer):
 
         return questions
 
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
@@ -297,7 +295,7 @@ class QuizCheckingSerializer(serializers.ModelSerializer):
 
         for item in MatchPairs.objects.filter(quiz=obj):
             data = MatchPairsSerializer(item, context=self.context).data
-            data["type"] = "match_pairs"
+            data["type"] = "match_pair"
             questions.append(data)
 
         for item in ObjectiveTest.objects.filter(quiz=obj):
@@ -492,7 +490,8 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             "name": instance.subject.name,
             "is_language": instance.subject.is_language,
         } if instance.subject else None
-        rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data if instance.certificate else None
+        rep["certificate"] = FileUploadSerializer(instance.certificate,
+                                                  context=self.context).data if instance.certificate else None
 
         return rep
 
