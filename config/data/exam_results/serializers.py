@@ -110,7 +110,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
 
     # Read methods for result representation
     def get_standard(self, obj):
-        return QuestionSerializer(obj.questions.all(), many=True).data
+        return QuestionSerializer(obj.questions.all(),context=self.context, many=True).data
 
     def get_match_pair_result(self, obj):
         return MatchPairsSerializer(obj.match_pair.all(), many=True).data
@@ -128,5 +128,5 @@ class QuizResultSerializer(serializers.ModelSerializer):
         return Cloze_TestSerializer(obj.cloze_test.all(), many=True).data
 
     def get_image_objective_result(self, obj):
-        return ImageObjectiveTestSerializer(obj.image_objective.all(), many=True).data
+        return ImageObjectiveTestSerializer(obj.image_objective.all(),context=self.context, many=True).data
 
