@@ -292,7 +292,7 @@ class QuizCheckAPIView(APIView):
                 'custom_data': 'some_value'
             }
 
-            url = FileUploadSerializer(question.get("question", {}).get("image",""),context=context).data
+            url = FileUploadSerializer(question.get("image", {}).get("id",""),context=context).data
             return is_correct, {
                 "id": question["id"],
                 "question_text": question.get("question", {}).get("name"),
@@ -300,7 +300,7 @@ class QuizCheckAPIView(APIView):
                 "user_answer": Answer.objects.filter(id=user_answer_id).first().text,
                 "correct_answer": correct_answer_id,
                 "comment": question.get("comment", ""),
-                "image_url": url or None
+                "image_url": url.get("file") or None
             }
         except Exception as e:
             logger.error(f"Error processing image objective: {str(e)}")
