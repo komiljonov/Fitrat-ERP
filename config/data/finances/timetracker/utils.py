@@ -228,6 +228,9 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
             for att in Stuff_Attendance.objects.filter(employee=user, date=check_in_date):
                 if att.check_in and att.check_out:
                     total_working_minutes += (att.check_out - att.check_in).total_seconds() // 60
+
+                    print("timefield",att.check_in,att.check_out)
+
                 for time_field in [att.check_in, att.check_out]:
 
                     if not time_field:
