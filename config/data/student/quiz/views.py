@@ -110,7 +110,12 @@ class QuizCheckAPIView(APIView):
             student=student
         ).first()
 
+        print(existing_results)
+
+
         existing_data = QuizResultSerializer(existing_results).data if existing_results else None
+
+        print(existing_data)
 
         merged_details = {}
 
