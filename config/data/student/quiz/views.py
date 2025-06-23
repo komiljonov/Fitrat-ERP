@@ -72,18 +72,12 @@ class QuizCheckAPIView(APIView):
             qtype = question["type"]
             qid = question["id"]
 
-            print(qtype,qid)
-
             user_answer = self._find_user_answer(data, qtype, qid)
-
-            print("USER_ANSWER:", user_answer)
-
 
             if qtype not in results["details"]:
                 results["details"][qtype] = []
 
             if not user_answer:
-                results["summary"]["wrong_count"] += 1
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
@@ -301,7 +295,13 @@ class QuizCheckAPIView(APIView):
             }
 
     def check_standard(self, question, user_answer):
+
+        print(user_answer,question)
+
         correct_answer_id = next((a["id"] for a in question.get("answers", []) if a.get("is_correct")), None)
+
+        print(correct_answer_id)
+
         user_answer_id = user_answer.get("answer_id")
         is_correct = str(user_answer_id) == str(correct_answer_id)
 
