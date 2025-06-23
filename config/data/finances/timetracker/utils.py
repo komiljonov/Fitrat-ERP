@@ -157,7 +157,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     kind=bonus_kind,
                     amount=penalty_amount,
                     stuff=user,
-                    comment=f"Bugun {check_in.time()} da ishga {late_minutes} minut kechikib kelganingiz uchun {penalty_amount} sum jarima yozildi! "
+                    comment=f"{check_in.date()} - {check_in.time()} da ishga {late_minutes :.2f} minut kechikib kelganingiz uchun {penalty_amount:.2f} sum jarima yozildi! "
                 )
 
                 print(
@@ -183,7 +183,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                             kind=bonus_kind,
                             amount=penalty,
                             stuff=user,
-                            comment=f"Bugun {check_out.time()} da ishdan  {early_minutes} minut erta ketganingiz uchun {penalty} sum jarima yozildi! "
+                            comment=f"{check_in.date()} - {check_out.time()} da ishdan  {early_minutes:.2f} minut erta ketganingiz uchun {penalty:.2f} sum jarima yozildi! "
                         )
                         print(
                             f"Early leave penalty for {user} from group {group.name}: {penalty:.2f} ({early_minutes:.0f} min early)")
@@ -302,7 +302,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                     stuff=user,
 
-                    comment=f"Bugun {check_in.time()} da ishga {early_minutes:.2f} minut erta kelganingiz uchun"
+                    comment=f"{check_in.date()} - {check_in.time()} da ishga {early_minutes:.2f} minut erta kelganingiz uchun"
 
                             f" {bonus_amount:.2f} sum bonus yozildi! "
 
@@ -337,7 +337,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                     stuff=user,
 
-                    comment=f"Bugun {check_in.time()} da ishga {late_minutes:.2f} minut kechikib kelganingiz uchun"
+                    comment=f"{check_in.date()} - {check_in.time()} da ishga {late_minutes:.2f} minut kechikib kelganingiz uchun"
 
                             f" {penalty_amount:.2f} sum jarima yozildi! "
 
@@ -382,7 +382,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                             stuff=user,
 
-                            comment=f"Bugun {check_out.time()} da ishdan  {early_minutes:.2f} minut erta ketganingiz uchun"
+                            comment=f"{check_in.date()} - {check_out.time()} da ishdan  {early_minutes:.2f} minut erta ketganingiz uchun"
 
                                     f" {penalty_amount:.2f} sum jarima yozildi! "
 
@@ -405,7 +405,7 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
                     kind=Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first(),
                     amount=bonus_amount,
                     stuff=user,
-                    comment=f"Bugun {total_working_minutes:.2f} daqiqa ishda bo'lganingiz uchun {bonus_amount:.2f} sum bonus yozildi!"
+                    comment=f"{check_in.date()} - {total_working_minutes:.2f} daqiqa ishda bo'lganingiz uchun {bonus_amount:.2f} sum bonus yozildi!"
                 )
 
                 print(f"Bonus for being in office: {bonus_amount:.2f} ({total_working_minutes} minutes worked)")
