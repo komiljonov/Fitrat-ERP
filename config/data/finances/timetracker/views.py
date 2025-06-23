@@ -72,7 +72,7 @@ class AttendanceList(ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         try:
-            ic(request.data)
+            print(request.data)
 
             check_in = request.data.get('check_in')
             check_out = request.data.get('check_out')
