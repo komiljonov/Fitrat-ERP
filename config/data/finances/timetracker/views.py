@@ -20,7 +20,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary, calculate_penalty
+from .utils import get_monthly_per_minute_salary, calculate_penalty, parse_custom_datetime
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 
@@ -108,11 +108,16 @@ class AttendanceList(ListCreateAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             elif check_in and actions and check_out:
+
+                sorted_actions = sorted(actions, key=lambda x: parse_custom_datetime(x['start']))
+                sorted_actions = sorted_actions[0]
+                ic(sorted_actions)
+
                 att = Stuff_Attendance.objects.filter(
                     employee__id=employee,
                     date=date,
-                    check_in=actions.get('start'),
-                    check_out=actions.get('end'),
+                    check_in=sorted_actions.get('start'),
+                    check_out=sorted_actions.get('end'),
                 ).first()
                 if att:
                     return Response(
