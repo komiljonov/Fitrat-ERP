@@ -92,6 +92,9 @@ class QuizCheckAPIView(APIView):
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
         existing_data = QuizResultSerializer(existing_results).data if existing_results else None
 
+        for question in existing_data:
+            print(question)
+
         RESULT_FIELDS_MAP = {
             "match_pair_result": "match_pair",
             "true_false_result": "true_false",
