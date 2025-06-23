@@ -1,5 +1,6 @@
 from django.db import models
 
+from data.student.student.models import Student
 from ..command.models import BaseModel
 
 
@@ -11,7 +12,7 @@ class QuizResult(BaseModel):
         blank=True,
         related_name="quiz_results"
     )
-    student = models.ForeignKey(
+    student : "Student" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
         null=True,
