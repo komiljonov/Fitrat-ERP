@@ -73,6 +73,28 @@ class AttendanceList(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         try:
             ic(request.data)
+
+            check_in = request.data.get('check_in')
+            check_out = request.data.get('check_out')
+            date = request.data.get('date')
+            employee = request.data.get('employee')
+
+            filters = {}
+            if check_out:
+                filters['check_out'] = check_out
+
+            att = Stuff_Attendance.objects.filter(
+                employee__id=employee,
+                date=date,
+                check_in=check_in,
+                **filters
+            )
+            if att:
+                return Response(
+                    "attendance exists",
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
             return self._process_attendance_with_error_handling(request.data)
         except AttendanceError as e:
             logger.error(f"Attendance error: {e.message}", extra=e.details)
