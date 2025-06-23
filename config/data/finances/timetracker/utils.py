@@ -26,6 +26,11 @@ UZBEK_WEEKDAYS = {
 }
 
 
+def parse_custom_datetime(dt_str):
+    return datetime.strptime(dt_str, "%Y_%m-%d %H:%M:%S")
+
+
+
 def localize(dt):
     return make_aware(dt, timezone=TASHKENT_TZ) if not is_aware(dt) else dt.astimezone(TASHKENT_TZ)
 
@@ -99,6 +104,9 @@ def get_monthly_per_minute_salary(user_id):
         "total_minutes": total_minutes,
         "per_minute_salary": per_minute_salary
     }
+
+
+
 
 
 def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = None) -> float:
