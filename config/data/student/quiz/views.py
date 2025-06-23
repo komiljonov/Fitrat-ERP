@@ -111,22 +111,21 @@ class QuizCheckAPIView(APIView):
 
         existing_data = QuizResultSerializer(existing_results).data if existing_results else None
 
+        # Start from existing result if present
         merged_details = {}
-
-        for qtype, entries in results["details"].items():
-            merged_details[qtype] = {entry["id"]: entry for entry in entries}
-
-        print(merged_details)
-
 
         if existing_data and "details" in existing_data:
             for qtype, entries in existing_data["details"].items():
-                if qtype not in merged_details:
-                    merged_details[qtype] = {}
-                for entry in entries:
-                    if entry["id"] not in merged_details[qtype]:
-                        merged_details[qtype][entry["id"]] = entry
+                merged_details[qtype] = {entry["id"]: entry for entry in entries}
 
+        # Now overwrite or add from new results
+        for qtype, entries in results["details"].items():
+            if qtype not in merged_details:
+                merged_details[qtype] = {}
+            for entry in entries:
+                merged_details[qtype][entry["id"]] = entry  # Overwrite or insert
+
+        # Reconstruct merged details
         results["details"] = {k: list(v.values()) for k, v in merged_details.items()}
 
         if "existing_results" in results:
