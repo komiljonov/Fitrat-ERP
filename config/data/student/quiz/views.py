@@ -80,7 +80,6 @@ class QuizCheckAPIView(APIView):
                 question = next((q for q in quiz_questions if q["id"] == qid), None)
                 if question:
                     question_data = self._prepare_question_data(question)
-                    print(question_data)
 
             user_answer = self._find_user_answer(data, qtype, qid)
 
