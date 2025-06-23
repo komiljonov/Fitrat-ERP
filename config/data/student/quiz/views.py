@@ -50,14 +50,12 @@ class QuizCheckAPIView(APIView):
     )
     def post(self, request):
 
-        print(request.data)
-
         serializer = QuizCheckSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         quiz = get_object_or_404(Quiz, id=data.get("quiz_id"))
-        student = Student.objects.filter(id=data.get("student")).first()
+        student = Student.objects.filter(user__id=data.get("student")).first()
         theme = get_object_or_404(Theme, id=data.get("theme"))
 
 
