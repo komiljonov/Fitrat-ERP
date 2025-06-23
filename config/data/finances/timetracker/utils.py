@@ -337,8 +337,8 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                     stuff=user,
 
-                    comment=f"{check_in.date()} - {check_in.time()} da ishga {late_minutes:.2f} minut kechikib kelganingiz uchun"
-
+                    comment=f"{check_in.date()} - {check_in.time()} da ishga {late_minutes:.2f} minut"
+                            f" kechikib kelganingiz uchun"
                             f" {penalty_amount:.2f} sum jarima yozildi! "
 
                 )
