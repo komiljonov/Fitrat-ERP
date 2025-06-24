@@ -413,10 +413,6 @@ class QuizCheckAPIView(APIView):
             if not is_correct:
                 all_correct = False
 
-        pairs = MatchPairs.objects.filter(id=question["id"]).first()
-        pairs = MatchPairsSerializer(pairs, many=True).data
-
-
         # Ensure all correct pairs were matched (no duplicates)
         if len(matched_correct_pairs) != len(correct_mapping):
             all_correct = False
