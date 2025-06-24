@@ -113,19 +113,19 @@ class QuizResultSerializer(serializers.ModelSerializer):
         return QuestionSerializer(obj.questions.all(),context=self.context, many=True).data
 
     def get_match_pair_result(self, obj):
-        return MatchPairsSerializer(obj.match_pair.all(), many=True).data
+        return MatchPairsSerializer(obj.match_pair.all(),context=self.context, many=True).data
 
     def get_true_false_result(self, obj):
-        return True_FalseSerializer(obj.true_false.all(), many=True).data
+        return True_FalseSerializer(obj.true_false.all(),context=self.context, many=True).data
 
     def get_vocabulary_result(self, obj):
-        return VocabularySerializer(obj.vocabulary.all(), many=True).data
+        return VocabularySerializer(obj.vocabulary.all(),context=self.context, many=True).data
 
     def get_objective_result(self, obj):
-        return ObjectiveTestSerializer(obj.objective.all(), many=True).data
+        return ObjectiveTestSerializer(obj.objective.all(),context=self.context, many=True).data
 
     def get_cloze_test_result(self, obj):
-        return Cloze_TestSerializer(obj.cloze_test.all(), many=True).data
+        return Cloze_TestSerializer(obj.cloze_test.all(),context=self.context, many=True).data
 
     def get_image_objective_result(self, obj):
         return ImageObjectiveTestSerializer(obj.image_objective.all(),context=self.context, many=True).data
