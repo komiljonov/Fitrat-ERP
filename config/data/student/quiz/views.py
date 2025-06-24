@@ -100,6 +100,7 @@ class QuizCheckAPIView(APIView):
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
         existing_data = QuizResultSerializer(existing_results,context=context).data if existing_results else None
 
+        print(existing_data)
         data_length = len(existing_data.items())
 
         RESULT_FIELDS_MAP = {
