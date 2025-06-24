@@ -76,6 +76,7 @@ class QuizCheckAPIView(APIView):
             qtype = question["type"]
             qid = question["id"]
 
+            print(qtype,qid)
             user_answer = self._find_user_answer(data, qtype, qid)
 
             if qtype not in results["details"]:
@@ -253,6 +254,7 @@ class QuizCheckAPIView(APIView):
                 "id": question["id"],
                 "correct": False,
                 "error": str(e),
+                "question_text": question.get("question", {}).get("name"),
                 "user_answer": user_answer.get("answer_ids", ""),
                 "correct_answer": "Error processing correct answer"
             }
