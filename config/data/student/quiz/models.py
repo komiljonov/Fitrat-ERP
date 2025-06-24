@@ -297,8 +297,8 @@ class ExamRegistration(BaseModel):
                                         related_name='registration_group')
     option : "ExamSubject" = models.ManyToManyField("quiz.ExamSubject",related_name='registration_option_subjects')
 
-    def __str__(self):
-        return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
+    # def __str__(self):
+    #     return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
 
 
 class ExamCertificate(BaseModel):
@@ -320,6 +320,6 @@ class ExamCertificate(BaseModel):
         ("Pending", "Pending"),
     ],max_length=255, null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.student.first_name}  {self.status}"
+    # def __str__(self):
+    #     return f"{self.student.first_name}  {self.status}"
 
