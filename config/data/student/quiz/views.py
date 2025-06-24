@@ -117,11 +117,7 @@ class QuizCheckAPIView(APIView):
         # Add existing results first
         if existing_data:
 
-            print(existing_data)
-
             for field, qtype in RESULT_FIELDS_MAP.items():
-
-                print(field, qtype)
 
                 entries = existing_data.get(field)
                 if entries:
