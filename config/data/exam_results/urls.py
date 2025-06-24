@@ -5,6 +5,6 @@ from data.exam_results.views import QuizRestAPIView, UnitTestListCreateAPIView, 
 urlpatterns = [
     path('', QuizRestAPIView.as_view()),
 
-    path("unit/",UnitTestListCreateAPIView.as_view()),
-    path("unit/<uuid:pk>",UnitTestRetrieveUpdateDestroyAPIView.as_view()),
+    path("unit-test/",UnitTestListCreateAPIView.as_view()),
+    path("unit-test/<uuid:pk>",UnitTestRetrieveUpdateDestroyAPIView.as_view()),
 ]

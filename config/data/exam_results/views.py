@@ -28,6 +28,26 @@ class UnitTestRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = UnitTestSerializer
 
 
+class UnitTestResultListCreateAPIView(ListCreateAPIView):
+    queryset = UnitTestResult.objects.all()
+    serializer_class = UnitTestResultSerializer
+
+    def get_queryset(self):
+        student = self.request.GET.get('student')
+        unit = self.request.GET.get('unit')
+        user = self.request.GET.get('user')
+
+
+        qs = UnitTestResult.objects.all()
+
+        if user:
+            qs = qs.filter(student__user__id=user)
+        if student:
+            qs = qs.filter(student__id=student)
+        if unit:
+            qs = qs.filter(unit__id=unit)
+        return qs
+
 
 class QuizRestAPIView(ListCreateAPIView):
     queryset = QuizResult.objects.all()
