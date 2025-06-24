@@ -56,8 +56,8 @@ class Question(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_file")
 
-    def __str__(self):
-        return self.text.name
+    # def __str__(self):
+    #     return self.text.name
 
 
 class Vocabulary(BaseModel):
@@ -97,8 +97,8 @@ class Fill_gaps(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_fill_file")
 
-    def __str__(self):
-        return f"{self.quiz.title}    {self.question.name}"
+    # def __str__(self):
+    #     return f"{self.quiz.title}    {self.question.name}"
 
 
 class Listening(BaseModel):
@@ -145,8 +145,8 @@ class MatchPairs(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_match_file")
 
-    def __str__(self):
-        return f"{self.quiz.title} "
+    # def __str__(self):
+    #     return f"{self.quiz.title} "
 
 
 class ObjectiveTest(BaseModel):
@@ -161,8 +161,8 @@ class ObjectiveTest(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_objective_file")
 
-    def __str__(self):
-        return f"{self.quiz.title}    {self.question.name}"
+    # def __str__(self):
+    #     return f"{self.quiz.title}    {self.question.name}"
 
 
 class Cloze_Test(BaseModel):
@@ -191,8 +191,8 @@ class ImageObjectiveTest(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_image_file")
 
-    def __str__(self):
-        return f"{self.quiz.title}  {self.answer.text}"
+    # def __str__(self):
+    #     return f"{self.quiz.title}  {self.answer.text}"
 
 
 class True_False(BaseModel):
@@ -211,8 +211,8 @@ class True_False(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_boolen_file")
 
-    def __str__(self):
-        return f"{self.quiz.title}  {self.answer}"
+    # def __str__(self):
+    #     return f"{self.quiz.title}  {self.answer}"
 
 
 class ExamSubject(BaseModel):
