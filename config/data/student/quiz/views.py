@@ -364,8 +364,8 @@ class QuizCheckAPIView(APIView):
             #             "file": question.get("file", ""),
             "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
-            "user_answer": user_choice,
-            "correct_answer": correct_answer
+            "user_answer": user_answer.get("choice", ""),
+            "correct_answer": question.get("answer", ""),
         }
 
     def check_match_pair(self, question, user_answer):
