@@ -145,10 +145,10 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
         else:
             rep["image"] = None
 
-        if hasattr(instance, 'answers') and instance.answers.exists():
-            answers_data = AnswerSerializer(instance.answers.all(), many=True).data
+        if hasattr(instance, 'answer') and instance.answer.exists():
+            answers_data = AnswerSerializer(instance.answer.all(), many=True).data
             random.shuffle(answers_data)
-            rep["answers"] = answers_data
+            rep["answer"] = answers_data
         if instance.file:
             rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
         return rep
