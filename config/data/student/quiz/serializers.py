@@ -147,7 +147,7 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
 
         if instance.answer:
             answers_data = AnswerSerializer(instance.answer).data
-            rep["answer"] = answers_data
+            rep["answer"] = answers_data.get("text")
         if instance.file:
             rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
         return rep
