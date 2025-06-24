@@ -131,8 +131,6 @@ class QuizCheckAPIView(APIView):
             for entry in entries:
                 merged_details[qtype][entry["id"]] = entry  # new entry overwrites old
 
-            print(qtype, entries)
-
         # Final merged details to be returned
         results["details"] = {k: list(v.values()) for k, v in merged_details.items()}
 

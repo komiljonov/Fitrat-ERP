@@ -77,8 +77,6 @@ class QuizResultSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get("request")
 
-        print(validated_data)
-
         student_input = validated_data.pop("student", None)
 
         student = None
@@ -107,11 +105,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
         ]
         for key, attr in m2m_fields:
             if key in validated_data:
-
-                print("validated data", validated_data[key])
-
                 getattr(quiz_result, attr).set(validated_data[key])
-
         return quiz_result
 
     # Read methods for result representation
