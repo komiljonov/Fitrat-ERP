@@ -287,8 +287,8 @@ class QuizCheckAPIView(APIView):
             user_answer_id = user_answer.get("answer", "")
             print(user_answer_id)
 
-            correct_answer = Answer.objects.filter(id=correct_answer_id).first().text
-            is_correct = str(user_answer_id) == str(correct_answer)
+            correct_answer = Answer.objects.filter(id=correct_answer_id).first()
+            is_correct = str(user_answer_id) == str(correct_answer.id)
 
             context = {
                 'request': self.request,
