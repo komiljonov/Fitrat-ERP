@@ -104,9 +104,7 @@ class QuizCheckAPIView(APIView):
 
         print([v for k,v in existing_data.items()])
 
-        data_length = {
-            len(v) for k, v in existing_data.items()
-        }
+        data_length = len(existing_data)
 
 
         RESULT_FIELDS_MAP = {
