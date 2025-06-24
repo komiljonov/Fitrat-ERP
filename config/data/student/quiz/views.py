@@ -100,6 +100,7 @@ class QuizCheckAPIView(APIView):
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
         existing_data = QuizResultSerializer(existing_results,context=context).data if existing_results else None
 
+        data_length = len(existing_data.items())
 
         RESULT_FIELDS_MAP = {
             "match_pair_result": "match_pair",
@@ -128,12 +129,13 @@ class QuizCheckAPIView(APIView):
             if qtype not in merged_details:
                 merged_details[qtype] = {}
             for entry in entries:
-                merged_details[qtype][entry["id"]] = entry  # new entry overwrites old
+                merged_details[qtype][entry["id"]] = entry
 
         # Final merged details to be returned
         results["details"] = {k: list(v.values()) for k, v in merged_details.items()}
 
-        total = quiz.count if quiz else len(existing_data)
+        total = data_length
+
         results["summary"]["total_questions"] = total
         results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
         results["summary"]["ball"] = round((results["summary"]["correct_count"] / total * 100), 2) if total > 0 else 0.0
