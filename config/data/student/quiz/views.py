@@ -394,7 +394,7 @@ class QuizCheckAPIView(APIView):
         pair_qs = MatchPairs.objects.filter(id=question["id"])
         pairs_serialized = MatchPairsSerializer(pair_qs, many=True).data
 
-        print(pairs_serialized)
+        print(pair_qs[0].pairs)
 
         expected_pairs_count = len(correct_mapping)
 
@@ -404,7 +404,8 @@ class QuizCheckAPIView(APIView):
                 "correct": False,
                 "error": f"Expected {expected_pairs_count} pairs, got {len(user_pairs)}",
                 "pair_results": [],
-                "pairs": pairs_serialized
+                "comment": pair_qs[0].comment,
+                "pairs": pair_qs[0].pairs,
             }
 
         all_correct = True
@@ -431,7 +432,8 @@ class QuizCheckAPIView(APIView):
         return all_correct, {
             "id": question["id"],
             "correct": all_correct,
-            "pairs": pairs_serialized
+            "comment":pair_qs[0].comment,
+            "pairs": pair_qs[0].pairs,
         }
 
     def _create_mastering_record(self, theme, student, quiz, ball):
