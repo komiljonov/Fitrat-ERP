@@ -100,9 +100,22 @@ class QuizCheckAPIView(APIView):
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
         existing_data = QuizResultSerializer(existing_results,context=context).data if existing_results else None
 
-        print(existing_data)
+        result = QuizResultSerializer(existing_results, context=context).data if existing_results else {}
 
-        data_length = len(existing_data)
+        counts = {
+            "standard": sum(len(item.get("answers", [])) for item in result.get("standard", [])),
+            "match_pair_result": sum(len(item.get("pairs", [])) for item in result.get("match_pair_result", [])),
+            "true_false_result": len(result.get("true_false_result", [])),  # each = 1 question
+            "objective_result": sum(len(item.get("answers", [])) for item in result.get("objective_result", [])),
+            "cloze_test_result": sum(len(item.get("questions", [])) for item in result.get("cloze_test_result", [])),
+            "image_objective_result": sum(
+                len(item.get("answers", [])) for item in result.get("image_objective_result", [])),
+            "vocabulary_result": len(result.get("vocabulary_result", [])),  # depending on structure
+        }
+
+        total_questions = sum(counts.values())
+
+        print("Question counts per type:", counts)
 
 
         RESULT_FIELDS_MAP = {
@@ -137,7 +150,7 @@ class QuizCheckAPIView(APIView):
         # Final merged details to be returned
         results["details"] = {k: list(v.values()) for k, v in merged_details.items()}
 
-        total = data_length
+        total = total_questions
 
         results["summary"]["total_questions"] = total
         results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
