@@ -659,7 +659,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "type": instance.exam.type,
             "is_mandatory": instance.exam.is_mandatory,
         }
-        rep["option"] = ExamSubjectSerializer(instance.option, many=True).data
+        rep["option"] = ExamSubjectSerializer(instance.option,context=self.context, many=True).data
         rep["student"] = StudentSerializer(instance.student, include_only=["id", "first_name", "last_name"]).data
         return rep
 
