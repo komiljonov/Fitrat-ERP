@@ -147,7 +147,6 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
 
         if instance.answer:
             answers_data = AnswerSerializer(instance.answer).data
-            random.shuffle(answers_data)
             rep["answer"] = answers_data
         if instance.file:
             rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
