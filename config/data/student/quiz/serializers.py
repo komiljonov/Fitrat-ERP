@@ -145,7 +145,7 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
         else:
             rep["image"] = None
 
-        if hasattr(instance, 'answer') and instance.answer.exists():
+        if instance.answer:
             answers_data = AnswerSerializer(instance.answer.all(), many=True).data
             random.shuffle(answers_data)
             rep["answer"] = answers_data
