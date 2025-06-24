@@ -140,7 +140,6 @@ class QuizCheckAPIView(APIView):
 
         return Response(results)
 
-
     def _prepare_question_data(self, question):
         qtype = question["type"]
         handler = getattr(self, f"_prepare_{qtype}", None)
@@ -530,8 +529,6 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
 
         # Regular update
         return super().update(request, *args, **kwargs)
-
-
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
