@@ -396,7 +396,7 @@ class QuizCheckAPIView(APIView):
 
 
 
-        pairs_serialized = pairs_serialized.get("pairs", [])
+        pairs_serialized = pairs_serialized[2]
 
         print(pairs_serialized[2])
 
