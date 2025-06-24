@@ -146,7 +146,7 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
             rep["image"] = None
 
         if instance.answer:
-            answers_data = AnswerSerializer(instance.answer.all(), many=True).data
+            answers_data = AnswerSerializer(instance.answer).data
             random.shuffle(answers_data)
             rep["answer"] = answers_data
         if instance.file:
