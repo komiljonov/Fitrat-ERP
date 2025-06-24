@@ -394,10 +394,6 @@ class QuizCheckAPIView(APIView):
         pair_qs = MatchPairs.objects.filter(id=question["id"])
         pairs_serialized = MatchPairsSerializer(pair_qs, many=True).data
 
-
-
-        pairs_serialized = pairs_serialized[2]
-
         print(pairs_serialized)
 
         expected_pairs_count = len(correct_mapping)
