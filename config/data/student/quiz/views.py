@@ -398,7 +398,7 @@ class QuizCheckAPIView(APIView):
 
         pairs_serialized = pairs_serialized.get("pairs", [])
 
-        print(pairs_serialized)
+        print(pairs_serialized[2])
 
         expected_pairs_count = len(correct_mapping)
 
