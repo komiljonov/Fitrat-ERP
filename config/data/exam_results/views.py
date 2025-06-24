@@ -1,7 +1,7 @@
 from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
 
-from .models import UnitTest,UnitTestResult
-from .serializers import UnitTestSerializer,UnitTestResultSerializer
+from .models import UnitTest, UnitTestResult, QuizResult
+from .serializers import UnitTestSerializer, UnitTestResultSerializer, QuizResultSerializer
 
 
 class UnitTestListCreateAPIView(ListCreateAPIView):
@@ -19,5 +19,23 @@ class UnitTestListCreateAPIView(ListCreateAPIView):
 
         if quiz:
             queryset = queryset.filter(quiz__id=quiz)
+
+        return queryset
+
+
+class QuizRestAPIView(ListCreateAPIView):
+    queryset = QuizResult.objects.all()
+    serializer_class = QuizResultSerializer
+
+    def get_queryset(self):
+        queryset = QuizResult.objects.all()
+
+        quiz = self.request.GET.get('quiz')
+        student = self.request.GET.get('student')
+        if quiz:
+            queryset = queryset.filter(quiz__id=quiz)
+
+        if student:
+            queryset = queryset.filter(students__id=student)
 
         return queryset

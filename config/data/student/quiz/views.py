@@ -1,3 +1,5 @@
+import logging
+import this
 from datetime import datetime, timedelta
 
 import openpyxl
@@ -7,13 +9,12 @@ from django.dispatch.dispatcher import logger
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from icecream import ic
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView, \
-    RetrieveAPIView
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -36,7 +37,9 @@ from ..student.models import Student
 from ..subject.models import Theme
 from ...account.models import CustomUser
 from ...exam_results.models import QuizResult
-from ...lid.new_lid.views import BulkUpdate
+from ...exam_results.serializers import QuizResultSerializer
+from ...upload.models import File
+from ...upload.serializers import FileUploadSerializer
 
 
 class QuizCheckAPIView(APIView):
@@ -54,7 +57,7 @@ class QuizCheckAPIView(APIView):
         data = serializer.validated_data
 
         quiz = get_object_or_404(Quiz, id=data.get("quiz_id"))
-        student = Student.objects.filter(user=request.user).first()
+        student = Student.objects.filter(user__id=data.get("student")).first()
         theme = get_object_or_404(Theme, id=data.get("theme"))
 
         results = {
@@ -64,7 +67,6 @@ class QuizCheckAPIView(APIView):
                 "correct_count": 0,
                 "wrong_count": 0,
                 "ball": 0.0,
-                # "section_breakdown": {}
             }
         }
 
@@ -73,42 +75,68 @@ class QuizCheckAPIView(APIView):
         for question in quiz_questions:
             qtype = question["type"]
             qid = question["id"]
-            question_ids = data.get("questions", [])
-            for qid in question_ids:
-
-                question = next((q for q in quiz_questions if q["id"] == qid), None)
-                if question:
-                    question_data = self._prepare_question_data(question)
-                    print(question_data)
 
             user_answer = self._find_user_answer(data, qtype, qid)
 
             if qtype not in results["details"]:
                 results["details"][qtype] = []
-            # if qtype not in results["summary"]["section_breakdown"]:
-            #     results["summary"]["section_breakdown"][qtype] = {"correct": 0, "wrong": 0}
 
             if not user_answer:
-                results["summary"]["wrong_count"] += 1
-                # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
                 continue
 
             is_correct, result_data = self._check_answer(question, user_answer)
 
             if is_correct:
                 results["summary"]["correct_count"] += 1
-                # results["summary"]["section_breakdown"][qtype]["correct"] += 1
             else:
                 results["summary"]["wrong_count"] += 1
-                # results["summary"]["section_breakdown"][qtype]["wrong"] += 1
-
-            # result = QuizResult.objects.filter(
-            #
-            # )
 
             results["details"][qtype].append(result_data)
+        context = {
+            'request': request,
+            'user': request.user,
+            'custom_data': 'some_value'
+        }
+        existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
+        existing_data = QuizResultSerializer(existing_results,context=context).data if existing_results else None
 
-        total = quiz.count if quiz else len(quiz_questions)
+        data_length = len(existing_data)
+
+
+        RESULT_FIELDS_MAP = {
+            "match_pair_result": "match_pair",
+            "true_false_result": "true_false",
+            "vocabulary_result": "vocabulary",
+            "objective_result": "objective_test",
+            "cloze_test_result": "cloze_test",
+            "image_objective_result": "image_objective",
+            "standard": "standard",
+        }
+
+        merged_details = {}
+
+        # Add existing results first
+        if existing_data:
+
+            for field, qtype in RESULT_FIELDS_MAP.items():
+
+                entries = existing_data.get(field)
+                if entries:
+                    merged_details[qtype] = {entry["id"]: entry for entry in entries}
+
+        # Merge with new incoming answers (overwrite duplicates)
+        for qtype, entries in results["details"].items():
+
+            if qtype not in merged_details:
+                merged_details[qtype] = {}
+            for entry in entries:
+                merged_details[qtype][entry["id"]] = entry
+
+        # Final merged details to be returned
+        results["details"] = {k: list(v.values()) for k, v in merged_details.items()}
+
+        total = data_length
+
         results["summary"]["total_questions"] = total
         results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
         results["summary"]["ball"] = round((results["summary"]["correct_count"] / total * 100), 2) if total > 0 else 0.0
@@ -139,7 +167,7 @@ class QuizCheckAPIView(APIView):
             "correct_answer": question.get("answer", "")
         }
 
-    def _prepare_match_pairs(self, question):
+    def _prepare_match_pair(self, question):
         left_items = [p for p in question.get("pairs", []) if p.get("choice") == "Left"]
         right_items = [p for p in question.get("pairs", []) if p.get("choice") == "Right"]
 
@@ -156,7 +184,7 @@ class QuizCheckAPIView(APIView):
 
         return {
             "id": question["id"],
-            "type": "match_pairs",
+            "type": "match_pair",
             "pairs": pairs
         }
 
@@ -170,12 +198,13 @@ class QuizCheckAPIView(APIView):
     def _find_user_answer(self, data, qtype, qid):
         id_fields = {
             'standard': 'question_id',
-            'match_pairs': 'match_id',
+            'match_pair': 'match_id',
             'objective_test': 'objective_id',
             'cloze_test': 'cloze_id',
             'image_objective': 'image_objective_id',
             'true_false': 'true_false_id'
         }
+
 
         id_field = id_fields.get(qtype, 'question_id')
         return next((a for a in data.get(qtype, []) if str(a.get(id_field)) == str(qid)), None)
@@ -186,6 +215,9 @@ class QuizCheckAPIView(APIView):
         # Handle any type aliases
         if qtype in ["image_objective", "image_objective_test"]:
             qtype = "image_objective"  # Standardize to one type
+
+        if qtype in ["objective_test","objective","objective_result"]:
+            qtype = "objective_test"
 
         checker = getattr(self, f"check_{qtype}", None)
 
@@ -224,6 +256,7 @@ class QuizCheckAPIView(APIView):
                 "id": question["id"],
                 "correct": False,
                 "error": str(e),
+                "question_text": question.get("question", {}).get("name"),
                 "user_answer": user_answer.get("answer_ids", ""),
                 "correct_answer": "Error processing correct answer"
             }
@@ -236,7 +269,7 @@ class QuizCheckAPIView(APIView):
 
             return is_correct, {
                 "id": question["id"],
-#                 "file": question.get("file", ""),
+                #                 "file": question.get("file", ""),
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_sequence,
@@ -256,41 +289,73 @@ class QuizCheckAPIView(APIView):
         try:
             correct_answer_id = question.get("answer", "")
             user_answer_id = user_answer.get("answer", "")
-            is_correct = str(user_answer_id) == str(correct_answer_id)
 
+            correct_answer = Answer.objects.filter(text=correct_answer_id).first()
+            is_correct = str(user_answer_id) == str(correct_answer.id)
+
+            context = {
+                'request': self.request,
+                'user': self.request.user,
+                'custom_data': 'some_value'
+            }
+
+            file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
+
+            url = FileUploadSerializer(file,context=context).data
+            correct_answer = Answer.objects.filter(text=correct_answer_id).first().text
             return is_correct, {
                 "id": question["id"],
-#                 "file": question.get("file", ""),
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_id,
-                "correct_answer": correct_answer_id,
-                "image_url": question.get("image_url", "")
+                "correct_answer": correct_answer,
+                "comment": question.get("comment", ""),
+                "image_url": url or None
             }
         except Exception as e:
             logger.error(f"Error processing image objective: {str(e)}")
+            file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
+
+            context = {
+                'request': self.request,
+                'user': self.request.user,
+                'custom_data': 'some_value'
+            }
+
+            url = FileUploadSerializer(file,context=context).data
+            correct_answer_id = question.get("answer", "")
+            correct_answer = Answer.objects.filter(id=correct_answer_id).first().text
+
             return False, {
                 "id": question["id"],
                 "correct": False,
                 "error": str(e),
+                "image_url": url or None,
                 "user_answer": user_answer.get("answer", ""),
-                "correct_answer": "Error processing correct answer"
+                "correct_answer": correct_answer
             }
 
     def check_standard(self, question, user_answer):
+
         correct_answer_id = next((a["id"] for a in question.get("answers", []) if a.get("is_correct")), None)
+
         user_answer_id = user_answer.get("answer_id")
         is_correct = str(user_answer_id) == str(correct_answer_id)
 
-        print(question)
 
+        correct_answer = next(
+            (a["text"] for a in question.get("answers", []) if a.get("is_correct")),
+            None
+        )
+        user_answer = Answer.objects.filter(id=user_answer_id).first().text
         return is_correct, {
             "id": question["id"],
             "file": question.get("file", {}),
             "question_text": question.get("text", {}).get("name"),
             "correct": is_correct,
             "user_answer": user_answer_id,
-            "correct_answer": correct_answer_id
+            "correct_answer": correct_answer,
+            "answers": question.get("answers", []),
         }
 
     def check_true_false(self, question, user_answer):
@@ -300,54 +365,77 @@ class QuizCheckAPIView(APIView):
 
         return is_correct, {
             "id": question["id"],
-#             "file": question.get("file", ""),
+            #             "file": question.get("file", ""),
             "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
-            "user_answer": user_choice,
-            "correct_answer": correct_answer
+            "comment": question.get("comment", ""),
+            "user_answer": user_answer.get("choice", ""),
+            "correct_answer": question.get("answer", ""),
         }
 
-    def check_match_pairs(self, question, user_answer):
+    def check_match_pair(self, question, user_answer):
+        # Extract correct left/right items from the question definition
+        left_items = {
+            p["key"]: p["id"]
+            for p in question.get("pairs", [])
+            if p.get("choice") == "Left"
+        }
+        right_items = {
+            p["key"]: p["id"]
+            for p in question.get("pairs", [])
+            if p.get("choice") == "Right"
+        }
 
-        left_items = {p["key"]: p["id"] for p in question.get("pairs", []) if p.get("choice") == "Left"}
-        right_items = {p["key"]: p["id"] for p in question.get("pairs", []) if p.get("choice") == "Right"}
-
+        # Build correct mapping by matching keys
         correct_mapping = {
             key: (left_items[key], right_items[key])
             for key in left_items if key in right_items
         }
 
         user_pairs = user_answer.get("pairs", [])
+
+        # ✅ Correct way: use filter + many=True
+        pair_qs = MatchPairs.objects.filter(id=question["id"])
+        pairs_serialized = MatchPairsSerializer(pair_qs, many=True).data
+
+        expected_pairs_count = len(correct_mapping)
+
+        if len(user_pairs) != expected_pairs_count:
+            return False, {
+                "id": question["id"],
+                "correct": False,
+                "error": f"Expected {expected_pairs_count} pairs, got {len(user_pairs)}",
+                "pair_results": [],
+                "pairs": pairs_serialized[0]["pairs"],
+                "comment": pairs_serialized[0]["comment"],
+            }
+
         all_correct = True
-        pair_results = []
+        matched_correct_pairs = set()
 
         for pair in user_pairs:
             left_id = str(pair.get("left_id"))
             right_id = str(pair.get("right_id"))
 
-            is_correct = any(
-                str(correct_left) == left_id and str(correct_right) == right_id
-                for correct_left, correct_right in correct_mapping.values()
-            )
+            is_correct = False
+            for key, (correct_left, correct_right) in correct_mapping.items():
+                if str(correct_left) == left_id and str(correct_right) == right_id:
+                    is_correct = True
+                    matched_correct_pairs.add(key)
+                    break
 
             if not is_correct:
                 all_correct = False
 
-            pair_results.append({
-                "left_id": left_id,
-                "right_id": right_id,
-                "is_correct": is_correct
-            })
+        # Check if all correct pairs were matched
+        if len(matched_correct_pairs) != len(correct_mapping):
+            all_correct = False
 
         return all_correct, {
             "id": question["id"],
             "correct": all_correct,
-#             "file": question.get("file", ""),
-            "pair_results": pair_results,
-            "correct_mapping": {
-                key: {"left_id": left, "right_id": right}
-                for key, (left, right) in correct_mapping.items()
-            }
+            "comment":pairs_serialized[0]["comment"],
+            "pairs": pairs_serialized[0]["pairs"]
         }
 
     def _create_mastering_record(self, theme, student, quiz, ball):
@@ -395,12 +483,55 @@ class ExamSubjectListCreate(ListCreateAPIView):
             queryset = queryset.filter(lang_national=lang_national)
         return queryset
 
-
 class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = ExamSubject.objects.all()
     serializer_class = ExamSubjectSerializer
 
+    allowed_bulk_fields = {
+        "order", "has_certificate", "certificate", "certificate_expire_date"
+    }
 
+    def update(self, request, *args, **kwargs):
+        if isinstance(request.data, list):
+            response_data = []
+            errors = []
+
+            for item in request.data:
+
+                item_id = item.get("id")
+                if not item_id:
+                    errors.append({"error": "Missing ID", "item": item})
+                    continue
+
+                try:
+                    instance = ExamSubject.objects.get(id=item_id)
+                except ExamSubject.DoesNotExist:
+                    errors.append({"error": f"ExamSubject with id={item_id} not found."})
+                    continue
+
+                filtered_data = {
+                    k: v for k, v in item.items() if k in self.allowed_bulk_fields
+                }
+
+                serializer = self.get_serializer(instance, data=filtered_data, partial=True)
+                try:
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                    response_data.append(serializer.data)
+
+                except ValidationError as ve:
+                    errors.append({"id": item_id, "validation_error": ve.detail})
+                except Exception as e:
+                    logging.exception(f"Unexpected error while updating ExamSubject {item_id}: {e}")
+                    errors.append({"id": item_id, "error": str(e)})
+
+            return Response({
+                "updated": response_data,
+                "errors": errors
+            }, status=status.HTTP_207_MULTI_STATUS)
+
+        # Regular update
+        return super().update(request, *args, **kwargs)
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
@@ -771,13 +902,12 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
         has_certificate = self.request.GET.get("has_certificate")
         group = self.request.GET.get("group")
 
-
         if group:
             qs = qs.filter(group__id=group)
         if has_certificate:
             qs = qs.filter(has_certificate=has_certificate.capitalize())
         if student:
-            qs = qs.filter(student__id=student)
+            qs = qs.filter(student__user__id=student)
         if exam:
             qs = qs.filter(exam__id=exam)
         if status:
@@ -795,7 +925,6 @@ class ExamRegistrationNoPgAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     pagination_class = None
 
-
     def get_queryset(self):
         qs = ExamRegistration.objects.all()
 
@@ -806,7 +935,6 @@ class ExamRegistrationNoPgAPIView(ListCreateAPIView):
         option = self.request.GET.get("option")
         has_certificate = self.request.GET.get("has_certificate")
         group = self.request.GET.get("group")
-
 
         if group:
             qs = qs.filter(group__id=group)
@@ -823,6 +951,7 @@ class ExamRegistrationNoPgAPIView(ListCreateAPIView):
         if option:
             qs = qs.filter(option=option)
         return qs
+
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -867,7 +996,7 @@ class ExamRegisteredStudentAPIView(APIView):
 
         headers = [
             "F.I.O", "Telefon raqami", "Ro'yxatdan o'tish", "Imtihonda qatnashadimi?",
-            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi"
+            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi","Ta'lim tili"
         ]
         ws.append(headers)
 
@@ -876,6 +1005,12 @@ class ExamRegisteredStudentAPIView(APIView):
         red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")  # light red
 
         for reg in registrations:
+
+            certificate = ExamCertificate.objects.filter(exam=exam,student=reg.student).first()
+            has_certificate = False
+            if certificate and certificate.certificate:
+                has_certificate = True
+
             student = reg.student
             row_data = [
                 f"{student.first_name} {student.last_name}",
@@ -884,9 +1019,14 @@ class ExamRegisteredStudentAPIView(APIView):
                 "Ha" if reg.is_participating else "Yo'q",
                 reg.mark,
                 reg.student_comment,
-                reg.option,
-                "Ha" if reg.has_certificate else "Yo'q"
+                "\n".join([f"{o.subject.name} - {o.options} variant" for o in reg.option.all() if o.subject]),
+                "Ha" if has_certificate else "Yo'q",
+                "\n".join([
+                "Uzbek" if o.lang_national else "Euro" if o.lang_foreign else "Tanlanmagan"
+                for o in reg.option.all()
+                ])
             ]
+
             row = ws.append(row_data)
 
             # Apply row coloring
@@ -937,13 +1077,14 @@ class ExamCertificateAPIView(ListCreateAPIView):
         return qs
 
 
-class ExamOptionCreate(APIView):
+
+class  ExamOptionCreate(APIView):
     """
     Bulk create or update ExamRegistration entries using ordinary field objects.
     """
 
     def post(self, request, *args, **kwargs):
-        data = request.data  # Expecting a list of dicts like [{student, exam, group, option, ...}]
+        data = request.data
 
         if not isinstance(data, list):
             return Response({'error': 'Body must be a list of registration objects'}, status=400)
@@ -952,14 +1093,13 @@ class ExamOptionCreate(APIView):
         registrations_to_update = []
         errors = []
 
-        with transaction.atomic():  # Wrap everything in a transaction
+        with transaction.atomic():
             for entry in data:
                 student_id = entry.get("student")
                 exam_id = entry.get("exam")
                 group_id = entry.get("group")
                 option = entry.get("option")
 
-                # Required fields check
                 if not student_id or not exam_id or option is None:
                     errors.append({'entry': entry, 'error': 'Missing required fields'})
                     continue
@@ -969,38 +1109,46 @@ class ExamOptionCreate(APIView):
                     exam = Exam.objects.get(id=exam_id)
                     group = Group.objects.get(id=group_id) if group_id else None
 
-                    # Check if registration already exists
+                    incoming_options = option if isinstance(option, list) else [option]
+
+                    # Ensure all ExamSubject instances exist
+                    existing_subjects = ExamSubject.objects.filter(id__in=incoming_options)
+                    if existing_subjects.count() != len(incoming_options):
+                        missing_ids = set(incoming_options) - set(str(s.id) for s in existing_subjects)
+                        errors.append({'entry': entry, 'error': f"Invalid ExamSubject ID(s): {list(missing_ids)}"})
+                        continue
+
                     existing_registration = ExamRegistration.objects.filter(
                         student=student,
                         exam=exam,
-                        group=group
+                        group=group,
                     ).first()
 
                     if existing_registration:
-                        # Update existing record
-                        existing_registration.option = option
-                        registrations_to_update.append(existing_registration)
+                        existing_option_ids = list(existing_registration.option.values_list("id", flat=True))
+                        merged_option_ids = list(set(existing_option_ids).union(set(incoming_options)))
+                        registrations_to_update.append((existing_registration, merged_option_ids))
                     else:
-                        # Create new record
-                        registrations_to_create.append(ExamRegistration(
-                            student=student,
-                            exam=exam,
-                            group=group,
-                            option=option
-                        ))
+                        registrations_to_create.append((student, exam, group, incoming_options))
 
                 except (Student.DoesNotExist, Exam.DoesNotExist, Group.DoesNotExist) as e:
                     errors.append({'entry': entry, 'error': str(e)})
                 except Exception as e:
                     errors.append({'entry': entry, 'error': f"Unexpected error: {str(e)}"})
 
-            # Perform bulk operations
-            if registrations_to_create:
-                ExamRegistration.objects.bulk_create(registrations_to_create)
+            # Create new registrations and set M2M options
+            for student, exam, group, option_ids in registrations_to_create:
+                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group,status="Waiting")
+                reg.option.set(option_ids)
 
-            if registrations_to_update:
-                ExamRegistration.objects.bulk_update(registrations_to_update, ['option'])
+            # Update existing registrations' options
+            for reg, option_ids in registrations_to_update:
+                reg.option.set(option_ids)
+                reg.status = "Waiting"
+                reg.save()
 
+
+        print((registrations_to_create),(registrations_to_update),(errors))
         response_data = {
             'created': len(registrations_to_create),
             'updated': len(registrations_to_update),

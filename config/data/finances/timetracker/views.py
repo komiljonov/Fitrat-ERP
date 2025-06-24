@@ -55,6 +55,7 @@ class TimeTrackerList(ListCreateAPIView):
         return queryset.order_by('-date')
 
 
+
 class AttendanceError(Exception):
     """Custom exception for attendance-related errors"""
 
@@ -71,7 +72,72 @@ class AttendanceList(ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         try:
-            ic(request.data)
+            print(request.data)
+
+            check_in = request.data.get('check_in')
+            check_out = request.data.get('check_out')
+            date = request.data.get('date')
+            employee = request.data.get('employee')
+            actions = request.data.get('actions')
+
+            filters = {}
+            if check_out:
+                filters['check_out'] = check_out
+            if actions is None:
+                att = Stuff_Attendance.objects.filter(
+                    employee__id=employee,
+                    date=date,
+                    check_in=check_in,
+                    **filters
+                )
+                if att:
+                    return Response(
+                        "attendance exists",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            elif check_in and actions and check_out is None:
+
+                print(actions)
+
+                sorted_actions = sorted(actions, key=lambda x: x['start'])
+
+                print(sorted_actions)
+
+                sorted_actions = sorted_actions[0]
+
+                att = Stuff_Attendance.objects.filter(
+                    employee__id=employee,
+                    date=date,
+                    check_in=sorted_actions.get('start'),
+                    check_out=sorted_actions.get('end'),
+                ).first()
+                if att:
+                    return Response(
+                        "attendance exists",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            elif check_in and actions and check_out:
+
+                print(actions)
+
+                sorted_actions = sorted(actions, key=lambda x: x['start'])
+
+                print(sorted_actions)
+                sorted_actions = sorted_actions[0]
+
+
+                att = Stuff_Attendance.objects.filter(
+                    employee__id=employee,
+                    date=date,
+                    check_in=sorted_actions.get('start'),
+                    check_out=sorted_actions.get('end'),
+                ).first()
+                if att:
+                    return Response(
+                        "attendance exists",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
             return self._process_attendance_with_error_handling(request.data)
         except AttendanceError as e:
             logger.error(f"Attendance error: {e.message}", extra=e.details)
@@ -276,6 +342,8 @@ class AttendanceList(ListCreateAPIView):
             if not penalty_info:
                 return {'total_penalty': 0, 'details': [], 'warning': 'No salary info found'}
 
+            ic(penalty_info)
+
             total_penalty = 0
             total_bonuses = 0
             penalty_details = []
@@ -291,7 +359,12 @@ class AttendanceList(ListCreateAPIView):
                             i + 1
                         )
 
+                        ic(penalty_result,penalty_result.get('penalty_amount'))
+
                         total_penalty += penalty_result['penalty_amount']
+
+                        print(penalty_result)
+
                         penalty_details.append(penalty_result)
 
                     except Exception as e:
@@ -301,6 +374,7 @@ class AttendanceList(ListCreateAPIView):
                             'error': f"Failed to calculate penalty: {str(e)}",
                             'penalty_amount': 0
                         })
+
                 if action['type'] == 'INSIDE':
                     try:
                         if check_in and check_out:
@@ -345,11 +419,13 @@ class AttendanceList(ListCreateAPIView):
 
                                         early_minutes = abs(time_difference)
 
-                                        amount = early_minutes * penalty_info['penalty_amount']
+                                        ic(penalty_info["per_minute_salary"])
+
+                                        amount = early_minutes * penalty_info['per_minute_salary']
 
                                         total_bonuses += amount
                                         employee = timeline.user
-                                        comment = f"{employee.full_name} ning ishga {early_minutes} minut erta kelganligi uchun {amount} sum bonus"
+                                        comment = f"{employee.full_name} ning ishga {early_minutes:2f} minut erta kelganligi uchun {amount:2f} sum bonus"
 
                                         penalty_kind = Kind.objects.filter(
                                             action="EXPENSE",
@@ -369,7 +445,10 @@ class AttendanceList(ListCreateAPIView):
                                         # User was late
                                         late_minutes = time_difference
 
-                                        amount = late_minutes * penalty_info['penalty_amount']
+
+                                        print(penalty_info["per_minute_salary"])
+
+                                        amount = late_minutes * penalty_info['per_minute_salary']
 
                                         total_penalty += amount
                                         employee = timeline.user
@@ -544,25 +623,25 @@ class AttendanceList(ListCreateAPIView):
             if not penalty_kind:
                 raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
 
-            # Build comment for finance record
-            comment = (
-                f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
-                f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-                f"{amount:.2f} sum jarima yozildi!"
-            )
-
-            # Check if a matching Finance record already exists
-            existing_finance = Finance.objects.filter(
-                action="EXPENSE",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            ).exists()
-
-            if existing_finance:
-                logger.info("Finance record already exists — skipping creation.")
-                return  # Skip if the same finance record exists
+            # # Build comment for finance record
+            # comment = (
+            #     f"{start_time.date()} - {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
+            #     f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
+            #     f"{amount:.2f} sum jarima yozildi!"
+            # )
+            #
+            # # Check if a matching Finance record already exists
+            # existing_finance = Finance.objects.filter(
+            #     action="EXPENSE",
+            #     kind=penalty_kind,
+            #     amount=amount,
+            #     stuff=user,
+            #     comment=comment
+            # ).exists()
+            #
+            # if existing_finance:
+            #     logger.info("Finance record already exists — skipping creation.")
+            #     return  # Skip if the same finance record exists
 
             # Create new attendance
             att = Stuff_Attendance.objects.create(
@@ -586,14 +665,14 @@ class AttendanceList(ListCreateAPIView):
                 employee_att.amount -= amount
                 employee_att.save()
 
-            # Create finance penalty record
-            Finance.objects.create(
-                action="INCOME",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            )
+            # # Create finance penalty record
+            # Finance.objects.create(
+            #     action="INCOME",
+            #     kind=penalty_kind,
+            #     amount=amount,
+            #     stuff=user,
+            #     comment=comment
+            # )
 
         except Exception as e:
             logger.error(f"Failed to create penalty finance record: {str(e)}")
@@ -622,34 +701,34 @@ class AttendanceList(ListCreateAPIView):
                 logger.info("Attendance record already exists — skipping creation.")
                 return  # Skip if exact attendance already exists
 
-            # Find or create penalty Kind
-            penalty_kind = Kind.objects.filter(
-                action="EXPENSE",
-                name__icontains="Bonus"
-            ).first()
+            # # Find or create penalty Kind
+            # penalty_kind = Kind.objects.filter(
+            #     action="EXPENSE",
+            #     name__icontains="Bonus"
+            # ).first()
+            #
+            # if not penalty_kind:
+            #     raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
 
-            if not penalty_kind:
-                raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
+            # # Build comment for finance record
+            # comment = (
+            #     f"{start_time.date()} - {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
+            #     f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
+            #     f"{amount:.2f} sum bonus yozildi!"
+            # )
 
-            # Build comment for finance record
-            comment = (
-                f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
-                f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
-                f"{amount:.2f} sum bonus yozildi!"
-            )
-
-            # Check if a matching Finance record already exists
-            existing_finance = Finance.objects.filter(
-                action="EXPENSE",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            ).exists()
-
-            if existing_finance:
-                logger.info("Finance record already exists — skipping creation.")
-                return  # Skip if the same finance record exists
+            # # Check if a matching Finance record already exists
+            # existing_finance = Finance.objects.filter(
+            #     action="EXPENSE",
+            #     kind=penalty_kind,
+            #     amount=amount,
+            #     stuff=user,
+            #     comment=comment
+            # ).exists()
+            #
+            # if existing_finance:
+            #     logger.info("Finance record already exists — skipping creation.")
+            #     return  # Skip if the same finance record exists
 
             # Create new attendance
             att = Stuff_Attendance.objects.create(
@@ -674,13 +753,13 @@ class AttendanceList(ListCreateAPIView):
                 employee_att.save()
 
             # Create finance penalty record
-            Finance.objects.create(
-                action="EXPENSE",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            )
+            # Finance.objects.create(
+            #     action="EXPENSE",
+            #     kind=penalty_kind,
+            #     amount=amount,
+            #     stuff=user,
+            #     comment=comment
+            # )
 
         except Exception as e:
             logger.error(f"Failed to create penalty finance record: {str(e)}")
@@ -704,30 +783,25 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             with transaction.atomic():
-                # Get the attendance record
                 attendance = self.get_object()
-                previous_check_in = attendance.check_in
-                previous_check_out = attendance.check_out
+
                 previous_amount = attendance.amount or 0
 
-                # 1. First remove existing financial impact
-                self._remove_existing_financial_impact(attendance)
 
-                # Parse incoming datetime strings if they exist
-                new_check_in = self._parse_datetime_safe(data.get('check_in')) if data.get('check_in') else None
-                new_check_out = self._parse_datetime_safe(data.get('check_out')) if data.get('check_out') else None
+                self._remove_existing_financial_impact(attendance, previous_amount)
 
-                # Update the attendance record with parsed datetimes
                 serializer = self.get_serializer(attendance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 updated_attendance = serializer.save()
+                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAisdfhugoidsfhugodisfhugsdfg")
 
-                # Calculate new penalty amount
                 new_penalty = calculate_penalty(
                     updated_attendance.employee.id,
                     updated_attendance.check_in,
                     updated_attendance.check_out
                 ) if updated_attendance.check_in and updated_attendance.check_out else 0
+
+                ic(new_penalty)
 
                 updated_attendance.amount = new_penalty
                 updated_attendance.save()
@@ -735,22 +809,15 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 em_att, created = Employee_attendance.objects.get_or_create(
                     employee=updated_attendance.employee,
                     date=updated_attendance.date,
-                    defaults={'amount': 0}  # Initialize with 0 if creating new
+                    defaults={'amount': 0}
                 )
 
-                # Add the attendance record to the many-to-many relationship
                 if not em_att.attendance.filter(id=updated_attendance.id).exists():
                     em_att.attendance.add(updated_attendance)
 
                 # Update the amount by first subtracting the previous amount and adding the new penalty
                 em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
                 em_att.save()
-
-                print({
-                        'previous_amount': previous_amount,
-                        'new_amount': new_penalty,
-                        'difference': new_penalty - previous_amount,
-                    })
 
                 return Response({
                     'success': True,
@@ -770,7 +837,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 'error_code': 'UPDATE_ERROR'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-    def _remove_existing_financial_impact(self, attendance):
+    def _remove_existing_financial_impact(self, attendance,previs_amount):
         """Remove all financial impact of the existing attendance record"""
         if not attendance.check_in:
             return
@@ -797,9 +864,19 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             pass
 
         # 2. Delete related finance records
+
+        print("finance logs",Finance.objects.filter(
+            stuff=employee,
+            amount=previs_amount,
+        ).first())
+
+        print(employee)
+        print(previs_amount)
+
         Finance.objects.filter(
             stuff=employee,
             created_at__date=date,
+            amount=previs_amount,
             comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
         ).delete()
 
