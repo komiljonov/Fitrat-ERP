@@ -623,25 +623,25 @@ class AttendanceList(ListCreateAPIView):
             if not penalty_kind:
                 raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
 
-            # Build comment for finance record
-            comment = (
-                f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
-                f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-                f"{amount:.2f} sum jarima yozildi!"
-            )
-
-            # Check if a matching Finance record already exists
-            existing_finance = Finance.objects.filter(
-                action="EXPENSE",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            ).exists()
-
-            if existing_finance:
-                logger.info("Finance record already exists — skipping creation.")
-                return  # Skip if the same finance record exists
+            # # Build comment for finance record
+            # comment = (
+            #     f"{start_time.date()} - {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
+            #     f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
+            #     f"{amount:.2f} sum jarima yozildi!"
+            # )
+            #
+            # # Check if a matching Finance record already exists
+            # existing_finance = Finance.objects.filter(
+            #     action="EXPENSE",
+            #     kind=penalty_kind,
+            #     amount=amount,
+            #     stuff=user,
+            #     comment=comment
+            # ).exists()
+            #
+            # if existing_finance:
+            #     logger.info("Finance record already exists — skipping creation.")
+            #     return  # Skip if the same finance record exists
 
             # Create new attendance
             att = Stuff_Attendance.objects.create(
@@ -665,14 +665,14 @@ class AttendanceList(ListCreateAPIView):
                 employee_att.amount -= amount
                 employee_att.save()
 
-            # Create finance penalty record
-            Finance.objects.create(
-                action="INCOME",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            )
+            # # Create finance penalty record
+            # Finance.objects.create(
+            #     action="INCOME",
+            #     kind=penalty_kind,
+            #     amount=amount,
+            #     stuff=user,
+            #     comment=comment
+            # )
 
         except Exception as e:
             logger.error(f"Failed to create penalty finance record: {str(e)}")
@@ -701,34 +701,34 @@ class AttendanceList(ListCreateAPIView):
                 logger.info("Attendance record already exists — skipping creation.")
                 return  # Skip if exact attendance already exists
 
-            # Find or create penalty Kind
-            penalty_kind = Kind.objects.filter(
-                action="EXPENSE",
-                name__icontains="Bonus"
-            ).first()
+            # # Find or create penalty Kind
+            # penalty_kind = Kind.objects.filter(
+            #     action="EXPENSE",
+            #     name__icontains="Bonus"
+            # ).first()
+            #
+            # if not penalty_kind:
+            #     raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
 
-            if not penalty_kind:
-                raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
+            # # Build comment for finance record
+            # comment = (
+            #     f"{start_time.date()} - {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
+            #     f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
+            #     f"{amount:.2f} sum bonus yozildi!"
+            # )
 
-            # Build comment for finance record
-            comment = (
-                f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
-                f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
-                f"{amount:.2f} sum bonus yozildi!"
-            )
-
-            # Check if a matching Finance record already exists
-            existing_finance = Finance.objects.filter(
-                action="EXPENSE",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            ).exists()
-
-            if existing_finance:
-                logger.info("Finance record already exists — skipping creation.")
-                return  # Skip if the same finance record exists
+            # # Check if a matching Finance record already exists
+            # existing_finance = Finance.objects.filter(
+            #     action="EXPENSE",
+            #     kind=penalty_kind,
+            #     amount=amount,
+            #     stuff=user,
+            #     comment=comment
+            # ).exists()
+            #
+            # if existing_finance:
+            #     logger.info("Finance record already exists — skipping creation.")
+            #     return  # Skip if the same finance record exists
 
             # Create new attendance
             att = Stuff_Attendance.objects.create(
@@ -753,13 +753,13 @@ class AttendanceList(ListCreateAPIView):
                 employee_att.save()
 
             # Create finance penalty record
-            Finance.objects.create(
-                action="EXPENSE",
-                kind=penalty_kind,
-                amount=amount,
-                stuff=user,
-                comment=comment
-            )
+            # Finance.objects.create(
+            #     action="EXPENSE",
+            #     kind=penalty_kind,
+            #     amount=amount,
+            #     stuff=user,
+            #     comment=comment
+            # )
 
         except Exception as e:
             logger.error(f"Failed to create penalty finance record: {str(e)}")
