@@ -101,7 +101,6 @@ class QuizCheckAPIView(APIView):
         existing_data = QuizResultSerializer(existing_results,context=context).data if existing_results else None
 
         data_length = len(existing_data.items())
-        print(data_length)
 
         RESULT_FIELDS_MAP = {
             "match_pair_result": "match_pair",
