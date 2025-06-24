@@ -134,7 +134,7 @@ class QuizCheckAPIView(APIView):
         # Final merged details to be returned
         results["details"] = {k: list(v.values()) for k, v in merged_details.items()}
 
-        total = quiz.count if quiz else len(quiz_questions)
+        total = quiz.count if quiz else len(existing_data)
         results["summary"]["total_questions"] = total
         results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
         results["summary"]["ball"] = round((results["summary"]["correct_count"] / total * 100), 2) if total > 0 else 0.0
