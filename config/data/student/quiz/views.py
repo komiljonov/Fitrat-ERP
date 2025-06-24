@@ -76,7 +76,6 @@ class QuizCheckAPIView(APIView):
             qtype = question["type"]
             qid = question["id"]
 
-            print(qtype,qid)
             user_answer = self._find_user_answer(data, qtype, qid)
 
             if qtype not in results["details"]:
@@ -287,7 +286,6 @@ class QuizCheckAPIView(APIView):
         try:
             correct_answer_id = question.get("answer", "")
             user_answer_id = user_answer.get("answer", "")
-            print(user_answer_id,correct_answer_id)
 
             correct_answer = Answer.objects.filter(text=correct_answer_id).first()
             is_correct = str(user_answer_id) == str(correct_answer.id)
@@ -396,8 +394,6 @@ class QuizCheckAPIView(APIView):
         # ✅ Correct way: use filter + many=True
         pair_qs = MatchPairs.objects.filter(id=question["id"])
         pairs_serialized = MatchPairsSerializer(pair_qs, many=True).data
-
-        print(pairs_serialized[0]["pairs"])
 
         expected_pairs_count = len(correct_mapping)
 
