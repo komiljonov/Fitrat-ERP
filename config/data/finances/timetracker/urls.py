@@ -1,8 +1,8 @@
 from django.urls import  path
 
 from .models import UserTimeLine
-from .views import AttendanceList, AttendanceDetail, UserTimeLineList, UserTimeLineDetail, TimeTrackerList, \
-    TimeLineBulkCreate
+from .views import AttendanceList, UserTimeLineList, UserTimeLineDetail, TimeTrackerList, \
+    TimeLineBulkCreate, AttendanceDetail
 
 urlpatterns = [
     path("", AttendanceList.as_view()),

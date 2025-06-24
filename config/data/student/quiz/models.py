@@ -56,8 +56,8 @@ class Question(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_file")
 
-    def __str__(self):
-        return self.text.name
+    # def __str__(self):
+    #     return self.text.name
 
 
 class Vocabulary(BaseModel):
@@ -97,8 +97,8 @@ class Fill_gaps(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_fill_file")
 
-    def __str__(self):
-        return f"{self.quiz.title}    {self.question.name}"
+    # def __str__(self):
+    #     return f"{self.quiz.title}    {self.question.name}"
 
 
 class Listening(BaseModel):
@@ -145,8 +145,8 @@ class MatchPairs(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_match_file")
 
-    def __str__(self):
-        return f"{self.quiz.title} "
+    # def __str__(self):
+    #     return f"{self.quiz.title} "
 
 
 class ObjectiveTest(BaseModel):
@@ -161,8 +161,8 @@ class ObjectiveTest(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_objective_file")
 
-    def __str__(self):
-        return f"{self.quiz.title}    {self.question.name}"
+    # def __str__(self):
+    #     return f"{self.quiz.title}    {self.question.name}"
 
 
 class Cloze_Test(BaseModel):
@@ -191,8 +191,8 @@ class ImageObjectiveTest(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_image_file")
 
-    def __str__(self):
-        return f"{self.quiz.title}  {self.answer.text}"
+    # def __str__(self):
+    #     return f"{self.quiz.title}  {self.answer.text}"
 
 
 class True_False(BaseModel):
@@ -211,8 +211,8 @@ class True_False(BaseModel):
     file = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                              related_name="question_boolen_file")
 
-    def __str__(self):
-        return f"{self.quiz.title}  {self.answer}"
+    # def __str__(self):
+    #     return f"{self.quiz.title}  {self.answer}"
 
 
 class ExamSubject(BaseModel):
@@ -224,8 +224,13 @@ class ExamSubject(BaseModel):
     lang_foreign = models.BooleanField(default=False)
     lang_national = models.BooleanField(default=False)
 
-    def __str__(self):
-        return f"{self.subject.name}  --- {self.options}"
+    order = models.IntegerField(null=True, blank=True)
+
+    has_certificate = models.BooleanField(default=False)
+    certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='certificate_of_student')
+    certificate_expire_date = models.DateField(null=True, blank=True)
+
 
 
 class Exam(BaseModel):
@@ -283,26 +288,17 @@ class ExamRegistration(BaseModel):
     status = models.CharField(choices=[
         ("Active", "Active"),
         ("Inactive", "Inactive"),
+        ("Waiting","Waiting"),
     ], max_length=255, null=True, blank=True)
     is_participating = models.BooleanField(default=True)
     mark = models.CharField(max_length=255, null=True, blank=True)
     student_comment = models.TextField(null=True, blank=True)
     group : "Group" = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True,
                                         related_name='registration_group')
-    option = models.CharField(choices=[
-        ("1", "1"),
-        ("2", "2"),
-        ("3", "3"),
-        ("4", "4"),
-        ("5", "5"),
-        ("6", "6"),
-    ], max_length=10, null=True, blank=True)
-    has_certificate = models.BooleanField(default=False)
-    certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
-                                            related_name='certificate_of_student')
-    certificate_expire_date = models.DateField(null=True, blank=True)
-    def __str__(self):
-        return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
+    option : "ExamSubject" = models.ManyToManyField("quiz.ExamSubject",related_name='registration_option_subjects')
+
+    # def __str__(self):
+    #     return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
 
 
 class ExamCertificate(BaseModel):
@@ -313,6 +309,9 @@ class ExamCertificate(BaseModel):
     certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                             related_name='registered_certificate_of_student')
 
+    subject : "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='certificate_of_student_subject')
+
     expire_date = models.DateField(null=True, blank=True)
 
     status = models.CharField(choices=[
@@ -321,6 +320,6 @@ class ExamCertificate(BaseModel):
         ("Pending", "Pending"),
     ],max_length=255, null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.student.first_name}  {self.status}"
+    # def __str__(self):
+    #     return f"{self.student.first_name}  {self.status}"
 

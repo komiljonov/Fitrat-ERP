@@ -1,9 +1,9 @@
 from django.db import models
 
+from data.student.student.models import Student
 from ..command.models import BaseModel
-from ..student.quiz.models import Quiz,Exam,Question,MatchPairs,True_False,Vocabulary,ObjectiveTest,ImageObjectiveTest,Listening,Cloze_Test
-from ..student.student.models import Student
-from ..student.subject.models import Theme
+
+
 class QuizResult(BaseModel):
     quiz = models.ForeignKey(
         "quiz.Quiz",
@@ -12,7 +12,7 @@ class QuizResult(BaseModel):
         blank=True,
         related_name="quiz_results"
     )
-    student = models.ForeignKey(
+    student : "Student" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
         null=True,
