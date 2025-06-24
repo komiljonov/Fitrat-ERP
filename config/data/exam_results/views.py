@@ -23,6 +23,12 @@ class UnitTestListCreateAPIView(ListCreateAPIView):
         return queryset
 
 
+class UnitTestRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = UnitTest.objects.all()
+    serializer_class = UnitTestSerializer
+
+
+
 class QuizRestAPIView(ListCreateAPIView):
     queryset = QuizResult.objects.all()
     serializer_class = QuizResultSerializer
