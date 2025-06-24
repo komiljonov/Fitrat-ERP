@@ -404,8 +404,8 @@ class QuizCheckAPIView(APIView):
                 "correct": False,
                 "error": f"Expected {expected_pairs_count} pairs, got {len(user_pairs)}",
                 "pair_results": [],
-                "comment": pair_qs[0].comment,
-                "pairs": pair_qs[0].pairs,
+                "pairs": pairs_serialized[0]["pairs"],
+                "comment": pairs_serialized[0]["comment"],
             }
 
         all_correct = True
@@ -432,8 +432,8 @@ class QuizCheckAPIView(APIView):
         return all_correct, {
             "id": question["id"],
             "correct": all_correct,
-            "comment":pair_qs[0].comment,
-            "pairs": pair_qs[0].pairs,
+            "comment":pairs_serialized[0]["comment"],
+            "pairs": pairs_serialized[0]["pairs"]
         }
 
     def _create_mastering_record(self, theme, student, quiz, ball):
