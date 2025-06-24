@@ -364,6 +364,7 @@ class QuizCheckAPIView(APIView):
             #             "file": question.get("file", ""),
             "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
+            "comment": question.get("comment", ""),
             "user_answer": user_answer.get("choice", ""),
             "correct_answer": question.get("answer", ""),
         }
