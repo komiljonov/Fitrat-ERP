@@ -720,6 +720,7 @@ class ExamListView(ListCreateAPIView):
         lang_national = self.request.GET.get("lang_national")
         options = self.request.GET.get("options")
 
+
         queryset = Exam.objects.all()
 
         user = CustomUser.objects.filter(id=self.request.user.id).first()

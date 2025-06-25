@@ -570,19 +570,21 @@ class ExamSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep["results"] = FileUploadSerializer(instance.results).data if instance.results else None
 
-        subject_id = (
-            Group.objects.filter(teacher=user)
-            .values_list("course__subject", flat=True)
-            .first()
-        )
+        teacher = Group.objects.filter(teacher=user).first().course.subject
+        print(teacher)
 
-        print(subject_id)
+
+        teachers_subject = ExamSubject.objects.filter(
+            subject=teacher
+        ).all()
+
+        print(teachers_subject)
 
         subject_obj = None
         lang_type = None
-        if subject_id:
-            subject_obj = Subject.objects.filter(id=subject_id).first()
-            lang_type = ExamSubject.objects.filter(subject=subject_id).first()
+        if teachers_subject:
+            subject_obj = Subject.objects.filter(id=teachers_subject.first().id).first()
+            lang_type = ExamSubject.objects.filter(subject=teachers_subject.first().id).first()
 
         if lang_type:
             if lang_type.lang_national and lang_type.lang_foreign:
@@ -600,7 +602,7 @@ class ExamSerializer(serializers.ModelSerializer):
             {
                 "instance_id": option.id,
                 "id": option.subject.id if option.subject else None,
-                "subject": option.subject.name if option.subject else None,
+                "subject": subject_obj.name if subject_obj else None,
                 "lang_type": lang_value,
                 "option": option.options,
             }
