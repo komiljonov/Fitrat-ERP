@@ -581,7 +581,7 @@ class ExamSerializer(serializers.ModelSerializer):
 
         lang_type = None
         if teachers_subject:
-            lang_type = ExamSubject.objects.filter(subject__id=teachers_subject.first().id).first()
+            lang_type =teachers_subject.first()
             print(lang_type.lang_national, lang_type.lang_foreign)
         if lang_type:
             if lang_type.lang_national and lang_type.lang_foreign:
