@@ -596,7 +596,7 @@ class ExamSerializer(serializers.ModelSerializer):
             {
                 "instance_id": option.id,
                 "id": option.subject.id if option.subject else None,
-                "subject": subject_obj.name if subject_obj else None,
+                "subject": option.subject.name if option.subject else None,
                 "lang_type": lang_value,
                 "option": option.options,
             }
