@@ -20,7 +20,7 @@ from ...student.mastering.serializers import StuffMasteringSerializer
 from ...student.student.models import Student
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...student.studentgroup.serializers import StudentsGroupSerializer
-
+from ...lid.new_lid.models import Lid
 
 class TeacherList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
@@ -102,6 +102,20 @@ class TeacherStatistics(ListAPIView):
         # }
 
         statistics1 = {
+            "first_lesson": Lid.objects.filter(
+                lid_stage_type="ORDERED_LID",
+                is_archived=False,
+                lids_group__group__teacher=teacher,
+                ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+                is_student=False
+            ).count(),
+            "first_lesson_archived" : Lid.objects.filter(
+                lid_stage_type="ORDERED_LID",
+                is_archived=True,
+                lids_group__group__teacher=teacher,
+                ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+                is_student=False,
+            ).count(),
             "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
             "new_students": StudentGroup.objects.filter(group__teacher=teacher,
                                                         student__student_stage_type="NEW_STUDENT", **filters).count(),
