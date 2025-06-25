@@ -247,6 +247,7 @@ class QuizCheckAPIView(APIView):
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
 
             file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
 
             return is_correct, {
                 "id": question["id"],
@@ -259,6 +260,7 @@ class QuizCheckAPIView(APIView):
         except Exception as e:
             logger.error(f"Error processing objective test: {str(e)}")
             file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return False, {
                 "id": question["id"],
                 "file" :file.file if file else None,
@@ -276,6 +278,7 @@ class QuizCheckAPIView(APIView):
             user_sequence = user_answer.get("word_sequence", [])
             is_correct = user_sequence == correct_sequence
             file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return is_correct, {
                 "id": question["id"],
                 "file": file.file if file else None,
@@ -287,6 +290,7 @@ class QuizCheckAPIView(APIView):
         except Exception as e:
             logger.error(f"Error processing cloze test: {str(e)}")
             file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return False, {
                 "id": question["id"],
                 "correct": False,
@@ -361,6 +365,7 @@ class QuizCheckAPIView(APIView):
         user_answer = Answer.objects.filter(id=user_answer_id).first().text
 
         file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+        file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
 
         return is_correct, {
             "id": question["id"],
@@ -378,6 +383,7 @@ class QuizCheckAPIView(APIView):
         is_correct = (user_choice == correct_answer)
 
         file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+        file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
 
 
         print(file)
