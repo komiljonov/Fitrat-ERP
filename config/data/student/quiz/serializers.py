@@ -614,6 +614,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
     )
 
     date = serializers.SerializerMethodField()
+    exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), allow_null=True)
 
     class Meta:
         model = ExamRegistration
