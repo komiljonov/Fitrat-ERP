@@ -1150,7 +1150,7 @@ class  ExamOptionCreate(APIView):
 
             # Create new registrations and set M2M options
             for student, exam, group, option_ids in registrations_to_create:
-                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group,status="Waiting")
+                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group,variation=int(option),status="Waiting")
                 reg.option.set(option_ids)
 
             # Update existing registrations' options
