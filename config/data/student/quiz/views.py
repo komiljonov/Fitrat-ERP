@@ -251,7 +251,7 @@ class QuizCheckAPIView(APIView):
 
             return is_correct, {
                 "id": question["id"],
-                "file": file.file if file else None,
+                "file": file if file else None,
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_text,
@@ -263,7 +263,7 @@ class QuizCheckAPIView(APIView):
             file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return False, {
                 "id": question["id"],
-                "file" :file.file if file else None,
+                "file" :file if file else None,
                 "correct": False,
                 "error": str(e),
                 "question_text": question.get("question", {}).get("name"),
@@ -281,7 +281,7 @@ class QuizCheckAPIView(APIView):
             file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return is_correct, {
                 "id": question["id"],
-                "file": file.file if file else None,
+                "file": file if file else None,
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_sequence,
@@ -294,7 +294,7 @@ class QuizCheckAPIView(APIView):
             return False, {
                 "id": question["id"],
                 "correct": False,
-                "file": file.file if file else None,
+                "file": file if file else None,
                 "error": str(e),
                 "user_answer": user_answer.get("word_sequence", []),
                 "correct_answer": "Error processing correct sequence"
@@ -369,7 +369,7 @@ class QuizCheckAPIView(APIView):
 
         return is_correct, {
             "id": question["id"],
-            "file": file.file if file else None,
+            "file": file if file else None,
             "question_text": question.get("text", {}).get("name"),
             "correct": is_correct,
             "user_answer": user_answer_id,
@@ -389,7 +389,7 @@ class QuizCheckAPIView(APIView):
         print(file)
         return is_correct, {
             "id": question["id"],
-            "file": file.file if file else None,
+            "file": file if file else None,
             "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
             "comment": question.get("comment", ""),
