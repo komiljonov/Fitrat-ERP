@@ -246,11 +246,11 @@ class QuizCheckAPIView(APIView):
             user_answer_text = user_answer.get("answer_ids", "")
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
 
-            print(question.get("file", ""))
+            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
 
             return is_correct, {
                 "id": question["id"],
-                "file": question.get("file", ""),
+                "file": file,
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_text,
@@ -258,9 +258,10 @@ class QuizCheckAPIView(APIView):
             }
         except Exception as e:
             logger.error(f"Error processing objective test: {str(e)}")
+            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
             return False, {
                 "id": question["id"],
-                "file" : question.get("file", ""),
+                "file" : file,
                 "correct": False,
                 "error": str(e),
                 "question_text": question.get("question", {}).get("name"),
@@ -278,10 +279,10 @@ class QuizCheckAPIView(APIView):
 
             user_sequence = user_answer.get("word_sequence", [])
             is_correct = user_sequence == correct_sequence
-
+            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
             return is_correct, {
                 "id": question["id"],
-                #                 "file": question.get("file", ""),
+                "file": file,
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_sequence,
@@ -289,9 +290,11 @@ class QuizCheckAPIView(APIView):
             }
         except Exception as e:
             logger.error(f"Error processing cloze test: {str(e)}")
+            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
             return False, {
                 "id": question["id"],
                 "correct": False,
+                "file": file,
                 "error": str(e),
                 "user_answer": user_answer.get("word_sequence", []),
                 "correct_answer": "Error processing correct sequence"
@@ -380,11 +383,11 @@ class QuizCheckAPIView(APIView):
         user_choice = user_answer.get("choice", "").lower()
         is_correct = (user_choice == correct_answer)
 
-        print(question.get("file", ""))
+        file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
 
         return is_correct, {
             "id": question["id"],
-            "file": question.get("file", ""),
+            "file": file,
             "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
             "comment": question.get("comment", ""),
