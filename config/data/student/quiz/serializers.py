@@ -491,7 +491,7 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             "is_language": instance.subject.is_language,
         } if instance.subject else None
         rep["certificate"] = FileUploadSerializer(instance.certificate,
-                                                  context=self.context).data if instance.certificate else None
+        context=self.context).data if instance.certificate else None
 
         return rep
 

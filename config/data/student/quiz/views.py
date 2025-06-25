@@ -1109,6 +1109,7 @@ class  ExamOptionCreate(APIView):
                 exam_id = entry.get("exam")
                 group_id = entry.get("group")
                 option = entry.get("option")
+                subject = entry.get("subject")
 
                 if not student_id or not exam_id or option is None:
                     errors.append({'entry': entry, 'error': 'Missing required fields'})
@@ -1119,7 +1120,7 @@ class  ExamOptionCreate(APIView):
                     exam = Exam.objects.get(id=exam_id)
                     group = Group.objects.get(id=group_id) if group_id else None
 
-                    incoming_options = option if isinstance(option, list) else [option]
+                    incoming_options = subject if isinstance(subject, list) else [subject]
 
                     # Ensure all ExamSubject instances exist
                     existing_subjects = ExamSubject.objects.filter(id__in=incoming_options)
@@ -1132,6 +1133,7 @@ class  ExamOptionCreate(APIView):
                         student=student,
                         exam=exam,
                         group=group,
+                        variation=int(option),
                     ).first()
 
                     if existing_registration:
