@@ -949,6 +949,7 @@ class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
     serializer_class = ExamRegistrationSerializer
     permission_classes = [IsAuthenticated]
 
+
 class ExamRegistrationNoPgAPIView(ListCreateAPIView):
     queryset = ExamRegistration.objects.all()
     serializer_class = ExamRegistrationSerializer
