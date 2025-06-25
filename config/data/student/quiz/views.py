@@ -357,9 +357,14 @@ class QuizCheckAPIView(APIView):
             None
         )
         user_answer = Answer.objects.filter(id=user_answer_id).first().text
+
+        file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+
+        print(question.get("file", {}),file)
+
         return is_correct, {
             "id": question["id"],
-            "file": question.get("file", {}),
+            "file": file,
             "question_text": question.get("text", {}).get("name"),
             "correct": is_correct,
             "user_answer": user_answer_id,
