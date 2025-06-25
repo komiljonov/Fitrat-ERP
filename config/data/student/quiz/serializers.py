@@ -565,6 +565,8 @@ class ExamSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = request.user
 
+        print(user)
+
         rep = super().to_representation(instance)
         rep["results"] = FileUploadSerializer(instance.results).data if instance.results else None
 
