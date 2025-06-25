@@ -664,7 +664,9 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                 comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
                         f" {attrs.get('student_comment')} sabab bilan inkor etdingiz va 50000 so'm Jarima berildi.",
             )
-            parents = CustomUser.objects.filter(phone__in=Relatives.objects.filter(student=student).all())
+            relatives_phones = Relatives.objects.filter(student=student).values_list("phone", flat=True)
+            parents = CustomUser.objects.filter(phone__in=relatives_phones)
+
             if parents:
                 for parent in parents:
                     Notification.objects.create(
