@@ -273,10 +273,6 @@ class QuizCheckAPIView(APIView):
         try:
             correct_sequence = [q["name"] for q in question.get("questions", [])][::-1]
 
-            print(question.get("questions", []))
-
-            print(correct_sequence)
-
             user_sequence = user_answer.get("word_sequence", [])
             is_correct = user_sequence == correct_sequence
             file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
@@ -366,8 +362,6 @@ class QuizCheckAPIView(APIView):
 
         file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
 
-        print(question.get("file", {}),file)
-
         return is_correct, {
             "id": question["id"],
             "file": file,
@@ -385,6 +379,8 @@ class QuizCheckAPIView(APIView):
 
         file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
 
+
+        print(file)
         return is_correct, {
             "id": question["id"],
             "file": file,
