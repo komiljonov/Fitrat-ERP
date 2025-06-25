@@ -34,6 +34,7 @@ class GroupSerializer(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True)
     subject = serializers.SerializerMethodField()
     level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all(), allow_null=True)
+    real_student = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
@@ -57,6 +58,7 @@ class GroupSerializer(serializers.ModelSerializer):
             'ended_at',
             'start_date',
             'finish_date',
+            'real_student',
             'is_secondary',
             'current_theme',
             "created_at",
@@ -81,6 +83,20 @@ class GroupSerializer(serializers.ModelSerializer):
         elif fields_to_remove:
             for field_name in fields_to_remove:
                 self.fields.pop(field_name, None)
+
+    def get_real_student(self, obj):
+        student_count = StudentGroup.objects.filter(
+            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+        ).count()
+
+        first = StudentGroup.objects.filter(
+            Q(group=obj) & (Q(student__isnull=True) | Q(
+                lid__lid_stage_type="ORDERED_LID",
+                lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN"
+            ))
+        ).count()
+
+        return student_count - first
 
     def get_subject(self, obj):
         return Group.objects.filter(pk=obj.pk).values("course__subject",
