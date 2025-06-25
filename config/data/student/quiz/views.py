@@ -246,9 +246,11 @@ class QuizCheckAPIView(APIView):
             user_answer_text = user_answer.get("answer_ids", "")
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
 
+            print(question.get("file", ""))
+
             return is_correct, {
                 "id": question["id"],
-                # "file": question.get("file", ""),
+                "file": question.get("file", ""),
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_text,
@@ -258,6 +260,7 @@ class QuizCheckAPIView(APIView):
             logger.error(f"Error processing objective test: {str(e)}")
             return False, {
                 "id": question["id"],
+                "file" : question.get("file", ""),
                 "correct": False,
                 "error": str(e),
                 "question_text": question.get("question", {}).get("name"),
@@ -377,9 +380,11 @@ class QuizCheckAPIView(APIView):
         user_choice = user_answer.get("choice", "").lower()
         is_correct = (user_choice == correct_answer)
 
+        print(question.get("file", ""))
+
         return is_correct, {
             "id": question["id"],
-            #             "file": question.get("file", ""),
+            "file": question.get("file", ""),
             "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
             "comment": question.get("comment", ""),
