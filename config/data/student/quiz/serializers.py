@@ -580,10 +580,8 @@ class ExamSerializer(serializers.ModelSerializer):
 
         print(teachers_subject)
 
-        subject_obj = None
         lang_type = None
         if teachers_subject:
-            subject_obj = Subject.objects.filter(id=teachers_subject.first().id).first()
             lang_type = ExamSubject.objects.filter(subject=teachers_subject.first().id).first()
 
         if lang_type:
@@ -601,8 +599,8 @@ class ExamSerializer(serializers.ModelSerializer):
         rep["options"] = [
             {
                 "instance_id": option.id,
-                "id": option.subject.id if option.subject else None,
-                "subject": subject_obj.name if subject_obj else None,
+                "id": teachers_subject.first().subject.id if teachers_subject else None,
+                "subject": teachers_subject.first().subject.name if teachers_subject else None,
                 "lang_type": lang_value,
                 "option": option.options,
             }
