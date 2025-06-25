@@ -576,6 +576,8 @@ class ExamSerializer(serializers.ModelSerializer):
             .first()
         )
 
+        print(subject_id)
+
         subject_obj = None
         lang_type = None
         if subject_id:
