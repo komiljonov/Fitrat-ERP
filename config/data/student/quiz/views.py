@@ -250,7 +250,7 @@ class QuizCheckAPIView(APIView):
 
             return is_correct, {
                 "id": question["id"],
-                "file": file,
+                "file": file.file,
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_text,
@@ -261,7 +261,7 @@ class QuizCheckAPIView(APIView):
             file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
             return False, {
                 "id": question["id"],
-                "file" : file,
+                "file" : file.file,
                 "correct": False,
                 "error": str(e),
                 "question_text": question.get("question", {}).get("name"),
@@ -278,7 +278,7 @@ class QuizCheckAPIView(APIView):
             file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
             return is_correct, {
                 "id": question["id"],
-                "file": file,
+                "file": file.file,
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_sequence,
@@ -290,7 +290,7 @@ class QuizCheckAPIView(APIView):
             return False, {
                 "id": question["id"],
                 "correct": False,
-                "file": file,
+                "file": file.file,
                 "error": str(e),
                 "user_answer": user_answer.get("word_sequence", []),
                 "correct_answer": "Error processing correct sequence"
@@ -364,7 +364,7 @@ class QuizCheckAPIView(APIView):
 
         return is_correct, {
             "id": question["id"],
-            "file": file,
+            "file": file.file,
             "question_text": question.get("text", {}).get("name"),
             "correct": is_correct,
             "user_answer": user_answer_id,
@@ -383,7 +383,7 @@ class QuizCheckAPIView(APIView):
         print(file)
         return is_correct, {
             "id": question["id"],
-            "file": file,
+            "file": file.file,
             "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
             "comment": question.get("comment", ""),
