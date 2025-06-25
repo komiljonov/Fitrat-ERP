@@ -7,6 +7,7 @@ from rest_framework import serializers
 from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, Exam, Gaps, \
     QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest, ExamCertificate, \
     ExamSubject
+from ..groups.models import Group
 from ..homeworks.models import Homework
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
@@ -561,18 +562,47 @@ class ExamSerializer(serializers.ModelSerializer):
         return count
 
     def to_representation(self, instance):
+        request = self.context.get("request")
+        user = request.user
+
         rep = super().to_representation(instance)
         rep["results"] = FileUploadSerializer(instance.results).data if instance.results else None
+
+        subject_id = (
+            Group.objects.filter(teacher=user)
+            .values_list("course__subject", flat=True)
+            .first()
+        )
+
+        subject_obj = None
+        lang_type = None
+        if subject_id:
+            subject_obj = Subject.objects.filter(id=subject_id).first()
+            lang_type = ExamSubject.objects.filter(subject=subject_id).first()
+
+        if lang_type:
+            if lang_type.lang_national and lang_type.lang_foreign:
+                lang_value = "both"
+            elif lang_type.lang_national:
+                lang_value = "national"
+            elif lang_type.lang_foreign:
+                lang_value = "foreign"
+            else:
+                lang_value = None
+        else:
+            lang_value = None
 
         rep["options"] = [
             {
                 "instance_id": option.id,
                 "id": option.subject.id if option.subject else None,
-                "subject": option.subject.name if option.subject else None,
+                "subject": subject_obj.name if subject_obj else None,
+                "lang_type": lang_value,
                 "option": option.options,
             }
             for option in instance.options.all()
         ]
+
         return rep
 
 
@@ -591,6 +621,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "exam",
             "status",
             "group",
+            "variation",
             "is_participating",
             "mark",
             "option",
