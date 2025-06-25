@@ -598,13 +598,12 @@ class ExamSerializer(serializers.ModelSerializer):
 
         rep["options"] = [
             {
-                "instance_id": option.id,
+                "instance_id": teachers_subject.first().id,
                 "id": teachers_subject.first().subject.id if teachers_subject else None,
                 "subject": teachers_subject.first().subject.name if teachers_subject else None,
                 "lang_type": lang_value,
-                "option": option.options,
+                "option": teachers_subject.first().options,
             }
-            for option in instance.options.all()
         ]
 
         return rep
