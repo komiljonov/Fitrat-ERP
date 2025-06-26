@@ -56,7 +56,6 @@ class TimeTrackerList(ListCreateAPIView):
         return queryset.order_by('-date')
 
 
-
 class AttendanceError(Exception):
     """Custom exception for attendance-related errors"""
 
@@ -769,6 +768,7 @@ class AttendanceList(ListCreateAPIView):
             logger.error(f"Failed to create penalty finance record: {str(e)}")
             raise
 
+
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
@@ -896,7 +896,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
         except ValueError as e:
             raise ValueError(f"Invalid datetime format: {datetime_str}") from e
-
 
 
 class UserTimeLineList(ListCreateAPIView):
