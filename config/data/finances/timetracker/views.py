@@ -97,13 +97,9 @@ class AttendanceList(ListCreateAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             elif check_in and actions and check_out is None:
-
                 print(actions)
-
                 sorted_actions = sorted(actions, key=lambda x: x['start'])
-
                 print(sorted_actions)
-
                 sorted_actions = sorted_actions[0]
 
                 att = Stuff_Attendance.objects.filter(
@@ -118,14 +114,10 @@ class AttendanceList(ListCreateAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             elif check_in and actions and check_out:
-
                 print(actions)
-
                 sorted_actions = sorted(actions, key=lambda x: x['start'])
-
                 print(sorted_actions)
                 sorted_actions = sorted_actions[0]
-
 
                 att = Stuff_Attendance.objects.filter(
                     employee__id=employee,
@@ -165,7 +157,6 @@ class AttendanceList(ListCreateAPIView):
 
         with transaction.atomic():
             try:
-
                 attendance_result = self._create_or_update_attendance(data)
                 user = CustomUser.objects.filter(second_user=data.get("employee")).first()
 
@@ -173,7 +164,8 @@ class AttendanceList(ListCreateAPIView):
                     user.id,
                     actions,
                     data.get('check_in'),
-                    data.get('check_out')
+                    data.get('check_out'),
+                    data.get('date')  # Pass date as well
                 )
 
                 return Response({
@@ -332,13 +324,9 @@ class AttendanceList(ListCreateAPIView):
             )
 
     def _process_action_penalties(self, employee_id: str, actions: List[dict],
-                                  check_in: str, check_out: str) -> dict:
+                                  check_in: str, check_out: str, date_str: str) -> dict:
         """Process penalties/bonuses for individual actions"""
         try:
-            if not actions:
-                return {'total_penalty': 0, 'details': []}
-
-            # Get user salary info
             penalty_info = self._get_penalty_calculation_info(employee_id)
             if not penalty_info:
                 return {'total_penalty': 0, 'details': [], 'warning': 'No salary info found'}
@@ -349,192 +337,104 @@ class AttendanceList(ListCreateAPIView):
             total_bonuses = 0
             penalty_details = []
 
-            if not actions and not check_out:
-                per_min_sal = get_monthly_per_minute_salary(employee_id)
+            # Handle case with no actions and no check_out
+            if not actions and not check_out and check_in:
+                try:
+                    # Parse check_in datetime
+                    check_in_dt = self._parse_datetime_safe(check_in)
 
-                check_in = datetime.strptime(check_in, '%Y-%m-%d').strftime("%A")
+                    # Calculate penalty using the imported function
+                    penalty_amount = calculate_penalty(employee_id, check_in_dt)
+                    total_penalty += penalty_amount
 
-                timeline = UserTimeLine.objects.filter(
-                    user__id=employee_id,
-                    day=check_in,
-                    is_weekend=False,
-                ).first()
+                    penalty_details.append({
+                        'type': 'check_in_penalty',
+                        'amount': penalty_amount,
+                        'check_in': check_in,
+                        'description': 'Check-in penalty calculation'
+                    })
 
-                if timeline:
-                    timeline_start = timeline.start_time
-                    bonus = timeline.bonus
-                    penalty = timeline.penalty
+                except Exception as e:
+                    logger.error(f"Error calculating check-in penalty: {str(e)}")
+                    penalty_details.append({
+                        'type': 'check_in_penalty_error',
+                        'error': str(e),
+                        'amount': 0
+                    })
 
-                    check_in = datetime.strptime(check_in, "%Y-%m-%dT%H:%M:%S")
+            # Handle case with both check_in and check_out
+            if check_in and check_out:
+                try:
+                    check_in_dt = self._parse_datetime_safe(check_in)
+                    check_out_dt = self._parse_datetime_safe(check_out)
 
-                    employee = CustomUser.objects.filter(id=employee_id).first()
+                    # Calculate penalty using the imported function
+                    penalty_amount = calculate_penalty(employee_id, check_in_dt, check_out_dt)
+                    total_penalty += penalty_amount
 
-                    attendance = Stuff_Attendance.objects.filter(
-                        employee_id=employee_id,
-                        check_in=check_in,
-                        check_out=None,
-                    ).first()
+                    penalty_details.append({
+                        'type': 'full_day_penalty',
+                        'amount': penalty_amount,
+                        'check_in': check_in,
+                        'check_out': check_out,
+                        'description': 'Full day penalty calculation'
+                    })
 
-                    kind = Kind.objects.filter(
-                        action="INCOME",
-                        name="Money back"
-                    ).first()
+                except Exception as e:
+                    logger.error(f"Error calculating full day penalty: {str(e)}")
+                    penalty_details.append({
+                        'type': 'full_day_penalty_error',
+                        'error': str(e),
+                        'amount': 0
+                    })
 
-                    if timeline_start > check_in.time():
-
-                        late_minutes = timeline_start - check_in.time()
-
-                        print(late_minutes)
-
-                        penalty_amount = late_minutes * bonus
-
-                        print(penalty_amount)
-
-                        penalty = Finance.objects.create(
-                            stuff=employee,
-                            action="INCOME",
-                            amount=penalty_amount,
-                            stuff_attendance=attendance,
-                            kind=kind,
-                            comment=f"{check_in.date()} {check_in.time()} da {employee.full_name} "
-                                    f"ning ishga {late_minutes:.2f} minut kechikib kelganligi uchun {penalty_amount:.2f} sum jarima."
+            # Process OUTSIDE actions for penalties
+            for i, action in enumerate(actions):
+                if action['type'] == 'OUTSIDE' and action.get('usable', True):
+                    try:
+                        penalty_result = self._calculate_outside_penalty(
+                            employee_id,
+                            action,
+                            penalty_info,
+                            i + 1
                         )
-                        if penalty:
-                            penalty_details.append(penalty)
 
+                        ic(penalty_result, penalty_result.get('penalty_amount'))
+                        total_penalty += penalty_result['penalty_amount']
+                        penalty_details.append(penalty_result)
 
+                    except Exception as e:
+                        logger.error(f"Error calculating penalty for action {i + 1}: {str(e)}")
+                        penalty_details.append({
+                            'action_index': i + 1,
+                            'error': f"Failed to calculate penalty: {str(e)}",
+                            'penalty_amount': 0
+                        })
 
-            # Process each OUTSIDE action individually
-            # for i, action in enumerate(actions):
-            #     if action['type'] == 'OUTSIDE' and action.get('usable', True):
-            #         try:
-            #             penalty_result = self._calculate_outside_penalty(
-            #                 employee_id,
-            #                 action,
-            #                 penalty_info,
-            #                 i + 1
-            #             )
-            #
-            #             ic(penalty_result,penalty_result.get('penalty_amount'))
-            #
-            #             total_penalty += penalty_result['penalty_amount']
-            #
-            #             print(penalty_result)
-            #
-            #             penalty_details.append(penalty_result)
-            #
-            #         except Exception as e:
-            #             logger.error(f"Error calculating penalty for action {i + 1}: {str(e)}")
-            #             penalty_details.append({
-            #                 'action_index': i + 1,
-            #                 'error': f"Failed to calculate penalty: {str(e)}",
-            #                 'penalty_amount': 0
-            #             })
-            #
-            #     if action['type'] == 'INSIDE':
-            #         try:
-            #             if check_in and check_out:
-            #
-            #                 attendance = Stuff_Attendance.objects.filter(
-            #                     employee__id=employee_id,
-            #                     check_in__date=date.today(),
-            #                 ).order_by('check_in').first()
-            #
-            #                 if attendance:
-            #                     today = date.today()
-            #                     day_name = today.strftime('%A')
-            #
-            #                     timeline = UserTimeLine.objects.filter(
-            #                         user=attendance.employee,
-            #                         day=day_name
-            #                     ).order_by('start_time').first()
-            #
-            #                     if timeline:
-            #                         actual_check_in_time = attendance.check_in.time()
-            #                         scheduled_start_time = timeline.start_time
-            #
-            #                         actual_datetime = datetime.combine(today, actual_check_in_time)
-            #                         scheduled_datetime = datetime.combine(today, scheduled_start_time)
-            #
-            #                         time_difference = (actual_datetime - scheduled_datetime).total_seconds() / 60
-            #
-            #                         if time_difference < 0:
-            #
-            #                             early_minutes = abs(time_difference)
-            #
-            #                             ic(penalty_info["per_minute_salary"])
-            #
-            #                             amount = early_minutes * penalty_info['per_minute_salary']
-            #
-            #                             total_bonuses += amount
-            #                             employee = timeline.user
-            #                             comment = f"{employee.full_name} ning  {check_in} da  ishga {early_minutes:.2f} minut erta kelganligi uchun {amount:.2f} sum bonus"
-            #
-            #                             penalty_kind = Kind.objects.filter(
-            #                                 action="EXPENSE",
-            #                                 name__icontains="Bonus"
-            #                             ).first()
-            #
-            #                             Finance.objects.create(
-            #                                 action="EXPENSE",
-            #                                 kind=penalty_kind,
-            #                                 amount=amount,
-            #                                 stuff=employee,
-            #                                 comment=comment
-            #                             )
-            #
-            #                             penalty_details.append(total_bonuses)
-            #                         elif time_difference > 0:
-            #                             # User was late
-            #                             late_minutes = time_difference
-            #
-            #
-            #                             print(penalty_info["per_minute_salary"])
-            #
-            #                             amount = late_minutes * penalty_info['per_minute_salary']
-            #
-            #                             total_penalty += amount
-            #                             employee = timeline.user
-            #                             comment = f"{employee.full_name} ning  {check_out} da   ishga {late_minutes :.2f} minut kech kelganligi uchun {amount:.2f} sum jarima"
-            #
-            #                             penalty_kind = Kind.objects.filter(
-            #                                 action="EXPENSE",
-            #                                 name__icontains="Money back"
-            #                             ).first()
-            #
-            #                             Finance.objects.create(
-            #                                 action="INCOME",
-            #                                 kind=penalty_kind,
-            #                                 amount=amount,
-            #                                 stuff=employee,
-            #                                 comment=comment
-            #                             )
-            #
-            #                             penalty_details.append(total_penalty)
-            #                         else:
-            #                             # User was on time
-            #                             print("User was on time")
-            #                             status = "on_time"
-            #                             minutes_difference = 0
-            #
-            #             bonus_results = self._calculate_work_bonus(
-            #                 employee_id,
-            #                 action,
-            #                 penalty_info,
-            #                 i + 1
-            #             )
-            #             total_bonuses += bonus_results['bonus_amount']
-            #             penalty_details.append(bonus_results)
-            #         except Exception as e:
-            #             logger.error(f"Error calculating bonus for action {i + 1}: {str(e)}")
-            #             penalty_details.append({
-            #                 'action_index': i + 1,
-            #                 'error': f"Failed to calculate bonus: {str(e)}",
-            #                 'bonus_amount': 0
-            #             })
+                # Process INSIDE actions for bonuses
+                elif action['type'] == 'INSIDE':
+                    try:
+                        bonus_results = self._calculate_work_bonus(
+                            employee_id,
+                            action,
+                            penalty_info,
+                            i + 1
+                        )
+                        total_bonuses += bonus_results['bonus_amount']
+                        penalty_details.append(bonus_results)
+
+                    except Exception as e:
+                        logger.error(f"Error calculating bonus for action {i + 1}: {str(e)}")
+                        penalty_details.append({
+                            'action_index': i + 1,
+                            'error': f"Failed to calculate bonus: {str(e)}",
+                            'bonus_amount': 0
+                        })
 
             return {
                 'total_penalty': round(total_penalty, 2),
+                'total_bonuses': round(total_bonuses, 2),
+                'net_amount': round(total_penalty - total_bonuses, 2),
                 'details': penalty_details,
                 'penalty_info': penalty_info
             }
@@ -575,8 +475,10 @@ class AttendanceList(ListCreateAPIView):
             except Exception as e:
                 logger.error(f"Error creating bonus record: {str(e)}")
                 finance_created = False
+
             return {
                 'action_index': action_index,
+                'type': 'work_bonus',
                 'start_time': action['start'],
                 'end_time': action['end'],
                 'duration_minutes': round(duration_minutes, 2),
@@ -617,6 +519,7 @@ class AttendanceList(ListCreateAPIView):
 
             return {
                 'action_index': action_index,
+                'type': 'outside_penalty',
                 'start_time': action['start'],
                 'end_time': action['end'],
                 'duration_minutes': round(duration_minutes, 2),
@@ -657,34 +560,15 @@ class AttendanceList(ListCreateAPIView):
                 logger.info("Attendance record already exists — skipping creation.")
                 return  # Skip if exact attendance already exists
 
-            # Find or create penalty Kind
+            # Find penalty Kind
             penalty_kind = Kind.objects.filter(
-                action="EXPENSE",
+                action="INCOME",
                 name__icontains="Money back"
             ).first()
 
             if not penalty_kind:
-                raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
-
-            # # Build comment for finance record
-            # comment = (
-            #     f"{start_time.date()} - {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
-            #     f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
-            #     f"{amount:.2f} sum jarima yozildi!"
-            # )
-            #
-            # # Check if a matching Finance record already exists
-            # existing_finance = Finance.objects.filter(
-            #     action="EXPENSE",
-            #     kind=penalty_kind,
-            #     amount=amount,
-            #     stuff=user,
-            #     comment=comment
-            # ).exists()
-            #
-            # if existing_finance:
-            #     logger.info("Finance record already exists — skipping creation.")
-            #     return  # Skip if the same finance record exists
+                logger.warning("Penalty Kind with action='INCOME' and name='Money back' not found.")
+                return
 
             # Create new attendance
             att = Stuff_Attendance.objects.create(
@@ -708,14 +592,21 @@ class AttendanceList(ListCreateAPIView):
                 employee_att.amount -= amount
                 employee_att.save()
 
-            # # Create finance penalty record
-            # Finance.objects.create(
-            #     action="INCOME",
-            #     kind=penalty_kind,
-            #     amount=amount,
-            #     stuff=user,
-            #     comment=comment
-            # )
+            # Create finance penalty record
+            comment = (
+                f"{start_time.date()} - {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
+                f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
+                f"{amount:.2f} sum jarima yozildi!"
+            )
+
+            Finance.objects.create(
+                action="INCOME",
+                kind=penalty_kind,
+                amount=amount,
+                stuff=user,
+                comment=comment,
+                stuff_attendance=att
+            )
 
         except Exception as e:
             logger.error(f"Failed to create penalty finance record: {str(e)}")
@@ -744,34 +635,15 @@ class AttendanceList(ListCreateAPIView):
                 logger.info("Attendance record already exists — skipping creation.")
                 return  # Skip if exact attendance already exists
 
-            # # Find or create penalty Kind
-            # penalty_kind = Kind.objects.filter(
-            #     action="EXPENSE",
-            #     name__icontains="Bonus"
-            # ).first()
-            #
-            # if not penalty_kind:
-            #     raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
+            # Find bonus Kind
+            bonus_kind = Kind.objects.filter(
+                action="EXPENSE",
+                name__icontains="Bonus"
+            ).first()
 
-            # # Build comment for finance record
-            # comment = (
-            #     f"{start_time.date()} - {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
-            #     f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
-            #     f"{amount:.2f} sum bonus yozildi!"
-            # )
-
-            # # Check if a matching Finance record already exists
-            # existing_finance = Finance.objects.filter(
-            #     action="EXPENSE",
-            #     kind=penalty_kind,
-            #     amount=amount,
-            #     stuff=user,
-            #     comment=comment
-            # ).exists()
-            #
-            # if existing_finance:
-            #     logger.info("Finance record already exists — skipping creation.")
-            #     return  # Skip if the same finance record exists
+            if not bonus_kind:
+                logger.warning("Bonus Kind with action='EXPENSE' and name='Bonus' not found.")
+                return
 
             # Create new attendance
             att = Stuff_Attendance.objects.create(
@@ -795,19 +667,25 @@ class AttendanceList(ListCreateAPIView):
                 employee_att.amount += amount
                 employee_att.save()
 
-            # Create finance penalty record
-            # Finance.objects.create(
-            #     action="EXPENSE",
-            #     kind=penalty_kind,
-            #     amount=amount,
-            #     stuff=user,
-            #     comment=comment
-            # )
+            # Create finance bonus record
+            comment = (
+                f"{start_time.date()} - {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
+                f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
+                f"{amount:.2f} sum bonus yozildi!"
+            )
+
+            Finance.objects.create(
+                action="EXPENSE",
+                kind=bonus_kind,
+                amount=amount,
+                stuff=user,
+                comment=comment,
+                stuff_attendance=att
+            )
 
         except Exception as e:
-            logger.error(f"Failed to create penalty finance record: {str(e)}")
+            logger.error(f"Failed to create bonus finance record: {str(e)}")
             raise
-
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     queryset = Stuff_Attendance.objects.all()
