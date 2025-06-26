@@ -2,6 +2,7 @@ from django.db import models
 
 from data.account.models import CustomUser
 from data.command.models import BaseModel
+from data.finances.timetracker.models import Stuff_Attendance
 from data.lid.new_lid.models import Lid
 from data.student.attendance.models import Attendance
 from data.student.student.models import Student
@@ -99,6 +100,8 @@ class Finance(BaseModel):
     creator : 'CustomUser' = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL,null=True,blank=True, related_name='finance_creator')
 
     comment = models.TextField(null=True, blank=True)
+
+    stuff_attendance : "Stuff_Attendance" = models.ForeignKey("timetracker.Stuff_Attendance",on_delete=models.SET_NULL,null=True,blank=True)
 
     is_first = models.BooleanField(default=False,null=True,blank=True)
 

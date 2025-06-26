@@ -293,7 +293,6 @@ def calculate_penalty(user_id: str, check_in: datetime, check_out: datetime = No
 
                 print(f"Early arrival bonus for {user}: {bonus_amount:.2f} ({early_minutes} min early)")
 
-
             # === Late Arrival Penalty
 
             elif time_diff > 0:
