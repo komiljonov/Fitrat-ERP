@@ -507,6 +507,7 @@ class ExamSubjectListCreate(ListCreateAPIView):
             queryset = queryset.filter(lang_national=lang_national)
         return queryset
 
+
 class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = ExamSubject.objects.all()
     serializer_class = ExamSubjectSerializer
@@ -556,6 +557,7 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
 
         # Regular update
         return super().update(request, *args, **kwargs)
+
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
@@ -943,12 +945,27 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
             qs = qs.filter(option=option)
         return qs
 
-
 class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
     queryset = ExamRegistration.objects.all()
     serializer_class = ExamRegistrationSerializer
     permission_classes = [IsAuthenticated]
 
+    def update(self, request, *args, **kwargs):
+        # Make mutable copy
+        data = request.data.copy()
+
+        # Auto-activate if `option` is set
+        if "option" in data and data.get("option"):
+            data["status"] = "Active"
+
+        # Pass modified data to serializer
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ExamRegistrationNoPgAPIView(ListCreateAPIView):
     queryset = ExamRegistration.objects.all()
@@ -1108,12 +1125,10 @@ class ExamCertificateAPIView(ListCreateAPIView):
         return qs
 
 
-
 class  ExamOptionCreate(APIView):
     """
     Bulk create or update ExamRegistration entries using ordinary field objects.
     """
-
     def post(self, request, *args, **kwargs):
         data = request.data
 
