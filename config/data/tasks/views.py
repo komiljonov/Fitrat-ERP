@@ -28,11 +28,14 @@ class TaskListCreateView(ListCreateAPIView):
 
         filial = self.request.query_params.get("filial")
         creator = self.request.GET.get("creator")
+        performer = self.request.GET.get("performer")
         queryset = Task.objects.all()
         if filial:
             queryset = queryset.filter(filial__id=filial)
         if creator:
             queryset = queryset.filter(creator=self.request.user).order_by("-date_of_expired")
+        if performer:
+            queryset = queryset.filter(performer=self.request.user).order_by("-date_of_expired")
         return queryset
 
 
