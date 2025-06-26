@@ -386,7 +386,7 @@ class AttendanceList(ListCreateAPIView):
 
                         print(late_minutes)
 
-                        penalty_amount = late_minutes * per_min_sal
+                        penalty_amount = late_minutes * bonus
 
                         print(penalty_amount)
 
@@ -399,7 +399,10 @@ class AttendanceList(ListCreateAPIView):
                             comment=f"{check_in.date()} {check_in.time()} da {employee.full_name} "
                                     f"ning ishga {late_minutes:.2f} minut kechikib kelganligi uchun {penalty_amount:.2f} sum jarima."
                         )
-                        print(penalty.amount)
+                        if penalty:
+                            penalty_details.append(penalty)
+
+
 
             # Process each OUTSIDE action individually
             # for i, action in enumerate(actions):
