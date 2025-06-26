@@ -108,7 +108,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
             "questions", "match_pair", "true_false", "vocabulary",
             "objective", "cloze_test", "image_objective",
             "standard", "match_pair_result", "true_false_result",
-            "vocabulary_result", "objective_result","`total_question_count`",
+            "vocabulary_result", "objective_result","total_question_count",
             "cloze_test_result", "image_objective_result"
         ]
 
