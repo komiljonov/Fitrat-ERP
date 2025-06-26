@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Student, Archived
-from ...finances.compensation.models import Comments
+from ...comments.models import Comment
 from ...notifications.models import Notification
 
 
@@ -13,10 +13,10 @@ def on_create(sender, instance: Archived, created, **kwargs):
             instance.student.is_archived = True
             instance.student.save()
 
-            comment = Comments.objects.create(
+            comment = Comment.objects.create(
                 asos=None,
                 creator=instance.creator,
-                user=instance.student,
+                student=instance.student,
                 monitoring=None,
                 comment=f"Arxivlandi {instance.created_at} sanasida, sabab: {instance.reason}",
             )
@@ -24,10 +24,10 @@ def on_create(sender, instance: Archived, created, **kwargs):
         if instance.lid:
             instance.lid.is_archived = True
             instance.lid.save()
-            comment = Comments.objects.create(
+            comment = Comment.objects.create(
                 asos=None,
                 creator=instance.creator,
-                user=instance.lid,
+                lid=instance.lid,
                 monitoring=None,
                 comment=f"Arxivlandi {instance.created_at} sanasida, sabab: {instance.reason}",
             )
