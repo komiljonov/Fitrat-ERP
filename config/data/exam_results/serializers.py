@@ -2,8 +2,9 @@
 from rest_framework import serializers
 
 from .models import UnitTest, UnitTestResult, QuizResult
+from ..student.groups.models import Group
 from ..student.mastering.models import Mastering
-from ..student.quiz.models import Quiz
+from ..student.quiz.models import Quiz, Exam
 from ..student.quiz.serializers import QuestionSerializer, MatchPairsSerializer, True_FalseSerializer, \
     VocabularySerializer, ObjectiveTestSerializer, Cloze_TestSerializer, ImageObjectiveTestSerializer
 from ..student.student.models import Student
@@ -21,7 +22,6 @@ class UnitTestSerializer(serializers.ModelSerializer):
     theme_after = serializers.PrimaryKeyRelatedField(
         queryset=Theme.objects.all(), allow_null=True, required=False
     )
-    quiz = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all())
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
 
     class Meta:
