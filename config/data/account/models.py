@@ -31,6 +31,8 @@ class CustomUser(AbstractUser):
         ("CALL_OPERATOR", "Call Center"),
         ("ADMINISTRATOR", "Sales Menejeri"),
         ("SERVICE_MANAGER", "Service Manager"),
+        ("CALL_SALES", "Call Sales"),
+        ("SERVICE_SALES", "Service Sales"),
         ("ACCOUNTING", "Accounting"),
         ("ATTENDANCE_MANAGER", "Attendance Manager"),
         ("FILIAL_Manager", "Filial Manager"),
