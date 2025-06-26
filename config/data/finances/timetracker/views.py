@@ -798,19 +798,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 updated_attendance = serializer.save()
                 print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAisdfhugoidsfhugodisfhugsdfg")
 
-                # finance = Finance.objects.filter(
-                #     stuff = attendance.employee,
-                #     stuff_attendance = attendance,
-                #     created_at__date = attendance.date,
-                # ).all()
-                #
-                # if finance:
-                #     for i in finance:
-                #         i.delete()
-                #         print(f"{i.amount} - finance_deleted")
-
-                print(updated_attendance)
-
                 new_penalty = calculate_penalty(
                     updated_attendance.employee.id,
                     updated_attendance.check_in,
@@ -831,6 +818,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 if not em_att.attendance.filter(id=updated_attendance.id).exists():
                     em_att.attendance.add(updated_attendance)
 
+                # Update the amount by first subtracting the previous amount and adding the new penalty
                 em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
                 em_att.save()
 
@@ -878,6 +866,16 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         except Employee_attendance.DoesNotExist:
             pass
 
+        # 2. Delete related finance records
+
+        print("finance logs",Finance.objects.filter(
+            stuff=employee,
+            amount=previs_amount,
+        ).first())
+
+        print(employee)
+        print(previs_amount)
+
         Finance.objects.filter(
             stuff=employee,
             created_at__date=date,
@@ -898,6 +896,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
             return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
         except ValueError as e:
             raise ValueError(f"Invalid datetime format: {datetime_str}") from e
+
 
 
 class UserTimeLineList(ListCreateAPIView):
