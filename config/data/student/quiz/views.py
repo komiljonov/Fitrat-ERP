@@ -104,8 +104,9 @@ class QuizCheckAPIView(APIView):
 
         print([v for k,v in existing_data.items()])
 
-        data_length = len(existing_data)
+        data_length = existing_data.get("total_question_count")
 
+        print(data_length)
 
         RESULT_FIELDS_MAP = {
             "match_pair_result": "match_pair",

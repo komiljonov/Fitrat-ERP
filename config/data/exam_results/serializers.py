@@ -100,6 +100,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
     cloze_test_result = serializers.SerializerMethodField()
     image_objective_result = serializers.SerializerMethodField()
 
+    total_question_count = serializers.SerializerMethodField()
     class Meta:
         model = QuizResult
         fields = [
@@ -107,7 +108,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
             "questions", "match_pair", "true_false", "vocabulary",
             "objective", "cloze_test", "image_objective",
             "standard", "match_pair_result", "true_false_result",
-            "vocabulary_result", "objective_result",
+            "vocabulary_result", "objective_result","`total_question_count`",
             "cloze_test_result", "image_objective_result"
         ]
 
@@ -144,6 +145,17 @@ class QuizResultSerializer(serializers.ModelSerializer):
             if key in validated_data:
                 getattr(quiz_result, attr).set(validated_data[key])
         return quiz_result
+
+    def get_total_question_count(self, obj):
+        return (
+                obj.questions.count() +
+                obj.match_pair.count() +
+                obj.true_false.count() +
+                obj.vocabulary.count() +
+                obj.objective.count() +
+                obj.cloze_test.count() +
+                obj.image_objective.count()
+        )
 
     # Read methods for result representation
     def get_standard(self, obj):
