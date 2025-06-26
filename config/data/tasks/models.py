@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from ..lid.new_lid.models import Lid
     from ..student.student.models import Student
     from ..account.models import CustomUser
+    from ..upload.models import File
 
 class Task(BaseModel):
     creator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name='task_performer')
@@ -34,6 +35,8 @@ class Task(BaseModel):
         default="SOON",
         max_length=50
     )
+
+    file : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,related_name='tasks_file')
 
 
     def __str__(self):

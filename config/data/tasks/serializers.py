@@ -9,7 +9,7 @@ from ..student.student.models import Student
 from ..student.student.serializers import StudentSerializer
 from ..tasks.models import Task
 from ..account.serializers import UserListSerializer
-
+from ..upload.serializers import FileUploadSerializer
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -28,6 +28,7 @@ class TaskSerializer(serializers.ModelSerializer):
             'performer',
             "filial",
             "task",
+            "file",
             "comment",
             "date_of_expired",
             "status",
@@ -86,6 +87,9 @@ class TaskSerializer(serializers.ModelSerializer):
         representation["creator"] = UserListSerializer(instance.creator,context=self.context).data
         representation['performer'] = UserListSerializer(instance.performer,context=self.context).data
         # Corrected the syntax for `UserListSerializer`
+
+        if instance.file:
+            representation['file'] = FileUploadSerializer(instance.file,context=self.context).data
 
         if instance.lid:
             representation['lid'] = LidSerializer(instance.lid).data

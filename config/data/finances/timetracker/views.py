@@ -597,13 +597,11 @@ class AttendanceList(ListCreateAPIView):
         try:
             user = CustomUser.objects.get(id=employee_id)
 
-            # Ensure start and end times are timezone-aware
             if timezone.is_naive(start_time):
                 start_time = timezone.make_aware(start_time)
             if timezone.is_naive(end_time):
                 end_time = timezone.make_aware(end_time)
 
-            # Check if identical attendance already exists
             att = Stuff_Attendance.objects.filter(
                 employee=user,
                 check_in=start_time,
@@ -613,9 +611,8 @@ class AttendanceList(ListCreateAPIView):
 
             if att:
                 logger.info("Attendance record already exists — skipping creation.")
-                return  # Skip if exact attendance already exists
+                return
 
-            # Find or create penalty Kind
             penalty_kind = Kind.objects.filter(
                 action="EXPENSE",
                 name__icontains="Money back"
@@ -624,14 +621,13 @@ class AttendanceList(ListCreateAPIView):
             if not penalty_kind:
                 raise ValueError("Penalty Kind with action='EXPENSE' and name like 'Bonus' not found.")
 
-            # Build comment for finance record
+
             comment = (
-                f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
+                f"{start_time.date()} sanasida {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
                 f"gacha {duration_minutes:.0f} minut tashqarida bo'lganingiz uchun "
                 f"{amount:.2f} sum jarima yozildi!"
             )
 
-            # Check if a matching Finance record already exists
             existing_finance = Finance.objects.filter(
                 action="EXPENSE",
                 kind=penalty_kind,
@@ -642,9 +638,8 @@ class AttendanceList(ListCreateAPIView):
 
             if existing_finance:
                 logger.info("Finance record already exists — skipping creation.")
-                return  # Skip if the same finance record exists
+                return
 
-            # Create new attendance
             att = Stuff_Attendance.objects.create(
                 employee=user,
                 check_in=start_time,
@@ -652,7 +647,6 @@ class AttendanceList(ListCreateAPIView):
                 amount=amount,
             )
 
-            # Link to Employee_attendance
             attendance_date = start_time.date()
             employee_att, _ = Employee_attendance.objects.get_or_create(
                 employee=user,
@@ -660,13 +654,11 @@ class AttendanceList(ListCreateAPIView):
                 defaults={'amount': 0}
             )
 
-            # Add this Stuff_Attendance if not already linked
             if not employee_att.attendance.filter(id=att.id).exists():
                 employee_att.attendance.add(att)
                 employee_att.amount -= amount
                 employee_att.save()
 
-            # Create finance penalty record
             Finance.objects.create(
                 action="INCOME",
                 kind=penalty_kind,
@@ -713,7 +705,7 @@ class AttendanceList(ListCreateAPIView):
 
             # Build comment for finance record
             comment = (
-                f"Bugun {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
+                f"{start_time.date()} sanasida {start_time.strftime('%H:%M')} dan {end_time.strftime('%H:%M')} "
                 f"gacha {duration_minutes:.0f} minut ishda bo'lganingiz uchun "
                 f"{amount:.2f} sum bonus yozildi!"
             )
