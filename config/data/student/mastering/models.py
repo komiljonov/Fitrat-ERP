@@ -24,6 +24,8 @@ class Mastering(BaseModel):
         ("Unit_Test", "Unit_Test"),
     ],default="Homework",null=True,blank=True)
 
+    updater = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True,blank=True,related_name='mastering_updater')
+
     ball = models.FloatField(default=0)
 
     def __str__(self):

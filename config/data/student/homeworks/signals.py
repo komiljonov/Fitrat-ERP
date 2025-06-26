@@ -29,7 +29,6 @@ def on_create(sender, instance: Homework_history, created, **kwargs):
                 )
 
 
-
 @receiver(post_save, sender=Homework_history)
 def on_update(sender, instance: Homework_history, created, **kwargs):
 
@@ -51,5 +50,9 @@ def on_update(sender, instance: Homework_history, created, **kwargs):
             mastering.ball = instance.mark
             mastering.save(update_fields=['ball'])
             print(f"✅ Updated mastering ball to {mastering.ball}")
+
+            mastering.updater = instance.updater
+            mastering.save(update_fields=['updater'])
+            print(f"✅ Updated mastering updater to {mastering.ball}")
         else:
             print("❗ Mastering not found.")
