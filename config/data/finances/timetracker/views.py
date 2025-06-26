@@ -378,41 +378,28 @@ class AttendanceList(ListCreateAPIView):
                 if action['type'] == 'INSIDE':
                     try:
                         if check_in and check_out:
-                            today = now().date()
-
-                            earliest_check_in = Stuff_Attendance.objects.filter(
-                                employee__id=employee_id,
-                                check_in__date=today
-                            ).aggregate(Min('check_in'))['check_in__min']
 
                             attendance = Stuff_Attendance.objects.filter(
                                 employee__id=employee_id,
-                                check_in=earliest_check_in
-                            ).first()
+                                check_in__date=date.today(),
+                            ).order_by('check_in').first()
 
                             if attendance:
                                 today = date.today()
                                 day_name = today.strftime('%A')
 
                                 timeline = UserTimeLine.objects.filter(
-                                    user=attendance.employee,  # assuming attendance.employee is the user
+                                    user=attendance.employee,
                                     day=day_name
                                 ).order_by('start_time').first()
 
                                 if timeline:
-                                    # Get actual check-in time (only time part)
                                     actual_check_in_time = attendance.check_in.time()
                                     scheduled_start_time = timeline.start_time
 
-                                    # Calculate the difference
-                                    from datetime import datetime, timedelta
-
-                                    # Convert times to datetime objects for comparison
-                                    today_datetime = datetime.combine(today, datetime.min.time())
                                     actual_datetime = datetime.combine(today, actual_check_in_time)
                                     scheduled_datetime = datetime.combine(today, scheduled_start_time)
 
-                                    # Calculate time difference in minutes
                                     time_difference = (actual_datetime - scheduled_datetime).total_seconds() / 60
 
                                     if time_difference < 0:
