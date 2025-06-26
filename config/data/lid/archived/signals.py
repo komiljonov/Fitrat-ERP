@@ -13,11 +13,13 @@ def on_create(sender, instance: Archived, created, **kwargs):
             instance.student.is_archived = True
             instance.student.save()
 
+            date = instance.created_at.date()
+
             comment = Comment.objects.create(
                 creator=instance.creator,
                 student=instance.student,
                 lid=None,
-                comment=f"Arxivlandi {instance.created_at} sanasida, sabab: {instance.reason}",
+                comment=f"Arxivlandi {date} sanasida, sabab: {instance.reason}",
             )
 
         if instance.lid:
@@ -27,7 +29,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
                 creator=instance.creator,
                 lid=instance.lid,
                 student=None,
-                comment=f"Arxivlandi {instance.created_at} sanasida, sabab: {instance.reason}",
+                comment=f"Arxivlandi {instance.created_at.date()} sanasida, sabab: {instance.reason}",
             )
 
 
