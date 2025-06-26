@@ -1,40 +1,43 @@
+from django.utils import timezone
 import logging
-from datetime import datetime, date
-
 from celery import shared_task
+from datetime import date
 
 from .models import Task
 from ..notifications.models import Notification
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @shared_task
 def check_daily_tasks():
+    now = timezone.now()
 
     overdue_tasks = Task.objects.filter(
         status="ONGOING",
-        date_of_expired__lte=datetime.now()
+        date_of_expired__lte=now
     )
+
     for task in overdue_tasks:
         task.status = "EXPIRED"
         task.save()
-        notification_tasks = Notification.objects.create(
+
+        Notification.objects.create(
             user=task.creator,
-            comment=f"You got a expired task \n Task comment : {task.comment}",
+            comment=f"You have an expired task.\nComment: {task.comment or 'No comment'}",
             come_from=task
         )
-        if notification_tasks:
-            logging.info("For task notification created !")
+        logger.info(f"Task {task.id} marked as EXPIRED and notification sent to user {task.creator_id}")
 
-    logging.info("Celery task completed: Checked daily tasks.")
+    logger.info("Completed checking daily tasks for expiration.")
 
 
 @shared_task
 def check_today_tasks():
-    today = date.today()
+    today = timezone.localdate()
+
     tasks = Task.objects.filter(status="SOON", date_of_expired__date=today)
 
     for task in tasks:
         task.status = "ONGOING"
         task.save()
-        logging.info(f"Task {task.id} status changed to ONGOING for today.")
+        logger.info(f"Task {task.id} scheduled for today marked as ONGOING.")
