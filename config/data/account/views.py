@@ -278,7 +278,11 @@ class StuffRolesView(ListAPIView):
             else:
                 queryset = queryset.filter(is_call_center=True)
         elif role:
-            queryset = queryset.filter(role=role)
+            if role == "SERVICE_SALES":
+                queryset = queryset.filter(role__in=["SERVICE_MANAGER","ADMINISTRATOR"])
+            else:
+                queryset = queryset.filter(role=role)
+
 
         return queryset.distinct()
 
