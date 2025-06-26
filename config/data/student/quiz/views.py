@@ -102,8 +102,6 @@ class QuizCheckAPIView(APIView):
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
         existing_data = QuizResultSerializer(existing_results,context=context).data if existing_results else None
 
-        print([v for k,v in existing_data.items()])
-
         data_length = existing_data.get("total_question_count")
 
         print(data_length)
