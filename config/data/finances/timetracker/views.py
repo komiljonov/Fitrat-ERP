@@ -412,7 +412,7 @@ class AttendanceList(ListCreateAPIView):
 
                                         total_bonuses += amount
                                         employee = timeline.user
-                                        comment = f"{employee.full_name} ning  {check_in} da  ishga {early_minutes:2f} minut erta kelganligi uchun {amount:2f} sum bonus"
+                                        comment = f"{employee.full_name} ning  {check_in} da  ishga {early_minutes:.2f} minut erta kelganligi uchun {amount:.2f} sum bonus"
 
                                         penalty_kind = Kind.objects.filter(
                                             action="EXPENSE",
@@ -439,7 +439,7 @@ class AttendanceList(ListCreateAPIView):
 
                                         total_penalty += amount
                                         employee = timeline.user
-                                        comment = f"{employee.full_name} ning  {check_out} da   ishga {late_minutes :2f} minut kech kelganligi uchun {amount:2f} sum jarima"
+                                        comment = f"{employee.full_name} ning  {check_out} da   ishga {late_minutes :.2f} minut kech kelganligi uchun {amount:.2f} sum jarima"
 
                                         penalty_kind = Kind.objects.filter(
                                             action="EXPENSE",
