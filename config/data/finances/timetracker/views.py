@@ -88,7 +88,7 @@ class AttendanceList(ListCreateAPIView):
                 att = Stuff_Attendance.objects.filter(
                     employee__id=employee,
                     date=date,
-                    check_in=check_in,
+                    first_check_in=check_in,
                     **filters
                 )
                 if att:
@@ -109,8 +109,8 @@ class AttendanceList(ListCreateAPIView):
                 att = Stuff_Attendance.objects.filter(
                     employee__id=employee,
                     date=date,
-                    check_in=sorted_actions.get('start'),
-                    check_out=sorted_actions.get('end'),
+                    first_check_in=sorted_actions.get('start'),
+                    first_check_out=sorted_actions.get('end'),
                 ).first()
                 if att:
                     return Response(
@@ -130,8 +130,8 @@ class AttendanceList(ListCreateAPIView):
                 att = Stuff_Attendance.objects.filter(
                     employee__id=employee,
                     date=date,
-                    check_in=sorted_actions.get('start'),
-                    check_out=sorted_actions.get('end'),
+                    first_check_in=sorted_actions.get('start'),
+                    first_check_out=sorted_actions.get('end'),
                 ).first()
                 if att:
                     return Response(
@@ -604,8 +604,8 @@ class AttendanceList(ListCreateAPIView):
 
             att = Stuff_Attendance.objects.filter(
                 employee=user,
-                check_in=start_time,
-                check_out=end_time,
+                first_check_in=start_time,
+                first_check_out=end_time,
                 amount=amount
             ).first()
 
@@ -685,8 +685,8 @@ class AttendanceList(ListCreateAPIView):
             # Check if identical attendance already exists
             att = Stuff_Attendance.objects.filter(
                 employee=user,
-                check_in=start_time,
-                check_out=end_time,
+                first_check_in=start_time,
+                first_check_out=end_time,
                 amount=amount
             ).first()
 

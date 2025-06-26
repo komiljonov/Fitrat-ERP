@@ -46,6 +46,9 @@ class Stuff_Attendance(BaseModel):
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
 
+    first_check_in = models.DateTimeField(null=True, blank=True)
+    first_check_out = models.DateTimeField(null=True, blank=True)
+
     not_marked = models.BooleanField(default=False)
 
     date = models.DateField(default=timezone.now().date())
@@ -67,6 +70,15 @@ class Stuff_Attendance(BaseModel):
     )
     def __str__(self):
         return f"{self.check_in} - {self.check_out} - {self.action}"
+
+    def save(self, *args, **kwargs):
+        if self.check_in and not self.first_check_in:
+            self.first_check_in = self.check_in
+
+        if self.check_out and not self.first_check_out:
+            self.first_check_out = self.check_out
+
+        super().save(*args, **kwargs)
 
     @property
     def work_time(self) -> Optional["UserTimeLine"]:
