@@ -11,14 +11,14 @@ if TYPE_CHECKING:
     from ..upload.models import File
 
 class Task(BaseModel):
-    creator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name='task_performer')
+    creator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name='task_creator')
 
     lid: "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True)
     student: "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True)
 
     task = models.TextField()
 
-    performer = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, null=True, blank=True)
+    performer = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, null=True, blank=True,related_name='task_performer')
 
     comment = models.TextField(blank=True)
 
@@ -36,7 +36,7 @@ class Task(BaseModel):
         max_length=50
     )
 
-    file : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,related_name='tasks_file')
+    file : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,related_name='created_tasks_file')
 
 
     def __str__(self):
