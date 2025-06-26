@@ -312,6 +312,7 @@ class StudentsAvgLearning(APIView):
             exams = []
             homeworks = []
             speaking = []
+            unit = []
             for m in student_record:
                 homework_id = Homework_history.objects.filter(
                     homework__theme=m.theme,
@@ -326,7 +327,7 @@ class StudentsAvgLearning(APIView):
                 item = {
                     "theme" : theme_data,
                     "homework_id": homework_id.id if homework_id else None,
-                    "mastering_id": m.id if m.choice == "Speaking" else None,
+                    "mastering_id": m.id if m.choice in ["Speaking","Unit_Test"] else None,
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
@@ -337,6 +338,8 @@ class StudentsAvgLearning(APIView):
                     exams.append(item)
                 elif m.choice=="Speaking":
                     speaking.append(item)
+                elif m.choice=="Unit_Test":
+                    unit.append(item)
                 else:
                     homeworks.append(item)
 
