@@ -504,8 +504,6 @@ class ExamSerializer(serializers.ModelSerializer):
     students_xml = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     results = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
 
-    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
-
     student_count = serializers.SerializerMethodField()
 
     options = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(), many=True, allow_null=True)
