@@ -565,45 +565,44 @@ class ExamSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = request.user
 
-        print(user)
-
         rep = super().to_representation(instance)
         rep["results"] = FileUploadSerializer(instance.results).data if instance.results else None
 
-        teacher = Group.objects.filter(teacher=user).first().course.subject
-        print(teacher)
+        if user.role == "TEACHER":
+
+            teacher = Group.objects.filter(teacher=user).first().course.subject
 
 
-        teachers_subject = ExamSubject.objects.filter(
-            subject=teacher
-        ).all()
+            teachers_subject = ExamSubject.objects.filter(
+                subject=teacher
+            ).all()
 
 
-        lang_type = None
-        if teachers_subject:
-            lang_type =teachers_subject.first()
-            print(lang_type.lang_national, lang_type.lang_foreign)
-        if lang_type:
-            if lang_type.lang_national and lang_type.lang_foreign:
-                lang_value = "both"
-            elif lang_type.lang_national:
-                lang_value = "national"
-            elif lang_type.lang_foreign:
-                lang_value = "foreign"
+            lang_type = None
+            if teachers_subject:
+                lang_type =teachers_subject.first()
+                print(lang_type.lang_national, lang_type.lang_foreign)
+            if lang_type:
+                if lang_type.lang_national and lang_type.lang_foreign:
+                    lang_value = "both"
+                elif lang_type.lang_national:
+                    lang_value = "national"
+                elif lang_type.lang_foreign:
+                    lang_value = "foreign"
+                else:
+                    lang_value = None
             else:
                 lang_value = None
-        else:
-            lang_value = None
 
-        rep["options"] = [
-            {
-                "instance_id": teachers_subject.first().id,
-                "id": teachers_subject.first().subject.id if teachers_subject else None,
-                "subject": teachers_subject.first().subject.name if teachers_subject else None,
-                "lang_type": lang_value,
-                "option": teachers_subject.first().options,
-            }
-        ]
+            rep["options"] = [
+                {
+                    "instance_id": teachers_subject.first().id,
+                    "id": teachers_subject.first().subject.id if teachers_subject else None,
+                    "subject": teachers_subject.first().subject.name if teachers_subject else None,
+                    "lang_type": lang_value,
+                    "option": teachers_subject.first().options,
+                }
+            ]
 
         return rep
 
