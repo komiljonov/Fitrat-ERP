@@ -2,16 +2,28 @@
 from rest_framework import serializers
 
 from .models import UnitTest, UnitTestResult, QuizResult
+from ..student.mastering.models import Mastering
 from ..student.quiz.models import Quiz
 from ..student.quiz.serializers import QuestionSerializer, MatchPairsSerializer, True_FalseSerializer, \
     VocabularySerializer, ObjectiveTestSerializer, Cloze_TestSerializer, ImageObjectiveTestSerializer
 from ..student.student.models import Student
+from ..student.studentgroup.models import StudentGroup
 from ..student.subject.models import Theme
 from ..student.subject.serializers import ThemeSerializer
 
 
 class UnitTestSerializer(serializers.ModelSerializer):
-    themes = serializers.PrimaryKeyRelatedField(many=True, queryset=Theme.objects.all(),allow_null=True)
+    themes = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Theme.objects.all(),
+        required=False
+    )
+    theme_after = serializers.PrimaryKeyRelatedField(
+        queryset=Theme.objects.all(), allow_null=True, required=False
+    )
+    quiz = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all())
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
+
     class Meta:
         model = UnitTest
         fields = [
@@ -19,14 +31,38 @@ class UnitTestSerializer(serializers.ModelSerializer):
             "theme_after",
             "themes",
             "quiz",
+            "group",
             "created_at"
         ]
+
+    def create(self, validated_data):
+        themes = validated_data.pop("themes", [])
+        unit_test = UnitTest.objects.create(**validated_data)
+        unit_test.themes.set(themes)
+
+        # Create mastering records for all students in the group
+        students = StudentGroup.objects.filter(
+            group=unit_test.group, student__isnull=False
+        ).select_related("student")
+
+        for sg in students:
+            Mastering.objects.create(
+                theme=None,
+                student=sg.student,
+                test=unit_test.quiz,
+                choice="Unit_Test"
+            )
+
+        return unit_test
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["themes"] = ThemeSerializer(instance.themes.all(), many=True).data
-        rep["theme_after"] = ThemeSerializer(instance.theme_after).data
+        rep["theme_after"] = (
+            ThemeSerializer(instance.theme_after).data if instance.theme_after else None
+        )
         return rep
+
 
 
 class UnitTestResultSerializer(serializers.ModelSerializer):
