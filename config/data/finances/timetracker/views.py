@@ -795,6 +795,17 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
                 updated_attendance = serializer.save()
                 print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAisdfhugoidsfhugodisfhugsdfg")
 
+                finance = Finance.objects.filter(
+                    stuff = attendance.employee,
+                    stuff_attendance = attendance,
+                    created_at__date = attendance.date,
+                ).all()
+
+                if finance:
+                    for i in finance:
+                        i.delete()
+                        print(f"{i.amount} - finance_deleted")
+
                 new_penalty = calculate_penalty(
                     updated_attendance.employee.id,
                     updated_attendance.check_in,
