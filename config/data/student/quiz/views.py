@@ -945,6 +945,7 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
             qs = qs.filter(option=option)
         return qs
 
+
 class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
     queryset = ExamRegistration.objects.all()
     serializer_class = ExamRegistrationSerializer
@@ -966,6 +967,7 @@ class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
         self.perform_update(serializer)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ExamRegistrationNoPgAPIView(ListCreateAPIView):
     queryset = ExamRegistration.objects.all()
