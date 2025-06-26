@@ -11,8 +11,14 @@ class UnitTestListCreateAPIView(ListCreateAPIView):
     def get_queryset(self):
         queryset = UnitTest.objects.all()
 
+
+        group = self.request.GET.get('group')
         theme_after = self.request.GET.get('theme_after')
         quiz = self.request.GET.get('quiz')
+
+
+        if group:
+            queryset = queryset.filter(group__id=group)
 
         if theme_after:
             queryset = queryset.filter(theme_after__id=theme_after)

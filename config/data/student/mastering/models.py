@@ -21,6 +21,7 @@ class Mastering(BaseModel):
         ("Homework", "Homework"),
         ("Test", "Test"),
         ("Speaking", "Speaking"),
+        ("Unit_Test", "Unit_Test"),
     ],default="Homework",null=True,blank=True)
 
     ball = models.FloatField(default=0)
