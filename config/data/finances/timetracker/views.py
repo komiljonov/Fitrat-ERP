@@ -395,15 +395,26 @@ class AttendanceList(ListCreateAPIView):
                                 today = date.today()
                                 day_name = today.strftime('%A')
 
-                                timeline = UserTimeLine.objects.filter(
-                                    user=attendance.employee,  # assuming attendance.employee is the user
+                                timelines = UserTimeLine.objects.filter(
+                                    user=attendance.employee,
                                     day=day_name
-                                ).order_by('start_time').first()
+                                ).all()
 
-                                if timeline:
+                                if timelines.exists():
+                                    closest_timeline = min(
+                                        timelines,
+                                        key=lambda t: abs(
+                                            datetime.combine(date.today(), t.start_time) - datetime.combine(
+                                                date.today(), attendance.check_in)
+                                        )
+                                    )
+                                else:
+                                    closest_timeline = None
+
+                                if closest_timeline:
                                     # Get actual check-in time (only time part)
                                     actual_check_in_time = attendance.check_in.time()
-                                    scheduled_start_time = timeline.start_time
+                                    scheduled_start_time = closest_timeline.start_time
 
                                     # Calculate the difference
                                     from datetime import datetime, timedelta
@@ -425,7 +436,7 @@ class AttendanceList(ListCreateAPIView):
                                         amount = early_minutes * penalty_info['per_minute_salary']
 
                                         total_bonuses += amount
-                                        employee = timeline.user
+                                        employee = closest_timeline.user
                                         comment = f"{employee.full_name} ning ishga {early_minutes:2f} minut erta kelganligi uchun {amount:2f} sum bonus"
 
                                         penalty_kind = Kind.objects.filter(
@@ -452,7 +463,7 @@ class AttendanceList(ListCreateAPIView):
                                         amount = late_minutes * penalty_info['per_minute_salary']
 
                                         total_penalty += amount
-                                        employee = timeline.user
+                                        employee = closest_timeline.user
                                         comment = f"{employee.full_name} ning ishga {late_minutes} minut kech kelganligi uchun {amount} sum jarima"
 
                                         penalty_kind = Kind.objects.filter(
