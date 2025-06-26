@@ -23,6 +23,7 @@ from .serializers import UserTimeLineSerializer
 from .utils import get_monthly_per_minute_salary, calculate_penalty
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
+from ...student import attendance
 
 
 class TimeTrackerList(ListCreateAPIView):
@@ -348,134 +349,186 @@ class AttendanceList(ListCreateAPIView):
             total_bonuses = 0
             penalty_details = []
 
+            if not actions and not check_out:
+                per_min_sal = get_monthly_per_minute_salary(employee_id)
+
+                check_in = datetime.strptime(check_in, '%Y-%m-%d').strftime("%A")
+
+                timeline = UserTimeLine.objects.filter(
+                    user__id=employee_id,
+                    day=check_in,
+                    is_weekend=False,
+                ).first()
+
+                if timeline:
+                    timeline_start = timeline.start_time
+                    bonus = timeline.bonus
+                    penalty = timeline.penalty
+
+                    check_in = datetime.strptime(check_in, "%Y-%m-%dT%H:%M:%S")
+
+                    employee = CustomUser.objects.filter(id=employee_id).first()
+
+                    attendance = Stuff_Attendance.objects.filter(
+                        employee_id=employee_id,
+                        check_in=check_in,
+                        check_out=None,
+                    ).first()
+
+                    kind = Kind.objects.filter(
+                        action="INCOME",
+                        name="Money back"
+                    ).first()
+
+                    if timeline_start > check_in.time():
+
+                        late_minutes = timeline_start - check_in.time()
+
+                        print(late_minutes)
+
+                        penalty_amount = late_minutes * per_min_sal
+
+                        print(penalty_amount)
+
+                        penalty = Finance.objects.create(
+                            stuff=employee,
+                            action="INCOME",
+                            amount=penalty_amount,
+                            stuff_attendance=attendance,
+                            kind=kind,
+                            comment=f"{check_in.date()} {check_in.time()} da {employee.full_name} "
+                                    f"ning ishga {late_minutes:.2f} minut kechikib kelganligi uchun {penalty_amount:.2f} sum jarima."
+                        )
+                        print(penalty.amount)
+
             # Process each OUTSIDE action individually
-            for i, action in enumerate(actions):
-                if action['type'] == 'OUTSIDE' and action.get('usable', True):
-                    try:
-                        penalty_result = self._calculate_outside_penalty(
-                            employee_id,
-                            action,
-                            penalty_info,
-                            i + 1
-                        )
-
-                        ic(penalty_result,penalty_result.get('penalty_amount'))
-
-                        total_penalty += penalty_result['penalty_amount']
-
-                        print(penalty_result)
-
-                        penalty_details.append(penalty_result)
-
-                    except Exception as e:
-                        logger.error(f"Error calculating penalty for action {i + 1}: {str(e)}")
-                        penalty_details.append({
-                            'action_index': i + 1,
-                            'error': f"Failed to calculate penalty: {str(e)}",
-                            'penalty_amount': 0
-                        })
-
-                if action['type'] == 'INSIDE':
-                    try:
-                        if check_in and check_out:
-
-                            attendance = Stuff_Attendance.objects.filter(
-                                employee__id=employee_id,
-                                check_in__date=date.today(),
-                            ).order_by('check_in').first()
-
-                            if attendance:
-                                today = date.today()
-                                day_name = today.strftime('%A')
-
-                                timeline = UserTimeLine.objects.filter(
-                                    user=attendance.employee,
-                                    day=day_name
-                                ).order_by('start_time').first()
-
-                                if timeline:
-                                    actual_check_in_time = attendance.check_in.time()
-                                    scheduled_start_time = timeline.start_time
-
-                                    actual_datetime = datetime.combine(today, actual_check_in_time)
-                                    scheduled_datetime = datetime.combine(today, scheduled_start_time)
-
-                                    time_difference = (actual_datetime - scheduled_datetime).total_seconds() / 60
-
-                                    if time_difference < 0:
-
-                                        early_minutes = abs(time_difference)
-
-                                        ic(penalty_info["per_minute_salary"])
-
-                                        amount = early_minutes * penalty_info['per_minute_salary']
-
-                                        total_bonuses += amount
-                                        employee = timeline.user
-                                        comment = f"{employee.full_name} ning  {check_in} da  ishga {early_minutes:.2f} minut erta kelganligi uchun {amount:.2f} sum bonus"
-
-                                        penalty_kind = Kind.objects.filter(
-                                            action="EXPENSE",
-                                            name__icontains="Bonus"
-                                        ).first()
-
-                                        Finance.objects.create(
-                                            action="EXPENSE",
-                                            kind=penalty_kind,
-                                            amount=amount,
-                                            stuff=employee,
-                                            comment=comment
-                                        )
-
-                                        penalty_details.append(total_bonuses)
-                                    elif time_difference > 0:
-                                        # User was late
-                                        late_minutes = time_difference
-
-
-                                        print(penalty_info["per_minute_salary"])
-
-                                        amount = late_minutes * penalty_info['per_minute_salary']
-
-                                        total_penalty += amount
-                                        employee = timeline.user
-                                        comment = f"{employee.full_name} ning  {check_out} da   ishga {late_minutes :.2f} minut kech kelganligi uchun {amount:.2f} sum jarima"
-
-                                        penalty_kind = Kind.objects.filter(
-                                            action="EXPENSE",
-                                            name__icontains="Money back"
-                                        ).first()
-
-                                        Finance.objects.create(
-                                            action="INCOME",
-                                            kind=penalty_kind,
-                                            amount=amount,
-                                            stuff=employee,
-                                            comment=comment
-                                        )
-
-                                        penalty_details.append(total_penalty)
-                                    else:
-                                        # User was on time
-                                        print("User was on time")
-                                        status = "on_time"
-                                        minutes_difference = 0
-
-                        bonus_results = self._calculate_work_bonus(
-                            employee_id,
-                            action,
-                            penalty_info,
-                            i + 1
-                        )
-                        total_bonuses += bonus_results['bonus_amount']
-                        penalty_details.append(bonus_results)
-                    except Exception as e:
-                        logger.error(f"Error calculating bonus for action {i + 1}: {str(e)}")
-                        penalty_details.append({
-                            'action_index': i + 1,
-                            'error': f"Failed to calculate bonus: {str(e)}",
-                            'bonus_amount': 0
-                        })
+            # for i, action in enumerate(actions):
+            #     if action['type'] == 'OUTSIDE' and action.get('usable', True):
+            #         try:
+            #             penalty_result = self._calculate_outside_penalty(
+            #                 employee_id,
+            #                 action,
+            #                 penalty_info,
+            #                 i + 1
+            #             )
+            #
+            #             ic(penalty_result,penalty_result.get('penalty_amount'))
+            #
+            #             total_penalty += penalty_result['penalty_amount']
+            #
+            #             print(penalty_result)
+            #
+            #             penalty_details.append(penalty_result)
+            #
+            #         except Exception as e:
+            #             logger.error(f"Error calculating penalty for action {i + 1}: {str(e)}")
+            #             penalty_details.append({
+            #                 'action_index': i + 1,
+            #                 'error': f"Failed to calculate penalty: {str(e)}",
+            #                 'penalty_amount': 0
+            #             })
+            #
+            #     if action['type'] == 'INSIDE':
+            #         try:
+            #             if check_in and check_out:
+            #
+            #                 attendance = Stuff_Attendance.objects.filter(
+            #                     employee__id=employee_id,
+            #                     check_in__date=date.today(),
+            #                 ).order_by('check_in').first()
+            #
+            #                 if attendance:
+            #                     today = date.today()
+            #                     day_name = today.strftime('%A')
+            #
+            #                     timeline = UserTimeLine.objects.filter(
+            #                         user=attendance.employee,
+            #                         day=day_name
+            #                     ).order_by('start_time').first()
+            #
+            #                     if timeline:
+            #                         actual_check_in_time = attendance.check_in.time()
+            #                         scheduled_start_time = timeline.start_time
+            #
+            #                         actual_datetime = datetime.combine(today, actual_check_in_time)
+            #                         scheduled_datetime = datetime.combine(today, scheduled_start_time)
+            #
+            #                         time_difference = (actual_datetime - scheduled_datetime).total_seconds() / 60
+            #
+            #                         if time_difference < 0:
+            #
+            #                             early_minutes = abs(time_difference)
+            #
+            #                             ic(penalty_info["per_minute_salary"])
+            #
+            #                             amount = early_minutes * penalty_info['per_minute_salary']
+            #
+            #                             total_bonuses += amount
+            #                             employee = timeline.user
+            #                             comment = f"{employee.full_name} ning  {check_in} da  ishga {early_minutes:.2f} minut erta kelganligi uchun {amount:.2f} sum bonus"
+            #
+            #                             penalty_kind = Kind.objects.filter(
+            #                                 action="EXPENSE",
+            #                                 name__icontains="Bonus"
+            #                             ).first()
+            #
+            #                             Finance.objects.create(
+            #                                 action="EXPENSE",
+            #                                 kind=penalty_kind,
+            #                                 amount=amount,
+            #                                 stuff=employee,
+            #                                 comment=comment
+            #                             )
+            #
+            #                             penalty_details.append(total_bonuses)
+            #                         elif time_difference > 0:
+            #                             # User was late
+            #                             late_minutes = time_difference
+            #
+            #
+            #                             print(penalty_info["per_minute_salary"])
+            #
+            #                             amount = late_minutes * penalty_info['per_minute_salary']
+            #
+            #                             total_penalty += amount
+            #                             employee = timeline.user
+            #                             comment = f"{employee.full_name} ning  {check_out} da   ishga {late_minutes :.2f} minut kech kelganligi uchun {amount:.2f} sum jarima"
+            #
+            #                             penalty_kind = Kind.objects.filter(
+            #                                 action="EXPENSE",
+            #                                 name__icontains="Money back"
+            #                             ).first()
+            #
+            #                             Finance.objects.create(
+            #                                 action="INCOME",
+            #                                 kind=penalty_kind,
+            #                                 amount=amount,
+            #                                 stuff=employee,
+            #                                 comment=comment
+            #                             )
+            #
+            #                             penalty_details.append(total_penalty)
+            #                         else:
+            #                             # User was on time
+            #                             print("User was on time")
+            #                             status = "on_time"
+            #                             minutes_difference = 0
+            #
+            #             bonus_results = self._calculate_work_bonus(
+            #                 employee_id,
+            #                 action,
+            #                 penalty_info,
+            #                 i + 1
+            #             )
+            #             total_bonuses += bonus_results['bonus_amount']
+            #             penalty_details.append(bonus_results)
+            #         except Exception as e:
+            #             logger.error(f"Error calculating bonus for action {i + 1}: {str(e)}")
+            #             penalty_details.append({
+            #                 'action_index': i + 1,
+            #                 'error': f"Failed to calculate bonus: {str(e)}",
+            #                 'bonus_amount': 0
+            #             })
 
             return {
                 'total_penalty': round(total_penalty, 2),
