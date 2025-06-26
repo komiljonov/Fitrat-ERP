@@ -14,10 +14,9 @@ def on_create(sender, instance: Archived, created, **kwargs):
             instance.student.save()
 
             comment = Comment.objects.create(
-                asos=None,
                 creator=instance.creator,
                 student=instance.student,
-                monitoring=None,
+                lid=None,
                 comment=f"Arxivlandi {instance.created_at} sanasida, sabab: {instance.reason}",
             )
 
@@ -25,10 +24,9 @@ def on_create(sender, instance: Archived, created, **kwargs):
             instance.lid.is_archived = True
             instance.lid.save()
             comment = Comment.objects.create(
-                asos=None,
                 creator=instance.creator,
                 lid=instance.lid,
-                monitoring=None,
+                student=None,
                 comment=f"Arxivlandi {instance.created_at} sanasida, sabab: {instance.reason}",
             )
 
