@@ -374,12 +374,10 @@ def calculate_amount(user, actions):
 
     effective_times = include_only_ranges(main_ranges, include_ranges)
 
-    print(effective_times)
-
-    total_effective_minutes = effective_times * 60
+    total_minutes = int(effective_times.total_seconds() / 60)
 
 
-    total_eff_amount: float = total_effective_minutes * user_bonus
+    total_eff_amount: float = total_minutes * user_bonus
 
     penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
@@ -390,7 +388,7 @@ def calculate_amount(user, actions):
 
     if total_eff_amount > 0:
         comment = (f"{date.date()} sanasida"
-                   f" {total_effective_minutes} minut ishda bulganingiz uchun bonus.")
+                   f" {total_minutes} minut ishda bulganingiz uchun bonus.")
 
         finance = Finance.objects.create(
             action="EXPENSE",
