@@ -174,7 +174,7 @@ class AttendanceList(ListCreateAPIView):
 
             emp_att.amount=total_amount
             emp_att.save()
-
+        return Response("Attendance created", status=status.HTTP_201_CREATED)
 
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
