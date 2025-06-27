@@ -190,10 +190,10 @@ class AttendanceList(ListCreateAPIView):
 
                 if attendance:
                     emp_att.attendance.add(attendance)
-                    emp_att.amount += att_amount
+                    emp_att.amount = total_amount
+                    emp_att.save()
 
-            emp_att.amount=total_amount
-            emp_att.save()
+
         return Response("Attendance created", status=status.HTTP_201_CREATED)
 
 
