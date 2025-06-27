@@ -11,6 +11,7 @@ from icecream import ic
 
 from data.account.models import CustomUser
 from data.finances.finance.models import Finance, Kind
+from data.finances.timetracker.delta import include_only_ranges, Range
 from data.finances.timetracker.models import UserTimeLine, Stuff_Attendance, Employee_attendance
 from data.student.groups.models import Group
 from data.student.studentgroup.models import StudentGroup
@@ -198,68 +199,68 @@ def get_user_penalty(user, date):
         return per_minute_salary
 
 
-def get_effective_times(user, actions: List[dict]):
-    from datetime import date as Date
-
-    start_dt = actions[0].get("start")
-    if isinstance(start_dt, str):
-        start_dt = datetime.fromisoformat(start_dt)
-
-    action_date: Date = start_dt.date()
-    day = action_date.strftime('%A')
-
-    timeline = UserTimeLine.objects.filter(user=user, day=day).all()
-
-    results = []
-
-
-    for action in actions:
-        start = action.get("start")
-        end = action.get("end")
-
-        if isinstance(start, str):
-            start = datetime.fromisoformat(start)
-        if isinstance(end, str):
-            end = datetime.fromisoformat(end)
-
-        for period in timeline:
-            period_start = datetime.combine(action_date, period.start_time)
-            period_end = datetime.combine(action_date, period.end_time)
-            if period_end <= period_start:
-                period_end += timedelta(days=1)
-
-            if end <= period_start or start >= period_end:
-                continue
-
-            effective_start = max(start, period_start)
-            effective_end = min(end, period_end)
-            effective_duration = (effective_end - effective_start).total_seconds() / 60
-
-            penalty_duration = max(0, (period_start - start).total_seconds() / 60)
-            bonus_duration = max(0, (end - period_end).total_seconds() / 60)
-
-            results.append({
-                "period_start": period_start.time(),
-                "period_end": period_end.time(),
-                "effective_start": effective_start.time(),
-                "effective_end": effective_end.time(),
-                "action_start": start,
-                "action_end": end,
-                "effective_minutes": int(effective_duration),
-                "penalty_minutes": int(penalty_duration),
-                "bonus_minutes": int(bonus_duration),
-            })
-
-    total_effective = sum(r["effective_minutes"] for r in results)
-    total_penalty = sum(r["penalty_minutes"] for r in results)
-    total_bonus = sum(r["bonus_minutes"] for r in results)
-
-    return {
-        "total_effective_minutes": total_effective,
-        "total_penalty_minutes": total_penalty,
-        "total_bonus_minutes": total_bonus,
-        "details": results
-    }
+# def get_effective_times(user, actions: List[dict]):
+#     from datetime import date as Date
+#
+#     start_dt = actions[0].get("start")
+#     if isinstance(start_dt, str):
+#         start_dt = datetime.fromisoformat(start_dt)
+#
+#     action_date: Date = start_dt.date()
+#     day = action_date.strftime('%A')
+#
+#     timeline = UserTimeLine.objects.filter(user=user, day=day).all()
+#
+#     results = []
+#
+#
+#     for action in actions:
+#         start = action.get("start")
+#         end = action.get("end")
+#
+#         if isinstance(start, str):
+#             start = datetime.fromisoformat(start)
+#         if isinstance(end, str):
+#             end = datetime.fromisoformat(end)
+#
+#         for period in timeline:
+#             period_start = datetime.combine(action_date, period.start_time)
+#             period_end = datetime.combine(action_date, period.end_time)
+#             if period_end <= period_start:
+#                 period_end += timedelta(days=1)
+#
+#             if end <= period_start or start >= period_end:
+#                 continue
+#
+#             effective_start = max(start, period_start)
+#             effective_end = min(end, period_end)
+#             effective_duration = (effective_end - effective_start).total_seconds() / 60
+#
+#             penalty_duration = max(0, (period_start - start).total_seconds() / 60)
+#             bonus_duration = max(0, (end - period_end).total_seconds() / 60)
+#
+#             results.append({
+#                 "period_start": period_start.time(),
+#                 "period_end": period_end.time(),
+#                 "effective_start": effective_start.time(),
+#                 "effective_end": effective_end.time(),
+#                 "action_start": start,
+#                 "action_end": end,
+#                 "effective_minutes": int(effective_duration),
+#                 "penalty_minutes": int(penalty_duration),
+#                 "bonus_minutes": int(bonus_duration),
+#             })
+#
+#     total_effective = sum(r["effective_minutes"] for r in results)
+#     total_penalty = sum(r["penalty_minutes"] for r in results)
+#     total_bonus = sum(r["bonus_minutes"] for r in results)
+#
+#     return {
+#         "total_effective_minutes": total_effective,
+#         "total_penalty_minutes": total_penalty,
+#         "total_bonus_minutes": total_bonus,
+#         "details": results
+#     }
 
 
 def calculate_amount(user, actions):
@@ -341,59 +342,21 @@ def calculate_amount(user, actions):
 
     # else:
 
-    effective_times = get_effective_times(user, actions)
-    total_effective_minutes = effective_times.get("total_effective_minutes", 0)
-    total_penalty_minutes = effective_times.get("total_penalty_minutes", 0)
-    total_bonus_minutes = effective_times.get("total_bonus_minutes", 0)
+    timelines = UserTimeLine.objects.filter(user=user, date=check_in_date).all()
 
-    # details = effective_times.get("details", {})
+    main_ranges = []
+    for period in timelines:
+        if period.start_time and period.end_time:  # Optional safety check
+            main_ranges.append(Range(period.start_time, period.end_time))
 
-    # for detail in details:
-    #     penalty_minutes = detail.get("penalty_minutes", 0)
-    #     bonus_minutes = detail.get("bonus_minutes", 0)
-    #
-    #     action_start = detail.get("action_start", 0)
-    #     action_end = detail.get("action_end", 0)
-    #
-    #     effective_time_start = detail.get("effective_start", 0)
-    #     effective_time_end = detail.get("effective_end", 0)
-    #
-    #     penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
-    #     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-    #
-    #     if penalty_minutes > 0:
-    #         penalty_amount = penalty_minutes * user_penalty
-    #
-    #         comment = (f"{action_start} dan {action_end} gacha"
-    #                    f" {penalty_minutes} minut ishda bulmaganingiz uchun jarima.")
-    #
-    #         print("KOmiljonov1109",action_start, penalty_minutes, penalty_amount)
-    #
-    #         finance = Finance.objects.create(
-    #             action="INCOME",
-    #             amount=penalty_amount,
-    #             stuff=user,
-    #             kind=penalty_kind,
-    #             comment=comment
-    #         )
-    #     if bonus_minutes > 0:
-    #         bonus_amount = bonus_minutes * user_bonus
-    #
-    #         comment = (f"{action_start.date()}  - {effective_time_start} dan {effective_time_end} gacha"
-    #                    f" {bonus_minutes} minut ishda bulganingiz uchun bonus.")
-    #
-    #         finance = Finance.objects.create(
-    #             action="EXPENSE",
-    #             amount=bonus_amount,
-    #             stuff=user,
-    #             kind=bonus_kind,
-    #             comment=comment
-    #         )
+    effective_times = include_only_ranges(main_ranges, actions)
+
+    print(effective_times)
+
+    total_effective_minutes = effective_times * 60
+
 
     total_eff_amount: float = total_effective_minutes * user_bonus
-    total_penalty_amount: float = total_penalty_minutes * user_penalty
-    total_bonus_amount: float = total_bonus_minutes * user_bonus
-    total_amount = total_eff_amount - total_penalty_amount + total_bonus_amount
 
     penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
@@ -414,34 +377,7 @@ def calculate_amount(user, actions):
             comment=comment
         )
 
-    if total_penalty_amount > 0:
-        comment = (f"{date.date()} sanasida"
-                   f" {total_penalty_minutes} minut ish vaqtida ishda bulmaganingiz uchun jarima.")
-
-        finance = Finance.objects.create(
-            action="EXPENSE",
-            amount=total_penalty_amount,
-            stuff=user,
-            kind=penalty_kind,
-            comment=comment
-        )
-
-    if total_bonus_amount > 0:
-        comment = (f"{date.date()} sanasida"
-                   f" {total_effective_minutes} minut ishdan tashqari vaqtda ishda bulganingiz uchun bonus.")
-
-        finance = Finance.objects.create(
-            action="EXPENSE",
-            amount=total_bonus_amount,
-            stuff=user,
-            kind=bonus_kind,
-            comment=comment
-        )
-
 
     return {
         "total_eff_amount": total_eff_amount,
-        "total_penalty_amount": total_penalty_amount,
-        "total_bonus_amount": total_bonus_amount,
-        "total_amount": total_amount,
     }
