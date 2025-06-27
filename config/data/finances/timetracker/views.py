@@ -157,7 +157,7 @@ class AttendanceList(ListCreateAPIView):
                 actions=sorted_actions,
             )
 
-            total_amount = att_amount.get("total_amount")
+            total_amount = att_amount.get("total_eff_amount")
 
             emp_att = Employee_attendance.objects.filter(
                 employee=user,
