@@ -328,7 +328,10 @@ def calculate_amount(user, actions):
     total_penalty_minutes = effective_times.get("total_penalty_minutes", 0)
     total_bonus_minutes = effective_times.get("total_bonus_minutes", 0)
 
+    print(total_effective_minutes, total_penalty_minutes, total_bonus_minutes)
+
     details = effective_times.get("details", {})
+    print(details)
 
     for detail in details:
         penalty_minutes = detail.get("penalty_minutes", 0)
@@ -348,7 +351,7 @@ def calculate_amount(user, actions):
             penalty_amount = penalty_minutes * user_penalty
 
             comment = (f"{action_start.date()} - {action_start} dan {action_end} gacha"
-                       f" {penalty_minutes}  ishda bulmaganingiz uchun jarima.")
+                       f" {penalty_minutes} minut ishda bulmaganingiz uchun jarima.")
 
             finance = Finance.objects.create(
                 action="INCOME",
@@ -362,7 +365,7 @@ def calculate_amount(user, actions):
             bonus_amount = bonus_minutes * user_bonus
 
             comment = (f"{action_start.date()} - {effective_time_start} dan {effective_time_end} gacha"
-                       f" {bonus_minutes}  ishda bulmaganingiz uchun bonus.")
+                       f" {bonus_minutes} minut ishda bulmaganingiz uchun bonus.")
 
             finance = Finance.objects.create(
                 action="INCOME",
