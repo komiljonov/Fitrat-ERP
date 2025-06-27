@@ -106,9 +106,11 @@ def get_monthly_per_minute_salary(user_id):
 def delete_user_actions(user, actions):
     for action in actions:
 
+        date = datetime.fromisoformat(actions.get("start"))
+
         daily_att = Employee_attendance.objects.filter(
             employee=user,
-            date=action.get('start').date(),
+            date=date,
         ).first()
 
         if daily_att:
@@ -119,7 +121,7 @@ def delete_user_actions(user, actions):
             employee=user,
             first_check_in=action.get('start'),
             first_check_out=action.get('end'),
-            date=action.get('start').date(),
+            date=date,
         ).first()
 
         if att:
