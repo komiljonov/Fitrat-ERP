@@ -127,10 +127,6 @@ def delete_user_actions(user, actions):
             date=date,
         ).first()
 
-        if daily_att:
-            daily_att.amount = 0
-            daily_att.save()
-
         att = Stuff_Attendance.objects.filter(
             employee=user,
             check_in=action.get('start'),
@@ -139,7 +135,7 @@ def delete_user_actions(user, actions):
         ).first()
 
         if att:
-            delete_finance = delete_user_finances(user, att)
+            delete_finance = delete_user_finances(user, daily_att)
             if delete_finance == 0:
                 print(f"att {att.check_in} finance amount {att.amount} sum deleted...")
 
@@ -149,19 +145,20 @@ def delete_user_actions(user, actions):
     return 0
 
 
-def delete_user_finances(user, attendance):
-    if not isinstance(attendance, Stuff_Attendance):
-        raise ValueError(f"Expected Stuff_Attendance instance, got: {attendance}")
+def delete_user_finances(user, daily_att):
 
-    ic(attendance.amount)
+    ic(daily_att.amount)
 
     finances = Finance.objects.filter(
         stuff=user,
-        amount=attendance.amount,
-        created_at__date=attendance.date
+        amount=daily_att.amount,
+        created_at__date=daily_att.date
     ).first()
 
     if finances:
+
+        daily_att.amount = 0
+        daily_att.save()
 
         ic(finances)
 
