@@ -348,28 +348,21 @@ def calculate_amount(user, actions):
 
     timelines = UserTimeLine.objects.filter(user=user, day=day).all()
 
-    def ensure_date(value):
-        if isinstance(value, date):
-            return value
-        return datetime.fromisoformat(value).date()
-
-    # Main loop
     main_ranges = []
     for period in timelines:
         if period.start_time and period.end_time:
-            period_day = ensure_date(check_in_date)
-
             if isinstance(period.start_time, time):
-                dt_start = datetime.combine(period_day, period.start_time)
+                dt_start = datetime.combine(check_in_date, period.start_time)
             else:
                 dt_start = period.start_time
 
             if isinstance(period.end_time, time):
-                dt_end = datetime.combine(period_day, period.end_time)
+                dt_end = datetime.combine(check_in_date, period.end_time)
             else:
                 dt_end = period.end_time
 
             main_ranges.append(Range(dt_start, dt_end))
+
 
     include_ranges = [
         Range(
