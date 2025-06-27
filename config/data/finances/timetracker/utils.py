@@ -353,7 +353,12 @@ def calculate_amount(user, actions):
         if period.start_time and period.end_time:  # Optional safety check
             main_ranges.append(Range(period.start_time, period.end_time))
 
-    effective_times = include_only_ranges(main_ranges, actions)
+    include_ranges = [
+        Range(datetime.fromisoformat(a["start"]), datetime.fromisoformat(a["end"]))
+        for a in actions
+    ]
+
+    effective_times = include_only_ranges(main_ranges, include_ranges)
 
     print(effective_times)
 
