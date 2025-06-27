@@ -286,7 +286,7 @@ class QuizCheckAPIView(APIView):
 
             print(file, question.get("file", {}).get("id", ""))
 
-            print("question name :",question.get("question", {}))
+            print("question name :",question.get("question", {}) )
 
             print(question.get("question", {}).get("name"))
 
