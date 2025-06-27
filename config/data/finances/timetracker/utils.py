@@ -265,6 +265,7 @@ def get_user_penalty(user, date):
 
 def calculate_amount(user, actions):
     check_in_date = datetime.fromisoformat(actions[0]["start"]).date()
+
     weekday_index = check_in_date.weekday()
 
     user_penalty = get_user_penalty(user, check_in_date)
@@ -342,7 +343,10 @@ def calculate_amount(user, actions):
 
     # else:
 
-    timelines = UserTimeLine.objects.filter(user=user, date=check_in_date).all()
+
+    day = check_in_date.strftime('%A')
+
+    timelines = UserTimeLine.objects.filter(user=user, day=day).all()
 
     main_ranges = []
     for period in timelines:
