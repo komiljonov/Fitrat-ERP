@@ -453,7 +453,7 @@ def calculate_amount(user, actions):
             action="EXPENSE",
             amount=amount,
             stuff=user,
-            kind=bonus_kind,
+            kind=penalty_kind,
             comment=comment
         )
 
