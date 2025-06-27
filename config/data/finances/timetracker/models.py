@@ -84,15 +84,11 @@ class Stuff_Attendance(BaseModel):
     def work_time(self) -> Optional["UserTimeLine"]:
         return UserTimeLine.get_todays_wt(self.employee)
 
+
     @property
     def work_time_opt(self) -> bool:
         return self.work_time is not None
 
-    # @property
-    # def work_time_start_datetime(self) -> Optional[datetime]:
-    #     if not self.work_time:
-    #         return None
-    #     return datetime.combine(self.date, self.work_time.start_time)
 
     @property
     def bonus(self) -> float:
