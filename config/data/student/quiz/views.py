@@ -104,7 +104,7 @@ class QuizCheckAPIView(APIView):
 
         data_length = existing_data.get("total_question_count")
 
-        print(data_length)
+        # print(data_length)
 
         RESULT_FIELDS_MAP = {
             "match_pair_result": "match_pair",
@@ -275,8 +275,17 @@ class QuizCheckAPIView(APIView):
             correct_sequence = [q["name"] for q in question.get("questions", [])][::-1]
 
             user_sequence = user_answer.get("word_sequence", [])
+
+            print(user_sequence)
+            print(correct_sequence)
+
             is_correct = user_sequence == correct_sequence
             file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+
+            print(file, question.get("file", {}).get("id", ""))
+
+            print(question.get("question", {}).get("name"))
+
             file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return is_correct, {
                 "id": question["id"],
