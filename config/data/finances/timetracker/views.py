@@ -159,12 +159,12 @@ class AttendanceList(ListCreateAPIView):
             total_amount = att_amount.get("total_amount")
 
             emp_att = Employee_attendance.objects.filter(
-                employee=employee,
+                employee=user,
                 date=date,
             ).first()
             if not emp_att:
                 emp_att = Employee_attendance.objects.create(
-                    employee=employee,
+                    employee=user,
                     date=date,
                     attendance=[],
                     amount=0
@@ -173,7 +173,7 @@ class AttendanceList(ListCreateAPIView):
             for action in sorted_actions:
 
                 attendance = Stuff_Attendance.objects.create(
-                    employee=employee,
+                    employee=user,
                     check_in=action.get('start'),
                     check_out=action.get('end'),
                     date=date,
