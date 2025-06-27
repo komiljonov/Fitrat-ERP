@@ -350,7 +350,7 @@ def calculate_amount(user, actions):
             comment = (f"{action_start.date()} - {action_start} dan {action_end} gacha"
                        f" {penalty_minutes} minut ishda bulmaganingiz uchun jarima.")
 
-            print("KOmiljonov1109", penalty_amount)
+            print("KOmiljonov1109",action_start, penalty_minutes, penalty_amount)
 
             finance = Finance.objects.create(
                 action="INCOME",
