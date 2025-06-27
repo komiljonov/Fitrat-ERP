@@ -195,20 +195,22 @@ def get_effective_times(user, actions: List[dict]):
 
     results = []
 
-    for period in timeline:
-        period_start = datetime.combine(action_date, period.start_time)
-        period_end = datetime.combine(action_date, period.end_time)
-        if period_end <= period_start:
-            period_end += timedelta(days=1)
+    results = []
 
-        for action in actions:
-            start = action.get("start")
-            end = action.get("end")
+    for action in actions:
+        start = action.get("start")
+        end = action.get("end")
 
-            if isinstance(start, str):
-                start = datetime.fromisoformat(start)
-            if isinstance(end, str):
-                end = datetime.fromisoformat(end)
+        if isinstance(start, str):
+            start = datetime.fromisoformat(start)
+        if isinstance(end, str):
+            end = datetime.fromisoformat(end)
+
+        for period in timeline:
+            period_start = datetime.combine(action_date, period.start_time)
+            period_end = datetime.combine(action_date, period.end_time)
+            if period_end <= period_start:
+                period_end += timedelta(days=1)
 
             if end <= period_start or start >= period_end:
                 continue
@@ -231,6 +233,7 @@ def get_effective_times(user, actions: List[dict]):
                 "penalty_minutes": int(penalty_duration),
                 "bonus_minutes": int(bonus_duration),
             })
+
     total_effective = sum(r["effective_minutes"] for r in results)
     total_penalty = sum(r["penalty_minutes"] for r in results)
     total_bonus = sum(r["bonus_minutes"] for r in results)
