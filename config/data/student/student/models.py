@@ -32,7 +32,7 @@ class Student(BaseModel):
     last_name = models.CharField(max_length=100, null=True, blank=True)
     middle_name = models.CharField(max_length=100, null=True, blank=True)
     phone = models.CharField(max_length=100)
-    date_of_birth = models.DateField(default=timezone.now())
+    date_of_birth = models.DateField(default=timezone.now)
 
     password = models.CharField(max_length=100, null=True, blank=True)
 
@@ -102,7 +102,7 @@ class Student(BaseModel):
     sales_manager: "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True, )
     is_archived = models.BooleanField(default=False, help_text="Is this student archived or not")
     is_frozen = models.BooleanField(default=False, help_text="Is this student frozen or not")
-    frozen_days = models.DateField(default=datetime.today(), null=True, blank=True)
+    frozen_days = models.DateField(default=datetime.today, null=True, blank=True)
     file: "File" = models.ManyToManyField('upload.File', blank=True,
                                           related_name="student_files", help_text="File for this student")
 
