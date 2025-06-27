@@ -350,7 +350,7 @@ def calculate_amount(user, actions):
         if penalty_minutes > 0:
             penalty_amount = penalty_minutes * user_penalty
 
-            comment = (f"{action_start.date()} - {action_start} dan {action_end} gacha"
+            comment = (f"{action_start} dan {action_end} gacha"
                        f" {penalty_minutes} minut ishda bulmaganingiz uchun jarima.")
 
             print("KOmiljonov1109",action_start, penalty_minutes, penalty_amount)
@@ -365,8 +365,8 @@ def calculate_amount(user, actions):
         if bonus_minutes > 0:
             bonus_amount = bonus_minutes * user_bonus
 
-            comment = (f"{action_start.date()} - {effective_time_start} dan {effective_time_end} gacha"
-                       f" {bonus_minutes} minut ishda bulmaganingiz uchun bonus.")
+            comment = (f"{effective_time_start} dan {effective_time_end} gacha"
+                       f" {bonus_minutes} minut ishda bulganingiz uchun bonus.")
 
             finance = Finance.objects.create(
                 action="INCOME",
