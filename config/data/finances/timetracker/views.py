@@ -213,6 +213,9 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
         data = request.data
 
+        ic(data)
+
+
         employee = CustomUser.objects.filter(second_user=data.get("employee")).first()
         if not employee:
             raise NotFound("Employee not found")

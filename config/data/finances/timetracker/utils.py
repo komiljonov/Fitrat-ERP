@@ -402,10 +402,8 @@ def calculate_amount(user, actions):
     if isinstance(date, str):
         date = datetime.fromisoformat(date)
 
-
-
     if total_eff_amount > 0:
-        comment = (f"{date} sanasida"
+        comment = (f"{date.date()} sanasida"
                    f" {total_effective_minutes} minut ishda bulganingiz uchun bonus.")
 
         finance = Finance.objects.create(
@@ -415,10 +413,9 @@ def calculate_amount(user, actions):
             kind=bonus_kind,
             comment=comment
         )
-        ic("effective finnance",{finance.amount})
 
     if total_penalty_amount > 0:
-        comment = (f"{date} sanasida"
+        comment = (f"{date.date()} sanasida"
                    f" {total_penalty_minutes} minut ish vaqtida ishda bulmaganingiz uchun jarima.")
 
         finance = Finance.objects.create(
@@ -428,10 +425,9 @@ def calculate_amount(user, actions):
             kind=penalty_kind,
             comment=comment
         )
-        ic("penalty finnance",{finance.amount})
 
     if total_bonus_amount > 0:
-        comment = (f"{date} sanasida"
+        comment = (f"{date.date()} sanasida"
                    f" {total_effective_minutes} minut ishdan tashqari vaqtda ishda bulganingiz uchun bonus.")
 
         finance = Finance.objects.create(
@@ -441,7 +437,6 @@ def calculate_amount(user, actions):
             kind=bonus_kind,
             comment=comment
         )
-        ic("bonus finnance",{finance.amount})
 
 
     return {
