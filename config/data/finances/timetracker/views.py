@@ -138,6 +138,9 @@ class AttendanceList(ListCreateAPIView):
 
         if actions:
             sorted_actions = sorted(actions, key=lambda x: x['start'])
+
+            print(employee)
+
             att_amount = calculate_amount(
                 user_id=employee,
                 actions=sorted_actions,
