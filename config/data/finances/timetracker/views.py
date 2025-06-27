@@ -82,6 +82,14 @@ class AttendanceList(ListCreateAPIView):
         filters = {}
         if check_out:
             filters['check_out'] = check_out
+
+        user = CustomUser.objects.filter(second_user=employee).first()
+        if not user:
+            return Response(
+                "User not found",
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         if actions is None:
             att = Stuff_Attendance.objects.filter(
                 employee__id=employee,
