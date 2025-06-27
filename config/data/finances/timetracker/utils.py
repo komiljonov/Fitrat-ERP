@@ -106,7 +106,7 @@ def get_monthly_per_minute_salary(user_id):
 def delete_user_actions(user, actions):
     for action in actions:
 
-        date = datetime.fromisoformat(actions.get("start"))
+        date = datetime.fromisoformat(action.get("start"))
 
         daily_att = Employee_attendance.objects.filter(
             employee=user,
