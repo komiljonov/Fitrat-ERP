@@ -23,6 +23,15 @@ class MasteringDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = MasteringSerializer
     permission_classes = [IsAuthenticated]
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save(updater=request.user)
+
+        return Response(serializer.data)
+
 
 class MasteringNoPG(ListAPIView):
     queryset = Mastering.objects.all()

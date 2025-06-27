@@ -92,16 +92,19 @@ class QuizCheckAPIView(APIView):
                 results["summary"]["wrong_count"] += 1
 
             results["details"][qtype].append(result_data)
+
         context = {
             'request': request,
             'user': request.user,
             'custom_data': 'some_value'
         }
+
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
         existing_data = QuizResultSerializer(existing_results,context=context).data if existing_results else None
 
-        data_length = len(existing_data)
+        data_length = existing_data.get("total_question_count")
 
+        # print(data_length)
 
         RESULT_FIELDS_MAP = {
             "match_pair_result": "match_pair",
@@ -242,9 +245,12 @@ class QuizCheckAPIView(APIView):
             user_answer_text = user_answer.get("answer_ids", "")
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
 
+            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+
             return is_correct, {
                 "id": question["id"],
-                # "file": question.get("file", ""),
+                "file": file if file else None,
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_text,
@@ -252,8 +258,11 @@ class QuizCheckAPIView(APIView):
             }
         except Exception as e:
             logger.error(f"Error processing objective test: {str(e)}")
+            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return False, {
                 "id": question["id"],
+                "file" :file if file else None,
                 "correct": False,
                 "error": str(e),
                 "question_text": question.get("question", {}).get("name"),
@@ -264,12 +273,27 @@ class QuizCheckAPIView(APIView):
     def check_cloze_test(self, question, user_answer):
         try:
             correct_sequence = [q["name"] for q in question.get("questions", [])][::-1]
-            user_sequence = user_answer.get("word_sequence", [])
-            is_correct = user_sequence == correct_sequence
 
+            user_sequence = user_answer.get("word_sequence", [])
+
+            print(user_sequence)
+            print(correct_sequence)
+
+            is_correct = user_sequence == correct_sequence
+            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+
+            print(is_correct)
+
+            print(file, question.get("file", {}).get("id", ""))
+
+            print("question name :",question.get("question", {}) )
+
+            print(question.get("question", {}).get("name"))
+
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return is_correct, {
                 "id": question["id"],
-                #                 "file": question.get("file", ""),
+                "file": file if file else None,
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_sequence,
@@ -277,9 +301,12 @@ class QuizCheckAPIView(APIView):
             }
         except Exception as e:
             logger.error(f"Error processing cloze test: {str(e)}")
+            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return False, {
                 "id": question["id"],
                 "correct": False,
+                "file": file if file else None,
                 "error": str(e),
                 "user_answer": user_answer.get("word_sequence", []),
                 "correct_answer": "Error processing correct sequence"
@@ -348,9 +375,13 @@ class QuizCheckAPIView(APIView):
             None
         )
         user_answer = Answer.objects.filter(id=user_answer_id).first().text
+
+        file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+        file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+
         return is_correct, {
             "id": question["id"],
-            "file": question.get("file", {}),
+            "file": file if file else None,
             "question_text": question.get("text", {}).get("name"),
             "correct": is_correct,
             "user_answer": user_answer_id,
@@ -363,9 +394,14 @@ class QuizCheckAPIView(APIView):
         user_choice = user_answer.get("choice", "").lower()
         is_correct = (user_choice == correct_answer)
 
+        file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+        file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+
+
+        print(file)
         return is_correct, {
             "id": question["id"],
-            #             "file": question.get("file", ""),
+            "file": file if file else None,
             "question_text": question.get("question", {}).get("name"),
             "correct": is_correct,
             "comment": question.get("comment", ""),
@@ -483,6 +519,7 @@ class ExamSubjectListCreate(ListCreateAPIView):
             queryset = queryset.filter(lang_national=lang_national)
         return queryset
 
+
 class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = ExamSubject.objects.all()
     serializer_class = ExamSubjectSerializer
@@ -532,6 +569,7 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
 
         # Regular update
         return super().update(request, *args, **kwargs)
+
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
@@ -710,6 +748,7 @@ class ExamListView(ListCreateAPIView):
         lang_foreign = self.request.GET.get("lang_foreign")
         lang_national = self.request.GET.get("lang_national")
         options = self.request.GET.get("options")
+
 
         queryset = Exam.objects.all()
 
@@ -919,6 +958,29 @@ class ExamRegistrationListCreateAPIView(ListCreateAPIView):
         return qs
 
 
+class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
+    queryset = ExamRegistration.objects.all()
+    serializer_class = ExamRegistrationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        # Make mutable copy
+        data = request.data.copy()
+
+        # Auto-activate if `option` is set
+        if "option" in data and data.get("option"):
+            data["status"] = "Active"
+
+        # Pass modified data to serializer
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class ExamRegistrationNoPgAPIView(ListCreateAPIView):
     queryset = ExamRegistration.objects.all()
     serializer_class = ExamRegistrationSerializer
@@ -1077,12 +1139,10 @@ class ExamCertificateAPIView(ListCreateAPIView):
         return qs
 
 
-
 class  ExamOptionCreate(APIView):
     """
     Bulk create or update ExamRegistration entries using ordinary field objects.
     """
-
     def post(self, request, *args, **kwargs):
         data = request.data
 
@@ -1099,6 +1159,7 @@ class  ExamOptionCreate(APIView):
                 exam_id = entry.get("exam")
                 group_id = entry.get("group")
                 option = entry.get("option")
+                subject = entry.get("subject")
 
                 if not student_id or not exam_id or option is None:
                     errors.append({'entry': entry, 'error': 'Missing required fields'})
@@ -1109,7 +1170,7 @@ class  ExamOptionCreate(APIView):
                     exam = Exam.objects.get(id=exam_id)
                     group = Group.objects.get(id=group_id) if group_id else None
 
-                    incoming_options = option if isinstance(option, list) else [option]
+                    incoming_options = subject if isinstance(subject, list) else [subject]
 
                     # Ensure all ExamSubject instances exist
                     existing_subjects = ExamSubject.objects.filter(id__in=incoming_options)
@@ -1122,6 +1183,7 @@ class  ExamOptionCreate(APIView):
                         student=student,
                         exam=exam,
                         group=group,
+                        variation=int(option),
                     ).first()
 
                     if existing_registration:
@@ -1138,7 +1200,7 @@ class  ExamOptionCreate(APIView):
 
             # Create new registrations and set M2M options
             for student, exam, group, option_ids in registrations_to_create:
-                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group,status="Waiting")
+                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group,variation=int(option),status="Waiting")
                 reg.option.set(option_ids)
 
             # Update existing registrations' options

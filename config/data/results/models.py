@@ -54,6 +54,10 @@ class Results(BaseModel):
     max_length=100,null=True,blank=True)
     level = models.CharField(choices=[
         ("Region", "Region"),
+        ("Respublika", "Respublika"),
+        ("Respublika Xususiy", "Respublika Xususiy"),
+        ("International", "International"),
+        ("International personal", "International personal"),
         ("Regional", "Regional"),
     ], max_length=256, null=True, blank=True)
 

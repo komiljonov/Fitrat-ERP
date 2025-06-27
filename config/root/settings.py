@@ -36,6 +36,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://api.fitrat.sector-soft.ru',
     'https://api.ilm.fitrat.sector-soft.ru',
     'https://ilm.fitrat.sector-soft.ru',
+    "https://api.ft.sector-soft.ru",
 ]
 #
 
@@ -253,9 +254,16 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "https://fitrat-erp.vercel.app",
     "https://api.fitrat.sector-soft.ru",
+<<<<<<< HEAD
     "https://fitrat.sector-soft.ru",
     "https://www.fitrat.sector-soft.ru",
 
+=======
+    "https://ilm.fitrat.sector-soft.ru",
+    "https://api.ilm.fitrat.sector-soft.ru",
+    "https://api.ft.sector-soft.ru",
+    "https://ft.sector-soft.ru"
+>>>>>>> 3fc443cedfdfcd6a16cedeb318e8cc95882bb997
 ]
 
 # INTERNAL_IPS = [

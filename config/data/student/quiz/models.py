@@ -290,6 +290,20 @@ class ExamRegistration(BaseModel):
         ("Inactive", "Inactive"),
         ("Waiting","Waiting"),
     ], max_length=255, null=True, blank=True)
+
+    variation = models.CharField(choices=[
+        (1,1),
+        (2,2),
+        (3,3),
+        (4,4),
+        (5,5),
+        (6,6),
+        (7,7),
+        (8,8),
+        (9,9),
+        (10,10),
+    ],max_length=2, null=True, blank=True)
+
     is_participating = models.BooleanField(default=True)
     mark = models.CharField(max_length=255, null=True, blank=True)
     student_comment = models.TextField(null=True, blank=True)

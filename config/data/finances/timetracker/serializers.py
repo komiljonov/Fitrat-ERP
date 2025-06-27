@@ -1,14 +1,10 @@
 from django.db.models import Q
-from icecream import ic
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from data.account.models import CustomUser
-
 from .models import Employee_attendance, UserTimeLine, Stuff_Attendance
-from .utils import calculate_penalty
 from ...account.serializers import UserSerializer
-from ...student.groups.models import Group, Day
+from ...student.groups.models import Group
 
 
 class Stuff_AttendanceSerializer(serializers.ModelSerializer):
@@ -26,36 +22,6 @@ class Stuff_AttendanceSerializer(serializers.ModelSerializer):
             "actions",
             "created_at",
         ]
-    #
-    # def update(self, instance, validated_data):
-    #     check_in = validated_data.get("check_in")
-    #     check_out = validated_data.get("check_out")
-    #
-    #     if check_in or check_out:
-    #         instance.check_in = check_in or instance.check_in
-    #         instance.check_out = check_out or instance.check_out
-    #
-    #         new_penalty = calculate_penalty(instance.employee.id, instance.check_in, instance.check_out)
-    #         previous_penalty = instance.amount
-    #
-    #         if new_penalty != previous_penalty:
-    #             timetracker = Employee_attendance.objects.filter(
-    #                 employee=instance.employee,
-    #                 date=instance.date,
-    #             ).first()
-    #
-    #             if timetracker:
-    #                 timetracker.amount = timetracker.amount - previous_penalty + new_penalty
-    #                 timetracker.save()
-    #
-    #         instance.amount = new_penalty
-    #
-    #     # Update any other fields if needed
-    #     for attr, value in validated_data.items():
-    #         setattr(instance, attr, value)
-    #
-    #     instance.save()
-    #     return instance
 
 
 class TimeTrackerSerializer(serializers.ModelSerializer):
@@ -136,7 +102,7 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["employee"] = UserSerializer(instance.employee).data
-        rep["attendance"] = Stuff_AttendanceSerializer(instance.attendance,many=True).data
+        rep["attendance"] = Stuff_AttendanceSerializer(instance.attendance, many=True).data
         return rep
 
 
@@ -149,8 +115,9 @@ class UserTimeLineBulkSerializer(serializers.ListSerializer):
 
 class UserTimeLineSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(),allow_null=True
+        queryset=CustomUser.objects.all(), allow_null=True
     )
+
     class Meta:
         model = UserTimeLine
         fields = [
@@ -165,5 +132,3 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         list_serializer_class = UserTimeLineBulkSerializer
-
-

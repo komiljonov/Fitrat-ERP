@@ -7,6 +7,7 @@ from rest_framework import serializers
 from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, Exam, Gaps, \
     QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest, ExamCertificate, \
     ExamSubject
+from ..groups.models import Group
 from ..homeworks.models import Homework
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
@@ -490,7 +491,7 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             "is_language": instance.subject.is_language,
         } if instance.subject else None
         rep["certificate"] = FileUploadSerializer(instance.certificate,
-                                                  context=self.context).data if instance.certificate else None
+        context=self.context).data if instance.certificate else None
 
         return rep
 
@@ -561,18 +562,50 @@ class ExamSerializer(serializers.ModelSerializer):
         return count
 
     def to_representation(self, instance):
+        request = self.context.get("request")
+        user = request.user
+
         rep = super().to_representation(instance)
         rep["results"] = FileUploadSerializer(instance.results).data if instance.results else None
 
-        rep["options"] = [
-            {
-                "instance_id": option.id,
-                "id": option.subject.id if option.subject else None,
-                "subject": option.subject.name if option.subject else None,
-                "option": option.options,
-            }
-            for option in instance.options.all()
-        ]
+        if user.role == "TEACHER":
+
+            teacher = Group.objects.filter(teacher=user).first().course.subject
+
+
+            teachers_subject = ExamSubject.objects.filter(
+                subject=teacher
+            ).all()
+
+
+            lang_type = None
+            if teachers_subject:
+                lang_type =teachers_subject.first()
+                print(lang_type.lang_national, lang_type.lang_foreign)
+            if lang_type:
+                if lang_type.lang_national and lang_type.lang_foreign:
+                    lang_value = "both"
+                elif lang_type.lang_national:
+                    lang_value = "national"
+                elif lang_type.lang_foreign:
+                    lang_value = "foreign"
+                else:
+                    lang_value = None
+            else:
+                lang_value = None
+
+            rep["options"] = [
+                {
+                    "instance_id": teachers_subject.first().id,
+                    "id": teachers_subject.first().subject.id if teachers_subject else None,
+                    "subject": teachers_subject.first().subject.name if teachers_subject else None,
+                    "lang_type": lang_value,
+                    "option": teachers_subject.first().options,
+                }
+            ]
+        else:
+            rep["options"] = ExamSubjectSerializer(instance.options, many=True).data
+
         return rep
 
 
@@ -582,6 +615,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
     )
 
     date = serializers.SerializerMethodField()
+    exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), allow_null=True)
 
     class Meta:
         model = ExamRegistration
@@ -591,6 +625,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "exam",
             "status",
             "group",
+            "variation",
             "is_participating",
             "mark",
             "option",
@@ -630,7 +665,9 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                 comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
                         f" {attrs.get('student_comment')} sabab bilan inkor etdingiz va 50000 so'm Jarima berildi.",
             )
-            parents = CustomUser.objects.filter(phone__in=Relatives.objects.filter(student=student).all())
+            relatives_phones = Relatives.objects.filter(student=student).values_list("phone", flat=True)
+            parents = CustomUser.objects.filter(phone__in=relatives_phones)
+
             if parents:
                 for parent in parents:
                     Notification.objects.create(

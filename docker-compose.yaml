@@ -21,7 +21,7 @@ services:
     environment:
       - POSTGRES_DB=fitrat
       - POSTGRES_USER=fitrat_user
-      - POSTGRES_PASSWORD=your_secure_password
+      - POSTGRES_PASSWORD=fitrat_erp_password
       - TZ=Etc/GMT+5
     ports:
       - "5433:5432"
@@ -35,9 +35,9 @@ services:
     container_name: "django_fitrat_ilm"
     build:
       context: ./config
-    command: gunicorn root.wsgi:application --bind 0.0.0.0:8000 --workers 8
+ #   command: gunicorn root.wsgi:application --bind 0.0.0.0:8000 --workers 8
 
-
+    command: python manage.py runserver 0.0.0.0:8000
     volumes: &shared_volumes
       - ./config:/usr/src/app
       - ./utils:/usr/src/app/utils
