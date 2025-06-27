@@ -182,7 +182,7 @@ class AttendanceList(ListCreateAPIView):
                 )
 
                 if attendance:
-                    emp_att.attendance.add(attendance)
+                    emp_att.attendance.set(attendance)
                     emp_att.amount += att_amount
 
             emp_att.amount=total_amount
