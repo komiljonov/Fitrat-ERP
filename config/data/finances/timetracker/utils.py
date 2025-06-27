@@ -329,7 +329,7 @@ def calculate_amount(user, actions):
     total_penalty_minutes = effective_times.get("total_penalty_minutes", 0)
     total_bonus_minutes = effective_times.get("total_bonus_minutes", 0)
 
-    print(effective_times)
+    ic(effective_times)
 
     details = effective_times.get("details", {})
 
