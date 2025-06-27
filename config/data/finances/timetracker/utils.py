@@ -248,6 +248,8 @@ def calculate_amount(user_id: str, actions):
     check_in_date = datetime.fromisoformat(actions[0]["start"]).date()
     weekday_index = check_in_date.weekday()
 
+    print(user)
+
     user_penalty = get_user_penalty(user, check_in_date)
     user_bonus = get_user_bonus(user, check_in_date)
 
