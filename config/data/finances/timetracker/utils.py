@@ -350,8 +350,18 @@ def calculate_amount(user, actions):
 
     main_ranges = []
     for period in timelines:
-        if period.start_time and period.end_time:  # Optional safety check
-            main_ranges.append(Range(period.start_time, period.end_time))
+        if period.start_time and period.end_time:
+            if isinstance(period.start_time, time):
+                dt_start = datetime.combine(period.day, period.start_time)
+            else:
+                dt_start = period.start_time
+
+            if isinstance(period.end_time, time):
+                dt_end = datetime.combine(period.day, period.end_time)
+            else:
+                dt_end = period.end_time
+
+            main_ranges.append(Range(dt_start, dt_end))
 
     include_ranges = [
         Range(
