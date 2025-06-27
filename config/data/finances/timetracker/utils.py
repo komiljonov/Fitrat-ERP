@@ -403,8 +403,8 @@ def calculate_amount(user, actions):
 
     # Ishga erta kelganligi uchun bonus
 
-    first_action_dt = datetime.combine(first_timeline.day, datetime.fromisoformat(first_action.get("start")).time())
-    first_timeline_dt = datetime.combine(first_timeline.day, first_timeline.start_time)
+    first_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(first_action.get("start")).time())
+    first_timeline_dt = datetime.combine(check_in_date, first_timeline.start_time)
 
     come_action = first_action_dt - first_timeline_dt
     come_minutes = come_action.total_seconds() // 60
@@ -437,8 +437,8 @@ def calculate_amount(user, actions):
         )
 
     # Ishdan erta ketgani uchun
-    last_action_dt = datetime.combine(last_timeline.day, datetime.fromisoformat(last_action.get("start")).time())
-    last_timeline_dt = datetime.combine(last_timeline.day, last_timeline.start_time)
+    last_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(last_action.get("start")).time())
+    last_timeline_dt = datetime.combine(check_in_date, last_timeline.start_time)
 
     come_action = last_action_dt - last_timeline_dt
     come_minutes = come_action.total_seconds() // 60
