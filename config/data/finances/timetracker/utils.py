@@ -1,5 +1,5 @@
 import calendar
-from datetime import date
+from datetime import date, time
 from datetime import datetime, timedelta
 from typing import List
 
@@ -354,7 +354,10 @@ def calculate_amount(user, actions):
             main_ranges.append(Range(period.start_time, period.end_time))
 
     include_ranges = [
-        Range(datetime.fromisoformat(a["start"]), datetime.fromisoformat(a["end"]))
+        Range(
+            datetime.combine(check_in_date, time.fromisoformat(a["start"])),
+            datetime.combine(check_in_date, time.fromisoformat(a["end"]))
+        )
         for a in actions
     ]
 
