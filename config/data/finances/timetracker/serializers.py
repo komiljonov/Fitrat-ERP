@@ -1,14 +1,10 @@
 from django.db.models import Q
-from icecream import ic
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from data.account.models import CustomUser
-
 from .models import Employee_attendance, UserTimeLine, Stuff_Attendance
-from .utils import calculate_penalty
 from ...account.serializers import UserSerializer
-from ...student.groups.models import Group, Day
+from ...student.groups.models import Group
 
 
 class Stuff_AttendanceSerializer(serializers.ModelSerializer):
@@ -26,7 +22,6 @@ class Stuff_AttendanceSerializer(serializers.ModelSerializer):
             "actions",
             "created_at",
         ]
-
 
 
 class TimeTrackerSerializer(serializers.ModelSerializer):
@@ -107,7 +102,7 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["employee"] = UserSerializer(instance.employee).data
-        rep["attendance"] = Stuff_AttendanceSerializer(instance.attendance,many=True).data
+        rep["attendance"] = Stuff_AttendanceSerializer(instance.attendance, many=True).data
         return rep
 
 
@@ -120,8 +115,9 @@ class UserTimeLineBulkSerializer(serializers.ListSerializer):
 
 class UserTimeLineSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(),allow_null=True
+        queryset=CustomUser.objects.all(), allow_null=True
     )
+
     class Meta:
         model = UserTimeLine
         fields = [
@@ -136,5 +132,3 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         list_serializer_class = UserTimeLineBulkSerializer
-
-
