@@ -335,54 +335,104 @@ def calculate_amount(user, actions):
 
     ic(effective_times)
 
-    details = effective_times.get("details", {})
+    # details = effective_times.get("details", {})
 
-    for detail in details:
-        penalty_minutes = detail.get("penalty_minutes", 0)
-        bonus_minutes = detail.get("bonus_minutes", 0)
-
-        action_start = detail.get("action_start", 0)
-        action_end = detail.get("action_end", 0)
-
-        effective_time_start = detail.get("effective_start", 0)
-        effective_time_end = detail.get("effective_end", 0)
-
-        penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
-        bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-
-        if penalty_minutes > 0:
-            penalty_amount = penalty_minutes * user_penalty
-
-            comment = (f"{action_start} dan {action_end} gacha"
-                       f" {penalty_minutes} minut ishda bulmaganingiz uchun jarima.")
-
-            print("KOmiljonov1109",action_start, penalty_minutes, penalty_amount)
-
-            finance = Finance.objects.create(
-                action="INCOME",
-                amount=penalty_amount,
-                stuff=user,
-                kind=penalty_kind,
-                comment=comment
-            )
-        if bonus_minutes > 0:
-            bonus_amount = bonus_minutes * user_bonus
-
-            comment = (f"{effective_time_start} dan {effective_time_end} gacha"
-                       f" {bonus_minutes} minut ishda bulganingiz uchun bonus.")
-
-            finance = Finance.objects.create(
-                action="INCOME",
-                amount=bonus_amount,
-                stuff=user,
-                kind=bonus_kind,
-                comment=comment
-            )
+    # for detail in details:
+    #     penalty_minutes = detail.get("penalty_minutes", 0)
+    #     bonus_minutes = detail.get("bonus_minutes", 0)
+    #
+    #     action_start = detail.get("action_start", 0)
+    #     action_end = detail.get("action_end", 0)
+    #
+    #     effective_time_start = detail.get("effective_start", 0)
+    #     effective_time_end = detail.get("effective_end", 0)
+    #
+    #     penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
+    #     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+    #
+    #     if penalty_minutes > 0:
+    #         penalty_amount = penalty_minutes * user_penalty
+    #
+    #         comment = (f"{action_start} dan {action_end} gacha"
+    #                    f" {penalty_minutes} minut ishda bulmaganingiz uchun jarima.")
+    #
+    #         print("KOmiljonov1109",action_start, penalty_minutes, penalty_amount)
+    #
+    #         finance = Finance.objects.create(
+    #             action="INCOME",
+    #             amount=penalty_amount,
+    #             stuff=user,
+    #             kind=penalty_kind,
+    #             comment=comment
+    #         )
+    #     if bonus_minutes > 0:
+    #         bonus_amount = bonus_minutes * user_bonus
+    #
+    #         comment = (f"{action_start.date()}  - {effective_time_start} dan {effective_time_end} gacha"
+    #                    f" {bonus_minutes} minut ishda bulganingiz uchun bonus.")
+    #
+    #         finance = Finance.objects.create(
+    #             action="EXPENSE",
+    #             amount=bonus_amount,
+    #             stuff=user,
+    #             kind=bonus_kind,
+    #             comment=comment
+    #         )
 
     total_eff_amount: float = total_effective_minutes * user_bonus
     total_penalty_amount: float = total_penalty_minutes * user_penalty
     total_bonus_amount: float = total_bonus_minutes * user_bonus
     total_amount = total_eff_amount - total_penalty_amount + total_bonus_amount
+
+    penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
+    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+
+    date = actions[0].get("start")
+    if isinstance(date, str):
+        date = datetime.fromisoformat(date)
+
+
+
+    if total_eff_amount > 0:
+        comment = (f"{date} sanasida"
+                   f" {total_effective_minutes} minut ishda bulganingiz uchun bonus.")
+
+        finance = Finance.objects.create(
+            action="EXPENSE",
+            amount=total_eff_amount,
+            stuff=user,
+            kind=bonus_kind,
+            comment=comment
+        )
+        ic("effective finnance",{finance.amount})
+
+    if total_penalty_amount > 0:
+        comment = (f"{date} sanasida"
+                   f" {total_penalty_minutes} minut ish vaqtida ishda bulmaganingiz uchun jarima.")
+
+        finance = Finance.objects.create(
+            action="EXPENSE",
+            amount=total_penalty_amount,
+            stuff=user,
+            kind=penalty_kind,
+            comment=comment
+        )
+        ic("penalty finnance",{finance.amount})
+
+    if total_bonus_amount > 0:
+        comment = (f"{date} sanasida"
+                   f" {total_effective_minutes} minut ishdan tashqari vaqtda ishda bulganingiz uchun bonus.")
+
+        finance = Finance.objects.create(
+            action="EXPENSE",
+            amount=total_bonus_amount,
+            stuff=user,
+            kind=bonus_kind,
+            comment=comment
+        )
+        ic("bonus finnance",{finance.amount})
+
+
     return {
         "total_eff_amount": total_eff_amount,
         "total_penalty_amount": total_penalty_amount,
