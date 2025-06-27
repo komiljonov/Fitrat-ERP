@@ -153,6 +153,8 @@ def delete_user_finances(user, attendance):
     if not isinstance(attendance, Stuff_Attendance):
         raise ValueError(f"Expected Stuff_Attendance instance, got: {attendance}")
 
+    ic(attendance.amount)
+
     finances = Finance.objects.filter(
         stuff=user,
         amount=attendance.amount,
@@ -160,6 +162,8 @@ def delete_user_finances(user, attendance):
     ).first()
 
     if finances:
+
+        ic(finances)
 
         user.balance -= finances.amount
         user.save()
@@ -397,7 +401,6 @@ def calculate_amount(user, actions):
             kind=bonus_kind,
             comment=comment
         )
-
 
     return {
         "total_eff_amount": total_eff_amount,
