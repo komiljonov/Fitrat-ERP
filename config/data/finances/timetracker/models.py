@@ -29,7 +29,7 @@ class Employee_attendance(BaseModel):
         ], max_length=10, null=True, blank=True
     )
     
-    date = models.DateField(default=timezone.now().date())
+    date = models.DateField(default=timezone.now().date)
 
     amount = models.FloatField(default=0)
 
@@ -51,7 +51,7 @@ class Stuff_Attendance(BaseModel):
 
     not_marked = models.BooleanField(default=False)
 
-    date = models.DateField(default=timezone.now().date())
+    date = models.DateField(default=timezone.now().date)
 
     amount = models.FloatField(default=0)
     actions = models.JSONField(null=True, blank=True)
