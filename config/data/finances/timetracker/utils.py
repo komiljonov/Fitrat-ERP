@@ -244,7 +244,6 @@ def get_effective_times(user, actions: List[dict]):
 
 
 def calculate_amount(user, actions):
-
     check_in_date = datetime.fromisoformat(actions[0]["start"]).date()
     weekday_index = check_in_date.weekday()
 
@@ -321,7 +320,6 @@ def calculate_amount(user, actions):
     #         if early_penalties:
     #             total_penalty += max(early_penalties)
 
-
     # else:
 
     effective_times = get_effective_times(user, actions)
@@ -347,11 +345,12 @@ def calculate_amount(user, actions):
         bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
 
         if penalty_minutes > 0:
-
             penalty_amount = penalty_minutes * user_penalty
 
             comment = (f"{action_start.date()} - {action_start} dan {action_end} gacha"
                        f" {penalty_minutes} minut ishda bulmaganingiz uchun jarima.")
+
+            print("KOmiljonov1109", penalty_amount)
 
             finance = Finance.objects.create(
                 action="INCOME",
@@ -361,7 +360,6 @@ def calculate_amount(user, actions):
                 comment=comment
             )
         if bonus_minutes > 0:
-
             bonus_amount = bonus_minutes * user_bonus
 
             comment = (f"{action_start.date()} - {effective_time_start} dan {effective_time_end} gacha"
@@ -375,9 +373,9 @@ def calculate_amount(user, actions):
                 comment=comment
             )
 
-    total_eff_amount : float = total_effective_minutes * user_bonus
-    total_penalty_amount : float = total_penalty_minutes * user_penalty
-    total_bonus_amount : float = total_bonus_minutes * user_bonus
+    total_eff_amount: float = total_effective_minutes * user_bonus
+    total_penalty_amount: float = total_penalty_minutes * user_penalty
+    total_bonus_amount: float = total_bonus_minutes * user_bonus
     total_amount = total_eff_amount - total_penalty_amount + total_bonus_amount
     return {
         "total_eff_amount": total_eff_amount,
