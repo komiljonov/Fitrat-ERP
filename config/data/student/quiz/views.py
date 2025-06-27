@@ -284,6 +284,8 @@ class QuizCheckAPIView(APIView):
 
             print(file, question.get("file", {}).get("id", ""))
 
+            print("question name :",question.get("question", {}))
+
             print(question.get("question", {}).get("name"))
 
             file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
