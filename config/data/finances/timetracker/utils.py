@@ -1,4 +1,5 @@
 import calendar
+import decimal
 from datetime import date, time
 from datetime import datetime, timedelta
 from typing import List
@@ -162,7 +163,9 @@ def delete_user_finances(user, daily_att):
 
         ic(finances)
 
-        user.balance -= finances.amount
+        amount : decimal.Decimal = finances.amount
+
+        user.balance -= amount
         user.save()
 
         finances.delete()
