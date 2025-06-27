@@ -46,6 +46,9 @@ class Stuff_Attendance(BaseModel):
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
 
+    first_check_in = models.DateTimeField(null=True, blank=True)
+    first_check_out = models.DateTimeField(null=True, blank=True)
+
     not_marked = models.BooleanField(default=False)
 
     date = models.DateField(default=timezone.now().date())
@@ -68,24 +71,28 @@ class Stuff_Attendance(BaseModel):
     def __str__(self):
         return f"{self.check_in} - {self.check_out} - {self.action}"
 
+    def save(self, *args, **kwargs):
+        if self.check_in and not self.first_check_in:
+            self.first_check_in = self.check_in
+
+        if self.check_out and not self.first_check_out:
+            self.first_check_out = self.check_out
+
+        super().save(*args, **kwargs)
+
     @property
     def work_time(self) -> Optional["UserTimeLine"]:
         return UserTimeLine.get_todays_wt(self.employee)
+
 
     @property
     def work_time_opt(self) -> bool:
         return self.work_time is not None
 
-    # @property
-    # def work_time_start_datetime(self) -> Optional[datetime]:
-    #     if not self.work_time:
-    #         return None
-    #     return datetime.combine(self.date, self.work_time.start_time)
 
     @property
     def bonus(self) -> float:
         return self.work_time.bonus if self.work_time else 0.0
-
 
 
 class UserTimeLine(BaseModel):

@@ -71,6 +71,8 @@ class UnitTest(BaseModel):
         null=True,
         blank=True
     )
+    group = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True,related_name="unit_test_group")
+
 
 
 class UnitTestResult(BaseModel):

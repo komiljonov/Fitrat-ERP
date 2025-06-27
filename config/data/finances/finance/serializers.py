@@ -121,6 +121,7 @@ class FinanceSerializer(serializers.ModelSerializer):
             'kind',
             'payment_method',
             'student',
+            "lid",
             'attendance',
             'stuff',
             'creator',
@@ -182,6 +183,11 @@ class FinanceSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
+        if instance.lid:
+            representation["lid"] = {
+                "id" : instance.lid.id,
+                "full_name" : f"{instance.lid.first_name} {instance.lid.last_name}",
+            }
         representation["creator"] = UserListSerializer(instance.creator).data
         representation['kind'] = KindSerializer(instance.kind).data
         representation["student"] = StudentSerializer(instance.student,include_only=["id","first_name","last_name"]).data

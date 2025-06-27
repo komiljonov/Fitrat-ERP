@@ -11,8 +11,14 @@ class UnitTestListCreateAPIView(ListCreateAPIView):
     def get_queryset(self):
         queryset = UnitTest.objects.all()
 
+
+        group = self.request.GET.get('group')
         theme_after = self.request.GET.get('theme_after')
         quiz = self.request.GET.get('quiz')
+
+
+        if group:
+            queryset = queryset.filter(group__id=group)
 
         if theme_after:
             queryset = queryset.filter(theme_after__id=theme_after)
@@ -21,6 +27,32 @@ class UnitTestListCreateAPIView(ListCreateAPIView):
             queryset = queryset.filter(quiz__id=quiz)
 
         return queryset
+
+
+class UnitTestRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = UnitTest.objects.all()
+    serializer_class = UnitTestSerializer
+
+
+class UnitTestResultListCreateAPIView(ListCreateAPIView):
+    queryset = UnitTestResult.objects.all()
+    serializer_class = UnitTestResultSerializer
+
+    def get_queryset(self):
+        student = self.request.GET.get('student')
+        unit = self.request.GET.get('unit')
+        user = self.request.GET.get('user')
+
+
+        qs = UnitTestResult.objects.all()
+
+        if user:
+            qs = qs.filter(student__user__id=user)
+        if student:
+            qs = qs.filter(student__id=student)
+        if unit:
+            qs = qs.filter(unit__id=unit)
+        return qs
 
 
 class QuizRestAPIView(ListCreateAPIView):

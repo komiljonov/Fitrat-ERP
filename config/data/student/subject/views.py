@@ -168,11 +168,14 @@ class ThemePgList(ListCreateAPIView):
 
         ic(group_id, theme_filter)
 
-        group = Group.objects.filter(id=group_id).first()
-        if not group or not group.course:
-            return Theme.objects.none()
+        if group_id:
+            group = Group.objects.filter(id=group_id).first()
+            if not group or not group.course:
+                return Theme.objects.none()
 
-        qs = Theme.objects.filter(course=group.course).order_by('created_at')
+            qs = Theme.objects.filter(course=group.course).order_by('created_at')
+        else:
+            qs = Theme.objects.all()
 
         if search:
             qs = qs.filter(title__icontains=search)
