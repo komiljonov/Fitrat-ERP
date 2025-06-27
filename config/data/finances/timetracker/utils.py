@@ -409,7 +409,7 @@ def calculate_amount(user, actions):
     come_action = first_action_dt - first_timeline_dt
     come_minutes = come_action.total_seconds() // 60
 
-    if come_minutes > 0:
+    if come_minutes < 0:
         comment = (f"{date.date()} sanasida ishga"
                    f" {come_minutes} minut erta kelganingiz uchun bonus.")
 
@@ -422,7 +422,7 @@ def calculate_amount(user, actions):
             kind=bonus_kind,
             comment=comment
         )
-    if come_minutes < 0:
+    if come_minutes > 0:
         comment = (f"{date.date()} sanasida ishga"
                    f" {abs(come_minutes)} minut kech kelganingiz uchun jarima.")
 
@@ -440,14 +440,14 @@ def calculate_amount(user, actions):
     last_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(last_action.get("start")).time())
     last_timeline_dt = datetime.combine(check_in_date, last_timeline.start_time)
 
-    come_action = last_action_dt - last_timeline_dt
-    come_minutes = come_action.total_seconds() // 60
+    late_come_action = last_action_dt - last_timeline_dt
+    late_come_minutes = late_come_action.total_seconds() // 60
 
     if come_minutes < 0:
         comment = (f"{date.date()} sanasida ishdan"
-                   f" {abs(come_minutes)} minut  erta ketganingiz uchun jarima.")
+                   f" {abs(late_come_minutes)} minut  erta ketganingiz uchun jarima.")
 
-        amount = come_minutes * user_bonus
+        amount = late_come_minutes * user_bonus
 
         finance = Finance.objects.create(
             action="EXPENSE",
