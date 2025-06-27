@@ -171,10 +171,18 @@ class AttendanceList(ListCreateAPIView):
 
             for action in sorted_actions:
 
+                check_in = action.get('start')
+                check_out = action.get('end')
+
+                if isinstance(check_in, str):
+                    check_in = datetime.fromisoformat(check_in)
+                if isinstance(check_out, str) and check_out is not None:
+                    check_out = datetime.fromisoformat(check_out)
+
                 attendance = Stuff_Attendance.objects.create(
                     employee=user,
-                    check_in=action.get('start'),
-                    check_out=action.get('end'),
+                    check_in=check_in,
+                    check_out=check_out,
                     date=date,
                     action="In_side" if action.get("type") == "INSIDE" else "Outside",
                     actions=actions,
