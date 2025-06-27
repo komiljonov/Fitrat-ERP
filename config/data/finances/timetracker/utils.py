@@ -245,7 +245,7 @@ def get_effective_times(user, actions: List[dict]):
 def calculate_amount(user_id: str, actions):
     user = CustomUser.objects.filter(id=user_id).first()
 
-    check_in_date = actions[0].get("start").date()
+    check_in_date = datetime.fromisoformat(actions[0]["start"]).date()
     weekday_index = check_in_date.weekday()
 
     user_penalty = get_user_penalty(user, check_in_date)
