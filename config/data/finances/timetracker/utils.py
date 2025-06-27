@@ -212,7 +212,6 @@ def get_effective_times(user, actions: List[dict]):
 
     results = []
 
-    results = []
 
     for action in actions:
         start = action.get("start")
@@ -346,8 +345,6 @@ def calculate_amount(user, actions):
     total_effective_minutes = effective_times.get("total_effective_minutes", 0)
     total_penalty_minutes = effective_times.get("total_penalty_minutes", 0)
     total_bonus_minutes = effective_times.get("total_bonus_minutes", 0)
-
-    ic(effective_times)
 
     # details = effective_times.get("details", {})
 
