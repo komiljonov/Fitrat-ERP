@@ -71,7 +71,7 @@ class AttendanceList(ListCreateAPIView):
     serializer_class = Stuff_AttendanceSerializer
 
     def create(self, request, *args, **kwargs):
-        print(request.data)
+        ic(request.data)
 
         check_in = request.data.get('check_in')
         check_out = request.data.get('check_out')
