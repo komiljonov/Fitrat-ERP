@@ -282,6 +282,8 @@ class QuizCheckAPIView(APIView):
             is_correct = user_sequence == correct_sequence
             file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
 
+            print(is_correct)
+
             print(file, question.get("file", {}).get("id", ""))
 
             print("question name :",question.get("question", {}))
