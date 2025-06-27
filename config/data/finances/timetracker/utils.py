@@ -135,12 +135,15 @@ def delete_user_actions(user, actions):
 
 
 def delete_user_finances(user, attendance):
+    if not isinstance(attendance, Stuff_Attendance):
+        raise ValueError(f"Expected Stuff_Attendance instance, got: {attendance}")
+
     finances = Finance.objects.filter(
         stuff=user,
         amount=attendance.amount,
-        attendance=attendance,
         created_at__date=attendance.date
     ).first()
+
     if finances:
 
         user.balance -= finances.amount
