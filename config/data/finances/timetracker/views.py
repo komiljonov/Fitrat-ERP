@@ -166,7 +166,6 @@ class AttendanceList(ListCreateAPIView):
                 emp_att = Employee_attendance.objects.create(
                     employee=user,
                     date=date,
-                    attendance=[],
                     amount=0
                 )
 
@@ -182,7 +181,7 @@ class AttendanceList(ListCreateAPIView):
                 )
 
                 if attendance:
-                    emp_att.attendance.set(attendance)
+                    emp_att.attendance.add(attendance)
                     emp_att.amount += att_amount
 
             emp_att.amount=total_amount
