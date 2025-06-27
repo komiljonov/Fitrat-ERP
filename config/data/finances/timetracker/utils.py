@@ -392,6 +392,72 @@ def calculate_amount(user, actions):
     if isinstance(date, str):
         date = datetime.fromisoformat(date)
 
+
+    sorted_actions = sorted(actions, key=lambda a: a["start"])
+
+    first_action = sorted_actions[0]
+    last_action = sorted_actions[-1]
+
+    first_timeline = timelines.order_by("start_time").first()
+    last_timeline = timelines.order_by("-start_time").first()
+
+    # Ishga erta kelganligi uchun bonus
+
+    first_action_dt = datetime.combine(first_timeline.day, datetime.fromisoformat(first_action.get("start")).time())
+    first_timeline_dt = datetime.combine(first_timeline.day, first_timeline.start_time)
+
+    come_action = first_action_dt - first_timeline_dt
+    come_minutes = come_action.total_seconds() // 60
+
+    if come_minutes > 0:
+        comment = (f"{date.date()} sanasida ishga"
+                   f" {come_minutes} minut erta kelganingiz uchun bonus.")
+
+        amount = come_minutes * user_bonus
+
+        finance = Finance.objects.create(
+            action="EXPENSE",
+            amount=amount,
+            stuff=user,
+            kind=bonus_kind,
+            comment=comment
+        )
+    if come_minutes < 0:
+        comment = (f"{date.date()} sanasida ishga"
+                   f" {abs(come_minutes)} minut kech kelganingiz uchun jarima.")
+
+        amount = come_minutes * user_penalty
+
+        finance = Finance.objects.create(
+            action="EXPENSE",
+            amount=amount,
+            stuff=user,
+            kind=penalty_kind,
+            comment=comment
+        )
+
+    # Ishdan erta ketgani uchun
+    last_action_dt = datetime.combine(last_timeline.day, datetime.fromisoformat(last_action.get("start")).time())
+    last_timeline_dt = datetime.combine(last_timeline.day, last_timeline.start_time)
+
+    come_action = last_action_dt - last_timeline_dt
+    come_minutes = come_action.total_seconds() // 60
+
+    if come_minutes < 0:
+        comment = (f"{date.date()} sanasida ishdan"
+                   f" {abs(come_minutes)} minut  erta ketganingiz uchun jarima.")
+
+        amount = come_minutes * user_bonus
+
+        finance = Finance.objects.create(
+            action="EXPENSE",
+            amount=amount,
+            stuff=user,
+            kind=bonus_kind,
+            comment=comment
+        )
+
+
     if total_eff_amount > 0:
         comment = (f"{date.date()} sanasida"
                    f" {total_minutes} minut ishda bulganingiz uchun bonus.")
