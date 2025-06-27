@@ -9,6 +9,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now
 from icecream import ic
 from rest_framework import status
+from rest_framework.exceptions import NotFound
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
@@ -20,7 +21,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary, calculate_amount, delete_user_actions
+from .utils import get_monthly_per_minute_salary, calculate_amount, delete_user_actions, get_updated_datas
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 from ...student import attendance
@@ -208,127 +209,35 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
-        try:
-            data = request.data
-            attendance_id = data.get('id') or kwargs.get('pk')
+        instance = self.get_object()
 
-            if not attendance_id:
-                return Response({
-                    'error': 'Attendance id is required for update',
-                    'error_code': 'MISSING_ID'
-                }, status=status.HTTP_400_BAD_REQUEST)
+        data = request.data
 
-            with transaction.atomic():
-                attendance = self.get_object()
-
-                previous_amount = attendance.amount or 0
+        employee = CustomUser.objects.filter(second_user=data.get("employee")).first()
+        if not employee:
+            raise NotFound("Employee not found")
 
 
-                self._remove_existing_financial_impact(attendance, previous_amount)
+        instance.employee = employee
+        instance.check_in = data.get("check_in")
+        instance.check_out = data.get("check_out")
+        instance.date = data.get("date")
+        instance.actions = data.get("actions")
+        instance.not_marked = data.get("not_marked", instance.not_marked)
 
-                serializer = self.get_serializer(attendance, data=data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                updated_attendance = serializer.save()
-                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAisdfhugoidsfhugodisfhugsdfg")
+        updated_json = get_updated_datas(employee,instance.date)
 
-                new_penalty = calculate_amount(
-                    updated_attendance.employee.id,
-                    updated_attendance.check_in,
-                    updated_attendance.check_out
-                ) if updated_attendance.check_in and updated_attendance.check_out else 0
+        calculated_amount = calculate_amount(
+            user=instance.employee,
+            actions=updated_json,
+        )
+        ic(calculated_amount)
 
-                ic(new_penalty)
+        instance.save()
 
-                updated_attendance.amount = new_penalty
-                updated_attendance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-                em_att, created = Employee_attendance.objects.get_or_create(
-                    employee=updated_attendance.employee,
-                    date=updated_attendance.date,
-                    defaults={'amount': 0}
-                )
-
-                if not em_att.attendance.filter(id=updated_attendance.id).exists():
-                    em_att.attendance.add(updated_attendance)
-
-                # Update the amount by first subtracting the previous amount and adding the new penalty
-                em_att.amount = (em_att.amount or 0) - (previous_amount or 0) + (new_penalty or 0)
-                em_att.save()
-
-                return Response({
-                    'success': True,
-                    'attendance': serializer.data,
-                    'penalty_calculation': {
-                        'previous_amount': previous_amount,
-                        'new_amount': new_penalty,
-                        'difference': new_penalty - previous_amount,
-                    },
-                    'message': 'Attendance updated successfully',
-                }, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            logger.error(f"Error updating attendance: {str(e)}", exc_info=True)
-            return Response({
-                'error': str(e),
-                'error_code': 'UPDATE_ERROR'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-    def _remove_existing_financial_impact(self, attendance,previs_amount):
-        """Remove all financial impact of the existing attendance record"""
-        if not attendance.check_in:
-            return
-
-        date = attendance.check_in.date()
-        employee = attendance.employee
-
-        # 1. Remove from Employee_attendance
-        try:
-            employee_att = Employee_attendance.objects.get(
-                employee=employee,
-                date=date
-            )
-            employee_att.amount -= attendance.amount or 0
-            employee_att.save()
-
-            # Remove the attendance record from the relationship
-            employee_att.attendance.remove(attendance)
-
-            # Delete if no more attendance records and amount is zero
-            if employee_att.amount == 0 and not employee_att.attendance.exists():
-                employee_att.delete()
-        except Employee_attendance.DoesNotExist:
-            pass
-
-        # 2. Delete related finance records
-
-        print("finance logs",Finance.objects.filter(
-            stuff=employee,
-            amount=previs_amount,
-        ).first())
-
-        print(employee)
-        print(previs_amount)
-
-        Finance.objects.filter(
-            stuff=employee,
-            created_at__date=date,
-            amount=previs_amount,
-            comment__contains=f"{attendance.check_in.strftime('%H:%M')} dan {attendance.check_out.strftime('%H:%M')}"
-        ).delete()
-
-    def _parse_datetime_safe(self, datetime_str):
-        """Parse datetime string with timezone support"""
-        if isinstance(datetime_str, datetime):
-            return datetime_str
-
-        try:
-            # Handle ISO format with timezone
-            if '+' in datetime_str or '-' in datetime_str.split('T')[-1]:
-                return datetime.fromisoformat(datetime_str)
-            # Handle simple format
-            return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
-        except ValueError as e:
-            raise ValueError(f"Invalid datetime format: {datetime_str}") from e
 
 
 class UserTimeLineList(ListCreateAPIView):
