@@ -149,8 +149,10 @@ class AttendanceList(ListCreateAPIView):
 
             print(employee)
 
+            user = CustomUser.objects.filter(second_user=employee).first()
+
             att_amount = calculate_amount(
-                user_id=employee,
+                user=user,
                 actions=sorted_actions,
             )
 
