@@ -357,7 +357,7 @@ def calculate_amount(user, actions):
     main_ranges = []
     for period in timelines:
         if period.start_time and period.end_time:
-            period_day = ensure_date(period.day)
+            period_day = ensure_date(check_in_date)
 
             if isinstance(period.start_time, time):
                 dt_start = datetime.combine(period_day, period.start_time)
