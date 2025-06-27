@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 from django.db import models
 from django.utils import timezone
+from django.utils.timezone import now
 
 from data.account.models import CustomUser
 from ...command.models import BaseModel
@@ -29,7 +30,7 @@ class Employee_attendance(BaseModel):
         ], max_length=10, null=True, blank=True
     )
     
-    date = models.DateField(default=timezone.now().date)
+    date = models.DateField(default=now)
 
     amount = models.FloatField(default=0)
 
@@ -51,7 +52,7 @@ class Stuff_Attendance(BaseModel):
 
     not_marked = models.BooleanField(default=False)
 
-    date = models.DateField(default=timezone.now().date)
+    date = models.DateField(default=now)
 
     amount = models.FloatField(default=0)
     actions = models.JSONField(null=True, blank=True)
