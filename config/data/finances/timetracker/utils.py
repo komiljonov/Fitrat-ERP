@@ -148,7 +148,6 @@ def delete_user_actions(user, actions):
 
 def delete_user_finances(user, daily_att):
 
-    ic(daily_att.amount)
 
     finances = Finance.objects.filter(
         stuff=user,
@@ -163,7 +162,10 @@ def delete_user_finances(user, daily_att):
 
         ic(finances)
 
-        amount : decimal.Decimal = finances.amount
+        if finances.amount is None:
+            amount = decimal.Decimal("0")
+        else:
+            amount = finances.amount
 
         user.balance -= amount
         user.save()
