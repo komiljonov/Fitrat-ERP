@@ -32,6 +32,20 @@ def localize(dt):
     return make_aware(dt, timezone=TASHKENT_TZ) if not is_aware(dt) else dt.astimezone(TASHKENT_TZ)
 
 
+def get_updated_datas(user, date):
+    user_attendances = Stuff_Attendance.objects.filter(employee=user, date=date)
+
+    all_actions = []
+
+    for att in user_attendances:
+        if isinstance(att.actions, list):
+            all_actions.extend(att.actions)
+
+    all_actions.sort(key=lambda a: a.get("start"))
+
+    return all_actions
+
+
 def get_monthly_per_minute_salary(user_id):
     user = CustomUser.objects.filter(id=user_id).first()
     if not user or not user.salary:
