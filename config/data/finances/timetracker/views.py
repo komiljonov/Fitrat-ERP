@@ -20,7 +20,7 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary, calculate_amount
+from .utils import get_monthly_per_minute_salary, calculate_amount, delete_user_actions
 from ..finance.models import Kind, Finance
 from ...account.models import CustomUser
 from ...student import attendance
@@ -162,6 +162,11 @@ class AttendanceList(ListCreateAPIView):
                 employee=user,
                 date=date,
             ).first()
+
+            delete_actions = delete_user_actions(user,actions)
+            print(delete_actions)
+
+
             if not emp_att:
                 emp_att = Employee_attendance.objects.create(
                     employee=user,
