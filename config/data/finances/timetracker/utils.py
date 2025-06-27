@@ -355,8 +355,8 @@ def calculate_amount(user, actions):
 
     include_ranges = [
         Range(
-            datetime.combine(check_in_date, time.fromisoformat(a["start"])),
-            datetime.combine(check_in_date, time.fromisoformat(a["end"]))
+            datetime.fromisoformat(a["start"]),
+            datetime.fromisoformat(a["end"])
         )
         for a in actions
     ]
