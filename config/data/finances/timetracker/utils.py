@@ -281,195 +281,257 @@ def calculate_amount(user, actions):
     today_uzbek_day = REVERSE_UZBEK_WEEKDAYS.get(weekday_index)
 
     # === CASE 1: Teacher / Assistant
-    # if user.role in ["TEACHER", "ASSISTANT"] and user.calculate_penalties:
-    #     student_groups = StudentGroup.objects.filter(
-    #         Q(group__teacher=user) | Q(group__secondary_teacher=user),
-    #         group__scheduled_day_type__name=today_uzbek_day
-    #     ).select_related('group').prefetch_related('group__scheduled_day_type')
-    #
-    #     matching_groups = []
-    #
-    #     for sg in student_groups:
-    #         group = sg.group
-    #         group_start_dt = timezone.make_aware(datetime.combine(check_in.date(), group.started_at))
-    #         delta_minutes = (check_in - group_start_dt).total_seconds() / 60
-    #         if delta_minutes < 0:
-    #             delta_minutes = 0
-    #
-    #         if delta_minutes <= 60:
-    #             matching_groups.append((group_start_dt, group, delta_minutes))
-    #
-    #     if matching_groups:
-    #         matching_groups.sort(key=lambda x: x[2])  # by lateness
-    #         group_start_dt, group, late_minutes = matching_groups[0]
-    #
-    #         if late_minutes > 0:
-    #             penalty_amount = late_minutes * per_minute_salary
-    #             total_penalty += penalty_amount
-    #
-    #             bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-    #             finance = Finance.objects.create(
-    #                 action="EXPENSE",
-    #                 kind=bonus_kind,
-    #                 amount=penalty_amount,
-    #                 stuff=user,
-    #                 comment=f"{check_in.date()} - {check_in.time()} da ishga {late_minutes :.2f} minut kechikib kelganingiz uchun {penalty_amount:.2f} sum jarima yozildi! "
-    #             )
-    #
-    #             print(
-    #                 f"Late penalty for {user} at group {group.name}: {penalty_amount:.2f} ({late_minutes:.0f} min late)")
-    #
-    #     # === Check-out Penalty
-    #     if check_out:
-    #         early_penalties = []
-    #
-    #         for sg in student_groups:
-    #             group = sg.group
-    #             group_end_dt = localize(datetime.combine(check_out.date(), group.ended_at))
-    #
-    #             if check_out < group_end_dt:
-    #                 early_minutes = (group_end_dt - check_out).total_seconds() / 60
-    #                 if early_minutes > 0:
-    #                     penalty = early_minutes * per_minute_salary
-    #                     early_penalties.append(penalty)
-    #
-    #                     bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-    #                     finance = Finance.objects.create(
-    #                         action="EXPENSE",
-    #                         kind=bonus_kind,
-    #                         amount=penalty,
-    #                         stuff=user,
-    #                         comment=f"{check_in.date()} - {check_out.time()} da ishdan  {early_minutes:.2f} minut erta ketganingiz uchun {penalty:.2f} sum jarima yozildi! "
-    #                     )
-    #                     print(
-    #                         f"Early leave penalty for {user} from group {group.name}: {penalty:.2f} ({early_minutes:.0f} min early)")
-    #
-    #         if early_penalties:
-    #             total_penalty += max(early_penalties)
+    if user.role in ["TEACHER", "ASSISTANT"] and user.calculate_penalties:
+        student_groups = StudentGroup.objects.filter(
+            Q(group__teacher=user) | Q(group__secondary_teacher=user),
+            group__scheduled_day_type__name=today_uzbek_day
+        ).select_related('group').prefetch_related('group__scheduled_day_type')
 
-    # else:
+        matching_groups = []
+        for period in student_groups:
+            if period.group.started_at and period.group.ended_at:
+                if isinstance(period.group.started_at, time):
+                    dt_start = datetime.combine(check_in_date, period.group.started_at)
+                else:
+                    dt_start = period.group.started_at
 
+                if isinstance(period.group.ended_at, time):
+                    dt_end = datetime.combine(check_in_date, period.group.ended_at)
+                else:
+                    dt_end = period.group.ended_at
 
-    day = check_in_date.strftime('%A')
+                matching_groups.append(Range(dt_start, dt_end))
 
-    timelines = UserTimeLine.objects.filter(user=user, day=day).all()
+        # Calculating the range of users
 
-    main_ranges = []
-    for period in timelines:
-        if period.start_time and period.end_time:
-            if isinstance(period.start_time, time):
-                dt_start = datetime.combine(check_in_date, period.start_time)
-            else:
-                dt_start = period.start_time
+        include_ranges = [
+            Range(
+                datetime.fromisoformat(a["start"]),
+                datetime.fromisoformat(a["end"])
+            )
+            for a in actions
+        ]
 
-            if isinstance(period.end_time, time):
-                dt_end = datetime.combine(check_in_date, period.end_time)
-            else:
-                dt_end = period.end_time
+        effective_times = include_only_ranges(matching_groups, include_ranges)
 
-            main_ranges.append(Range(dt_start, dt_end))
+        print(effective_times)
+        total_minutes = int(effective_times.total_seconds() / 60)
 
+        total_eff_amount: float = total_minutes * user_bonus
 
-    include_ranges = [
-        Range(
-            datetime.fromisoformat(a["start"]),
-            datetime.fromisoformat(a["end"])
-        )
-        for a in actions
-    ]
+        penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
+        bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
 
-    effective_times = include_only_ranges(main_ranges, include_ranges)
+        date = actions[0].get("start")
+        if isinstance(date, str):
+            date = datetime.fromisoformat(date)
 
-    total_minutes = int(effective_times.total_seconds() / 60)
+        sorted_actions = sorted(actions, key=lambda a: a["start"])
 
+        first_action = sorted_actions[0]
+        last_action = sorted_actions[-1]
 
-    total_eff_amount: float = total_minutes * user_bonus
+        first_timeline = sorted(student_groups, key=lambda sg: sg.group.started_at or datetime.max)[0]
+        last_timeline = sorted(student_groups, key=lambda sg: sg.group.started_at or datetime.min)[-1]
 
-    penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
-    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+        # Ishga erta kelganligi uchun bonus
 
-    date = actions[0].get("start")
-    if isinstance(date, str):
-        date = datetime.fromisoformat(date)
+        first_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(first_action.get("start")).time())
+        first_timeline_dt = datetime.combine(check_in_date, first_timeline.group.started_at)
 
+        come_action = first_action_dt - first_timeline_dt
+        come_minutes = come_action.total_seconds() // 60
 
-    sorted_actions = sorted(actions, key=lambda a: a["start"])
+        if come_minutes < 0:
+            comment = (f"{date.date()} sanasida ishga"
+                       f" {come_minutes} minut erta kelganingiz uchun bonus.")
 
-    first_action = sorted_actions[0]
-    last_action = sorted_actions[-1]
+            amount = come_minutes * user_bonus
 
-    first_timeline = timelines.order_by("start_time").first()
-    last_timeline = timelines.order_by("-start_time").first()
+            finance = Finance.objects.create(
+                action="EXPENSE",
+                amount=amount,
+                stuff=user,
+                kind=bonus_kind,
+                comment=comment
+            )
 
-    # Ishga erta kelganligi uchun bonus
+        if come_minutes > 0:
+            comment = (f"{date.date()} sanasida ishga"
+                       f" {abs(come_minutes)} minut kech kelganingiz uchun jarima.")
 
-    first_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(first_action.get("start")).time())
-    first_timeline_dt = datetime.combine(check_in_date, first_timeline.start_time)
+            amount = come_minutes * user_penalty
 
-    come_action = first_action_dt - first_timeline_dt
-    come_minutes = come_action.total_seconds() // 60
+            finance = Finance.objects.create(
+                action="EXPENSE",
+                amount=amount,
+                stuff=user,
+                kind=penalty_kind,
+                comment=comment
+            )
 
-    if come_minutes < 0:
-        comment = (f"{date.date()} sanasida ishga"
-                   f" {come_minutes} minut erta kelganingiz uchun bonus.")
+        # Ishdan erta ketgani uchun
+        last_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(last_action.get("start")).time())
+        last_timeline_dt = datetime.combine(check_in_date, last_timeline.started_at)
 
-        amount = come_minutes * user_bonus
+        late_come_action = last_action_dt - last_timeline_dt
+        late_come_minutes = late_come_action.total_seconds() // 60
 
-        finance = Finance.objects.create(
-            action="EXPENSE",
-            amount=amount,
-            stuff=user,
-            kind=bonus_kind,
-            comment=comment
-        )
-    if come_minutes > 0:
-        comment = (f"{date.date()} sanasida ishga"
-                   f" {abs(come_minutes)} minut kech kelganingiz uchun jarima.")
+        if come_minutes < 0:
+            comment = (f"{date.date()} sanasida ishdan"
+                       f" {abs(late_come_minutes)} minut  erta ketganingiz uchun jarima.")
 
-        amount = come_minutes * user_penalty
+            amount = late_come_minutes * user_bonus
 
-        finance = Finance.objects.create(
-            action="EXPENSE",
-            amount=amount,
-            stuff=user,
-            kind=penalty_kind,
-            comment=comment
-        )
+            finance = Finance.objects.create(
+                action="EXPENSE",
+                amount=amount,
+                stuff=user,
+                kind=penalty_kind,
+                comment=comment
+            )
 
-    # Ishdan erta ketgani uchun
-    last_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(last_action.get("start")).time())
-    last_timeline_dt = datetime.combine(check_in_date, last_timeline.start_time)
+        if total_eff_amount > 0:
+            comment = (f"{date.date()} sanasida"
+                       f" {total_minutes} minut ishda bulganingiz uchun bonus.")
 
-    late_come_action = last_action_dt - last_timeline_dt
-    late_come_minutes = late_come_action.total_seconds() // 60
+            finance = Finance.objects.create(
+                action="EXPENSE",
+                amount=total_eff_amount,
+                stuff=user,
+                kind=bonus_kind,
+                comment=comment
+            )
 
-    if come_minutes < 0:
-        comment = (f"{date.date()} sanasida ishdan"
-                   f" {abs(late_come_minutes)} minut  erta ketganingiz uchun jarima.")
-
-        amount = late_come_minutes * user_bonus
-
-        finance = Finance.objects.create(
-            action="EXPENSE",
-            amount=amount,
-            stuff=user,
-            kind=penalty_kind,
-            comment=comment
-        )
+        return {
+            "total_eff_amount": total_eff_amount,
+        }
 
 
-    if total_eff_amount > 0:
-        comment = (f"{date.date()} sanasida"
-                   f" {total_minutes} minut ishda bulganingiz uchun bonus.")
+    else:
 
-        finance = Finance.objects.create(
-            action="EXPENSE",
-            amount=total_eff_amount,
-            stuff=user,
-            kind=bonus_kind,
-            comment=comment
-        )
+        day = check_in_date.strftime('%A')
 
-    return {
-        "total_eff_amount": total_eff_amount,
-    }
+        timelines = UserTimeLine.objects.filter(user=user, day=day).all()
+
+        main_ranges = []
+        for period in timelines:
+            if period.start_time and period.end_time:
+                if isinstance(period.start_time, time):
+                    dt_start = datetime.combine(check_in_date, period.start_time)
+                else:
+                    dt_start = period.start_time
+
+                if isinstance(period.end_time, time):
+                    dt_end = datetime.combine(check_in_date, period.end_time)
+                else:
+                    dt_end = period.end_time
+
+                main_ranges.append(Range(dt_start, dt_end))
+
+
+        # Calculating the range of users
+
+        include_ranges = [
+            Range(
+                datetime.fromisoformat(a["start"]),
+                datetime.fromisoformat(a["end"])
+            )
+            for a in actions
+        ]
+
+        effective_times = include_only_ranges(main_ranges, include_ranges)
+
+        total_minutes = int(effective_times.total_seconds() / 60)
+
+
+        total_eff_amount: float = total_minutes * user_bonus
+
+        penalty_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Money back").first()
+        bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+
+        date = actions[0].get("start")
+        if isinstance(date, str):
+            date = datetime.fromisoformat(date)
+
+
+        sorted_actions = sorted(actions, key=lambda a: a["start"])
+
+        first_action = sorted_actions[0]
+        last_action = sorted_actions[-1]
+
+        first_timeline = timelines.order_by("start_time").first()
+        last_timeline = timelines.order_by("-start_time").first()
+
+        # Ishga erta kelganligi uchun bonus
+
+        first_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(first_action.get("start")).time())
+        first_timeline_dt = datetime.combine(check_in_date, first_timeline.start_time)
+
+        come_action = first_action_dt - first_timeline_dt
+        come_minutes = come_action.total_seconds() // 60
+
+        if come_minutes < 0:
+            comment = (f"{date.date()} sanasida ishga"
+                       f" {come_minutes} minut erta kelganingiz uchun bonus.")
+
+            amount = come_minutes * user_bonus
+
+            finance = Finance.objects.create(
+                action="EXPENSE",
+                amount=amount,
+                stuff=user,
+                kind=bonus_kind,
+                comment=comment
+            )
+        if come_minutes > 0:
+            comment = (f"{date.date()} sanasida ishga"
+                       f" {abs(come_minutes)} minut kech kelganingiz uchun jarima.")
+
+            amount = come_minutes * user_penalty
+
+            finance = Finance.objects.create(
+                action="EXPENSE",
+                amount=amount,
+                stuff=user,
+                kind=penalty_kind,
+                comment=comment
+            )
+
+        # Ishdan erta ketgani uchun
+        last_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(last_action.get("start")).time())
+        last_timeline_dt = datetime.combine(check_in_date, last_timeline.start_time)
+
+        late_come_action = last_action_dt - last_timeline_dt
+        late_come_minutes = late_come_action.total_seconds() // 60
+
+        if come_minutes < 0:
+            comment = (f"{date.date()} sanasida ishdan"
+                       f" {abs(late_come_minutes)} minut  erta ketganingiz uchun jarima.")
+
+            amount = late_come_minutes * user_bonus
+
+            finance = Finance.objects.create(
+                action="EXPENSE",
+                amount=amount,
+                stuff=user,
+                kind=penalty_kind,
+                comment=comment
+            )
+
+
+        if total_eff_amount > 0:
+            comment = (f"{date.date()} sanasida"
+                       f" {total_minutes} minut ishda bulganingiz uchun bonus.")
+
+            finance = Finance.objects.create(
+                action="EXPENSE",
+                amount=total_eff_amount,
+                stuff=user,
+                kind=bonus_kind,
+                comment=comment
+            )
+
+        return {
+            "total_eff_amount": total_eff_amount,
+        }
