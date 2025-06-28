@@ -32,6 +32,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
             "photo",
             "ball",
             "choice",
+            "test_checked",
             "is_active",
             "created_at"
         ]

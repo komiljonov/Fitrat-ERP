@@ -504,6 +504,9 @@ class QuizCheckAPIView(APIView):
                 choice="Test"
             )
 
+            homework.test_checked = True
+            homework.save()
+
 
             if homework:
                 Points.objects.create(
