@@ -494,6 +494,8 @@ class QuizCheckAPIView(APIView):
             return
 
         try:
+            homework = Homework.objects.filter(theme=theme).first()
+
             mastering = Mastering.objects.create(
                 theme=theme,
                 student=student,
@@ -502,7 +504,7 @@ class QuizCheckAPIView(APIView):
                 choice="Test"
             )
 
-            homework = Homework.objects.filter(theme=theme).first()
+
             if homework:
                 Points.objects.create(
                     point=ball,
