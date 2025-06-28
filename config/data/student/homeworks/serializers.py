@@ -82,7 +82,8 @@ class HomeworkSerializer(serializers.ModelSerializer):
         offline_avg = mean(offline_marks) if offline_marks else 0
         overall_avg = round(mean(all_marks), 2) if all_marks else 0
 
-
+        if overall_avg == 0:
+            ball = 0
         if overall_avg <= 20:
             ball = 1
         elif overall_avg <= 40:
