@@ -16,6 +16,11 @@ class StudentGroup(BaseModel):
 
     # is_archiver : bool = models.BooleanField(default=False)
 
+    homework_type = models.CharField(choices=[
+        ("Online", "Online"),
+        ("Offline", "Offline"),
+    ],null=True,blank=True,max_length=20)
+
     class Meta:
         verbose_name = "Add Group"
         verbose_name_plural = "Add Groups"
