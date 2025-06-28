@@ -615,7 +615,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
     )
 
     date = serializers.SerializerMethodField()
-    exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), allow_null=True)
+    exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), allow_null=True, required=False)
 
     class Meta:
         model = ExamRegistration
@@ -639,7 +639,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
         return exam.date if exam else None
 
     def validate(self, attrs):
-        exam = attrs.get("exam")
+        exam =  getattr(self.instance, "exam", None)
         student = attrs.get("student")
 
         if not exam:
