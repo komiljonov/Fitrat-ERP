@@ -19,7 +19,7 @@ class StudentGroup(BaseModel):
     homework_type = models.CharField(choices=[
         ("Online", "Online"),
         ("Offline", "Offline"),
-    ],null=True,blank=True,max_length=20)
+    ],default="Offline",null=True,blank=True,max_length=20)
 
     class Meta:
         verbose_name = "Add Group"
