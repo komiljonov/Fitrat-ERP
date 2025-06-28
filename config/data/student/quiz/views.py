@@ -292,13 +292,11 @@ class QuizCheckAPIView(APIView):
             else:
                 file_id = None
 
-
-            print(is_correct)
-            print(file, file_id)
-
-            question_data = question.get("question", {})
-            print("question name :", question_data)
-            question_name = question_data.get("name", "")
+            question_name = ""
+            if isinstance(question.get("question"), dict):
+                question_name = question["question"].get("name", "")
+            elif isinstance(question.get("sentence"), dict):
+                question_name = question["sentence"].get("text", "")
 
             print(question_name)
 
