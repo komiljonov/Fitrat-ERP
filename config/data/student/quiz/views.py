@@ -286,7 +286,12 @@ class QuizCheckAPIView(APIView):
             print(question)
 
             file_id = question.get("file", {}).get("id", "")
-            file = File.objects.filter(id=file_id).first()
+            file = None
+            if file_id:
+                file = File.objects.filter(id=file_id).first()
+            else:
+                file_id = None
+
 
             print(is_correct)
             print(file, file_id)
