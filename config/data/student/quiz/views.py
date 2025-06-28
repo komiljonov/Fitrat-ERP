@@ -285,13 +285,12 @@ class QuizCheckAPIView(APIView):
 
             print(question)
 
-            file_id = question.get("file", {}).get("id", "")
-            file = None
-            if file_id:
-                file = File.objects.filter(id=file_id).first()
-            else:
-                file_id = None
+            # Safe file handling
+            file_data_raw = question.get("file")
+            file_id = file_data_raw.get("id") if isinstance(file_data_raw, dict) else None
+            file = File.objects.filter(id=file_id).first() if file_id else None
 
+            # Get question name
             question_name = ""
             if isinstance(question.get("question"), dict):
                 question_name = question["question"].get("name", "")
@@ -314,8 +313,9 @@ class QuizCheckAPIView(APIView):
         except Exception as e:
             logger.error(f"Error processing cloze test: {str(e)}")
 
-            file_id = question.get("file", {}).get("id", "") if isinstance(question, dict) else ""
-            file = File.objects.filter(id=file_id).first()
+            file_data_raw = question.get("file") if isinstance(question, dict) else None
+            file_id = file_data_raw.get("id") if isinstance(file_data_raw, dict) else None
+            file = File.objects.filter(id=file_id).first() if file_id else None
             file_data = FileUploadSerializer(file, context={'request': self.request}).data if file else None
 
             return False, {
