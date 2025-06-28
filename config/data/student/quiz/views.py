@@ -272,43 +272,53 @@ class QuizCheckAPIView(APIView):
 
     def check_cloze_test(self, question, user_answer):
         try:
-            correct_sequence = [q["name"] for q in question.get("questions", [])][::-1]
+            if not isinstance(question, dict) or not isinstance(user_answer, dict):
+                raise ValueError("Invalid input: 'question' or 'user_answer' is not a dictionary")
 
+            correct_sequence = [q.get("name", "") for q in question.get("questions", [])][::-1]
             user_sequence = user_answer.get("word_sequence", [])
 
             print(user_sequence)
             print(correct_sequence)
 
             is_correct = user_sequence == correct_sequence
-            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
+
+            file_id = question.get("file", {}).get("id", "")
+            file = File.objects.filter(id=file_id).first()
 
             print(is_correct)
+            print(file, file_id)
 
-            print(file, question.get("file", {}).get("id", ""))
+            question_data = question.get("question", {})
+            print("question name :", question_data)
+            question_name = question_data.get("name", "")
 
-            print("question name :",question.get("question", {}) )
+            print(question_name)
 
-            print(question.get("question", {}).get("name"))
+            file_data = FileUploadSerializer(file, context={'request': self.request}).data if file else None
 
-            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
             return is_correct, {
-                "id": question["id"],
-                "file": file if file else None,
-                "question_text": question.get("question", {}).get("name"),
+                "id": question.get("id"),
+                "file": file_data,
+                "question_text": question_name,
                 "correct": is_correct,
                 "user_answer": user_sequence,
                 "correct_answer": correct_sequence
             }
+
         except Exception as e:
             logger.error(f"Error processing cloze test: {str(e)}")
-            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
-            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+
+            file_id = question.get("file", {}).get("id", "") if isinstance(question, dict) else ""
+            file = File.objects.filter(id=file_id).first()
+            file_data = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+
             return False, {
-                "id": question["id"],
+                "id": question.get("id") if isinstance(question, dict) else None,
                 "correct": False,
-                "file": file if file else None,
+                "file": file_data,
                 "error": str(e),
-                "user_answer": user_answer.get("word_sequence", []),
+                "user_answer": user_answer.get("word_sequence", []) if isinstance(user_answer, dict) else [],
                 "correct_answer": "Error processing correct sequence"
             }
 
