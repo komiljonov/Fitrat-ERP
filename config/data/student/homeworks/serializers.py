@@ -84,7 +84,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
 
         if overall_avg == 0:
             ball = 0
-        if overall_avg <= 20:
+        elif overall_avg <= 20:
             ball = 1
         elif overall_avg <= 40:
             ball = 2
