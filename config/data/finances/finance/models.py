@@ -24,6 +24,10 @@ class Casher(BaseModel):
         default='ADMINISTRATOR',
         max_length=20,
     )
+
+    is_archived = models.BooleanField(default=False)
+    comment = models.TextField(blank=True)
+
     def __str__(self):
         return f"{self.user.phone} {self.role}"
 
