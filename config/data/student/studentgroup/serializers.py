@@ -32,6 +32,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'group',
             'lid',
             'student',
+            "homework_type",
             "lesson_count",
             "current_theme",
             "group_price",
