@@ -62,7 +62,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
 
         mastering = Mastering.objects.filter(
             student=student,
-            type="Test",
+            choice="Test",
             theme=obj.theme
         ).first()
 
