@@ -7,6 +7,6 @@ class ArchivedConfig(AppConfig):
     name = 'data.lid.archived'
 
 
-    # def ready(self):
-    #     import data.lid.archived.signals
+    def ready(self):
+        import data.lid.archived.signals
 
