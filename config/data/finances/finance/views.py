@@ -41,7 +41,7 @@ class CasherListCreateAPIView(ListCreateAPIView):
 
         filter = {}
         if is_archived:
-            filter['archived'] = is_archived.capitalize()
+            filter['is_archived'] = is_archived.capitalize()
         if role:
             filter['role'] = role
 

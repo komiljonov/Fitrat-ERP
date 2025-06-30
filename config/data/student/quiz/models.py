@@ -10,6 +10,11 @@ from data.student.subject.models import Theme
 from data.upload.models import File
 from data.student.groups.models import Group
 
+
+
+def after_4_days():
+    return datetime.today() + timedelta(days=4)
+
 class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -170,7 +175,7 @@ class Cloze_Test(BaseModel):
                                      related_name='clozetest_quiz')
     questions: "QuizGaps" = models.ManyToManyField("quiz.QuizGaps", related_name='cloze_questions')
     sentence: "Answer" = models.ForeignKey("quiz.Answer", on_delete=models.SET_NULL, null=True, blank=True,
-                                         related_name='cloze_answer')
+                                           related_name='cloze_answer')
 
     comment = models.TextField(blank=True, null=True)
 
@@ -216,10 +221,10 @@ class True_False(BaseModel):
 
 
 class ExamSubject(BaseModel):
-    subject : "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
-                                related_name='exam_subject_quiz')
+    subject: "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='exam_subject_quiz')
 
-    options = models.CharField(default=1,max_length=2, null=True, blank=True)
+    options = models.CharField(default=1, max_length=2, null=True, blank=True)
 
     lang_foreign = models.BooleanField(default=False)
     lang_national = models.BooleanField(default=False)
@@ -232,9 +237,7 @@ class ExamSubject(BaseModel):
     certificate_expire_date = models.DateField(null=True, blank=True)
 
 
-
 class Exam(BaseModel):
-
     name = models.CharField(default="Test imtihoni", null=False, blank=False)
 
     quiz: "Quiz" = models.ForeignKey("quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True,
@@ -271,7 +274,7 @@ class Exam(BaseModel):
 
     is_language = models.BooleanField(default=False)
 
-    date = models.DateField(default=datetime.today() + timedelta(days=4))
+    date = models.DateField(default=after_4_days)
     start_time = models.TimeField(null=True, blank=True)
     end_time = models.TimeField(null=True, blank=True)
 
@@ -288,28 +291,28 @@ class ExamRegistration(BaseModel):
     status = models.CharField(choices=[
         ("Active", "Active"),
         ("Inactive", "Inactive"),
-        ("Waiting","Waiting"),
+        ("Waiting", "Waiting"),
     ], max_length=255, null=True, blank=True)
 
     variation = models.CharField(choices=[
-        (1,1),
-        (2,2),
-        (3,3),
-        (4,4),
-        (5,5),
-        (6,6),
-        (7,7),
-        (8,8),
-        (9,9),
-        (10,10),
-    ],max_length=2, null=True, blank=True)
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (5, 5),
+        (6, 6),
+        (7, 7),
+        (8, 8),
+        (9, 9),
+        (10, 10),
+    ], max_length=2, null=True, blank=True)
 
     is_participating = models.BooleanField(default=True)
     mark = models.CharField(max_length=255, null=True, blank=True)
     student_comment = models.TextField(null=True, blank=True)
-    group : "Group" = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True,
-                                        related_name='registration_group')
-    option : "ExamSubject" = models.ManyToManyField("quiz.ExamSubject",related_name='registration_option_subjects')
+    group: "Group" = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='registration_group')
+    option: "ExamSubject" = models.ManyToManyField("quiz.ExamSubject", related_name='registration_option_subjects')
 
     # def __str__(self):
     #     return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
@@ -323,8 +326,8 @@ class ExamCertificate(BaseModel):
     certificate: "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,
                                             related_name='registered_certificate_of_student')
 
-    subject : "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
-                                            related_name='certificate_of_student_subject')
+    subject: "Subject" = models.ForeignKey("subject.Subject", on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='certificate_of_student_subject')
 
     expire_date = models.DateField(null=True, blank=True)
 
@@ -332,8 +335,7 @@ class ExamCertificate(BaseModel):
         ("Accepted", "Accepted"),
         ("Rejected", "Rejected"),
         ("Pending", "Pending"),
-    ],max_length=255, null=True, blank=True)
+    ], max_length=255, null=True, blank=True)
 
     # def __str__(self):
     #     return f"{self.student.first_name}  {self.status}"
-
