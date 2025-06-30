@@ -236,6 +236,9 @@ class ExamSubject(BaseModel):
                                             related_name='certificate_of_student')
     certificate_expire_date = models.DateField(null=True, blank=True)
 
+    def __str__(self):
+        return self.subject.name
+
 
 class Exam(BaseModel):
     name = models.CharField(default="Test imtihoni", null=False, blank=False)
