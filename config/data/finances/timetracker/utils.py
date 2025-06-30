@@ -372,7 +372,7 @@ def calculate_amount(user, actions):
 
         # Ishdan erta ketgani uchun
         last_action_dt = datetime.combine(check_in_date, datetime.fromisoformat(last_action.get("start")).time())
-        last_timeline_dt = datetime.combine(check_in_date, last_timeline.started_at)
+        last_timeline_dt = datetime.combine(check_in_date, last_timeline.group.started_at)
 
         late_come_action = last_action_dt - last_timeline_dt
         late_come_minutes = late_come_action.total_seconds() // 60

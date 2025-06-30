@@ -1,12 +1,6 @@
-from datetime import datetime, date
-from typing import List, Optional
+from datetime import datetime
 
-from django.core.handlers.base import logger
-from django.db import transaction
-from django.db.models import Min
-from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from django.utils.timezone import now
 from icecream import ic
 from rest_framework import status
 from rest_framework.exceptions import NotFound
@@ -21,10 +15,8 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary, calculate_amount, delete_user_actions, get_updated_datas
-from ..finance.models import Kind, Finance
+from .utils import calculate_amount, delete_user_actions, get_updated_datas
 from ...account.models import CustomUser
-from ...student import attendance
 
 
 class TimeTrackerList(ListCreateAPIView):
@@ -56,15 +48,6 @@ class TimeTrackerList(ListCreateAPIView):
             queryset = queryset.filter(date=parse_datetime(date))
         return queryset.order_by('-date')
 
-
-class AttendanceError(Exception):
-    """Custom exception for attendance-related errors"""
-
-    def __init__(self, message: str, error_code: str = None, details: dict = None):
-        self.message = message
-        self.error_code = error_code or "ATTENDANCE_ERROR"
-        self.details = details or {}
-        super().__init__(self.message)
 
 
 class AttendanceList(ListCreateAPIView):
@@ -164,9 +147,8 @@ class AttendanceList(ListCreateAPIView):
                 date=date,
             ).first()
 
-            delete_actions = delete_user_actions(user,actions)
+            delete_actions = delete_user_actions(user, actions)
             print(delete_actions)
-
 
             if not emp_att:
                 emp_att = Employee_attendance.objects.create(
@@ -199,7 +181,6 @@ class AttendanceList(ListCreateAPIView):
                     emp_att.amount = total_amount
                     emp_att.save()
 
-
         return Response("Attendance created", status=status.HTTP_201_CREATED)
 
 
@@ -215,11 +196,9 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
         ic(data)
 
-
         employee = CustomUser.objects.filter(second_user=data.get("employee")).first()
         if not employee:
             raise NotFound("Employee not found")
-
 
         instance.employee = employee
         instance.check_in = data.get("check_in")
@@ -228,7 +207,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         instance.actions = data.get("actions")
         instance.not_marked = data.get("not_marked", instance.not_marked)
 
-        updated_json = get_updated_datas(employee,instance.date)
+        updated_json = get_updated_datas(employee, instance.date)
 
         calculated_amount = calculate_amount(
             user=instance.employee,
@@ -240,7 +219,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 
 class UserTimeLineList(ListCreateAPIView):
