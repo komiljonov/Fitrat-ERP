@@ -696,6 +696,9 @@ class ExamCertificateSerializer(serializers.ModelSerializer):
     certificate = serializers.PrimaryKeyRelatedField(
         queryset=File.objects.all(), allow_null=True,
     )
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True,
+    )
 
     class Meta:
         model = ExamCertificate
@@ -711,4 +714,5 @@ class ExamCertificateSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data
+        rep["student"] = StudentSerializer(instance.student, include_only=["id", "first_name", "last_name"]).data
         return rep
