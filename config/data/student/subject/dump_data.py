@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Theme
-from .serializers import ThemeDumpSerializer
+from .serializers import ThemeDumpSerializer, ThemeLoaddataSerializer
 import uuid
 
 class ThemeDumpDownloadAPIView(APIView):
@@ -42,9 +42,9 @@ class ThemeDumpDownloadAPIView(APIView):
 
 class ThemeBulkCreateAPIView(APIView):
     @swagger_auto_schema(
-        request_body=ThemeDumpSerializer(many=True),
+        request_body=ThemeLoaddataSerializer(many=True),
         responses={
-            201: ThemeDumpSerializer(many=True),
+            201: ThemeLoaddataSerializer(many=True),
             400: "Invalid data or format"
         },
         operation_summary="Bulk create themes",
@@ -54,7 +54,7 @@ class ThemeBulkCreateAPIView(APIView):
         if not isinstance(request.data, list):
             return Response({"error": "Expected a list of themes"}, status=400)
 
-        serializer = ThemeDumpSerializer(data=request.data, many=True)
+        serializer = ThemeLoaddataSerializer(data=request.data, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

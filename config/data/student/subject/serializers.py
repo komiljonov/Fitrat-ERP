@@ -13,7 +13,16 @@ class ThemeDumpSerializer(serializers.ModelSerializer):
         model = Theme
         fields = "__all__"
 
-
+class ThemeLoaddataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Theme
+        fields = '__all__'
+        extra_kwargs = {
+            'created_at': {'required': False},
+            'updated_at': {'required': False},
+            'deleted_at': {'required': False},
+            'id': {'required': False},
+        }
 
 class SubjectSerializer(serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
