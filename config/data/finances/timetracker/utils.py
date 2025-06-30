@@ -381,7 +381,7 @@ def calculate_amount(user, actions):
             comment = (f"{date.date()} sanasida ishdan"
                        f" {abs(late_come_minutes)} minut  erta ketganingiz uchun jarima.")
 
-            amount = late_come_minutes * user_bonus
+            amount = late_come_minutes * user_penalty
 
             finance = Finance.objects.create(
                 action="EXPENSE",
