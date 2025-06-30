@@ -611,7 +611,7 @@ class ExamSerializer(serializers.ModelSerializer):
 
 class ExamRegistrationSerializer(serializers.ModelSerializer):
     option = serializers.PrimaryKeyRelatedField(
-        queryset=ExamSubject.objects.all(), many=True, allow_null=True
+        queryset=ExamSubject.objects.all(), many=True, allow_null=True,required=False
     )
 
     date = serializers.SerializerMethodField()
