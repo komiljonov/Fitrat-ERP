@@ -1,5 +1,6 @@
 from django.urls import path
 
+from .dump_data import ThemeDumpDownloadAPIView
 from .views import (SubjectList, SubjectNoPG, SubjectDetail,
                     LevelList, LevelDetail, LevelNoPG,
                     ThemeList, ThemeDetail, ThemeNoPG, ImportStudentsAPIView, ThemePgList)
@@ -20,4 +21,7 @@ urlpatterns = [
     path('theme/no-pg/', ThemeNoPG.as_view(), name='theme-nopg'),
 
     path('import/',ImportStudentsAPIView.as_view(), name='import'),
+
+    path("dump/",ThemeDumpDownloadAPIView.as_view(), name='theme-dump'),
+
 ]

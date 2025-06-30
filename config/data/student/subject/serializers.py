@@ -7,6 +7,14 @@ from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
 
+
+class ThemeDumpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Theme
+        fields = "__all__"
+
+
+
 class SubjectSerializer(serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
     all_themes = serializers.SerializerMethodField()
