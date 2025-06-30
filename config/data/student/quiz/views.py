@@ -348,9 +348,12 @@ class QuizCheckAPIView(APIView):
                 'custom_data': 'some_value'
             }
 
-            file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
-
-            url = FileUploadSerializer(file,context=context).data
+            id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+            if id:
+                file = File.objects.filter(id=id).first()
+                url = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            else:
+                url = None
             correct_answer = Answer.objects.filter(text=correct_answer_id).first().text
             return is_correct, {
                 "id": question["id"],
@@ -363,7 +366,6 @@ class QuizCheckAPIView(APIView):
             }
         except Exception as e:
             logger.error(f"Error processing image objective: {str(e)}")
-            file = File.objects.filter(id=question.get("image", {}).get("id", "")).first()
 
             context = {
                 'request': self.request,
@@ -371,7 +373,12 @@ class QuizCheckAPIView(APIView):
                 'custom_data': 'some_value'
             }
 
-            url = FileUploadSerializer(file,context=context).data
+            id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+            if id:
+                file = File.objects.filter(id=id).first()
+                url = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            else:
+                url = None
             correct_answer_id = question.get("answer", "")
             correct_answer = Answer.objects.filter(id=correct_answer_id).first().text
 
@@ -398,8 +405,12 @@ class QuizCheckAPIView(APIView):
         )
         user_answer = Answer.objects.filter(id=user_answer_id).first().text
 
-        file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
-        file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+        id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+        if id:
+            file = File.objects.filter(id=id).first()
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+        else:
+            file = None
 
         return is_correct, {
             "id": question["id"],
