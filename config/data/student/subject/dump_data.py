@@ -2,6 +2,8 @@
 
 import json
 from django.http import HttpResponse
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Theme
 from .serializers import ThemeDumpSerializer
@@ -33,3 +35,15 @@ class ThemeDumpDownloadAPIView(APIView):
         response = HttpResponse(dump_json, content_type='application/json')
         response['Content-Disposition'] = 'attachment; filename="theme_dump.json"'
         return response
+
+
+class ThemeBulkCreateAPIView(APIView):
+    def post(self, request):
+        if not isinstance(request.data, list):
+            return Response({"error": "Expected a list of themes"}, status=400)
+
+        serializer = ThemeDumpSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
