@@ -1,7 +1,10 @@
 from django.db import models
 
+from data.student.quiz.models import ExamSubject
 from data.student.student.models import Student
 from ..command.models import BaseModel
+from ..student.course.models import Course
+from ..student.groups.models import Group
 
 
 class QuizResult(BaseModel):
@@ -74,7 +77,6 @@ class UnitTest(BaseModel):
     group = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True,related_name="unit_test_group")
 
 
-
 class UnitTestResult(BaseModel):
     student = models.ForeignKey(
         "student.Student",
@@ -89,3 +91,33 @@ class UnitTestResult(BaseModel):
         blank=True
     )
     point = models.IntegerField(default=0)
+
+
+class MockExam(BaseModel):
+    options : "ExamSubject" = models.ManyToManyField(
+        "quiz.ExamSubject",related_name="mock_exam_options"
+    )
+    course : "Course" = models.ForeignKey(
+        "course.Course",on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="mock_exam_courses"
+    )
+    group : "Group" = models.ForeignKey(
+        "groups.Group",on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="mock_exam_groups"
+    )
+    start_date = models.DateField(null=False, blank=False)
+    start_time = models.TimeField(null=False, blank=False)
+
+    end_date = models.DateField(null=False, blank=False)
+    end_time = models.TimeField(null=False, blank=False)
+
+    student : "Student" = models.ForeignKey(
+        "student.Student",on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="mock_exam_students"
+    )

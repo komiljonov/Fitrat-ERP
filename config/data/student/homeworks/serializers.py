@@ -1,7 +1,11 @@
+from statistics import mean
+
 from django.db.models import Avg
 from rest_framework import serializers
 from .models import Homework, Homework_history
 from ..attendance.models import Attendance
+from ..mastering.models import Mastering
+from ..student.models import Student
 from ..subject.models import Theme
 from ..subject.serializers import ThemeSerializer
 from ...upload.models import File
@@ -28,28 +32,59 @@ class HomeworkSerializer(serializers.ModelSerializer):
             "photo",
             "ball",
             "choice",
+            "test_checked",
             "is_active",
             "created_at"
         ]
 
+
     def get_ball(self, obj):
         request = self.context.get("request")
         student_id = request.query_params.get("student") if request else None
+        user_id = request.query_params.get("user") if request else None
 
-        if not student_id:
+        if not student_id and not user_id:
+            return None
+
+        student = None
+        if user_id:
+            student = Student.objects.filter(user__id=user_id).first()
+        if student_id:
+            student = Student.objects.filter(id=student_id).first()
+
+        if not student:
             return None
 
         histories = Homework_history.objects.filter(
-            student__id=student_id,
+            student=student,
             homework=obj,
         )
 
-        online_avg = histories.filter(homework__choice="Online").aggregate(avg=Avg("mark"))["avg"] or 0
-        offline_avg = histories.filter(homework__choice="Offline").aggregate(avg=Avg("mark"))["avg"] or 0
+        mastering = Mastering.objects.filter(
+            student=student,
+            choice="Test",
+            theme=obj.theme
+        ).first()
 
-        overall_avg = round(histories.aggregate(avg=Avg("mark"))["avg"] or 0, 2)
+        mastering_ball = mastering.ball if mastering and mastering.ball is not None else None
 
-        if overall_avg <= 20:
+
+        online_marks = list(histories.filter(homework__choice="Online").values_list("mark", flat=True))
+        offline_marks = list(histories.filter(homework__choice="Offline").values_list("mark", flat=True))
+        all_marks = list(histories.values_list("mark", flat=True))
+
+
+        if mastering_ball is not None:
+            all_marks.append(mastering_ball)
+
+
+        online_avg = mean(online_marks) if online_marks else 0
+        offline_avg = mean(offline_marks) if offline_marks else 0
+        overall_avg = round(mean(all_marks), 2) if all_marks else 0
+
+        if overall_avg == 0:
+            ball = 0
+        elif overall_avg <= 20:
             ball = 1
         elif overall_avg <= 40:
             ball = 2
@@ -59,10 +94,11 @@ class HomeworkSerializer(serializers.ModelSerializer):
             ball = 4
         else:
             ball = 5
+
         return {
             "online_avg": round(online_avg, 2),
             "offline_avg": round(offline_avg, 2),
-            "overall_avg": round(histories.aggregate(avg=Avg("mark"))["avg"] or 0, 2),
+            "overall_avg": overall_avg,
             "ball": round(ball, 2),
         }
 

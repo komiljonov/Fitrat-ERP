@@ -7,6 +7,7 @@ from ..new_lid.serializers import LidSerializer
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from ...comments.models import Comment
+from ...comments.serializers import CommentSerializer
 from ...student.student.models import Student
 from ...student.student.serializers import StudentSerializer
 
@@ -24,6 +25,8 @@ class ArchivedSerializer(serializers.ModelSerializer):
             'lid',
             'student',
             "reason",
+            "comment",
+            "is_archived",
             'created_at',
             'updated_at',
         ]
@@ -44,6 +47,8 @@ class ArchivedSerializer(serializers.ModelSerializer):
             representation['lid'] = LidSerializer(instance.lid).data
         if instance.student:
             representation['student'] = StudentSerializer(instance.student).data
+        if instance.comment:
+            representation['comment'] = CommentSerializer(instance.comment).data
 
         # Clean the response by removing falsy values
         filtered_data = {key: value for key, value in representation.items() if value not in [{}, [], None, "", False]}

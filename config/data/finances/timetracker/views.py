@@ -1,12 +1,6 @@
-from datetime import datetime, date
-from typing import List, Optional
+from datetime import datetime
 
-from django.core.handlers.base import logger
-from django.db import transaction
-from django.db.models import Min
-from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from django.utils.timezone import now
 from icecream import ic
 from rest_framework import status
 from rest_framework.exceptions import NotFound
@@ -21,10 +15,8 @@ from .models import UserTimeLine, Stuff_Attendance
 from .serializers import Stuff_AttendanceSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
-from .utils import get_monthly_per_minute_salary, calculate_amount, delete_user_actions, get_updated_datas
-from ..finance.models import Kind, Finance
+from .utils import calculate_amount, delete_user_actions, get_updated_datas
 from ...account.models import CustomUser
-from ...student import attendance
 
 
 class TimeTrackerList(ListCreateAPIView):
@@ -57,16 +49,6 @@ class TimeTrackerList(ListCreateAPIView):
         return queryset.order_by('-date')
 
 
-class AttendanceError(Exception):
-    """Custom exception for attendance-related errors"""
-
-    def __init__(self, message: str, error_code: str = None, details: dict = None):
-        self.message = message
-        self.error_code = error_code or "ATTENDANCE_ERROR"
-        self.details = details or {}
-        super().__init__(self.message)
-
-
 class AttendanceList(ListCreateAPIView):
     queryset = Stuff_Attendance.objects.all()
     serializer_class = Stuff_AttendanceSerializer
@@ -80,10 +62,7 @@ class AttendanceList(ListCreateAPIView):
         employee = request.data.get('employee')
         actions = request.data.get('actions')
 
-        filters = {}
-        if check_out:
-            filters['check_out'] = check_out
-
+        # Validate user exists
         user = CustomUser.objects.filter(second_user=employee).first()
         if not user:
             return Response(
@@ -91,52 +70,17 @@ class AttendanceList(ListCreateAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        if actions is None:
-            att = Stuff_Attendance.objects.filter(
-                employee__id=employee,
-                date=date,
-                first_check_in=check_in,
-                **filters
+        # Check if attendance already exists for this date
+        existing_attendance = Stuff_Attendance.objects.filter(
+            employee__id=employee,
+            date=date
+        ).exists()
+
+        if existing_attendance:
+            return Response(
+                "Attendance for this date already exists",
+                status=status.HTTP_400_BAD_REQUEST
             )
-            if att:
-                return Response(
-                    "attendance exists",
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        elif check_in and actions and check_out is None:
-
-            sorted_actions = sorted(actions, key=lambda x: x['start'])
-
-            sorted_actions = sorted_actions[0]
-
-            att = Stuff_Attendance.objects.filter(
-                employee__id=employee,
-                date=date,
-                first_check_in=sorted_actions.get('start'),
-                first_check_out=sorted_actions.get('end'),
-            ).first()
-            if att:
-                return Response(
-                    "attendance exists",
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        elif check_in and actions and check_out:
-
-            sorted_actions = sorted(actions, key=lambda x: x['start'])
-
-            sorted_actions = sorted_actions[0]
-
-            att = Stuff_Attendance.objects.filter(
-                employee__id=employee,
-                date=date,
-                first_check_in=sorted_actions.get('start'),
-                first_check_out=sorted_actions.get('end'),
-            ).first()
-            if att:
-                return Response(
-                    "attendance exists",
-                    status=status.HTTP_400_BAD_REQUEST
-                )
 
         return self.create_attendance(request.data)
 
@@ -145,60 +89,59 @@ class AttendanceList(ListCreateAPIView):
         employee = data.get('employee')
         date = data.get('date')
 
-        if actions:
-            sorted_actions = sorted(actions, key=lambda x: x['start'])
-
-            print(employee)
-
-            user = CustomUser.objects.filter(second_user=employee).first()
-
-            att_amount = calculate_amount(
-                user=user,
-                actions=sorted_actions,
+        if not actions:
+            return Response(
+                "No actions provided",
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-            total_amount = att_amount.get("total_eff_amount")
+        user = CustomUser.objects.filter(second_user=employee).first()
 
-            emp_att = Employee_attendance.objects.filter(
+        # Delete existing actions for this date to avoid duplicates
+        delete_actions = delete_user_actions(user, actions, date)
+
+        # Sort actions by start time
+        sorted_actions = sorted(actions, key=lambda x: x['start'])
+
+        # Calculate amount for ALL actions at once
+        att_amount = calculate_amount(
+            user=user,
+            actions=sorted_actions,
+        )
+
+        total_amount = att_amount.get("total_eff_amount", 0)
+
+        # Get or create employee attendance record
+        emp_att, created = Employee_attendance.objects.get_or_create(
+            employee=user,
+            date=date,
+            defaults={'amount': 0}
+        )
+
+        # Create individual attendance records for each action
+        for action in sorted_actions:
+            check_in = action.get('start')
+            check_out = action.get('end')
+
+            if isinstance(check_in, str):
+                check_in = datetime.fromisoformat(check_in)
+            if isinstance(check_out, str) and check_out is not None:
+                check_out = datetime.fromisoformat(check_out)
+
+            attendance = Stuff_Attendance.objects.create(
                 employee=user,
+                check_in=check_in,
+                check_out=check_out,
                 date=date,
-            ).first()
+                action="In_side" if action.get("type") == "INSIDE" else "Outside",
+                actions=[action],  # Store individual action, not all actions
+            )
 
-            delete_actions = delete_user_actions(user,actions)
-            print(delete_actions)
+            emp_att.attendance.add(attendance)
 
-
-            if not emp_att:
-                emp_att = Employee_attendance.objects.create(
-                    employee=user,
-                    date=date,
-                    amount=0
-                )
-
-            for action in sorted_actions:
-
-                check_in = action.get('start')
-                check_out = action.get('end')
-
-                if isinstance(check_in, str):
-                    check_in = datetime.fromisoformat(check_in)
-                if isinstance(check_out, str) and check_out is not None:
-                    check_out = datetime.fromisoformat(check_out)
-
-                attendance = Stuff_Attendance.objects.create(
-                    employee=user,
-                    check_in=check_in,
-                    check_out=check_out,
-                    date=date,
-                    action="In_side" if action.get("type") == "INSIDE" else "Outside",
-                    actions=actions,
-                )
-
-                if attendance:
-                    emp_att.attendance.add(attendance)
-                    emp_att.amount = total_amount
-                    emp_att.save()
-
+        # Update total amount once for all actions
+        emp_att.amount = total_amount
+        emp_att.save()
 
         return Response("Attendance created", status=status.HTTP_201_CREATED)
 
@@ -215,11 +158,9 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
         ic(data)
 
-
         employee = CustomUser.objects.filter(second_user=data.get("employee")).first()
         if not employee:
             raise NotFound("Employee not found")
-
 
         instance.employee = employee
         instance.check_in = data.get("check_in")
@@ -228,7 +169,7 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
         instance.actions = data.get("actions")
         instance.not_marked = data.get("not_marked", instance.not_marked)
 
-        updated_json = get_updated_datas(employee,instance.date)
+        updated_json = get_updated_datas(employee, instance.date)
 
         calculated_amount = calculate_amount(
             user=instance.employee,
@@ -240,7 +181,6 @@ class AttendanceDetail(RetrieveUpdateDestroyAPIView):
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 
 class UserTimeLineList(ListCreateAPIView):

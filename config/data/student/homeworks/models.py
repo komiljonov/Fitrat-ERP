@@ -22,6 +22,8 @@ class Homework(BaseModel):
         ("Offline", "Offline"),
     ],max_length=20,null=True,blank=True)
 
+    test_checked = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "Homework"
         verbose_name_plural = "Homeworks"
