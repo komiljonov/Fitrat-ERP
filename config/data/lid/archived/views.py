@@ -23,6 +23,24 @@ class ArchivedListAPIView(ListCreateAPIView):
     filterset_fields = ('reason',)
     ordering_fields = ('reason',)
 
+    def get_queryset(self):
+        queryset = Archived.objects.all()
+        lid = self.request.GET.get('lid', None)
+        student = self.request.GET.get('student', None)
+        creator = self.request.GET.get('creator', None)
+        comment = self.request.GET.get('comment', None)
+
+        if lid:
+            queryset = queryset.filter(lid__id=lid)
+        if student:
+            queryset = queryset.filter(student__id=student)
+        if creator:
+            queryset = queryset.filter(creator__id=creator)
+        if comment:
+            queryset = queryset.filter(comment__id=comment)
+        return queryset
+
+
 
 class ArchivedDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Archived.objects.all()

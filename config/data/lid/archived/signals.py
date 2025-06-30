@@ -8,7 +8,7 @@ from ...notifications.models import Notification
 
 @receiver(post_save, sender=Archived)
 def on_create(sender, instance: Archived, created, **kwargs):
-    if created:
+    if created and instance.is_archived == True:
         if instance.student:
             instance.student.is_archived = True
             instance.student.save()
@@ -31,5 +31,26 @@ def on_create(sender, instance: Archived, created, **kwargs):
                 student=None,
                 comment=f"Arxivlandi {instance.created_at.date()} sanasida, sabab: {instance.reason}",
             )
+    if not created and instance.is_archived == False:
+        if instance.student:
+            instance.student.is_archived = False
+            instance.student.save()
 
+            date = instance.created_at.date()
+
+            comment = Comment.objects.create(
+                creator=instance.creator,
+                student=instance.student,
+                lid=None,
+                comment=f"Arxivdan chiqarildi {date} sanasida, sabab: {instance.reason}",
+            )
+        if instance.lid:
+            instance.lid.is_archived = False
+            instance.lid.save()
+            comment = Comment.objects.create(
+                creator=instance.creator,
+                lid=instance.lid,
+                student=None,
+                comment=f"Arxivlandi {instance.created_at.date()} sanasida, sabab: {instance.reason}",
+            )
 
