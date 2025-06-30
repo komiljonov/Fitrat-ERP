@@ -2,6 +2,7 @@
 
 import json
 from django.http import HttpResponse
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
@@ -39,23 +40,46 @@ class ThemeDumpDownloadAPIView(APIView):
 
 
 
-
 class ThemeBulkCreateAPIView(APIView):
     @swagger_auto_schema(
-        request_body=ThemeLoaddataSerializer(many=True),
+        request_body=openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "model": openapi.Schema(type=openapi.TYPE_STRING),
+                    "pk": openapi.Schema(type=openapi.TYPE_STRING, format="uuid"),
+                    "fields": openapi.Schema(type=openapi.TYPE_OBJECT),
+                },
+                required=["model", "pk", "fields"]
+            )
+        ),
         responses={
-            201: ThemeLoaddataSerializer(many=True),
-            400: "Invalid data or format"
+            201: openapi.Response("Themes created successfully", ThemeDumpSerializer(many=True)),
+            400: openapi.Response("Invalid data or format")
         },
-        operation_summary="Bulk create themes",
-        operation_description="Takes a list of theme objects and creates them in bulk."
+        operation_summary="Bulk create themes (fixture-compatible)",
+        operation_description="Accepts a list of theme objects in Django fixture format and creates them in bulk."
     )
     def post(self, request):
-        if not isinstance(request.data, list):
-            return Response({"error": "Expected a list of themes"}, status=400)
+        data = request.data
 
-        serializer = ThemeLoaddataSerializer(data=request.data, many=True)
+        if not isinstance(data, list):
+            return Response({"error": "Expected a list of theme objects."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Convert Django fixture format to serializer-compatible format
+        transformed_data = []
+        for obj in data:
+            if not isinstance(obj, dict) or "fields" not in obj:
+                return Response({"error": "Each item must contain 'fields'"}, status=400)
+            theme_data = obj["fields"]
+            if "pk" in obj or "id" in obj:
+                theme_data["id"] = obj.get("pk") or obj.get("id")
+            transformed_data.append(theme_data)
+
+        serializer = ThemeDumpSerializer(data=transformed_data, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
