@@ -398,7 +398,7 @@ def calculate_regular_amount(user, actions, check_in_date,
         comment = f"{check_in_date} sanasida ishga {arrive_diff:.0f} minut kech kelganingiz uchun jarima."
         amount = arrive_diff * user_penalty
         Finance.objects.create(
-            action="EXPENSE", amount=-amount, stuff=user,
+            action="INCOME", amount=-amount, stuff=user,
             kind=penalty_kind, comment=comment
         )
 
@@ -412,14 +412,14 @@ def calculate_regular_amount(user, actions, check_in_date,
         comment = f"{check_in_date} sanasida ishdan {depart_diff:.0f} minut erta ketganingiz uchun jarima."
         amount = depart_diff * user_penalty
         Finance.objects.create(
-            action="EXPENSE", amount=-amount, stuff=user,
+            action="INCOME", amount=-amount, stuff=user,
             kind=penalty_kind, comment=comment
         )
     elif depart_diff < 0:  # Late departure
         comment = f"{check_in_date} sanasida ishdan {abs(depart_diff):.0f} minut kech ketganingiz uchun bonus."
         amount = abs(depart_diff) * user_bonus
         Finance.objects.create(
-            action="EXPENSE", amount=amount, stuff=user,
+            action="INCOME", amount=amount, stuff=user,
             kind=bonus_kind, comment=comment
         )
 
