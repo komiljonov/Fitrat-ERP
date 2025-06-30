@@ -21,10 +21,9 @@ class ThemeDumpDownloadAPIView(APIView):
             for obj in serializer.data
         ]
 
-        # Convert to JSON string
-        dump_json = json.dumps(dump, indent=2, ensure_ascii=False)
+        # Fix: Convert all unknown types (like UUID) using `default=str`
+        dump_json = json.dumps(dump, indent=2, ensure_ascii=False, default=str)
 
-        # Return as downloadable JSON file
         response = HttpResponse(dump_json, content_type='application/json')
         response['Content-Disposition'] = 'attachment; filename="theme_dump.json"'
         return response
