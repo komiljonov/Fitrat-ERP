@@ -90,3 +90,16 @@ class StuffArchive(CreateAPIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"error": "Xodim topilmadi!"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+
+
+
+
+
+
+
+
+
