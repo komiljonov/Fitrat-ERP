@@ -569,40 +569,31 @@ class ExamSerializer(serializers.ModelSerializer):
         rep["results"] = FileUploadSerializer(instance.results).data if instance.results else None
 
         if user.role == "TEACHER":
+            teacher_subject = Group.objects.filter(teacher=user).first().course.subject
 
-            teacher = Group.objects.filter(teacher=user).first().course.subject
+            teacher_exam_subjects = ExamSubject.objects.filter(subject=teacher_subject)
 
-
-            teachers_subject = ExamSubject.objects.filter(
-                subject=teacher
-            ).all()
-
-
-            lang_type = None
-            if teachers_subject:
-                lang_type =teachers_subject.first()
-                print(lang_type.lang_national, lang_type.lang_foreign)
-            if lang_type:
-                if lang_type.lang_national and lang_type.lang_foreign:
+            options_list = []
+            for exam_subject in teacher_exam_subjects:
+                if exam_subject.lang_national and exam_subject.lang_foreign:
                     lang_value = "both"
-                elif lang_type.lang_national:
+                elif exam_subject.lang_national:
                     lang_value = "national"
-                elif lang_type.lang_foreign:
+                elif exam_subject.lang_foreign:
                     lang_value = "foreign"
                 else:
                     lang_value = None
-            else:
-                lang_value = None
 
-            rep["options"] = [
-                {
-                    "instance_id": teachers_subject.first().id,
-                    "id": teachers_subject.first().subject.id if teachers_subject else None,
-                    "subject": teachers_subject.first().subject.name if teachers_subject else None,
+                options_list.append({
+                    "instance_id": exam_subject.id,
+                    "id": exam_subject.subject.id,
+                    "subject": exam_subject.subject.name,
                     "lang_type": lang_value,
-                    "option": teachers_subject.first().options,
-                }
-            ]
+                    "option": exam_subject.options,
+                })
+
+            rep["options"] = options_list
+
         else:
             rep["options"] = ExamSubjectSerializer(instance.options, many=True).data
 

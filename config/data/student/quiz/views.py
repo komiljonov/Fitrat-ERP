@@ -1,5 +1,4 @@
 import logging
-import this
 from datetime import datetime, timedelta
 
 import openpyxl
@@ -100,7 +99,7 @@ class QuizCheckAPIView(APIView):
         }
 
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
-        existing_data = QuizResultSerializer(existing_results,context=context).data if existing_results else None
+        existing_data = QuizResultSerializer(existing_results, context=context).data if existing_results else None
 
         data_length = existing_data.get("total_question_count")
 
@@ -208,7 +207,6 @@ class QuizCheckAPIView(APIView):
             'true_false': 'true_false_id'
         }
 
-
         id_field = id_fields.get(qtype, 'question_id')
         return next((a for a in data.get(qtype, []) if str(a.get(id_field)) == str(qid)), None)
 
@@ -219,7 +217,7 @@ class QuizCheckAPIView(APIView):
         if qtype in ["image_objective", "image_objective_test"]:
             qtype = "image_objective"  # Standardize to one type
 
-        if qtype in ["objective_test","objective","objective_result"]:
+        if qtype in ["objective_test", "objective", "objective_result"]:
             qtype = "objective_test"
 
         checker = getattr(self, f"check_{qtype}", None)
@@ -269,7 +267,7 @@ class QuizCheckAPIView(APIView):
                 file = None
             return False, {
                 "id": question["id"],
-                "file" :file if file else None,
+                "file": file if file else None,
                 "correct": False,
                 "error": str(e),
                 "question_text": question.get("question", {}).get("name"),
@@ -398,7 +396,6 @@ class QuizCheckAPIView(APIView):
         user_answer_id = user_answer.get("answer_id")
         is_correct = str(user_answer_id) == str(correct_answer_id)
 
-
         correct_answer = next(
             (a["text"] for a in question.get("answers", []) if a.get("is_correct")),
             None
@@ -506,7 +503,7 @@ class QuizCheckAPIView(APIView):
         return all_correct, {
             "id": question["id"],
             "correct": all_correct,
-            "comment":pairs_serialized[0]["comment"],
+            "comment": pairs_serialized[0]["comment"],
             "pairs": pairs_serialized[0]["pairs"]
         }
 
@@ -527,7 +524,6 @@ class QuizCheckAPIView(APIView):
 
             homework.test_checked = True
             homework.save()
-
 
             if homework:
                 Points.objects.create(
@@ -789,7 +785,6 @@ class ExamListView(ListCreateAPIView):
         lang_foreign = self.request.GET.get("lang_foreign")
         lang_national = self.request.GET.get("lang_national")
         options = self.request.GET.get("options")
-
 
         queryset = Exam.objects.all()
 
@@ -1101,7 +1096,7 @@ class ExamRegisteredStudentAPIView(APIView):
 
         headers = [
             "F.I.O", "Telefon raqami", "Ro'yxatdan o'tish", "Imtihonda qatnashadimi?",
-            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi","Ta'lim tili"
+            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi", "Ta'lim tili"
         ]
         ws.append(headers)
 
@@ -1111,7 +1106,7 @@ class ExamRegisteredStudentAPIView(APIView):
 
         for reg in registrations:
 
-            certificate = ExamCertificate.objects.filter(exam=exam,student=reg.student).first()
+            certificate = ExamCertificate.objects.filter(exam=exam, student=reg.student).first()
             has_certificate = False
             if certificate and certificate.certificate:
                 has_certificate = True
@@ -1127,8 +1122,8 @@ class ExamRegisteredStudentAPIView(APIView):
                 "\n".join([f"{o.subject.name} - {o.options} variant" for o in reg.option.all() if o.subject]),
                 "Ha" if has_certificate else "Yo'q",
                 "\n".join([
-                "Uzbek" if o.lang_national else "Euro" if o.lang_foreign else "Tanlanmagan"
-                for o in reg.option.all()
+                    "Uzbek" if o.lang_national else "Euro" if o.lang_foreign else "Tanlanmagan"
+                    for o in reg.option.all()
                 ])
             ]
 
@@ -1182,10 +1177,11 @@ class ExamCertificateAPIView(ListCreateAPIView):
         return qs
 
 
-class  ExamOptionCreate(APIView):
+class ExamOptionCreate(APIView):
     """
     Bulk create or update ExamRegistration entries using ordinary field objects.
     """
+
     def post(self, request, *args, **kwargs):
         data = request.data
 
@@ -1243,7 +1239,8 @@ class  ExamOptionCreate(APIView):
 
             # Create new registrations and set M2M options
             for student, exam, group, option_ids in registrations_to_create:
-                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group,variation=int(option),status="Waiting")
+                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group, variation=int(option),
+                                                      status="Waiting")
                 reg.option.set(option_ids)
 
             # Update existing registrations' options
@@ -1252,8 +1249,7 @@ class  ExamOptionCreate(APIView):
                 reg.status = "Waiting"
                 reg.save()
 
-
-        print((registrations_to_create),(registrations_to_update),(errors))
+        print((registrations_to_create), (registrations_to_update), (errors))
         response_data = {
             'created': len(registrations_to_create),
             'updated': len(registrations_to_update),
