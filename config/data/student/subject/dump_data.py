@@ -9,7 +9,13 @@ import uuid
 
 class ThemeDumpDownloadAPIView(APIView):
     def get(self, request):
+
+        course = self.request.GET.get('course')
+
         themes = Theme.objects.all()
+
+        if course:
+            themes = themes.filter(course__id=course)
         serializer = ThemeDumpSerializer(themes, many=True)
 
         dump = [
