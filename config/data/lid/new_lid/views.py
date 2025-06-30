@@ -1,5 +1,5 @@
 from django.core.exceptions import FieldError
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
@@ -379,6 +379,10 @@ class LidStatisticsView(ListAPIView):
         no_debt = Student.objects.filter(balance__gte=0, **filter).count()
         debt = Student.objects.filter(balance__lt=0, **filter).count()
 
+        no_debt_sum = Student.objects.filter(balance__gte=0, **filter).aggregate(total=Sum("balance"))["total"] or 0
+        debt_sum = Student.objects.filter(balance__lt=0, **filter).aggregate(total=Sum("balance"))["total"] or 0
+
+
         response_data = {
             "new_lid_statistics": {
                 "leads_count": leads_count,
@@ -406,7 +410,9 @@ class LidStatisticsView(ListAPIView):
                 "new_students": new_student,
                 "active_students": active_student,
                 "no-debt": no_debt,
-                "debt": debt
+                "debt": debt,
+                "no_debt_sum": no_debt_sum,
+                "debt_sum": debt_sum,
             }
         }
 
