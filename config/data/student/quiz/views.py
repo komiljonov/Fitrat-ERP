@@ -245,9 +245,12 @@ class QuizCheckAPIView(APIView):
             user_answer_text = user_answer.get("answer_ids", "")
             is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
 
-            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
-            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
-
+            id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+            if id:
+                file = File.objects.filter(id=id).first()
+                file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            else:
+                file = None
             return is_correct, {
                 "id": question["id"],
                 "file": file if file else None,
@@ -258,8 +261,12 @@ class QuizCheckAPIView(APIView):
             }
         except Exception as e:
             logger.error(f"Error processing objective test: {str(e)}")
-            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
-            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+            if id:
+                file = File.objects.filter(id=id).first()
+                file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            else:
+                file = None
             return False, {
                 "id": question["id"],
                 "file" :file if file else None,
@@ -409,9 +416,12 @@ class QuizCheckAPIView(APIView):
         user_choice = user_answer.get("choice", "").lower()
         is_correct = (user_choice == correct_answer)
 
-        file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
-        file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
-
+        id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+        if id:
+            file = File.objects.filter(id=id).first()
+            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+        else:
+            file = None
 
         print(file)
         return is_correct, {
