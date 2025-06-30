@@ -355,7 +355,17 @@ class GroupStudentDetail(ListAPIView):
         id = self.kwargs.get('pk')
         print(id)
 
-        return StudentGroup.objects.filter(Q(student=id) | Q(lid=id),)
+        qs = StudentGroup.objects.filter(Q(student=id) | Q(lid=id))
+
+        user = self.request.GET.get("user")
+        course = self.request.GET.get("course")
+
+        if user:
+            qs = qs.filter(student__user__id=user)
+        if course:
+            qs = qs.filter(group__course__id=course)
+
+        return qs
 
 class GroupStudentNoPgDetail(ListAPIView):
     permission_classes = [IsAuthenticated]

@@ -37,8 +37,11 @@ class CasherListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         role = self.request.query_params.get('role', None)
+        is_archived = self.request.GET.get('is_archived', False)
 
         filter = {}
+        if is_archived:
+            filter['archived'] = is_archived.capitalize()
         if role:
             filter['role'] = role
 

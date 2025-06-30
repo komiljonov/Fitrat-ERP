@@ -272,43 +272,58 @@ class QuizCheckAPIView(APIView):
 
     def check_cloze_test(self, question, user_answer):
         try:
-            correct_sequence = [q["name"] for q in question.get("questions", [])][::-1]
+            if not isinstance(question, dict) or not isinstance(user_answer, dict):
+                raise ValueError("Invalid input: 'question' or 'user_answer' is not a dictionary")
 
+            correct_sequence = [q.get("name", "") for q in question.get("questions", [])][::-1]
             user_sequence = user_answer.get("word_sequence", [])
 
             print(user_sequence)
             print(correct_sequence)
 
             is_correct = user_sequence == correct_sequence
-            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
 
-            print(is_correct)
+            print(question)
 
-            print(file, question.get("file", {}).get("id", ""))
+            # Safe file handling
+            file_data_raw = question.get("file")
+            file_id = file_data_raw.get("id") if isinstance(file_data_raw, dict) else None
+            file = File.objects.filter(id=file_id).first() if file_id else None
 
-            print("question name :",question.get("question", {}) )
+            # Get question name
+            question_name = ""
+            if isinstance(question.get("question"), dict):
+                question_name = question["question"].get("name", "")
+            elif isinstance(question.get("sentence"), dict):
+                question_name = question["sentence"].get("text", "")
 
-            print(question.get("question", {}).get("name"))
+            print(question_name)
 
-            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            file_data = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+
             return is_correct, {
-                "id": question["id"],
-                "file": file if file else None,
-                "question_text": question.get("question", {}).get("name"),
+                "id": question.get("id"),
+                "file": file_data,
+                "question_text": question_name,
                 "correct": is_correct,
                 "user_answer": user_sequence,
                 "correct_answer": correct_sequence
             }
+
         except Exception as e:
             logger.error(f"Error processing cloze test: {str(e)}")
-            file = File.objects.filter(id=question.get("file", {}).get("id", "")).first()
-            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+
+            file_data_raw = question.get("file") if isinstance(question, dict) else None
+            file_id = file_data_raw.get("id") if isinstance(file_data_raw, dict) else None
+            file = File.objects.filter(id=file_id).first() if file_id else None
+            file_data = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+
             return False, {
-                "id": question["id"],
+                "id": question.get("id") if isinstance(question, dict) else None,
                 "correct": False,
-                "file": file if file else None,
+                "file": file_data,
                 "error": str(e),
-                "user_answer": user_answer.get("word_sequence", []),
+                "user_answer": user_answer.get("word_sequence", []) if isinstance(user_answer, dict) else [],
                 "correct_answer": "Error processing correct sequence"
             }
 
@@ -479,6 +494,8 @@ class QuizCheckAPIView(APIView):
             return
 
         try:
+            homework = Homework.objects.filter(theme=theme).first()
+
             mastering = Mastering.objects.create(
                 theme=theme,
                 student=student,
@@ -487,7 +504,10 @@ class QuizCheckAPIView(APIView):
                 choice="Test"
             )
 
-            homework = Homework.objects.filter(theme=theme).first()
+            homework.test_checked = True
+            homework.save()
+
+
             if homework:
                 Points.objects.create(
                     point=ball,

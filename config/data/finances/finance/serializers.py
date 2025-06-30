@@ -50,6 +50,8 @@ class CasherSerializer(serializers.ModelSerializer):
             'balance',
             'income',
             'expense',
+            'is_archived',
+            'comment',
         ]
 
     def get_balance(self, obj):
