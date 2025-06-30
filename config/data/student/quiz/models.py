@@ -340,7 +340,7 @@ class ExamCertificate(BaseModel):
         ("Accepted", "Accepted"),
         ("Rejected", "Rejected"),
         ("Pending", "Pending"),
-    ], max_length=255, null=True, blank=True)
+    ],default="Pending" ,max_length=255, null=True, blank=True)
 
     # def __str__(self):
     #     return f"{self.student.first_name}  {self.status}"
