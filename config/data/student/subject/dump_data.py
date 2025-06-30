@@ -2,6 +2,7 @@
 
 import json
 from django.http import HttpResponse
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -37,7 +38,18 @@ class ThemeDumpDownloadAPIView(APIView):
         return response
 
 
+
+
 class ThemeBulkCreateAPIView(APIView):
+    @swagger_auto_schema(
+        request_body=ThemeDumpSerializer(many=True),
+        responses={
+            201: ThemeDumpSerializer(many=True),
+            400: "Invalid data or format"
+        },
+        operation_summary="Bulk create themes",
+        operation_description="Takes a list of theme objects and creates them in bulk."
+    )
     def post(self, request):
         if not isinstance(request.data, list):
             return Response({"error": "Expected a list of themes"}, status=400)
