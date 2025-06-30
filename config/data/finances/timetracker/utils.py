@@ -434,11 +434,6 @@ def calculate_regular_amount(user, actions, check_in_date,
     return total_eff_amount
 
 
-
-
-
-# ADDITIONAL HELPER FUNCTION:
-
 def validate_actions_data(actions):
     """Validate that actions data is properly formatted"""
 

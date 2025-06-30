@@ -1,13 +1,15 @@
 
 from rest_framework import serializers
 
-from .models import UnitTest, UnitTestResult, QuizResult
+from .models import UnitTest, UnitTestResult, QuizResult, MockExam
+from ..student.course.models import Course
 from ..student.groups.models import Group
 from ..student.mastering.models import Mastering
 from ..student.quiz.models import Quiz, Exam
 from ..student.quiz.serializers import QuestionSerializer, MatchPairsSerializer, True_FalseSerializer, \
     VocabularySerializer, ObjectiveTestSerializer, Cloze_TestSerializer, ImageObjectiveTestSerializer
 from ..student.student.models import Student
+from ..student.student.serializers import StudentSerializer
 from ..student.studentgroup.models import StudentGroup
 from ..student.subject.models import Theme
 from ..student.subject.serializers import ThemeSerializer
@@ -64,7 +66,6 @@ class UnitTestSerializer(serializers.ModelSerializer):
         return rep
 
 
-
 class UnitTestResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = UnitTestResult
@@ -75,6 +76,7 @@ class UnitTestResultSerializer(serializers.ModelSerializer):
             "point",
             "created_at"
         ]
+
 
 class QuizResultSerializer(serializers.ModelSerializer):
     # Write-only fields for incoming UUID lists
@@ -179,3 +181,45 @@ class QuizResultSerializer(serializers.ModelSerializer):
     def get_image_objective_result(self, obj):
         return ImageObjectiveTestSerializer(obj.image_objective.all(),context=self.context, many=True).data
 
+
+class MockExamSerializer(serializers.ModelSerializer):
+
+    options = serializers.PrimaryKeyRelatedField(many=True, queryset=MockExam.objects.all(),allow_null=True, required=False)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=False, allow_null=True, required=False)
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), allow_null=True, required=False)
+    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True, required=False)
+
+    class Meta:
+        model = MockExam
+        fields = [
+            "id",
+            "options",
+            "course",
+            "group",
+            "start_date",
+            "start_time",
+            "end_date",
+            "end_time",
+            "student",
+            "created_at"
+        ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        rep["options"] = MockExamSerializer(instance.options.all(), many=True).data
+        rep["student"] = {
+            "id": instance.student.id,
+            "full_name": f"{instance.student.first_name} ({instance.student.last_name})",
+            "balance": instance.student.balance,
+        } if instance.student else None
+        rep["group"] = {
+            "id": instance.group.id,
+            "name" : instance.group.name,
+        } if instance.group else None
+        rep["course"] = {
+            "id": instance.course.id,
+            "name" : instance.course.name,
+        } if instance.course else None
+
+        return rep
