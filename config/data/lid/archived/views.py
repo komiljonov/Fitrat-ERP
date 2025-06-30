@@ -29,7 +29,10 @@ class ArchivedListAPIView(ListCreateAPIView):
         student = self.request.GET.get('student', None)
         creator = self.request.GET.get('creator', None)
         comment = self.request.GET.get('comment', None)
+        is_archived = self.request.GET.get('is_archived', None)
 
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
         if lid:
             queryset = queryset.filter(lid__id=lid)
         if student:
