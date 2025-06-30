@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 from .models import Lid
 from .serializers import LidSerializer
 from ...student.lesson.models import FirstLLesson
+from ...student.student.models import Student
 
 
 class LidListCreateView(ListCreateAPIView):
@@ -307,30 +308,30 @@ class LidStatisticsView(ListAPIView):
 
         filial = self.request.query_params.get("filial")
         is_archived = self.request.query_params.get("is_archived")
-        course_id = self.request.query_params.get("course")
+        # course_id = self.request.query_params.get("course")
         call_operator_id = self.request.query_params.get("call_operator")
         service_manager = self.request.query_params.get("service_manager")
         sales_manager = self.request.query_params.get("sales_manager")
-        teacher = self.request.query_params.get("teacher")
-        channel = self.request.query_params.get("channel")
-        subject = self.request.query_params.get("subject")
+        # teacher = self.request.query_params.get("teacher")
+        # channel = self.request.query_params.get("channel")
+        # subject = self.request.query_params.get("subject")
         is_student = self.request.query_params.get("is_student")
 
         filter = {}
         if is_archived:
             filter["is_archived"] = True
-        if course_id:
-            filter["lids_group__course__id"] = course_id
+        # if course_id:
+        #     filter["lids_group__course__id"] = course_id
         if call_operator_id:
             filter["call_operator__id"] = call_operator_id
         if service_manager:
             filter["service_manager__id"] = service_manager
         if sales_manager:
             filter["sales_manager__id"] = sales_manager
-        if teacher:
-            filter["lids_group__teacher__id"] = teacher
-        if channel:
-            filter["subject__id"] = subject
+        # if teacher:
+        #     filter["lids_group__teacher__id"] = teacher
+        # if channel:
+        #     filter["subject__id"] = subject
         if is_student:
             filter["is_student"] = is_student.capitalize()
 
@@ -372,6 +373,12 @@ class LidStatisticsView(ListAPIView):
 
         first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID", **filter).count()
 
+        new_student = Student.objects.filter(student_stage_type="NEW_STUDENT",**filter).count()
+        active_student = Student.objects.filter(student_stage_type="ACTIVE_STUDENT",**filter).count()
+
+        no_debt = Student.objects.filter(balance__gte=0, **filter).count()
+        debt = Student.objects.filter(balance__lt=0, **filter).count()
+
         response_data = {
             "new_lid_statistics": {
                 "leads_count": leads_count,
@@ -395,6 +402,12 @@ class LidStatisticsView(ListAPIView):
                 "lid": archived_lid,
                 "order": ordered_archived,
             },
+            "student_archived": {
+                "new_students": new_student,
+                "active_students": active_student,
+                "no-debt": no_debt,
+                "debt": debt
+            }
         }
 
         return Response(response_data)
