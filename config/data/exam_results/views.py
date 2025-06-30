@@ -1,7 +1,7 @@
 from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
 
-from .models import UnitTest, UnitTestResult, QuizResult
-from .serializers import UnitTestSerializer, UnitTestResultSerializer, QuizResultSerializer
+from .models import UnitTest, UnitTestResult, QuizResult, MockExam
+from .serializers import UnitTestSerializer, UnitTestResultSerializer, QuizResultSerializer, MockExamSerializer
 
 
 class UnitTestListCreateAPIView(ListCreateAPIView):
@@ -71,3 +71,31 @@ class QuizRestAPIView(ListCreateAPIView):
             queryset = queryset.filter(students__id=student)
 
         return queryset
+
+
+class MockExamListCreateAPIView(ListCreateAPIView):
+    queryset = MockExam.objects.all()
+    serializer_class = MockExamSerializer
+
+    def get_queryset(self):
+        queryset = MockExam.objects.all()
+
+        group = self.request.GET.get('group')
+        course = self.request.GET.get('course')
+        student = self.request.GET.get('student')
+        option = self.request.GET.get('option')
+
+        if group:
+            queryset = queryset.filter(group__id=group)
+        if course:
+            queryset = queryset.filter(course__id=course)
+        if student:
+            queryset = queryset.filter(students__id=student)
+        if option:
+            queryset = queryset.filter(options__id__in=option)
+        return queryset
+
+
+class MockExamRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = MockExam.objects.all()
+    serializer_class = MockExamSerializer
