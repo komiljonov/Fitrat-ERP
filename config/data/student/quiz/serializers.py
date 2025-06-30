@@ -708,6 +708,7 @@ class ExamCertificateSerializer(serializers.ModelSerializer):
             "exam",
             "status",
             "certificate",
+            "expire_date",
             "created_at",
         ]
 

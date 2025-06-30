@@ -1177,6 +1177,11 @@ class ExamCertificateAPIView(ListCreateAPIView):
         return qs
 
 
+class ExamCertificateUpdate(RetrieveUpdateDestroyAPIView):
+    queryset = ExamCertificate.objects.all()
+    serializer_class = ExamCertificateSerializer
+
+
 class ExamOptionCreate(APIView):
     """
     Bulk create or update ExamRegistration entries using ordinary field objects.
