@@ -11,6 +11,10 @@ from data.upload.models import File
 from data.student.groups.models import Group
 
 
+
+def after_4_days():
+    return datetime.today() + timedelta(days=4)
+
 class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -270,7 +274,7 @@ class Exam(BaseModel):
 
     is_language = models.BooleanField(default=False)
 
-    date = models.DateField(default=lambda: datetime.today() + timedelta(days=4))
+    date = models.DateField(default=after_4_days)
     start_time = models.TimeField(null=True, blank=True)
     end_time = models.TimeField(null=True, blank=True)
 
