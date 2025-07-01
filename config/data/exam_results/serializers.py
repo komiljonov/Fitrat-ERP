@@ -185,7 +185,6 @@ class QuizResultSerializer(serializers.ModelSerializer):
 class MockExamSerializer(serializers.ModelSerializer):
 
     options = serializers.PrimaryKeyRelatedField(many=True, queryset=MockExam.objects.all(),allow_null=True, required=False)
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=False, allow_null=True, required=False)
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), allow_null=True, required=False)
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True, required=False)
 
@@ -200,19 +199,31 @@ class MockExamSerializer(serializers.ModelSerializer):
             "start_time",
             "end_date",
             "end_time",
-            "student",
             "created_at"
         ]
+
+    def create(self, validated_data):
+        group = validated_data.get("group")
+        if group:
+            students = StudentGroup.objects.filter(group=group)
+            for student in students:
+                mastering = Mastering.objects.create(
+                    student=student.student if student.student else None,
+                    lid=student.lid if student.lid else None,
+                    theme=None,
+                    choice="Mock",
+                    ball=0
+                )
+                print(mastering)
+
+        return super().create(validated_data)
+
+
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
         rep["options"] = MockExamSerializer(instance.options.all(), many=True).data
-        rep["student"] = {
-            "id": instance.student.id,
-            "full_name": f"{instance.student.first_name} ({instance.student.last_name})",
-            "balance": instance.student.balance,
-        } if instance.student else None
         rep["group"] = {
             "id": instance.group.id,
             "name" : instance.group.name,

@@ -115,9 +115,5 @@ class MockExam(BaseModel):
     end_date = models.DateField(null=False, blank=False)
     end_time = models.TimeField(null=False, blank=False)
 
-    student : "Student" = models.ForeignKey(
-        "student.Student",on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="mock_exam_students"
-    )
+    def __str__(self):
+        return self.group.name
