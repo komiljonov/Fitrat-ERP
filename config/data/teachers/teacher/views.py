@@ -313,6 +313,7 @@ class StudentsAvgLearning(APIView):
             homeworks = []
             speaking = []
             unit = []
+            mock=[]
             for m in student_record:
                 homework_id = Homework_history.objects.filter(
                     homework__theme=m.theme,
@@ -327,7 +328,7 @@ class StudentsAvgLearning(APIView):
                 item = {
                     "theme" : theme_data,
                     "homework_id": homework_id.id if homework_id else None,
-                    "mastering_id": m.id if m.choice in ["Speaking","Unit_Test"] else None,
+                    "mastering_id": m.id if m.choice in ["Speaking","Unit_Test","Mock"] else None,
                     "title": m.test.title if m.test else "N/A",
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
@@ -341,6 +342,8 @@ class StudentsAvgLearning(APIView):
                     speaking.append(item)
                 elif m.choice=="Unit_Test":
                     unit.append(item)
+                elif m.choice=="Mock":
+                    mock.append(item)
                 else:
                     homeworks.append(item)
 
@@ -352,7 +355,8 @@ class StudentsAvgLearning(APIView):
             overall_homework = sum(x['ball'] for x in homeworks) / len(homeworks) if homeworks else 0
             overall_speaking = sum(x['ball'] for x in speaking) / len(speaking) if speaking else 0
             overall_unit = sum(x['ball'] for x in unit) / len(unit) if unit else 0
-            overall = round((overall_exam + overall_homework + overall_speaking + overall_unit) / 4, 2) if exams or homeworks or speaking or unit else 0
+            overall_mock = sum(x['ball'] for x in mock) / len(mock) if mock else 0
+            overall = round((overall_exam + overall_homework + overall_speaking + overall_unit + mock) / 5, 2) if exams or homeworks or speaking or unit else 0
 
             first_ball = Student.objects.filter(id=sg.student.id).first() if sg.student else None
 
@@ -363,7 +367,7 @@ class StudentsAvgLearning(APIView):
                 "exams": {
                     "items": exams,
                     "overall": round(overall_exam, 2)
-                },  
+                },
                 "homeworks": {
                     "items": homeworks,
                     "overall": round(overall_homework, 2)
@@ -375,6 +379,10 @@ class StudentsAvgLearning(APIView):
                 "unit_test": {
                     "items": unit,
                     "overall": round(overall_unit, 2)
+                },
+                "mock": {
+                    "items":mock,
+                    "overall": round(overall_mock,2)
                 },
                 "overall": overall
             })
