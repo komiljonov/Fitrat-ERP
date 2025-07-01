@@ -356,7 +356,7 @@ class StudentsAvgLearning(APIView):
             overall_speaking = sum(x['ball'] for x in speaking) / len(speaking) if speaking else 0
             overall_unit = sum(x['ball'] for x in unit) / len(unit) if unit else 0
             overall_mock = sum(x['ball'] for x in mock) / len(mock) if mock else 0
-            overall = round((overall_exam + overall_homework + overall_speaking + overall_unit + mock) / 5, 2) if exams or homeworks or speaking or unit else 0
+            overall = round((overall_exam + overall_homework + overall_speaking + overall_unit + overall_mock) / 5, 2) if exams or homeworks or speaking or unit else 0
 
             first_ball = Student.objects.filter(id=sg.student.id).first() if sg.student else None
 
