@@ -98,18 +98,19 @@ class FinanceListAPIView(ListCreateAPIView):
                 kind_obj = Kind.objects.get(id=kind)
                 queryset = queryset.filter(kind=kind_obj)
             except Kind.DoesNotExist:
-                return Finance.objects.none()  # Return an empty queryset if kind is invalid
+                return Finance.objects.none()
 
         if start_date:
-            start_date = parse_date(start_date)  # Ensure it is a valid date
+            start_date = parse_date(start_date)
             if start_date:
                 queryset = queryset.filter(created_at__gte=start_date)
 
-        if end_date:
+        if start_date and end_date:
             end_dt = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1) - datetime.timedelta(
                 seconds=1)
             end_dt = make_aware(end_dt)
-            queryset = queryset.filter(created_at__lte=end_dt)
+
+            queryset = queryset.filter(created_at__gte=start_date,created_at__lte=end_dt)
 
         return queryset
 
