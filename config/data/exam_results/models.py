@@ -117,3 +117,21 @@ class MockExam(BaseModel):
 
     def __str__(self):
         return self.group.name
+
+
+class MockExamResult(BaseModel):
+    mock : "MockExam" = models.ForeignKey(
+        "exam_results.MockExam",on_delete=models.SET_NULL,null=True,blank=True,related_name="mock_exam_results"
+    )
+    student : "Student" = models.ForeignKey(
+        "student.Student",on_delete=models.SET_NULL,null=True,blank=True,related_name="mock_exam_student"
+    )
+    reading = models.IntegerField(default=0)
+    listening = models.IntegerField(default=0)
+    writing = models.IntegerField(default=0)
+    speaking = models.IntegerField(default=0)
+
+    overall_score = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.student.first_name}  {self.overall_score}"
