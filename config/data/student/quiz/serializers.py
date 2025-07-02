@@ -567,7 +567,7 @@ class ExamSerializer(serializers.ModelSerializer):
         exam.options.set(options)  # ✅ Set the many-to-many relationship
 
         for option in options:
-            if option.options > 0:  # ✅ Use the actual field name, not dict-style access
+            if int(option.options) > 0:  # ✅ Use the actual field name, not dict-style access
                 subject = option.subject
                 group = Group.objects.filter(course__subject=subject, teacher=option.teacher).first()
                 teacher = group.teacher if group else None
