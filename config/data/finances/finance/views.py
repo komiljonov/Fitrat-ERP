@@ -101,7 +101,13 @@ class FinanceListAPIView(ListCreateAPIView):
                 return Finance.objects.none()
 
         if start_date:
-            queryset = queryset.filter(created_at__gte=parse_date(start_date),created_at__lte=parse_date(end_date) + datetime.timedelta(days=1) - datetime.timedelta(seconds=1))
+            start = parse_date(start_date)
+            end = parse_date(end_date) if end_date else start
+
+            end = end + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+
+            queryset = queryset.filter(created_at__gte=start, created_at__lte=end)
+
 
         if start_date and end_date:
             end_dt = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1) - datetime.timedelta(
