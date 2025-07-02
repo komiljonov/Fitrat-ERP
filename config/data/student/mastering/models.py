@@ -23,6 +23,7 @@ class Mastering(BaseModel):
         ("Test", "Test"),
         ("Speaking", "Speaking"),
         ("Unit_Test", "Unit_Test"),
+        ("Mock", "Mock"),
     ],default="Homework",null=True,blank=True)
 
     mock : "MockExam" = models.ForeignKey("exam_results.MockExam",on_delete=models.SET_NULL, null=True,blank=True,
