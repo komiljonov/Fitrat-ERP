@@ -577,7 +577,7 @@ class ExamSerializer(serializers.ModelSerializer):
         if user.role == "TEACHER":
             teacher_subject = Group.objects.filter(teacher=user).first().course.subject
 
-            teacher_exam_subjects = ExamSubject.objects.filter(subject=teacher_subject)
+            teacher_exam_subjects = instance.options.filter(subject=teacher_subject).all()
 
             options_list = []
             for exam_subject in teacher_exam_subjects:
