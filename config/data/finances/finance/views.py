@@ -209,6 +209,8 @@ class CasherHandoverAPIView(CreateAPIView):
         receiver = serializer.validated_data.get("receiver")
         casher = serializer.validated_data.get("casher")
         amount = serializer.validated_data.get("amount")
+        payment_method = serializer.validated_data.get("payment_method")
+
         icecream.ic(receiver, casher, amount)
 
         if int(amount) > 0:
@@ -219,6 +221,7 @@ class CasherHandoverAPIView(CreateAPIView):
             Finance.objects.create(
                 casher=casher,
                 amount=amount,
+                payment_method=payment_method,
                 action='EXPENSE',
                 kind=handover,  # Now it's correctly assigned
                 creator=request.user,
@@ -233,6 +236,7 @@ class CasherHandoverAPIView(CreateAPIView):
             Finance.objects.create(
                 casher=receiver,
                 amount=amount,
+                payment_method=payment_method,
                 action='INCOME',
                 kind=acception,  # Now it's correctly assigned
                 creator=request.user,
