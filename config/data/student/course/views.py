@@ -65,6 +65,18 @@ class CourseNoPG(ListAPIView):
     def get_paginated_response(self, data):
         return Response(data)
 
+    def get_queryset(self):
+        queryset = Course.objects.all()
+
+        subject = self.request.GET.get('subject', None)
+        filial = self.request.GET.get('filial', None)
+
+        if filial:
+            queryset = queryset.filter(filial=filial)
+        if subject:
+            queryset = queryset.filter(subject__id=subject)
+        return queryset
+
 
 class StudentCourse(ListAPIView):
     queryset = Course.objects.all()
