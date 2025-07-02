@@ -1380,13 +1380,22 @@ class MonthlyExam(APIView):
         exam_registration.variation = second_exam_subject
         exam_registration.save()
 
-        certificate = None
-        if validated_data.get("has_certificate"):
-            certificate = ExamCertificate.objects.create(
+        first_certificate = None
+        if validated_data.get("first_has_certificate"):
+            first_certificate = ExamCertificate.objects.create(
                 student_id=student_id,
                 exam_id=exam_id,
                 status="Pending",
-                certificate=validated_data.get("certificate"),
+                certificate=validated_data.get("first_certificate"),
+                expire_date=validated_data.get("expire_date"),
+            )
+        second_certificate = None
+        if validated_data.get("second_has_certificate"):
+            second_certificate = ExamCertificate.objects.create(
+                student_id=student_id,
+                exam_id=exam_id,
+                status="Pending",
+                certificate=validated_data.get("second_certificate"),
                 expire_date=validated_data.get("expire_date"),
             )
 
@@ -1394,9 +1403,8 @@ class MonthlyExam(APIView):
             "first_subject": first_exam_subject.subject.name,
             "second_subject": second_exam_subject.subject.name,
             "has_certificate": validated_data.get("has_certificate"),
-            "certificate": str(certificate.id) if certificate else None,
-            "expire_date": validated_data.get("expire_date"),
-            "status": certificate.status if certificate else None,
+            "first_certificate": str(first_certificate.id) if first_certificate else None,
+            "second_certificate": str(second_certificate.id) if second_certificate else None,
             "exam": str(exam_id),
             "student": str(student_id),
         }
