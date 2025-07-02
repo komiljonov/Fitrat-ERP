@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from .serializers import TeacherSerializer
 from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
+from ...exam_results.models import MockExamResult
 from ...results.models import Results
 from ...student.groups.models import Group, SecondaryGroup
 from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
@@ -320,6 +321,13 @@ class StudentsAvgLearning(APIView):
                     student=m.student,
                 ).first()
 
+                mock_records = None
+                if m.mock:
+                    mock_records = MockExamResult.objects.filter(
+                        student=m.student,
+                        mock=m.mock,
+                    ).first()
+
                 theme_data = {
                     "id": m.theme.id,
                     "name": m.theme.title,
@@ -330,6 +338,7 @@ class StudentsAvgLearning(APIView):
                     "homework_id": homework_id.id if homework_id else None,
                     "mastering_id": m.id if m.choice in ["Speaking","Unit_Test","Mock"] else None,
                     "title": m.test.title if m.test else "N/A",
+                    "mock":mock_records,
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
                     "updater" : homework_id.updater.full_name if homework_id and homework_id.updater else
