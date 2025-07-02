@@ -11,8 +11,8 @@ from ..student.quiz.serializers import QuestionSerializer, MatchPairsSerializer,
 from ..student.student.models import Student
 from ..student.student.serializers import StudentSerializer
 from ..student.studentgroup.models import StudentGroup
-from ..student.subject.models import Theme
-from ..student.subject.serializers import ThemeSerializer
+from ..student.subject.models import Theme, Subject
+from ..student.subject.serializers import ThemeSerializer, SubjectSerializer
 
 
 class UnitTestSerializer(serializers.ModelSerializer):
@@ -184,7 +184,7 @@ class QuizResultSerializer(serializers.ModelSerializer):
 
 class MockExamSerializer(serializers.ModelSerializer):
 
-    options = serializers.PrimaryKeyRelatedField(many=True, queryset=MockExam.objects.all(),allow_null=True, required=False)
+    options = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True, required=False)
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), allow_null=True, required=False)
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True, required=False)
 
@@ -223,7 +223,7 @@ class MockExamSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep["options"] = MockExamSerializer(instance.options.all(), many=True).data
+        rep["options"] = SubjectSerializer(instance.options,context=self.context).data
         rep["group"] = {
             "id": instance.group.id,
             "name" : instance.group.name,
