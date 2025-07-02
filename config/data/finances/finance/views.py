@@ -343,7 +343,17 @@ class CasherStatisticsAPIView(APIView):
     def get(self, request, *args, **kwargs):
         casher = self.kwargs.get('pk')
         kind = self.request.query_params.get('kind', None)
+
+        start_date = self.request.GET.get("start_date", None)
+        end_date = self.request.GET.get("end_date", None)
+
         filter = {}
+
+        if start_date:
+            filter["created_at__gte"] = start_date
+        if end_date:
+            filter["created_at__lte"] = end_date
+
         if kind:
             filter['kind'] = Kind.objects.get(id=kind)
         if casher:
