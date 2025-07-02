@@ -65,6 +65,10 @@ class QuizRestAPIView(ListCreateAPIView):
 
         quiz = self.request.GET.get('quiz')
         student = self.request.GET.get('student')
+        user = self.request.GET.get('user')
+
+        if user:
+            queryset = queryset.filter(student__user__id=user)
         if quiz:
             queryset = queryset.filter(quiz__id=quiz)
 
