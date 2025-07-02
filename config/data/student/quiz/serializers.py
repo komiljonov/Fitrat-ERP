@@ -630,8 +630,10 @@ class ExamSerializer(serializers.ModelSerializer):
 class ExamMonthlySerializer(serializers.Serializer):
     first_subject = serializers.UUIDField()
     second_subject = serializers.UUIDField()
-    has_certificate = serializers.BooleanField()
-    certificate = serializers.UUIDField()
+    first_has_certificate = serializers.BooleanField()
+    second_has_certificate = serializers.BooleanField()
+    first_certificate = serializers.UUIDField()
+    second_certificate = serializers.UUIDField()
     expire_date = serializers.DateTimeField()
     class Meta:
         model = ExamRegistration
@@ -641,8 +643,10 @@ class ExamMonthlySerializer(serializers.Serializer):
             "student",
             "first_subject",
             "second_subject",
-            "has_certificate",
-            "certificate",
+            "first_has_certificate",
+            "second_has_certificate",
+            "first_certificate",
+            "second_certificate",
             "expire_date",
             "is_participating",
             "student_comment",
