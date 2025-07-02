@@ -262,14 +262,14 @@ class MockExamResultSerializer(serializers.ModelSerializer):
 
             ball = (instance.overall_score * 100) / 9
 
-            Mastering.objects.create(
-                student=instance.student,
-                lid=None,
-                theme=None,
-                test=None,
+            mastering = Mastering.objects.filter(
                 choice="Mock",
-                ball=ball,
-            )
+                student=instance.student if instance.student else None,
+                mock=instance.mock if instance.mock else None,
+            ).first()
+            if mastering:
+                mastering.ball=ball
+                mastering.save()
 
         return instance
 
