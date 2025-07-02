@@ -87,6 +87,7 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
     receiver = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
     amount = serializers.IntegerField()
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
+    payment_method = serializers.CharField()
 
     class Meta:
         model = Handover
@@ -95,6 +96,7 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
             'receiver',
             'amount',
             'casher',
+            "payment_method",
             'created_at',
             'updated_at',
         ]
