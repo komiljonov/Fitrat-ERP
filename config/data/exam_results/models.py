@@ -1,6 +1,6 @@
 from django.db import models
 
-from data.student.quiz.models import ExamSubject
+from ..student.subject.models import Subject
 from data.student.student.models import Student
 from ..command.models import BaseModel
 from ..student.course.models import Course
@@ -94,8 +94,8 @@ class UnitTestResult(BaseModel):
 
 
 class MockExam(BaseModel):
-    options : "ExamSubject" = models.ManyToManyField(
-        "quiz.ExamSubject",related_name="mock_exam_options"
+    options : "Subject" = models.ForeignKey(
+        "subject.Subject",on_delete=models.SET_NULL,related_name="mock_exam_options",null=True,blank=True
     )
     course : "Course" = models.ForeignKey(
         "course.Course",on_delete=models.SET_NULL,

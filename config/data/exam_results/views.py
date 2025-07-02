@@ -92,7 +92,7 @@ class MockExamListCreateAPIView(ListCreateAPIView):
         if student:
             queryset = queryset.filter(students__id=student)
         if option:
-            queryset = queryset.filter(options__id__in=option)
+            queryset = queryset.filter(options__id=option)
         return queryset
 
 
