@@ -1,4 +1,5 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.response import Response
 
 from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult
 from .serializers import UnitTestSerializer, UnitTestResultSerializer, QuizResultSerializer, MockExamSerializer, \
@@ -59,6 +60,7 @@ class UnitTestResultListCreateAPIView(ListCreateAPIView):
 class QuizRestAPIView(ListCreateAPIView):
     queryset = QuizResult.objects.all()
     serializer_class = QuizResultSerializer
+    pagination_class = None
 
     def get_queryset(self):
         queryset = QuizResult.objects.all()
@@ -71,12 +73,13 @@ class QuizRestAPIView(ListCreateAPIView):
             queryset = queryset.filter(student__user__id=user)
         if quiz:
             queryset = queryset.filter(quiz__id=quiz)
-
         if student:
             queryset = queryset.filter(students__id=student)
 
-        return queryset
+        return queryset.order_by("-created_at")
 
+    def get_paginated_response(self, data):
+        return Response(data)
 
 class MockExamListCreateAPIView(ListCreateAPIView):
     queryset = MockExam.objects.all()
