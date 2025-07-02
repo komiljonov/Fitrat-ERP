@@ -28,7 +28,7 @@ from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer,
     VocabularySerializer, PairsSerializer, MatchPairsSerializer, ExamSerializer, \
     QuizGapsSerializer, AnswerSerializer, ExamRegistrationSerializer, ObjectiveTestSerializer, Cloze_TestSerializer, \
     ImageObjectiveTestSerializer, True_FalseSerializer, ExamCertificateSerializer, QuizCheckingSerializer, \
-    ExamSubjectSerializer
+    ExamSubjectSerializer, ExamMonthlySerializer
 from ..groups.models import Group
 from ..homeworks.models import Homework
 from ..mastering.models import Mastering
@@ -1340,3 +1340,67 @@ class ExamOptionCreate(APIView):
         }
 
         return Response(response_data, status=207 if errors else 200)
+
+
+class MonthlyExam(APIView):
+    serializer_class = ExamMonthlySerializer
+
+    def put(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        exam_id = validated_data.get("exam")
+        student_id = validated_data.get("student")
+
+        # 🔍 Retrieve ExamRegistration to update
+        exam_registration = ExamRegistration.objects.filter(
+            exam_id=exam_id,
+            student_id=student_id
+        ).first()
+
+        if not exam_registration:
+            return Response({"detail": "Exam registration not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # ✅ Set options (subjects)
+        first_subject_id = validated_data.get("first_subject")
+        second_subject_id = validated_data.get("second_subject")
+
+        first_exam_subject = ExamSubject.objects.filter(subject_id=first_subject_id).first()
+        second_exam_subject = ExamSubject.objects.filter(subject_id=second_subject_id).first()
+
+        if not first_exam_subject or not second_exam_subject:
+            return Response({"detail": "Exam subject not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update exam_registration
+        exam_registration.option = first_exam_subject
+        exam_registration.save()
+
+        # Save second subject as variation or extra field
+        exam_registration.variation = second_exam_subject
+        exam_registration.save()
+
+        certificate = None
+        if validated_data.get("has_certificate"):
+            certificate = ExamCertificate.objects.create(
+                student_id=student_id,
+                exam_id=exam_id,
+                status="Pending",
+                certificate=validated_data.get("certificate"),
+                expire_date=validated_data.get("expire_date"),
+            )
+
+        response_data = {
+            "first_subject": first_exam_subject.subject.name,
+            "second_subject": second_exam_subject.subject.name,
+            "has_certificate": validated_data.get("has_certificate"),
+            "certificate": str(certificate.id) if certificate else None,
+            "expire_date": validated_data.get("expire_date"),
+            "status": certificate.status if certificate else None,
+            "exam": str(exam_id),
+            "student": str(student_id),
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+
