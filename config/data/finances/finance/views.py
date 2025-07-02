@@ -237,7 +237,7 @@ class CasherHandoverAPIView(CreateAPIView):
         amount = serializer.validated_data.get("amount")
         payment_method = serializer.validated_data.get("payment_method")
 
-        icecream.ic(receiver, casher, amount)
+        print(payment_method)
 
         if int(amount) > 0:
             # Get the Kind instance (unpacking the tuple)
@@ -249,7 +249,7 @@ class CasherHandoverAPIView(CreateAPIView):
                 amount=amount,
                 payment_method=payment_method,
                 action='EXPENSE',
-                kind=handover,  # Now it's correctly assigned
+                kind=handover,
                 creator=request.user,
                 comment=f"{casher.name}  - {amount}  so'm  "
                         f"{receiver.name}  ga kassa topshirdi ."
@@ -264,7 +264,7 @@ class CasherHandoverAPIView(CreateAPIView):
                 amount=amount,
                 payment_method=payment_method,
                 action='INCOME',
-                kind=acception,  # Now it's correctly assigned
+                kind=acception,
                 creator=request.user,
                 comment=f"{receiver.name}  - {amount}  so'm  "
                         f"{casher.name}  dan kassa qabul qildi ."
