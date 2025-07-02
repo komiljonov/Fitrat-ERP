@@ -1,13 +1,12 @@
 import datetime
 
-import icecream
 import openpyxl
 import pandas as pd
 from django.db.models import Sum, Q
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_date
-from django.utils.timezone import now
+from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -205,12 +204,13 @@ class FinancePaymentMethodsAmountsListAPIView(APIView):
         filial = self.request.GET.get('filial', None)
         casher = self.request.GET.get('casher', None)
 
-        def get_total_amount(payment_name, action_type,casher,filial):
-            return Finance.objects.filter(payment_method=payment_name, action=action_type,casher__id=casher,filial__id=filial).aggregate(
+        def get_total_amount(payment_name, action_type, casher, filial):
+            return Finance.objects.filter(payment_method=payment_name, action=action_type, casher__id=casher,
+                                          filial__id=filial).aggregate(
                 total=Sum('amount'))['total'] or 0
 
-        income_amount = get_total_amount(payment_method,"INCOME",casher,filial)
-        expense_amount = get_total_amount(payment_method,"EXPENSE",casher,filial)
+        income_amount = get_total_amount(payment_method, "INCOME", casher, filial)
+        expense_amount = get_total_amount(payment_method, "EXPENSE", casher, filial)
 
         return Response({
             'income_amount': income_amount,
@@ -220,8 +220,6 @@ class FinancePaymentMethodsAmountsListAPIView(APIView):
             "casher": casher,
             "current_amount": income_amount - expense_amount,
         })
-
-
 
 
 class CasherHandoverAPIView(CreateAPIView):
@@ -236,8 +234,6 @@ class CasherHandoverAPIView(CreateAPIView):
         casher = serializer.validated_data.get("casher")
         amount = serializer.validated_data.get("amount")
         payment_method = serializer.validated_data.get("payment_method")
-
-        print(payment_method)
 
         if int(amount) > 0:
             # Get the Kind instance (unpacking the tuple)
@@ -351,13 +347,19 @@ class CasherStatisticsAPIView(APIView):
 
         if start_date:
             start_dt = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            start_dt = make_aware(start_dt)
             filter["created_at__gte"] = start_dt
 
+            if not end_date:
+                # default end date to end of start_date
+                end_dt = start_dt + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+                filter["created_at__lte"] = end_dt
+
         if end_date:
-            # include entire end day by setting time to 23:59:59
-            end_dt = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+            end_dt = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1) - datetime.timedelta(
+                seconds=1)
+            end_dt = make_aware(end_dt)
             filter["created_at__lte"] = end_dt
-        print(filter)
 
         if kind:
             filter['kind'] = Kind.objects.get(id=kind)
@@ -390,8 +392,7 @@ class TeacherGroupFinanceAPIView(APIView):
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
 
-
-        print("teacher" , teacher_id)
+        print("teacher", teacher_id)
 
         group_filters = {"group__teacher_id": teacher_id}
         if start_date and end_date:
@@ -421,8 +422,9 @@ class TeacherGroupFinanceAPIView(APIView):
             elif start_date:
                 finance_filters["created_at__gte"] = start_date
 
-            kind=Kind.objects.filter(action="INCOME",name__icontains="Lesson payment").first()
-            finance_records = Finance.objects.filter(**finance_filters,stuff__id=teacher_id,kind=kind).order_by("created_at")
+            kind = Kind.objects.filter(action="INCOME", name__icontains="Lesson payment").first()
+            finance_records = Finance.objects.filter(**finance_filters, stuff__id=teacher_id, kind=kind).order_by(
+                "created_at")
             created_at = finance_records.first().created_at if finance_records.exists() else None
             total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
 
@@ -456,8 +458,10 @@ class TeacherGroupFinanceAPIView(APIView):
                     first_attendance = student_attendances.first()
                     # Remove this line as it's too restrictive
                     # student_finance_filters["created_at__date"] = first_attendance.created_at.date()
-                    total_student_payment = Finance.objects.filter(**student_finance_filters,stuff__id=teacher_id,kind=kind).aggregate(Sum('amount'))[
-                                                'amount__sum'] or 0
+                    total_student_payment = \
+                    Finance.objects.filter(**student_finance_filters, stuff__id=teacher_id, kind=kind).aggregate(
+                        Sum('amount'))[
+                        'amount__sum'] or 0
                 else:
                     total_student_payment = 0
 
@@ -1018,11 +1022,13 @@ class GeneratePaymentExcelAPIView(APIView):
 
         for method in payment_methods:
             income = \
-            Finance.objects.filter(payment_method=method, action='INCOME', **filters).aggregate(total=Sum('amount'))[
-                'total'] or 0
+                Finance.objects.filter(payment_method=method, action='INCOME', **filters).aggregate(
+                    total=Sum('amount'))[
+                    'total'] or 0
             expense = \
-            Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).aggregate(total=Sum('amount'))[
-                'total'] or 0
+                Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).aggregate(
+                    total=Sum('amount'))[
+                    'total'] or 0
             data[f"{method}_Income"] = income
             data[f"{method}_Expense"] = expense
 
