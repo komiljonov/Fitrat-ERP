@@ -1,7 +1,7 @@
 
 from rest_framework import serializers
 
-from .models import UnitTest, UnitTestResult, QuizResult, MockExam
+from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult
 from ..student.course.models import Course
 from ..student.groups.models import Group
 from ..student.mastering.models import Mastering
@@ -207,12 +207,10 @@ class MockExamSerializer(serializers.ModelSerializer):
         if group:
             students = StudentGroup.objects.filter(group=group)
             for student in students:
-                mastering = Mastering.objects.create(
+                mastering = MockExamResult.objects.create(
+                    mock=self.instance,
                     student=student.student if student.student else None,
-                    lid=student.lid if student.lid else None,
-                    theme=None,
-                    choice="Mock",
-                    ball=0
+                    overall_score=0
                 )
                 print(mastering)
 
@@ -233,4 +231,50 @@ class MockExamSerializer(serializers.ModelSerializer):
             "name" : instance.course.name,
         } if instance.course else None
 
+        return rep
+
+
+
+class MockExamResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MockExamResult
+        fields = [
+            "id",
+            "student",
+            "mock",
+            "reading",
+            "listening",
+            "writing",
+            "speaking",
+            "overall_score",
+            "created_at",
+        ]
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if instance.mock and instance.student:
+            instance.overall_score = (
+                instance.reading + instance.listening + instance.writing + instance.speaking
+            ) / 4
+            instance.save()
+
+            Mastering.objects.create(
+                student=instance.student,
+                lid=None,
+                theme=None,
+                test=None,
+                choice="Mock",
+                ball=instance.overall_score,
+            )
+
+        return instance
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["student"] = {
+            "id": instance.student.id,
+            "full_name": f"{instance.student.first_name} ({instance.student.last_name})",
+        }
         return rep
