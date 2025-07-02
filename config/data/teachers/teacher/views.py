@@ -327,6 +327,16 @@ class StudentsAvgLearning(APIView):
                         student=m.student,
                         mock=m.mock,
                     ).first()
+                    if mock_records:
+                        mock_records_data = {
+                            "id": mock_records.id,
+                            "reading": mock_records.reading,
+                            "listening": mock_records.listening,
+                            "writing": mock_records.writing,
+                            "speaking": mock_records.speaking,
+                            "overall_score": mock_records.overall_score,
+                            "created_at": mock_records.created_at.isoformat(),  # ensure datetime is serializable
+                        }
 
                 theme_data = {
                     "id": m.theme.id,
@@ -338,7 +348,7 @@ class StudentsAvgLearning(APIView):
                     "homework_id": homework_id.id if homework_id else None,
                     "mastering_id": m.id if m.choice in ["Speaking","Unit_Test","Mock"] else None,
                     "title": m.test.title if m.test else "N/A",
-                    "mock":mock_records,
+                    "mock":mock_records_data,
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
                     "updater" : homework_id.updater.full_name if homework_id and homework_id.updater else
