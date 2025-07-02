@@ -560,6 +560,28 @@ class ExamSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+    def create(self, validated_data):
+        options = validated_data.pop("options", [])
+        exam = super().create(validated_data)
+
+        exam.options.set(options)  # ✅ Set the many-to-many relationship
+
+        for option in options:
+            if option.options > 0:  # ✅ Use the actual field name, not dict-style access
+                subject = option.subject
+                group = Group.objects.filter(course__subject=subject, teacher=option.teacher).first()
+                teacher = group.teacher if group else None
+
+                if teacher:
+                    Notification.objects.create(
+                        user=teacher,
+                        choice="Examination",
+                        come_from=exam,
+                        comment=f"{exam.date} sanasida {subject.name} fanidan imtihon yaratildi!"
+                    )
+
+        return exam
+
     def get_student_count(self, instance):
         count = ExamRegistration.objects.filter(
             exam=instance,
