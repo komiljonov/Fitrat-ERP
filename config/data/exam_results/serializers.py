@@ -260,13 +260,15 @@ class MockExamResultSerializer(serializers.ModelSerializer):
             ) / 4
             instance.save()
 
+            ball = (instance.overall_score * 100) / 9
+
             Mastering.objects.create(
                 student=instance.student,
                 lid=None,
                 theme=None,
                 test=None,
                 choice="Mock",
-                ball=instance.overall_score,
+                ball=ball,
             )
 
         return instance

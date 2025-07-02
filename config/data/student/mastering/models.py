@@ -1,5 +1,6 @@
 from django.db import models
 
+from data.exam_results.models import MockExam
 from ..quiz.models import Quiz
 from ..student.models import Student
 from ..subject.models import Theme
@@ -23,6 +24,9 @@ class Mastering(BaseModel):
         ("Speaking", "Speaking"),
         ("Unit_Test", "Unit_Test"),
     ],default="Homework",null=True,blank=True)
+
+    mock : "MockExam" = models.ForeignKey("exam_results.MockExam",on_delete=models.SET_NULL, null=True,blank=True,
+                             related_name='mastering_mock')
 
     updater = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True,blank=True,related_name='mastering_updater')
 
