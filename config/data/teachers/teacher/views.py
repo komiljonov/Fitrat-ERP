@@ -321,21 +321,18 @@ class StudentsAvgLearning(APIView):
                     student=m.student,
                 ).first()
 
-                mock_records = None
+                mock_records_data = None  # ← this ensures it's always available
                 if m.mock:
-                    mock_records = MockExamResult.objects.filter(
-                        student=m.student,
-                        mock=m.mock,
-                    ).first()
-                    if mock_records:
+                    mock_result = MockExamResult.objects.filter(student=m.student, mock=m.mock).first()
+                    if mock_result:
                         mock_records_data = {
-                            "id": mock_records.id,
-                            "reading": mock_records.reading,
-                            "listening": mock_records.listening,
-                            "writing": mock_records.writing,
-                            "speaking": mock_records.speaking,
-                            "overall_score": mock_records.overall_score,
-                            "created_at": mock_records.created_at.isoformat(),  # ensure datetime is serializable
+                            "id": mock_result.id,
+                            "reading": mock_result.reading,
+                            "listening": mock_result.listening,
+                            "writing": mock_result.writing,
+                            "speaking": mock_result.speaking,
+                            "overall_score": mock_result.overall_score,
+                            "created_at": mock_result.created_at.isoformat(),  # datetime to string
                         }
 
                 theme_data = {
