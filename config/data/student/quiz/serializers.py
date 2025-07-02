@@ -581,9 +581,8 @@ class ExamSerializer(serializers.ModelSerializer):
 
             options_list = []
             for exam_subject in teacher_exam_subjects:
-                if exam_subject.lang_national and exam_subject.lang_foreign:
-                    lang_value = "both"
-                elif exam_subject.lang_national:
+
+                if exam_subject.lang_national:
                     lang_value = "national"
                 elif exam_subject.lang_foreign:
                     lang_value = "foreign"
