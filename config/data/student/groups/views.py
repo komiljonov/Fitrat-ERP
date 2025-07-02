@@ -106,6 +106,7 @@ class GroupListAPIView(ListAPIView):
     def get_queryset(self):
         filter = {}
         queryset = Group.objects.all()
+        subject = self.request.GET.get('subject', None)
         status = self.request.GET.get('status', None)
         filial = self.request.GET.get('filial', None)
         course = self.request.GET.get('course', None)
@@ -114,6 +115,7 @@ class GroupListAPIView(ListAPIView):
         end_date = self.request.GET.get('end_date', None)
         student = self.request.GET.get('student', None)
         not_added = self.request.GET.get('not_added', None)
+
 
         if status:
             filter['status'] = status
@@ -129,6 +131,8 @@ class GroupListAPIView(ListAPIView):
             filter['created_at__gte'] = start_date
         if end_date:
             filter['created_at__lte'] = end_date
+        if subject:
+            queryset = queryset.filter(course__subject__id=subject)
         if not_added and not_added.lower() == "true":
             queryset = queryset.exclude(status="INACTIVE")
         return queryset.filter(**filter)
