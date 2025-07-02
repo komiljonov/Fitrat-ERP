@@ -1169,6 +1169,67 @@ class ExamRegisteredStudentAPIView(APIView):
         return response
 
 
+class ExamRegisteredStudentListAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="List Registered Students",
+        operation_description="Return registered students for a specific exam as JSON.",
+        manual_parameters=[
+            openapi.Parameter(
+                name='exam_id',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                required=True,
+                description="ID of the exam"
+            )
+        ],
+        responses={200: openapi.Response(description="List of registered students")}
+    )
+    def get(self, request):
+        exam_id = request.GET.get("exam_id")
+        if not exam_id:
+            return Response({"detail": "Missing 'exam_id' parameter."}, status=400)
+
+        try:
+            exam = Exam.objects.get(id=exam_id)
+        except Exam.DoesNotExist:
+            return Response({"detail": "Exam not found."}, status=404)
+
+        registrations = ExamRegistration.objects.filter(exam=exam).select_related('student').prefetch_related('option')
+
+        # Sort by is_participating (True first)
+        registrations = sorted(registrations, key=lambda r: not r.is_participating)
+
+        data = []
+        for reg in registrations:
+            student = reg.student
+            certificate = ExamCertificate.objects.filter(exam=exam, student=student).first()
+            has_certificate = bool(certificate and certificate.certificate)
+
+            options = [
+                {
+                    "subject": o.subject.name if o.subject else None,
+                    "variant": o.options,
+                    "lang": "Uzbek" if o.lang_national else "Euro" if o.lang_foreign else "Tanlanmagan"
+                }
+                for o in reg.option.all()
+            ]
+
+            data.append({
+                "full_name": f"{student.first_name} {student.last_name}",
+                "phone": getattr(student, 'phone', ''),
+                "status": "Faol" if reg.status == "Active" else "Yakunlangan",
+                "is_participating": reg.is_participating,
+                "mark": reg.mark,
+                "student_comment": reg.student_comment,
+                "options": options,
+                "has_certificate": has_certificate,
+            })
+
+        return Response(data, status=200)
+
+
 class ExamCertificateAPIView(ListCreateAPIView):
     queryset = ExamCertificate.objects.all()
     serializer_class = ExamCertificateSerializer
