@@ -102,7 +102,7 @@ class FinanceListAPIView(ListCreateAPIView):
 
         filter = {}
         if start_date:
-            filter['start_date__gte'] = parse_datetime(start_date).date()
+            filter['created_at__gte'] = parse_datetime(start_date).date()
             queryset = queryset.filter(**filter)
 
         if start_date and end_date:
