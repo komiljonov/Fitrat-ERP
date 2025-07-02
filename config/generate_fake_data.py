@@ -50,7 +50,7 @@ def generate_fake_data():
       "settings",
       "results",
       "shop",
-      "cashiers_archived",
+      "cashiers_archiv+ed",
     ]
     for i in pages:
         Page.objects.create(
