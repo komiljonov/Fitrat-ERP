@@ -353,6 +353,7 @@ class CasherStatisticsAPIView(APIView):
             filter["created_at__gte"] = start_date
         if end_date:
             filter["created_at__lte"] = end_date
+        print(filter)
 
         if kind:
             filter['kind'] = Kind.objects.get(id=kind)
