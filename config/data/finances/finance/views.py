@@ -361,6 +361,8 @@ class CasherStatisticsAPIView(APIView):
             end_dt = make_aware(end_dt)
             filter["created_at__lte"] = end_dt
 
+        print(filter)
+
         if kind:
             filter['kind'] = Kind.objects.get(id=kind)
         if casher:
