@@ -117,7 +117,13 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
             rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
 
         if instance.sentence:
-            rep["sentence"] = AnswerSerializer(instance.sentence).data
+            sentence_text = instance.sentence.text if hasattr(instance.sentence, 'text') else ''
+            words = sentence_text.split()
+            random.shuffle(words)
+            rep["sentence"] = {
+                "id": str(instance.sentence.id),
+                "shuffled_words": words
+            }
 
         return rep
 
