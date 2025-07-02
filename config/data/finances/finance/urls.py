@@ -6,7 +6,7 @@ from .views import FinanceListAPIView, FinanceDetailAPIView, FinanceNoPGList, St
     TeacherGroupFinanceAPIView, FinanceTeacher, FinanceExcel, KindRetrieve, KindList, PaymentMethodsRetrieve, \
     PaymentMethodsList, PaymentStatistics, PaymentCasherStatistics, SalesList, SalesStudentList, SalesStudentsRetrieve, \
     PaymentStatisticsByKind, SalesStudentNoPG, GeneratePaymentExcelAPIView, SaleStudentRetrieve, VoucherList, \
-    VoucherRetrieve, VoucherNoPG, VoucherStudentRetrieve, VoucherStudentList
+    VoucherRetrieve, VoucherNoPG, VoucherStudentRetrieve, VoucherStudentList,FinancePaymentMethodsAmountsListAPIView
 
 urlpatterns = [
     path('', FinanceListAPIView.as_view(), name='finance_list'),
@@ -20,6 +20,8 @@ urlpatterns = [
     path('casher/<uuid:pk>/', CasherRetrieveUpdateDestroyAPIView.as_view(), name='finance_casher'),
     path('casher/no-pg/', CasherNoPg.as_view(), name='finance_casher_no-pg'),
     path('casher/stats/<uuid:pk>/', CasherStatisticsAPIView.as_view(), name='finance_casher_stats'),
+
+    path("method-amount/",FinancePaymentMethodsAmountsListAPIView.as_view(), name="finance_payment_method_amounts"),
 
     path('handover', CasherHandoverAPIView.as_view(), name='finance_handover'),
     path('handover/<uuid:pk>/', CasherHandoverHistory.as_view(), name='finance_handover_history'),

@@ -198,6 +198,32 @@ class StuffFinanceListAPIView(ListAPIView):
         return Finance.objects.none()
 
 
+class FinancePaymentMethodsAmountsListAPIView(APIView):
+
+    def get(self, request):
+        payment_method = self.request.GET.get('payment_method', None)
+        filial = self.request.GET.get('filial', None)
+        casher = self.request.GET.get('casher', None)
+
+        def get_total_amount(payment_name, action_type,casher,filial):
+            return Finance.objects.filter(payment_method=payment_name, action=action_type,casher__id=casher,filial__id=filial).aggregate(
+                total=Sum('amount'))['total'] or 0
+
+        income_amount = get_total_amount(payment_method,"INCOME",casher,filial)
+        expense_amount = get_total_amount(payment_method,"EXPENSE",casher,filial)
+
+        return Response({
+            'income_amount': income_amount,
+            'expense_amount': expense_amount,
+            "payment_method": payment_method,
+            "filial": filial,
+            "casher": casher,
+            "current_amount": income_amount - expense_amount,
+        })
+
+
+
+
 class CasherHandoverAPIView(CreateAPIView):
     serializer_class = CasherHandoverSerializer
     permission_classes = [IsAuthenticated]
