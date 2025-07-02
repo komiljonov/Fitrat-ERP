@@ -627,6 +627,40 @@ class ExamSerializer(serializers.ModelSerializer):
         return rep
 
 
+class ExamMonthlySerializer(serializers.Serializer):
+    first_subject = serializers.UUIDField()
+    second_subject = serializers.UUIDField()
+    has_certificate = serializers.BooleanField()
+    certificate = serializers.UUIDField()
+    expire_date = serializers.DateTimeField()
+    class Meta:
+        model = ExamRegistration
+        fields = [
+            "id",
+            "exam",
+            "student",
+            "first_subject",
+            "second_subject",
+            "has_certificate",
+            "certificate",
+            "expire_date",
+            "is_participating",
+            "student_comment",
+            "variation",
+            "mark",
+            "date",
+            "status",
+            "group",
+            "option",
+            "created_at",
+        ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["student"] = StudentSerializer(instance.student,
+                                           include_only=["id","first_name","last_name"]).data
+        return rep
+
 class ExamRegistrationSerializer(serializers.ModelSerializer):
     option = serializers.PrimaryKeyRelatedField(
         queryset=ExamSubject.objects.all(), many=True, allow_null=True,required=False
@@ -634,6 +668,9 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
 
     date = serializers.SerializerMethodField()
     exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), allow_null=True, required=False)
+
+    first_subject = serializers.UUIDField(required=False)
+    second_subject = serializers.UUIDField(required=False)
 
     class Meta:
         model = ExamRegistration
@@ -744,3 +781,5 @@ class ExamCertificateSerializer(serializers.ModelSerializer):
         rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data
         rep["student"] = StudentSerializer(instance.student, include_only=["id", "first_name", "last_name"]).data
         return rep
+
+

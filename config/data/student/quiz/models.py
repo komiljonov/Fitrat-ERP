@@ -323,6 +323,10 @@ class ExamRegistration(BaseModel):
     #     return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
 
 
+
+
+
+
 class ExamCertificate(BaseModel):
     student: "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='registrated_student_certificate')
