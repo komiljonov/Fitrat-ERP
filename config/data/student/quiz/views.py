@@ -145,6 +145,9 @@ class QuizCheckAPIView(APIView):
 
         self._create_mastering_record(theme, student, quiz, results["summary"]["ball"])
 
+        existing_results.json_body = results
+        existing_results.save()
+
         return Response(results)
 
     def _prepare_question_data(self, question):

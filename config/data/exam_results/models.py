@@ -55,6 +55,8 @@ class QuizResult(BaseModel):
     )
     point = models.IntegerField(default=0)
 
+    json_body = models.JSONField(default=list)
+
 
 class UnitTest(BaseModel):
     theme_after = models.ForeignKey(
