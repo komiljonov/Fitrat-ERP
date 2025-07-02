@@ -39,6 +39,23 @@ class CasherListCreateAPIView(ListCreateAPIView):
         is_archived = self.request.GET.get('is_archived', False)
 
         filter = {}
+        start_date = self.request.GET.get('start_date', None)
+        end_date = self.request.GET.get('end_date', None)
+        if start_date:
+            start_dt = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            start_dt = make_aware(start_dt)
+            filter["created_at__gte"] = start_dt
+
+            if not end_date:
+                # default end date to end of start_date
+                end_dt = start_dt + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+                filter["created_at__lte"] = end_dt
+
+        if end_date:
+            end_dt = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1) - datetime.timedelta(
+                seconds=1)
+            end_dt = make_aware(end_dt)
+            filter["created_at__lte"] = end_dt
         if is_archived:
             filter['is_archived'] = is_archived.capitalize()
         if role:
