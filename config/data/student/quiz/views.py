@@ -1,4 +1,5 @@
 import logging
+import uuid
 from datetime import datetime, timedelta
 
 import openpyxl
@@ -145,7 +146,19 @@ class QuizCheckAPIView(APIView):
 
         self._create_mastering_record(theme, student, quiz, results["summary"]["ball"])
 
-        existing_results.json_body = results
+        def make_json_serializable(obj):
+            if isinstance(obj, dict):
+                return {k: make_json_serializable(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [make_json_serializable(i) for i in obj]
+            elif isinstance(obj, uuid.UUID):
+                return str(obj)
+            else:
+                return obj
+
+        # Before saving
+        serializable_results = make_json_serializable(results)
+        existing_results.json_body = serializable_results
         existing_results.save()
 
         return Response(results)
