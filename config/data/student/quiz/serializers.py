@@ -628,12 +628,12 @@ class ExamSerializer(serializers.ModelSerializer):
 
 
 class ExamMonthlySerializer(serializers.ModelSerializer):
-    first_subject = serializers.UUIDField()
-    second_subject = serializers.UUIDField()
-    first_has_certificate = serializers.BooleanField()
-    second_has_certificate = serializers.BooleanField()
-    first_certificate = serializers.UUIDField()
-    second_certificate = serializers.UUIDField()
+    first_subject = serializers.UUIDField(required=False)
+    second_subject = serializers.UUIDField(required=False)
+    first_has_certificate = serializers.BooleanField(required=False)
+    second_has_certificate = serializers.BooleanField(required=False)
+    first_certificate = serializers.UUIDField(required=False)
+    second_certificate = serializers.UUIDField(required=False)
     expire_date = serializers.DateTimeField(required=False)
     option = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(),many=True,allow_null=True)
 
