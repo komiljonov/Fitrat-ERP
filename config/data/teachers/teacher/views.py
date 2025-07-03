@@ -269,6 +269,7 @@ class SecondaryGroupStatic(APIView):
 class StudentsAvgLearning(APIView):
     def get(self, request, *args, **kwargs):
         group_id = request.query_params.get("group")
+
         if not group_id:
             return Response({"error": "group parameter is required"}, status=400)
 
@@ -309,19 +310,19 @@ class StudentsAvgLearning(APIView):
                     'is_frozen': sg.lid.is_frozen,
                 }
 
-
             exams = []
             homeworks = []
             speaking = []
             unit = []
             mock=[]
+
             for m in student_record:
                 homework_id = Homework_history.objects.filter(
                     homework__theme=m.theme,
                     student=m.student,
                 ).first()
 
-                mock_records_data = None  # ← this ensures it's always available
+                mock_records_data = None
                 if m.mock:
                     mock_result = MockExamResult.objects.filter(student=m.student, mock=m.mock).first()
                     if mock_result:
