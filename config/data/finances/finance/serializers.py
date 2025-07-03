@@ -63,8 +63,12 @@ class CasherSerializer(serializers.ModelSerializer):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
 
-        income = 0
-        expense = 0
+        income = \
+        Finance.objects.filter(casher=obj, action='INCOME').aggregate(
+            Sum('amount'))['amount__sum'] or 0
+        expense = \
+        Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(
+            Sum('amount'))['amount__sum'] or 0
         if start_date:
 
 
@@ -93,7 +97,9 @@ class CasherSerializer(serializers.ModelSerializer):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
 
-        income = 0
+        income = \
+            Finance.objects.filter(casher=obj, action='INCOME').aggregate(
+                Sum('amount'))['amount__sum'] or 0
 
         if start_date:
             start = parse_date(start_date)
@@ -117,7 +123,9 @@ class CasherSerializer(serializers.ModelSerializer):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
 
-        expense = 0
+        expense = \
+            Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(
+                Sum('amount'))['amount__sum'] or 0
         if start_date:
             start = parse_date(start_date)
             end = parse_date(end_date) if end_date else start
