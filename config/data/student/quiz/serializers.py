@@ -627,7 +627,7 @@ class ExamSerializer(serializers.ModelSerializer):
         return rep
 
 
-class ExamMonthlySerializer(serializers.Serializer):
+class ExamMonthlySerializer(serializers.ModelSerializer):
     first_subject = serializers.UUIDField()
     second_subject = serializers.UUIDField()
     first_has_certificate = serializers.BooleanField()
@@ -635,6 +635,7 @@ class ExamMonthlySerializer(serializers.Serializer):
     first_certificate = serializers.UUIDField()
     second_certificate = serializers.UUIDField()
     expire_date = serializers.DateTimeField(required=False)
+
     class Meta:
         model = ExamRegistration
         fields = [
@@ -661,9 +662,12 @@ class ExamMonthlySerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["student"] = StudentSerializer(instance.student,
-                                           include_only=["id","first_name","last_name"]).data
+        rep["student"] = StudentSerializer(
+            instance.student,
+            include_only=["id", "first_name", "last_name"]
+        ).data
         return rep
+
 
 
 class ExamRegistrationSerializer(serializers.ModelSerializer):
