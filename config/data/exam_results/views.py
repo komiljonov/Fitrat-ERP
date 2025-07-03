@@ -161,7 +161,7 @@ class StudentsResultsListAPIView(APIView):
                     else result.university_entering_ball if result.results == "University"
                     else result.result_score
                 ),
-                "file": file.file if file else None
+                "file": file if file else None
             })
 
         return Response(data)
