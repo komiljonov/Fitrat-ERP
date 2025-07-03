@@ -300,16 +300,16 @@ class ExamRegistration(BaseModel):
     ], max_length=255, null=True, blank=True)
 
     variation = models.CharField(choices=[
-        (1, 1),
-        (2, 2),
-        (3, 3),
-        (4, 4),
-        (5, 5),
-        (6, 6),
-        (7, 7),
-        (8, 8),
-        (9, 9),
-        (10, 10),
+        ("1", "1"),
+        ("2", "2"),
+        ("3", "3"),
+        ("4", "4"),
+        ("5", "5"),
+        ("6", "6"),
+        ("7", "7"),
+        ("8", "8"),
+        ("9", "9"),
+        ("10", "10"),
     ], max_length=2, null=True, blank=True)
 
     is_participating = models.BooleanField(default=True)
