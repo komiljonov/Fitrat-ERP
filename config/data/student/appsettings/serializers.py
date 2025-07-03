@@ -22,7 +22,7 @@ from ...upload.serializers import FileUploadSerializer
 
 
 class StoresSerializer(serializers.ModelSerializer):
-    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True, allow_null=True)
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
 
     class Meta:
@@ -31,6 +31,7 @@ class StoresSerializer(serializers.ModelSerializer):
             "id",
             "photo",
             "video",
+            "text",
             "seen",
             "created_at",
         ]
@@ -38,7 +39,7 @@ class StoresSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["photo"] = FileUploadSerializer(instance.photo, context=self.context).data
-        rep["video"] = FileUploadSerializer(instance.video, context=self.context).data
+        rep["video"] = FileUploadSerializer(instance.video,many=True, context=self.context).data
         return rep
 
 

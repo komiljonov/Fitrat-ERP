@@ -130,3 +130,7 @@ class MockExamResultListCreateAPIView(ListCreateAPIView):
 class MockExamResultRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = MockExamResult.objects.all()
     serializer_class = MockExamResultSerializer
+
+
+
+
