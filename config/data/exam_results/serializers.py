@@ -247,12 +247,16 @@ class MockExamResultSerializer(serializers.ModelSerializer):
             "writing",
             "speaking",
             "overall_score",
+            "updater",
             "created_at",
         ]
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+
+        instance.updater = self.context.request.user
+        instance.save()
 
         if instance.mock and instance.student:
             instance.overall_score = (
