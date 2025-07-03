@@ -143,8 +143,12 @@ class StudentsResultsListAPIView(APIView):
         if student:
             results = results.filter(student__id=student)
 
+        results = results.prefetch_related("student")
+
         data = []
         for result in results:
+            file = result.upload_file.first()
+
             data.append({
                 "id": result.id,
                 "student_id": result.student.id,
@@ -157,7 +161,7 @@ class StudentsResultsListAPIView(APIView):
                     else result.university_entering_ball if result.results == "University"
                     else result.result_score
                 ),
-                "file": result.upload_file.first().file if result.upload_file.exists() else None
+                "file": file.file if file else None
             })
 
         return Response(data)
