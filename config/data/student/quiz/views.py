@@ -1355,8 +1355,8 @@ class MonthlyExam(APIView):
 
         # 🔍 Retrieve ExamRegistration to update
         exam_registration = ExamRegistration.objects.filter(
-            exam_id=exam_id,
-            student_id=student_id
+            exam__id=exam_id,
+            student__id=student_id
         ).first()
 
         if not exam_registration:
@@ -1383,16 +1383,16 @@ class MonthlyExam(APIView):
         first_certificate = None
         if validated_data.get("first_has_certificate"):
             first_certificate = ExamCertificate.objects.create(
-                student_id=student_id,
-                exam_id=exam_id,
+                student=student_id,
+                exam=exam_id,
                 status="Pending",
                 certificate=validated_data.get("first_certificate"),
             )
         second_certificate = None
         if validated_data.get("second_has_certificate"):
             second_certificate = ExamCertificate.objects.create(
-                student_id=student_id,
-                exam_id=exam_id,
+                student=student_id,
+                exam=exam_id,
                 status="Pending",
                 certificate=validated_data.get("second_certificate"),
             )
