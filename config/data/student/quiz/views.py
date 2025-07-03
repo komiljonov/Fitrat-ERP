@@ -1366,19 +1366,7 @@ class MonthlyExam(APIView):
         if not exam_registration:
             return Response({"detail": "Exam registration not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # ✅ Set options (subjects)
-        first_subject_id = validated_data.get("first_subject")
-        second_subject_id = validated_data.get("second_subject")
 
-        first_exam_subject = ExamSubject.objects.filter(subject__id=first_subject_id).first()
-        second_exam_subject = ExamSubject.objects.filter(subject__id=second_subject_id).first()
-
-        if not first_exam_subject or not second_exam_subject:
-            return Response({"detail": "Exam subject not found."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Update exam_registration
-        exam_registration.option.set([first_exam_subject, second_exam_subject])
-        exam_registration.save()
 
         file_1 = File.objects.filter(id=validated_data.get("first_certificate")).first()
         file_2 = File.objects.filter(id=validated_data.get("second_certificate")).first()
@@ -1399,6 +1387,27 @@ class MonthlyExam(APIView):
                 status="Pending",
                 certificate=file_2,
             )
+        # ✅ Set options (subjects)
+        first_subject_id = validated_data.get("first_subject")
+        second_subject_id = validated_data.get("second_subject")
+
+        first_exam_subject = ExamSubject.objects.create(
+            subject=first_subject_id,
+            has_certificate=True if first_certificate else False,
+            certificate=file_1 if first_certificate else None,
+        )
+        second_exam_subject = ExamSubject.objects.create(
+            subject=second_subject_id,
+            has_certificate=True if second_certificate else False,
+            certificate=file_2 if second_certificate else None,
+        )
+
+        if not first_exam_subject or not second_exam_subject:
+            return Response({"detail": "Exam subject not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update exam_registration
+        exam_registration.option.set([first_exam_subject, second_exam_subject])
+        exam_registration.save()
 
         response_data = {
             "first_subject": first_exam_subject.subject.name,
