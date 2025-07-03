@@ -332,6 +332,7 @@ class StudentsAvgLearning(APIView):
                             "writing": mock_result.writing,
                             "speaking": mock_result.speaking,
                             "overall_score": mock_result.overall_score,
+                            "updater": mock_result.updater,
                             "created_at": mock_result.created_at.isoformat(),  # datetime to string
                         }
 
@@ -340,6 +341,7 @@ class StudentsAvgLearning(APIView):
                     "name": m.theme.title,
                 } if m.theme else None
 
+                full_name = getattr(mock_records_data.get("updater"), "full_name", "Unknown")
                 item = {
                     "theme" : theme_data,
                     "homework_id": homework_id.id if homework_id else None,
@@ -349,7 +351,8 @@ class StudentsAvgLearning(APIView):
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
                     "updater" : homework_id.updater.full_name if homework_id and homework_id.updater else
-                    m.updater.full_name if m.choice in ["Speaking","Unit_Test"] and m.updater is not None else "N/A",
+                    m.updater.full_name if m.choice in ["Speaking","Unit_Test"] and m.updater is not None
+                    else full_name if mock_records_data else "N/A",
                     "created_at": m.created_at
                 }
                 if m.test and m.test.type == "Offline" and m.choice=="Test":
