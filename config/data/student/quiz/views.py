@@ -1402,12 +1402,13 @@ class MonthlyExam(APIView):
             certificate=file_2 if second_certificate else None,
         )
 
+        print(first_exam_subject,second_exam_subject)
+
         if not first_exam_subject or not second_exam_subject:
             return Response({"detail": "Exam subject not found."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Update exam_registration
         exam_registration.option.set([first_exam_subject, second_exam_subject])
-        exam_registration.save()
 
         response_data = {
             "first_subject": first_exam_subject.subject.name,
