@@ -89,10 +89,55 @@ class CasherSerializer(serializers.ModelSerializer):
         return income - expense
 
     def get_income(self, obj):
-        return Finance.objects.filter(casher=obj, action='INCOME').aggregate(Sum('amount'))['amount__sum'] or 0
+        request = self.context.get('request')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        income = 0
+
+        if start_date:
+            start = parse_date(start_date)
+            end = parse_date(end_date) if end_date else start
+
+            from datetime import datetime, timedelta
+            end = end + timedelta(days=1) - timedelta(seconds=1)
+
+            income = \
+            Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start, creted_at__lte=end).aggregate(
+                Sum('amount'))['amount__sum'] or 0
+
+        if start_date and end_date:
+            income = \
+            Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start_date, creted_at__lte=end_date).aggregate(
+                Sum('amount'))['amount__sum'] or 0
+        return income
 
     def get_expense(self, obj):
-        return Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(Sum('amount'))['amount__sum'] or 0
+        request = self.context.get('request')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        expense = 0
+        if start_date:
+            start = parse_date(start_date)
+            end = parse_date(end_date) if end_date else start
+
+            from datetime import datetime, timedelta
+            end = end + timedelta(days=1) - timedelta(seconds=1)
+
+            expense = \
+            Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start, creted_at__lte=end).aggregate(
+                Sum('amount'))['amount__sum'] or 0
+
+        if start_date and end_date:
+
+            expense = \
+                Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start_date,
+                                       creted_at__lte=end_date).aggregate(
+                    Sum('amount'))['amount__sum'] or 0
+
+        return expense
+
 
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
