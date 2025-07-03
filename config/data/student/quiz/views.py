@@ -1331,7 +1331,7 @@ class ExamOptionCreate(APIView):
                 reg.status = "Waiting"
                 reg.save()
 
-        print((registrations_to_create), (registrations_to_update), (errors))
+        # print((registrations_to_create), (registrations_to_update), (errors))
         response_data = {
             'created': len(registrations_to_create),
             'updated': len(registrations_to_update),
@@ -1387,7 +1387,6 @@ class MonthlyExam(APIView):
                 exam_id=exam_id,
                 status="Pending",
                 certificate=validated_data.get("first_certificate"),
-                expire_date=validated_data.get("expire_date"),
             )
         second_certificate = None
         if validated_data.get("second_has_certificate"):
@@ -1396,7 +1395,6 @@ class MonthlyExam(APIView):
                 exam_id=exam_id,
                 status="Pending",
                 certificate=validated_data.get("second_certificate"),
-                expire_date=validated_data.get("expire_date"),
             )
 
         response_data = {

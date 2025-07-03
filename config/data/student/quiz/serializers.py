@@ -634,7 +634,7 @@ class ExamMonthlySerializer(serializers.Serializer):
     second_has_certificate = serializers.BooleanField()
     first_certificate = serializers.UUIDField()
     second_certificate = serializers.UUIDField()
-    expire_date = serializers.DateTimeField()
+    expire_date = serializers.DateTimeField(required=False)
     class Meta:
         model = ExamRegistration
         fields = [
@@ -664,6 +664,7 @@ class ExamMonthlySerializer(serializers.Serializer):
         rep["student"] = StudentSerializer(instance.student,
                                            include_only=["id","first_name","last_name"]).data
         return rep
+
 
 class ExamRegistrationSerializer(serializers.ModelSerializer):
     option = serializers.PrimaryKeyRelatedField(
