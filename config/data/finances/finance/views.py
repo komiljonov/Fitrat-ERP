@@ -207,22 +207,20 @@ class StuffFinanceListAPIView(ListAPIView):
 class FinancePaymentMethodsAmountsListAPIView(APIView):
 
     def get(self, request):
-        payment_method = self.request.GET.get('payment_method', None)
-        filial = self.request.GET.get('filial', None)
-        casher = self.request.GET.get('casher', None)
+        payment_method = request.GET.get('payment_method')
+        filial = request.GET.get('filial')
+        casher_id = request.GET.get('casher')
 
-        casher = Casher.objects.filter(id=casher).first()
-        casher = CasherSerializer(casher).data
-        print(casher)
-
+        casher_obj = Casher.objects.filter(id=casher_id).first()
+        casher_data = CasherSerializer(casher_obj, context={"request": request}).data
 
         return Response({
-            'income_amount': casher['income'],
-            'expense_amount': casher['expense'],
+            'income_amount': casher_data['income'],
+            'expense_amount': casher_data['expense'],
             "payment_method": payment_method,
             "filial": filial,
-            "casher": casher,
-            "current_amount": casher["income"] - casher['expense'],
+            "casher": casher_data,
+            "current_amount": casher_data['income'] - casher_data['expense'],
         })
 
 
