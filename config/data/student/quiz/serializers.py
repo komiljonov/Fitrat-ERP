@@ -653,7 +653,6 @@ class ExamMonthlySerializer(serializers.ModelSerializer):
             "student_comment",
             "variation",
             "mark",
-            "date",
             "status",
             "group",
             "option",
