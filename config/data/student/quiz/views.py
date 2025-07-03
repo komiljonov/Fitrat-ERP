@@ -1376,11 +1376,11 @@ class MonthlyExam(APIView):
             return Response({"detail": "Exam subject not found."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Update exam_registration
-        exam_registration.option = first_exam_subject
+        exam_registration.option.set(first_exam_subject)
         exam_registration.save()
 
         # Save second subject as variation or extra field
-        exam_registration.variation = second_exam_subject
+        exam_registration.option.set(second_exam_subject)
         exam_registration.save()
 
         first_certificate = None
