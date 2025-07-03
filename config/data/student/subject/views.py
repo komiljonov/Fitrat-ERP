@@ -28,7 +28,10 @@ class SubjectList(ListCreateAPIView):
         queryset = Subject.objects.all()
         filial = self.request.GET.get('filial', None)
         is_language = self.request.GET.get('is_language', None)
+        is_archived = self.request.GET.get('is_archived', None)
 
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
         if is_language:
             queryset = queryset.filter(is_language=is_language.capitalize())
         if filial:
@@ -121,6 +124,10 @@ class ThemeList(ListCreateAPIView):
 
         theme = self.request.query_params.get('theme')
         level = self.request.query_params.get('level')
+        is_archived = self.request.GET.get('is_archived', None)
+
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
         if theme:
             queryset = queryset.filter(theme=theme)
         course = self.request.query_params.get('course')

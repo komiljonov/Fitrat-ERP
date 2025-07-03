@@ -115,8 +115,10 @@ class GroupListAPIView(ListAPIView):
         end_date = self.request.GET.get('end_date', None)
         student = self.request.GET.get('student', None)
         not_added = self.request.GET.get('not_added', None)
+        is_archived = self.request.GET.get('is_archived', None)
 
-
+        if is_archived:
+            filter["is_archived"] = is_archived.capitalize()
         if status:
             filter['status'] = status
         if student:

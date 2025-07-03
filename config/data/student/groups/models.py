@@ -79,6 +79,8 @@ class Group(BaseModel):
 
     comment = models.TextField(null=True, blank=True)
 
+    is_archived = models.BooleanField(default=False, help_text='Is this group archived?')
+
     def __str__(self):
         return f"{self.name} - {self.price_type}"
 

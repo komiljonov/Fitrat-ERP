@@ -15,6 +15,8 @@ class Subject(BaseModel):
     is_language = models.BooleanField(default=False)
     has_level = models.BooleanField(default=False)
 
+    is_archived = models.BooleanField(default=False)
+
     def __str__(self):
         return f"{self.name}  has level  {self.has_level}"
 
@@ -81,6 +83,7 @@ class Theme(BaseModel):
         'upload.File',  blank=True, related_name='theme_photos'
     )
 
+    is_archived = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('created_at',)

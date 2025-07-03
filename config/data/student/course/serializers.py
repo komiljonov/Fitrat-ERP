@@ -18,7 +18,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ["id", "name", "level","filial", "lessons_number", "level_counts" ,"theme", "subject", "status"]
+        fields = ["id", "name", "level","filial", "lessons_number", "level_counts" ,"theme", "subject", "status","is_archived"]
 
     def to_internal_value(self, data):
         res = super().to_internal_value(data)

@@ -60,6 +60,7 @@ class GroupSerializer(serializers.ModelSerializer):
             'finish_date',
             'real_student',
             'is_secondary',
+            "is_archived",
             'current_theme',
             "created_at",
         ]
