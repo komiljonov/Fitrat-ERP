@@ -19,5 +19,5 @@ urlpatterns = [
     path("mock-results/",MockExamResultListCreateAPIView.as_view()),
     path("mock-results/<uuid:pk>",MockExamResultRetrieveUpdateDestroyAPIView.as_view()),
 
-    path("results/",StudentsResultsListAPIView.as_view()),
+    path("student-results/",StudentsResultsListAPIView.as_view()),
 ]
