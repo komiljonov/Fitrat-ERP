@@ -74,16 +74,16 @@ class CasherSerializer(serializers.ModelSerializer):
             from datetime import datetime, timedelta
             end = end + timedelta(days=1) - timedelta(seconds=1)
 
-            income = Finance.objects.filter(casher=obj, action='INCOME',created_at__gte=start,creted_at__lte=end).aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher=obj, action='EXPENSE',created_at__gte=start,creted_at__lte=end).aggregate(Sum('amount'))['amount__sum'] or 0
+            income = Finance.objects.filter(casher=obj, action='INCOME',created_at__gte=start,created_at__lte=end).aggregate(Sum('amount'))['amount__sum'] or 0
+            expense = Finance.objects.filter(casher=obj, action='EXPENSE',created_at__gte=start,created_at__lte=end).aggregate(Sum('amount'))['amount__sum'] or 0
 
 
         if start_date and end_date:
             income = \
-            Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start_date, creted_at__lte=end_date).aggregate(
+            Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start_date, created_at__lte=end_date).aggregate(
                 Sum('amount'))['amount__sum'] or 0
             expense = \
-            Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start_date, creted_at__lte=end_date).aggregate(
+            Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start_date, created_at__lte=end_date).aggregate(
                 Sum('amount'))['amount__sum'] or 0
 
         return income - expense
