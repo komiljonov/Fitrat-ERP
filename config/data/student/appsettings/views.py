@@ -27,6 +27,7 @@ class StoresListView(ListCreateAPIView):
     queryset = Store.objects.all()
     serializer_class = StoresSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Store.objects.all()
@@ -40,6 +41,8 @@ class StoresListView(ListCreateAPIView):
             queryset = queryset.filter(seen=seen.capitalize())
         return queryset
 
+    def get_paginated_response(self, data):
+        return Response(data)
 
 class StoreDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Store.objects.all()
