@@ -1356,7 +1356,8 @@ class MonthlyExam(APIView):
         # 🔍 Retrieve ExamRegistration to update
         exam_registration = ExamRegistration.objects.filter(
             exam__id=exam_id,
-            student__id=student_id
+            student__id=student_id,
+            exam__choice="Monthly"
         ).first()
 
         if not exam_registration:
