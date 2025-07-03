@@ -1363,9 +1363,6 @@ class MonthlyExam(APIView):
         ).first()
 
 
-        print(validated_data.get("first_certificate"))
-        print(validated_data.get("second_certificate"))
-
         if not exam_registration:
             return Response({"detail": "Exam registration not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -1383,13 +1380,16 @@ class MonthlyExam(APIView):
         exam_registration.option.set([first_exam_subject, second_exam_subject])
         exam_registration.save()
 
+        file_1 = File.objects.filter(id=validated_data.get("first_certificate")).first()
+        file_2 = File.objects.filter(id=validated_data.get("second_certificate")).first()
+
         first_certificate = None
         if validated_data.get("first_has_certificate"):
             first_certificate = ExamCertificate.objects.create(
                 student=student_id,
                 exam=exam_id,
                 status="Pending",
-                certificate=validated_data.get("first_certificate"),
+                certificate=file_1,
             )
         second_certificate = None
         if validated_data.get("second_has_certificate"):
@@ -1397,7 +1397,7 @@ class MonthlyExam(APIView):
                 student=student_id,
                 exam=exam_id,
                 status="Pending",
-                certificate=validated_data.get("second_certificate"),
+                certificate=file_2,
             )
 
         response_data = {
