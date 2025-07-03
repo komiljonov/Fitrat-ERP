@@ -33,8 +33,8 @@ class Mastering(BaseModel):
 
     ball = models.FloatField(default=0)
 
-    def __str__(self):
-        return self.lid.first_name if self.lid else self.student.first_name
+    # def __str__(self):
+    #     return self.lid.first_name if self.lid else self.student.first_name
 
     class Meta:
         ordering = ('created_at',)
