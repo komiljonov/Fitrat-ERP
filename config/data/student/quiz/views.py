@@ -1016,12 +1016,8 @@ class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
-        # Make mutable copy
-        data = request.data.copy()
 
-        # Auto-activate if `option` is set
-        # if "option" in data and data.get("option"):
-        #     data["status"] = "Active"
+        data = request.data.copy()
 
         data["status"] = "Active"
 
