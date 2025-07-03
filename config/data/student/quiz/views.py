@@ -34,7 +34,7 @@ from ..homeworks.models import Homework
 from ..mastering.models import Mastering
 from ..shop.models import Points
 from ..student.models import Student
-from ..subject.models import Theme
+from ..subject.models import Theme, Subject
 from ...account.models import CustomUser
 from ...exam_results.models import QuizResult
 from ...exam_results.serializers import QuizResultSerializer
@@ -1391,13 +1391,16 @@ class MonthlyExam(APIView):
         first_subject_id = validated_data.get("first_subject")
         second_subject_id = validated_data.get("second_subject")
 
+        first_subject_obj = Subject.objects.filter(id=first_subject_id).first()
+        second_subject_obj = Subject.objects.filter(id=second_subject_id).first()
+
         first_exam_subject = ExamSubject.objects.create(
-            subject=first_subject_id,
+            subject=first_subject_obj,
             has_certificate=True if first_certificate else False,
             certificate=file_1 if first_certificate else None,
         )
         second_exam_subject = ExamSubject.objects.create(
-            subject=second_subject_id,
+            subject=second_subject_obj,
             has_certificate=True if second_certificate else False,
             certificate=file_2 if second_certificate else None,
         )
