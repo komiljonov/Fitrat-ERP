@@ -353,7 +353,7 @@ class StudentsAvgLearning(APIView):
                     "type": m.test.type if m.test else "unknown",
                     "updater" : homework_id.updater.full_name if homework_id and homework_id.updater else
                     m.updater.full_name if m.choice in ["Speaking","Unit_Test"] and m.updater is not None
-                    else full_name if mock_records_data else "N/A",
+                    else "N/A",
                     "created_at": m.created_at
                 }
                 if m.test and m.test.type == "Offline" and m.choice=="Test":
