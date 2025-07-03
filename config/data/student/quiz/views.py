@@ -1369,8 +1369,8 @@ class MonthlyExam(APIView):
         first_subject_id = validated_data.get("first_subject")
         second_subject_id = validated_data.get("second_subject")
 
-        first_exam_subject = ExamSubject.objects.filter(subject_id=first_subject_id).first()
-        second_exam_subject = ExamSubject.objects.filter(subject_id=second_subject_id).first()
+        first_exam_subject = ExamSubject.objects.filter(subject__id=first_subject_id).first()
+        second_exam_subject = ExamSubject.objects.filter(subject__id=second_subject_id).first()
 
         if not first_exam_subject or not second_exam_subject:
             return Response({"detail": "Exam subject not found."}, status=status.HTTP_400_BAD_REQUEST)
