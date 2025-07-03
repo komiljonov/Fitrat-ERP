@@ -1353,6 +1353,8 @@ class MonthlyExam(APIView):
         exam_id = validated_data.get("exam")
         student_id = validated_data.get("student")
 
+        print(exam_id,student_id)
+
         # 🔍 Retrieve ExamRegistration to update
         exam_registration = ExamRegistration.objects.filter(
             exam__id=exam_id,
