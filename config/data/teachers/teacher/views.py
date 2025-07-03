@@ -342,7 +342,7 @@ class StudentsAvgLearning(APIView):
                     "name": m.theme.title,
                 } if m.theme else None
 
-                full_name = getattr(mock_records_data.get("updater"), "full_name", "Unknown")
+                # full_name = getattr(mock_records_data.get("updater"), "full_name", "Unknown")
                 item = {
                     "theme" : theme_data,
                     "homework_id": homework_id.id if homework_id else None,
