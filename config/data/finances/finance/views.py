@@ -219,6 +219,9 @@ class FinancePaymentMethodsAmountsListAPIView(APIView):
         income_amount = get_total_amount(payment_method, "INCOME", casher, filial)
         expense_amount = get_total_amount(payment_method, "EXPENSE", casher, filial)
 
+        print(income_amount, expense_amount)
+
+
         return Response({
             'income_amount': income_amount,
             'expense_amount': expense_amount,
