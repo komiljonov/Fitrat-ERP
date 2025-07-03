@@ -39,6 +39,7 @@ class SubjectSerializer(serializers.ModelSerializer):
             'image',
             'all_themes',
             'label',
+            "is_archived",
         ]
 
     def create(self, validated_data):
@@ -139,6 +140,8 @@ class ThemeSerializer(serializers.ModelSerializer):
             'videos',
             'files',
             'photos',
+
+            "is_archived",
 
             'homework_files',
             'course_work_files',

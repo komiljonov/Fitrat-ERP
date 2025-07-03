@@ -35,6 +35,7 @@ class CourseList(ListCreateAPIView):
         level = self.request.query_params.get('level', None)
         filial = self.request.query_params.get('filial', None)
         subject = self.request.query_params.get('subject', None)
+        is_archived = self.request.GET.get('is_archived', False)
 
         queryset = Course.objects.all()
 
@@ -46,6 +47,8 @@ class CourseList(ListCreateAPIView):
 
         if subject:
             queryset = queryset.filter(subject__id=subject)
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         return queryset
 
@@ -68,6 +71,8 @@ class CourseNoPG(ListAPIView):
     def get_queryset(self):
         queryset = Course.objects.all()
 
+        is_archived = self.request.GET.get('is_archived', False)
+
         subject = self.request.GET.get('subject', None)
         filial = self.request.GET.get('filial', None)
 
@@ -75,6 +80,8 @@ class CourseNoPG(ListAPIView):
             queryset = queryset.filter(filial=filial)
         if subject:
             queryset = queryset.filter(subject__id=subject)
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
         return queryset
 
 
