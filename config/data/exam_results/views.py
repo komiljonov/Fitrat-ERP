@@ -1,9 +1,11 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult
 from .serializers import UnitTestSerializer, UnitTestResultSerializer, QuizResultSerializer, MockExamSerializer, \
     MockExamResultSerializer
+from ..results.models import Results
 
 
 class UnitTestListCreateAPIView(ListCreateAPIView):
@@ -131,6 +133,33 @@ class MockExamResultRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = MockExamResult.objects.all()
     serializer_class = MockExamResultSerializer
 
+
+class StudentsResultsListAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        student = self.request.GET.get('student')
+
+        results = Results.objects.filter(status="Accepted")
+
+        if student:
+            results = results.filter(student__id=student)
+
+        data = []
+        for result in results:
+            data.append({
+                "id": result.id,
+                "student_id": result.student.id,
+                "full_name": f"{result.student.first_name} {result.student.last_name}",
+                "student_photo": result.student.photo.url if result.student.photo else None,
+                "type": result.results,
+                "teacher": result.teacher.full_name if result.teacher else None,
+                "point": (
+                    result.band_score if result.results == "Certificate"
+                    else result.university_entering_ball if result.results == "University"
+                    else result.result_score
+                )
+            })
+
+        return Response(data)
 
 
 
