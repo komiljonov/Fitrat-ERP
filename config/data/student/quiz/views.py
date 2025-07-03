@@ -1019,12 +1019,8 @@ class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
 
         data = request.data.copy()
 
-        print(data)
-
-
         data["status"] = "Active"
 
-        # Pass modified data to serializer
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=data, partial=partial)
