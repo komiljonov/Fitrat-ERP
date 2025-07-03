@@ -148,12 +148,10 @@ class StudentsResultsListAPIView(APIView):
 
         # Initialize paginator
         paginator = PageNumberPagination()
-        paginator.page_size = 10  # 🔁 You can also set this in settings.py
+        paginator.page_size = 10
 
-        # Paginate the queryset
         paginated_results = paginator.paginate_queryset(results, request)
 
-        # Build response data
         serializer_context = {"request": request, "view": self}
         data = []
 
