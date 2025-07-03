@@ -237,7 +237,7 @@ class ExamSubject(BaseModel):
     certificate_expire_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return self.subject.name
+        return f"{self.subject.name}  -  {self.has_certificate}"
 
 
 class Exam(BaseModel):
