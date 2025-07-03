@@ -6,6 +6,7 @@ from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResu
 from .serializers import UnitTestSerializer, UnitTestResultSerializer, QuizResultSerializer, MockExamSerializer, \
     MockExamResultSerializer
 from ..results.models import Results
+from ..upload.serializers import FileUploadSerializer
 
 
 class UnitTestListCreateAPIView(ListCreateAPIView):
@@ -146,8 +147,15 @@ class StudentsResultsListAPIView(APIView):
         results = results.prefetch_related("student")
 
         data = []
+
+        serializer_context = {
+            "request": request,
+            "view": self,
+        }
+
         for result in results:
             file = result.upload_file.first()
+            file = FileUploadSerializer(file,context=serializer_context).data if file else None
 
             data.append({
                 "id": result.id,
