@@ -211,26 +211,18 @@ class FinancePaymentMethodsAmountsListAPIView(APIView):
         filial = self.request.GET.get('filial', None)
         casher = self.request.GET.get('casher', None)
 
-        def get_total_amount(payment_name, action_type, casher, filial):
-            return Finance.objects.filter(payment_method=payment_name, action=action_type, casher__id=casher,
-                                          filial__id=filial).aggregate(
-                total=Sum('amount'))['total'] or 0
-
-        income_amount = get_total_amount(payment_method, "INCOME", casher, filial)
-        expense_amount = get_total_amount(payment_method, "EXPENSE", casher, filial)
-
-        print(Finance.objects.filter(payment_method=payment_method, filial=filial,casher__id=casher,action="EXPENSE").first())
-
-        print(income_amount, expense_amount)
+        casher = Casher.objects.filter(id=casher).first()
+        casher = CasherSerializer(casher).data
+        print(casher)
 
 
         return Response({
-            'income_amount': income_amount,
-            'expense_amount': expense_amount,
+            'income_amount': casher['income'],
+            'expense_amount': casher['expense'],
             "payment_method": payment_method,
             "filial": filial,
             "casher": casher,
-            "current_amount": income_amount - expense_amount,
+            "current_amount": casher["income"] - casher['expense'],
         })
 
 
