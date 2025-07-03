@@ -137,25 +137,28 @@ class MockExamResultRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 class StudentsResultsListAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        student = self.request.GET.get('student')
+        student = request.GET.get('student')
 
         results = Results.objects.filter(status="Accepted")
-
         if student:
             results = results.filter(student__id=student)
 
-        results = results.prefetch_related("student")
+        results = results.prefetch_related("student", "upload_file")
 
+        # Initialize paginator
+        paginator = PageNumberPagination()
+        paginator.page_size = 10  # 🔁 You can also set this in settings.py
+
+        # Paginate the queryset
+        paginated_results = paginator.paginate_queryset(results, request)
+
+        # Build response data
+        serializer_context = {"request": request, "view": self}
         data = []
 
-        serializer_context = {
-            "request": request,
-            "view": self,
-        }
-
-        for result in results:
+        for result in paginated_results:
             file = result.upload_file.first()
-            file = FileUploadSerializer(file,context=serializer_context).data if file else None
+            file = FileUploadSerializer(file, context=serializer_context).data if file else None
 
             data.append({
                 "id": result.id,
@@ -169,10 +172,12 @@ class StudentsResultsListAPIView(APIView):
                     else result.university_entering_ball if result.results == "University"
                     else result.result_score
                 ),
-                "file": file if file else None
+                "file": file
             })
 
-        return Response(data)
+        # Return paginated response
+        return paginator.get_paginated_response(data)
+
 
 
 
