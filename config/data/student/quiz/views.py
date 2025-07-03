@@ -1362,6 +1362,10 @@ class MonthlyExam(APIView):
             exam__choice="Monthly"
         ).first()
 
+
+        print(validated_data.get("first_certificate"))
+        print(validated_data.get("second_certificate"))
+
         if not exam_registration:
             return Response({"detail": "Exam registration not found."}, status=status.HTTP_404_NOT_FOUND)
 
