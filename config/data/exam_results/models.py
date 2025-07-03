@@ -1,5 +1,6 @@
 from django.db import models
 
+from data.account.models import CustomUser
 from ..student.subject.models import Subject
 from data.student.student.models import Student
 from ..command.models import BaseModel
@@ -132,6 +133,8 @@ class MockExamResult(BaseModel):
     listening = models.IntegerField(default=0)
     writing = models.IntegerField(default=0)
     speaking = models.IntegerField(default=0)
+
+    updater : "CustomUser" = models.ForeignKey("account.CustomUser",on_delete=models.SET_NULL,null=True,blank=True,related_name="mock_exam_updater")
 
     overall_score = models.IntegerField(default=0)
 
