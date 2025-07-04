@@ -267,6 +267,7 @@ async def flask_translate_proxy(request):
         if not text or not src or not dest:
             return JsonResponse({'error': 'Missing text/source_lang/target_lang'}, status=400)
 
+        # Properly await the translation (assuming it's a true async method)
         result = await translator.translate(text, src=src, dest=dest)
 
         return JsonResponse({
@@ -276,4 +277,6 @@ async def flask_translate_proxy(request):
         })
 
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())  # Logs the full traceback for debugging
         return JsonResponse({'error': str(e)}, status=500)
