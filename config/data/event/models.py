@@ -11,7 +11,7 @@ class Event(BaseModel):
     link_preview = models.URLField(null=True,blank=True)
     link = models.URLField(null=True,blank=True)
     comment = models.TextField(null=True,blank=True)
-    end_date = models.DateTimeField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
     status = models.CharField(choices=[
         ("Expired", "Expired"),
         ("Soon", "Soon"),

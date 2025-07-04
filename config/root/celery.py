@@ -23,6 +23,10 @@ app.conf.beat_schedule = {
         "task": "data.student.student.task.update_frozen_days",
         "schedule": crontab(hour=0,minute=0),
     },
+    "event-task": {
+        "task": "data.event.tasks.check_today_tasks",
+        "schedule": crontab(hour=0,minute=0),
+    },
 
     # Daily tasks
     "check_attendance_daily": {
