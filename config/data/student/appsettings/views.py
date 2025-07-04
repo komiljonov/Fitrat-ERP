@@ -252,7 +252,7 @@ translator = Translator()
 
 
 @csrf_exempt
-async def flask_translate_proxy(request):
+def flask_translate_proxy(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST allowed'}, status=405)
 
@@ -267,8 +267,8 @@ async def flask_translate_proxy(request):
         if not text or not src or not dest:
             return JsonResponse({'error': 'Missing text/source_lang/target_lang'}, status=400)
 
-        # Properly await the translation (assuming it's a true async method)
-        result = await translator.translate(text, src=src, dest=dest)
+        result = translator.translate(text, src=src, dest=dest)
+        print(result)
 
         return JsonResponse({
             'translated_text': result.text,
@@ -278,5 +278,5 @@ async def flask_translate_proxy(request):
 
     except Exception as e:
         import traceback
-        print(traceback.format_exc())  # Logs the full traceback for debugging
+        print(traceback.format_exc())  # For debugging
         return JsonResponse({'error': str(e)}, status=500)
