@@ -1,28 +1,28 @@
-from django.shortcuts import render
+import json
+
+from django.http import JsonResponse
 from icecream import ic
-from reportlab import Version
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-
-from ..mastering.models import Mastering
-from ...finances.finance.models import Finance
-from ...notifications.models import Notification
-from ...notifications.serializers import NotificationSerializer
-from ...student.course.models import Course
-from ...student.student.models import Student
-from ...student.studentgroup.models import StudentGroup
-
-from rest_framework.response import Response
-
-from .serializers import StoresSerializer, StudentAPPSerializer, StudentFinanceSerializer, StrikeSerializer, \
-    VersionUpdateSerializer
-from .models import Store, Strike, VersionUpdate
-
+from django.views.decorators.csrf import csrf_exempt
+from googletrans import Translator
+from icecream import ic
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
     ListAPIView
-    )
+)
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import Store, Strike, VersionUpdate
+from .serializers import StoresSerializer, StudentAPPSerializer, StudentFinanceSerializer, StrikeSerializer, \
+    VersionUpdateSerializer
+from ..mastering.models import Mastering
+from ...finances.finance.models import Finance
+from ...notifications.models import Notification
+from ...notifications.serializers import NotificationSerializer
+from ...student.student.models import Student
+
 
 class StoresListView(ListCreateAPIView):
     queryset = Store.objects.all()
@@ -67,7 +67,7 @@ class FinanceListView(ListAPIView):
     def get_queryset(self):
         id = self.kwargs.get('pk')
 
-        action =  self.request.query_params.get('action', None)
+        action = self.request.query_params.get('action', None)
         kind = self.request.query_params.get('kind', None)
         payment_method = self.request.query_params.get('payment_method', None)
         search = self.request.query_params.get('search', None)
@@ -208,11 +208,11 @@ class StudentAvgAPIView(APIView):
         # Calculate overall
         overall = round(
             (
-                avg(overall_scores["exams"]) +
-                avg(overall_scores["homeworks"]) +
-                avg(overall_scores["speaking"]) +
-                avg(overall_scores["unit"]) +
-                avg(overall_scores["mock"])
+                    avg(overall_scores["exams"]) +
+                    avg(overall_scores["homeworks"]) +
+                    avg(overall_scores["speaking"]) +
+                    avg(overall_scores["unit"]) +
+                    avg(overall_scores["mock"])
             ) / 5,
             2,
         )
@@ -230,11 +230,11 @@ class StudentAvgAPIView(APIView):
                 "mock": avg(c["mock"]),
                 "overall": round(
                     (
-                        avg(c["exams"]) +
-                        avg(c["homeworks"]) +
-                        avg(c["speaking"]) +
-                        avg(c["unit"]) +
-                        avg(c["mock"])
+                            avg(c["exams"]) +
+                            avg(c["homeworks"]) +
+                            avg(c["speaking"]) +
+                            avg(c["unit"]) +
+                            avg(c["mock"])
                     ) / 5,
                     2,
                 )
@@ -248,13 +248,8 @@ class StudentAvgAPIView(APIView):
         })
 
 
-from flask import Flask
-from googletrans import Translator
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-
 translator = Translator()
+
 
 @csrf_exempt
 def flask_translate_proxy(request):
@@ -266,6 +261,8 @@ def flask_translate_proxy(request):
         text = data.get('text')
         src = data.get('source_lang')
         dest = data.get('target_lang')
+
+        print(data, text, src, dest)
 
         if not text or not src or not dest:
             return JsonResponse({'error': 'Missing text/source_lang/target_lang'}, status=400)
