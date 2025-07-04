@@ -270,6 +270,7 @@ class StuffRolesView(ListAPIView):
 
         if search:
             queryset = queryset.filter(full_name__icontains=search)
+
         if subject:
             queryset = queryset.filter(teachers_groups__course__subject_id=subject)
 
@@ -277,16 +278,13 @@ class StuffRolesView(ListAPIView):
             queryset = queryset.filter(filial__id=filial)
 
         if is_call_operator and is_call_operator.lower() == 'true':
-            if role:
-                queryset = queryset.filter(Q(is_call_center=True) | Q(role=role))
-            else:
-                queryset = queryset.filter(is_call_center=True)
-        elif role:
+            queryset = queryset.filter(is_call_center=True)
+
+        if role:
             if role == "SERVICE_SALES":
-                queryset = queryset.filter(role__in=["SERVICE_SALES","ADMINISTRATOR"])
+                queryset = queryset.filter(role__in=["SERVICE_SALES", "ADMINISTRATOR"])
             else:
                 queryset = queryset.filter(role=role)
-
 
         return queryset.distinct()
 
