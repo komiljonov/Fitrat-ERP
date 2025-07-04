@@ -51,7 +51,17 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
                 f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz "
                 f"sizga taqdim etish uchun tayyor.\n"
                 f"Filial : {instance.product.filial}\n"
-            )
+            ),
+            choice="Shopping"
         )
-
+    if not created and instance.status == "Cancelled":
+        Notification.objects.create(
+            user=student.user,
+            comment=(
+                f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz "
+                f"bekor qilindi.\n"
+                f"Filial : {instance.product.filial}\n"
+            ),
+            choice="Shopping"
+        )
 
