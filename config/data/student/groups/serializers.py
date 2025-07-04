@@ -10,12 +10,14 @@ from .room_filings_calculate import calculate_room_filling_statistics
 from ..attendance.models import Attendance, SecondaryAttendance
 from ..course.models import Course
 from ..course.serializers import CourseSerializer
+from ..student.models import Student
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Theme, Level
 from ..subject.serializers import LevelSerializer
 from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from ...department.marketing_channel.models import Group_Type
+from ...lid.new_lid.models import Lid
 
 
 class DaySerializer(serializers.ModelSerializer):
@@ -367,6 +369,8 @@ class SecondaryGroupModelSerializer(serializers.ModelSerializer):
 
 
 class GroupSaleStudentSerializer(serializers.ModelSerializer):
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
     class Meta:
         model = GroupSaleStudent
         fields = [
