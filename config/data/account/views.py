@@ -290,7 +290,7 @@ class StuffRolesView(ListAPIView):
             else:
                 queryset = queryset.filter(role=role)
 
-        return queryset.distinct()
+        return queryset
 
     def get_paginated_response(self, data):
         return Response(data)
