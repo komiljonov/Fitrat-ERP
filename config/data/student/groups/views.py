@@ -734,7 +734,9 @@ class StudentSaleGroupListCreateAPIView(ListCreateAPIView):
 
         group = self.request.GET.get('group', None)
         student = self.request.GET.get('student', None)
-
+        lid = self.request.GET.get('lid_id', None)
+        if lid:
+            qs = qs.filter(lid__id=lid)
         if group:
             qs = qs.filter(group__id=group)
         if student:

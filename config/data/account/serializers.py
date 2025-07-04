@@ -45,17 +45,16 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return user
 
 
-# class ConfirmationCodeSerializer(serializers.Serializer):
-#     phone = serializers.EmailField()
-#     confirmation_code = serializers.IntegerField()
-#
-#
-# class PasswordResetRequestSerializer(serializers.Serializer):
-#     phone = serializers.EmailField()
-#
-#
-# class PasswordResetLoginSerializer(serializers.Serializer):
-#     new_password = serializers.CharField()
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    phone = serializers.CharField()
+
+
+class PasswordResetVerifySerializer(serializers.Serializer):
+    phone = serializers.CharField()
+    confirmation_code = serializers.IntegerField()
+    new_password = serializers.CharField()
+
 
 class UserLoginSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=30, required=True)

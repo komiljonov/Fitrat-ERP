@@ -1,6 +1,8 @@
 # Create your views here.
+import random
 
 from django.db.models import Q
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -19,9 +21,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import CustomUser
-from .serializers import UserCreateSerializer, UserUpdateSerializer, CheckNumberSerializer
+from .serializers import UserCreateSerializer, UserUpdateSerializer, CheckNumberSerializer, \
+    PasswordResetRequestSerializer, PasswordResetVerifySerializer
 from .utils import build_weekly_schedule
 from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
+from ..department.marketing_channel.models import ConfirmationCode
 from ..finances.timetracker.sinx import TimetrackerSinc
 from ..student.student.models import Student
 
@@ -304,3 +308,49 @@ class StuffList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class PasswordResetRequestAPIView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone = serializer.validated_data["phone"]
+
+        code = random.randint(1000, 9999)
+        ConfirmationCode.objects.update_or_create(phone=phone, defaults={"code": code, "created_at": timezone.now()})
+
+        return Response({"detail": "Confirmation code sent."})
+
+
+class PasswordResetAPIView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordResetVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        phone = serializer.validated_data["phone"]
+        code = serializer.validated_data["confirmation_code"]
+        new_password = serializer.validated_data["new_password"]
+
+        try:
+            code_obj = ConfirmationCode.objects.get(phone=phone, code=code)
+            if not code_obj.is_valid():
+                return Response({"detail": "Code expired."}, status=status.HTTP_400_BAD_REQUEST)
+        except ConfirmationCode.DoesNotExist:
+            return Response({"detail": "Invalid confirmation code."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Step 2: Find user
+        try:
+            user = CustomUser.objects.get(phone=phone)
+        except CustomUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+        user.set_password(new_password)
+        user.save()
+
+        code_obj.delete()
+
+        return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)

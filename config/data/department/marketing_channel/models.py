@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.db import models
+from django.utils import timezone
 
 from ...command.models import BaseModel
 
@@ -19,3 +22,12 @@ class Group_Type(BaseModel):
         max_length=100)
     def __str__(self):
         return self.price_type
+
+
+class ConfirmationCode(models.Model):
+    phone = models.CharField(max_length=20, unique=True)
+    code = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self):
+        return self.created_at > timezone.now() - timedelta(minutes=5)
