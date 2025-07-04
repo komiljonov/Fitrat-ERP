@@ -286,7 +286,7 @@ class StuffRolesView(ListAPIView):
 
                 print(role)
 
-                queryset = queryset.filter(role__in=["SERVICE_SALES", "ADMINISTRATOR"])
+                queryset = queryset.filter(role__in=["SERVICE_MANAGER", "ADMINISTRATOR","SERVICE_SALES"])
             else:
                 queryset = queryset.filter(role=role)
 
