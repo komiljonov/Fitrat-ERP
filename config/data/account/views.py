@@ -245,9 +245,6 @@ class StuffRolesView(ListAPIView):
     pagination_class = None
 
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    search_fields = ('role', 'first_name', 'last_name')
-    ordering_fields = ('role', 'first_name', 'last_name')
-    filterset_fields = ('role', 'first_name', 'last_name')
 
     def get_serializer(self, *args, **kwargs):
         serializer_class = self.get_serializer_class()
