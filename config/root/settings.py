@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'data.upload',
 
     'data.dashboard',
+    'data.library',
 
     'data.department.filial',
     'data.department.marketing_channel',
