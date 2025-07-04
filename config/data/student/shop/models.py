@@ -54,7 +54,7 @@ class Purchase(BaseModel):
                                              null=True, blank=True, related_name="purchases_product")
     student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL,
                                             null=True, blank=True, related_name="purchases_customer")
-    status = models.CharField(choices=[("Pending", "Pending"), ("Completed", "Completed")], max_length=20,default="Pending")
+    status = models.CharField(choices=[("Pending", "Pending"), ("Completed", "Completed"),("Cancelled","Cancelled")], max_length=20,default="Pending")
 
     def __str__(self):
         return f"{self.student.phone}  -- {self.product}"
