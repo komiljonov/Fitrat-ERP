@@ -140,7 +140,7 @@ class StudentsResultsListAPIView(APIView):
     def get(self, request, *args, **kwargs):
         student = request.GET.get('student')
 
-        results = Results.objects.filter(status="Accepted")
+        results = Results.objects.filter(status="Accepted",results="Certificate",who="Student")
         if student:
             results = results.filter(student__id=student)
 
@@ -162,14 +162,13 @@ class StudentsResultsListAPIView(APIView):
             data.append({
                 "id": result.id,
                 "student_id": result.student.id,
+                "fk_name":  result.result_fk_name,
                 "full_name": f"{result.student.first_name} {result.student.last_name}",
                 "student_photo": result.student.photo.url if result.student.photo else None,
                 "type": result.results,
                 "teacher": result.teacher.full_name if result.teacher else None,
                 "point": (
-                    result.band_score if result.results == "Certificate"
-                    else result.university_entering_ball if result.results == "University"
-                    else result.result_score
+                    result.band_score
                 ),
                 "file": file
             })
