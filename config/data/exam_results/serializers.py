@@ -204,17 +204,21 @@ class MockExamSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         group = validated_data.get("group")
+
+        # First, create the MockExam instance
+        mock = super().create(validated_data)
+
+        # Then create results for students in the group
         if group:
             students = StudentGroup.objects.filter(group=group)
             for student in students:
-                mastering = MockExamResult.objects.create(
-                    mock=self.instance,
+                MockExamResult.objects.create(
+                    mock=mock,
                     student=student.student if student.student else None,
                     overall_score=0
                 )
-                print(mastering)
 
-        return super().create(validated_data)
+        return mock
 
 
 
