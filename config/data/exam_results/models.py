@@ -138,5 +138,5 @@ class MockExamResult(BaseModel):
 
     overall_score = models.IntegerField(default=0)
 
-    def __str__(self):
-        return f"{self.student.first_name}  {self.overall_score}"
+    # def __str__(self):
+    #     return f"{self.student.first_name}  {self.overall_score}"
