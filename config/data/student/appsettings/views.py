@@ -247,3 +247,36 @@ class StudentAvgAPIView(APIView):
             "course_scores": course_results
         })
 
+
+from flask import Flask
+from googletrans import Translator
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+translator = Translator()
+
+@csrf_exempt
+def flask_translate_proxy(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        text = data.get('text')
+        src = data.get('source_lang')
+        dest = data.get('target_lang')
+
+        if not text or not src or not dest:
+            return JsonResponse({'error': 'Missing text/source_lang/target_lang'}, status=400)
+
+        result = translator.translate(text, src=src, dest=dest)
+
+        return JsonResponse({
+            'translated_text': result.text,
+            'source_language': result.src,
+            'target_language': result.dest
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
