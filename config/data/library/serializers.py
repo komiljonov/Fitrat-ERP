@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
-from .models import Category,Library
+from .models import LibraryCategory,Library
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class LibraryCategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = LibraryCategory
         fields = [
             "id",
             "name",

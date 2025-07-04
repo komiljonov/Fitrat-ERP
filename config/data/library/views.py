@@ -3,19 +3,19 @@ from unicodedata import category
 
 # Create your views here.
 
-from .serializers import CategorySerializer,LibrarySerializer
-from .models import Category,Library
+from .serializers import LibraryCategorySerializer,LibrarySerializer
+from .models import LibraryCategory,Library
 
 from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView
 
 class CategoryCreateAPIView(ListCreateAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+    queryset = LibraryCategory.objects.all()
+    serializer_class = LibraryCategorySerializer
 
 
 class CategoryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+    queryset = LibraryCategory.objects.all()
+    serializer_class = LibraryCategorySerializer
 
 
 class LibraryCreateAPIView(ListCreateAPIView):

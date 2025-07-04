@@ -5,14 +5,14 @@ from ..upload.models import File
 # Create your models here.
 
 
-class Category(BaseModel):
+class LibraryCategory(BaseModel):
     name = models.CharField(max_length=100)
     def __str__(self):
         return self.name
 
 
 class Library(BaseModel):
-    category : "Category" = models.ForeignKey("library.Category", on_delete=models.SET_NULL, null=True,blank=True)
+    category : "LibraryCategory" = models.ForeignKey("library.LibraryCategory", on_delete=models.SET_NULL, null=True,blank=True)
     name = models.TextField()
     choice = models.CharField(choices=[
         ("withAudio", "With Audio"),
