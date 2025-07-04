@@ -263,9 +263,13 @@ class StuffRolesView(ListAPIView):
         role = self.request.query_params.get('role')
         is_call_operator = self.request.query_params.get('is_call_operator')
         search = self.request.GET.get('search')
+        is_archived  = self.request.GET.get('is_archived')
 
         queryset = CustomUser.objects.all().order_by('-created_at')
 
+
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
         if search:
             queryset = queryset.filter(full_name__icontains=search)
 
