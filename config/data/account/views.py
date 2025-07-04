@@ -28,6 +28,7 @@ from ..account.serializers import UserLoginSerializer, UserListSerializer, UserS
 from ..department.marketing_channel.models import ConfirmationCode
 from ..finances.timetracker.sinx import TimetrackerSinc
 from ..student.student.models import Student
+from ..student.student.sms import SayqalSms
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -318,6 +319,15 @@ class PasswordResetRequestAPIView(APIView):
 
         code = random.randint(1000, 9999)
         ConfirmationCode.objects.update_or_create(phone=phone, defaults={"code": code, "created_at": timezone.now()})
+
+        sms = SayqalSms()
+
+        text = f"Sizning {phone} raqamingiz bilan ochilgan Fitrat student App ning password reset uchun\n code : {code}."
+
+        try:
+            sms.send_sms(phone, text)
+        except Exception as e:
+            return Response({"detail": "SMS sending failed."}, status=500)
 
         return Response({"detail": "Confirmation code sent."})
 
