@@ -127,16 +127,16 @@ class LidSerializer(serializers.ModelSerializer):
         representation['call_operator'] = {
             "id": instance.call_operator.id,
             "full_name": instance.call_operator.full_name,
-        }
+        } if instance.call_operator else None
         representation['file'] = FileUploadSerializer(instance.file.all(), many=True,context=self.context).data
         representation["sales_manager"] = {
             "id":instance.sales_manager.id,
             "full_name":instance.sales_manager.full_name,
-        }
+        } if instance.sales_manager else None
         representation["service_manager"] = {
             "id":instance.service_manager.id,
             "full_name":instance.service_manager.full_name,
-        }
+        } if instance.service_manager else None
         return representation
 
     def update(self, instance, validated_data):
