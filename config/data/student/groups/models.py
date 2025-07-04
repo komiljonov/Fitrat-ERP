@@ -88,8 +88,8 @@ class Group(BaseModel):
 
 class GroupSaleStudent(BaseModel):
     group: 'Group' = models.ForeignKey('groups.Group', on_delete=models.CASCADE,related_name='sale_student_group')
-    student: "Student" = models.ForeignKey('student.Student', on_delete=models.CASCADE,related_name='sale_student_student')
-    lid : "Lid" = models.ForeignKey('new_lid.Lid', on_delete=models.CASCADE,related_name='sale_student_lid')
+    student: "Student" = models.ForeignKey('student.Student', on_delete=models.SET_NULL,null=True,blank=True,related_name='sale_student_student')
+    lid : "Lid" = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,null=True,blank=True,related_name='sale_student_lid')
     amount = models.FloatField(default=0, null=True, blank=True)
 
 
