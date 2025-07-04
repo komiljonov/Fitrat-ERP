@@ -166,7 +166,10 @@ class StudentsResultsListAPIView(APIView):
             data.append({
                 "id": result.id,
                 "student_id": result.student.id,
-                "fk_name":  result.result_fk_name,
+                "fk_name": {
+                    "id": result.result_fk_name.id,
+                    "name": str(result.result_fk_name.name)
+                } if result.result_fk_name else None,
                 "full_name": f"{result.student.first_name} {result.student.last_name}",
                 "student_photo": result.student.photo.url if result.student.photo else None,
                 "type": result.results,
