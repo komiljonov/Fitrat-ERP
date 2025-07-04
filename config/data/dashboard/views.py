@@ -608,12 +608,15 @@ class MonitoringView(APIView):
         subject_id = request.query_params.get('subject', None)
         course_id = request.query_params.get('course', None)
         filial = request.query_params.get('filial', None)
+        teacher = request.query_params.get('teacher', None)
 
-        # Base queryset for teachers
+
         teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
             name=Concat(F('first_name'), Value(' '), F('last_name')),
             overall_point=F('monitoring')
         )
+        if teacher:
+            teachers = teachers.filter(id=teacher)
 
         if course_id:
             teachers = teachers.filter(teachers_groups__course__id=course_id)  # ✅ Correct related_name usage
