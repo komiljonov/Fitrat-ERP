@@ -260,6 +260,8 @@ class StuffRolesView(ListAPIView):
             ]
         )
 
+    from django.db.models import Q
+
     def get_queryset(self):
         subject = self.request.query_params.get('subject')
         filial = self.request.query_params.get('filial')
@@ -267,38 +269,40 @@ class StuffRolesView(ListAPIView):
         is_call_operator = self.request.query_params.get('is_call_operator')
         search = self.request.GET.get('search')
 
-        queryset = CustomUser.objects.all().order_by('-created_at')
+        base_qs = CustomUser.objects.all().order_by('-created_at')
 
+        # Apply search filter
         if search:
-            queryset = queryset.filter(full_name__icontains=search)
+            base_qs = base_qs.filter(full_name__icontains=search)
 
+        # Apply subject filter
         if subject:
-            queryset = queryset.filter(teachers_groups__course__subject_id=subject)
+            base_qs = base_qs.filter(teachers_groups__course__subject_id=subject)
 
+        # Apply filial filter
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            base_qs = base_qs.filter(filial__id=filial)
 
+        # Apply call operator filter
         if is_call_operator and is_call_operator.lower() == 'true':
-            queryset = queryset.filter(is_call_center=True)
+            base_qs = base_qs.filter(is_call_center=True)
 
+        # Handle role-based filtering separately
         if role:
+            role = role.upper()
             if role == "SERVICE_SALES":
+                # Combine all three roles
+                role_qs = CustomUser.objects.filter(
+                    Q(role="SERVICE_SALES") |
+                    Q(role="SERVICE_MANAGER") |
+                    Q(role="ADMINISTRATOR")
+                )
+                # Apply other filters to the role_qs too
+                base_qs = base_qs & role_qs
+            else:
+                base_qs = base_qs.filter(role=role)
 
-                print(role)
-
-                queryset = queryset.filter(role__in=["SERVICE_MANAGER", "ADMINISTRATOR","SERVICE_SALES"])
-
-            if role != "SERVICE_SALES":
-
-                print(role)
-                print("----------")
-
-                queryset = queryset.filter(role=role)
-
-        return queryset
-
-    def get_paginated_response(self, data):
-        return Response(data)
+        return base_qs.distinct()
 
 
 class StuffList(ListAPIView):
