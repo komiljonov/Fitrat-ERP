@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import StoresListView, StoreDetailView, StudentDetailView, FinanceListView, StrikeListView, \
-    VersionUpdateView, StudentNotificationsView
+    VersionUpdateView, StudentNotificationsView, StudentAvgAPIView
 
 urlpatterns = [
     path('story/',StoresListView.as_view()),
@@ -18,4 +18,6 @@ urlpatterns = [
     path("versions/",VersionUpdateView.as_view()),
 
     path("notifications/",StudentNotificationsView.as_view()),
+
+    path("learning/",StudentAvgAPIView.as_view()),
 ]
