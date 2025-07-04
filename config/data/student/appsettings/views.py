@@ -4,6 +4,7 @@ from reportlab import Version
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from ..mastering.models import Mastering
 from ...finances.finance.models import Finance
 from ...notifications.models import Notification
 from ...notifications.serializers import NotificationSerializer
@@ -130,3 +131,119 @@ class StudentNotificationsView(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
+
+class StudentAvgAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        student = Student.objects.filter(user=user).first()
+
+        if not student:
+            return Response({"error": "Student not found."}, status=404)
+
+        mastering_records = (
+            Mastering.objects.filter(student=student)
+            .select_related("test", "theme", "theme__course")
+        )
+
+        overall_scores = {
+            "exams": [],
+            "homeworks": [],
+            "speaking": [],
+            "unit": [],
+            "mock": [],
+        }
+
+        course_scores = {}
+
+        for m in mastering_records:
+            course = m.theme.course if m.theme and m.theme.course else None
+            if not course:
+                continue  # skip if course is missing
+
+            course_id = str(course.id)
+            if course_id not in course_scores:
+                course_scores[course_id] = {
+                    "course_name": course.name,
+                    "course_id": course.id,
+                    "exams": [],
+                    "homeworks": [],
+                    "speaking": [],
+                    "unit": [],
+                    "mock": [],
+                }
+
+            item = {
+                "id": m.id,
+                "ball": m.ball,
+                "title": m.test.title if m.test else None,
+                "created_at": m.created_at,
+                "theme": {
+                    "id": m.theme.id if m.theme else None,
+                    "name": m.theme.title if m.theme else None
+                }
+            }
+
+            if m.test and m.test.type == "Offline" and m.choice == "Test":
+                overall_scores["exams"].append(m.ball)
+                course_scores[course_id]["exams"].append(m.ball)
+            elif m.choice == "Speaking":
+                overall_scores["speaking"].append(m.ball)
+                course_scores[course_id]["speaking"].append(m.ball)
+            elif m.choice == "Unit_Test":
+                overall_scores["unit"].append(m.ball)
+                course_scores[course_id]["unit"].append(m.ball)
+            elif m.choice == "Mock":
+                overall_scores["mock"].append(m.ball)
+                course_scores[course_id]["mock"].append(m.ball)
+            else:
+                overall_scores["homeworks"].append(m.ball)
+                course_scores[course_id]["homeworks"].append(m.ball)
+
+        def avg(values):
+            return round(sum(values) / len(values), 2) if values else 0
+
+        # Calculate overall
+        overall = round(
+            (
+                avg(overall_scores["exams"]) +
+                avg(overall_scores["homeworks"]) +
+                avg(overall_scores["speaking"]) +
+                avg(overall_scores["unit"]) +
+                avg(overall_scores["mock"])
+            ) / 5,
+            2,
+        )
+
+        # Prepare per-course averages
+        course_results = []
+        for c in course_scores.values():
+            course_results.append({
+                "course_id": c["course_id"],
+                "course_name": c["course_name"],
+                "exams": avg(c["exams"]),
+                "homeworks": avg(c["homeworks"]),
+                "speaking": avg(c["speaking"]),
+                "unit": avg(c["unit"]),
+                "mock": avg(c["mock"]),
+                "overall": round(
+                    (
+                        avg(c["exams"]) +
+                        avg(c["homeworks"]) +
+                        avg(c["speaking"]) +
+                        avg(c["unit"]) +
+                        avg(c["mock"])
+                    ) / 5,
+                    2,
+                )
+            })
+
+        return Response({
+            "student_id": student.id,
+            "full_name": f"{student.first_name} {student.last_name}",
+            "overall_learning": overall,
+            "course_scores": course_results
+        })
+
