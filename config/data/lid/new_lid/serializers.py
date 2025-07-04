@@ -59,7 +59,6 @@ class LidSerializer(serializers.ModelSerializer):
 
         super(LidSerializer, self).__init__(*args, **kwargs)
 
-
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(lid__id=obj.id)
         return [{
@@ -117,7 +116,7 @@ class LidSerializer(serializers.ModelSerializer):
         return list(StudentGroup.objects.filter(lid=obj).values_list("group__course__name","group__course__level__id"))
 
     def get_group(self, obj):
-        return list(StudentGroup.objects.filter(lid=obj).values_list("group__id","group__teacher__id","group__name"))
+        return list(StudentGroup.objects.filter(lid=obj).values_list("group__id","group__teacher__id","group__name","group__teacher__full_name"))
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -125,9 +124,19 @@ class LidSerializer(serializers.ModelSerializer):
         representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
         representation['marketing_channel'] = MarketingChannelSerializer(
             instance.marketing_channel).data if instance.marketing_channel else None
-        representation['call_operator'] = UserSerializer(
-            instance.call_operator).data if instance.call_operator else None
+        representation['call_operator'] = {
+            "id": instance.call_operator.id,
+            "full_name": instance.call_operator.full_name,
+        }
         representation['file'] = FileUploadSerializer(instance.file.all(), many=True,context=self.context).data
+        representation["sales_manager"] = {
+            "id":instance.sales_manager.id,
+            "full_name":instance.sales_manager.full_name,
+        }
+        representation["service_manager"] = {
+            "id":instance.service_manager.id,
+            "full_name":instance.service_manager.full_name,
+        }
         return representation
 
     def update(self, instance, validated_data):
