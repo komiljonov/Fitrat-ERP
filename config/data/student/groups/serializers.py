@@ -373,5 +373,6 @@ class GroupSaleStudentSerializer(serializers.ModelSerializer):
             "id",
             "group",
             "student",
+            "lid",
             "amount",
         ]
