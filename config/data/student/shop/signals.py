@@ -55,6 +55,10 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
             choice="Shopping"
         )
     if not created and instance.status == "Cancelled":
+
+        instance.student.coins += instance.product.coin
+        instance.student.save()
+
         Notification.objects.create(
             user=student.user,
             comment=(
