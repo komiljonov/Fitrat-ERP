@@ -139,8 +139,12 @@ class MockExamResultRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 class StudentsResultsListAPIView(APIView):
     def get(self, request, *args, **kwargs):
         student = request.GET.get('student')
+        results = Results.objects.filter(status="Accepted", results="Certificate", who="Student")
 
-        results = Results.objects.filter(status="Accepted",results="Certificate",who="Student")
+        fk_name = self.request.GET.get('fk_name')
+        if fk_name:
+            results = results.filter(result_fk_name__id=fk_name)
+
         if student:
             results = results.filter(student__id=student)
 
