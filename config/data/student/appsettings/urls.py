@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import StoresListView, StoreDetailView, StudentDetailView, FinanceListView, StrikeListView, \
-    VersionUpdateView, StudentNotificationsView, StudentAvgAPIView
+    VersionUpdateView, StudentNotificationsView, StudentAvgAPIView, flask_translate_proxy
 
 urlpatterns = [
     path('story/',StoresListView.as_view()),
@@ -20,4 +20,6 @@ urlpatterns = [
     path("notifications/",StudentNotificationsView.as_view()),
 
     path("learning/",StudentAvgAPIView.as_view()),
+
+    path('translate/', flask_translate_proxy),
 ]
