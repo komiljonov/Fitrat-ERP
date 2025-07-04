@@ -90,6 +90,7 @@ INSTALLED_APPS = [
 
     'data.dashboard',
     'data.library',
+    'data.event',
 
     'data.department.filial',
     'data.department.marketing_channel',
