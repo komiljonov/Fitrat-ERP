@@ -27,5 +27,5 @@ class EventSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
 
         rep["file"] = FileUploadSerializer(instance.file,many=True,context=self.context).data
-        rep["photo"] = FileUploadSerializer(instance.photo,many=True,context=self.context).data
+        rep["photo"] = FileUploadSerializer(instance.photo,context=self.context).data
         return rep
