@@ -43,7 +43,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         if obj.student:
             sale = GroupSaleStudent.objects.filter(group=obj.group, student=obj.student).first()
         elif obj.lid:
-            sale = GroupSaleStudent.objects.filter(group=obj.group, student=obj.lid).first()
+            sale = GroupSaleStudent.objects.filter(group=obj.group, lid=obj.lid).first()
         else:
             sale = None
         return GroupSaleStudentSerializer(sale).data if sale else None
