@@ -89,7 +89,7 @@ INSTALLED_APPS = [
     'data.upload',
 
     'data.dashboard',
-    'data.library',
+    # 'data.library',
     'data.event',
 
     'data.department.filial',
