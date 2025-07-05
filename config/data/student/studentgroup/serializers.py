@@ -40,7 +40,12 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         ]
 
     def get_group_price(self, obj):
-        sale = GroupSaleStudent.objects.filter(group=obj.group, student=obj.student).first()
+        if obj.student:
+            sale = GroupSaleStudent.objects.filter(group=obj.group, student=obj.student).first()
+        elif obj.lid:
+            sale = GroupSaleStudent.objects.filter(group=obj.group, student=obj.lid).first()
+        else:
+            sale = None
         return GroupSaleStudentSerializer(sale).data if sale else None
 
     def get_current_theme(self, obj):
