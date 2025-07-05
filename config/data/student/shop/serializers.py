@@ -1,7 +1,7 @@
 from django.db.models import Sum
 from rest_framework import serializers
 
-from .models import Points, Coins, Products, Purchase, Category
+from .models import Points, Coins, Products, Purchase, Category, CoinsSettings
 
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
@@ -31,6 +31,19 @@ class PointsSerializer(serializers.ModelSerializer):
         if instance.from_homework:
             rep["from_homework"] = FileUploadSerializer(instance.from_homework, context=self.context).data
         return rep
+
+
+class CoinsSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CoinsSettings
+        fields = [
+            "id",
+            "type",
+            "from_point",
+            "to_point",
+            "coin",
+            "created_at",
+        ]
 
 
 class CoinsSerializer(serializers.ModelSerializer):

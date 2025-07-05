@@ -80,6 +80,7 @@ class LevelSerializer(serializers.ModelSerializer):
             'subject',
             "courses",
             "all_themes",
+            "order",
         ]
 
     def get_all_themes(self, obj):

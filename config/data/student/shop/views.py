@@ -6,10 +6,31 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Coins, Points, Products, Purchase, Category
+from .models import Coins, Points, Products, Purchase, Category, CoinsSettings
 from .serializers import CoinsSerializer, PointsSerializer, ProductsSerializer, PurchaseSerializer, \
-    PointToCoinExchangeSerializer, CategoriesSerializer
+    PointToCoinExchangeSerializer, CategoriesSerializer, CoinsSettingsSerializer
 from ..student.models import Student
+
+
+class CoinsSettingsCreateAPIView(ListCreateAPIView):
+    queryset = CoinsSettings.objects.all()
+    serializer_class = CoinsSettingsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = CoinsSettings.objects.all()
+
+        type = self.request.GET.get('type')
+
+        if type:
+            queryset = queryset.filter(type=type)
+        return queryset
+
+
+class CoinsSettingsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = CoinsSettings.objects.all()
+    serializer_class = CoinsSettingsSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class CoinsList(ListCreateAPIView):

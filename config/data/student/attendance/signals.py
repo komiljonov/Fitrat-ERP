@@ -11,7 +11,7 @@ from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import GroupSaleStudent
 from ..homeworks.models import Homework_history, Homework
 from ..student.models import Student
-from ..subject.models import Theme
+from ..subject.models import Theme, Level
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import Finance, Kind, SaleStudent
 from ...lid.new_lid.models import Lid
@@ -310,4 +310,36 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 #                 student=instance.student,
 #                 mark=0
 #             )
+
+
+@receiver(post_save, sender=Attendance)
+def group_level_update(sender, instance: Attendance, created, **kwargs):
+    if not created:
+        return
+
+    theme_instance = instance.theme.first()
+    if not theme_instance:
+        return
+
+    group = instance.group
+    course = group.course
+    level = theme_instance.level
+
+    next_level = Level.objects.filter(order=level.order + 1).first()
+
+    group_themes = Theme.objects.filter(
+        course=course,
+        level=level,
+        subject=course.subject
+    )
+
+    last_theme = group_themes.last()
+
+    if last_theme and theme_instance == last_theme:
+        group.level = next_level
+        group.save(update_fields=["level"])
+
+        
+
+
 

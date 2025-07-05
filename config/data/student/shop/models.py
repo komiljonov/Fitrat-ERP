@@ -21,10 +21,40 @@ class Points(BaseModel):
         return f"{self.student.phone}  -- {self.point} point"
 
 
+class CoinsSettings(BaseModel):
+    type = models.CharField(choices=[
+        ("Single", "Single"),
+        ("Double", "Double"),
+    ],max_length=10,null=True,blank=True)
+
+    choice = models.CharField(choices=[
+        ("Speaking", "Speaking"),
+        ("Homework", "Homework"),
+        ("Result", "Result"),
+        ("Mock","Mock"),
+        ("Unit", "Unit Test"),
+        ("Weekly", "Weekly"),
+        ("Monthly", "Monthly"),
+    ],max_length=10,null=True,blank=True)
+
+
+    from_point = models.CharField(max_length=15,null=True,blank=True)
+    to_point = models.CharField(max_length=15,null=True,blank=True)
+
+    coin = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+
+
 class Coins(BaseModel):
     coin = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True,
                                             blank=True, related_name="coins_of_student")
+
+    choice = models.CharField(choices=[
+        ("Speaking", "Speaking"),
+        ("Homework", "Homework"),
+        ("Result", "Result"),
+    ],max_length=10,null=True,blank=True)
 
     comment = models.TextField(blank=True, null=True)
 
