@@ -7,8 +7,8 @@ from .views import CategoryCreateAPIView,CategoryRetrieveUpdateDestroyAPIView,Li
 
 
 urlpatterns = [
-    path("",ListCreateAPIView.as_view()),
-    path("<uuid:pk>/",CategoryRetrieveUpdateDestroyAPIView.as_view()),
+    # path("",ListCreateAPIView.as_view()),
+    # path("<uuid:pk>/",CategoryRetrieveUpdateDestroyAPIView.as_view()),
 
     path("category/",CategoryCreateAPIView.as_view()),
     path("category/<uuid:pk>/",CategoryRetrieveUpdateDestroyAPIView.as_view()),
