@@ -8,7 +8,7 @@ class Event(BaseModel):
     file : "File" = models.ManyToManyField("upload.File",related_name="events_file")
     photo : "File" = models.ForeignKey("upload.File",on_delete=models.SET_NULL,null=True,blank=True,related_name="events_photo")
 
-    link_preview = models.URLField(null=True,blank=True)
+    link_preview = models.CharField(null=True,blank=True)
     link = models.URLField(null=True,blank=True)
     comment = models.TextField(null=True,blank=True)
     end_date = models.DateField(null=True,blank=True)
