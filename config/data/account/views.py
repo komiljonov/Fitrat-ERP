@@ -279,8 +279,6 @@ class StuffRolesView(ListAPIView):
         if filial:
             queryset = queryset.filter(filial__id=filial)
 
-        # if is_call_operator and is_call_operator.lower() == 'true':
-        #     queryset = queryset.filter(is_call_center=True)
 
         if role:
             if role == "CALL_OPERATOR":
@@ -301,7 +299,7 @@ class StuffRolesView(ListAPIView):
             is_call_operator_bool = is_call_operator.lower() == "true"
             queryset = queryset.filter(Q(is_call_center=is_call_operator_bool) | Q(role="CALL_OPERATOR"))
 
-        return queryset
+        return queryset.distinct()
 
     def get_paginated_response(self, data):
         return Response(data)
