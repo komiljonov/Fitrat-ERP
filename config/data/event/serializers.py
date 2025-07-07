@@ -19,6 +19,7 @@ class EventSerializer(serializers.ModelSerializer):
             "link_preview",
             "link",
             "comment",
+            "has_countdown",
             "end_date",
             "status",
             "created_at",
