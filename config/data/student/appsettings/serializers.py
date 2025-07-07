@@ -10,6 +10,7 @@ from ..groups.lesson_date_calculator import calculate_lessons
 from ..mastering.models import Mastering
 from ..student.models import Student
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
+from ...account.models import CustomUser
 from ...account.serializers import UserSerializer
 from ...department.filial.models import Filial
 from ...department.filial.serializers import FilialSerializer
@@ -265,7 +266,14 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             instance.password = hashlib.sha512(password.encode('utf-8')).hexdigest()
             instance.save()
 
-        # Handle file updates with set()
+        if instance.photo:
+            user = CustomUser.objects.filter(phone=instance.phone).first()
+            if user:
+                file = instance.photo.file
+                if file:
+                    user.photo = file
+                    user.save()
+
         files = validated_data.get('file', None)
         if files is not None:
             # Convert the provided list of files to a set to avoid duplicates
