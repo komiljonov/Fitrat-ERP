@@ -609,12 +609,16 @@ class MonitoringView(APIView):
         course_id = request.query_params.get('course', None)
         filial = request.query_params.get('filial', None)
         teacher = request.query_params.get('teacher', None)
+        role = request.query_params.get('role', None)
 
 
         teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
             name=Concat(F('first_name'), Value(' '), F('last_name')),
             overall_point=F('monitoring')
         )
+        if role:
+            teachers = teachers.filter(role=role)
+
         if teacher:
             teachers = teachers.filter(id=teacher)
 
