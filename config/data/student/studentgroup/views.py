@@ -118,6 +118,7 @@ class GroupStudentList(ListAPIView):
         status = self.request.query_params.get('status')
         is_archived = self.request.GET.get('is_archived', False)
 
+        print(is_archived)
 
         today = now().date()
         start_of_day = datetime.datetime.combine(today, datetime.time.min)
@@ -126,6 +127,8 @@ class GroupStudentList(ListAPIView):
         queryset = StudentGroup.objects.filter(group__id=group_id)
 
         if is_archived:
+
+            print(is_archived.capitalize())
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if status:
