@@ -5,6 +5,7 @@ from .models import Points, Coins, Products, Purchase, Category, CoinsSettings
 
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
+from ...account.models import CustomUser
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
@@ -114,6 +115,7 @@ class ProductsSerializer(serializers.ModelSerializer):
 class PurchaseSerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Products.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    updater = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
     class Meta:
         model = Purchase
         fields = [
@@ -125,6 +127,15 @@ class PurchaseSerializer(serializers.ModelSerializer):
             "comment",
             "created_at",
         ]
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.updater = self.context["request"].user  # FIX HERE
+        instance.save()
+
+        return instance
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
