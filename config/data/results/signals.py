@@ -119,7 +119,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         subject=level,
                         result=None,
                         type="Olimpiada",
-                        ball=level.max_ball
+                        ball=instance.result_score
                     )
 
                     # Create finance record
@@ -129,13 +129,15 @@ def on_update(sender, instance: Results, created, **kwargs):
                         kind=bonus_kind,
                         amount=level.amount,
                         stuff=instance.teacher,
-                        comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.amount} sum qo'shildi!"
+                        comment=f"Sizga {'natijangiz' if instance.who == 'Mine'  else  f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
+                                                                                       f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!"
                     )
 
                     if finance.amount:
                         Notification.objects.create(
                             user=instance.teacher,
-                            comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.amount} sum qo'shildi!",
+                            comment=f"Sizga {'natijangiz' if instance.who == 'Mine'  else  f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
+                                                                                       f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!",
                             come_from=instance,
                             choice="Bonus",
                         )
@@ -144,7 +146,8 @@ def on_update(sender, instance: Results, created, **kwargs):
                     if ball:
                         Notification.objects.create(
                             user=instance.teacher,
-                            comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.max_ball} ball qo'shildi!",
+                            comment=f"Sizga {'natijangiz' if instance.who == 'Mine'  else  f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
+                                               f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.max_ball} ball qo'shildi!",
                             come_from=instance,
                             choice="Bonus",
                         )
@@ -212,13 +215,20 @@ def on_update(sender, instance: Results, created, **kwargs):
                             kind=bonus_kind,
                             amount=level.amount,
                             stuff=instance.teacher,
-                            comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.amount} sum qo'shildi!"
+                            comment=f"Sizga {'natijangiz' if instance.who == 'Mine'  else  f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
+                                   f'  {"DTM" if instance.university_type=="Official" else f"Xususiy {instance.university_name} universitet" if 
+                                   instance.university_type == "Unofficial" else f"Xorijiy {instance.university_name} universitet"} imtihonida {instance.result_score} '
+                                                                                           f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!",
                         )
 
                         if finance.amount:
                             Notification.objects.create(
                                 user=instance.teacher,
-                                comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.amount} sum qo'shildi!",
+                                comment=f"Sizga {'natijangiz' if instance.who == 'Mine'  else  f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
+                                       f'  {"DTM" if instance.university_type=="Official" else f"Xususiy {instance.university_name} universitet" if 
+                                       instance.university_type == "Unofficial" else f"Xorijiy {instance.university_name} universitet"} imtihonida {instance.result_score} '
+                                                                                               f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!",
+
                                 come_from=instance,
                                 choice="Bonus",
                             )
@@ -227,7 +237,10 @@ def on_update(sender, instance: Results, created, **kwargs):
                         if ball:
                             Notification.objects.create(
                                 user=instance.teacher,
-                                comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {level.max_ball} ball qo'shildi!",
+                                comment=f"Sizga {'natijangiz' if instance.who == 'Mine'  else  f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
+                                       f'  {"DTM" if instance.university_type=="Official" else f"Xususiy {instance.university_name} universitet" if 
+                                       instance.university_type == "Unofficial" else f"Xorijiy {instance.university_name} universitet"} imtihonida {instance.result_score} '
+                                                                                               f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.max_ball} ball qo'shildi!",
                                 come_from=instance.id,
                                 choice="Bonus",
                             )
@@ -442,13 +455,23 @@ def on_update(sender, instance: Results, created, **kwargs):
                         kind=bonus_kind,
                         amount=subject.amount,
                         stuff=instance.teacher,
-                        comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {subject.amount} sum qo'shildi!"
+                        comment=(
+                            f"Sizga "
+                            f"{'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'} "
+                            f"{instance.result_fk_name.name} sertifikati imtihonida "
+                            f"{instance.band_score} ball uchun {subject.amount} so'm qo'shildi!"
+                        ),
                     )
 
                     if finance.amount:
                         Notification.objects.create(
                             user=instance.teacher,
-                            comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else 'talabangiz natijasi'} uchun {subject.amount} sum qo'shildi!",
+                            comment=(
+                                f"Sizga "
+                                f"{'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'} "
+                                f"{instance.result_fk_name.name} sertifikati imtihonida "
+                                f"{instance.band_score} ball uchun {subject.amount} so'm qo'shildi!"
+                            ),
                             come_from=instance,
                             choice="Bonus",
                         )
@@ -457,7 +480,12 @@ def on_update(sender, instance: Results, created, **kwargs):
                     if ball:
                         Notification.objects.create(
                             user=instance.teacher,
-                            comment=f"Sizga {'natijangiz' if instance.who == who else 'talabangiz natijasi'} uchun {subject.max_ball} ball qo'shildi!",
+                            comment=(
+                                f"Sizga "
+                                f"{'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'} "
+                                f"{instance.result_fk_name.name} sertifikati imtihonida "
+                                f"{instance.band_score} ball uchun {subject.max_ball} ball qo'shildi!"
+                            ),
                             come_from=instance,
                             choice="Bonus",
                         )
