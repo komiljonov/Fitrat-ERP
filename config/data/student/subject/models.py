@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING
 
 from django.db import models
-from data.student.groups.models import Group
+
 
 if TYPE_CHECKING:
     from data.student.course.models import Course
+    from data.student.groups.models import Group
 from ...command.models import BaseModel
 
 
