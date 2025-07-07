@@ -41,7 +41,7 @@ class StudentsGroupList(ListCreateAPIView):
         status = self.request.query_params.get('status')
         today = datetime.date.today()
         user = self.request.user
-
+        is_archived = self.request.GET.get('is_archived', False)
 
         if user.role == 'TEACHER':
             queryset = StudentGroup.objects.filter(group__teacher__id=user.id)
@@ -49,6 +49,10 @@ class StudentsGroupList(ListCreateAPIView):
             queryset = StudentGroup.objects.filter(group__filial__in=user.filial.all())
         if status:
             queryset = queryset.filter(group__status=status)
+
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
+
         # **Exclude students who have attended today**
         attended_today = Attendance.objects.filter(
             student=OuterRef("student"),  # Ensure this matches your Attendance model field
@@ -112,6 +116,7 @@ class GroupStudentList(ListAPIView):
         reason = self.request.query_params.get('reason', None)
 
         status = self.request.query_params.get('status')
+        is_archived = self.request.GET.get('is_archived', False)
 
         # Get today's date for filtering attendance records
         today = now().date()
@@ -119,6 +124,9 @@ class GroupStudentList(ListAPIView):
         end_of_day = datetime.datetime.combine(today, datetime.time.max)
 
         queryset = StudentGroup.objects.filter(group__id=group_id)
+
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if status:
             queryset = queryset.filter(student__student_stage_type=status)
