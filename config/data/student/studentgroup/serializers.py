@@ -36,7 +36,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             "lesson_count",
             "current_theme",
             "group_price",
-            # "is_archived",
+            "is_archived",
         ]
 
     def get_group_price(self, obj):
