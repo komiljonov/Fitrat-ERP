@@ -16,6 +16,7 @@ class EventSerializer(serializers.ModelSerializer):
             "id",
             "file",
             "photo",
+            "title",
             "link_preview",
             "link",
             "comment",
