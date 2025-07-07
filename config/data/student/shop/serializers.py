@@ -142,8 +142,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
         rep["student"] = StudentSerializer(instance.student, context=self.context).data
         rep["product"] = ProductsSerializer(instance.product, context=self.context).data
         rep["updater"] = {
-            "id" : instance.updater,
-            "full_name" : instance.full_name,
+            "id": instance.updater.id,
+            "full_name": instance.updater.full_name,
         } if instance.updater is not None else None
         return rep
 
