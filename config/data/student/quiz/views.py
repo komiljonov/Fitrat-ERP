@@ -1345,79 +1345,86 @@ class MonthlyExam(APIView):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
+        # Required fields
         exam_id = validated_data.get("exam")
         student_id = validated_data.get("student")
 
-        print(exam_id,student_id)
+        if not exam_id or not student_id:
+            return Response({"detail": "Exam and student are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 🔍 Retrieve ExamRegistration to update
+        # 🔍 Retrieve existing exam registration
         exam_registration = ExamRegistration.objects.filter(
             exam=exam_id,
             student=student_id,
             exam__choice="Monthly"
         ).first()
 
-
         if not exam_registration:
             return Response({"detail": "Exam registration not found."}, status=status.HTTP_404_NOT_FOUND)
 
-
-
-        file_1 = File.objects.filter(id=validated_data.get("first_certificate")).first()
-        file_2 = File.objects.filter(id=validated_data.get("second_certificate")).first()
-
+        # Optional certificates
         first_certificate = None
-        if validated_data.get("first_has_certificate"):
-            first_certificate = ExamCertificate.objects.create(
-                student=student_id,
-                exam=exam_id,
-                status="Pending",
-                certificate=file_1,
-            )
+        if validated_data.get("first_has_certificate") and validated_data.get("first_certificate"):
+            file_1 = File.objects.filter(id=validated_data["first_certificate"]).first()
+            if file_1:
+                first_certificate = ExamCertificate.objects.create(
+                    student=student_id,
+                    exam=exam_id,
+                    status="Pending",
+                    certificate=file_1,
+                )
+
         second_certificate = None
-        if validated_data.get("second_has_certificate"):
-            second_certificate = ExamCertificate.objects.create(
-                student=student_id,
-                exam=exam_id,
-                status="Pending",
-                certificate=file_2,
-            )
-        # ✅ Set options (subjects)
-        first_subject_id = validated_data.get("first_subject")
-        second_subject_id = validated_data.get("second_subject")
+        if validated_data.get("second_has_certificate") and validated_data.get("second_certificate"):
+            file_2 = File.objects.filter(id=validated_data["second_certificate"]).first()
+            if file_2:
+                second_certificate = ExamCertificate.objects.create(
+                    student=student_id,
+                    exam=exam_id,
+                    status="Pending",
+                    certificate=file_2,
+                )
 
-        first_subject_obj = Subject.objects.filter(id=first_subject_id).first()
-        second_subject_obj = Subject.objects.filter(id=second_subject_id).first()
+        # Optional exam subjects
+        exam_subjects = []
+        if validated_data.get("first_subject"):
+            subject_1 = Subject.objects.filter(id=validated_data["first_subject"]).first()
+            if subject_1:
+                exam_subjects.append(
+                    ExamSubject.objects.create(
+                        subject=subject_1,
+                        has_certificate=bool(first_certificate),
+                        certificate=first_certificate.certificate if first_certificate else None,
+                    )
+                )
 
-        first_exam_subject = ExamSubject.objects.create(
-            subject=first_subject_obj,
-            has_certificate=True if first_certificate else False,
-            certificate=file_1 if first_certificate else None,
-        )
-        second_exam_subject = ExamSubject.objects.create(
-            subject=second_subject_obj,
-            has_certificate=True if second_certificate else False,
-            certificate=file_2 if second_certificate else None,
-        )
+        if validated_data.get("second_subject"):
+            subject_2 = Subject.objects.filter(id=validated_data["second_subject"]).first()
+            if subject_2:
+                exam_subjects.append(
+                    ExamSubject.objects.create(
+                        subject=subject_2,
+                        has_certificate=bool(second_certificate),
+                        certificate=second_certificate.certificate if second_certificate else None,
+                    )
+                )
 
-        print(first_exam_subject,second_exam_subject)
+        # Only update if we have subjects
+        if exam_subjects:
+            exam_registration.option.set(exam_subjects)
 
-        if not first_exam_subject or not second_exam_subject:
-            return Response({"detail": "Exam subject not found."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Update exam_registration
-        exam_registration.option.set([first_exam_subject, second_exam_subject])
-
+        # Prepare response
         response_data = {
-            "first_subject": first_exam_subject.subject.name,
-            "second_subject": second_exam_subject.subject.name,
-            "has_certificate": validated_data.get("has_certificate"),
-            "first_certificate": str(first_certificate.id) if first_certificate else None,
-            "second_certificate": str(second_certificate.id) if second_certificate else None,
             "exam": str(exam_id),
             "student": str(student_id),
+            "first_subject": exam_subjects[0].subject.name if len(exam_subjects) > 0 else None,
+            "second_subject": exam_subjects[1].subject.name if len(exam_subjects) > 1 else None,
+            "first_certificate": str(first_certificate.id) if first_certificate else None,
+            "second_certificate": str(second_certificate.id) if second_certificate else None,
         }
+
         return Response(response_data, status=status.HTTP_200_OK)
+
 
 
 
