@@ -135,8 +135,13 @@ class PurchaseList(ListCreateAPIView):
         user = self.request.query_params.get('user')
         student = self.request.query_params.get('student')
 
+        status = self.request.GET.get('status')
+
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+
+        if status:
+            queryset = queryset.filter(status=status)
 
         if user:
             queryset = queryset.filter(student__user__id=user)
