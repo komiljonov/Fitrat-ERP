@@ -121,6 +121,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
             "product",
             "student",
             "status",
+            "updater",
+            "comment",
             "created_at",
         ]
 
@@ -128,6 +130,10 @@ class PurchaseSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep["student"] = StudentSerializer(instance.student, context=self.context).data
         rep["product"] = ProductsSerializer(instance.product, context=self.context).data
+        rep["updater"] = {
+            "id" : instance.updater,
+            "full_name" : instance.full_name,
+        } if instance.updater is not None else None
         return rep
 
     def create(self, validated_data):
