@@ -45,7 +45,10 @@ class ArchivedListAPIView(ListCreateAPIView):
         balance_to = get('balance_to')
         start_date = get('start_date')
         end_date = get('end_date')
+        filial = get("filial")
 
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
         if lid:
