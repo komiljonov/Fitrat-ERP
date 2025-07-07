@@ -48,7 +48,22 @@ class ArchivedListAPIView(ListCreateAPIView):
         start_date = get('start_date')
         end_date = get('end_date')
         filial = get("filial")
+        debts = get("debts")
+        no_debts = get("no_debts")
 
+        if no_debts:
+            # Student or lid exists and their balance is >= 100000
+            queryset = queryset.filter(
+                Q(student__isnull=False, student__balance__gte=100000) |
+                Q(lid__isnull=False, lid__balance__gte=100000)
+            )
+
+        if debts:
+            # Student or lid exists and their balance is < 100000
+            queryset = queryset.filter(
+                Q(student__isnull=False, student__balance__lt=100000) |
+                Q(lid__isnull=False, lid__balance__lt=100000)
+            )
         if student_stage:
             queryset = queryset.filter(student__student_stage_type=student_stage)
         if lid_stage:
@@ -77,10 +92,18 @@ class ArchivedListAPIView(ListCreateAPIView):
         if service_manager:
             queryset = queryset.filter(Q(student__service_manager__id=service_manager) | Q(lid__service_manager__id=service_manager))
 
-        if balance_from:
-            queryset = queryset.filter(Q(student__balance__gte=balance_from) | Q(lid__balance__gte=balance_from))
-        if balance_to:
-            queryset = queryset.filter(Q(student__balance__lte=balance_to) | Q(lid__balance__lte=balance_to))
+        if balance_from or balance_to:
+            student_q = Q()
+            lid_q = Q()
+
+            if balance_from:
+                student_q &= Q(student__balance__gte=balance_from)
+                lid_q &= Q(lid__balance__gte=balance_from)
+            if balance_to:
+                student_q &= Q(student__balance__lte=balance_to)
+                lid_q &= Q(lid__balance__lte=balance_to)
+
+            queryset = queryset.filter(student_q | lid_q)
 
         # handle date
         if start_date and end_date:
