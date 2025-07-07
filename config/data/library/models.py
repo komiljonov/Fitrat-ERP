@@ -19,6 +19,10 @@ class Library(BaseModel):
         ("noAudio", "No Audio"),
     ],max_length=100,null=True,blank=True)
 
+    description = models.TextField(null=True,blank=True)
+    title = models.TextField(null=True,blank=True)
+    author = models.CharField(max_length=256,null=True,blank=True)
+
     book : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True,blank=True, related_name="books_files")
 
     file : "File" = models.ManyToManyField("upload.File",related_name="libraries_files")
