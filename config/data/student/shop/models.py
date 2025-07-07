@@ -54,6 +54,10 @@ class Coins(BaseModel):
         ("Speaking", "Speaking"),
         ("Homework", "Homework"),
         ("Result", "Result"),
+        ("Mock","Mock"),
+        ("Unit", "Unit Test"),
+        ("Weekly", "Weekly"),
+        ("Monthly", "Monthly"),
     ],max_length=10,null=True,blank=True)
 
     comment = models.TextField(blank=True, null=True)

@@ -33,6 +33,7 @@ from ..groups.models import Group
 from ..homeworks.models import Homework
 from ..mastering.models import Mastering
 from ..shop.models import Points
+from ..shop.utils import give_coin
 from ..student.models import Student
 from ..subject.models import Theme, Subject
 from ...account.models import CustomUser
@@ -549,6 +550,12 @@ class QuizCheckAPIView(APIView):
                     student=student,
                     comment=f"{homework.theme.title} test results"
                 )
+            coin = give_coin(
+                student=student,
+                type="Single",
+                choice="Homework",
+                from_point=ball,
+            )
         except Exception:
             pass
 
