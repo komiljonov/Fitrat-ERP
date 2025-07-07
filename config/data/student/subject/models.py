@@ -99,4 +99,4 @@ class Theme(BaseModel):
 
 class GroupThemeStart(BaseModel):
     group : "Group" = models.ForeignKey("groups.Group",on_delete=models.SET_NULL, null=True, blank=True,related_name="group_themes_started_group")
-    theme : "Theme" = models.ForeignKey("theme.Theme", on_delete=models.SET_NULL, null=True, blank=True,related_name="group_theme_started_theme")
+    theme : "Theme" = models.ForeignKey("subject.Theme", on_delete=models.SET_NULL, null=True, blank=True,related_name="group_theme_started_theme")
