@@ -7,6 +7,7 @@ from django.utils.autoreload import logger
 from data.notifications.models import Notification
 from data.student.shop.models import Coins, Purchase, Points
 from data.student.student.models import Student
+from data.finances.compensation.models import Page
 
 
 @receiver(post_save, sender=Points)
@@ -44,7 +45,7 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
         student.save()
 
     if not created and instance.status == "Completed":
-        # Notify when marked as completed
+
         Notification.objects.create(
             user=student.user,
             comment=(
@@ -54,6 +55,8 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
             ),
             choice="Shopping"
         )
+
+
     if not created and instance.status == "Cancelled":
 
         instance.student.coins += instance.product.coin
@@ -69,3 +72,16 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
             choice="Shopping"
         )
 
+    if created:
+        notifier_users = Page.objects.filter(is_readable=True)
+        if notifier_users:
+            for user in notifier_users:
+                Notification.objects.create(
+                    user=user,
+                    comment=(
+                        f"{instance.student.first_name} {instance.student.last_name} talaba  {instance.product.name} nomli mahsulot uchun "
+                        f"coin orqali to'lov amalga oshirdi.\n"
+                        f"Filial : {instance.product.filial}\n"
+                    ),
+                    choice="Shopping"
+                )
