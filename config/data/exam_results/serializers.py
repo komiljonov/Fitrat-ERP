@@ -259,7 +259,7 @@ class MockExamResultSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
-        instance.updater = self.context.request.user
+        instance.updater = self.context["request"].user  # FIX HERE
         instance.save()
 
         if instance.mock and instance.student:
