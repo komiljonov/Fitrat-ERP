@@ -287,7 +287,7 @@ class StuffRolesView(ListAPIView):
                 filters = Q(role="CALL_OPERATOR")
                 if is_call_operator:
                     is_call_operator_bool = is_call_operator.lower() == "true"
-                    filters |= Q(is_call_operator=is_call_operator_bool)
+                    filters |= Q(is_call_center=is_call_operator_bool)
                 queryset = queryset.filter(filters)
 
             elif role == "ADMINISTRATOR":
@@ -299,7 +299,7 @@ class StuffRolesView(ListAPIView):
         elif is_call_operator:
             # If role is not provided but is_call_operator is
             is_call_operator_bool = is_call_operator.lower() == "true"
-            queryset = queryset.filter(is_call_operator=is_call_operator_bool)
+            queryset = queryset.filter(Q(is_call_center=is_call_operator_bool) | Q(role="CALL_OPERATOR"))
 
         return queryset
 
