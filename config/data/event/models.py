@@ -12,6 +12,7 @@ class Event(BaseModel):
     link = models.URLField(null=True,blank=True)
     comment = models.TextField(null=True,blank=True)
     end_date = models.DateField(null=True,blank=True)
+    has_countdown = models.BooleanField(default=False)
     status = models.CharField(choices=[
         ("Expired", "Expired"),
         ("Soon", "Soon"),

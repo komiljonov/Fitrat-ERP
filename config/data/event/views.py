@@ -13,6 +13,10 @@ class EventListCreate(ListCreateAPIView):
         queryset = Event.objects.all()
 
         status = self.request.GET.get('status')
+        has_countdown = self.request.GET.get('has_countdown')
+
+        if has_countdown:
+            queryset = queryset.filter(has_countdown=has_countdown.capitalize())
         if status:
             queryset = queryset.filter(status=status)
 
