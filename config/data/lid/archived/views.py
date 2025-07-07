@@ -54,6 +54,7 @@ class ArchivedListAPIView(ListCreateAPIView):
         if lid_stage:
             queryset = queryset.filter(lid__lid_stage_type=lid_stage)
         if filial:
+            print(filial)
             queryset = queryset.filter(filial__id=filial)
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
