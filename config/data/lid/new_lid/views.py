@@ -318,6 +318,9 @@ class LidStatisticsView(ListAPIView):
         is_student = self.request.query_params.get("is_student")
 
         filter = {}
+
+        if filial:
+            filter["filial__id"] = filial
         if is_archived:
             filter["is_archived"] = True
         # if course_id:
