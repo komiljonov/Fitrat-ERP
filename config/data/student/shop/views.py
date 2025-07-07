@@ -130,6 +130,7 @@ class PurchaseList(ListCreateAPIView):
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         queryset = Purchase.objects.all()
         user = self.request.query_params.get('user')
@@ -156,8 +157,6 @@ class PurchaseList(ListCreateAPIView):
             queryset = queryset.filter(student__id=student)
 
         return queryset
-    def get_paginated_response(self, data):
-        return Response(data)
 
 
 class PurchaseDetail(RetrieveUpdateDestroyAPIView):

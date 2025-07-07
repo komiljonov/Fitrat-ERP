@@ -276,7 +276,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
 
         files = validated_data.get('file', None)
         if files is not None:
-            # Convert the provided list of files to a set to avoid duplicates
+
             instance.file.set(files)
 
         # Update other fields
