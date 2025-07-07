@@ -6,11 +6,12 @@ from django.utils import timezone
 from django.utils.timezone import now
 
 from ...command.models import BaseModel
-from ...lid.new_lid.models import Lid
+
 
 if TYPE_CHECKING:
     from ..course.models import Course
     from ..student.models import Student
+    from ...lid.new_lid.models import Lid
 
 from ...account.models import CustomUser
 from ..subject.models import Level
