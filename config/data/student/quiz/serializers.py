@@ -628,13 +628,13 @@ class ExamSerializer(serializers.ModelSerializer):
 
 
 class ExamMonthlySerializer(serializers.ModelSerializer):
-    first_subject = serializers.UUIDField(required=False)
-    second_subject = serializers.UUIDField(required=False)
-    first_has_certificate = serializers.BooleanField(required=False)
-    second_has_certificate = serializers.BooleanField(required=False)
-    first_certificate = serializers.UUIDField(required=False)
-    second_certificate = serializers.UUIDField(required=False)
-    expire_date = serializers.DateTimeField(required=False)
+    first_subject = serializers.UUIDField(required=False,allow_null=True)
+    second_subject = serializers.UUIDField(required=False,allow_null=True)
+    first_has_certificate = serializers.BooleanField(required=False,allow_null=True)
+    second_has_certificate = serializers.BooleanField(required=False,allow_null=True)
+    first_certificate = serializers.UUIDField(required=False,allow_null=True)
+    second_certificate = serializers.UUIDField(required=False,allow_null=True)
+    expire_date = serializers.DateTimeField(required=False,allow_null=True)
     option = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(),many=True,allow_null=True)
 
     class Meta:
