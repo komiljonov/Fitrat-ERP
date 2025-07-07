@@ -283,6 +283,9 @@ class StuffRolesView(ListAPIView):
             queryset = queryset.filter(is_call_center=True)
 
         if role:
+            if role == "CALL_OPERATOR" or queryset.is_call_center == is_call_operator.capitalize():
+                queryset = queryset.filter(Q(role=role) | Q(is_call_operator=is_call_operator.capitalize()))
+
             if role == "ADMINISTRATOR":
                 queryset = queryset.filter(role__in=["ADMINISTRATOR","SERVICE_SALES"])
 
