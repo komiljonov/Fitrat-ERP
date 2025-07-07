@@ -471,11 +471,26 @@ class LessonScheduleListApi(ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
 
         # Get the date filter from query params (optional)
+
+        teacher = self.request.GET.get('teacher')
+        name = self.request.GET.get('name')
+        subject = self.request.GET.get('subject')
+        room = self.request.GET.get('room')
+
         date_filter = self.request.GET.get('date', None)
         date_filter = datetime.datetime.strptime(date_filter, "%d-%m-%Y").date() if date_filter else None
 
         # Prepare to collect lessons grouped by date
         lessons_by_date = defaultdict(list)
+
+        if name:
+            queryset = queryset.filter(name=name)
+        if subject:
+            queryset = queryset.filter(course__subject__id=subject)
+        if room:
+            queryset = queryset.filter(room_number__id=room)
+        if teacher:
+            queryset = queryset.filter(teacher__id=teacher)
 
         # Collect lessons from the main schedule
         for item in serializer.data:
