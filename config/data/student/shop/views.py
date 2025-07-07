@@ -1,4 +1,5 @@
 from decimal import Decimal
+from itertools import product
 
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
@@ -215,3 +216,33 @@ class CategoryDetail(RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = [IsAuthenticated]
+
+
+class OrdersStatisList(APIView):
+    def get(self, request, *args, **kwargs):
+
+        queryset = Purchase.objects.all()
+
+        product = self.request.GET.get('product')
+        student = self.request.GET.get('student')
+        status = self.request.GET.get('status')
+        updater = self.request.GET.get('updater')
+
+        # if status:
+        #     queryset = queryset.filter(status=status)
+        # if student:
+        #     queryset = queryset.filter(student__user__id=student)
+        # if product:
+        #     queryset = queryset.filter(product__id=product)
+        # if updater:
+        #     queryset = queryset.filter(updater__id=updater)
+
+        complated_orders = Purchase.objects.filter(status="Completed")
+        pending_orders = Purchase.objects.filter(status="Pending")
+        cancalled_orders = Purchase.objects.filter(status="Cancelled")
+
+        return Response({
+            "complated_orders": complated_orders,
+            "pending_orders": pending_orders,
+            "cancalled_orders": cancalled_orders,
+        })

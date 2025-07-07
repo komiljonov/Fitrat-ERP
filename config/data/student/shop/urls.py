@@ -1,7 +1,7 @@
 from .views import (PurchaseList, PurchaseDetail, PointsList,
                     PointsDetail, CoinsList, CoinsDetail,
                     ProductsDetail, ProductsList, PointToCoinExchangeApiView, CategoryList, CategoryDetail,
-                    CoinsSettingsCreateAPIView, CoinsSettingsRetrieveAPIView)
+                    CoinsSettingsCreateAPIView, CoinsSettingsRetrieveAPIView, OrdersStatisList)
 
 from django.urls import path
 
@@ -25,4 +25,6 @@ urlpatterns = [
 
     path("coins-settings/",CoinsSettingsCreateAPIView.as_view()),
     path("coins-settings/<uuid:pk>",CoinsSettingsRetrieveAPIView.as_view()),
+
+    path("order-stats/",OrdersStatisList.as_view()),
 ]
