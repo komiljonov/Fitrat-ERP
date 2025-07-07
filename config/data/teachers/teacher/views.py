@@ -270,6 +270,7 @@ class StudentsAvgLearning(APIView):
     def get(self, request, *args, **kwargs):
         group_id = request.query_params.get("group")
 
+
         if not group_id:
             return Response({"error": "group parameter is required"}, status=400)
 
