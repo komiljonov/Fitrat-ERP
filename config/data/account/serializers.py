@@ -292,6 +292,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.create(**validated_data)
         return user
 
+
 class CheckNumberSerializer(serializers.Serializer):
     phone = serializers.CharField()
 
