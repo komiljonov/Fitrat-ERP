@@ -279,18 +279,28 @@ class StuffRolesView(ListAPIView):
         if filial:
             queryset = queryset.filter(filial__id=filial)
 
-        if is_call_operator and is_call_operator.lower() == 'true':
-            queryset = queryset.filter(is_call_center=True)
+        # if is_call_operator and is_call_operator.lower() == 'true':
+        #     queryset = queryset.filter(is_call_center=True)
 
         if role:
-            if role == "CALL_OPERATOR" or queryset.is_call_center == is_call_operator.capitalize():
-                queryset = queryset.filter(Q(role=role) | Q(is_call_center=is_call_operator.capitalize()))
+            if role == "CALL_OPERATOR":
+                filters = Q(role="CALL_OPERATOR")
+                if is_call_operator:
+                    is_call_operator_bool = is_call_operator.lower() == "true"
+                    filters |= Q(is_call_operator=is_call_operator_bool)
+                queryset = queryset.filter(filters)
 
-            if role == "ADMINISTRATOR":
-                queryset = queryset.filter(role__in=["ADMINISTRATOR","SERVICE_SALES"])
+            elif role == "ADMINISTRATOR":
+                queryset = queryset.filter(role__in=["ADMINISTRATOR", "SERVICE_SALES"])
 
             else:
                 queryset = queryset.filter(role=role)
+
+        elif is_call_operator:
+            # If role is not provided but is_call_operator is
+            is_call_operator_bool = is_call_operator.lower() == "true"
+            queryset = queryset.filter(is_call_operator=is_call_operator_bool)
+
         return queryset
 
     def get_paginated_response(self, data):
