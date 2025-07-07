@@ -12,9 +12,10 @@ if TYPE_CHECKING:
     from ..course.models import Course
     from ..student.models import Student
     from ...lid.new_lid.models import Lid
+    from ..subject.models import Level
 
 from ...account.models import CustomUser
-from ..subject.models import Level
+
 
 class Room(BaseModel):
     room_number = models.CharField(max_length=100,)
