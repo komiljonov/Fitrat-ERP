@@ -287,4 +287,9 @@ class MockExamResultSerializer(serializers.ModelSerializer):
             "id": instance.student.id,
             "full_name": f"{instance.student.first_name} ({instance.student.last_name})",
         }
+        if instance.updater:
+            rep["updater"] = {
+                "id": instance.updater.id,
+                "full_name": instance.full_name,
+            }
         return rep
