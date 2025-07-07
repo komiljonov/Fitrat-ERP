@@ -290,6 +290,6 @@ class MockExamResultSerializer(serializers.ModelSerializer):
         if instance.updater:
             rep["updater"] = {
                 "id": instance.updater.id,
-                "full_name": instance.full_name,
+                "full_name": instance.updater.full_name,
             }
         return rep
