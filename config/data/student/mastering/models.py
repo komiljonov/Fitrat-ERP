@@ -29,7 +29,7 @@ class Mastering(BaseModel):
     mock : "MockExam" = models.ForeignKey("exam_results.MockExam",on_delete=models.SET_NULL, null=True,blank=True,
                              related_name='mastering_mock')
 
-    # updater = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True,blank=True,related_name='mastering_updater')
+    updater = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True,blank=True,related_name='mastering_updater')
 
     ball = models.FloatField(default=0)
 
