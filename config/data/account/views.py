@@ -318,7 +318,7 @@ class PasswordResetRequestAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         phone = serializer.validated_data["phone"]
 
-        code = random.randint(1000, 9999)
+        code = random.randint(100000, 999999)
         ConfirmationCode.objects.update_or_create(phone=phone, defaults={"code": code, "created_at": timezone.now()})
 
         sms = SayqalSms()
