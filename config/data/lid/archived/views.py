@@ -33,6 +33,8 @@ class ArchivedListAPIView(ListCreateAPIView):
 
         lid = get('lid')
         student = get('student')
+        student_stage = get('student_stage')
+        lid_stage = get('lid_stage')
         creator = get('creator')
         comment = get('comment')
         is_archived = get('is_archived')
@@ -47,6 +49,10 @@ class ArchivedListAPIView(ListCreateAPIView):
         end_date = get('end_date')
         filial = get("filial")
 
+        if student_stage:
+            queryset = queryset.filter(student__student_stage_type=student_stage)
+        if lid_stage:
+            queryset = queryset.filter(lid__lid_stage_type=lid_stage)
         if filial:
             queryset = queryset.filter(filial__id=filial)
         if is_archived:
