@@ -333,8 +333,11 @@ class StudentsAvgLearning(APIView):
                             "writing": mock_result.writing,
                             "speaking": mock_result.speaking,
                             "overall_score": mock_result.overall_score,
-                            "updater": mock_result.updater,
-                            "created_at": mock_result.created_at.isoformat(),  # datetime to string
+                            "updater": {
+                                "id": mock_result.updater.id,
+                                "full_name": f"{mock_result.updater.first_name} {mock_result.updater.last_name}",
+                            } if mock_result.updater else None,
+                            "created_at": mock_result.created_at.isoformat(),
                         }
 
                 theme_data = {
