@@ -684,17 +684,14 @@ class PaymentCasherStatistics(ListAPIView):
         start_date_str = request.query_params.get('start_date')
         end_date_str = request.query_params.get('end_date')
 
-        if not id:
-            return Response({"error": "Casher ID is required"}, status=400)
-
-        # Parse start and end dates safely
+        # Parse dates correctly
         start_date = None
         end_date = None
         try:
             if start_date_str:
-                start_date = strptime(start_date_str, "%Y-%m-%d")
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             if end_date_str:
-                end_date = strptime(end_date_str, "%Y-%m-%d")
+                end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
         except ValueError:
             return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
