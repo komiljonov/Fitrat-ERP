@@ -124,7 +124,7 @@ class GroupStudentList(ListAPIView):
         start_of_day = datetime.datetime.combine(today, datetime.time.min)
         end_of_day = datetime.datetime.combine(today, datetime.time.max)
 
-        queryset = StudentGroup.objects.filter(group__id=group_id)
+        queryset = StudentGroup.objects.filter(group__id=group_id).distinct()
 
         if is_archived:
             queryset = queryset.filter(Q(student__is_archived=is_archived.capitalize()) | Q(lid__is_archived=is_archived.capitalize()))
@@ -161,7 +161,7 @@ class GroupStudentList(ListAPIView):
 
         print(list(queryset.distinct()))
 
-        return queryset.distinct()
+        return queryset
 
     def get_paginated_response(self, data):
         """
