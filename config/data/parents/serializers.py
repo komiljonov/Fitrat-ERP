@@ -46,10 +46,10 @@ class RelativesSerializer(serializers.ModelSerializer):
             sms.send_sms(
                 number=phone,
                 message=f"""
-                📱 Fitrat ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+                Fitrat ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
 
-                🔑 Login: {phone}
-                🧩 Parol: {password}
+                Login: {phone}
+                Parol: {password}
 
                 Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
                 """
@@ -87,10 +87,10 @@ class RelativesSerializer(serializers.ModelSerializer):
             )
 
             f"""
-            📱 Fitrat ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+            Fitrat ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
 
-            🔑 Login: {phone}
-            🧩 Parol: {password}
+            Login: {phone}
+            Parol: {password}
 
             Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
             """
