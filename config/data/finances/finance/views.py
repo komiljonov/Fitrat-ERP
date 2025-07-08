@@ -687,13 +687,6 @@ class PaymentCasherStatistics(ListAPIView):
         if not id:
             return Response({"error": "Casher ID is required"}, status=400)
 
-        # Define filters
-        filter = {"casher__id": id}
-        if start_date:
-            filter['created_at__gte'] = start_date
-        if end_date:
-            filter['created_at__lte'] = end_date + timedelta(days=1) - timedelta(seconds=1)
-
         # Define valid payment methods
         valid_payment_methods = [
             'Click', 'Payme', 'Cash', 'Card', "Money_send"
@@ -701,7 +694,15 @@ class PaymentCasherStatistics(ListAPIView):
 
         # Function to calculate totals
         def get_total_amount(payment, action_type):
-            return Finance.objects.filter(payment_method=payment, action=action_type, **filter).aggregate(
+
+            qs = Finance.objects.filter(payment_method=payment, action=action_type)
+            if id:
+                qs = qs.filter(casher__id=id)
+            if start_date:
+                qs = qs.filter(created_at__gte=start_date,created_at__lte=start_date + timedelta(days=1) - timedelta(seconds=1))
+            if start_date and end_date:
+                qs = qs.filter(created_at__gte=start_date,created_at__lte=end_date + timedelta(days=1) - timedelta(seconds=1))
+            return qs.aggregate(
                 total=Sum('amount'))['total'] or 0
 
         # Compute income and expense for each method
