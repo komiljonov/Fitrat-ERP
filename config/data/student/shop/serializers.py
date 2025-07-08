@@ -56,6 +56,7 @@ class CoinsSerializer(serializers.ModelSerializer):
             "student",
             "coin",
             "comment",
+            "status",
             "created_at",
         ]
 
