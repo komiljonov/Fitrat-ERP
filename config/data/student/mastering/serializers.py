@@ -4,6 +4,7 @@ from rest_framework import serializers
 from .models import Mastering, MasteringTeachers
 from ..quiz.models import Quiz
 from ..quiz.serializers import QuizSerializer
+from ..shop.utils import give_coin
 from ..subject.models import Theme
 from ..subject.serializers import ThemeSerializer
 
@@ -43,6 +44,29 @@ class MasteringSerializer(serializers.ModelSerializer):
 
         room = Mastering.objects.create(filial=filial, **validated_data)
         return room
+
+    # def update(self, instance, validated_data):
+    #
+    #     from ..shop.utils import give_coin
+    #
+    #     if filial := validated_data.pop("filial", None):
+    #         instance.filial = filial
+    #
+    #     for attr, value in validated_data.items():
+    #         setattr(instance, attr, value)
+    #
+    #     choice = validated_data.pop("choice", None)
+    #     if choice:
+    #
+    #         type =
+    #
+    #         give_coin = give_coin(
+    #             student=instance.student,
+    #             type=
+    #         )
+    #
+    #     instance.save()
+    #     return instance
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
