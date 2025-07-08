@@ -359,7 +359,7 @@ class CasherStatisticsAPIView(APIView):
         filter = {}
 
         if start_date:
-            start_dt = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
             start_dt = make_aware(start_dt)
             filter["created_at__gte"] = start_dt
 
@@ -369,7 +369,7 @@ class CasherStatisticsAPIView(APIView):
                 filter["created_at__lte"] = end_dt
 
         if end_date:
-            end_dt = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1) - datetime.timedelta(
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1) - datetime.timedelta(
                 seconds=1)
             end_dt = make_aware(end_dt)
             filter["created_at__lte"] = end_dt
