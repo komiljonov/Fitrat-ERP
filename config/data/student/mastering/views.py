@@ -1,22 +1,22 @@
-import icecream
-from django.shortcuts import render
-from rest_framework import status
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
-from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
+# Create your views here.
+from rest_framework import status
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .models import Mastering, MasteringTeachers
 # Create your views here.
 from .serializers import MasteringSerializer, StuffMasteringSerializer
-from .models import Mastering, MasteringTeachers
 from ..attendance.models import Attendance
-from ..subject.models import Theme, Level, GroupThemeStart
+from ..groups.models import Group
+from ..subject.models import Theme, GroupThemeStart
 from ...account.models import CustomUser
 from ...finances.finance.models import KpiFinance
 from ...finances.finance.serializers import KpiFinanceSerializer
 from ...notifications.models import Notification
-from ...payme.exceptions import InvalidParamsError
 
 
 class MasteringList(ListCreateAPIView):
@@ -96,6 +96,7 @@ class MasteringStudentFilter(ListAPIView):
     queryset = Mastering.objects.all()
     serializer_class = MasteringSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         quiz_id = self.request.query_qaram.get('quiz_id')
         student = self.request.query_param.get('student')
@@ -111,10 +112,6 @@ class MasteringStudentFilter(ListAPIView):
             queryset = queryset.filter(student__user__id=user)
         return queryset
 
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 
 class ChangeGroupTheme(APIView):
     permission_classes = [IsAuthenticated]
@@ -172,5 +169,3 @@ class ChangeGroupTheme(APIView):
                 return Response({"detail": "Theme successfully updated."}, status=status.HTTP_200_OK)
 
         return Response({"detail": "Invalid theme order or theme mismatch."}, status=status.HTTP_400_BAD_REQUEST)
-
-

@@ -242,7 +242,7 @@ class OrdersStatisList(APIView):
         cancalled_orders = Purchase.objects.filter(status="Cancelled")
 
         return Response({
-            "complated_orders": complated_orders,
-            "pending_orders": pending_orders,
-            "cancalled_orders": cancalled_orders,
+            "complated_orders": complated_orders.count(),
+            "pending_orders": pending_orders.count(),
+            "cancalled_orders": cancalled_orders.count(),
         })
