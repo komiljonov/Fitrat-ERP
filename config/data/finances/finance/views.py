@@ -78,12 +78,16 @@ class FinanceListAPIView(ListCreateAPIView):
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
 
+    from datetime import datetime, timedelta
+    from django.utils.dateparse import parse_date
+    from django.utils.timezone import make_aware
+
     def get_queryset(self):
-        kind = self.request.query_params.get('kind', None)
-        action = self.request.query_params.get('action', None)
-        start_date = self.request.query_params.get('start_date', None)
-        end_date = self.request.query_params.get('end_date', None)
-        casher_id = self.request.query_params.get('casher_id', None)
+        kind = self.request.query_params.get('kind')
+        action = self.request.query_params.get('action')
+        start_date_str = self.request.query_params.get('start_date')
+        end_date_str = self.request.query_params.get('end_date')
+        casher_id = self.request.query_params.get('casher_id')
 
         queryset = Finance.objects.all()
 
@@ -100,24 +104,28 @@ class FinanceListAPIView(ListCreateAPIView):
             except Kind.DoesNotExist:
                 return Finance.objects.none()
 
-        if start_date:
-            start = parse_date(start_date)
-            end = parse_date(end_date) if end_date else start
+        if start_date_str:
+            start = parse_date(start_date_str)
+            if not start:
+                return Finance.objects.none()
 
-            end = end + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+            if end_date_str:
+                end = parse_date(end_date_str)
+                if not end:
+                    end = start
+            else:
+                end = start
 
-            queryset = queryset.filter(created_at__gte=start, created_at__lte=end)
-
-
-        if start_date and end_date:
-            end_dt = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1) - datetime.timedelta(
-                seconds=1)
+            # Add one day to end for exclusive filtering
+            end_dt = datetime.combine(end, datetime.min.time()) + timedelta(days=1)
             end_dt = make_aware(end_dt)
 
-            queryset = queryset.filter(created_at__gte=start_date,created_at__lte=end_dt)
+            queryset = queryset.filter(
+                created_at__gte=datetime.combine(start, datetime.min.time()),
+                created_at__lt=end_dt
+            )
 
         return queryset
-
 
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Finance.objects.all()
