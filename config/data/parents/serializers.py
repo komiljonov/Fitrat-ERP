@@ -6,7 +6,9 @@ from rest_framework import serializers
 
 from data.account.models import CustomUser
 from data.parents.models import Relatives
+from data.student.student.sms import SayqalSms
 
+sms = SayqalSms()
 
 
 class RelativesSerializer(serializers.ModelSerializer):
@@ -41,6 +43,17 @@ class RelativesSerializer(serializers.ModelSerializer):
 
             # ✅ Optionally send or log password
             print(f"Parent account created with phone {phone} and password: {password}")
+            sms.send_sms(
+                number=phone,
+                message=f"""
+                📱 Fitrat ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+
+                🔑 Login: {phone}
+                🧩 Parol: {password}
+
+                Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
+                """
+            )
 
             # ✅ Create Relative linking user to student
             relative = Relatives.objects.create(
@@ -72,6 +85,16 @@ class RelativesSerializer(serializers.ModelSerializer):
                 password=make_password(password),
                 role="Parents",
             )
+
+            f"""
+            📱 Fitrat ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+
+            🔑 Login: {phone}
+            🧩 Parol: {password}
+
+            Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
+            """
+
             print(f"New parent user created for phone {phone} with password: {password}")
 
         # Update Relative instance
