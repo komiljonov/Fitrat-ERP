@@ -1,5 +1,4 @@
 import datetime
-from datetime import timedelta
 from time import strptime
 
 import openpyxl
@@ -675,15 +674,6 @@ class PaymentStatistics(APIView):
         return Response(data)
 
 
-
-from datetime import datetime, timedelta
-from django.db.models import Sum
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import ListAPIView
-from data.finances.finance.models import Finance  # Adjust as needed
-
-
 class PaymentCasherStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -697,9 +687,9 @@ class PaymentCasherStatistics(ListAPIView):
         end_date = None
         try:
             if start_date_str:
-                start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+                start_date = strptime(start_date_str, "%Y-%m-%d")
             if end_date_str:
-                end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+                end_date = strptime(end_date_str, "%Y-%m-%d")
         except ValueError:
             return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
@@ -712,12 +702,12 @@ class PaymentCasherStatistics(ListAPIView):
             if start_date and not end_date:
                 qs = qs.filter(
                     created_at__gte=start_date,
-                    created_at__lt=start_date + timedelta(days=1)
+                    created_at__lt=start_date + datetime.timedelta(days=1)
                 )
             elif start_date and end_date:
                 qs = qs.filter(
                     created_at__gte=start_date,
-                    created_at__lt=end_date + timedelta(days=1)
+                    created_at__lt=end_date + datetime.timedelta(days=1)
                 )
             return qs.aggregate(total=Sum('amount'))['total'] or 0
 
