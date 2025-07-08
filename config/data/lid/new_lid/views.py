@@ -410,6 +410,7 @@ class LidStatisticsView(ListAPIView):
                 "order": ordered_archived,
             },
             "student_archived": {
+                "all":all_archived + new_student + active_student,
                 "new_students": new_student,
                 "active_students": active_student,
                 "no-debt": no_debt,
