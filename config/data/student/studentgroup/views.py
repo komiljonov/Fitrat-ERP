@@ -334,7 +334,7 @@ class GroupAttendedStudents(ListAPIView):
         queryset =  Attendance.objects.filter(
             group=group,
             created_at__gte=datetime.date.today(),
-        )
+        ).distinct()
 
         ic(reason)
 
