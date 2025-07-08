@@ -159,6 +159,8 @@ class GroupStudentList(ListAPIView):
 
         queryset = queryset.filter(Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids))
 
+        print(queryset.distinct())
+
         return queryset.distinct()
 
     def get_paginated_response(self, data):
