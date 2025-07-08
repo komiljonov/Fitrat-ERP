@@ -329,12 +329,18 @@ class PasswordResetRequestAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         phone = serializer.validated_data["phone"]
 
-        code = random.randint(100000, 999999)
+        code = random.randint(10000, 99999)
         ConfirmationCode.objects.update_or_create(phone=phone, defaults={"code": code, "created_at": timezone.now()})
 
         sms = SayqalSms()
 
-        text = f"Sizning {phone} raqamingiz bilan ochilgan Fitrat student App ning password reset uchun\n code : {code}."
+        text = f""" Fitrat Student ilovasi — Parolni tiklash
+                    Sizning raqamingiz: {phone}
+                    Parolni tiklash kodingiz: {code}
+                    
+                    Ushbu kodni hech kimga bermang. U faqat sizga mo‘ljallangan!
+                    
+                    """
 
         try:
             sms.send_sms(phone, text)
