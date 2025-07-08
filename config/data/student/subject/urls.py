@@ -4,7 +4,7 @@ from .dump_data import ThemeDumpDownloadAPIView, ThemeBulkCreateAPIView
 from .views import (SubjectList, SubjectNoPG, SubjectDetail,
                     LevelList, LevelDetail, LevelNoPG,
                     ThemeList, ThemeDetail, ThemeNoPG, ImportStudentsAPIView, ThemePgList)
-
+from ..mastering.views import ChangeGroupTheme
 
 urlpatterns = [
     path('', SubjectList.as_view(), name='subject-list'),
@@ -26,4 +26,5 @@ urlpatterns = [
 
     path("loaddata/",ThemeBulkCreateAPIView.as_view(), name='theme-loaddata'),
 
+    path("change/att-theme/",ChangeGroupTheme.as_view(), name='change-group-theme'),
 ]
