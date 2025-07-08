@@ -30,8 +30,11 @@ def new_created_order(sender, instance: Points, created, **kwargs):
 def new_created_order(sender, instance: Coins, created, **kwargs):
     if created:
         user = Student.objects.filter(pk=instance.student.pk).first()
-        if user:
+        if user and instance.status == "Given":
             user.coins += instance.coin
+            user.save()
+        if user and instance.status == "Taken":
+            user.coins -= instance.coin
             user.save()
 
 
@@ -40,9 +43,13 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
     student = instance.student
 
     if created:
-        # Subtract coins on creation
-        student.coins -= instance.product.coin
-        student.save()
+        Coins.objects.create(
+            student=student,
+            coin=instance.product.coin,
+            choice="Shopping",
+            comment=f"Siz uchun {instance.product.name} buyurtma qilindi va tasdiqlanishi bilan sizga xabar beramiz .",
+            status="Taken"
+        )
 
     if not created and instance.status == "Completed":
 
@@ -59,8 +66,13 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
 
     if not created and instance.status == "Cancelled":
 
-        instance.student.coins += instance.product.coin
-        instance.student.save()
+        Coins.objects.create(
+            student=student,
+            coin=instance.product.coin,
+            choice="Shopping",
+            comment=f"Sizning kutish bosqichidagi {instance.product.name} buyurtmangiz bekir qilinganligi uchun coinlaringiz qaytarildi.",
+            status="Given"
+        )
 
         Notification.objects.create(
             user=student.user,
