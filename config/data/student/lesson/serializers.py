@@ -339,13 +339,11 @@ class FirstLessonSerializer(serializers.ModelSerializer):
         lid = validated_data.get("lid")
 
         if group and lid:
-            # ✅ Check if the same lid is already assigned to the group
             if StudentGroup.objects.filter(group=group, lid=lid).exists():
                 raise serializers.ValidationError(
                     {"lid": "This LID is already assigned to this group."}
                 )
 
-            # ✅ Check if a student with the same phone number is already assigned to the group
             if StudentGroup.objects.filter(
                     group=group,
                     student__phone=lid.phone_number
@@ -354,7 +352,6 @@ class FirstLessonSerializer(serializers.ModelSerializer):
                     {"student": "A student with the same phone number is already assigned to this group."}
                 )
 
-        # ✅ Auto-assign filial if not provided
         if not filial:
             request = self.context.get("request")
             if request and hasattr(request.user, "filial"):
