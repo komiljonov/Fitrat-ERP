@@ -1,5 +1,4 @@
 import datetime
-from time import strptime
 
 import openpyxl
 import pandas as pd
@@ -28,7 +27,7 @@ from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSeri
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 from ...student.groups.models import Group
-
+from datetime import datetime, timedelta
 
 class CasherListCreateAPIView(ListCreateAPIView):
     queryset = Casher.objects.all()
@@ -678,45 +677,48 @@ class PaymentCasherStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
-        id = self.kwargs.get('pk')
+        cashier_id = self.kwargs.get('pk')
         start_date_str = request.query_params.get('start_date')
         end_date_str = request.query_params.get('end_date')
 
-        # ✅ Safely parse dates
+        # ✅ Safely parse dates from string to datetime
         start_date = None
         end_date = None
         try:
             if start_date_str:
-                start_date = strptime(start_date_str, "%Y-%m-%d")
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             if end_date_str:
-                end_date = strptime(end_date_str, "%Y-%m-%d")
+                end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
         except ValueError:
             return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
+        # ✅ Supported payment methods
         valid_payment_methods = ['Click', 'Payme', 'Cash', 'Card', "Money_send"]
 
-        def get_total_amount(payment, action_type):
-            qs = Finance.objects.filter(payment_method=payment, action=action_type)
-            if id:
-                qs = qs.filter(casher__id=id)
+        def get_total_amount(payment_method, action_type):
+            qs = Finance.objects.filter(payment_method=payment_method, action=action_type)
+            if cashier_id:
+                qs = qs.filter(casher__id=cashier_id)
+
             if start_date and not end_date:
                 qs = qs.filter(
                     created_at__gte=start_date,
-                    created_at__lt=start_date + datetime.timedelta(days=1)
+                    created_at__lt=start_date + timedelta(days=1)
                 )
             elif start_date and end_date:
                 qs = qs.filter(
                     created_at__gte=start_date,
-                    created_at__lt=end_date + datetime.timedelta(days=1)
+                    created_at__lt=end_date + timedelta(days=1)
                 )
+
             return qs.aggregate(total=Sum('amount'))['total'] or 0
 
-        # Build response data
+        # ✅ Build statistics data
         data = {}
         for payment in valid_payment_methods:
-            formatted = payment.lower().replace(" ", "_")
-            data[f"{formatted}_income"] = get_total_amount(payment, "INCOME")
-            data[f"{formatted}_expense"] = get_total_amount(payment, "EXPENSE")
+            key = payment.lower().replace(" ", "_")
+            data[f"{key}_income"] = get_total_amount(payment, "INCOME")
+            data[f"{key}_expense"] = get_total_amount(payment, "EXPENSE")
 
         data["total_income"] = sum(data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods)
         data["total_expense"] = sum(data[f"{p.lower().replace(' ', '_')}_expense"] for p in valid_payment_methods)
@@ -725,7 +727,6 @@ class PaymentCasherStatistics(ListAPIView):
 
     def get_queryset(self):
         return Finance.objects.none()
-
 
 class SalesList(ListCreateAPIView):
     serializer_class = SalesSerializer
