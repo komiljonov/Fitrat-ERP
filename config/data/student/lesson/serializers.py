@@ -1,8 +1,9 @@
 import datetime
 
 from django.utils.module_loading import import_string
+from drf_yasg.openapi import Response
 from icecream import ic
-from rest_framework import serializers, request
+from rest_framework import serializers, request, status
 
 from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
 from ..attendance.models import Attendance
@@ -334,34 +335,35 @@ class FirstLessonSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
-
         group = validated_data.get("group")
         lid = validated_data.get("lid")
 
         if group and lid:
-            # Check if the LID is already assigned to the group
+            # ✅ Check if the same lid is already assigned to the group
             if StudentGroup.objects.filter(group=group, lid=lid).exists():
                 raise serializers.ValidationError(
-                    "This lid has already been assigned to this group."
+                    {"lid": "This LID is already assigned to this group."}
                 )
 
-            # Check if a student with the same phone number is already in the group
+            # ✅ Check if a student with the same phone number is already assigned to the group
             if StudentGroup.objects.filter(
                     group=group,
                     student__phone=lid.phone_number
             ).exists():
                 raise serializers.ValidationError(
-                    "A student with the same phone number is already assigned to this group."
+                    {"student": "A student with the same phone number is already assigned to this group."}
                 )
 
-        # Auto-assign filial if not provided
+        # ✅ Auto-assign filial if not provided
         if not filial:
             request = self.context.get("request")
             if request and hasattr(request.user, "filial"):
                 filial = request.user.filial.first()
 
         if not filial:
-            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+            raise serializers.ValidationError(
+                {"filial": "Filial could not be determined."}
+            )
 
         validated_data["filial"] = filial
         return super().create(validated_data)
