@@ -7,6 +7,6 @@ from data.student.student.models import Student
 # Register your models here.
 @admin.register(Coins)
 class CoinsAdmin(admin.ModelAdmin):
-    list_display = ('student__first_name', 'status', 'coin')
-    search_fields = ('student__first_name',)
+    list_display = ('student__first_name', 'student__last_name','status', 'coin')
+    search_fields = ('student__first_name', 'student__last_name',)
     list_filter = ('status',)
