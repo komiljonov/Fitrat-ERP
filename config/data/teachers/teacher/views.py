@@ -297,7 +297,7 @@ class StudentsAvgLearning(APIView):
 
         mastering_records = Mastering.objects.filter(
             mastering_filter
-        ).select_related("student", "lid", "test", "theme").distinct("student__id")
+        ).select_related("student", "lid", "test", "theme").distinct()
 
         results = []
 
