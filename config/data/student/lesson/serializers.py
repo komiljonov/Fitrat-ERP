@@ -334,6 +334,17 @@ class FirstLessonSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
+
+        if validated_data.get('group') and validated_data.get('lid'):
+            sg = StudentGroup.objects.filter(
+                group_id=validated_data.get('group'),
+                student__phone=validated_data.get("lid").phone_number
+            ).first()
+            if sg:
+                raise serializers.ValidationError(
+                    "This lid has already been assigned to this group."
+                )
+
         if not filial:
             request = self.context.get("request")  #
             if request and hasattr(request.user, "filial"):
