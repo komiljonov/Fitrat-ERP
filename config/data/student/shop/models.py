@@ -62,6 +62,11 @@ class Coins(BaseModel):
 
     comment = models.TextField(blank=True, null=True)
 
+    status = models.CharField(choices=[
+        ("Taken", "Taken"),
+        ("Given", "Given"),
+    ],max_length=10,null=True,blank=True)
+
     def __str__(self):
         return f"{self.student.phone}  -- {self.coin} coin"
 

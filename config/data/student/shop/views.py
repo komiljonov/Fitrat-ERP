@@ -42,10 +42,13 @@ class CoinsList(ListCreateAPIView):
     def get_queryset(self):
         queryset = Coins.objects.all()
         student = self.request.query_params.get('student')
-        is_exchanged = self.request.query_params.get('is_exchanged')
+        status = self.request.query_params.get('status')
 
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+
+        if status:
+            queryset = queryset.filter(status=status)
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
@@ -53,8 +56,6 @@ class CoinsList(ListCreateAPIView):
             queryset = queryset.filter(created_at__gte=start_date)
         if student:
             queryset = queryset.filter(student__user__id=student)
-        if is_exchanged:
-            queryset = queryset.filter(is_exchanged=is_exchanged.capitalize())
         return queryset
 
 
