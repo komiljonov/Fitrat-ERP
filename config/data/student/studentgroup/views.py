@@ -164,10 +164,14 @@ class GroupStudentList(ListAPIView):
         return queryset
 
     def get_paginated_response(self, data):
-        """
-        Returns paginated response if pagination is enabled, otherwise returns all data.
-        """
-        return Response(data)
+        seen = set()
+        unique_data = []
+        for item in data:
+            item_id = item.get('id')
+            if item_id not in seen:
+                seen.add(item_id)
+                unique_data.append(item)
+        return Response(unique_data)
 
 
 class SecondaryGroupStudentList(ListAPIView):
