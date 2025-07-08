@@ -1,5 +1,6 @@
 import datetime
 from datetime import timedelta
+from time import strptime
 
 import openpyxl
 import pandas as pd
@@ -674,56 +675,60 @@ class PaymentStatistics(APIView):
         return Response(data)
 
 
+
 class PaymentCasherStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
-        """Fetch and return payment statistics per cashier."""
         id = self.kwargs.get('pk')
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
+        start_date_str = request.query_params.get('start_date')
+        end_date_str = request.query_params.get('end_date')
 
-        # Validate that `id` exists
         if not id:
             return Response({"error": "Casher ID is required"}, status=400)
 
-        # Define valid payment methods
-        valid_payment_methods = [
-            'Click', 'Payme', 'Cash', 'Card', "Money_send"
-        ]
+        # Parse start and end dates safely
+        start_date = None
+        end_date = None
+        try:
+            if start_date_str:
+                start_date = strptime(start_date_str, "%Y-%m-%d")
+            if end_date_str:
+                end_date = strptime(end_date_str, "%Y-%m-%d")
+        except ValueError:
+            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
-        # Function to calculate totals
+        valid_payment_methods = ['Click', 'Payme', 'Cash', 'Card', "Money_send"]
+
         def get_total_amount(payment, action_type):
-
             qs = Finance.objects.filter(payment_method=payment, action=action_type)
             if id:
                 qs = qs.filter(casher__id=id)
-            if start_date:
-                qs = qs.filter(created_at__gte=start_date,created_at__lte=start_date + timedelta(days=1) - timedelta(seconds=1))
-            if start_date and end_date:
-                qs = qs.filter(created_at__gte=start_date,created_at__lte=end_date + timedelta(days=1) - timedelta(seconds=1))
-            return qs.aggregate(
-                total=Sum('amount'))['total'] or 0
+            if start_date and not end_date:
+                qs = qs.filter(
+                    created_at__gte=start_date,
+                    created_at__lte=start_date + timedelta(days=1) - timedelta(seconds=1)
+                )
+            elif start_date and end_date:
+                qs = qs.filter(
+                    created_at__gte=start_date,
+                    created_at__lte=end_date + timedelta(days=1) - timedelta(seconds=1)
+                )
+            return qs.aggregate(total=Sum('amount'))['total'] or 0
 
-        # Compute income and expense for each method
         data = {}
         for payment in valid_payment_methods:
-            formatted_name = payment.lower().replace(" ", "_")
+            formatted = payment.lower().replace(" ", "_")
+            data[f"{formatted}_income"] = get_total_amount(payment, "INCOME")
+            data[f"{formatted}_expense"] = get_total_amount(payment, "EXPENSE")
 
-            data[f"{formatted_name}_income"] = get_total_amount(payment, "INCOME")
-
-            data[f"{formatted_name}_expense"] = get_total_amount(payment, "EXPENSE")
-
-        # Compute total income and expense
         data["total_income"] = sum(data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods)
         data["total_expense"] = sum(data[f"{p.lower().replace(' ', '_')}_expense"] for p in valid_payment_methods)
 
         return Response(data)
 
     def get_queryset(self):
-        """ListAPIView requires a queryset; returning an empty one to satisfy DRF behavior."""
         return Finance.objects.none()
-
 
 class SalesList(ListCreateAPIView):
     serializer_class = SalesSerializer
