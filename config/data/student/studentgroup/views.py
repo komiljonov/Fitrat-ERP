@@ -348,7 +348,7 @@ class GroupAttendedStudents(ListAPIView):
                     "REASONED","UNREASONED"
                 ]
             )
-        return queryset
+        return queryset.distinct()
 
 
     def get_paginated_response(self, data):
