@@ -61,7 +61,7 @@ class RelativesSerializer(serializers.ModelSerializer):
                 name=name,
                 phone=phone,
                 who=validated_data.get("who"),
-                lid=parent
+                lid=None
             )
             return relative
 
