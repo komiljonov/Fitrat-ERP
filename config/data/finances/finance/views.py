@@ -354,50 +354,71 @@ class CasherHandoverHistory(ListAPIView):
         return Finance.objects.none()
 
 
+from datetime import datetime, timedelta
+from django.utils.timezone import make_aware
+from django.db.models import Sum
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+from data.finances.finance.models import Finance, Kind  # adjust if needed
+
+
 class CasherStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        casher = self.kwargs.get('pk')
-        kind = self.request.query_params.get('kind', None)
+        casher_id = self.kwargs.get('pk')
+        kind_id = request.query_params.get('kind')
+        start_date_str = request.query_params.get('start_date')
+        end_date_str = request.query_params.get('end_date')
 
-        start_date = self.request.GET.get("start_date", None)
-        end_date = self.request.GET.get("end_date", None)
+        filters = {}
 
-        filter = {}
+        # Handle start date
+        if start_date_str:
+            try:
+                start_dt = make_aware(datetime.strptime(start_date_str, "%Y-%m-%d"))
+                filters["created_at__gte"] = start_dt
 
-        if start_date:
-            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
-            start_dt = make_aware(start_dt)
-            filter["created_at__gte"] = start_dt
+                if not end_date_str:
+                    # Set end of day as end date
+                    end_dt = start_dt + timedelta(days=1) - timedelta(seconds=1)
+                    filters["created_at__lte"] = end_dt
+            except ValueError:
+                return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=400)
 
-            if not end_date:
-                # default end date to end of start_date
-                end_dt = start_dt + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
-                filter["created_at__lte"] = end_dt
+        # Handle end date
+        if end_date_str:
+            try:
+                end_dt = datetime.strptime(end_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+                end_dt = make_aware(end_dt)
+                filters["created_at__lte"] = end_dt
+            except ValueError:
+                return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=400)
 
-        if end_date:
-            end_dt = datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1) - datetime.timedelta(
-                seconds=1)
-            end_dt = make_aware(end_dt)
-            filter["created_at__lte"] = end_dt
+        # Handle kind filtering
+        if kind_id:
+            try:
+                filters['kind'] = Kind.objects.get(id=kind_id)
+            except Kind.DoesNotExist:
+                return Response({"error": "Kind not found."}, status=404)
 
-        print(filter)
-
-        if kind:
-            filter['kind'] = Kind.objects.get(id=kind)
-        if casher:
-            income = Finance.objects.filter(casher__id=casher, action='INCOME', **filter
-                                            ).aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher__id=casher, action='EXPENSE', **filter
-                                             ).aggregate(Sum('amount'))['amount__sum'] or 0
+        # Check casher and return results
+        if casher_id:
+            income = Finance.objects.filter(casher__id=casher_id, action='INCOME', **filters)\
+                .aggregate(Sum('amount'))['amount__sum'] or 0
+            expense = Finance.objects.filter(casher__id=casher_id, action='EXPENSE', **filters)\
+                .aggregate(Sum('amount'))['amount__sum'] or 0
             balance = income - expense
+
             return Response({
                 "income": income,
                 "expense": expense,
-                "balance": balance,
+                "balance": balance
             })
-        return Response({"error": "Casher not found"}, status=404)
+
+        return Response({"error": "Casher ID is required."}, status=400)
 
 
 class CustomPagination(PageNumberPagination):
