@@ -27,7 +27,15 @@ class NotificationListNoPG(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user)
+        qs = Notification.objects.filter(user=self.request.user)
+
+        is_read = self.request.GET.get('is_read')
+        has_read = self.request.GET.get('has_read')
+        if is_read:
+            qs = qs.filter(is_read=is_read.capitalize())
+        if has_read:
+            qs = qs.filter(has_read=has_read.capitalize())
+        return
 
     def get_paginated_response(self, data):
         return Response(data)
