@@ -1,5 +1,8 @@
+import random
+import string
 from datetime import datetime
 
+from django.contrib.auth.hashers import make_password
 from django.db import transaction
 from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
@@ -11,8 +14,10 @@ from ...finances.finance.models import SaleStudent
 from ...parents.models import Relatives
 from ...student.attendance.models import Attendance
 from ...student.student.models import Student
+from ...student.student.sms import SayqalSms
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 
+sms = SayqalSms()
 
 @receiver(pre_save, sender=Lid)
 def on_pre_save(sender, instance, **kwargs):
@@ -61,14 +66,14 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             instance.save()
 
         if instance.is_student and instance.filial :
-
+            password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
             student, student_created = Student.objects.get_or_create(
                 phone=instance.phone_number,
                 defaults={
                     "first_name": instance.first_name,
                     "last_name": instance.last_name,
                     "photo": instance.photo,
-                    "password": "1234",
+                    "password": make_password(password),
                     "middle_name": instance.middle_name,
                     "date_of_birth": instance.date_of_birth,
                     "education_lang": instance.education_lang,
@@ -87,13 +92,25 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 },
             )
 
+            sms.send_sms(
+                number=student.phone,
+                message=f"""
+                Fitrat Student ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+
+                Login: {student.phone}
+                Parol: {password}
+
+                Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
+                """
+            )
+
             if not student_created:
                 student.first_name = instance.first_name
                 student.last_name = instance.last_name
                 student.photo = instance.photo
                 student.middle_name = instance.middle_name
                 student.date_of_birth = instance.date_of_birth
-                student.password = "1234"
+                student.password = make_password(password)
                 student.education_lang = instance.education_lang
                 student.student_type = instance.student_type
                 student.edu_class = instance.edu_class
@@ -107,6 +124,18 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.service_manager = instance.service_manager
                 student.sales_manager = instance.sales_manager
                 student.save()
+
+                sms.send_sms(
+                    number=student.phone,
+                    message=f"""
+                    Fitrat Student ilovasida muvaffaqiyatli ma'lumotlaringiz yangilandi!
+
+                    Login: {student.phone}
+                    Parol: {password}
+
+                    Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
+                    """
+                )
 
             StudentGroup.objects.filter(lid=instance).update(student=student,lid=None)
 

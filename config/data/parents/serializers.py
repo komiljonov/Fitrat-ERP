@@ -46,7 +46,7 @@ class RelativesSerializer(serializers.ModelSerializer):
             sms.send_sms(
                 number=phone,
                 message=f"""
-                Fitrat ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+                Fitrat Ota - Onalar uchun ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
 
                 Login: {phone}
                 Parol: {password}
@@ -86,15 +86,17 @@ class RelativesSerializer(serializers.ModelSerializer):
                 role="Parents",
             )
 
-            f"""
-            Fitrat ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+            sms.send_sms(
+                number=phone,
+                message=f"""
+                Fitrat Ota - Onalar uchun ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
 
-            Login: {phone}
-            Parol: {password}
+                Login: {phone}
+                Parol: {password}
 
-            Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
-            """
-
+                Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
+                """
+            )
             print(f"New parent user created for phone {phone} with password: {password}")
 
         # Update Relative instance
