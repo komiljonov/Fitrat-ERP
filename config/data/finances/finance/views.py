@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 
 import openpyxl
 import pandas as pd
@@ -691,7 +692,7 @@ class PaymentCasherStatistics(ListAPIView):
         if start_date:
             filter['created_at__gte'] = start_date
         if end_date:
-            filter['created_at__lte'] = end_date
+            filter['created_at__lte'] = end_date + timedelta(days=1) - timedelta(seconds=1)
 
         # Define valid payment methods
         valid_payment_methods = [
