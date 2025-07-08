@@ -59,9 +59,8 @@ class ParentsStudentsAPIView(APIView):
             students = students.filter(phone=phone)
         if id:
             students = students.filter(id=id)
-
+        students_data = []
         if students:
-            students_data = []
 
             for student in students:
                 students_data.append({
@@ -70,4 +69,4 @@ class ParentsStudentsAPIView(APIView):
                     "phone" : student.student.phone,
                     "balance": student.student.balance,
                 })
-            return Response(students_data, status=status.HTTP_200_OK)
+        return Response(students_data, status=status.HTTP_200_OK)
