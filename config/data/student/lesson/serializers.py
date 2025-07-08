@@ -335,26 +335,36 @@ class FirstLessonSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
 
-        if validated_data.get('group') and validated_data.get('lid'):
-            sg = StudentGroup.objects.filter(
-                group_id=validated_data.get('group'),
-                student__phone=validated_data.get("lid").phone_number
-            ).first()
-            if sg:
+        group = validated_data.get("group")
+        lid = validated_data.get("lid")
+
+        if group and lid:
+            # Check if the LID is already assigned to the group
+            if StudentGroup.objects.filter(group=group, lid=lid).exists():
                 raise serializers.ValidationError(
                     "This lid has already been assigned to this group."
                 )
 
+            # Check if a student with the same phone number is already in the group
+            if StudentGroup.objects.filter(
+                    group=group,
+                    student__phone_number=lid.phone_number
+            ).exists():
+                raise serializers.ValidationError(
+                    "A student with the same phone number is already assigned to this group."
+                )
+
+        # Auto-assign filial if not provided
         if not filial:
-            request = self.context.get("request")  #
+            request = self.context.get("request")
             if request and hasattr(request.user, "filial"):
                 filial = request.user.filial.first()
 
         if not filial:
             raise serializers.ValidationError({"filial": "Filial could not be determined."})
 
-        room = FirstLLesson.objects.create(filial=filial, **validated_data)
-        return room
+        validated_data["filial"] = filial
+        return super().create(validated_data)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
