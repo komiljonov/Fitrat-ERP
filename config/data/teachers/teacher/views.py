@@ -22,6 +22,8 @@ from ...student.student.models import Student
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...student.studentgroup.serializers import StudentsGroupSerializer
 from ...lid.new_lid.models import Lid
+from ...student.subject.models import GroupThemeStart
+
 
 class TeacherList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
     queryset = CustomUser.objects.filter(role='TEACHER')
@@ -269,13 +271,17 @@ class SecondaryGroupStatic(APIView):
         })
 
 
+
+
 class StudentsAvgLearning(APIView):
     def get(self, request, *args, **kwargs):
         group_id = request.query_params.get("group")
 
-
         if not group_id:
             return Response({"error": "group parameter is required"}, status=400)
+
+        # Get the theme that marks the limit
+        current_theme = GroupThemeStart.objects.filter(group__id=group_id).order_by('-created_at').first()
 
         student_groups = StudentGroup.objects.filter(
             group__id=group_id,
@@ -284,14 +290,18 @@ class StudentsAvgLearning(APIView):
         student_ids = [sg.student.id for sg in student_groups if sg.student]
         lid_ids = [sg.lid.id for sg in student_groups if sg.lid]
 
+        mastering_filter = Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids)
+
+        if current_theme and current_theme.theme:
+            mastering_filter &= Q(theme__created_at__lte=current_theme.theme.created_at)
+
         mastering_records = Mastering.objects.filter(
-            Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids)
-        ).select_related("student", "lid", "test")
+            mastering_filter
+        ).select_related("student", "lid", "test", "theme")
 
         results = []
 
         for sg in student_groups:
-
             target_id = sg.student.id if sg.student else sg.lid.id
             is_student = bool(sg.student)
 
@@ -304,7 +314,6 @@ class StudentsAvgLearning(APIView):
                     'is_frozen': sg.student.is_frozen,
                     'frozen_date': sg.student.frozen_days,
                 }
-
             else:
                 student_record = mastering_records.filter(lid__id=target_id)
                 name = {
@@ -314,11 +323,7 @@ class StudentsAvgLearning(APIView):
                     'is_frozen': sg.lid.is_frozen,
                 }
 
-            exams = []
-            homeworks = []
-            speaking = []
-            unit = []
-            mock=[]
+            exams, homeworks, speaking, unit, mock = [], [], [], [], []
 
             for m in student_record:
                 homework_id = Homework_history.objects.filter(
@@ -326,11 +331,11 @@ class StudentsAvgLearning(APIView):
                     student=m.student,
                 ).first()
 
-                mock_records_data = None
+                mock_data = None
                 if m.mock:
                     mock_result = MockExamResult.objects.filter(student=m.student, mock=m.mock).first()
                     if mock_result:
-                        mock_records_data = {
+                        mock_data = {
                             "id": mock_result.id,
                             "reading": mock_result.reading,
                             "listening": mock_result.listening,
@@ -344,73 +349,57 @@ class StudentsAvgLearning(APIView):
                             "created_at": mock_result.created_at.isoformat(),
                         }
 
-                theme_data = {
-                    "id": m.theme.id,
-                    "name": m.theme.title,
-                } if m.theme else None
-
-                # full_name = getattr(mock_records_data.get("updater"), "full_name", "Unknown")
                 item = {
-                    "theme" : theme_data,
+                    "theme": {
+                        "id": m.theme.id,
+                        "name": m.theme.title,
+                    } if m.theme else None,
                     "homework_id": homework_id.id if homework_id else None,
-                    "mastering_id": m.id if m.choice in ["Speaking","Unit_Test","Mock"] else None,
+                    "mastering_id": m.id if m.choice in ["Speaking", "Unit_Test", "Mock"] else None,
                     "title": m.test.title if m.test else "N/A",
-                    "mock":mock_records_data,
+                    "mock": mock_data,
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
-                    "updater" : homework_id.updater.full_name if homework_id and homework_id.updater else
-                    m.updater.full_name if m.choice in ["Speaking","Unit_Test"] and m.updater is not None
-                    else "N/A",
-                    "created_at": m.created_at
+                    "updater": homework_id.updater.full_name if homework_id and homework_id.updater else
+                        m.updater.full_name if m.choice in ["Speaking", "Unit_Test"] and m.updater else "N/A",
+                    "created_at": m.created_at,
                 }
-                if m.test and m.test.type == "Offline" and m.choice=="Test":
+
+                if m.test and m.test.type == "Offline" and m.choice == "Test":
                     exams.append(item)
-                elif m.choice=="Speaking":
+                elif m.choice == "Speaking":
                     speaking.append(item)
-                elif m.choice=="Unit_Test":
+                elif m.choice == "Unit_Test":
                     unit.append(item)
-                elif m.choice=="Mock":
+                elif m.choice == "Mock":
                     mock.append(item)
                 else:
                     homeworks.append(item)
 
-            # Sort homework items by created_at (newest first)
-            # homeworks.sort(key=lambda x: x['created_at'], reverse=True)
-            # exams.sort(key=lambda x: x['created_at'], reverse=True)
+            def avg(lst):
+                return round(sum(x['ball'] for x in lst) / len(lst), 2) if lst else 0
 
-            overall_exam = sum(x['ball'] for x in exams) / len(exams) if exams else 0
-            overall_homework = sum(x['ball'] for x in homeworks) / len(homeworks) if homeworks else 0
-            overall_speaking = sum(x['ball'] for x in speaking) / len(speaking) if speaking else 0
-            overall_unit = sum(x['ball'] for x in unit) / len(unit) if unit else 0
-            overall_mock = sum(x['ball'] for x in mock) / len(mock) if mock else 0
-            overall = round((overall_exam + overall_homework + overall_speaking + overall_unit + overall_mock) / 5, 2) if exams or homeworks or speaking or unit else 0
+            overall_exam = avg(exams)
+            overall_homework = avg(homeworks)
+            overall_speaking = avg(speaking)
+            overall_unit = avg(unit)
+            overall_mock = avg(mock)
 
-            first_ball = Student.objects.filter(id=sg.student.id).first() if sg.student else None
+            all_parts = [overall_exam, overall_homework, overall_speaking, overall_unit, overall_mock]
+            filled = [p for p in all_parts if p > 0]
+            overall = round(sum(filled) / len(filled), 2) if filled else 0
+
+            first_ball = sg.student.ball if is_student and sg.student.ball else 0
 
             results.append({
-                "id":target_id,
+                "id": target_id,
                 "user": name,
-                "first_ball":first_ball.ball if first_ball else 0,
-                "exams": {
-                    "items": exams,
-                    "overall": round(overall_exam, 2)
-                },
-                "homeworks": {
-                    "items": homeworks,
-                    "overall": round(overall_homework, 2)
-                },
-                "speaking": {
-                    "items": speaking,
-                    "overall": round(overall_speaking, 2)
-                },
-                "unit_test": {
-                    "items": unit,
-                    "overall": round(overall_unit, 2)
-                },
-                "mock": {
-                    "items":mock,
-                    "overall": round(overall_mock,2)
-                },
+                "first_ball": first_ball,
+                "exams": {"items": exams, "overall": overall_exam},
+                "homeworks": {"items": homeworks, "overall": overall_homework},
+                "speaking": {"items": speaking, "overall": overall_speaking},
+                "unit_test": {"items": unit, "overall": overall_unit},
+                "mock": {"items": mock, "overall": overall_mock},
                 "overall": overall
             })
 
