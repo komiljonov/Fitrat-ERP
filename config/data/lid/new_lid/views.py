@@ -379,11 +379,11 @@ class LidStatisticsView(ListAPIView):
         new_student = Student.objects.filter(is_archived=True,student_stage_type="NEW_STUDENT",**filter).count()
         active_student = Student.objects.filter(is_archived=True,student_stage_type="ACTIVE_STUDENT",**filter).count()
 
-        no_debt = Student.objects.filter(is_archived=True,balance__gte=100, **filter).count()
-        debt = Student.objects.filter(is_archived=True,balance__lt=100, **filter).count()
+        no_debt = Student.objects.filter(is_archived=True,balance__gte=100000, **filter).count()
+        debt = Student.objects.filter(is_archived=True,balance__lt=100000, **filter).count()
 
-        no_debt_sum = Student.objects.filter(is_archived=True,balance__gte=100, **filter).aggregate(total=Sum("balance"))["total"] or 0
-        debt_sum = Student.objects.filter(is_archived=True,balance__lt=100, **filter).aggregate(total=Sum("balance"))["total"] or 0
+        no_debt_sum = Student.objects.filter(is_archived=True,balance__gte=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
+        debt_sum = Student.objects.filter(is_archived=True,balance__lt=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
 
 
         response_data = {
