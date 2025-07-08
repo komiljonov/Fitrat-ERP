@@ -348,7 +348,7 @@ class FirstLessonSerializer(serializers.ModelSerializer):
             # Check if a student with the same phone number is already in the group
             if StudentGroup.objects.filter(
                     group=group,
-                    student__phone_number=lid.phone_number
+                    student__phone=lid.phone_number
             ).exists():
                 raise serializers.ValidationError(
                     "A student with the same phone number is already assigned to this group."
