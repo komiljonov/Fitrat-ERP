@@ -159,7 +159,7 @@ class GroupStudentList(ListAPIView):
 
         queryset = queryset.filter(Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids))
 
-        print(queryset.distinct())
+        print(list(queryset.distinct()))
 
         return queryset.distinct()
 
