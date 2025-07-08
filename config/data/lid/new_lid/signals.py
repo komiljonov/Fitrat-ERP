@@ -92,17 +92,17 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 },
             )
 
-            sms.send_sms(
-                number=student.phone,
-                message=f"""
-                Fitrat Student ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
-
-                Login: {student.phone}
-                Parol: {password}
-
-                Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
-                """
-            )
+            # sms.send_sms(
+            #     number=student.phone,
+            #     message=f"""
+            #     Fitrat Student ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+            #
+            #     Login: {student.phone}
+            #     Parol: {password}
+            #
+            #     Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
+            #     """
+            # )
 
             if not student_created:
                 student.first_name = instance.first_name
@@ -125,17 +125,17 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.sales_manager = instance.sales_manager
                 student.save()
 
-                sms.send_sms(
-                    number=student.phone,
-                    message=f"""
-                    Fitrat Student ilovasida muvaffaqiyatli ma'lumotlaringiz yangilandi!
-
-                    Login: {student.phone}
-                    Parol: {password}
-
-                    Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
-                    """
-                )
+                # sms.send_sms(
+                #     number=student.phone,
+                #     message=f"""
+                #     Fitrat Student ilovasida muvaffaqiyatli ma'lumotlaringiz yangilandi!
+                #
+                #     Login: {student.phone}
+                #     Parol: {password}
+                #
+                #     Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
+                #     """
+                # )
 
             StudentGroup.objects.filter(lid=instance).update(student=student,lid=None)
 
