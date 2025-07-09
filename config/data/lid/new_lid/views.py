@@ -381,16 +381,16 @@ class LidStatisticsView(ListAPIView):
 
         no_debt = Student.objects.filter(is_archived=True,balance__gte=100000, **filter).count()
 
-        lead_no_debt = Lid.objects.filter(is_archived=True,balance__gte=100000,**filter).count()
+        lead_no_debt = Lid.objects.filter(is_archived=True,is_student=False,balance__gte=100000,**filter).count()
 
         debt = Student.objects.filter(is_archived=True,balance__lt=100000, **filter).count()
 
-        lead_debt = Lid.objects.filter(is_archived=True,balance__lt=100000, **filter).count()
+        lead_debt = Lid.objects.filter(is_archived=True,is_student=False,balance__lt=100000, **filter).count()
 
         no_debt_sum = Student.objects.filter(is_archived=True,balance__gte=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
-        lead_no_debt_sum = Lid.objects.filter(is_archived=True,balance__gte=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
+        lead_no_debt_sum = Lid.objects.filter(is_archived=True,is_student=False,balance__gte=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
         debt_sum = Student.objects.filter(is_archived=True,balance__lt=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
-        lead_debt_sum = Lid.objects.filter(is_archived=True,balance__lt=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
+        lead_debt_sum = Lid.objects.filter(is_archived=True,is_student=False,balance__lt=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
 
 
         response_data = {
