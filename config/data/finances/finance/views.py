@@ -583,7 +583,7 @@ class FinanceExcel(APIView):
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
             finances = finances.filter(
                 created_at__gte=start_date,
-                created_at__lt=start_date + timedelta(days=1)
+                created_at__lt=start_date + timedelta(days=1) - timedelta(seconds=1)
             )
 
         if end_date_str:
