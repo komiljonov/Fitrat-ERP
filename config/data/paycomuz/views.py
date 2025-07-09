@@ -286,20 +286,20 @@ class MerchantAPIView(APIView):
 
 class GeneratePaymeURLView(APIView):
     def post(self, request):
-
         print(request.data)
 
-        data = request.data.copy("params")
+        # Correct way to access nested keys
+        data = request.data.get("params", {})  # ✅ fix
 
         print(data)
 
         amount = data.get('amount')
-        order_id = data.get('account').order_id
+        account = data.get('account', {})
+        order_id = account.get('order_id')
+        return_url = request.data.get("return_url", None)  # Optional
 
-        amount = amount
-        order_id = order_id
-        return_url = data.get("return_url", None)
-
+        if not all([amount, order_id, return_url]):
+            return Response({"detail": "Missing required fields."}, status=400)
 
         paycom = PayComResponse()
         url = paycom.create_initialization(
