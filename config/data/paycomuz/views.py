@@ -74,9 +74,8 @@ class MerchantAPIView(APIView):
         print(validate_class)
 
         result: int = validate_class.check_order(**validated_data['params'])
-        print(result)
 
-        if result is None:
+        if result != ORDER_FOUND:
             self.reply = {
                 "error": {
                     "id": validated_data['id'],

@@ -20,15 +20,6 @@ class CheckOrder(Paycom):
         if not (student_exists or lead_exists):
             return self.ORDER_NOT_FOUND
 
-        # Create or update transaction record (status = processing)
-        Transaction.objects.update_or_create(
-            order_key=order_key,
-            defaults={
-                'amount': Decimal(amount) / 100,
-                'status': Transaction.PROCESSING,
-            }
-        )
-
         return self.ORDER_FOUND
 
     def successfully_payment(self, account, transaction, *args, **kwargs):
