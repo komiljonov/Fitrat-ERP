@@ -5,5 +5,5 @@ from .views import GeneratePaymeURLView, PaycomWebhookView
 
 urlpatterns = [
     path("paycom/", PaycomWebhookView.as_view(), name="paycom-webhook"),
-    path("generate-payment/", GeneratePaymeURLView.as_view(), name="generate-payment-link"),
+    path("payme/", GeneratePaymeURLView.as_view(), name="generate-payment-link"),
 ]
