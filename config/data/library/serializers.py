@@ -46,18 +46,16 @@ class LibrarySerializer(serializers.ModelSerializer):
         pdf_path = book_file.file.path
         doc = fitz.open(pdf_path)
         page = doc.load_page(0)
-
         pix = page.get_pixmap(dpi=150)
         image_bytes = pix.tobytes("png")
 
-        image_file = ContentFile(image_bytes)
         image_name = f"{uuid.uuid4()}.png"
+        image_file = ContentFile(image_bytes, name=image_name)
 
         cover_file = File.objects.create(
             file=image_file,
-            name=image_name
+            choice="file"
         )
-
         validated_data["cover"] = cover_file
 
         return super().create(validated_data)
