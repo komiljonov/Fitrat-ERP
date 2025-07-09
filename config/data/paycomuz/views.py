@@ -289,33 +289,26 @@ class GeneratePaymeURLView(APIView):
 
         print(request.data)
 
-        serializer = GeneratePaymentLinkSerializer(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
+        data = request.data.copy("params")
 
-            print(data)
+        print(data)
 
-            amount = data.get("amount")
-            order_id = data.get("order_id")
-            return_url = data.get("return_url")
+        amount = data.get('amount')
+        order_id = data.get('account').order_id
 
-            # Safety check
-            # if not amount or not order_id or not return_url:
-            #     return Response(
-            #         {"detail": "Missing required fields."},
-            #         status=status.HTTP_400_BAD_REQUEST
-            #     )
+        amount = amount
+        order_id = order_id
+        return_url = data.get("return_url", None)
 
-            paycom = PayComResponse()
-            url = paycom.create_initialization(
-                amount=Decimal(amount),
-                order_id=str(order_id),
-                return_url=return_url
-            )
 
-            return Response({'payment_url': url}, status=status.HTTP_200_OK)
+        paycom = PayComResponse()
+        url = paycom.create_initialization(
+            amount=Decimal(amount),
+            order_id=str(order_id),
+            return_url=return_url
+        )
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'payment_url': url}, status=status.HTTP_200_OK)
 
 
 class PaycomWebhookView(MerchantAPIView):
