@@ -23,6 +23,8 @@ class Library(BaseModel):
     title = models.TextField(null=True,blank=True)
     author = models.CharField(max_length=256,null=True,blank=True)
 
+    cover = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True,blank=True,related_name="cover_images")
+
     book : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True,blank=True, related_name="books_files")
 
     file : "File" = models.ManyToManyField("upload.File",related_name="libraries_files")
