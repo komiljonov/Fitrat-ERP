@@ -1,12 +1,15 @@
 import datetime
+from datetime import datetime, timedelta
 
 import openpyxl
 import pandas as pd
-from django.db.models import Sum, Q
+from django.db.models import Q
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_date
-from django.utils.timezone import now, make_aware
+from django.utils.timezone import make_aware
+from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -20,14 +23,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from data.account.models import CustomUser
+from data.finances.finance.models import Finance, Kind  # adjust if needed
 from data.student.student.models import Student
-from .models import Finance, Casher, Handover, PaymentMethod, Sale, SaleStudent, Kind, Voucher, VoucherStudent
+from .models import Casher, Handover, PaymentMethod, Sale, SaleStudent, Voucher, VoucherStudent
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, KindSerializer, \
     PaymentMethodSerializer, SalesSerializer, SaleStudentSerializer, VoucherSerializer, VoucherStudentSerializer
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 from ...student.groups.models import Group
-from datetime import datetime, timedelta
+
 
 class CasherListCreateAPIView(ListCreateAPIView):
     queryset = Casher.objects.all()
@@ -78,10 +82,6 @@ class FinanceListAPIView(ListCreateAPIView):
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
 
-    from datetime import datetime, timedelta
-    from django.utils.dateparse import parse_date
-    from django.utils.timezone import make_aware
-
     def get_queryset(self):
         kind = self.request.query_params.get('kind')
         action = self.request.query_params.get('action')
@@ -89,7 +89,7 @@ class FinanceListAPIView(ListCreateAPIView):
         end_date_str = self.request.query_params.get('end_date')
         casher_id = self.request.query_params.get('casher_id')
 
-        queryset = Finance.objects.all()
+        queryset = Finance.objects.all().exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
 
         if action:
             queryset = queryset.filter(action=action)
@@ -126,6 +126,7 @@ class FinanceListAPIView(ListCreateAPIView):
             )
 
         return queryset
+
 
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Finance.objects.all()
@@ -354,16 +355,6 @@ class CasherHandoverHistory(ListAPIView):
         return Finance.objects.none()
 
 
-from datetime import datetime, timedelta
-from django.utils.timezone import make_aware
-from django.db.models import Sum
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-
-from data.finances.finance.models import Finance, Kind  # adjust if needed
-
-
 class CasherStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -406,10 +397,10 @@ class CasherStatisticsAPIView(APIView):
 
         # Check casher and return results
         if casher_id:
-            income = Finance.objects.filter(casher__id=casher_id, action='INCOME', **filters)\
-                .aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher__id=casher_id, action='EXPENSE', **filters)\
-                .aggregate(Sum('amount'))['amount__sum'] or 0
+            income = Finance.objects.filter(casher__id=casher_id, action='INCOME', **filters) \
+                         .aggregate(Sum('amount'))['amount__sum'] or 0
+            expense = Finance.objects.filter(casher__id=casher_id, action='EXPENSE', **filters) \
+                          .aggregate(Sum('amount'))['amount__sum'] or 0
             balance = income - expense
 
             return Response({
@@ -503,9 +494,9 @@ class TeacherGroupFinanceAPIView(APIView):
                     # Remove this line as it's too restrictive
                     # student_finance_filters["created_at__date"] = first_attendance.created_at.date()
                     total_student_payment = \
-                    Finance.objects.filter(**student_finance_filters, stuff__id=teacher_id, kind=kind).aggregate(
-                        Sum('amount'))[
-                        'amount__sum'] or 0
+                        Finance.objects.filter(**student_finance_filters, stuff__id=teacher_id, kind=kind).aggregate(
+                            Sum('amount'))[
+                            'amount__sum'] or 0
                 else:
                     total_student_payment = 0
 
@@ -756,6 +747,7 @@ class PaymentCasherStatistics(ListAPIView):
 
     def get_queryset(self):
         return Finance.objects.none()
+
 
 class SalesList(ListCreateAPIView):
     serializer_class = SalesSerializer
