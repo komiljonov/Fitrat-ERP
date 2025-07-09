@@ -43,7 +43,7 @@ urlpatterns = [
     path("auth/", include("data.account.urls")),
     # path('dash/', include('django_plotly_dash.urls')),
 
-    path("payme/", include("data.payme.urls")),
+    path("payme/", include("data.paycomuz.urls")),
 
     path("tasks/", include("data.tasks.urls")),
     path("comments/", include("data.comments.urls")),
