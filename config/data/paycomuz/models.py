@@ -13,7 +13,6 @@ class Transaction(models.Model):
         (CANCELED, 'canceled')
     )
 
-    _id = models.CharField(max_length=255)
     request_id = models.IntegerField()
     order_key = models.CharField(max_length=255, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
