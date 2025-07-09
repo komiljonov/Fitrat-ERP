@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework.response import Response
 from unicodedata import category
 
 # Create your views here.
@@ -11,6 +12,12 @@ from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIVi
 class CategoryCreateAPIView(ListCreateAPIView):
     queryset = LibraryCategory.objects.all()
     serializer_class = LibraryCategorySerializer
+
+    pagination_class = None
+
+
+    def get_paginated_response(self, data):
+        return Response({data})
 
 
 class CategoryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
