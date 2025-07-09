@@ -68,6 +68,14 @@ class UserLoginSerializer(serializers.Serializer):
 
         if phone:
             user = CustomUser.objects.get(phone=phone)
+
+            from rest_framework.exceptions import PermissionDenied
+
+            if user.role == "Student":
+                balance = Student.objects.filter(user=user).first().balance
+                if balance < -100000:
+                    raise PermissionDenied(detail="Sizning qarzdorligingiz sababli faoliyatingiz cheklangan!")
+
             if user.is_archived ==True:
                 raise serializers.ValidationError({"permission denied": "Sizning faoliyatingiz cheklangan!"},
                                                   code='permission_denied')
