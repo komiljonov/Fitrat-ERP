@@ -82,7 +82,7 @@ class LevelList(ListCreateAPIView):
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
-        return queryset
+        return queryset.order_by("order")
 
 
 class LevelDetail(RetrieveUpdateDestroyAPIView):
