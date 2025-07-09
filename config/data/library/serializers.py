@@ -3,11 +3,11 @@ from rest_framework import serializers
 from .models import LibraryCategory,Library
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
-import fitz
-from django.core.files.base import ContentFile
-from io import BytesIO
-from PIL import Image
-import uuid
+# import fitz
+# from django.core.files.base import ContentFile
+# from io import BytesIO
+# from PIL import Image
+# import uuid
 
 class LibraryCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,27 +40,27 @@ class LibrarySerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    def create(self, validated_data):
-        book_file = validated_data.get("book")
+    # def create(self, validated_data):
+    #     book_file = validated_data.get("book")
+    #
+    #     pdf_path = book_file.file.path
+    #     doc = fitz.open(pdf_path)
+    #     page = doc.load_page(0)
+    #
+    #     pix = page.get_pixmap(dpi=150)
+    #     image_bytes = pix.tobytes("png")
+    #
+    #     image_file = ContentFile(image_bytes)
+    #     image_name = f"{uuid.uuid4()}.png"
+    #
+    #     cover_file = File.objects.create(
+    #         file=image_file,
+    #         name=image_name
+    #     )
+    #
+    #     validated_data["cover"] = cover_file
 
-        pdf_path = book_file.file.path
-        doc = fitz.open(pdf_path)
-        page = doc.load_page(0)
-
-        pix = page.get_pixmap(dpi=150)
-        image_bytes = pix.tobytes("png")
-
-        image_file = ContentFile(image_bytes)
-        image_name = f"{uuid.uuid4()}.png"
-
-        cover_file = File.objects.create(
-            file=image_file,
-            name=image_name
-        )
-
-        validated_data["cover"] = cover_file
-
-        return super().create(validated_data)
+        # return super().create(validated_data)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
