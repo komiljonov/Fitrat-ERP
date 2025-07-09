@@ -96,6 +96,11 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
+        dn_come_attendance_count = Attendance.objects.filter(student=instance.student,reason__in=["REASONED","UNREASONED"]).count()
+
+        if dn_come_attendance_count >= 5:
+            instance.student.is_frozen = True
+            instance.student.save()
 
         if attendances_count <= 3 :
             stage = "BIRINCHI_DARS" if instance.reason == "IS_PRESENT" else "BIRINCHI_DARSGA_KELMAGAN"
@@ -116,6 +121,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                     come_from=instance.student,
                     choice="New_Student",
                 )
+
 
 
 @receiver(post_save, sender=Attendance)
