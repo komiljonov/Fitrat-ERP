@@ -59,7 +59,6 @@ class SayqalSms:
 
         response = post(url, json=data, headers={"X-Access-Token": token})
 
-        ic(response)
         ic("Sms response", data, response.json())
 
         return response.json()
