@@ -6,6 +6,7 @@ from decimal import Decimal
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework import status
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,6 +18,7 @@ from .authentication import authentication
 # project
 from .models import Transaction
 from .serializers.payme_operation import PaycomOperationSerialzer
+from .serializers.serializers import PaycomuzSerializer
 from .status import *
 
 
@@ -326,3 +328,8 @@ class GeneratePaymeURLView(APIView):
 
 class PaycomWebhookView(MerchantAPIView):
     VALIDATE_CLASS = Paycom
+
+
+class TransactionAPIView(ListCreateAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = PaycomuzSerializer
