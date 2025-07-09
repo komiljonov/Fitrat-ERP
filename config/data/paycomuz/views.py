@@ -298,6 +298,8 @@ class GeneratePaymeURLView(APIView):
         order_id = account.get('order_id')
         return_url = request.data.get("return_url", None)  # Optional
 
+        print(amount, order_id, return_url)
+
         if not all([amount, order_id]):
             return Response({"detail": "Missing required fields."}, status=400)
 
