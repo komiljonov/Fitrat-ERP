@@ -18,6 +18,7 @@ class LibraryCategorySerializer(serializers.ModelSerializer):
 class LibrarySerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=False)
     file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=False)
+    category = serializers.PrimaryKeyRelatedField(queryset=LibraryCategory.objects.all(),allow_null=False)
     class Meta:
         model = Library
         fields = [
@@ -34,6 +35,7 @@ class LibrarySerializer(serializers.ModelSerializer):
         ]
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["category"] = LibraryCategorySerializer(instance.category).data
         rep["book"] = FileUploadSerializer(instance.book,context=self.context).data
         rep["file"] = FileUploadSerializer(instance.file,many=True,context=self.context).data
 
