@@ -71,8 +71,6 @@ class MerchantAPIView(APIView):
 
         print(validate_class)
 
-        print(validated_data.check_order(**validated_data['params']))
-
         result: int = validate_class.check_order(**validated_data['params'])
         print(result)
 
