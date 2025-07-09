@@ -517,6 +517,8 @@ class SecondaryStudentCreate(ListCreateAPIView):
     queryset = SecondaryStudentGroup.objects.all()
     serializer_class = SecondaryStudentsGroupSerializer
 
+    pagination_class = None
+
     def get_queryset(self):
         id = self.request.query_params.get('group')
         filial = self.request.query_params.get("filial")
