@@ -169,25 +169,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'root.wsgi.application'
 
 PAYCOM_SETTINGS = {
-    "KASSA_ID": "KASSA ID",  # token
-    "SECRET_KEY": "TEST KEY OR PRODUCTIN KEY",  # password
+    "KASSA_ID": config("PAYME_ID"),  # token
+    "SECRET_KEY": config("PAYME_KEY"),  # password
     "ACCOUNTS": {
         "KEY": "order_id"
     },
 }
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-# from decouple import config
 
 DATABASES = {
     "default": {
