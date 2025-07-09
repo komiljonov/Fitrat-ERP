@@ -23,7 +23,7 @@ class Attendance(BaseModel):
     REASON_CHOICES = [
         ('IS_PRESENT', 'Is Present'),
         ('REASONED', 'Sababli'),
-        ('UNREASONED', 'Sababsiz'),
+            ('UNREASONED', 'Sababsiz'),
         ('HOLIDAY', 'Dam olish kuni'),
     ]
     reason = models.CharField(
