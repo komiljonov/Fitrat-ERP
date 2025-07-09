@@ -292,9 +292,9 @@ class GeneratePaymeURLView(APIView):
 
             paycom = PayComResponse()
             url = paycom.create_initialization(
-                amount=Decimal(data['amount']),
-                order_id=str(data['order_id']),
-                return_url=data['return_url']
+                amount=Decimal(data.get("amount")),
+                order_id=str(data.get('order_id')),
+                return_url=data.get('return_url')
             )
 
             return Response({'payment_url': url}, status=status.HTTP_200_OK)
