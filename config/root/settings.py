@@ -55,7 +55,7 @@ INSTALLED_APPS = [
 
     # Installed apps
     'data.account',
-    'data.payme',
+    'data.paycomuz',
     'data.tasks',
     'data.finances.finance',
     'data.finances.compensation',
@@ -167,6 +167,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'root.wsgi.application'
+
+PAYCOM_SETTINGS = {
+    "KASSA_ID": "KASSA ID",  # token
+    "SECRET_KEY": "TEST KEY OR PRODUCTIN KEY",  # password
+    "ACCOUNTS": {
+        "KEY": "order_id"
+    },
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
