@@ -98,7 +98,15 @@ class MerchantAPIView(APIView):
 
         validate_class: Paycom = self.VALIDATE_CLASS()
         result: int = validate_class.check_order(**validated_data['params'])
-        assert result != None
+
+        if result is None:
+            self.reply = dict(error=dict(
+                id=validated_data['id'],
+                code=ORDER_NOT_FOUND,
+                message=ORDER_NOT_FOUND_MESSAGE
+            ))
+            return
+
         if result != ORDER_FOUND:
             self.REPLY_RESPONSE[result](validated_data)
             return
