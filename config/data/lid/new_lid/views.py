@@ -380,10 +380,17 @@ class LidStatisticsView(ListAPIView):
         active_student = Student.objects.filter(is_archived=True,student_stage_type="ACTIVE_STUDENT",**filter).count()
 
         no_debt = Student.objects.filter(is_archived=True,balance__gte=100000, **filter).count()
+
+        lead_no_debt = Lid.objects.filter(is_archived=True,balance__gte=100000,**filter).count()
+
         debt = Student.objects.filter(is_archived=True,balance__lt=100000, **filter).count()
 
+        lead_debt = Lid.objects.filter(is_archived=True,balance__lt=100000, **filter).count()
+
         no_debt_sum = Student.objects.filter(is_archived=True,balance__gte=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
+        lead_no_debt_sum = Lid.objects.filter(is_archived=True,balance__gte=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
         debt_sum = Student.objects.filter(is_archived=True,balance__lt=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
+        lead_debt_sum = Lid.objects.filter(is_archived=True,balance__lt=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
 
 
         response_data = {
@@ -413,10 +420,10 @@ class LidStatisticsView(ListAPIView):
                 "all":all_archived + new_student + active_student,
                 "new_students": new_student,
                 "active_students": active_student,
-                "no-debt": no_debt,
-                "debt": debt,
-                "no_debt_sum": no_debt_sum,
-                "debt_sum": debt_sum,
+                "no-debt": no_debt + lead_no_debt,
+                "debt": debt + lead_debt,
+                "no_debt_sum": no_debt_sum + lead_no_debt_sum,
+                "debt_sum": debt_sum + lead_debt_sum,
             }
         }
 
