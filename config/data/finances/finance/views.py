@@ -561,6 +561,8 @@ class FinanceExcel(APIView):
         casher_role = request.GET.get('casher_role')
         kind_id = request.GET.get('kind')
         action = request.GET.get('action')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
 
         filters = Q()
         if filial:
@@ -575,6 +577,12 @@ class FinanceExcel(APIView):
             filters &= Q(action=action)
 
         finances = Finance.objects.filter(filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+
+        if start_date:
+            finances = finances.filter(created_at__gte=start_date,created_at__lt=start_date + timedelta(days=1))
+
+        if end_date:
+            finances = finances.filter(created_at__gte=start_date,created_at__lt=end_date + timedelta(days=1))
 
         # Create an Excel workbook
         workbook = openpyxl.Workbook()
