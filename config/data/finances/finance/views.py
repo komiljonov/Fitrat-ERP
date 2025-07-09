@@ -135,7 +135,7 @@ class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class FinanceNoPGList(ListAPIView):
-    queryset = Finance.objects.all()
+    queryset = Finance.objects.all().exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
     pagination_class = None
@@ -155,7 +155,7 @@ class StudentFinanceListAPIView(ListAPIView):
 
     def get_queryset(self, **kwargs):
         # Initialize the queryset to all Finance records
-        queryset = Finance.objects.all()
+        queryset = Finance.objects.all().exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
 
         # Get the pk from the URL kwargs
         pk = self.kwargs.get('pk')
@@ -226,13 +226,13 @@ class FinancePaymentMethodsAmountsListAPIView(APIView):
             casher=casher_obj,
             action='INCOME',
             payment_method=payment_method
-        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        ).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(Sum('amount'))['amount__sum'] or 0
 
         expense = Finance.objects.filter(
             casher=casher_obj,
             action='EXPENSE',
             payment_method=payment_method
-        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        ).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(Sum('amount'))['amount__sum'] or 0
 
         return Response({
             'income_amount': income,
@@ -321,12 +321,12 @@ class FinanceStatisticsAPIView(APIView):
         def get_balance(role):
 
             total_income = (
-                    Finance.objects.filter(casher__role=role, action="INCOME", **filters)
+                    Finance.objects.filter(casher__role=role, action="INCOME", **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
                     .aggregate(total_income=Sum("amount"))["total_income"] or 0
             )
 
             total_outcome = (
-                    Finance.objects.filter(casher__role=role, action="EXPENSE", **filters)
+                    Finance.objects.filter(casher__role=role, action="EXPENSE", **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
                     .aggregate(total_outcome=Sum("amount"))["total_outcome"] or 0
             )
 
@@ -397,9 +397,9 @@ class CasherStatisticsAPIView(APIView):
 
         # Check casher and return results
         if casher_id:
-            income = Finance.objects.filter(casher__id=casher_id, action='INCOME', **filters) \
+            income = Finance.objects.filter(casher__id=casher_id, action='INCOME', **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")) \
                          .aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher__id=casher_id, action='EXPENSE', **filters) \
+            expense = Finance.objects.filter(casher__id=casher_id, action='EXPENSE', **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")) \
                           .aggregate(Sum('amount'))['amount__sum'] or 0
             balance = income - expense
 
@@ -574,7 +574,7 @@ class FinanceExcel(APIView):
         if action:
             filters &= Q(action=action)
 
-        finances = Finance.objects.filter(filters)
+        finances = Finance.objects.filter(filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
 
         # Create an Excel workbook
         workbook = openpyxl.Workbook()
@@ -676,7 +676,7 @@ class PaymentStatistics(APIView):
         ]
 
         def get_total_amount(payment_name, action_type):
-            return Finance.objects.filter(payment_method=payment_name, action=action_type, **filter).aggregate(
+            return Finance.objects.filter(payment_method=payment_name, action=action_type, **filter).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                 total=Sum('amount'))['total'] or 0
 
         data = {}
@@ -716,7 +716,7 @@ class PaymentCasherStatistics(ListAPIView):
         valid_payment_methods = ['Click', 'Payme', 'Cash', 'Card', "Money_send"]
 
         def get_total_amount(payment_method, action_type):
-            qs = Finance.objects.filter(payment_method=payment_method, action=action_type)
+            qs = Finance.objects.filter(payment_method=payment_method, action=action_type).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
             if cashier_id:
                 qs = qs.filter(casher__id=cashier_id)
 
@@ -841,7 +841,7 @@ class PaymentStatisticsByKind(APIView):
         # Function to get total amount for a given kind and action type
         def get_total_amount(kind, action_type):
             return (
-                    Finance.objects.filter(kind=kind, action=action_type, **filters)
+                    Finance.objects.filter(kind=kind, action=action_type, **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
                     .aggregate(total=Sum('amount'))['total'] or 0
             )
 
@@ -967,11 +967,11 @@ class GeneratePaymentExcelAPIView(APIView):
 
         for method in payment_methods:
             income = \
-                Finance.objects.filter(payment_method=method, action='INCOME', **filters).aggregate(
+                Finance.objects.filter(payment_method=method, action='INCOME', **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                     total=Sum('amount'))[
                     'total'] or 0
             expense = \
-                Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).aggregate(
+                Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                     total=Sum('amount'))[
                     'total'] or 0
             data[f"{method}_Income"] = income
