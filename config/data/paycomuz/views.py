@@ -286,6 +286,9 @@ class MerchantAPIView(APIView):
 
 class GeneratePaymeURLView(APIView):
     def post(self, request):
+
+        print(request.data)
+
         serializer = GeneratePaymentLinkSerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
