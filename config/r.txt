@@ -113,6 +113,7 @@ pydantic==2.10.6
 pydantic_core==2.27.2
 Pygments==2.19.1
 PyJWT==2.10.1
+PyMuPDF==1.26.3
 pyparsing==3.2.1
 python-crontab==3.2.0
 python-dateutil==2.9.0.post0
