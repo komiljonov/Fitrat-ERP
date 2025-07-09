@@ -71,7 +71,7 @@ class MerchantAPIView(APIView):
         assert self.VALIDATE_CLASS is not None
         validate_class: Paycom = self.VALIDATE_CLASS()
 
-        print(validate_class)
+        print(validated_data['params'])
 
         result: int = validate_class.check_order(**validated_data['params'])
 
