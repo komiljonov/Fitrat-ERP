@@ -150,8 +150,8 @@ class CheckOrder(PayComResponse):
                     "amount": amount,
                     "state": transaction.state,
                     "status": Transaction.SUCCESS,
-                    "perform_datetime": transaction.perform_time,
-                    "created_datetime": transaction.create_time,
+                    "perform_datetime": transaction.perform_datetime,
+                    "created_datetime": transaction.created_datetime,
                 }
             )
 
@@ -166,7 +166,7 @@ class CheckOrder(PayComResponse):
                 "amount": Decimal(transaction.amount),
                 "state": transaction.state,
                 "status": Transaction.CANCELED,
-                "cancel_datetime": transaction.cancel_time,
+                "cancel_datetime": transaction.cancel_datetime,
                 "reason": transaction.reason,
             }
         )
