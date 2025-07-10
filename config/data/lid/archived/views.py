@@ -9,8 +9,8 @@ from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpda
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Archived
-from .serializers import ArchivedSerializer, StuffArchivedSerializer
+from .models import Archived, Frozen
+from .serializers import ArchivedSerializer, StuffArchivedSerializer, FrozenSerializer
 from ...account.models import CustomUser
 
 from django.utils.dateparse import parse_datetime, parse_date
@@ -177,7 +177,30 @@ class StuffArchive(CreateAPIView):
         return Response({"error": "Xodim topilmadi!"}, status=status.HTTP_404_NOT_FOUND)
 
 
+class FrozenListCreateList(ListCreateAPIView):
+    queryset = Frozen.objects.all()
+    serializer_class = FrozenSerializer
 
+    def get_queryset(self):
+        queryset = Frozen.objects.all()
+
+        creator = self.request.GET.get('creator')
+        lid = self.request.GET.get('lid')
+        student = self.request.GET.get('student')
+
+        if creator:
+            queryset = queryset.filter(creator__id=creator)
+        if lid:
+            queryset = queryset.filter(lid__id=lid)
+        if student:
+            queryset = queryset.filter(student__id=student)
+        return queryset
+
+
+class FrozenDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Frozen.objects.all()
+    serializer_class = FrozenSerializer
+    permission_classes = (IsAuthenticated,)
 
 
 
