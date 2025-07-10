@@ -68,21 +68,21 @@ class MerchantAPIView(APIView):
         assert self.reply != None
         return Response(self.reply)
 
-
-
     def check_perform_transaction(self, validated_data):
         assert self.VALIDATE_CLASS is not None
         validate_class: Paycom = self.VALIDATE_CLASS()
 
-        # Validate account (order_id)
-        result = validate_class.check_order(**validated_data['params'])
+        order_key = validated_data["params"]["account"].get(self.ORDER_KEY)
+
+        # ✅ 1. Check if order exists
+        result = validate_class.check_order(**validated_data["params"])
 
         if result != validate_class.ORDER_FOUND:
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": validated_data["id"],
                 "error": {
-                    "code": validate_class.ORDER_NOT_FOUND,
+                    "code": validate_class.ORDER_NOT_FOUND,  # -31050
                     "message": {
                         "uz": "Buyurtma topilmadi",
                         "ru": "Заказ не найден",
@@ -93,12 +93,56 @@ class MerchantAPIView(APIView):
             }
             return
 
-        # Validate user-supplied amount
-        amount = validated_data['params'].get("amount", 0)
+        # ✅ 2. Validate amount
+        amount = validated_data["params"].get("amount", 0)
         if amount <= 0:
             return self.invalid_amount(validated_data)
 
-        # Allow the transaction
+        # ✅ 3. Check if order is already paid or cancelled
+        existing_paid = Transaction.objects.filter(
+            order_key=order_key,
+            status__in=[Transaction.SUCCESS, Transaction.CANCELED]
+        ).exists()
+
+        if existing_paid:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "error": {
+                    "code": -31051,
+                    "message": {
+                        "uz": "Toʻlov allaqachon amalga oshirilgan yoki bekor qilingan",
+                        "ru": "Платеж уже завершен или отменен",
+                        "en": "Transaction already completed or cancelled"
+                    },
+                    "data": None
+                }
+            }
+            return
+
+        # ✅ 4. Check if a transaction is still in progress
+        in_progress = Transaction.objects.filter(
+            order_key=order_key,
+            status=Transaction.PROCESSING
+        ).exists()
+
+        if in_progress:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "error": {
+                    "code": -31099,
+                    "message": {
+                        "uz": "Boshqa toʻlov ushbu buyurtma uchun bajarilmoqda",
+                        "ru": "Другой платеж уже обрабатывается",
+                        "en": "Another transaction is already in progress for this order"
+                    },
+                    "data": None
+                }
+            }
+            return
+
+        # ✅ 5. All good — allow transaction
         self.reply = {
             "jsonrpc": "2.0",
             "id": validated_data["id"],
@@ -106,6 +150,7 @@ class MerchantAPIView(APIView):
                 "allow": True
             }
         }
+
 
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
