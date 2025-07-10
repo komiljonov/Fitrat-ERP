@@ -28,6 +28,7 @@ class CheckOrder(PayComResponse):
 
         return self.ORDER_FOUND
 
+
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
         if not order_key:
@@ -49,34 +50,50 @@ class CheckOrder(PayComResponse):
             return
 
         _id = validated_data['params']['id']
-        existing_tx = Transaction.objects.filter(_id=_id).first()
-
-        if existing_tx:
-            if existing_tx.status != Transaction.CANCELED:
-                self.reply = dict(result=dict(
-                    create_time=existing_tx.created_datetime,
-                    transaction=str(existing_tx.id),
-                    state=existing_tx.state,
-                ))
-                return
-            else:
-                self.reply = dict(error=dict(
-                    id=validated_data['id'],
-                    code=self.ON_PROCESS,
-                    message={
-                        "uz": "Buyurtma to'lo'vi hozirda amalga oshirilmoqda",
-                        "ru": "Платеж на этот заказ на данный момент в процессе",
-                        "en": "Payment for this order is currently on process"
-                    }
-                ))
-                return
-
+        amount = validated_data['params']['amount'] / 100
+        request_id = validated_data['id']
         current_time_ms = int(datetime.now().timestamp() * 1000)
 
+        existing_tx = Transaction.objects.filter(_id=_id).first()
+        if existing_tx:
+            # Return existing transaction info
+            self.reply = dict(result=dict(
+                create_time=existing_tx.created_datetime,
+                transaction=str(existing_tx.id),
+                state=existing_tx.state,
+            ))
+            return
+
+        # Check if there's another transaction for this order_key in progress
+        previous_tx = Transaction.objects.filter(order_key=order_key, status=Transaction.PROCESSING).exclude(
+            _id=_id).first()
+        if previous_tx:
+            # Save the new ID anyway to avoid -31003 on CheckTransaction
+            Transaction.objects.create(
+                request_id=request_id,
+                _id=_id,
+                amount=amount,
+                order_key=order_key,
+                state=self.CREATE_TRANSACTION,
+                created_datetime=current_time_ms,
+                status=Transaction.PROCESSING,
+            )
+            self.reply = dict(error=dict(
+                id=request_id,
+                code=self.ON_PROCESS,
+                message={
+                    "uz": "Buyurtma to'lo'vi hozirda amalga oshirilmoqda",
+                    "ru": "Платеж на этот заказ на данный момент в процессе",
+                    "en": "Payment for this order is currently on process"
+                }
+            ))
+            return
+
+        # Create a new valid transaction
         obj = Transaction.objects.create(
-            request_id=validated_data['id'],
+            request_id=request_id,
             _id=_id,
-            amount=validated_data['params']['amount'] / 100,
+            amount=amount,
             order_key=order_key,
             state=self.CREATE_TRANSACTION,
             created_datetime=current_time_ms,
@@ -88,6 +105,7 @@ class CheckOrder(PayComResponse):
             transaction=str(obj.id),
             state=self.CREATE_TRANSACTION
         ))
+
 
     def successfully_payment(self, account, transaction, *args, **kwargs):
         order_key = account.get(self.ORDER_KEY)
