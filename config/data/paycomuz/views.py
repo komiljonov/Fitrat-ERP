@@ -90,7 +90,8 @@ class MerchantAPIView(APIView):
 
     def create_transaction(self, validated_data):
         """
-        >>> self.create_transaction(validated_data)
+        Handle CreateTransaction request from Paycom.
+        Ensures idempotency, validates order, handles duplicate transactions safely.
         """
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
         if not order_key:
@@ -99,76 +100,91 @@ class MerchantAPIView(APIView):
         validate_class: Paycom = self.VALIDATE_CLASS()
         result = validate_class.check_order(**validated_data['params'])
 
-        if result is None:
-            self.reply = dict(error=dict(
-                id=validated_data['id'],
-                code=ORDER_NOT_FOUND,
-                message=ORDER_NOT_FOUND_MESSAGE
-            ))
-            return
-
-        if result != ORDER_FOUND:
-            self.REPLY_RESPONSE[result](validated_data)
+        if result is None or result != ORDER_FOUND:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "error": {
+                    "code": ORDER_NOT_FOUND,
+                    "message": ORDER_NOT_FOUND_MESSAGE,
+                    "data": None
+                }
+            }
             return
 
         _id = validated_data['params']['id']
-        check_transaction = Transaction.objects.filter(order_key=order_key).order_by('-id')
-        if check_transaction.exists():
-            transaction = check_transaction.first()
-            print(transaction,transaction._id)
-            if transaction.status != Transaction.CANCELED and transaction._id == _id:
-                self.reply = dict(result=dict(
-                    create_time=int(transaction.created_datetime),
-                    transaction=str(transaction._id),
-                    state=CREATE_TRANSACTION
-                ))
+        amount = validated_data['params']['amount'] / 100
+        now = int(datetime.now().timestamp() * 1000)
 
-            elif transaction.status == Transaction.PROCESSING:
-
-                tx, _ = Transaction.objects.get_or_create(
-                    _id=_id,
-                    defaults=dict(
-                        request_id=validated_data['id'],
-                        amount=validated_data['params']['amount'] / 100,
-                        order_key=order_key,
-                        state=CREATE_TRANSACTION,
-                        created_datetime=int(datetime.now().timestamp() * 1000),
-                        status=Transaction.PROCESSING
-                    )
-                )
-
-                self.reply = {
-                    "jsonrpc": "2.0",
-                    "id": validated_data["id"],
-                    "result": {
-                        "create_time": tx.created_datetime,
-                        "transaction": str(tx._id),
-                        "state": CREATE_TRANSACTION
-                    }
+        # Check if transaction with this _id already exists
+        existing_tx = Transaction.objects.filter(_id=_id).first()
+        if existing_tx:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "result": {
+                    "create_time": int(existing_tx.created_datetime),
+                    "transaction": str(existing_tx._id),
+                    "state": existing_tx.state
                 }
+            }
+            return
 
-            else:
-                self.reply = dict(error=dict(
-                    id=validated_data['id'],
-                    code=ORDER_NOT_FOUND,
-                    message=ORDER_NOT_FOUND_MESSAGE
-                ))
-        else:
-            current_time = datetime.now()
-            current_time_to_string = int(round(current_time.timestamp()) * 1000)
-            obj = Transaction.objects.create(
-                request_id=validated_data['id'],
-                _id=validated_data['params']['id'],
-                amount=validated_data['params']['amount'] / 100,
-                order_key=validated_data['params']['account'][self.ORDER_KEY],
-                state=CREATE_TRANSACTION,
-                created_datetime=current_time_to_string
+        # Check for another transaction in progress or already paid for the same order
+        conflicting_tx = Transaction.objects.filter(
+            order_key=order_key,
+            status__in=[Transaction.PROCESSING, Transaction.SUCCESS]
+        ).exclude(_id=_id).first()
+
+        if conflicting_tx:
+            # Save this new _id as "processing" but return -31099 to indicate duplication
+            tx, _ = Transaction.objects.get_or_create(
+                _id=_id,
+                defaults=dict(
+                    request_id=validated_data['id'],
+                    amount=amount,
+                    order_key=order_key,
+                    state=CREATE_TRANSACTION,
+                    created_datetime=now,
+                    status=Transaction.PROCESSING
+                )
             )
-            self.reply = dict(result=dict(
-                create_time=current_time_to_string,
-                transaction=str(obj._id),
-                state=CREATE_TRANSACTION
-            ))
+
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "error": {
+                    "code": ON_PROCESS,
+                    "message": {
+                        "uz": "Buyurtma toʻlovi hozirda amalga oshirilmoqda",
+                        "ru": "Платеж по заказу уже выполняется",
+                        "en": "Payment for this order is already in process"
+                    },
+                    "data": None
+                }
+            }
+            return
+
+        # No conflicts, create a new valid transaction
+        tx = Transaction.objects.create(
+            request_id=validated_data['id'],
+            _id=_id,
+            amount=amount,
+            order_key=order_key,
+            state=CREATE_TRANSACTION,
+            created_datetime=now,
+            status=Transaction.PROCESSING
+        )
+
+        self.reply = {
+            "jsonrpc": "2.0",
+            "id": validated_data["id"],
+            "result": {
+                "create_time": now,
+                "transaction": str(tx._id),
+                "state": CREATE_TRANSACTION
+            }
+        }
 
     def perform_transaction(self, validated_data):
         """
