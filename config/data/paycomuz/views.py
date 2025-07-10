@@ -115,15 +115,18 @@ class MerchantAPIView(APIView):
         check_transaction = Transaction.objects.filter(order_key=order_key).order_by('-id')
         if check_transaction.exists():
             transaction = check_transaction.first()
+            print(transaction,transaction._id)
             if transaction.status != Transaction.CANCELED and transaction._id == _id:
                 self.reply = dict(result=dict(
                     create_time=int(transaction.created_datetime),
                     transaction=str(transaction._id),
                     state=CREATE_TRANSACTION
                 ))
-                print(transaction,transaction._id)
+
+
 
             elif transaction.status == Transaction.PROCESSING:
+                print(transaction, transaction._id)
                 self.reply = dict(
                     id=validated_data['id'],
                     error=dict(
