@@ -26,10 +26,16 @@ class CheckOrder(PayComResponse):
         if not order_key:
             return self.ORDER_NOT_FOUND
 
+        print("-------------1")
+
         student = Student.objects.filter(id=order_key).first()
+
+        print("student", student)
         if not student:
             lid = Lid.objects.filter(id=order_key).first()
+            print("lid ", lid)
             if not lid:
+                print("lid is None")
                 return self.ORDER_NOT_FOUND
 
         return self.ORDER_FOUND
