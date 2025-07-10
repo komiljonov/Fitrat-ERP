@@ -26,16 +26,13 @@ class CheckOrder(PayComResponse):
 
         student = Student.objects.filter(id=order_key).first()
         if student:
-            print("order found")
             return self.ORDER_FOUND
 
         lid = Lid.objects.filter(id=order_key).first()
         if lid:
-            print("lid found")
             return self.ORDER_FOUND
-        print("order not found")
-        return self.ORDER_NOT_FOUND
 
+        return self.ORDER_NOT_FOUND
 
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
@@ -130,7 +127,6 @@ class CheckOrder(PayComResponse):
             transaction=str(obj._id),
             state=self.CREATE_TRANSACTION
         ))
-
 
     def successfully_payment(self, account, transaction, *args, **kwargs):
         order_key = account.get(self.ORDER_KEY)
