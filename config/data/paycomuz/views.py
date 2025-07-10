@@ -68,10 +68,13 @@ class MerchantAPIView(APIView):
         assert self.reply != None
         return Response(self.reply)
 
+
+
     def check_perform_transaction(self, validated_data):
         assert self.VALIDATE_CLASS is not None
         validate_class: Paycom = self.VALIDATE_CLASS()
 
+        # Validate account (order_id)
         result = validate_class.check_order(**validated_data['params'])
 
         if result != validate_class.ORDER_FOUND:
@@ -79,17 +82,23 @@ class MerchantAPIView(APIView):
                 "jsonrpc": "2.0",
                 "id": validated_data["id"],
                 "error": {
-                    "code": ORDER_NOT_FOUND,
-                    "message": ORDER_NOT_FOUND_MESSAGE,
+                    "code": validate_class.ORDER_NOT_FOUND,
+                    "message": {
+                        "uz": "Buyurtma topilmadi",
+                        "ru": "Заказ не найден",
+                        "en": "Order not found"
+                    },
                     "data": None
                 }
             }
             return
 
-        amount = validated_data['params']['amount']
+        # Validate user-supplied amount
+        amount = validated_data['params'].get("amount", 0)
         if amount <= 0:
             return self.invalid_amount(validated_data)
 
+        # Allow the transaction
         self.reply = {
             "jsonrpc": "2.0",
             "id": validated_data["id"],
