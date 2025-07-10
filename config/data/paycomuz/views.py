@@ -15,6 +15,7 @@ from data.paycomuz.methods_subscribe_api import PayComResponse  # your custom Pa
 from data.paycomuz.serializers import GeneratePaymentLinkSerializer
 from . import Paycom
 from .authentication import authentication
+from .check_order import CheckOrder
 # project
 from .models import Transaction
 from .serializers.payme_operation import PaycomOperationSerialzer
@@ -334,7 +335,7 @@ class GeneratePaymeURLView(APIView):
 
 
 class PaycomWebhookView(MerchantAPIView):
-    VALIDATE_CLASS = Paycom
+    VALIDATE_CLASS = CheckOrder
 
 
 class TransactionAPIView(ListCreateAPIView):
