@@ -88,6 +88,7 @@ class MerchantAPIView(APIView):
 
         self.REPLY_RESPONSE[result](validated_data)
 
+
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
         if not order_key:
@@ -170,6 +171,7 @@ class MerchantAPIView(APIView):
             }
         }
 
+
     def perform_transaction(self, validated_data):
         """
         >>> self.perform_transaction(validated_data)
@@ -208,6 +210,7 @@ class MerchantAPIView(APIView):
                 message=TRANSACTION_NOT_FOUND_MESSAGE
             ))
 
+
     def check_transaction(self, validated_data):
         _id = validated_data['params']['id']
         request_id = validated_data['id']
@@ -222,8 +225,8 @@ class MerchantAPIView(APIView):
                     "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
                     "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
                     "cancel_time": int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
-                    "transaction": str(transaction._id),  # ✅ MUST match original Paycom `_id`
-                    "state": transaction.state,
+                    "transaction": str(transaction._id),  # 🔥 MUST be `params.id` value
+                    "state": transaction.state,  # 1, 2, or 3
                     "reason": transaction.reason if transaction.reason is not None else None
                 }
             }
@@ -238,6 +241,7 @@ class MerchantAPIView(APIView):
                     "data": None
                 }
             }
+
 
     def cancel_transaction(self, validated_data):
         id = validated_data['params']['id']
@@ -267,6 +271,7 @@ class MerchantAPIView(APIView):
                 code=TRANSACTION_NOT_FOUND,
                 message=TRANSACTION_NOT_FOUND_MESSAGE
             ))
+
 
     def get_statement(self, validated_data):
         from_d = validated_data.get('params').get('from')
@@ -303,8 +308,10 @@ class MerchantAPIView(APIView):
 
         self.reply = response
 
+
     def order_found(self, validated_data):
         self.reply = dict(result=dict(allow=True))
+
 
     def order_not_found(self, validated_data):
         self.reply = dict(error=dict(
@@ -312,6 +319,7 @@ class MerchantAPIView(APIView):
             code=ORDER_NOT_FOUND,
             message=ORDER_NOT_FOUND_MESSAGE
         ))
+
 
     def invalid_amount(self, validated_data):
         self.reply = dict(error=dict(
