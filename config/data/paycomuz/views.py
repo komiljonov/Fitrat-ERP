@@ -97,7 +97,7 @@ class MerchantAPIView(APIView):
             raise serializers.ValidationError(f"{self.ORDER_KEY} required field")
 
         validate_class: Paycom = self.VALIDATE_CLASS()
-        result: int = validate_class.check_order(**validated_data['params'])
+        result = validate_class.check_order(**validated_data['params'])
 
         if result is None:
             self.reply = dict(error=dict(
