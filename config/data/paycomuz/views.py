@@ -74,7 +74,7 @@ class MerchantAPIView(APIView):
 
         result = validate_class.check_order(**validated_data['params'])
 
-        if result != ORDER_FOUND:
+        if result != validate_class.ORDER_FOUND:
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": validated_data["id"],
@@ -88,16 +88,7 @@ class MerchantAPIView(APIView):
 
         amount = validated_data['params']['amount']
         if amount <= 0:
-            self.reply = {
-                "jsonrpc": "2.0",
-                "id": validated_data["id"],
-                "error": {
-                    "code": INVALID_AMOUNT,  # -31001
-                    "message": INVALID_AMOUNT_MESSAGE,
-                    "data": None
-                }
-            }
-            return
+            return self.invalid_amount(validated_data)
 
         self.reply = {
             "jsonrpc": "2.0",
