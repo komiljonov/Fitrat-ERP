@@ -25,16 +25,14 @@ class CheckOrder(PayComResponse):
             return self.ORDER_NOT_FOUND
 
         student = Student.objects.filter(id=order_key).first()
+        if student:
+            return self.ORDER_FOUND
 
-        if not student:
-            lid = Lid.objects.filter(id=order_key).first()
-            if not lid:
-                return self.ORDER_NOT_FOUND
+        lid = Lid.objects.filter(id=order_key).first()
+        if lid:
+            return self.ORDER_FOUND
 
-        print(self.ORDER_FOUND)
-        print(self.ORDER_NOT_FOUND)
-
-        return self.ORDER_FOUND
+        return self.ORDER_NOT_FOUND
 
 
     def create_transaction(self, validated_data):
