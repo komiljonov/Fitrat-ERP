@@ -54,7 +54,12 @@ class CheckOrder(PayComResponse):
         request_id = validated_data['id']
         current_time_ms = int(datetime.now().timestamp() * 1000)
 
+        print(_id,amount,request_id,current_time_ms)
+
         existing_tx = Transaction.objects.filter(_id=_id).first()
+
+        print(existing_tx)
+
         if existing_tx:
             # Return existing transaction info
             self.reply = dict(result=dict(
@@ -67,6 +72,9 @@ class CheckOrder(PayComResponse):
         # Check if there's another transaction for this order_key in progress
         previous_tx = Transaction.objects.filter(order_key=order_key, status=Transaction.PROCESSING).exclude(
             _id=_id).first()
+
+        print(previous_tx)
+
         if previous_tx:
             # Save the new ID anyway to avoid -31003 on CheckTransaction
             Transaction.objects.create(
@@ -99,6 +107,8 @@ class CheckOrder(PayComResponse):
             created_datetime=current_time_ms,
             status=Transaction.CREATED,
         )
+
+        print(obj)
 
         self.reply = dict(result=dict(
             create_time=current_time_ms,
