@@ -99,7 +99,7 @@ class GroupSerializer(serializers.ModelSerializer):
             ))
         ).count()
 
-        return student_count
+        return student_count - first
 
     def get_subject(self, obj):
         return Group.objects.filter(pk=obj.pk).values("course__subject",
