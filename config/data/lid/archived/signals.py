@@ -1,7 +1,8 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import Archived
+from .models import Archived, Frozen
+from ..new_lid.models import Lid
 from ...comments.models import Comment
 
 
@@ -53,3 +54,24 @@ def on_create(sender, instance: Archived, created, **kwargs):
                 comment=f"Arxivlandi {instance.created_at.date()} sanasida, sabab: {instance.reason}",
             )
 
+
+@receiver(post_save, sender=Frozen)
+def on_create(sender, instance: Frozen, created, **kwargs):
+    if created and instance.is_frozen == True:
+        if instance.student:
+            instance.student.is_frozen = True
+            instance.student.save()
+
+        if instance.lid:
+            instance.lid.is_frozen = True
+            instance.lid.save()
+
+
+    if not created and instance.is_frozen == False:
+        if instance.student:
+            instance.student.is_frozen = False
+            instance.student.save()
+
+        if instance.lid:
+            instance.lid.is_frozen = False
+            instance.lid.save()
