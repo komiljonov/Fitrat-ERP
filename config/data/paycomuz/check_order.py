@@ -1,41 +1,104 @@
 # views.py
+from datetime import datetime
+from decimal import Decimal
+
+from django.db import transaction as db_transaction
+from rest_framework import serializers
+
 from data.lid.new_lid.models import Lid
 from data.paycomuz import Paycom
 from data.paycomuz.models import Transaction
 from data.student.student.models import Student
-from decimal import Decimal
-from django.db import transaction as db_transaction
+
 
 class CheckOrder(Paycom):
-    def check_order(self, amount, account, *args, **kwargs):
-        order_key = account.get("order_id")  # Must match `order_key` in Transaction
+    ORDER_FOUND = 200
+    ORDER_NOT_FOUND = -31050
+    ON_PROCESS = -31099
+    CREATE_TRANSACTION = 0
+    ORDER_KEY = "order_id"
 
+    def check_order(self, amount, account, *args, **kwargs):
+        order_key = account.get(self.ORDER_KEY)
         if not order_key:
             return self.ORDER_NOT_FOUND
 
-        # Check if order exists in Student or Lid
-        student_exists = Student.objects.filter(id=order_key).exists()
-        lead_exists = Lid.objects.filter(id=order_key).exists()
-
-        if not (student_exists or lead_exists):
+        if not Student.objects.filter(id=order_key).exists() and not Lid.objects.filter(id=order_key).exists():
             return self.ORDER_NOT_FOUND
 
         return self.ORDER_FOUND
 
+    def create_transaction(self, validated_data):
+        order_key = validated_data['params']['account'].get(self.ORDER_KEY)
+        if not order_key:
+            raise serializers.ValidationError(f"{self.ORDER_KEY} required field")
+
+        validate_class: CheckOrder = self.VALIDATE_CLASS()
+        result: int = validate_class.check_order(**validated_data['params'])
+
+        if result != self.ORDER_FOUND:
+            self.reply = dict(error=dict(
+                id=validated_data['id'],
+                code=self.ORDER_NOT_FOUND,
+                message={
+                    "uz": "Buyurtma topilmadi",
+                    "ru": "Заказ не найден",
+                    "en": "Order not found"
+                }
+            ))
+            return
+
+        _id = validated_data['params']['id']
+        existing_tx = Transaction.objects.filter(_id=_id).first()
+
+        if existing_tx:
+            if existing_tx.status != Transaction.CANCELED:
+                self.reply = dict(result=dict(
+                    create_time=existing_tx.created_datetime,
+                    transaction=str(existing_tx.id),
+                    state=existing_tx.state,
+                ))
+                return
+            else:
+                self.reply = dict(error=dict(
+                    id=validated_data['id'],
+                    code=self.ON_PROCESS,
+                    message={
+                        "uz": "Buyurtma to'lo'vi hozirda amalga oshirilmoqda",
+                        "ru": "Платеж на этот заказ на данный момент в процессе",
+                        "en": "Payment for this order is currently on process"
+                    }
+                ))
+                return
+
+        current_time_ms = int(datetime.now().timestamp() * 1000)
+
+        obj = Transaction.objects.create(
+            request_id=validated_data['id'],
+            _id=_id,
+            amount=validated_data['params']['amount'] / 100,
+            order_key=order_key,
+            state=self.CREATE_TRANSACTION,
+            created_datetime=current_time_ms,
+            status=Transaction.CREATED,
+        )
+
+        self.reply = dict(result=dict(
+            create_time=current_time_ms,
+            transaction=str(obj.id),
+            state=self.CREATE_TRANSACTION
+        ))
+
     def successfully_payment(self, account, transaction, *args, **kwargs):
-        order_key = account.get("order_id")
-        amount = Decimal(transaction.amount) / 100
+        order_key = account.get(self.ORDER_KEY)
+        amount = Decimal(transaction.amount)
 
         with db_transaction.atomic():
-            # Credit balance
-            student = Student.objects.filter(id=order_key).first()
-            lead = Lid.objects.filter(id=order_key).first()
-            user = student or lead
+            user = Student.objects.filter(id=order_key).first() or Lid.objects.filter(id=order_key).first()
             if user:
                 user.balance += amount
                 user.save()
 
-            # Update transaction
             Transaction.objects.update_or_create(
                 _id=str(transaction.id),
                 defaults={
@@ -50,13 +113,14 @@ class CheckOrder(Paycom):
             )
 
     def cancel_payment(self, account, transaction, *args, **kwargs):
-        order_key = account.get("order_id")
+        order_key = account.get(self.ORDER_KEY)
+
         Transaction.objects.update_or_create(
             _id=str(transaction.id),
             defaults={
                 "request_id": transaction.request_id,
                 "order_key": order_key,
-                "amount": Decimal(transaction.amount) / 100,
+                "amount": Decimal(transaction.amount),
                 "state": transaction.state,
                 "status": Transaction.CANCELED,
                 "cancel_datetime": transaction.cancel_time,
