@@ -40,7 +40,7 @@ class CheckOrder(PayComResponse):
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
 
-        print(order_key)
+        print("order_key",order_key)
 
         if not order_key:
             raise serializers.ValidationError(f"{self.ORDER_KEY} required field")
