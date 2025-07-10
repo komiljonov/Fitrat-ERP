@@ -124,8 +124,8 @@ class MerchantAPIView(APIView):
                 ))
 
             elif transaction.status == Transaction.PROCESSING:
-                # Save new incoming ID
-                Transaction.objects.get_or_create(
+
+                tx, _ = Transaction.objects.get_or_create(
                     _id=_id,
                     defaults=dict(
                         request_id=validated_data['id'],
@@ -139,15 +139,11 @@ class MerchantAPIView(APIView):
 
                 self.reply = {
                     "jsonrpc": "2.0",
-                    "id": validated_data['id'],
-                    "error": {
-                        "code": ON_PROCESS,
-                        "message": {
-                            "uz": "Buyurtma to'lo'vi hozirda amalga oshirilmoqda",
-                            "ru": "Платеж на этот заказ на данный момент в процессе",
-                            "en": "Payment for this order is currently on process"
-                        },
-                        "data": None
+                    "id": validated_data["id"],
+                    "result": {
+                        "create_time": tx.created_datetime,
+                        "transaction": str(tx._id),
+                        "state": CREATE_TRANSACTION
                     }
                 }
 
