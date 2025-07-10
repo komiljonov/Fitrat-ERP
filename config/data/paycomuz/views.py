@@ -171,44 +171,61 @@ class MerchantAPIView(APIView):
             }
         }
 
-
     def perform_transaction(self, validated_data):
-        """
-        >>> self.perform_transaction(validated_data)
-        """
-        id = validated_data['params']['id']
+        _id = validated_data['params']['id']
         request_id = validated_data['id']
+
         try:
-            obj = Transaction.objects.get(_id=id)
-            if obj.state not in [CANCEL_TRANSACTION_CODE]:
+            obj = Transaction.objects.get(_id=_id)
+
+            if obj.state not in [CANCEL_TRANSACTION_CODE, PERFORM_CANCELED_CODE]:
                 obj.state = CLOSE_TRANSACTION
                 obj.status = Transaction.SUCCESS
+
                 if not obj.perform_datetime:
                     current_time = datetime.now()
                     current_time_to_string = int(round(current_time.timestamp()) * 1000)
                     obj.perform_datetime = current_time_to_string
                     self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
+                else:
+                    current_time_to_string = obj.perform_datetime
 
-                self.reply = dict(result=dict(
-                    transaction=str(obj.id),
-                    perform_time=int(obj.perform_datetime),
-                    state=CLOSE_TRANSACTION
-                ))
+                obj.save()
+
+                self.reply = {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "transaction": str(obj._id),  # ✅ Always return Paycom `params.id`
+                        "perform_time": int(current_time_to_string),
+                        "state": CLOSE_TRANSACTION
+                    }
+                }
+
             else:
                 obj.status = Transaction.FAILED
+                obj.save()
 
-                self.reply = dict(error=dict(
-                    id=request_id,
-                    code=UNABLE_TO_PERFORM_OPERATION,
-                    message=UNABLE_TO_PERFORM_OPERATION_MESSAGE
-                ))
-            obj.save()
+                self.reply = {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "error": {
+                        "code": UNABLE_TO_PERFORM_OPERATION,
+                        "message": UNABLE_TO_PERFORM_OPERATION_MESSAGE,
+                        "data": None
+                    }
+                }
+
         except Transaction.DoesNotExist:
-            self.reply = dict(error=dict(
-                id=request_id,
-                code=TRANSACTION_NOT_FOUND,
-                message=TRANSACTION_NOT_FOUND_MESSAGE
-            ))
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": TRANSACTION_NOT_FOUND,
+                    "message": TRANSACTION_NOT_FOUND_MESSAGE,
+                    "data": None
+                }
+            }
 
 
     def check_transaction(self, validated_data):
