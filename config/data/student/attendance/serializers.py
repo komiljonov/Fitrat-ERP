@@ -86,6 +86,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         from django.db import transaction
 
+        print(validated_data)
         # Extract themes from validated_data before creating the instance
         themes = validated_data.pop('theme', [])
 
@@ -139,6 +140,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
         Handle bulk creation of attendance records
         """
         created_instances = []
+
+        print(validated_data_list)
 
         for data in validated_data_list:
             themes = data.pop('theme', [])
