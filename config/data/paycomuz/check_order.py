@@ -26,12 +26,14 @@ class CheckOrder(PayComResponse):
 
         student = Student.objects.filter(id=order_key).first()
         if student:
+            print("order found")
             return self.ORDER_FOUND
 
         lid = Lid.objects.filter(id=order_key).first()
         if lid:
+            print("lid found")
             return self.ORDER_FOUND
-
+        print("order not found")
         return self.ORDER_NOT_FOUND
 
 
@@ -40,7 +42,7 @@ class CheckOrder(PayComResponse):
 
         if not order_key:
             raise serializers.ValidationError(f"{self.ORDER_KEY} required field")
-
+        print(self.check_order(**validated_data['params']))
         result = self.check_order(**validated_data['params'])
 
         print("----------")
