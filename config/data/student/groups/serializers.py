@@ -66,7 +66,6 @@ class GroupSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
         include_only: list | None = kwargs.pop("include_only", None)
@@ -145,7 +144,8 @@ class GroupSerializer(serializers.ModelSerializer):
         if 'level' in res:
             res["level"] = LevelSerializer(instance.level).data
         if 'teacher' in res:
-            res['teacher'] = UserSerializer(instance.teacher, include_only=["id","first_name","last_name","full_name"]).data
+            res['teacher'] = UserSerializer(instance.teacher,
+                                            include_only=["id", "first_name", "last_name", "full_name"]).data
 
         if 'room_number' in res:
             res["room_number"] = RoomsSerializer(instance.room_number).data
@@ -185,7 +185,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
         return group
 
- 
+
 class GroupLessonSerializer(serializers.ModelSerializer):
     group_lesson_dates = serializers.SerializerMethodField()  # Add this field
 
@@ -321,13 +321,14 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
         attendance = (
             SecondaryAttendance.objects
             .filter(group=obj, created_at__date=today)
-            .values("theme",)
+            .values("theme", )
             .distinct()
         )
         return list(attendance)
 
     def get_student_count(self, obj):
-        return SecondaryStudentGroup.objects.filter(Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))).count()
+        return SecondaryStudentGroup.objects.filter(
+            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))).count()
 
     def create(self, validated_data):
         scheduled_day_types = validated_data.pop("scheduled_day_type", [])
@@ -368,8 +369,9 @@ class SecondaryGroupModelSerializer(serializers.ModelSerializer):
 
 
 class GroupSaleStudentSerializer(serializers.ModelSerializer):
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(),allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+
     class Meta:
         model = GroupSaleStudent
         fields = [

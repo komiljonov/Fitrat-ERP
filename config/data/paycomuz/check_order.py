@@ -31,6 +31,9 @@ class CheckOrder(PayComResponse):
             if not lid:
                 return self.ORDER_NOT_FOUND
 
+        print(self.ORDER_FOUND)
+        print(self.ORDER_NOT_FOUND)
+
         return self.ORDER_FOUND
 
 
@@ -84,22 +87,19 @@ class CheckOrder(PayComResponse):
 
         print(previous_tx)
 
-        if previous_tx:
-            # Save the new ID anyway to avoid -31003 on CheckTransaction
-            try:
-                tx = Transaction.objects.create(
-                    request_id=request_id,
-                    _id=_id,
-                    amount=amount,
-                    order_key=order_key,
-                    state=self.CREATE_TRANSACTION,
-                    created_datetime=current_time_ms,
-                    status=Transaction.PROCESSING,
-                )
-                print("🟢 Transaction created:", tx)
-            except Exception as e:
-                print("🔴 Failed to create transaction!", e)
+        tx, created = Transaction.objects.get_or_create(
+            _id=_id,
+            defaults={
+                "request_id": request_id,
+                "amount": amount,
+                "order_key": order_key,
+                "state": self.CREATE_TRANSACTION,
+                "created_datetime": current_time_ms,
+                "status": Transaction.PROCESSING,
+            }
+        )
 
+        if previous_tx:
             self.reply = dict(error=dict(
                 id=request_id,
                 code=self.ON_PROCESS,
@@ -111,7 +111,6 @@ class CheckOrder(PayComResponse):
             ))
             return
 
-        # Create a new valid transaction
         obj = Transaction.objects.create(
             request_id=request_id,
             _id=_id,
