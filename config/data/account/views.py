@@ -3,6 +3,7 @@ import random
 
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -17,6 +18,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -182,6 +184,39 @@ class CustomAuthToken(TokenObtainPairView):
             'role': user.role,
             'filial': filial,
         }, status=status.HTTP_200_OK)
+
+
+class CustomRefreshTokenView(APIView):
+    @method_decorator(csrf_exempt)
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get('refresh_token')
+        if not refresh_token:
+            return Response({'detail': 'Refresh token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+
+            user = refresh.user
+            if not user:
+                raise AuthenticationFailed("User not found.")
+
+            filial = list(user.filial.values_list('pk', flat=True))  # adjust if needed
+            student_id = Student.objects.filter(user=user.id).values_list('id', flat=True).first()
+
+            return Response({
+                'access_token': access_token,
+                'refresh_token': str(refresh),  # optional: reuse or rotate
+                'user_id': user.pk,
+                'phone': user.phone,
+                'role': user.role,
+                'filial': filial,
+                'student_id': student_id,
+            }, status=status.HTTP_200_OK)
+
+        except TokenError as e:
+            return Response({'detail': 'Invalid or expired refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 
 class UserUpdateAPIView(UpdateAPIView):
