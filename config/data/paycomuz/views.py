@@ -74,19 +74,34 @@ class MerchantAPIView(APIView):
 
         result = validate_class.check_order(**validated_data['params'])
 
-        print(result)
-
         if result != ORDER_FOUND:
             self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
                 "error": {
-                    "id": validated_data['id'],
                     "code": ORDER_NOT_FOUND,
-                    "message": ORDER_NOT_FOUND_MESSAGE
+                    "message": ORDER_NOT_FOUND_MESSAGE,
+                    "data": None
                 }
             }
             return
 
-        self.REPLY_RESPONSE[result](validated_data)
+        # ✅ Validate amount
+        amount = validated_data['params']['amount'] / 100  # Convert tiyin to so'm
+        expected_amount = validate_class.get_expected_amount(validated_data['params'])
+
+        if expected_amount != amount:
+            self.invalid_amount(validated_data)
+            return
+
+        # ✅ Allow transaction
+        self.reply = {
+            "jsonrpc": "2.0",
+            "id": validated_data["id"],
+            "result": {
+                "allow": True
+            }
+        }
 
 
     def create_transaction(self, validated_data):
@@ -340,13 +355,16 @@ class MerchantAPIView(APIView):
             message=ORDER_NOT_FOUND_MESSAGE
         ))
 
-
     def invalid_amount(self, validated_data):
-        self.reply = dict(error=dict(
-            id=validated_data['id'],
-            code=INVALID_AMOUNT,
-            message=INVALID_AMOUNT_MESSAGE
-        ))
+        self.reply = {
+            "jsonrpc": "2.0",
+            "id": validated_data["id"],
+            "error": {
+                "code": INVALID_AMOUNT,  # usually -31001
+                "message": INVALID_AMOUNT_MESSAGE,  # should be a dict with uz/ru/en
+                "data": None
+            }
+        }
 
     def response_check_transaction(self, transaction: Transaction):
         self.reply = dict(result=dict(
