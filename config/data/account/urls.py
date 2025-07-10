@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import StuffRolesView, StuffList, CheckNumberApi, TT_Data, PasswordResetVerifyAPIView, \
-    PasswordUpdateAPIView, PasswordResetRequestAPIView
+    PasswordUpdateAPIView, PasswordResetRequestAPIView, CustomRefreshTokenView
 from ..account.views import (
     CustomAuthToken,
     UserUpdateAPIView,
@@ -13,6 +13,7 @@ from ..account.views import (
 
 urlpatterns = [
     path('token', CustomAuthToken.as_view(), name='user_login'),
+    path("refresh/",CustomRefreshTokenView.as_view(), name='user_refresh'),
     path('create', RegisterAPIView.as_view(), name='user_create'),
 
     path("tt/", TT_Data.as_view()),
