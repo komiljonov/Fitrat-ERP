@@ -68,6 +68,7 @@ class MerchantAPIView(APIView):
         assert self.reply != None
         return Response(self.reply)
 
+
     def check_perform_transaction(self, validated_data):
         assert self.VALIDATE_CLASS is not None
         validate_class: Paycom = self.VALIDATE_CLASS()
@@ -234,6 +235,7 @@ class MerchantAPIView(APIView):
             }
         }
 
+
     def perform_transaction(self, validated_data):
         _id = validated_data['params']['id']
         request_id = validated_data['id']
@@ -322,6 +324,7 @@ class MerchantAPIView(APIView):
                 }
             }
 
+
     def cancel_transaction(self, validated_data):
         self.context_id = validated_data["id"]  # ✅ Ensure correct response ID
         tx_id = validated_data['params']['id']
@@ -403,6 +406,7 @@ class MerchantAPIView(APIView):
             message=ORDER_NOT_FOUND_MESSAGE
         ))
 
+
     def invalid_amount(self, validated_data):
         self.reply = {
             "jsonrpc": "2.0",
@@ -413,6 +417,7 @@ class MerchantAPIView(APIView):
                 "data": None
             }
         }
+
 
     def response_check_transaction(self, transaction: Transaction):
         self.reply = dict(result=dict(
