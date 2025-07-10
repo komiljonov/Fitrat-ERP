@@ -333,34 +333,6 @@ class FirstLessonSerializer(serializers.ModelSerializer):
         # Proceed with the standard update logic
         return super().update(instance, validated_data)
 
-    def create(self, validated_data):
-        filial = validated_data.pop("filial", None)
-        group = validated_data.get("group")
-        lid = validated_data.get("lid")
-
-        if group and lid:
-            if StudentGroup.objects.filter(group=group, lid=lid).exists():
-                return Response({"error": "This LID is already assigned to this group."}, status=400)
-
-            if StudentGroup.objects.filter(
-                    group=group,
-                    student__phone=lid.phone_number
-            ).exists():
-                return Response({"error": "This Student is already assigned to this group."}, status=400)
-
-        if not filial:
-            request = self.context.get("request")
-            if request and hasattr(request.user, "filial"):
-                filial = request.user.filial.first()
-
-        if not filial:
-            raise serializers.ValidationError(
-                {"filial": "Filial could not be determined."}
-            )
-
-        validated_data["filial"] = filial
-        return super().create(validated_data)
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['group'] = GroupSerializer(instance.group).data
