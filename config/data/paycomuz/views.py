@@ -86,15 +86,19 @@ class MerchantAPIView(APIView):
             }
             return
 
-        # ✅ Validate amount
-        amount = validated_data['params']['amount'] / 100  # Convert tiyin to so'm
-        expected_amount = validate_class.get_expected_amount(validated_data['params'])
-
-        if expected_amount != amount:
-            self.invalid_amount(validated_data)
+        amount = validated_data['params']['amount']
+        if amount <= 0:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "error": {
+                    "code": INVALID_AMOUNT,  # -31001
+                    "message": INVALID_AMOUNT_MESSAGE,
+                    "data": None
+                }
+            }
             return
 
-        # ✅ Allow transaction
         self.reply = {
             "jsonrpc": "2.0",
             "id": validated_data["id"],
@@ -102,7 +106,6 @@ class MerchantAPIView(APIView):
                 "allow": True
             }
         }
-
 
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
