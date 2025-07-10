@@ -42,7 +42,7 @@ class CheckOrder(PayComResponse):
 
         if not order_key:
             raise serializers.ValidationError(f"{self.ORDER_KEY} required field")
-        print(self.check_order(**validated_data['params']))
+        print("status",self.check_order(**validated_data['params']))
         result = self.check_order(**validated_data['params'])
 
         print("----------")
