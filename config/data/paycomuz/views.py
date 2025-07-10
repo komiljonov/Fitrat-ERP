@@ -259,36 +259,39 @@ class MerchantAPIView(APIView):
                 }
             }
 
-
     def cancel_transaction(self, validated_data):
-        id = validated_data['params']['id']
+        self.context_id = validated_data["id"]  # ✅ Ensure correct response ID
+        tx_id = validated_data['params']['id']
         reason = validated_data['params']['reason']
-        request_id = validated_data['id']
 
         try:
-            transaction = Transaction.objects.get(_id=id)
+            transaction = Transaction.objects.get(_id=tx_id)
             if transaction.state == 1:
                 transaction.state = CANCEL_TRANSACTION_CODE
             elif transaction.state == 2:
                 transaction.state = PERFORM_CANCELED_CODE
                 self.VALIDATE_CLASS().cancel_payment(validated_data['params'], transaction)
+
             transaction.reason = reason
             transaction.status = Transaction.CANCELED
 
-            current_time = datetime.now()
-            current_time_to_string = int(round(current_time.timestamp()) * 1000)
+            now_ms = int(datetime.now().timestamp() * 1000)
             if not transaction.cancel_datetime:
-                transaction.cancel_datetime = current_time_to_string
+                transaction.cancel_datetime = now_ms
+
             transaction.save()
 
             self.response_check_transaction(transaction)
-        except Transaction.DoesNotExist:
-            self.reply = dict(error=dict(
-                id=request_id,
-                code=TRANSACTION_NOT_FOUND,
-                message=TRANSACTION_NOT_FOUND_MESSAGE
-            ))
 
+        except Transaction.DoesNotExist:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": self.context_id,
+                "error": {
+                    "code": TRANSACTION_NOT_FOUND,
+                    "message": TRANSACTION_NOT_FOUND_MESSAGE
+                }
+            }
 
     def get_statement(self, validated_data):
         from_d = validated_data.get('params').get('from')
