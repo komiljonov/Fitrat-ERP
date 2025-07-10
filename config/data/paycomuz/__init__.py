@@ -1,6 +1,4 @@
 from .methods_subscribe_api import PayComResponse
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
 
 
 class Paycom(PayComResponse):
@@ -12,6 +10,10 @@ class Paycom(PayComResponse):
         """
         >>> self.check_order(amount=amount, account=account)
         """
+
+        from ..lid.new_lid.models import Lid
+        from ..student.student.models import Student
+
         order_key = account.get("order_id")  # Must match `order_key` in Transaction
 
         if not order_key:
