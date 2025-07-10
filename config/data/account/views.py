@@ -197,7 +197,8 @@ class CustomRefreshTokenView(APIView):
             refresh = RefreshToken(refresh_token)
             access_token = str(refresh.access_token)
 
-            user = refresh.user
+            user_id = refresh['user_id']
+            user = CustomUser.objects.filter(id=user_id).first()
             if not user:
                 raise AuthenticationFailed("User not found.")
 
