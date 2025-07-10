@@ -1,6 +1,7 @@
 from django.urls import path
 
-from .views import StuffRolesView, StuffList, CheckNumberApi, TT_Data, PasswordResetVerifyAPIView, PasswordUpdateAPIView
+from .views import StuffRolesView, StuffList, CheckNumberApi, TT_Data, PasswordResetVerifyAPIView, \
+    PasswordUpdateAPIView, PasswordResetRequestAPIView
 from ..account.views import (
     CustomAuthToken,
     UserUpdateAPIView,
@@ -25,6 +26,7 @@ urlpatterns = [
     path('roles/', StuffRolesView.as_view(), name='stuff-roles'),
     path("check-number/", CheckNumberApi.as_view(), name='check-number'),
 
-    path("password-reset/", PasswordResetVerifyAPIView.as_view(), name='password_reset'),
-    path("password-reset/confirm/", PasswordUpdateAPIView.as_view(), name='password_reset_done'),
+    path("password-reset/",PasswordResetRequestAPIView.as_view(), name='password_reset'),
+    path("password-reset/confirm/", PasswordResetVerifyAPIView.as_view(), name='password_reset_done'),
+    path("password-reset/done/",PasswordUpdateAPIView.as_view(), name='password_reset_complete'),
 ]
