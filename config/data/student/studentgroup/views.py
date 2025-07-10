@@ -118,6 +118,8 @@ class GroupStudentList(ListAPIView):
         status = self.request.query_params.get('status')
         is_archived = self.request.GET.get('is_archived', False)
 
+        search = self.request.GET.get('search')
+
         print(is_archived)
 
         today = now().date()
@@ -125,6 +127,12 @@ class GroupStudentList(ListAPIView):
         end_of_day = datetime.datetime.combine(today, datetime.time.max)
 
         queryset = StudentGroup.objects.filter(group__id=group_id)
+
+        if search:
+            queryset = queryset.filter(
+                Q(student__first_name__icontains=search) | Q(lid__first_name__icontains=search) | Q(student__last_name__icontains=search) |
+                Q(lid__last_name__icontains=search) | Q(lid__phone_number__icontains=search) | Q(student__phone__icontains=search)
+            )
 
         if is_archived:
             queryset = queryset.filter(Q(student__is_archived=is_archived.capitalize()) | Q(lid__is_archived=is_archived.capitalize())).distinct("id")

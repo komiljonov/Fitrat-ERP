@@ -73,7 +73,7 @@ class CheckOrder(PayComResponse):
             # Return existing transaction info
             self.reply = dict(result=dict(
                 create_time=existing_tx.created_datetime,
-                transaction=str(existing_tx.id),
+                transaction=str(existing_tx._id),
                 state=existing_tx.state,
             ))
             return
@@ -86,15 +86,20 @@ class CheckOrder(PayComResponse):
 
         if previous_tx:
             # Save the new ID anyway to avoid -31003 on CheckTransaction
-            Transaction.objects.create(
-                request_id=request_id,
-                _id=_id,
-                amount=amount,
-                order_key=order_key,
-                state=self.CREATE_TRANSACTION,
-                created_datetime=current_time_ms,
-                status=Transaction.PROCESSING,
-            )
+            try:
+                tx = Transaction.objects.create(
+                    request_id=request_id,
+                    _id=_id,
+                    amount=amount,
+                    order_key=order_key,
+                    state=self.CREATE_TRANSACTION,
+                    created_datetime=current_time_ms,
+                    status=Transaction.PROCESSING,
+                )
+                print("🟢 Transaction created:", tx)
+            except Exception as e:
+                print("🔴 Failed to create transaction!", e)
+
             self.reply = dict(error=dict(
                 id=request_id,
                 code=self.ON_PROCESS,
@@ -114,14 +119,14 @@ class CheckOrder(PayComResponse):
             order_key=order_key,
             state=self.CREATE_TRANSACTION,
             created_datetime=current_time_ms,
-            status=Transaction.CREATED,
+            status=Transaction.SUCCESS,
         )
 
         print(obj)
 
         self.reply = dict(result=dict(
             create_time=current_time_ms,
-            transaction=str(obj.id),
+            transaction=str(obj._id),
             state=self.CREATE_TRANSACTION
         ))
 
