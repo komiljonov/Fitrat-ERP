@@ -7,7 +7,7 @@ from .models import Finance, SaleStudent
 
 @admin.register(Finance)
 class FinansAdmin(admin.ModelAdmin):
-    list_display = ("casher__name", "casher__role","action",'amount','kind')
+    list_display = ("casher__name", "stuff__first__name","casher__role","action",'amount','kind')
     search_fields = ("action",'kind',)
     list_filter = ("action",'kind',)
 
