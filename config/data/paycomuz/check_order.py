@@ -26,8 +26,11 @@ class CheckOrder(PayComResponse):
         if not order_key:
             return self.ORDER_NOT_FOUND
 
-        if not Student.objects.filter(id=order_key).exists() or not Lid.objects.filter(id=order_key).exists():
-            return self.ORDER_NOT_FOUND
+        student = Student.objects.filter(id=order_key).first()
+        if not student:
+            lid = Lid.objects.filter(id=order_key).first()
+            if not lid:
+                return self.ORDER_NOT_FOUND
 
         return self.ORDER_FOUND
 
