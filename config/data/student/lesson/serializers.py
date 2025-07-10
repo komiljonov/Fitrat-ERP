@@ -340,17 +340,14 @@ class FirstLessonSerializer(serializers.ModelSerializer):
 
         if group and lid:
             if StudentGroup.objects.filter(group=group, lid=lid).exists():
-                raise serializers.ValidationError(
-                    {"lid": "This LID is already assigned to this group."}
-                )
+                return {"errors": {"lid": "This LID is already assigned to this group."}}
 
             if StudentGroup.objects.filter(
                     group=group,
                     student__phone=lid.phone_number
             ).exists():
-                raise serializers.ValidationError(
-                    {"student": "A student with the same phone number is already assigned to this group."}
-                )
+                return {"errors": "A student with the same phone number is already assigned to this group."}
+
 
         if not filial:
             request = self.context.get("request")
@@ -358,9 +355,8 @@ class FirstLessonSerializer(serializers.ModelSerializer):
                 filial = request.user.filial.first()
 
         if not filial:
-            raise serializers.ValidationError(
-                {"filial": "Filial could not be determined."}
-            )
+            return {"filial": "Filial could not be determined."}
+
 
         validated_data["filial"] = filial
         return super().create(validated_data)
@@ -397,7 +393,7 @@ class ExtraLessonSerializer(serializers.ModelSerializer):
                 filial = request.user.filial.first()
 
         if not filial:
-            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+            return {"filial": "Filial could not be determined."}
 
         room = ExtraLesson.objects.create(filial=filial, **validated_data)
         return room
@@ -427,7 +423,7 @@ class ExtraLessonGroupSerializer(serializers.ModelSerializer):
                 filial = request.user.filial.first()
 
         if not filial:
-            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+            return {"filial": "Filial could not be determined."}
 
         room = ExtraLessonGroup.objects.create(filial=filial, **validated_data)
         return room
