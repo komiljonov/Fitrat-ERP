@@ -334,7 +334,7 @@ class GeneratePaymeURLView(APIView):
         return Response({'payment_url': url}, status=status.HTTP_200_OK)
 
 
-class PaycomWebhookView(Paycom):
+class PaycomWebhookView(PayComResponse):
     VALIDATE_CLASS = CheckOrder
 
 
