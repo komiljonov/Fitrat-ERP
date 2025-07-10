@@ -63,6 +63,24 @@ class FistLessonView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        group = serializer.validated_data.get("group")
+        lid = serializer.validated_data.get("lid")
+
+        if group and lid:
+            if StudentGroup.objects.filter(group=group, lid=lid).exists():
+                return Response({"error": "This LID is already assigned to this group."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if StudentGroup.objects.filter(group=group, student__phone=lid.phone_number).exists():
+                return Response({"error": "This Student is already assigned to this group."}, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 class FirstLessonView(ListAPIView):
 
 
