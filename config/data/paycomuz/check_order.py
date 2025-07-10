@@ -21,21 +21,14 @@ class CheckOrder(PayComResponse):
     def check_order(self, amount, account, *args, **kwargs):
         order_key = account.get(self.ORDER_KEY)
 
-        print("order_key", order_key)
-
         if not order_key:
             return self.ORDER_NOT_FOUND
 
-        print("-------------1")
-
         student = Student.objects.filter(id=order_key).first()
 
-        print("student", student)
         if not student:
             lid = Lid.objects.filter(id=order_key).first()
-            print("lid ", lid)
             if not lid:
-                print("lid is None")
                 return self.ORDER_NOT_FOUND
 
         return self.ORDER_FOUND
@@ -47,11 +40,11 @@ class CheckOrder(PayComResponse):
         if not order_key:
             raise serializers.ValidationError(f"{self.ORDER_KEY} required field")
 
-        result: int = self.check_order(**validated_data['params'])
+        result = self.check_order(**validated_data['params'])
 
         print("----------")
 
-        print(result)
+        print(result,type(result))
 
         if result != self.ORDER_FOUND:
             self.reply = dict(error=dict(
