@@ -150,20 +150,16 @@ class MerchantAPIView(APIView):
                 )
             )
 
+            # Respond with result, not error!
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": validated_data["id"],
-                "error": {
-                    "code": ON_PROCESS,
-                    "message": {
-                        "uz": "Buyurtma toʻlovi hozirda amalga oshirilmoqda",
-                        "ru": "Платеж по заказу уже выполняется",
-                        "en": "Payment for this order is already in process"
-                    },
-                    "data": None
+                "result": {
+                    "create_time": tx.created_datetime,
+                    "transaction": str(tx._id),
+                    "state": CREATE_TRANSACTION
                 }
             }
-            return
 
         # No conflicts, create a new valid transaction
         tx = Transaction.objects.create(
