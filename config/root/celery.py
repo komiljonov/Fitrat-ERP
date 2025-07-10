@@ -25,7 +25,7 @@ app.conf.beat_schedule = {
     },
     "event-task": {
         "task": "data.event.tasks.check_today_tasks",
-        "schedule": crontab(hour=0,minute=0),
+        "schedule": crontab(hour=9,minute=0),
     },
 
     # Daily tasks
