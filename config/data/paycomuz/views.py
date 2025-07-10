@@ -209,21 +209,35 @@ class MerchantAPIView(APIView):
             ))
 
     def check_transaction(self, validated_data):
-        """
-        >>> self.check_transaction(validated_data)
-        """
-        id = validated_data['params']['id']
+        _id = validated_data['params']['id']
         request_id = validated_data['id']
 
         try:
-            transaction = Transaction.objects.get(_id=id)
-            self.response_check_transaction(transaction)
+            transaction = Transaction.objects.get(_id=_id)
+
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "result": {
+                    "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
+                    "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
+                    "cancel_time": int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
+                    "transaction": str(transaction._id),  # ✅ Use Paycom ID here
+                    "state": transaction.state,
+                    "reason": transaction.reason if transaction.reason is not None else None
+                }
+            }
+
         except Transaction.DoesNotExist:
-            self.reply = dict(error=dict(
-                id=request_id,
-                code=TRANSACTION_NOT_FOUND,
-                message=TRANSACTION_NOT_FOUND_MESSAGE
-            ))
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": TRANSACTION_NOT_FOUND,
+                    "message": TRANSACTION_NOT_FOUND_MESSAGE,
+                    "data": None
+                }
+            }
 
     def cancel_transaction(self, validated_data):
         id = validated_data['params']['id']
