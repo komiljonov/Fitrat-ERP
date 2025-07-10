@@ -89,10 +89,6 @@ class MerchantAPIView(APIView):
         self.REPLY_RESPONSE[result](validated_data)
 
     def create_transaction(self, validated_data):
-        """
-        Handle CreateTransaction request from Paycom.
-        Ensures idempotency, validates order, handles duplicate transactions safely.
-        """
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
         if not order_key:
             raise serializers.ValidationError(f"{self.ORDER_KEY} required field")
@@ -116,7 +112,7 @@ class MerchantAPIView(APIView):
         amount = validated_data['params']['amount'] / 100
         now = int(datetime.now().timestamp() * 1000)
 
-        # Check if transaction with this _id already exists
+        # First, check if this transaction ID was already used
         existing_tx = Transaction.objects.filter(_id=_id).first()
         if existing_tx:
             self.reply = {
@@ -130,38 +126,30 @@ class MerchantAPIView(APIView):
             }
             return
 
-        # Check for another transaction in progress or already paid for the same order
-        conflicting_tx = Transaction.objects.filter(
+        # Now check if another transaction for this order is already in progress or successful
+        other_tx = Transaction.objects.filter(
             order_key=order_key,
             status__in=[Transaction.PROCESSING, Transaction.SUCCESS]
         ).exclude(_id=_id).first()
 
-        if conflicting_tx:
-            # Save this new _id as "processing" but return -31099 to indicate duplication
-            tx, _ = Transaction.objects.get_or_create(
-                _id=_id,
-                defaults=dict(
-                    request_id=validated_data['id'],
-                    amount=amount,
-                    order_key=order_key,
-                    state=CREATE_TRANSACTION,
-                    created_datetime=now,
-                    status=Transaction.PROCESSING
-                )
-            )
-
-            # Respond with result, not error!
+        if other_tx:
+            # ❗️ DO NOT create a new transaction
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": validated_data["id"],
-                "result": {
-                    "create_time": tx.created_datetime,
-                    "transaction": str(tx._id),
-                    "state": CREATE_TRANSACTION
+                "error": {
+                    "code": ON_PROCESS,
+                    "message": {
+                        "uz": "Buyurtma toʻlovi hozirda amalga oshirilmoqda",
+                        "ru": "Платеж по заказу уже выполняется",
+                        "en": "Payment for this order is already in process"
+                    },
+                    "data": None
                 }
             }
+            return
 
-        # No conflicts, create a new valid transaction
+        # No conflicts — create the new transaction
         tx = Transaction.objects.create(
             request_id=validated_data['id'],
             _id=_id,
