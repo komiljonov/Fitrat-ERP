@@ -1,7 +1,6 @@
 from datetime import date
 
 from django.db.models import Count, Q
-from icecream import ic
 from rest_framework import serializers
 
 from .lesson_date_calculator import calculate_lessons
