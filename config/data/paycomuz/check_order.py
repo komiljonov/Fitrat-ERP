@@ -6,12 +6,12 @@ from django.db import transaction as db_transaction
 from rest_framework import serializers
 
 from data.lid.new_lid.models import Lid
-from data.paycomuz import Paycom
+from data.paycomuz import PayComResponse
 from data.paycomuz.models import Transaction
 from data.student.student.models import Student
 
 
-class CheckOrder(Paycom):
+class CheckOrder(PayComResponse):
     ORDER_FOUND = 200
     ORDER_NOT_FOUND = -31050
     ON_PROCESS = -31099
