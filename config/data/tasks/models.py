@@ -36,7 +36,7 @@ class Task(BaseModel):
         max_length=50
     )
 
-    file : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,related_name='created_tasks_file')
+    # file : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True, blank=True,related_name='created_tasks_file')
 
 
     def __str__(self):
