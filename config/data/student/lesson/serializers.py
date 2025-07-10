@@ -340,17 +340,13 @@ class FirstLessonSerializer(serializers.ModelSerializer):
 
         if group and lid:
             if StudentGroup.objects.filter(group=group, lid=lid).exists():
-                raise serializers.ValidationError(
-                    {"lid": "This LID is already assigned to this group."}
-                )
+                return Response({"error": "This LID is already assigned to this group."}, status=400)
 
             if StudentGroup.objects.filter(
                     group=group,
                     student__phone=lid.phone_number
             ).exists():
-                raise serializers.ValidationError(
-                    {"non_field_errors": ["A student with the same phone number is already assigned to this group."]}
-                )
+                return Response({"error": "This Student is already assigned to this group."}, status=400)
 
         if not filial:
             request = self.context.get("request")
