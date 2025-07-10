@@ -72,9 +72,9 @@ class MerchantAPIView(APIView):
         assert self.VALIDATE_CLASS is not None
         validate_class: Paycom = self.VALIDATE_CLASS()
 
-        print(validated_data['params'])
+        result = validate_class.check_order(**validated_data['params'])
 
-        result: int = validate_class.check_order(**validated_data['params'])
+        print(result)
 
         if result != ORDER_FOUND:
             self.reply = {
@@ -305,6 +305,15 @@ class MerchantAPIView(APIView):
         ))
 
 
+class PaycomWebhookView(MerchantAPIView):
+    VALIDATE_CLASS = CheckOrder
+
+
+class TransactionAPIView(ListCreateAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = PaycomuzSerializer
+
+
 class GeneratePaymeURLView(APIView):
     def post(self, request):
         print(request.data)
@@ -332,12 +341,3 @@ class GeneratePaymeURLView(APIView):
         )
 
         return Response({'payment_url': url}, status=status.HTTP_200_OK)
-
-
-class PaycomWebhookView(MerchantAPIView):
-    VALIDATE_CLASS = CheckOrder
-
-
-class TransactionAPIView(ListCreateAPIView):
-    queryset = Transaction.objects.all()
-    serializer_class = PaycomuzSerializer
