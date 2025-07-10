@@ -137,17 +137,19 @@ class MerchantAPIView(APIView):
                     )
                 )
 
-                self.reply = dict(
-                    id=validated_data['id'],
-                    error=dict(
-                        code=ON_PROCESS,
-                        message={
+                self.reply = {
+                    "jsonrpc": "2.0",
+                    "id": validated_data['id'],
+                    "error": {
+                        "code": ON_PROCESS,
+                        "message": {
                             "uz": "Buyurtma to'lo'vi hozirda amalga oshirilmoqda",
                             "ru": "Платеж на этот заказ на данный момент в процессе",
                             "en": "Payment for this order is currently on process"
-                        }
-                    )
-                )
+                        },
+                        "data": None
+                    }
+                }
 
             else:
                 self.reply = dict(error=dict(
