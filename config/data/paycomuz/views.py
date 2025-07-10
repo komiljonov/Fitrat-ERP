@@ -123,19 +123,29 @@ class MerchantAPIView(APIView):
                     state=CREATE_TRANSACTION
                 ))
 
-
-
             elif transaction.status == Transaction.PROCESSING:
-                print(transaction, transaction._id)
+                # Save new incoming ID
+                Transaction.objects.get_or_create(
+                    _id=_id,
+                    defaults=dict(
+                        request_id=validated_data['id'],
+                        amount=validated_data['params']['amount'] / 100,
+                        order_key=order_key,
+                        state=CREATE_TRANSACTION,
+                        created_datetime=int(datetime.now().timestamp() * 1000),
+                        status=Transaction.PROCESSING
+                    )
+                )
+
                 self.reply = dict(
                     id=validated_data['id'],
                     error=dict(
                         code=ON_PROCESS,
-                        message=dict(
-                            uz="Buyurtma to'lo'vi hozirda amalga oshirilmoqda",
-                            ru="Платеж на этот заказ на данный момент в процессе",
-                            en="Payment for this order is currently on process"
-                        )
+                        message={
+                            "uz": "Buyurtma to'lo'vi hozirda amalga oshirilmoqda",
+                            "ru": "Платеж на этот заказ на данный момент в процессе",
+                            "en": "Payment for this order is currently on process"
+                        }
                     )
                 )
 
@@ -158,7 +168,7 @@ class MerchantAPIView(APIView):
             )
             self.reply = dict(result=dict(
                 create_time=current_time_to_string,
-                transaction=str(obj.id),
+                transaction=str(obj._id),
                 state=CREATE_TRANSACTION
             ))
 
