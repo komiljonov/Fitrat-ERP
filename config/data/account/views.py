@@ -350,8 +350,25 @@ class PasswordResetRequestAPIView(APIView):
         return Response({"detail": "Confirmation code sent."})
 
 
-class PasswordResetAPIView(APIView):
+class PasswordResetVerifyAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordResetVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
+        phone = serializer.validated_data["phone"]
+        code = serializer.validated_data["confirmation_code"]
+
+        try:
+            code_obj = ConfirmationCode.objects.get(phone=phone, code=code)
+            if not code_obj.is_valid():
+                return Response({"detail": "Code expired."}, status=status.HTTP_400_BAD_REQUEST)
+        except ConfirmationCode.DoesNotExist:
+            return Response({"detail": "Invalid confirmation code."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"detail": "Code is valid."}, status=status.HTTP_200_OK)
+
+
+class PasswordUpdateAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = PasswordResetVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -367,12 +384,10 @@ class PasswordResetAPIView(APIView):
         except ConfirmationCode.DoesNotExist:
             return Response({"detail": "Invalid confirmation code."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Step 2: Find user
         try:
             user = CustomUser.objects.get(phone=phone)
         except CustomUser.DoesNotExist:
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
 
         user.set_password(new_password)
         user.save()
