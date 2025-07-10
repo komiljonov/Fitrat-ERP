@@ -10,10 +10,6 @@ class CheckOrder(Paycom):
     def check_order(self, amount, account, *args, **kwargs):
         order_key = account.get("order_id")  # Must match `order_key` in Transaction
 
-        order_id = order_key.get("order_id")
-
-        print(account, order_key)
-
         if not order_key:
             return self.ORDER_NOT_FOUND
 
