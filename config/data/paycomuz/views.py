@@ -118,9 +118,10 @@ class MerchantAPIView(APIView):
             if transaction.status != Transaction.CANCELED and transaction._id == _id:
                 self.reply = dict(result=dict(
                     create_time=int(transaction.created_datetime),
-                    transaction=str(transaction.id),
+                    transaction=str(transaction._id),
                     state=CREATE_TRANSACTION
                 ))
+                print(transaction,transaction._id)
 
             elif transaction.status == Transaction.PROCESSING:
                 self.reply = dict(
