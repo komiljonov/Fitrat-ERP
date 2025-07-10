@@ -25,9 +25,6 @@ from .status import *
 
 class MerchantAPIView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = []
-    http_method_names = ['post']
-
     CHECK_PERFORM_TRANSACTION = 'CheckPerformTransaction'
     CREATE_TRANSACTION = 'CreateTransaction'
     PERFORM_TRANSACTION = 'PerformTransaction'
@@ -35,6 +32,8 @@ class MerchantAPIView(APIView):
     CANCEL_TRANSACTION = 'CancelTransaction'
     GET_STATEMENT = 'GetStatement'
 
+    http_method_names = ['post']
+    authentication_classes = []
     VALIDATE_CLASS: Paycom = None
     reply = None
     ORDER_KEY = KEY = settings.PAYCOM_SETTINGS['ACCOUNTS']['KEY']
@@ -46,74 +45,96 @@ class MerchantAPIView(APIView):
             self.PERFORM_TRANSACTION: self.perform_transaction,
             self.CHECK_TRANSACTION: self.check_transaction,
             self.CANCEL_TRANSACTION: self.cancel_transaction,
-            self.GET_STATEMENT: self.get_statement,
+            self.GET_STATEMENT: self.get_statement
         }
 
         self.REPLY_RESPONSE = {
             ORDER_FOUND: self.order_found,
             ORDER_NOT_FOUND: self.order_not_found,
-            INVALID_AMOUNT: self.invalid_amount,
+            INVALID_AMOUNT: self.invalid_amount
         }
 
         super(MerchantAPIView, self).__init__()
 
     def post(self, request):
-        if not authentication(request):
+        check = authentication(request)
+        if check is False or not check:
             return Response(AUTH_ERROR)
-
-        serializer = PaycomOperationSerialzer(data=request.data)
+        serializer = PaycomOperationSerialzer(data=request.data, many=False)
         serializer.is_valid(raise_exception=True)
-
         method = serializer.validated_data['method']
         self.METHODS[method](serializer.validated_data)
-        assert self.reply is not None
 
+        assert self.reply != None
         return Response(self.reply)
 
     def check_perform_transaction(self, validated_data):
         assert self.VALIDATE_CLASS is not None
-        validate_class = self.VALIDATE_CLASS()
+        validate_class: Paycom = self.VALIDATE_CLASS()
+
         result = validate_class.check_order(**validated_data['params'])
 
-        if result == ORDER_FOUND:
-            self.order_found(validated_data)
-        else:
-            self.order_not_found(validated_data)
+        print(result)
 
-    def create_transaction(self, validated_data):
-        params = validated_data['params']
-        order_key = params['account'].get(self.ORDER_KEY)
-        if not order_key:
-            raise serializers.ValidationError(f"{self.ORDER_KEY} required")
-
-        validate_class = self.VALIDATE_CLASS()
-        if validate_class.check_order(**params) != ORDER_FOUND:
-            self.order_not_found(validated_data)
-            return
-
-        _id = params['id']
-        amount = params['amount'] / 100
-        now_ms = int(datetime.now().timestamp() * 1000)
-
-        existing = Transaction.objects.filter(_id=_id).first()
-        if existing:
+        if result != ORDER_FOUND:
             self.reply = {
-                "jsonrpc": "2.0",
-                "id": validated_data["id"],
-                "result": {
-                    "create_time": int(existing.created_datetime),
-                    "transaction": str(existing._id),
-                    "state": existing.state
+                "error": {
+                    "id": validated_data['id'],
+                    "code": ORDER_NOT_FOUND,
+                    "message": ORDER_NOT_FOUND_MESSAGE
                 }
             }
             return
 
+        self.REPLY_RESPONSE[result](validated_data)
+
+
+    def create_transaction(self, validated_data):
+        order_key = validated_data['params']['account'].get(self.ORDER_KEY)
+        if not order_key:
+            raise serializers.ValidationError(f"{self.ORDER_KEY} required field")
+
+        validate_class: Paycom = self.VALIDATE_CLASS()
+        result = validate_class.check_order(**validated_data['params'])
+
+        if result is None or result != ORDER_FOUND:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "error": {
+                    "code": ORDER_NOT_FOUND,
+                    "message": ORDER_NOT_FOUND_MESSAGE,
+                    "data": None
+                }
+            }
+            return
+
+        _id = validated_data['params']['id']
+        amount = validated_data['params']['amount'] / 100
+        now = int(datetime.now().timestamp() * 1000)
+
+        # First, check if this transaction ID was already used
+        existing_tx = Transaction.objects.filter(_id=_id).first()
+        if existing_tx:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "result": {
+                    "create_time": int(existing_tx.created_datetime),
+                    "transaction": str(existing_tx._id),
+                    "state": existing_tx.state
+                }
+            }
+            return
+
+        # Now check if another transaction for this order is already in progress or successful
         other_tx = Transaction.objects.filter(
             order_key=order_key,
             status__in=[Transaction.PROCESSING, Transaction.SUCCESS]
         ).exclude(_id=_id).first()
 
         if other_tx:
+            # ❗️ DO NOT create a new transaction
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": validated_data["id"],
@@ -129,13 +150,14 @@ class MerchantAPIView(APIView):
             }
             return
 
+        # No conflicts — create the new transaction
         tx = Transaction.objects.create(
             request_id=validated_data['id'],
             _id=_id,
             amount=amount,
             order_key=order_key,
             state=CREATE_TRANSACTION,
-            created_datetime=now_ms,
+            created_datetime=now,
             status=Transaction.PROCESSING
         )
 
@@ -143,7 +165,7 @@ class MerchantAPIView(APIView):
             "jsonrpc": "2.0",
             "id": validated_data["id"],
             "result": {
-                "create_time": now_ms,
+                "create_time": now,
                 "transaction": str(tx._id),
                 "state": CREATE_TRANSACTION
             }
@@ -154,9 +176,36 @@ class MerchantAPIView(APIView):
         request_id = validated_data['id']
 
         try:
-            tx = Transaction.objects.get(_id=_id)
+            obj = Transaction.objects.get(_id=_id)
 
-            if tx.status == Transaction.CANCELED or tx.state in [CANCEL_TRANSACTION_CODE, PERFORM_CANCELED_CODE]:
+            if obj.state not in [CANCEL_TRANSACTION_CODE, PERFORM_CANCELED_CODE]:
+                obj.state = CLOSE_TRANSACTION
+                obj.status = Transaction.SUCCESS
+
+                if not obj.perform_datetime:
+                    current_time = datetime.now()
+                    current_time_to_string = int(round(current_time.timestamp()) * 1000)
+                    obj.perform_datetime = current_time_to_string
+                    self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
+                else:
+                    current_time_to_string = obj.perform_datetime
+
+                obj.save()
+
+                self.reply = {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "transaction": str(obj._id),  # ✅ Always return Paycom `params.id`
+                        "perform_time": int(current_time_to_string),
+                        "state": CLOSE_TRANSACTION
+                    }
+                }
+
+            else:
+                obj.status = Transaction.FAILED
+                obj.save()
+
                 self.reply = {
                     "jsonrpc": "2.0",
                     "id": request_id,
@@ -166,28 +215,6 @@ class MerchantAPIView(APIView):
                         "data": None
                     }
                 }
-                return
-
-            if tx.state == self.PERFORM_TRANSACTION:
-                self.response_check_transaction(tx)
-                return
-
-            now_ms = int(datetime.now().timestamp() * 1000)
-            tx.state = self.PERFORM_TRANSACTION
-            tx.status = Transaction.SUCCESS
-            tx.perform_datetime = now_ms
-            self.VALIDATE_CLASS().successfully_payment(validated_data['params'], tx)
-            tx.save()
-
-            self.reply = {
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "result": {
-                    "transaction": str(tx._id),
-                    "perform_time": now_ms,
-                    "state": self.PERFORM_TRANSACTION
-                }
-            }
 
         except Transaction.DoesNotExist:
             self.reply = {
@@ -200,22 +227,24 @@ class MerchantAPIView(APIView):
                 }
             }
 
+
     def check_transaction(self, validated_data):
         _id = validated_data['params']['id']
         request_id = validated_data['id']
 
         try:
-            tx = Transaction.objects.get(_id=_id)
+            transaction = Transaction.objects.get(_id=_id)
+
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "result": {
-                    "create_time": int(tx.created_datetime) if tx.created_datetime else 0,
-                    "perform_time": int(tx.perform_datetime) if tx.perform_datetime else 0,
-                    "cancel_time": int(tx.cancel_datetime) if tx.cancel_datetime else 0,
-                    "transaction": str(tx._id),
-                    "state": tx.state,
-                    "reason": tx.reason if tx.reason is not None else None
+                    "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
+                    "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
+                    "cancel_time": int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
+                    "transaction": str(transaction._id),  # 🔥 MUST be `params.id` value
+                    "state": transaction.state,  # 1, 2, or 3
+                    "reason": transaction.reason if transaction.reason is not None else None
                 }
             }
 
@@ -231,102 +260,103 @@ class MerchantAPIView(APIView):
             }
 
     def cancel_transaction(self, validated_data):
-        request_id = validated_data["id"]
-        _id = validated_data["params"]["id"]
-        reason = validated_data["params"]["reason"]
+        self.context_id = validated_data["id"]  # ✅ Ensure correct response ID
+        tx_id = validated_data['params']['id']
+        reason = validated_data['params']['reason']
 
         try:
-            tx = Transaction.objects.get(_id=_id)
+            transaction = Transaction.objects.get(_id=tx_id)
+            if transaction.state == 1:
+                transaction.state = CANCEL_TRANSACTION_CODE
+            elif transaction.state == 2:
+                transaction.state = PERFORM_CANCELED_CODE
+                self.VALIDATE_CLASS().cancel_payment(validated_data['params'], transaction)
 
-            if tx.state == CREATE_TRANSACTION:
-                tx.state = CANCEL_TRANSACTION_CODE
-            elif tx.state == self.PERFORM_TRANSACTION:
-                tx.state = PERFORM_CANCELED_CODE
-                self.VALIDATE_CLASS().cancel_payment(validated_data['params'], tx)
+            transaction.reason = reason
+            transaction.status = Transaction.CANCELED
 
-            tx.status = Transaction.CANCELED
-            tx.reason = reason
-            tx.cancel_datetime = tx.cancel_datetime or int(datetime.now().timestamp() * 1000)
-            tx.save()
+            now_ms = int(datetime.now().timestamp() * 1000)
+            if not transaction.cancel_datetime:
+                transaction.cancel_datetime = now_ms
 
-            self.response_check_transaction(tx)
+            transaction.save()
+
+            self.response_check_transaction(transaction)
 
         except Transaction.DoesNotExist:
             self.reply = {
                 "jsonrpc": "2.0",
-                "id": request_id,
+                "id": self.context_id,
                 "error": {
                     "code": TRANSACTION_NOT_FOUND,
-                    "message": TRANSACTION_NOT_FOUND_MESSAGE,
-                    "data": None
+                    "message": TRANSACTION_NOT_FOUND_MESSAGE
                 }
             }
 
     def get_statement(self, validated_data):
-        from_d = validated_data['params']['from']
-        to_d = validated_data['params']['to']
+        from_d = validated_data.get('params').get('from')
+        to_d = validated_data.get('params').get('to')
 
-        txs = Transaction.objects.filter(created_datetime__range=(from_d, to_d))
+        filtered_transactions = Transaction.objects.filter(
+            created_datetime__gte=from_d,
+            created_datetime__lte=to_d
+        )
 
-        self.reply = {
-            "jsonrpc": "2.0",
-            "id": validated_data["id"],
-            "result": {
-                "transactions": [
-                    {
-                        "id": tx._id,
-                        "time": int(tx.created_datetime),
-                        "amount": tx.amount,
-                        "account": {"order_id": tx.order_key},
-                        "create_time": int(tx.created_datetime),
-                        "perform_time": int(tx.perform_datetime) if tx.perform_datetime else 0,
-                        "cancel_time": int(tx.cancel_datetime) if tx.cancel_datetime else 0,
-                        "transaction": tx.request_id,
-                        "state": tx.state,
-                        "reason": tx.reason
-                    } for tx in txs
-                ]
-            }
-        }
+        transactions_json = [
+            dict(
+                id=obj._id,
+                time=int(obj.created_datetime),
+                amount=obj.amount,
+                account=dict(
+                    order_id=obj.order_key
+                ),
+                create_time=int(obj.created_datetime) if obj.created_datetime else 0,
+                perform_time=int(obj.perform_datetime) if obj.perform_datetime else 0,
+                cancel_time=int(obj.cancel_datetime) if obj.cancel_datetime else 0,
+                transaction=obj.request_id,
+                state=obj.state,
+                reason=obj.reason,
+            )
 
-    def response_check_transaction(self, tx: Transaction):
-        self.reply = {
-            "jsonrpc": "2.0",
-            "id": self.context_id if hasattr(self, "context_id") else tx.request_id,
-            "result": {
-                "create_time": int(tx.created_datetime) if tx.created_datetime else 0,
-                "perform_time": int(tx.perform_datetime) if tx.perform_datetime else 0,
-                "cancel_time": int(tx.cancel_datetime) if tx.cancel_datetime else 0,
-                "transaction": str(tx._id),
-                "state": tx.state,
-                "reason": tx.reason
-            }
-        }
+            for obj in filtered_transactions]
+
+        response = dict(
+            result=dict(
+                transactions=transactions_json
+            )
+        )
+
+        self.reply = response
+
 
     def order_found(self, validated_data):
-        self.reply = {"result": {"allow": True}}
+        self.reply = dict(result=dict(allow=True))
+
 
     def order_not_found(self, validated_data):
-        self.reply = {
-            "jsonrpc": "2.0",
-            "id": validated_data["id"],
-            "error": {
-                "code": ORDER_NOT_FOUND,
-                "message": ORDER_NOT_FOUND_MESSAGE,
-                "data": None
-            }
-        }
+        self.reply = dict(error=dict(
+            id=validated_data['id'],
+            code=ORDER_NOT_FOUND,
+            message=ORDER_NOT_FOUND_MESSAGE
+        ))
+
 
     def invalid_amount(self, validated_data):
-        self.reply = {
-            "jsonrpc": "2.0",
-            "id": validated_data["id"],
-            "error": {
-                "code": INVALID_AMOUNT,
-                "message": INVALID_AMOUNT_MESSAGE,
-                "data": None
-            }
-        }
+        self.reply = dict(error=dict(
+            id=validated_data['id'],
+            code=INVALID_AMOUNT,
+            message=INVALID_AMOUNT_MESSAGE
+        ))
+
+    def response_check_transaction(self, transaction: Transaction):
+        self.reply = dict(result=dict(
+            create_time=int(transaction.created_datetime) if transaction.created_datetime else 0,
+            perform_time=int(transaction.perform_datetime) if transaction.perform_datetime else 0,
+            cancel_time=int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
+            transaction=str(transaction._id),
+            state=transaction.state,
+            reason=transaction.reason
+        ))
 
 
 class PaycomWebhookView(MerchantAPIView):
