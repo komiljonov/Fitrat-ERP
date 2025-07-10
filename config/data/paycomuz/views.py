@@ -222,7 +222,7 @@ class MerchantAPIView(APIView):
                     "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
                     "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
                     "cancel_time": int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
-                    "transaction": str(transaction._id),  # ✅ Use Paycom ID here
+                    "transaction": str(transaction._id),  # ✅ MUST match original Paycom `_id`
                     "state": transaction.state,
                     "reason": transaction.reason if transaction.reason is not None else None
                 }
