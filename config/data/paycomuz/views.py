@@ -257,42 +257,88 @@ class MerchantAPIView(APIView):
         request_id = validated_data['id']
 
         try:
-            transaction = Transaction.objects.get(_id=_id)
+            obj = Transaction.objects.get(_id=_id)
 
-            if transaction.state == 2:
-                # Already performed
-                pass
-
-            elif transaction.state == 1:
-                # Perform it
-                transaction.state = 2
-                transaction.perform_datetime = datetime.now()
-                transaction.save()
-
-            else:
-                # Invalid state
+            # Если транзакция уже завершена — вернуть её состояние
+            if obj.state == CLOSE_TRANSACTION:
                 self.reply = {
                     "jsonrpc": "2.0",
                     "id": request_id,
-                    "error": {
-                        "code": -31008,
-                        "message": {
-                            "uz": "Ushbu amalni bajarib bo'lmaydi",
-                            "ru": "Невозможно выполнить данную операцию",
-                            "en": "Unable to perform operation"
-                        },
-                        "data": None
+                    "result": {
+                        "transaction": str(obj._id),
+                        "perform_time": int(obj.perform_datetime),
+                        "state": CLOSE_TRANSACTION
                     }
                 }
                 return
+
+            # Если транзакция создана — провести её
+            if obj.state == CREATE_TRANSACTION:
+                obj.state = CLOSE_TRANSACTION
+                obj.status = Transaction.SUCCESS
+
+                current_time = datetime.now()
+                perform_time = int(current_time.timestamp() * 1000)
+                obj.perform_datetime = perform_time
+
+                # Выполнить действия по завершению оплаты
+                self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
+                obj.save()
+
+                self.reply = {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "transaction": str(obj._id),
+                        "perform_time": perform_time,
+                        "state": CLOSE_TRANSACTION
+                    }
+                }
+                return
+
+            # Если транзакция отменена — вернуть ошибку
+            obj.status = Transaction.FAILED
+            obj.save()
+
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": UNABLE_TO_PERFORM_OPERATION,
+                    "message": UNABLE_TO_PERFORM_OPERATION_MESSAGE,
+                    "data": None
+                }
+            }
+
+        except Transaction.DoesNotExist:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": TRANSACTION_NOT_FOUND,
+                    "message": TRANSACTION_NOT_FOUND_MESSAGE,
+                    "data": None
+                }
+            }
+
+
+    def check_transaction(self, validated_data):
+        _id = validated_data['params']['id']
+        request_id = validated_data['id']
+
+        try:
+            transaction = Transaction.objects.get(_id=_id)
 
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "result": {
-                    "transaction": str(transaction._id),
-                    "perform_time": int(transaction.perform_datetime.timestamp() * 1000),
-                    "state": transaction.state
+                    "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
+                    "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
+                    "cancel_time": int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
+                    "transaction": str(transaction._id),  # 🔥 MUST be `params.id` value
+                    "state": transaction.state,  # 1, 2, or 3
+                    "reason": transaction.reason if transaction.reason is not None else None
                 }
             }
 
