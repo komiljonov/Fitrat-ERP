@@ -27,7 +27,6 @@ class CheckOrder(PayComResponse):
         # Check in both Student and Lid
         if Student.objects.filter(id=order_key).exists():
             return self.ORDER_FOUND
-
         if Lid.objects.filter(id=order_key).exists():
             return self.ORDER_FOUND
 
