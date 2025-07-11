@@ -102,7 +102,7 @@ class MerchantAPIView(APIView):
         existing_amount = Transaction.objects.filter(
             order_key=order_key,
             amount=amount,
-            status_in=[Transaction.PROCESSING,Transaction.CANCELED]
+            status__in=[Transaction.PROCESSING,Transaction.CANCELED]
         ).exists()
 
         if amount != existing_amount:
