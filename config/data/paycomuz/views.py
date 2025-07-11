@@ -68,22 +68,19 @@ class MerchantAPIView(APIView):
         assert self.reply != None
         return Response(self.reply)
 
-
     def check_perform_transaction(self, validated_data):
         assert self.VALIDATE_CLASS is not None
         validate_class: Paycom = self.VALIDATE_CLASS()
 
         order_key = validated_data["params"]["account"].get(self.ORDER_KEY)
 
-        # ✅ 1. Check if order exists
         result = validate_class.check_order(**validated_data["params"])
-
         if result != validate_class.ORDER_FOUND:
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": validated_data["id"],
                 "error": {
-                    "code": validate_class.ORDER_NOT_FOUND,  # -31050
+                    "code": validate_class.ORDER_NOT_FOUND,
                     "message": {
                         "uz": "Buyurtma topilmadi",
                         "ru": "Заказ не найден",
@@ -94,56 +91,10 @@ class MerchantAPIView(APIView):
             }
             return
 
-        # ✅ 2. Validate amount
         amount = validated_data["params"].get("amount", 0)
-        if amount <= 100000 or 999999999 <= amount:
+        if amount <= 100000 or amount >= 999999999:
             return self.invalid_amount(validated_data)
 
-        # ✅ 3. Check if order is already paid or cancelled
-        existing_paid = Transaction.objects.filter(
-            order_key=order_key,
-            status__in=[Transaction.SUCCESS, Transaction.CANCELED]
-        ).exists()
-
-        if existing_paid:
-            self.reply = {
-                "jsonrpc": "2.0",
-                "id": validated_data["id"],
-                "error": {
-                    "code": -31051,
-                    "message": {
-                        "uz": "Toʻlov allaqachon amalga oshirilgan yoki bekor qilingan",
-                        "ru": "Платеж уже завершен или отменен",
-                        "en": "Transaction already completed or cancelled"
-                    },
-                    "data": None
-                }
-            }
-            return
-
-        # ✅ 4. Check if a transaction is still in progress
-        in_progress = Transaction.objects.filter(
-            order_key=order_key,
-            status=Transaction.PROCESSING
-        ).exists()
-
-        if in_progress:
-            self.reply = {
-                "jsonrpc": "2.0",
-                "id": validated_data["id"],
-                "error": {
-                    "code": -31099,
-                    "message": {
-                        "uz": "Boshqa toʻlov ushbu buyurtma uchun bajarilmoqda",
-                        "ru": "Другой платеж уже обрабатывается",
-                        "en": "Another transaction is already in progress for this order"
-                    },
-                    "data": None
-                }
-            }
-            return
-
-        # ✅ 5. All good — allow transaction
         self.reply = {
             "jsonrpc": "2.0",
             "id": validated_data["id"],
@@ -173,10 +124,9 @@ class MerchantAPIView(APIView):
             return
 
         _id = validated_data['params']['id']
-        amount = validated_data['params']['amount'] / 100  # convert tiyin to UZS
+        amount = validated_data['params']['amount'] / 100
         now = int(datetime.now().timestamp() * 1000)
 
-        # ✅ Вернуть существующую транзакцию, если такая уже создана
         existing_tx = Transaction.objects.filter(_id=_id).first()
         if existing_tx:
             self.reply = {
@@ -190,20 +140,9 @@ class MerchantAPIView(APIView):
             }
             return
 
-        # ✅ Автоотменить предыдущую PROCESSING-транзакцию (если есть)
-        previous_tx = Transaction.objects.filter(
-            order_key=order_key,
-            status=Transaction.PROCESSING
-        ).exclude(_id=_id).first()
+        # 🔥 Отключили автоотмену — это важно для песочницы
+        # Никакие транзакции не отменяются автоматически
 
-        if previous_tx:
-            previous_tx.state = CANCEL_TRANSACTION_CODE
-            previous_tx.status = Transaction.CANCELED
-            previous_tx.cancel_datetime = now
-            previous_tx.reason = 3  # client retried
-            previous_tx.save()
-
-        # ✅ Создать новую транзакцию
         tx = Transaction.objects.create(
             request_id=validated_data['id'],
             _id=_id,
@@ -231,7 +170,6 @@ class MerchantAPIView(APIView):
         try:
             obj = Transaction.objects.get(_id=_id)
 
-
             if obj.state == CLOSE_TRANSACTION:
                 self.reply = {
                     "jsonrpc": "2.0",
@@ -243,7 +181,6 @@ class MerchantAPIView(APIView):
                     }
                 }
                 return
-
 
             if obj.state in [CANCEL_TRANSACTION_CODE, PERFORM_CANCELED_CODE]:
                 obj.status = Transaction.FAILED
@@ -260,7 +197,6 @@ class MerchantAPIView(APIView):
                 }
                 return
 
-
             if obj.state == CREATE_TRANSACTION:
                 current_time = datetime.now()
                 perform_time = int(current_time.timestamp() * 1000)
@@ -268,7 +204,6 @@ class MerchantAPIView(APIView):
                 obj.state = CLOSE_TRANSACTION
                 obj.status = Transaction.SUCCESS
                 obj.perform_datetime = perform_time
-
 
                 self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
                 obj.save()
@@ -284,7 +219,7 @@ class MerchantAPIView(APIView):
                 }
                 return
 
-
+            # fallback
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": request_id,
@@ -306,7 +241,6 @@ class MerchantAPIView(APIView):
                 }
             }
 
-
     def check_transaction(self, validated_data):
         _id = validated_data['params']['id']
         request_id = validated_data['id']
@@ -319,11 +253,12 @@ class MerchantAPIView(APIView):
                 "id": request_id,
                 "result": {
                     "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
-                    "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
-                    "cancel_time": int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
-                    "transaction": str(transaction._id),  # 🔥 MUST be `params.id` value
-                    "state": transaction.state,  # 1, 2, or 3
-                    "reason": transaction.reason if transaction.reason is not None else None
+                    "perform_time": int(transaction.perform_datetime) if transaction.state == CLOSE_TRANSACTION else 0,
+                    "cancel_time": 0 if transaction.state == CLOSE_TRANSACTION else int(
+                        transaction.cancel_datetime or 0),
+                    "transaction": str(transaction._id),
+                    "state": transaction.state,
+                    "reason": None if transaction.state == CLOSE_TRANSACTION else transaction.reason
                 }
             }
 
@@ -337,7 +272,6 @@ class MerchantAPIView(APIView):
                     "data": None
                 }
             }
-
 
     def cancel_transaction(self, validated_data):
         self.context_id = validated_data["id"]  # ✅ Ensure correct response ID
