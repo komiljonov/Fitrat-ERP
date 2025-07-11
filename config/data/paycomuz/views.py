@@ -174,10 +174,10 @@ class MerchantAPIView(APIView):
             return
 
         _id = validated_data['params']['id']
-        amount = validated_data['params']['amount'] / 100
+        amount = validated_data['params']['amount'] / 100  # convert tiyin to UZS
         now = int(datetime.now().timestamp() * 1000)
 
-        # 1. Return existing transaction if same id is reused
+        # ✅ Вернуть существующую транзакцию, если такая уже создана
         existing_tx = Transaction.objects.filter(_id=_id).first()
         if existing_tx:
             self.reply = {
@@ -191,38 +191,29 @@ class MerchantAPIView(APIView):
             }
             return
 
-        # 2. Check if any other transaction exists for this order in PROCESSING or SUCCESS
+        # ✅ Не разрешаем создать новую, если уже есть PROCESSING или SUCCESS
         other_tx = Transaction.objects.filter(
             order_key=order_key,
             status__in=[Transaction.PROCESSING, Transaction.SUCCESS]
         ).exclude(_id=_id).first()
 
         if other_tx:
-            # Optional: auto-cancel previous PROCESSING transaction
-            if other_tx.status == Transaction.PROCESSING:
-                other_tx.state = CANCEL_TRANSACTION_CODE
-                other_tx.status = Transaction.CANCELED
-                other_tx.cancel_datetime = int(datetime.now().timestamp() * 1000)
-                other_tx.reason = 3  # client retried
-                other_tx.save()
-            else:
-                # Another SUCCESS transaction exists — can't allow new one
-                self.reply = {
-                    "jsonrpc": "2.0",
-                    "id": validated_data["id"],
-                    "error": {
-                        "code": ON_PROCESS,
-                        "message": {
-                            "uz": "Buyurtma toʻlovi hozirda amalga oshirilmoqda",
-                            "ru": "Платеж по заказу уже выполняется",
-                            "en": "Payment for this order is already in process"
-                        },
-                        "data": None
-                    }
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "error": {
+                    "code": ON_PROCESS,
+                    "message": {
+                        "uz": "Buyurtma toʻlovi hozirda amalga oshirilmoqda",
+                        "ru": "Платеж по заказу уже выполняется",
+                        "en": "Payment for this order is already in process"
+                    },
+                    "data": None
                 }
-                return
+            }
+            return
 
-        # 3. All clear — create new transaction
+        # ✅ Создаём новую транзакцию
         tx = Transaction.objects.create(
             request_id=validated_data['id'],
             _id=_id,
