@@ -274,27 +274,33 @@ class MerchantAPIView(APIView):
             }
 
     def cancel_transaction(self, validated_data):
-        self.context_id = validated_data["id"]  # ✅ Ensure correct response ID
+        self.context_id = validated_data["id"]
         tx_id = validated_data['params']['id']
         reason = validated_data['params']['reason']
 
         try:
             transaction = Transaction.objects.get(_id=tx_id)
-            if transaction.state == 1:
-                transaction.state = CANCEL_TRANSACTION_CODE
-            elif transaction.state == 2:
-                transaction.state = PERFORM_CANCELED_CODE
-                self.VALIDATE_CLASS().cancel_payment(validated_data['params'], transaction)
-
-            transaction.reason = reason
-            transaction.status = Transaction.CANCELED
-
             now_ms = int(datetime.now().timestamp() * 1000)
-            if not transaction.cancel_datetime:
+
+            if transaction.state == CREATE_TRANSACTION:
+                transaction.state = CANCEL_TRANSACTION_CODE  # -1
+                transaction.status = Transaction.CANCELED
+                transaction.reason = reason
                 transaction.cancel_datetime = now_ms
 
-            transaction.save()
+            elif transaction.state == CLOSE_TRANSACTION:
+                transaction.state = PERFORM_CANCELED_CODE  # -2
+                transaction.status = Transaction.CANCELED
+                transaction.reason = reason
 
+                # ❗ сохраняем cancel_datetime, но не трогаем perform_datetime
+                if not transaction.cancel_datetime:
+                    transaction.cancel_datetime = now_ms
+
+                # вызов возврата
+                self.VALIDATE_CLASS().cancel_payment(validated_data['params'], transaction)
+
+            transaction.save()
             self.response_check_transaction(transaction)
 
         except Transaction.DoesNotExist:
@@ -306,7 +312,6 @@ class MerchantAPIView(APIView):
                     "message": TRANSACTION_NOT_FOUND_MESSAGE
                 }
             }
-
 
     def get_statement(self, validated_data):
         from_d = validated_data.get('params').get('from')
