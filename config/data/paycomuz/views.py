@@ -313,6 +313,7 @@ class MerchantAPIView(APIView):
                 }
             }
 
+
     def get_statement(self, validated_data):
         from_d = validated_data.get('params').get('from')
         to_d = validated_data.get('params').get('to')

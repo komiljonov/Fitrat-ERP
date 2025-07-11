@@ -116,13 +116,13 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.edu_class = instance.edu_class
                 student.edu_level = instance.edu_level
                 student.subject = instance.subject
-                student.balance = instance.balance
                 student.ball = instance.ball
                 student.filial = instance.filial
                 student.marketing_channel = instance.marketing_channel
                 student.call_operator = instance.call_operator
                 student.service_manager = instance.service_manager
                 student.sales_manager = instance.sales_manager
+                student.balance = instance.balance if instance.balance == 0 else student.balance + instance.balance
                 student.save()
 
                 # sms.send_sms(
