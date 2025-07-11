@@ -96,19 +96,10 @@ class MerchantAPIView(APIView):
 
         # ✅ 2. Validate amount
         amount = validated_data["params"].get("amount", 0)
-        if amount <= 0:
+        if amount <= 100000 or 999999999 <= amount:
             return self.invalid_amount(validated_data)
 
-        # existing_amount = Transaction.objects.filter(
-        #     order_key=order_key,
-        #     amount=amount,
-        #     status_in=[Transaction.PROCESSING,Transaction.CANCELED]
-        # ).exists()
-        #
-        # if amount != existing_amount:
-        #     return self.invalid_amount(validated_data)
-
-
+        # ✅ 3. Check if order is already paid or cancelled
         existing_paid = Transaction.objects.filter(
             order_key=order_key,
             status__in=[Transaction.SUCCESS, Transaction.CANCELED]
@@ -259,56 +250,43 @@ class MerchantAPIView(APIView):
         try:
             obj = Transaction.objects.get(_id=_id)
 
-            # Если транзакция уже завершена — вернуть её состояние
-            if obj.state == CLOSE_TRANSACTION:
-                self.reply = {
-                    "jsonrpc": "2.0",
-                    "id": request_id,
-                    "result": {
-                        "transaction": str(obj._id),
-                        "perform_time": int(obj.perform_datetime),
-                        "state": CLOSE_TRANSACTION
-                    }
-                }
-                return
-
-            # Если транзакция создана — провести её
-            if obj.state == CREATE_TRANSACTION:
+            if obj.state not in [CANCEL_TRANSACTION_CODE, PERFORM_CANCELED_CODE]:
                 obj.state = CLOSE_TRANSACTION
                 obj.status = Transaction.SUCCESS
 
-                current_time = datetime.now()
-                perform_time = int(current_time.timestamp() * 1000)
-                obj.perform_datetime = perform_time
+                if not obj.perform_datetime:
+                    current_time = datetime.now()
+                    current_time_to_string = int(round(current_time.timestamp()) * 1000)
+                    obj.perform_datetime = current_time_to_string
+                    self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
+                else:
+                    current_time_to_string = obj.perform_datetime
 
-                # Выполнить действия по завершению оплаты
-                self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
                 obj.save()
 
                 self.reply = {
                     "jsonrpc": "2.0",
                     "id": request_id,
                     "result": {
-                        "transaction": str(obj._id),
-                        "perform_time": perform_time,
+                        "transaction": str(obj._id),  # ✅ Always return Paycom `params.id`
+                        "perform_time": int(current_time_to_string),
                         "state": CLOSE_TRANSACTION
                     }
                 }
-                return
 
-            # Если транзакция отменена — вернуть ошибку
-            obj.status = Transaction.FAILED
-            obj.save()
+            else:
+                obj.status = Transaction.FAILED
+                obj.save()
 
-            self.reply = {
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "error": {
-                    "code": UNABLE_TO_PERFORM_OPERATION,
-                    "message": UNABLE_TO_PERFORM_OPERATION_MESSAGE,
-                    "data": None
+                self.reply = {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "error": {
+                        "code": UNABLE_TO_PERFORM_OPERATION,
+                        "message": UNABLE_TO_PERFORM_OPERATION_MESSAGE,
+                        "data": None
+                    }
                 }
-            }
 
         except Transaction.DoesNotExist:
             self.reply = {
