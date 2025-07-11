@@ -99,7 +99,16 @@ class MerchantAPIView(APIView):
         if amount <= 0:
             return self.invalid_amount(validated_data)
 
-        # ✅ 3. Check if order is already paid or cancelled
+        existing_amount = Transaction.objects.filter(
+            order_key=order_key,
+            amount=amount,
+            status_in=[Transaction.PROCESSING,Transaction.CANCELED]
+        ).exists()
+
+        if amount != existing_amount:
+            return self.invalid_amount(validated_data)
+
+
         existing_paid = Transaction.objects.filter(
             order_key=order_key,
             status__in=[Transaction.SUCCESS, Transaction.CANCELED]
