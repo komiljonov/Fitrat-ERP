@@ -251,7 +251,7 @@ class MerchantAPIView(APIView):
         try:
             obj = Transaction.objects.get(_id=_id)
 
-            # ✅ Транзакция уже выполнена — вернуть результат
+
             if obj.state == CLOSE_TRANSACTION:
                 self.reply = {
                     "jsonrpc": "2.0",
@@ -264,7 +264,7 @@ class MerchantAPIView(APIView):
                 }
                 return
 
-            # ❌ Транзакция уже отменена — ошибка
+
             if obj.state in [CANCEL_TRANSACTION_CODE, PERFORM_CANCELED_CODE]:
                 obj.status = Transaction.FAILED
                 obj.save()
@@ -280,7 +280,7 @@ class MerchantAPIView(APIView):
                 }
                 return
 
-            # ✅ Транзакция в состоянии "создана" — выполняем
+
             if obj.state == CREATE_TRANSACTION:
                 current_time = datetime.now()
                 perform_time = int(current_time.timestamp() * 1000)
@@ -289,7 +289,7 @@ class MerchantAPIView(APIView):
                 obj.status = Transaction.SUCCESS
                 obj.perform_datetime = perform_time
 
-                # Выполнить бизнес-логику (например, пополнение баланса)
+
                 self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
                 obj.save()
 
@@ -304,7 +304,7 @@ class MerchantAPIView(APIView):
                 }
                 return
 
-            # В других случаях — ошибка (на всякий случай)
+
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": request_id,
