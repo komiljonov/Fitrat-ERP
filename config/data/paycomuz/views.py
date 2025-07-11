@@ -274,46 +274,27 @@ class MerchantAPIView(APIView):
             }
 
     def cancel_transaction(self, validated_data):
-        self.context_id = validated_data["id"]
+        self.context_id = validated_data["id"]  # ✅ Ensure correct response ID
         tx_id = validated_data['params']['id']
         reason = validated_data['params']['reason']
 
         try:
             transaction = Transaction.objects.get(_id=tx_id)
-
-            now_ms = int(datetime.now().timestamp() * 1000)
-
-            if transaction.state == CREATE_TRANSACTION:
-                # ❗ Не выполнена, просто отменяем
-                transaction.state = CANCEL_TRANSACTION_CODE  # -1
-                transaction.status = Transaction.CANCELED
-                transaction.reason = reason
-                transaction.cancel_datetime = now_ms
-
-            elif transaction.state == CLOSE_TRANSACTION:
-                # ❗ Уже выполнена, требуется возврат
-                transaction.state = PERFORM_CANCELED_CODE  # -2
-                transaction.status = Transaction.CANCELED
-                transaction.reason = reason
-                transaction.cancel_datetime = now_ms
-
-                # вызываем кастомный возврат
+            if transaction.state == 1:
+                transaction.state = CANCEL_TRANSACTION_CODE
+            elif transaction.state == 2:
+                transaction.state = PERFORM_CANCELED_CODE
                 self.VALIDATE_CLASS().cancel_payment(validated_data['params'], transaction)
 
-            else:
-                # ❌ уже отменена или что-то другое
-                self.reply = {
-                    "jsonrpc": "2.0",
-                    "id": self.context_id,
-                    "error": {
-                        "code": UNABLE_TO_PERFORM_OPERATION,
-                        "message": UNABLE_TO_PERFORM_OPERATION_MESSAGE,
-                        "data": None
-                    }
-                }
-                return
+            transaction.reason = reason
+            transaction.status = Transaction.CANCELED
+
+            now_ms = int(datetime.now().timestamp() * 1000)
+            if not transaction.cancel_datetime:
+                transaction.cancel_datetime = now_ms
 
             transaction.save()
+
             self.response_check_transaction(transaction)
 
         except Transaction.DoesNotExist:
@@ -322,8 +303,7 @@ class MerchantAPIView(APIView):
                 "id": self.context_id,
                 "error": {
                     "code": TRANSACTION_NOT_FOUND,
-                    "message": TRANSACTION_NOT_FOUND_MESSAGE,
-                    "data": None
+                    "message": TRANSACTION_NOT_FOUND_MESSAGE
                 }
             }
 
