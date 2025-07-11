@@ -288,7 +288,7 @@ class MerchantAPIView(APIView):
                 transaction.reason = reason
                 transaction.cancel_datetime = now_ms
 
-            elif transaction.state == CLOSE_TRANSACTION:
+            elif transaction.state == CLOSE_TRANSACTION or transaction.state == -31003:
                 transaction.state = PERFORM_CANCELED_CODE  # -2
                 transaction.status = Transaction.CANCELED
                 transaction.reason = reason
