@@ -8,5 +8,5 @@ urlpatterns = [
     path('<uuid:pk>',NotificationRetrieveUpdateDestroyAPIView.as_view()),
     path('no-pg/',NotificationListNoPG.as_view()),
 
-    path("notifications/mark-all-read/",MarkAllNotificationsReadAPIView.as_view()),
+    path("mark-all-read/",MarkAllNotificationsReadAPIView.as_view()),
 ]
