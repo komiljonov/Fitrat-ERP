@@ -30,9 +30,8 @@ class Paycom(PayComResponse):
         Return True if this is a flexible ('nakopitelnaya') account transaction.
         You can check this via metadata, transaction.order_type, or model field.
         """
-        # Example check based on transaction's related order or metadata
         order = self.get_order_by_key(transaction.order_key)
-        return getattr(order, 'is_flexible', False)  # or order.account_type == 'nakopitelnaya'
+        return getattr(order, 'is_flexible', False)
 
     def can_cancel_order(self, transaction) -> bool:
         """
@@ -40,7 +39,7 @@ class Paycom(PayComResponse):
         Could depend on time, delivery, attendance, etc.
         """
         order = self.get_order_by_key(transaction.order_key)
-        return not order.is_used and not order.is_expired  # example rules
+        return not order.state == 1 and not order.cancel_reason
 
     def mark_order_as_canceled(self, transaction):
         """
