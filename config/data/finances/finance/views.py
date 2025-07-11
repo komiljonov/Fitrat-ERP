@@ -1,5 +1,5 @@
 import datetime
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 import openpyxl
 import pandas as pd
@@ -425,9 +425,9 @@ def parse_date_range(start_date_str, end_date_str):
     start = end = None
 
     if start_date_str:
-        start = make_aware(datetime.combine(datetime.strptime(start_date_str, "%Y-%m-%d"), datetime.time.min))
+        start = make_aware(datetime.combine(datetime.strptime(start_date_str, "%Y-%m-%d"), time.min))
     if end_date_str:
-        end = make_aware(datetime.combine(datetime.strptime(end_date_str, "%Y-%m-%d"), datetime.time.max))
+        end = make_aware(datetime.combine(datetime.strptime(end_date_str, "%Y-%m-%d"), time.max))
 
     return start, end
 
