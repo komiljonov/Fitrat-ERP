@@ -152,7 +152,6 @@ class MerchantAPIView(APIView):
             }
         }
 
-
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
         if not order_key:
@@ -191,29 +190,20 @@ class MerchantAPIView(APIView):
             }
             return
 
-        # ✅ Не разрешаем создать новую, если уже есть PROCESSING или SUCCESS
-        other_tx = Transaction.objects.filter(
+        # ✅ Автоотменить предыдущую PROCESSING-транзакцию (если есть)
+        previous_tx = Transaction.objects.filter(
             order_key=order_key,
-            status__in=[Transaction.PROCESSING, Transaction.SUCCESS]
+            status=Transaction.PROCESSING
         ).exclude(_id=_id).first()
 
-        if other_tx:
-            self.reply = {
-                "jsonrpc": "2.0",
-                "id": validated_data["id"],
-                "error": {
-                    "code": ON_PROCESS,
-                    "message": {
-                        "uz": "Buyurtma toʻlovi hozirda amalga oshirilmoqda",
-                        "ru": "Платеж по заказу уже выполняется",
-                        "en": "Payment for this order is already in process"
-                    },
-                    "data": None
-                }
-            }
-            return
+        if previous_tx:
+            previous_tx.state = CANCEL_TRANSACTION_CODE
+            previous_tx.status = Transaction.CANCELED
+            previous_tx.cancel_datetime = now
+            previous_tx.reason = 3  # client retried
+            previous_tx.save()
 
-        # ✅ Создаём новую транзакцию
+        # ✅ Создать новую транзакцию
         tx = Transaction.objects.create(
             request_id=validated_data['id'],
             _id=_id,
@@ -233,7 +223,6 @@ class MerchantAPIView(APIView):
                 "state": CREATE_TRANSACTION
             }
         }
-
 
     def perform_transaction(self, validated_data):
         _id = validated_data['params']['id']
