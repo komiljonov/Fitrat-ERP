@@ -152,6 +152,7 @@ class MerchantAPIView(APIView):
             }
         }
 
+
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
         if not order_key:
@@ -250,31 +251,21 @@ class MerchantAPIView(APIView):
         try:
             obj = Transaction.objects.get(_id=_id)
 
-            if obj.state not in [CANCEL_TRANSACTION_CODE, PERFORM_CANCELED_CODE]:
-                obj.state = CLOSE_TRANSACTION
-                obj.status = Transaction.SUCCESS
-
-                if not obj.perform_datetime:
-                    current_time = datetime.now()
-                    current_time_to_string = int(round(current_time.timestamp()) * 1000)
-                    obj.perform_datetime = current_time_to_string
-                    self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
-                else:
-                    current_time_to_string = obj.perform_datetime
-
-                obj.save()
-
+            # ✅ Транзакция уже выполнена — вернуть результат
+            if obj.state == CLOSE_TRANSACTION:
                 self.reply = {
                     "jsonrpc": "2.0",
                     "id": request_id,
                     "result": {
-                        "transaction": str(obj._id),  # ✅ Always return Paycom `params.id`
-                        "perform_time": int(current_time_to_string),
+                        "transaction": str(obj._id),
+                        "perform_time": int(obj.perform_datetime),
                         "state": CLOSE_TRANSACTION
                     }
                 }
+                return
 
-            else:
+            # ❌ Транзакция уже отменена — ошибка
+            if obj.state in [CANCEL_TRANSACTION_CODE, PERFORM_CANCELED_CODE]:
                 obj.status = Transaction.FAILED
                 obj.save()
 
@@ -287,6 +278,42 @@ class MerchantAPIView(APIView):
                         "data": None
                     }
                 }
+                return
+
+            # ✅ Транзакция в состоянии "создана" — выполняем
+            if obj.state == CREATE_TRANSACTION:
+                current_time = datetime.now()
+                perform_time = int(current_time.timestamp() * 1000)
+
+                obj.state = CLOSE_TRANSACTION
+                obj.status = Transaction.SUCCESS
+                obj.perform_datetime = perform_time
+
+                # Выполнить бизнес-логику (например, пополнение баланса)
+                self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
+                obj.save()
+
+                self.reply = {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "transaction": str(obj._id),
+                        "perform_time": perform_time,
+                        "state": CLOSE_TRANSACTION
+                    }
+                }
+                return
+
+            # В других случаях — ошибка (на всякий случай)
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": UNABLE_TO_PERFORM_OPERATION,
+                    "message": UNABLE_TO_PERFORM_OPERATION_MESSAGE,
+                    "data": None
+                }
+            }
 
         except Transaction.DoesNotExist:
             self.reply = {
