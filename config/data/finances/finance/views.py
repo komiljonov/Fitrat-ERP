@@ -437,8 +437,12 @@ class TeacherGroupFinanceAPIView(APIView):
 
         attended_groups = Attendance.objects.filter(**group_filters).values_list('group_id', flat=True).distinct()
 
+        print("after_attended_groups", attended_groups)
+
         # Convert to set to ensure uniqueness, then back to list
         unique_group_ids = list(set(attended_groups))
+
+        print("unique_group_ids", unique_group_ids)
 
         group_data_list = []
         processed_groups = set()  # Track processed groups to avoid duplicates
@@ -449,6 +453,7 @@ class TeacherGroupFinanceAPIView(APIView):
                 continue
 
             processed_groups.add(group_id)
+
 
             # Prepare finance filter
             finance_filters = {"attendance__group__id": group_id}
@@ -463,6 +468,12 @@ class TeacherGroupFinanceAPIView(APIView):
             created_at = finance_records.first().created_at if finance_records.exists() else None
             total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
 
+
+            print("finance_records", finance_records)
+            print("created_at", created_at)
+            print("total_group_payment", total_group_payment)
+
+
             # Collect students in group with date filters applied
             student_filters = {"attendance_student__group__id": group_id}
             if start_date and end_date:
@@ -473,9 +484,15 @@ class TeacherGroupFinanceAPIView(APIView):
             students = Student.objects.filter(**student_filters).distinct()
             student_data = []
 
+            print("students", students)
+
+
             for student in students:
                 # Apply date filters to student attendances
                 student_attendance_filters = {"group_id": group_id, "student": student}
+
+                print("student_attendance_filters", student_attendance_filters)
+
                 if start_date and end_date:
                     student_attendance_filters["created_at__range"] = (start_date, end_date)
                 elif start_date:
@@ -483,6 +500,9 @@ class TeacherGroupFinanceAPIView(APIView):
 
                 student_attendances = Attendance.objects.filter(**student_attendance_filters)
                 student_finance_filters = {"attendance__in": student_attendances}
+
+                print("student_finance_filters", student_finance_filters)
+
 
                 if start_date and end_date:
                     student_finance_filters["created_at__range"] = (start_date, end_date)
@@ -505,11 +525,14 @@ class TeacherGroupFinanceAPIView(APIView):
                     "student_name": f"{student.first_name} {student.last_name}",
                     "total_payment": total_student_payment
                 })
+                print("student_data", student_data)
 
             # Get group name more efficiently
             try:
                 group = Group.objects.get(id=group_id)
                 group_name = group.name
+
+                print("group_name", group_name)
             except Group.DoesNotExist:
                 group_name = "Unknown Group"
 
@@ -522,6 +545,8 @@ class TeacherGroupFinanceAPIView(APIView):
             })
 
         group_data_list.sort(key=lambda x: x['created_at'] or timezone.now(), reverse=True)
+
+        print("group_data_list", group_data_list)
 
         # Paginate the group data
         paginator = self.pagination_class()
