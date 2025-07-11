@@ -152,7 +152,6 @@ class MerchantAPIView(APIView):
             }
         }
 
-
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
         if not order_key:
@@ -177,7 +176,7 @@ class MerchantAPIView(APIView):
         amount = validated_data['params']['amount'] / 100
         now = int(datetime.now().timestamp() * 1000)
 
-        # First, check if this transaction ID was already used
+        # 1. Return existing transaction if same id is reused
         existing_tx = Transaction.objects.filter(_id=_id).first()
         if existing_tx:
             self.reply = {
@@ -191,30 +190,38 @@ class MerchantAPIView(APIView):
             }
             return
 
-        # Now check if another transaction for this order is already in progress or successful
+        # 2. Check if any other transaction exists for this order in PROCESSING or SUCCESS
         other_tx = Transaction.objects.filter(
             order_key=order_key,
             status__in=[Transaction.PROCESSING, Transaction.SUCCESS]
         ).exclude(_id=_id).first()
 
         if other_tx:
-            # ❗️ DO NOT create a new transaction
-            self.reply = {
-                "jsonrpc": "2.0",
-                "id": validated_data["id"],
-                "error": {
-                    "code": ON_PROCESS,
-                    "message": {
-                        "uz": "Buyurtma toʻlovi hozirda amalga oshirilmoqda",
-                        "ru": "Платеж по заказу уже выполняется",
-                        "en": "Payment for this order is already in process"
-                    },
-                    "data": None
+            # Optional: auto-cancel previous PROCESSING transaction
+            if other_tx.status == Transaction.PROCESSING:
+                other_tx.state = CANCEL_TRANSACTION_CODE
+                other_tx.status = Transaction.CANCELED
+                other_tx.cancel_datetime = int(datetime.now().timestamp() * 1000)
+                other_tx.reason = 3  # client retried
+                other_tx.save()
+            else:
+                # Another SUCCESS transaction exists — can't allow new one
+                self.reply = {
+                    "jsonrpc": "2.0",
+                    "id": validated_data["id"],
+                    "error": {
+                        "code": ON_PROCESS,
+                        "message": {
+                            "uz": "Buyurtma toʻlovi hozirda amalga oshirilmoqda",
+                            "ru": "Платеж по заказу уже выполняется",
+                            "en": "Payment for this order is already in process"
+                        },
+                        "data": None
+                    }
                 }
-            }
-            return
+                return
 
-        # No conflicts — create the new transaction
+        # 3. All clear — create new transaction
         tx = Transaction.objects.create(
             request_id=validated_data['id'],
             _id=_id,
@@ -358,6 +365,7 @@ class MerchantAPIView(APIView):
                     "message": TRANSACTION_NOT_FOUND_MESSAGE
                 }
             }
+
 
     def get_statement(self, validated_data):
         from_d = validated_data.get('params').get('from')
