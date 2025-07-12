@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     # Installed apps
     'data.account',
     'data.paycomuz',
-    'data.click_up',
+    'data.clickuz',
     'data.tasks',
     'data.finances.finance',
     'data.finances.compensation',
