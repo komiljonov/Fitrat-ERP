@@ -466,9 +466,9 @@ class LessonScheduleListApi(ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
 
-        # Get the date filter from query params (optional)
 
         teacher = self.request.GET.get('teacher')
+        print(teacher)
         name = self.request.GET.get('name')
         subject = self.request.GET.get('subject')
         room = self.request.GET.get('room')
@@ -476,7 +476,7 @@ class LessonScheduleListApi(ListAPIView):
         date_filter = self.request.GET.get('date', None)
         date_filter = datetime.datetime.strptime(date_filter, "%d-%m-%Y").date() if date_filter else None
 
-        # Prepare to collect lessons grouped by date
+
         lessons_by_date = defaultdict(list)
 
         if name:
@@ -487,8 +487,9 @@ class LessonScheduleListApi(ListAPIView):
             queryset = queryset.filter(room_number__id=room)
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
+            print(queryset)
 
-        # Collect lessons from the main schedule
+
         for item in serializer.data:
             days = item.get('days', [])
             for day in days:
@@ -503,7 +504,7 @@ class LessonScheduleListApi(ListAPIView):
             created_at__gte=datetime.date.today(),
         )
 
-        # Process extra lessons for groups
+
         for extra in extra_lessons_group:
             lesson_date = extra.date
             if date_filter and lesson_date != date_filter:
@@ -520,19 +521,18 @@ class LessonScheduleListApi(ListAPIView):
             }
             lessons_by_date[lesson_date].append(lesson_data)
 
-        # Fetch extra lessons for individual students (ExtraLesson)
+
         extra_lessons_individual = ExtraLesson.objects.filter(
             date__gte=datetime.date.today(),
         )
 
-        # Process extra lessons for individual students
+
         for extra in extra_lessons_individual:
             lesson_date = extra.date
             if date_filter and lesson_date != date_filter:
                 continue
             lesson_data = {
                 "name": f"{extra.student.first_name} {extra.student.last_name}" if extra.student else None,
-                # You can change this to any student info you need
                 "comment": extra.comment,
                 "teacher_name": f"{extra.teacher.first_name} {extra.teacher.last_name}" if extra.teacher else None,
                 "status": "Extra_lessons",
@@ -544,15 +544,12 @@ class LessonScheduleListApi(ListAPIView):
             }
             lessons_by_date[lesson_date].append(lesson_data)
 
-        # Sort the dates in ascending order
         sorted_dates = sorted(lessons_by_date.keys())
 
-        # Prepare the sorted response
         sorted_lessons = []
         for lesson_date in sorted_dates:
             lessons = lessons_by_date[lesson_date]
 
-            # Sort by started_at (string format HH:MM)
             lessons.sort(key=lambda x: x.get("started_at"))
 
             sorted_lessons.append({
