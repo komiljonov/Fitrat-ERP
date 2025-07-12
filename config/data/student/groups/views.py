@@ -490,7 +490,7 @@ class LessonScheduleListApi(ListAPIView):
             print(queryset)
 
 
-        for item in serializer.data:
+        for item in queryset:
             days = item.get('days', [])
             for day in days:
                 lesson_date = datetime.datetime.strptime(day['date'], "%d-%m-%Y").date()
@@ -525,7 +525,6 @@ class LessonScheduleListApi(ListAPIView):
         extra_lessons_individual = ExtraLesson.objects.filter(
             date__gte=datetime.date.today(),
         )
-
 
         for extra in extra_lessons_individual:
             lesson_date = extra.date
