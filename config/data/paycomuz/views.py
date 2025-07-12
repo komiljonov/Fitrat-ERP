@@ -273,98 +273,29 @@ class MerchantAPIView(APIView):
                 }
             }
 
-
     def cancel_transaction(self, validated_data):
-        self.context_id = validated_data["id"]
+        self.context_id = validated_data["id"]  # ✅ Ensure correct response ID
         tx_id = validated_data['params']['id']
         reason = validated_data['params']['reason']
 
         try:
             transaction = Transaction.objects.get(_id=tx_id)
+            if transaction.state == 1:
+                transaction.state = CANCEL_TRANSACTION_CODE
+            elif transaction.state == 2:
+                transaction.state = PERFORM_CANCELED_CODE
+                self.VALIDATE_CLASS().cancel_payment(validated_data['params'], transaction)
+
+            transaction.reason = reason
+            transaction.status = Transaction.CANCELED
+
             now_ms = int(datetime.now().timestamp() * 1000)
-
-            # Case 1: Not performed yet (state = 1)
-            if transaction.state == CREATE_TRANSACTION:
-                transaction.state = CANCEL_TRANSACTION_CODE  # -1
-                transaction.status = Transaction.CANCELED
-                transaction.reason = reason
+            if not transaction.cancel_datetime:
                 transaction.cancel_datetime = now_ms
-                transaction.save()
-                return self.response_check_transaction(transaction)
 
-            # Case 2: Already performed (state = 2)
-            elif transaction.state == CLOSE_TRANSACTION:
-                # Determine whether it's a "nakopitelnaya" (flexible) or "odnorazoviy" (fixed) payment
-                is_nakopitelnaya = self.VALIDATE_CLASS().is_nakopitelnaya(transaction)
+            transaction.save()
 
-                if is_nakopitelnaya:
-                    student = self.VALIDATE_CLASS().get_student_by_transaction(transaction)
-
-                    # Check if student has enough balance to refund the cancellation
-                    if student.balance < transaction.amount:
-                        self.reply = {
-                            "jsonrpc": "2.0",
-                            "id": self.context_id,
-                            "error": {
-                                "code": -31007,
-                                "message": {
-                                    "uz": "Yetarli mablag' mavjud emas",
-                                    "ru": "Недостаточно средств для возврата",
-                                    "en": "Insufficient funds to refund cancellation"
-                                }
-                            }
-                        }
-                        return
-
-                    # Deduct from student balance
-                    student.balance -= transaction.amount
-                    student.save()
-
-                else:
-                    # For fixed payments: check if it’s cancelable
-                    if not self.VALIDATE_CLASS().can_cancel_order(transaction):
-                        self.reply = {
-                            "jsonrpc": "2.0",
-                            "id": self.context_id,
-                            "error": {
-                                "code": -31007,
-                                "message": {
-                                    "uz": "Buyurtma bekor qilib bo'lmaydi",
-                                    "ru": "Невозможно отменить заказ",
-                                    "en": "Order cannot be canceled"
-                                }
-                            }
-                        }
-                        return
-
-                    # Mark order as canceled
-                    self.VALIDATE_CLASS().mark_order_as_canceled(transaction)
-
-                # Update transaction state
-                transaction.state = PERFORM_CANCELED_CODE  # -2
-                transaction.status = Transaction.CANCELED
-                transaction.reason = reason
-
-                if not transaction.cancel_datetime:
-                    transaction.cancel_datetime = now_ms
-
-                transaction.save()
-                return self.response_check_transaction(transaction)
-
-            # Case 3: Already canceled → return current status
-            elif transaction.state in [CANCEL_TRANSACTION_CODE, PERFORM_CANCELED_CODE]:
-                return self.response_check_transaction(transaction)
-
-            # Other state → invalid
-            else:
-                self.reply = {
-                    "jsonrpc": "2.0",
-                    "id": self.context_id,
-                    "error": {
-                        "code": UNABLE_TO_PERFORM_OPERATION,
-                        "message": UNABLE_TO_PERFORM_OPERATION_MESSAGE
-                    }
-                }
+            self.response_check_transaction(transaction)
 
         except Transaction.DoesNotExist:
             self.reply = {
