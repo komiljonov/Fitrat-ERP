@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import icecream
 from django.db.models import Q
+from django.utils.dateparse import parse_date
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -13,8 +14,6 @@ from .models import Archived, Frozen
 from .serializers import ArchivedSerializer, StuffArchivedSerializer, FrozenSerializer
 from ...account.models import CustomUser
 
-from django.utils.dateparse import parse_datetime, parse_date
-from datetime import timedelta
 
 class ArchivedListAPIView(ListCreateAPIView):
     queryset = Archived.objects.all()
@@ -86,11 +85,14 @@ class ArchivedListAPIView(ListCreateAPIView):
         if subject:
             queryset = queryset.filter(Q(student__subject__id=subject) | Q(lid__subject__id=subject))
         if call_operator:
-            queryset = queryset.filter(Q(student__call_operator__id=call_operator) | Q(lid__call_operator__id=call_operator))
+            queryset = queryset.filter(
+                Q(student__call_operator__id=call_operator) | Q(lid__call_operator__id=call_operator))
         if sales_manager:
-            queryset = queryset.filter(Q(student__sales_manager__id=sales_manager) | Q(lid__sales_manager__id=sales_manager))
+            queryset = queryset.filter(
+                Q(student__sales_manager__id=sales_manager) | Q(lid__sales_manager__id=sales_manager))
         if service_manager:
-            queryset = queryset.filter(Q(student__service_manager__id=service_manager) | Q(lid__service_manager__id=service_manager))
+            queryset = queryset.filter(
+                Q(student__service_manager__id=service_manager) | Q(lid__service_manager__id=service_manager))
 
         if balance_from or balance_to:
             student_q = Q()
@@ -124,7 +126,6 @@ class ArchivedListAPIView(ListCreateAPIView):
                 pass
 
         return queryset
-
 
 
 class ArchivedDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -201,13 +202,3 @@ class FrozenDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Frozen.objects.all()
     serializer_class = FrozenSerializer
     permission_classes = (IsAuthenticated,)
-
-
-
-
-
-
-
-
-
-
