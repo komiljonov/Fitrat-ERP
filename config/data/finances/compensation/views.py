@@ -138,42 +138,57 @@ class PageCreateView(ListCreateAPIView):
 
 class PageBulkUpdateView(APIView):
     def put(self, request, *args, **kwargs):
-        # Ensure the request body is a list of pages with ids and updated data
-        if isinstance(request.data, list):
-            updated_pages = []
-            for data in request.data:
-                try:
-                    # Find the Page object to update
-                    page = Page.objects.get(id=data['id'])
+        if not isinstance(request.data, list):
+            return Response({"detail": "Expected a list of pages for update."}, status=status.HTTP_400_BAD_REQUEST)
 
-                    # If the 'user' field is provided, get the CustomUser instance
+        updated_pages = []
+        created_pages = []
+
+        for data in request.data:
+            page_id = data.get("id")
+
+            if page_id:  # Update existing
+                try:
+                    page = Page.objects.get(id=page_id)
+
                     if 'user' in data:
                         try:
-                            user_instance = CustomUser.objects.get(id=data['user'])
-                            data['user'] = user_instance  # Assign the CustomUser instance
+                            data['user'] = CustomUser.objects.get(id=data['user'])
                         except CustomUser.DoesNotExist:
                             return Response({"detail": f"CustomUser with id {data['user']} does not exist."},
                                             status=status.HTTP_400_BAD_REQUEST)
 
-                    # Update each field
                     for attr, value in data.items():
-                        setattr(page, attr, value)
+                        if attr in ['name', 'user', 'is_editable', 'is_readable', 'is_parent']:
+                            setattr(page, attr, value)
                     updated_pages.append(page)
+
                 except Page.DoesNotExist:
-                    # Handle if the Page with the given ID doesn't exist
-                    continue
+                    continue  # Skip non-existing pages
 
-            # Perform bulk update (only if there are pages to update)
-            if updated_pages:
-                Page.objects.bulk_update(updated_pages,
-                                         fields=['name', 'user', 'is_editable', 'is_readable', 'is_parent'])
+            else:  # Create new
+                user_id = data.get('user')
+                if user_id:
+                    try:
+                        data['user'] = CustomUser.objects.get(id=user_id)
+                    except CustomUser.DoesNotExist:
+                        return Response({"detail": f"CustomUser with id {user_id} does not exist."},
+                                        status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(
-                {"updated_pages": PagesSerializer(updated_pages, many=True).data},
-                status=status.HTTP_200_OK
-            )
+                serializer = PagesSerializer(data=data)
+                if serializer.is_valid():
+                    created_pages.append(serializer.save())
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"detail": "Expected a list of pages for update."}, status=status.HTTP_400_BAD_REQUEST)
+        if updated_pages:
+            Page.objects.bulk_update(updated_pages,
+                                     fields=['name', 'user', 'is_editable', 'is_readable', 'is_parent'])
+
+        return Response(
+            {"updated_pages": PagesSerializer(updated_pages + created_pages, many=True).data},
+            status=status.HTTP_200_OK
+        )
 
 
 class AsosListCreateView(ListCreateAPIView):
