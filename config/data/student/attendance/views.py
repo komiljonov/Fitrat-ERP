@@ -29,6 +29,7 @@ class AttendanceList(ListCreateAPIView):
         end_date = self.request.GET.get('end_date')
         reason = self.request.GET.get('reason')
         student = self.request.GET.get('student')
+        group = self.request.GET.get('group')
         queryset = Attendance.objects.all()
 
         if start_date and end_date:
@@ -37,12 +38,14 @@ class AttendanceList(ListCreateAPIView):
 
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
 
+        if group:
+            queryset = queryset.filter(group__id=group)
 
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
 
         if student:
-            queryset = queryset.filter(student=student)
+            queryset = queryset.filter(student__id=student)
 
         if reason:
             queryset = queryset.filter(reason=reason)
