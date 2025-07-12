@@ -72,6 +72,7 @@ class RelativesSerializer(serializers.ModelSerializer):
         name = validated_data.get("name", instance.name)
         who = validated_data.get("who", instance.who)
         student = validated_data.get("student", instance.student)
+        lid = validated_data.get("lid", instance.lid)
 
         # Check for existing parent user with this phone
         parent_user = CustomUser.objects.filter(phone=phone, role="Parents").first()
@@ -103,8 +104,12 @@ class RelativesSerializer(serializers.ModelSerializer):
         instance.name = name
         instance.phone = phone
         instance.who = who
-        instance.student = student
-        instance.lid = parent_user  # Link or re-link the lid
+        if student and lid is None:
+            instance.student = student
+            instance.lid = None
+        else:
+            instance.student = None
+            instance.lid = lid
         instance.save()
 
         # Optionally update user name and phone again
