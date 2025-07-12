@@ -253,12 +253,11 @@ class MerchantAPIView(APIView):
                 "id": request_id,
                 "result": {
                     "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
-                    "perform_time": int(transaction.perform_datetime) if transaction.state == CLOSE_TRANSACTION else 0,
-                    "cancel_time": 0 if transaction.state == CLOSE_TRANSACTION else int(
-                        transaction.cancel_datetime or 0),
+                    "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,  # ✅ Fixed
+                    "cancel_time": int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
                     "transaction": str(transaction._id),
                     "state": transaction.state,
-                    "reason": None if transaction.state == CLOSE_TRANSACTION else transaction.reason
+                    "reason": transaction.reason
                 }
             }
 
