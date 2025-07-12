@@ -19,6 +19,8 @@ from ...notifications.models import Notification
 
 from threading import local
 
+from ...parents.models import Relatives
+
 _signal_state = local()
 
 
@@ -121,6 +123,14 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                     come_from=instance.student,
                     choice="New_Student",
                 )
+                parents = Relatives.objects.filter(student=instance.student).all()
+                for parent in parents:
+                    Notification.objects.create(
+                        user=parent,
+                        comment=f"Talaba {instance.student.first_name} {instance.student.last_name}  -  bugungi {instance.group.name} guruhidagi {attendances_count} darsiga qatnashmadi!",
+                        come_from=instance.student,
+                        choice="Students",
+                    )
 
 
 
