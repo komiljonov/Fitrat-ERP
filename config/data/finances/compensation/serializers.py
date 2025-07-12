@@ -167,6 +167,7 @@ class ResultPointsSerializer(serializers.ModelSerializer):
             "degree",
             "amount",
             "is_archived",
+            "coin",
             "created_at",
             "updated_at"
         ]
