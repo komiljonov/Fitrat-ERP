@@ -3,16 +3,19 @@ from rest_framework import serializers
 from .models import Comment, StuffComments
 from ..account.models import CustomUser
 from ..account.serializers import UserSerializer
+from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
 
 class CommentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
     class Meta:
         model = Comment
         fields = [
             "id",
             "creator",
+            "photo",
             "lid",
             "student",
             "comment",
@@ -37,6 +40,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
         # Ensure the 'creator' field exists in the representation
         creator = instance.creator if instance.creator else None
+        rep["photo"] = FileUploadSerializer(instance.photo,context=self.context).data
 
         if creator:
             rep[
