@@ -74,13 +74,14 @@ class MerchantAPIView(APIView):
 
         order_key = validated_data["params"]["account"].get(self.ORDER_KEY)
 
+        # Step 1: Validate account (order existence)
         result = validate_class.check_order(**validated_data["params"])
         if result != validate_class.ORDER_FOUND:
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": validated_data["id"],
                 "error": {
-                    "code": validate_class.ORDER_NOT_FOUND,
+                    "code": -31050,
                     "message": {
                         "uz": "Buyurtma topilmadi",
                         "ru": "Заказ не найден",
@@ -91,10 +92,12 @@ class MerchantAPIView(APIView):
             }
             return
 
+        # Step 2: Validate amount
         amount = validated_data["params"].get("amount", 0)
-        if amount <= 100000 or amount >= 999999999:
+        if amount <= 1000 or amount >= 999999999:
             return self.invalid_amount(validated_data)
 
+        # ✅ Everything valid
         self.reply = {
             "jsonrpc": "2.0",
             "id": validated_data["id"],
@@ -106,23 +109,29 @@ class MerchantAPIView(APIView):
     def create_transaction(self, validated_data):
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
         if not order_key:
-            raise serializers.ValidationError(f"{self.ORDER_KEY} required field")
+            raise serializers.ValidationError(f"{self.ORDER_KEY} is required")
 
         validate_class: Paycom = self.VALIDATE_CLASS()
         result = validate_class.check_order(**validated_data['params'])
 
-        if result is None or result != ORDER_FOUND:
+        # Step 1: Check invalid account
+        if result != ORDER_FOUND:
             self.reply = {
                 "jsonrpc": "2.0",
                 "id": validated_data["id"],
                 "error": {
-                    "code": ORDER_NOT_FOUND,
-                    "message": ORDER_NOT_FOUND_MESSAGE,
+                    "code": -31050,
+                    "message": {
+                        "uz": "Buyurtma mavjud emas",
+                        "ru": "Счёт не существует",
+                        "en": "Account not found"
+                    },
                     "data": None
                 }
             }
             return
 
+        # Step 2: Create transaction
         _id = validated_data['params']['id']
         amount = validated_data['params']['amount'] / 100
         now = int(datetime.now().timestamp() * 1000)
@@ -139,9 +148,6 @@ class MerchantAPIView(APIView):
                 }
             }
             return
-
-        # 🔥 Отключили автоотмену — это важно для песочницы
-        # Никакие транзакции не отменяются автоматически
 
         tx = Transaction.objects.create(
             request_id=validated_data['id'],
