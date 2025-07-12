@@ -49,6 +49,8 @@ class Homework_history(BaseModel):
                                         null=True,blank=True,related_name="homeworks_updater")
     description = models.TextField(null=True,blank=True)
 
+    test_checked = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "Homeworks History"
         verbose_name_plural = "Histories"

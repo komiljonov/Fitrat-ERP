@@ -131,6 +131,7 @@ class HomeworksHistorySerializer(serializers.ModelSerializer):
             "is_active",
             "description",
             "mark",
+            "test_checked",
             "created_at"
         ]
 

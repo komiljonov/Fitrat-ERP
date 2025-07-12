@@ -30,7 +30,7 @@ from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer,
     ImageObjectiveTestSerializer, True_FalseSerializer, ExamCertificateSerializer, QuizCheckingSerializer, \
     ExamSubjectSerializer, ExamMonthlySerializer
 from ..groups.models import Group
-from ..homeworks.models import Homework
+from ..homeworks.models import Homework, Homework_history
 from ..mastering.models import Mastering
 from ..shop.models import Points
 from ..shop.utils import give_coin
@@ -539,10 +539,15 @@ class QuizCheckAPIView(APIView):
                 choice="Test"
             )
 
-            homework.test_checked = True
-            homework.save()
+            history = Homework_history.objects.filter(
+                homework=homework,
+                student=student,
+            ).first()
+            if history:
+                history.test_checked = True
+                history.save()
 
-            if homework:
+            if history:
                 Points.objects.create(
                     point=ball,
                     from_test=mastering,
