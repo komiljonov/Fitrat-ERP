@@ -13,6 +13,7 @@ from ..subject.models import Theme
 from ...account.serializers import UserSerializer
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
+from ...parents.models import Relatives
 
 
 class StudentsGroupSerializer(serializers.ModelSerializer):
@@ -25,6 +26,8 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
 
     group_price = serializers.SerializerMethodField()
 
+    relatives = serializers.SerializerMethodField()
+
     class Meta:
         model = StudentGroup
         fields = [
@@ -32,12 +35,39 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             'group',
             'lid',
             'student',
+            'relatives',
             "homework_type",
             "lesson_count",
             "current_theme",
             "group_price",
             "is_archived",
         ]
+
+    def get_relatives(self, obj):
+        parents = []
+
+        if obj.student and obj.lid is None:
+            relatives = Relatives.objects.filter(student=obj.student)
+            for rel in relatives:
+                parents.append({
+                    "name": rel.name,
+                    "id": rel.id,
+                    "phone": rel.phone,
+                    "who" : rel.who,
+                })
+
+        else:
+            relatives = Relatives.objects.filter(lid=obj.lid)
+            for rel in relatives:
+                parents.append({
+                    "name": rel.name,
+                    "id": rel.id,
+                    "phone": rel.phone,
+                    "who" : rel.who,
+                })
+
+        return parents
+
 
     def get_group_price(self, obj):
         if obj.student:
