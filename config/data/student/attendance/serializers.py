@@ -13,6 +13,7 @@ from ..subject.models import Theme
 from ..subject.serializers import ThemeSerializer
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
+from ...parents.models import Relatives
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -20,6 +21,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     teacher = serializers.SerializerMethodField()
+
+    relatives = serializers.SerializerMethodField()
 
     class Meta:
         model = Attendance
@@ -34,9 +37,35 @@ class AttendanceSerializer(serializers.ModelSerializer):
             'reason',
             'remarks',
             "amount",
+            "relatives",
             'created_at',
             'updated_at',
         ]
+
+    def get_relatives(self, obj):
+        parents = []
+
+        if obj.student and obj.lid is None:
+            relatives = Relatives.objects.filter(student=obj.student)
+            for rel in relatives:
+                parents.append({
+                    "name": rel.name,
+                    "id": rel.id,
+                    "phone": rel.phone,
+                    "who" : rel.who,
+                })
+
+        else:
+            relatives = Relatives.objects.filter(lid=obj.lid)
+            for rel in relatives:
+                parents.append({
+                    "name": rel.name,
+                    "id": rel.id,
+                    "phone": rel.phone,
+                    "who" : rel.who,
+                })
+
+        return parents
 
     def get_teacher(self, obj):
         return obj.group.teacher.full_name
