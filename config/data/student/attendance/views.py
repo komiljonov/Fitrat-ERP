@@ -1,5 +1,8 @@
+from datetime import timedelta, datetime
+
 from django.db import transaction
 from django.db.models import Q
+from django.utils.timezone import make_aware
 from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import (ListCreateAPIView,
@@ -21,10 +24,29 @@ class AttendanceList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        reason = self.request.GET.get('reason')
         student = self.request.GET.get('student')
         queryset = Attendance.objects.all()
+
+        if start_date and end_date:
+            start_date = make_aware(datetime.strptime(start_date, '%Y-%m-%d'))
+            end_date = make_aware(datetime.combine(datetime.strptime(end_date, '%Y-%m-%d'), datetime.max.time()))
+
+            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+
+
+        if start_date:
+            queryset = queryset.filter(created_at__gte=start_date)
+
         if student:
             queryset = queryset.filter(student=student)
+
+        if reason:
+            queryset = queryset.filter(reason=reason)
+
         return queryset
 
 
