@@ -1,16 +1,16 @@
 from .status import ORDER_FOUND, ORDER_NOT_FOUND, INVALID_AMOUNT
 from django.conf import settings
 
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
-
-
 class ClickUz:
     ORDER_FOUND = ORDER_FOUND
     ORDER_NOT_FOUND = ORDER_NOT_FOUND
     INVALID_AMOUNT = INVALID_AMOUNT
 
     def check_order(self, order_id: str, amount: str):
+
+        from ..lid.new_lid.models import Lid
+        from ..student.student.models import Student
+
         """
         :Need to check order
         :param order_id:
