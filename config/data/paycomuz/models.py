@@ -25,4 +25,4 @@ class Transaction(models.Model):
     reason = models.IntegerField(null=True)
 
     def __str__(self):
-        return f"{self.id}"
+        return f"{self._id}"
