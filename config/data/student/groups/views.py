@@ -489,14 +489,14 @@ class LessonScheduleListApi(ListAPIView):
             queryset = queryset.filter(teacher__id=teacher)
             print(queryset)
 
-        for item in queryset:
-            days = getattr(item, 'days', [])
+
+        for item in serializer.data:
+            days = item.get('days', [])
             for day in days:
                 lesson_date = datetime.datetime.strptime(day['date'], "%d-%m-%Y").date()
                 if date_filter and lesson_date != date_filter:
                     continue
                 lessons_by_date[lesson_date].extend(day['lessons'])
-
 
         # Fetch extra lessons for the groups (ExtraLessonGroup)
         extra_lessons_group = ExtraLessonGroup.objects.filter(
