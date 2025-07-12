@@ -5,12 +5,14 @@ from django.db.models.functions import Cast
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from icecream import ic
+from lxml.saxparser import comment
 
 from .models import Results
 from .utils import validate_olimpiada_requirements, validate_university_requirements, validate_certificate_requirements
 from ..finances.compensation.models import MonitoringAsos4, Asos, ResultName, ResultSubjects
 from ..finances.finance.models import Finance, Casher, Kind
 from ..notifications.models import Notification
+from ..student.shop.models import Coins
 
 
 @receiver(post_save, sender=Results)
@@ -121,6 +123,14 @@ def on_update(sender, instance: Results, created, **kwargs):
                         type="Olimpiada",
                         ball=instance.result_score
                     )
+                    coin = Coins.objects.create(
+                        coin=level.coin,
+                        student=instance.student,
+                        choice="Result",
+                        comment=f"Sizga {'natijangiz' if instance.who == 'Mine'  else  f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
+                                               f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.max_ball} coin qo'shildi!",
+                        status="Given"
+                    )
 
                     # Create finance record
                     finance = Finance.objects.create(
@@ -147,7 +157,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         Notification.objects.create(
                             user=instance.teacher,
                             comment=f"Sizga {'natijangiz' if instance.who == 'Mine'  else  f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
-                                               f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.max_ball} ball qo'shildi!",
+                                               f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.coin} ball qo'shildi!",
                             come_from=instance,
                             choice="Bonus",
                         )
@@ -207,6 +217,16 @@ def on_update(sender, instance: Results, created, **kwargs):
                             result=None,
                             type="University",
                             ball=level.max_ball
+                        )
+                        coin = Coins.objects.create(
+                            coin=level.coin,
+                            student=instance.student,
+                            choice="Result",
+                            comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
+                                                                                         f'  {"DTM" if instance.university_type == "Official" else f"Xususiy {instance.university_name} universitet" if
+                                                                                         instance.university_type == "Unofficial" else f"Xorijiy {instance.university_name} universitet"} imtihonida {instance.result_score} '
+                                                                                         f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.coin} coin qo'shildi!",
+                            status="Given"
                         )
 
                         finance = Finance.objects.create(
@@ -448,7 +468,18 @@ def on_update(sender, instance: Results, created, **kwargs):
                         type="Certificate",
                         ball=subject.max_ball
                     )
-
+                    coin = Coins.objects.create(
+                        coin=subject.coin,
+                        student=instance.student,
+                        choice="Result",
+                        comment=(
+                            f"Sizga "
+                            f"{'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'} "
+                            f"{instance.result_fk_name.name} sertifikati imtihonida "
+                            f"{instance.band_score} ball uchun {subject.coin} coin qo'shildi!"
+                        ),
+                        status="Given"
+                    )
                     finance = Finance.objects.create(
                         casher=casher,
                         action="EXPENSE",

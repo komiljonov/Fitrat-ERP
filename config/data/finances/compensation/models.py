@@ -192,6 +192,7 @@ class ResultSubjects(BaseModel):
 
     amount = models.CharField(max_length=128, null=True, blank=True)
     is_archived = models.BooleanField(default=False)
+    coin = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = "Monitoring"
