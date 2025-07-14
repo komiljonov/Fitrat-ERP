@@ -438,10 +438,19 @@ class TeacherGroupFinanceAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         teacher_id = self.kwargs.get('pk')
-        start_date_str = self.request.query_params.get('start_date')
-        end_date_str = self.request.query_params.get('end_date')
+        start_date_str = request.query_params.get('start_date')
+        end_date_str = request.query_params.get('end_date')
+
+        current_year = datetime.date.today().year
+        default_start_date = make_aware(datetime(current_year, 1, 1))
+        default_end_date = make_aware(datetime(current_year, 12, 31, 23, 59, 59))
+
 
         start_date, end_date = parse_date_range(start_date_str, end_date_str)
+
+        start_date = start_date or default_start_date
+        end_date = end_date or default_end_date
+
 
         group_filters = {"group__teacher_id": teacher_id}
         if start_date and end_date:

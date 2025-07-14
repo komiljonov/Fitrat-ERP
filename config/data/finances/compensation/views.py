@@ -181,7 +181,7 @@ class PageBulkUpdateView(APIView):
         for data in request.data:
             page_id = data.get("id")
 
-            # Resolve user if provided
+
             if "user" in data:
                 print("resolve_user", resolve_user(data["user"]))
                 user_instance = resolve_user(data["user"])
