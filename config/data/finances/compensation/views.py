@@ -172,8 +172,8 @@ class PageBulkUpdateView(APIView):
             # Handle user resolution
             user_instance = None
             if "user" in data:
-                print(data["user"])
-                user_instance = resolve_user(CustomUser.objects.filter(id=data["user"]).first())
+                print("user_input =", data["user"])
+                user_instance = resolve_user(data["user"])
                 if not user_instance:
                     return Response(
                         {"detail": f"Invalid user reference: {data['user']}"},
@@ -211,6 +211,8 @@ class PageBulkUpdateView(APIView):
             {"updated_pages": PagesSerializer(updated_pages + created_pages, many=True).data},
             status=status.HTTP_200_OK
         )
+
+
 
 class AsosListCreateView(ListCreateAPIView):
     queryset = Asos.objects.all()
