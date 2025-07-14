@@ -153,7 +153,7 @@ class PageBulkUpdateView(APIView):
 
                     if 'user' in data:
                         try:
-                            data['user'] = CustomUser.objects.get(id=data['user'])
+                            data['user'] = CustomUser.objects.get(id=data['user'].get("id"))
                         except CustomUser.DoesNotExist:
                             return Response({"detail": f"CustomUser with id {data['user']} does not exist."},
                                             status=status.HTTP_400_BAD_REQUEST)
