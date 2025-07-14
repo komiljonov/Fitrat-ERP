@@ -102,7 +102,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "rest_framework_simplejwt",
-    # "django_celery_beat",
+    'rest_framework_simplejwt.token_blacklist',
 
 ]
 
@@ -140,12 +140,14 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(weeks=3),
-    "ROTATE_REFRESH_TOKENS": False,
+    "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_BLACKLIST_ENABLED": True,
 }
 
 TEMPLATES = [
@@ -263,27 +265,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "https://fitrat-erp.vercel.app",
     "https://api.fitrat.sector-soft.ru",
-#<<<<<<< HEAD
     "https://fitrat.sector-soft.ru",
     "https://www.fitrat.sector-soft.ru",
-
-#=======
     "https://ilm.fitrat.sector-soft.ru",
     "https://api.ilm.fitrat.sector-soft.ru",
     "https://api.ft.sector-soft.ru",
     "https://ft.sector-soft.ru"
-#>>>>>>> 3fc443cedfdfcd6a16cedeb318e8cc95882bb997
 ]
-
-# INTERNAL_IPS = [
-#     "api.ilm.fitrat.sector-soft.ru",
-#     "194.26.138.23",
-#     "api.ilm.fitrat.sector-soft.ru",
-#     "https://api.ilm.fitrat.sector-soft.ru/"
-# ]
-#
-# hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-# INTERNAL_IPS += ["127.0.0.1"] + [ip[: ip.rfind(".")] + ".1" for ip in ips]
 
 CORS_ALLOW_METHODS = (
     "DELETE",
