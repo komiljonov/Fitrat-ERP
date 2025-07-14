@@ -1,7 +1,9 @@
 from django.db import models
 
-from data.account.models import CustomUser
-from data.command.models import BaseModel
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from data.account.models import CustomUser
+    from data.command.models import BaseModel
 
 
 class Filial(models.Model):
