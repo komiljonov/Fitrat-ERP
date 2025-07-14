@@ -3,6 +3,7 @@ import json
 from django.db.models import Avg, OuterRef, Subquery, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
+from pygments.lexers import q
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -160,13 +161,13 @@ class PageBulkUpdateView(APIView):
                         if isinstance(user_value, dict) and 'id' in user_value:
                             try:
                                 print("user_value_id",user_value["id"])
-                                data['user'] = user_value["id"]
+                                data['user'] = CustomUser.objects.filter(id=user_value["id"]).first().id
                             except CustomUser.DoesNotExist:
                                 return Response({"detail": f"User with id {user_value['id']} not found."}, status=400)
                         elif isinstance(user_value, str):
                             try:
                                 user_value = data['user']
-                                data['user'] = user_value["id"]
+                                data['user'] = CustomUser.objects.filter(id=user_value["id"]).first().id
 
                                 print("data",data)
 
@@ -188,11 +189,11 @@ class PageBulkUpdateView(APIView):
 
                 if isinstance(user_field, dict):
 
-                    user_id = user_field.get('id')
+                    user_id = CustomUser.objects.filter(id=user_field["id"]).first().id
 
                 elif isinstance(user_field, str):
 
-                    user_id = user_field
+                    user_id = CustomUser.objects.filter(id=user_field).first().id
 
                 else:
 
