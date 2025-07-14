@@ -153,16 +153,18 @@ class PageBulkUpdateView(APIView):
                     page = Page.objects.get(id=page_id)
 
                     if 'user' in data:
-                        try:
-                            user_data = data.get('user')
-                            if isinstance(user_data, dict) and 'id' in user_data:
-                                try:
-                                    data['user'] = CustomUser.objects.get(id=user_data['id'])
-                                except CustomUser.DoesNotExist:
-                                    raise ValidationError(f"User with id {user_data['id']} not found.")
-                        except CustomUser.DoesNotExist:
-                            return Response({"detail": f"CustomUser with id {data['user']} does not exist."},
-                                            status=status.HTTP_400_BAD_REQUEST)
+                        user_value = data['user']
+                        if isinstance(user_value, dict) and 'id' in user_value:
+                            try:
+                                data['user'] = CustomUser.objects.get(id=user_value['id'])
+                            except CustomUser.DoesNotExist:
+                                return Response({"detail": f"User with id {user_value['id']} not found."}, status=400)
+                        elif isinstance(user_value, str):
+                            try:
+                                data['user'] = CustomUser.objects.get(id=user_value)
+                            except CustomUser.DoesNotExist:
+                                return Response({"detail": f"User with id {user_value} not found."}, status=400)
+
 
                     for attr, value in data.items():
                         if attr in ['name', 'user', 'is_editable', 'is_readable', 'is_parent']:
