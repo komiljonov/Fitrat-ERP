@@ -154,25 +154,34 @@ class TT_Data(APIView):
         return Response({"count": count}, status=status.HTTP_200_OK)
 
 
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+
 class CustomAuthToken(TokenObtainPairView):
     serializer_class = UserLoginSerializer
 
     @csrf_exempt
     def post(self, request, *args, **kwargs):
-        # Validate serializer data
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-
-        # Get the validated user
         user = serializer.validated_data.get('user')
+
         if not user:
             raise AuthenticationFailed("Invalid credentials or user does not exist.")
 
-        # Generate Refresh and Access Tokens
+        # ✅ Blacklist old refresh tokens
+        for token in OutstandingToken.objects.filter(user=user):
+            try:
+                BlacklistedToken.objects.get_or_create(token=token)
+            except Exception:
+                pass  # token may already be blacklisted
+
+        # ✅ Issue new tokens
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
-        filial = list(user.filial.values_list('pk', flat=True))  # Get a list of filial IDs
+
+        filial = list(user.filial.values_list('pk', flat=True))
         student_id = Student.objects.filter(user=user.id).values_list('id', flat=True).first()
 
         return Response({
@@ -184,6 +193,7 @@ class CustomAuthToken(TokenObtainPairView):
             'role': user.role,
             'filial': filial,
         }, status=status.HTTP_200_OK)
+
 
 
 class CustomRefreshTokenView(APIView):
