@@ -198,9 +198,11 @@ class PageBulkUpdateView(APIView):
                 except Page.DoesNotExist:
                     continue  # Skip invalid updates
 
-                for field in ['name', 'user', 'is_editable', 'is_readable', 'is_parent']:
-                    if field in data:
-                        setattr(page, field, data[field])
+                serializer = PagesSerializer(instance=page, data=data, partial=True)
+                if serializer.is_valid():
+                    updated_pages.append(serializer.save())
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
                 updated_pages.append(page)
             else:
