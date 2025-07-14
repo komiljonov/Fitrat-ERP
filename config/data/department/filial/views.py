@@ -3,9 +3,10 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Filial, UserFilial
+from .models import Filial
 
 from .serializers import FilialSerializer, UserFilialSerializer
+from ...command.models import UserFilial
 
 
 class FilialListCreate(ListCreateAPIView):
