@@ -178,14 +178,35 @@ class PageBulkUpdateView(APIView):
                     continue  # Skip non-existing pages
 
             else:  # Create new
-                user_id = data.get('user').get("id")
-                print(user_id)
+
+                user_field = data.get('user')
+
+                if isinstance(user_field, dict):
+
+                    user_id = user_field.get('id')
+
+                elif isinstance(user_field, str):
+
+                    user_id = user_field
+
+                else:
+
+                    user_id = None
+
                 if user_id:
+
                     try:
+
                         data['user'] = CustomUser.objects.get(id=user_id)
+
                     except CustomUser.DoesNotExist:
-                        return Response({"detail": f"CustomUser with id {user_id} does not exist."},
-                                        status=status.HTTP_400_BAD_REQUEST)
+
+                        return Response(
+
+                            {"detail": f"CustomUser with id {user_id} does not exist."},
+
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
 
                 serializer = PagesSerializer(data=data)
                 if serializer.is_valid():
