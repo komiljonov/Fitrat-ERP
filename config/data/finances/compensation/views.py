@@ -4,6 +4,7 @@ from django.db.models import Avg, OuterRef, Subquery, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
@@ -153,7 +154,12 @@ class PageBulkUpdateView(APIView):
 
                     if 'user' in data:
                         try:
-                            data['user'] = CustomUser.objects.get(id=data['user'].get("id"))
+                            user_data = data.get('user')
+                            if isinstance(user_data, dict) and 'id' in user_data:
+                                try:
+                                    data['user'] = CustomUser.objects.get(id=user_data['id'])
+                                except CustomUser.DoesNotExist:
+                                    raise ValidationError(f"User with id {user_data['id']} not found.")
                         except CustomUser.DoesNotExist:
                             return Response({"detail": f"CustomUser with id {data['user']} does not exist."},
                                             status=status.HTTP_400_BAD_REQUEST)
