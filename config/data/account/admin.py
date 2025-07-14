@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.token_blacklist import admin as blacklist_admin
 
 from ..account.forms import CustomUserChangeForm, CustomUserCreationForm
 from ..account.models import CustomUser
@@ -36,18 +36,13 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(CustomUser)
 
-
-
-from django.contrib import admin
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
-from django.contrib.admin.sites import NotRegistered
-
+# Remove token registration from blacklist's admin module
 try:
-    admin.site.unregister(OutstandingToken)
-except NotRegistered:
+    admin.site.unregister(blacklist_admin.OutstandingToken)
+except admin.sites.NotRegistered:
     pass
 
 try:
-    admin.site.unregister(BlacklistedToken)
-except NotRegistered:
+    admin.site.unregister(blacklist_admin.BlacklistedToken)
+except admin.sites.NotRegistered:
     pass
