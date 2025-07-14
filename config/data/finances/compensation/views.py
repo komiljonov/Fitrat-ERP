@@ -146,77 +146,54 @@ class PageBulkUpdateView(APIView):
         updated_pages = []
         created_pages = []
 
+        def resolve_user(user_input):
+            """
+            Resolves a user from input which could be:
+            - dict with `id`
+            - string UUID
+            Returns: CustomUser instance or None
+            """
+            user_id = None
+
+            if isinstance(user_input, dict):
+                user_id = user_input.get("id")
+            elif isinstance(user_input, str):
+                user_id = user_input
+            elif user_input is None:
+                return None
+
+            if user_id:
+                return CustomUser.objects.filter(id=user_id).first()
+            return None
+
         for data in request.data:
             page_id = data.get("id")
 
-            if page_id:  # Update existing
+            # Handle user resolution
+            user_instance = None
+            if "user" in data:
+                user_instance = resolve_user(data["user"])
+                if not user_instance:
+                    return Response(
+                        {"detail": f"Invalid user reference: {data['user']}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                data["user"] = user_instance
+
+            if page_id:
                 try:
                     page = Page.objects.get(id=page_id)
-
-                    if 'user' in data:
-                        user_value = data['user']
-
-                        print("user_value",user_value)
-
-                        if isinstance(user_value, dict) and 'id' in user_value:
-                            try:
-                                print("user_value_id",user_value["id"])
-                                data['user'] = CustomUser.objects.filter(id=user_value["id"]).first().id
-                            except CustomUser.DoesNotExist:
-                                return Response({"detail": f"User with id {user_value['id']} not found."}, status=400)
-
-                        elif isinstance(user_value, str):
-                            try:
-                                user_value = data['user']
-                                data['user'] = CustomUser.objects.filter(id=user_value).first().id
-
-                                print("data",data)
-
-                            except CustomUser.DoesNotExist:
-                                return Response({"detail": f"User with id {user_value} not found."}, status=400)
-
-
-                    for attr, value in data.items():
-                        if attr in ['name', 'user', 'is_editable', 'is_readable', 'is_parent']:
-                            setattr(page, attr, value)
-                    updated_pages.append(page)
-
                 except Page.DoesNotExist:
                     continue  # Skip non-existing pages
 
-            else:  # Create new
+                # Update allowed fields
+                for field in ['name', 'user', 'is_editable', 'is_readable', 'is_parent']:
+                    if field in data:
+                        setattr(page, field, data[field])
+                updated_pages.append(page)
 
-                user_field = data.get('user')
-
-                if isinstance(user_field, dict):
-
-                    user_id = CustomUser.objects.filter(id=user_field["id"]).first().id
-
-                elif isinstance(user_field, str):
-
-                    user_id = CustomUser.objects.filter(id=user_field).first().id
-
-                else:
-
-                    user_id = None
-
-                if user_id:
-                    print("user_id",user_id)
-
-                    try:
-
-                        data['user'] = user_id
-                        print("data",data)
-
-                    except CustomUser.DoesNotExist:
-
-                        return Response(
-
-                            {"detail": f"CustomUser with id {user_id} does not exist."},
-
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
-
+            else:
+                # Creating new
                 serializer = PagesSerializer(data=data)
                 if serializer.is_valid():
                     created_pages.append(serializer.save())
@@ -224,14 +201,15 @@ class PageBulkUpdateView(APIView):
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if updated_pages:
-            Page.objects.bulk_update(updated_pages,
-                                     fields=['name', 'user', 'is_editable', 'is_readable', 'is_parent'])
+            Page.objects.bulk_update(
+                updated_pages,
+                fields=['name', 'user', 'is_editable', 'is_readable', 'is_parent']
+            )
 
         return Response(
             {"updated_pages": PagesSerializer(updated_pages + created_pages, many=True).data},
             status=status.HTTP_200_OK
         )
-
 
 class AsosListCreateView(ListCreateAPIView):
     queryset = Asos.objects.all()
