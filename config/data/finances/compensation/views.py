@@ -154,9 +154,12 @@ class PageBulkUpdateView(APIView):
 
                     if 'user' in data:
                         user_value = data['user']
+
+                        print(user_value)
+
                         if isinstance(user_value, dict) and 'id' in user_value:
                             try:
-                                data['user'] = CustomUser.objects.get(id=user_value['id'].get("id"))
+                                data['user'] = CustomUser.objects.get(id=user_value['id'])
                             except CustomUser.DoesNotExist:
                                 return Response({"detail": f"User with id {user_value['id']} not found."}, status=400)
                         elif isinstance(user_value, str):
@@ -175,7 +178,8 @@ class PageBulkUpdateView(APIView):
                     continue  # Skip non-existing pages
 
             else:  # Create new
-                user_id = data.get('user')
+                user_id = data.get('user').get("id")
+                print(user_id)
                 if user_id:
                     try:
                         data['user'] = CustomUser.objects.get(id=user_id)
