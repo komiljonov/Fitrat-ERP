@@ -172,7 +172,7 @@ class PageBulkUpdateView(APIView):
             # Handle user resolution
             user_instance = None
             if "user" in data:
-                user_instance = resolve_user(data["user"])
+                user_instance = resolve_user(CustomUser.objects.filter(id=data["user"].get("id")).first())
                 if not user_instance:
                     return Response(
                         {"detail": f"Invalid user reference: {data['user']}"},
