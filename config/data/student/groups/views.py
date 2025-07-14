@@ -464,20 +464,14 @@ class LessonScheduleListApi(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
 
-
-        teacher = self.request.GET.get('teacher')
-        print(teacher)
-        name = self.request.GET.get('name')
-        subject = self.request.GET.get('subject')
-        room = self.request.GET.get('room')
-
-        date_filter = self.request.GET.get('date', None)
+        # Apply filters
+        teacher = request.GET.get('teacher')
+        name = request.GET.get('name')
+        subject = request.GET.get('subject')
+        room = request.GET.get('room')
+        date_filter = request.GET.get('date', None)
         date_filter = datetime.datetime.strptime(date_filter, "%d-%m-%Y").date() if date_filter else None
-
-
-        lessons_by_date = defaultdict(list)
 
         if name:
             queryset = queryset.filter(name=name)
@@ -487,8 +481,11 @@ class LessonScheduleListApi(ListAPIView):
             queryset = queryset.filter(room_number__id=room)
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
-            print(queryset)
 
+        # Now serialize the filtered queryset
+        serializer = self.get_serializer(queryset, many=True)
+
+        lessons_by_date = defaultdict(list)
 
         for item in serializer.data:
             days = item.get('days', [])
@@ -498,12 +495,11 @@ class LessonScheduleListApi(ListAPIView):
                     continue
                 lessons_by_date[lesson_date].extend(day['lessons'])
 
-        # Fetch extra lessons for the groups (ExtraLessonGroup)
+        # Extra lessons (group-based)
         extra_lessons_group = ExtraLessonGroup.objects.filter(
             group__in=queryset,
             created_at__gte=datetime.date.today(),
         )
-
 
         for extra in extra_lessons_group:
             lesson_date = extra.date
@@ -521,7 +517,7 @@ class LessonScheduleListApi(ListAPIView):
             }
             lessons_by_date[lesson_date].append(lesson_data)
 
-
+        # Extra lessons (individual)
         extra_lessons_individual = ExtraLesson.objects.filter(
             date__gte=datetime.date.today(),
         )
@@ -543,14 +539,12 @@ class LessonScheduleListApi(ListAPIView):
             }
             lessons_by_date[lesson_date].append(lesson_data)
 
+        # Sort and return
         sorted_dates = sorted(lessons_by_date.keys())
-
         sorted_lessons = []
         for lesson_date in sorted_dates:
             lessons = lessons_by_date[lesson_date]
-
             lessons.sort(key=lambda x: x.get("started_at"))
-
             sorted_lessons.append({
                 "date": lesson_date.strftime('%d-%m-%Y'),
                 "lessons": lessons
