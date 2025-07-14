@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from django.db.models import Avg, OuterRef, Subquery, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -148,23 +149,33 @@ class PageBulkUpdateView(APIView):
 
         def resolve_user(user_input):
             """
-            Resolves a user from input which could be:
-            - dict with `id`
-            - string UUID
+            Resolves a user from:
+            - dict with 'id' or 'username'
+            - plain string (either UUID or username)
             Returns: CustomUser instance or None
             """
             user_id = None
+            username = None
 
             if isinstance(user_input, dict):
                 user_id = user_input.get("id")
+                username = user_input.get("username")
             elif isinstance(user_input, str):
-                user_id = user_input
-            elif user_input is None:
+                # Try UUID first
+                try:
+                    user_id = str(uuid.UUID(user_input))
+                except ValueError:
+                    username = user_input
+            else:
                 return None
 
             if user_id:
                 return CustomUser.objects.filter(id=user_id).first()
+            elif username:
+                return CustomUser.objects.filter(full_name=username).first()
+
             return None
+
 
         for data in request.data:
             page_id = data.get("id")
