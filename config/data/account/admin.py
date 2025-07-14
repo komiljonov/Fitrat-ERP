@@ -35,5 +35,19 @@ class CustomUserAdmin(UserAdmin):
 
 
 admin.site.register(CustomUser)
-admin.site.unregister(OutstandingToken)
-admin.site.unregister(BlacklistedToken)
+
+
+
+from django.contrib import admin
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from django.contrib.admin.sites import NotRegistered
+
+try:
+    admin.site.unregister(OutstandingToken)
+except NotRegistered:
+    pass
+
+try:
+    admin.site.unregister(BlacklistedToken)
+except NotRegistered:
+    pass
