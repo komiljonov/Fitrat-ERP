@@ -156,7 +156,7 @@ class PageBulkUpdateView(APIView):
                         user_value = data['user']
                         if isinstance(user_value, dict) and 'id' in user_value:
                             try:
-                                data['user'] = CustomUser.objects.get(id=user_value['id'])
+                                data['user'] = CustomUser.objects.get(id=user_value['id'].get("id"))
                             except CustomUser.DoesNotExist:
                                 return Response({"detail": f"User with id {user_value['id']} not found."}, status=400)
                         elif isinstance(user_value, str):
