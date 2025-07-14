@@ -515,6 +515,7 @@ class LessonScheduleListApi(ListAPIView):
                 "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
                 "ended_at": extra.ended_at.strftime('%H:%M') if extra.ended_at else None,
             }
+
             lessons_by_date[lesson_date].append(lesson_data)
 
         # Extra lessons (individual)
@@ -537,6 +538,7 @@ class LessonScheduleListApi(ListAPIView):
                 "is_payable": extra.is_payable,
                 "is_attendance": extra.is_attendance,
             }
+
             lessons_by_date[lesson_date].append(lesson_data)
 
         # Sort and return
