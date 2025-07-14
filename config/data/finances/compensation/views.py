@@ -165,7 +165,11 @@ class PageBulkUpdateView(APIView):
                                 return Response({"detail": f"User with id {user_value['id']} not found."}, status=400)
                         elif isinstance(user_value, str):
                             try:
-                                data['user'] = CustomUser.objects.get(id=user_value)
+                                user_value = data['user']
+                                data['user'] = user_value["id"]
+
+                                print("data",data)
+
                             except CustomUser.DoesNotExist:
                                 return Response({"detail": f"User with id {user_value} not found."}, status=400)
 
@@ -199,7 +203,8 @@ class PageBulkUpdateView(APIView):
 
                     try:
 
-                        data['user'] =user_id
+                        data['user'] = user_id
+                        print("data",data)
 
                     except CustomUser.DoesNotExist:
 
