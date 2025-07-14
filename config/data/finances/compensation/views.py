@@ -139,6 +139,7 @@ class PageCreateView(ListCreateAPIView):
         return Response(data)
 
 
+
 class PageBulkUpdateView(APIView):
     def put(self, request, *args, **kwargs):
         if not isinstance(request.data, list):
@@ -150,40 +151,37 @@ class PageBulkUpdateView(APIView):
         def resolve_user(user_input):
             """
             Resolves a user from:
-            - dict with 'id' or 'username'
-            - plain string (either UUID or username)
+            - dict with 'id' or 'username' or 'full_name'
+            - plain string (UUID or full_name)
             Returns: CustomUser instance or None
             """
             user_id = None
-            username = None
+            full_name = None
 
             if isinstance(user_input, dict):
                 user_id = user_input.get("id")
-                username = user_input.get("username")
+                full_name = user_input.get("full_name")
             elif isinstance(user_input, str):
-                # Try UUID first
+                # Try UUID
                 try:
                     user_id = str(uuid.UUID(user_input))
                 except ValueError:
-                    username = user_input
+                    full_name = user_input
             else:
                 return None
 
             if user_id:
                 return CustomUser.objects.filter(id=user_id).first()
-            elif username:
-                return CustomUser.objects.filter(full_name=username).first()
+            elif full_name:
+                return CustomUser.objects.filter(full_name=full_name).first()
 
             return None
-
 
         for data in request.data:
             page_id = data.get("id")
 
-            # Handle user resolution
-            user_instance = None
+            # Resolve user if provided
             if "user" in data:
-                print("user_input =", data["user"])
                 user_instance = resolve_user(data["user"])
                 if not user_instance:
                     return Response(
@@ -196,16 +194,14 @@ class PageBulkUpdateView(APIView):
                 try:
                     page = Page.objects.get(id=page_id)
                 except Page.DoesNotExist:
-                    continue  # Skip non-existing pages
+                    continue  # Skip invalid updates
 
-                # Update allowed fields
                 for field in ['name', 'user', 'is_editable', 'is_readable', 'is_parent']:
                     if field in data:
                         setattr(page, field, data[field])
-                updated_pages.append(page)
 
+                updated_pages.append(page)
             else:
-                # Creating new
                 serializer = PagesSerializer(data=data)
                 if serializer.is_valid():
                     created_pages.append(serializer.save())
@@ -222,7 +218,6 @@ class PageBulkUpdateView(APIView):
             {"updated_pages": PagesSerializer(updated_pages + created_pages, many=True).data},
             status=status.HTTP_200_OK
         )
-
 
 
 class AsosListCreateView(ListCreateAPIView):
