@@ -24,6 +24,7 @@ class UserFilialSerializer(serializers.ModelSerializer):
             "is_archived",
             "created_at",
         ]
+    
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
