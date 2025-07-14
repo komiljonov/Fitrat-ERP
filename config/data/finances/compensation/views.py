@@ -155,7 +155,7 @@ class PageBulkUpdateView(APIView):
                     if 'user' in data:
                         user_value = data['user']
 
-                        print(user_value)
+                        print("user_value",user_value)
 
                         if isinstance(user_value, dict) and 'id' in user_value:
                             try:
@@ -194,6 +194,7 @@ class PageBulkUpdateView(APIView):
                     user_id = None
 
                 if user_id:
+                    print("user_id",user_id)
 
                     try:
 
