@@ -172,9 +172,9 @@ class PageBulkUpdateView(APIView):
                 return None
 
             if user_id:
-                return CustomUser.objects.filter(id=user_id).first()
+                return CustomUser.objects.filter(id=user_id).first().id
             elif full_name:
-                return CustomUser.objects.filter(full_name=full_name).first()
+                return CustomUser.objects.filter(full_name=full_name).first().id
 
             return None
 
