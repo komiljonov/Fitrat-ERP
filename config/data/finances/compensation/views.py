@@ -164,10 +164,11 @@ class PageBulkUpdateView(APIView):
                                 data['user'] = CustomUser.objects.filter(id=user_value["id"]).first().id
                             except CustomUser.DoesNotExist:
                                 return Response({"detail": f"User with id {user_value['id']} not found."}, status=400)
+
                         elif isinstance(user_value, str):
                             try:
                                 user_value = data['user']
-                                data['user'] = CustomUser.objects.filter(id=user_value["id"]).first().id
+                                data['user'] = CustomUser.objects.filter(id=user_value).first().id
 
                                 print("data",data)
 
