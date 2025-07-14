@@ -441,7 +441,7 @@ class TeacherGroupFinanceAPIView(APIView):
         start_date_str = request.query_params.get('start_date')
         end_date_str = request.query_params.get('end_date')
 
-        current_year = datetime.date.today().year
+        current_year = datetime.today().year
         default_start_date = make_aware(datetime(current_year, 1, 1))
         default_end_date = make_aware(datetime(current_year, 12, 31, 23, 59, 59))
 
