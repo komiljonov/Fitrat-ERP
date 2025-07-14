@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
-from .models import Filial, UserFilial
+from .models import Filial
 from ...account.models import CustomUser
+from ...command.models import UserFilial
 
 
 class FilialSerializer(serializers.ModelSerializer):

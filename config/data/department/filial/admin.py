@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from data.department.filial.models import UserFilial
+from data.command.models import UserFilial
 
 
 # Register your models here.
