@@ -183,6 +183,7 @@ class PageBulkUpdateView(APIView):
 
             # Resolve user if provided
             if "user" in data:
+                print("resolve_user", resolve_user(data["user"]))
                 user_instance = resolve_user(data["user"])
                 if not user_instance:
                     return Response(
