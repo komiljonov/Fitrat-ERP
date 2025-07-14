@@ -167,6 +167,7 @@ class PageBulkUpdateView(APIView):
                     user_id = str(uuid.UUID(user_input))
                 except ValueError:
                     full_name = user_input
+                    print("full_name", full_name)
             else:
                 return None
 
