@@ -1,12 +1,10 @@
 from decimal import Decimal
-from itertools import count
 
-from django.db.models import Count
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from icecream import ic
 
-from .models import Finance, SaleStudent, Voucher, VoucherStudent, Casher, Kind, PaymentMethod, KpiFinance
+from .models import Finance, VoucherStudent, Casher, Kind, KpiFinance
 
 
 @receiver(post_save, sender=Finance)

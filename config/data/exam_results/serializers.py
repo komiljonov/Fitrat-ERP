@@ -1,15 +1,13 @@
-
 from rest_framework import serializers
 
 from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult
 from ..student.course.models import Course
 from ..student.groups.models import Group
 from ..student.mastering.models import Mastering
-from ..student.quiz.models import Quiz, Exam
+from ..student.quiz.models import Quiz
 from ..student.quiz.serializers import QuestionSerializer, MatchPairsSerializer, True_FalseSerializer, \
     VocabularySerializer, ObjectiveTestSerializer, Cloze_TestSerializer, ImageObjectiveTestSerializer
 from ..student.student.models import Student
-from ..student.student.serializers import StudentSerializer
 from ..student.studentgroup.models import StudentGroup
 from ..student.subject.models import Theme, Subject
 from ..student.subject.serializers import ThemeSerializer, SubjectSerializer
@@ -103,14 +101,15 @@ class QuizResultSerializer(serializers.ModelSerializer):
     image_objective_result = serializers.SerializerMethodField()
 
     total_question_count = serializers.SerializerMethodField()
+
     class Meta:
         model = QuizResult
         fields = [
-            "id", "student", "point", "created_at", "quiz_id","json_body",
+            "id", "student", "point", "created_at", "quiz_id", "json_body",
             "questions", "match_pair", "true_false", "vocabulary",
             "objective", "cloze_test", "image_objective",
             "standard", "match_pair_result", "true_false_result",
-            "vocabulary_result", "objective_result","total_question_count",
+            "vocabulary_result", "objective_result", "total_question_count",
             "cloze_test_result", "image_objective_result"
         ]
 
@@ -161,30 +160,29 @@ class QuizResultSerializer(serializers.ModelSerializer):
 
     # Read methods for result representation
     def get_standard(self, obj):
-        return QuestionSerializer(obj.questions.all(),context=self.context, many=True).data
+        return QuestionSerializer(obj.questions.all(), context=self.context, many=True).data
 
     def get_match_pair_result(self, obj):
-        return MatchPairsSerializer(obj.match_pair.all(),context=self.context, many=True).data
+        return MatchPairsSerializer(obj.match_pair.all(), context=self.context, many=True).data
 
     def get_true_false_result(self, obj):
-        return True_FalseSerializer(obj.true_false.all(),context=self.context, many=True).data
+        return True_FalseSerializer(obj.true_false.all(), context=self.context, many=True).data
 
     def get_vocabulary_result(self, obj):
-        return VocabularySerializer(obj.vocabulary.all(),context=self.context, many=True).data
+        return VocabularySerializer(obj.vocabulary.all(), context=self.context, many=True).data
 
     def get_objective_result(self, obj):
-        return ObjectiveTestSerializer(obj.objective.all(),context=self.context, many=True).data
+        return ObjectiveTestSerializer(obj.objective.all(), context=self.context, many=True).data
 
     def get_cloze_test_result(self, obj):
-        return Cloze_TestSerializer(obj.cloze_test.all(),context=self.context, many=True).data
+        return Cloze_TestSerializer(obj.cloze_test.all(), context=self.context, many=True).data
 
     def get_image_objective_result(self, obj):
-        return ImageObjectiveTestSerializer(obj.image_objective.all(),context=self.context, many=True).data
+        return ImageObjectiveTestSerializer(obj.image_objective.all(), context=self.context, many=True).data
 
 
 class MockExamSerializer(serializers.ModelSerializer):
-
-    options = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True, required=False)
+    options = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True, required=False)
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), allow_null=True, required=False)
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True, required=False)
 
@@ -220,23 +218,20 @@ class MockExamSerializer(serializers.ModelSerializer):
 
         return mock
 
-
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep["options"] = SubjectSerializer(instance.options,context=self.context).data
+        rep["options"] = SubjectSerializer(instance.options, context=self.context).data
         rep["group"] = {
             "id": instance.group.id,
-            "name" : instance.group.name,
+            "name": instance.group.name,
         } if instance.group else None
         rep["course"] = {
             "id": instance.course.id,
-            "name" : instance.course.name,
+            "name": instance.course.name,
         } if instance.course else None
 
         return rep
-
 
 
 class MockExamResultSerializer(serializers.ModelSerializer):
@@ -264,8 +259,8 @@ class MockExamResultSerializer(serializers.ModelSerializer):
 
         if instance.mock and instance.student:
             instance.overall_score = (
-                instance.reading + instance.listening + instance.writing + instance.speaking
-            ) / 4
+                                             instance.reading + instance.listening + instance.writing + instance.speaking
+                                     ) / 4
             instance.save()
 
             ball = (instance.overall_score * 100) / 9
@@ -276,7 +271,7 @@ class MockExamResultSerializer(serializers.ModelSerializer):
                 mock=instance.mock if instance.mock else None,
             ).first()
             if mastering:
-                mastering.ball=ball
+                mastering.ball = ball
                 mastering.save()
 
         return instance

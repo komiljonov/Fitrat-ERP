@@ -1,11 +1,11 @@
 from django.db import models
 
 from data.account.models import CustomUser
-from ..student.subject.models import Subject
 from data.student.student.models import Student
 from ..command.models import BaseModel
 from ..student.course.models import Course
 from ..student.groups.models import Group
+from ..student.subject.models import Subject
 
 
 class QuizResult(BaseModel):
@@ -16,7 +16,7 @@ class QuizResult(BaseModel):
         blank=True,
         related_name="quiz_results"
     )
-    student : "Student" = models.ForeignKey(
+    student: "Student" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
         null=True,
@@ -77,7 +77,7 @@ class UnitTest(BaseModel):
         null=True,
         blank=True
     )
-    group = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True,related_name="unit_test_group")
+    group = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, related_name="unit_test_group")
 
 
 class UnitTestResult(BaseModel):
@@ -97,17 +97,17 @@ class UnitTestResult(BaseModel):
 
 
 class MockExam(BaseModel):
-    options : "Subject" = models.ForeignKey(
-        "subject.Subject",on_delete=models.SET_NULL,related_name="mock_exam_options",null=True,blank=True
+    options: "Subject" = models.ForeignKey(
+        "subject.Subject", on_delete=models.SET_NULL, related_name="mock_exam_options", null=True, blank=True
     )
-    course : "Course" = models.ForeignKey(
-        "course.Course",on_delete=models.SET_NULL,
+    course: "Course" = models.ForeignKey(
+        "course.Course", on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="mock_exam_courses"
     )
-    group : "Group" = models.ForeignKey(
-        "groups.Group",on_delete=models.SET_NULL,
+    group: "Group" = models.ForeignKey(
+        "groups.Group", on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="mock_exam_groups"
@@ -123,18 +123,19 @@ class MockExam(BaseModel):
 
 
 class MockExamResult(BaseModel):
-    mock : "MockExam" = models.ForeignKey(
-        "exam_results.MockExam",on_delete=models.SET_NULL,null=True,blank=True,related_name="mock_exam_results"
+    mock: "MockExam" = models.ForeignKey(
+        "exam_results.MockExam", on_delete=models.SET_NULL, null=True, blank=True, related_name="mock_exam_results"
     )
-    student : "Student" = models.ForeignKey(
-        "student.Student",on_delete=models.SET_NULL,null=True,blank=True,related_name="mock_exam_student"
+    student: "Student" = models.ForeignKey(
+        "student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="mock_exam_student"
     )
     reading = models.IntegerField(default=0)
     listening = models.IntegerField(default=0)
     writing = models.IntegerField(default=0)
     speaking = models.IntegerField(default=0)
 
-    updater : "CustomUser" = models.ForeignKey("account.CustomUser",on_delete=models.SET_NULL,null=True,blank=True,related_name="mock_exam_updater")
+    updater: "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True,
+                                              related_name="mock_exam_updater")
 
     overall_score = models.IntegerField(default=0)
 
