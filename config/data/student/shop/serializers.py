@@ -1,8 +1,6 @@
-from django.db.models import Sum
 from rest_framework import serializers
 
 from .models import Points, Coins, Products, Purchase, Category, CoinsSettings
-
 from ..student.models import Student
 from ..student.serializers import StudentSerializer
 from ...account.models import CustomUser
@@ -12,6 +10,7 @@ from ...upload.serializers import FileUploadSerializer
 
 class PointsSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+
     class Meta:
         model = Points
         fields = [
@@ -24,6 +23,7 @@ class PointsSerializer(serializers.ModelSerializer):
             "is_exchanged",
             "created_at",
         ]
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["student"] = StudentSerializer(instance.student).data
@@ -49,6 +49,7 @@ class CoinsSettingsSerializer(serializers.ModelSerializer):
 
 class CoinsSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+
     class Meta:
         model = Coins
         fields = [
@@ -61,11 +62,10 @@ class CoinsSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        if validated_data["student"] and validated_data["coin"] <0:
+        if validated_data["student"] and validated_data["coin"] < 0:
             raise serializers.ValidationError("Coins cannot be negative")
 
         return Coins.objects.create(**validated_data)
-
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -75,6 +75,7 @@ class CoinsSerializer(serializers.ModelSerializer):
 
 class CategoriesSerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField()
+
     class Meta:
         model = Category
         fields = [
@@ -83,13 +84,15 @@ class CategoriesSerializer(serializers.ModelSerializer):
             "products",
             "created_at",
         ]
+
     def get_products(self, instance):
         return Products.objects.filter(category=instance).count()
 
 
 class ProductsSerializer(serializers.ModelSerializer):
-    image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True ,allow_null=True)
+    image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
     selling_counts = serializers.SerializerMethodField()
+
     class Meta:
         model = Products
         fields = [
@@ -106,10 +109,9 @@ class ProductsSerializer(serializers.ModelSerializer):
     def get_selling_counts(self, instance):
         return Purchase.objects.filter(product=instance).count()
 
-
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["image"] = FileUploadSerializer(instance.image,many=True ,context=self.context).data
+        rep["image"] = FileUploadSerializer(instance.image, many=True, context=self.context).data
         return rep
 
 
@@ -117,6 +119,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Products.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     updater = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+
     class Meta:
         model = Purchase
         fields = [
@@ -152,7 +155,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
         user = Student.objects.get(pk=validated_data["student"])
 
-        if user.coins < validated_data.get("product").coin :
+        if user.coins < validated_data.get("product").coin:
             raise serializers.ValidationError(
                 "Student does not have enough coins to purchase product"
             )
@@ -168,4 +171,3 @@ class PointToCoinExchangeSerializer(serializers.Serializer):
         if value < 10:
             raise serializers.ValidationError("Minimum 10 points required to exchange.")
         return value
-

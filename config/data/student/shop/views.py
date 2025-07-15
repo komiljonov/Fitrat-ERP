@@ -1,8 +1,7 @@
 from decimal import Decimal
-from itertools import product
 
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -221,7 +220,6 @@ class CategoryDetail(RetrieveUpdateDestroyAPIView):
 
 class OrdersStatisList(APIView):
     def get(self, request, *args, **kwargs):
-
         queryset = Purchase.objects.all()
 
         product = self.request.GET.get('product')
