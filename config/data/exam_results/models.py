@@ -141,3 +141,39 @@ class MockExamResult(BaseModel):
 
     # def __str__(self):
     #     return f"{self.student.first_name}  {self.overall_score}"
+
+
+class LevelExam(BaseModel):
+    name = models.CharField(max_length=120,null=False, blank=False)
+    date = models.DateField(null=False, blank=False)
+    choice = models.CharField(choices=[
+        ("MidCourse", "MidCourse"),
+        ("Level", "Level"),
+    ],max_length=20,null=False, blank=False)
+    course : "Course" = models.ForeignKey(
+        "course.Course", on_delete=models.SET_NULL,null=True,blank=True,related_name="level_courses_mock"
+    )
+    group: "Group" = models.ForeignKey(
+        "groups.Group", on_delete=models.SET_NULL,
+        null=True,blank=True,
+        related_name="level_course_groups_mock"
+    )
+    subject: "Subject" = models.ForeignKey(
+        "subject.Subject", on_delete=models.SET_NULL,null=True,blank=True,related_name="level_subject_mock"
+    )
+
+    def __str__(self):
+        return self.name
+
+
+# class LevelExamResult(BaseModel):
+#     level: "LevelExam" = models.ForeignKey(
+#         "exam_results.LevelExam", on_delete=models.SET_NULL,null=True,blank=True,related_name="level_exam_results"
+#     )
+#     student: "Student" = models.ForeignKey(
+#         "student.Student", on_delete=models.SET_NULL,null=True,blank=True,related_name="level_exam_student"
+#     )
+#     ball = models.IntegerField(default=0)
+#
+#     def __str__(self):
+#         return self.level.name

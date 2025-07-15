@@ -2,7 +2,8 @@ from django.urls import path
 
 from data.exam_results.views import QuizRestAPIView, UnitTestListCreateAPIView, UnitTestRetrieveUpdateDestroyAPIView, \
     UnitTestResultListCreateAPIView, MockExamListCreateAPIView, MockExamRetrieveUpdateDestroyAPIView, \
-    MockExamResultListCreateAPIView, MockExamResultRetrieveUpdateDestroyAPIView, StudentsResultsListAPIView
+    MockExamResultListCreateAPIView, MockExamResultRetrieveUpdateDestroyAPIView, StudentsResultsListAPIView, \
+    LevelExamListCreateAPIView, LevelExamRetrieveUpdateDestroyAPIView
 
 urlpatterns = [
     path('', QuizRestAPIView.as_view()),
@@ -19,4 +20,8 @@ urlpatterns = [
     path("mock-results/<uuid:pk>", MockExamResultRetrieveUpdateDestroyAPIView.as_view()),
 
     path("student-results/", StudentsResultsListAPIView.as_view()),
+
+    path("level/",LevelExamListCreateAPIView.as_view()),
+    path("level/<uuid:pk>", LevelExamRetrieveUpdateDestroyAPIView.as_view()),
+
 ]

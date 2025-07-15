@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult
+from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult, LevelExam, LevelExamResult
 from ..student.course.models import Course
 from ..student.groups.models import Group
 from ..student.mastering.models import Mastering
@@ -287,4 +287,74 @@ class MockExamResultSerializer(serializers.ModelSerializer):
                 "id": instance.updater.id,
                 "full_name": instance.updater.full_name,
             }
+        return rep
+
+
+class LevelExamSerializer(serializers.ModelSerializer):
+    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True, required=False)
+    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True, required=False)
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), allow_null=True, required=False)
+    class Meta:
+        model = LevelExam
+        fields = [
+            "id",
+            "name",
+            "date",
+            "choice",
+            "course",
+            "group",
+            "subject",
+            "created_at",
+        ]
+
+    def create(self, validated_data):
+        course = validated_data.get("course")
+        subject = validated_data.get("subject")
+        group = validated_data.get("group")
+
+        # Create the LevelExam instance
+        level_exam = LevelExam.objects.create(**validated_data)
+
+        # Determine groups to pull students from
+        if course and subject and not group:
+            groups = Group.objects.filter(course=course)
+        elif group:
+            groups = [group]
+        else:
+            groups = []
+
+        if groups:
+            students = StudentGroup.objects.filter(group__in=groups)
+
+            for student in students:
+                Mastering.objects.create(
+                    student=student.student if student.student else None,
+                    lid=student.lid if student.lid else None,
+                    test=None,
+                    choice=level_exam.choice,
+                    mock=None,
+                    level_exam=level_exam,
+                    ball=0
+                )
+
+        return level_exam
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        rep["subject"] = {
+            "id": instance.subject.id,
+            "name": instance.subject.name,
+        } if instance.subject else None
+
+        rep["course"] = {
+            "id": instance.course.id,
+            "name": instance.course.name,
+        } if instance.course else None
+
+        rep["group"] = {
+            "id": instance.group.id,
+            "name": instance.group.name,
+        } if instance.group else None
+
         return rep
