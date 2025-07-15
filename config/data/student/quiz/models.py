@@ -3,17 +3,17 @@ from datetime import datetime, timedelta
 from django.db import models
 
 from data.command.models import BaseModel
+from data.student.groups.models import Group
 from data.student.homeworks.models import Homework
 from data.student.student.models import Student
 from data.student.subject.models import Subject
 from data.student.subject.models import Theme
 from data.upload.models import File
-from data.student.groups.models import Group
-
 
 
 def after_4_days():
     return datetime.today() + timedelta(days=4)
+
 
 class Quiz(BaseModel):
     title = models.CharField(max_length=255)
@@ -288,6 +288,7 @@ class Exam(BaseModel):
     def __str__(self):
         return self.name
 
+
 class ExamRegistration(BaseModel):
     student: "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='registrated_student')
@@ -323,10 +324,6 @@ class ExamRegistration(BaseModel):
     #     return f"{self.student.first_name}  {self.exam.choice}  {self.mark}  {self.created_at}"
 
 
-
-
-
-
 class ExamCertificate(BaseModel):
     student: "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='registrated_student_certificate')
@@ -344,7 +341,7 @@ class ExamCertificate(BaseModel):
         ("Accepted", "Accepted"),
         ("Rejected", "Rejected"),
         ("Pending", "Pending"),
-    ],default="Pending" ,max_length=255, null=True, blank=True)
+    ], default="Pending", max_length=255, null=True, blank=True)
 
     # def __str__(self):
     #     return f"{self.student.first_name}  {self.status}"
