@@ -1,11 +1,12 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult
+from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult, LevelExam
 from .serializers import UnitTestSerializer, UnitTestResultSerializer, QuizResultSerializer, MockExamSerializer, \
-    MockExamResultSerializer
+    MockExamResultSerializer, LevelExamSerializer
 from ..results.models import Results
 from ..upload.serializers import FileUploadSerializer
 
@@ -179,3 +180,34 @@ class StudentsResultsListAPIView(APIView):
 
         # Return paginated response
         return paginator.get_paginated_response(data)
+
+
+class LevelExamListCreateAPIView(ListCreateAPIView):
+    queryset = LevelExam.objects.all()
+    serializer_class = LevelExamSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        queryset = LevelExam.objects.all()
+
+        choice = self.request.GET.get('choice')
+        group = self.request.GET.get('group')
+        course = self.request.GET.get('course')
+        subject = self.request.GET.get('subject')
+
+        if choice:
+            queryset = queryset.filter(choice=choice)
+        if group:
+            queryset = queryset.filter(group__id=group)
+        if course:
+            queryset = queryset.filter(course__id=course)
+        if subject:
+            queryset = queryset.filter(subject__id=subject)
+        return queryset
+
+
+class LevelExamRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = LevelExam.objects.all()
+    serializer_class = LevelExamSerializer
+    permission_classes = (IsAuthenticated,)
+
