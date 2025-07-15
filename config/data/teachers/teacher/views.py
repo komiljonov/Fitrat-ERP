@@ -322,7 +322,7 @@ class StudentsAvgLearning(APIView):
                     'is_frozen': sg.lid.is_frozen,
                 }
 
-            exams, homeworks, speaking, unit, mock = [], [], [], [], []
+            exams, homeworks, speaking, unit, mock , mid_course , level = [], [], [], [], [], [], []
 
             for m in student_record:
                 homework_id = Homework_history.objects.filter(
@@ -354,13 +354,13 @@ class StudentsAvgLearning(APIView):
                         "name": m.theme.title,
                     } if m.theme else None,
                     "homework_id": homework_id.id if homework_id else None,
-                    "mastering_id": m.id if m.choice in ["Speaking", "Unit_Test", "Mock"] else None,
+                    "mastering_id": m.id if m.choice in ["Speaking", "Unit_Test", "Mock","MidCourse", "Level"] else None,
                     "title": m.test.title if m.test else "N/A",
-                    "mock": mock_data,
+                    "mock": mock_data if mock_data is not None else m.level_exam.id,
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
                     "updater": homework_id.updater.full_name if homework_id and homework_id.updater else
-                        m.updater.full_name if m.choice in ["Speaking", "Unit_Test"] and m.updater else "N/A",
+                        m.updater.full_name if m.choice in ["Speaking", "Unit_Test","MidCourse", "Level"] and m.updater else "N/A",
                     "created_at": m.created_at,
                 }
 
@@ -383,8 +383,10 @@ class StudentsAvgLearning(APIView):
             overall_speaking = avg(speaking)
             overall_unit = avg(unit)
             overall_mock = avg(mock)
+            overall_mid_course = avg(mid_course)
+            overall_level = avg(level)
 
-            all_parts = [overall_exam, overall_homework, overall_speaking, overall_unit, overall_mock]
+            all_parts = [overall_exam, overall_homework, overall_speaking, overall_unit, overall_mock, overall_mid_course, overall_level]
             filled = [p for p in all_parts if p > 0]
             overall = round(sum(filled) / len(filled), 2) if filled else 0
 
