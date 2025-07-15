@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import StoresListView, StoreDetailView, StudentDetailView, FinanceListView, StrikeListView, \
-    VersionUpdateView, StudentNotificationsView, StudentAvgAPIView, flask_translate_proxy
+    VersionUpdateView, StudentNotificationsView, StudentAvgAPIView, flask_translate_proxy, SendSmsToStudent
 
 urlpatterns = [
     path('story/',StoresListView.as_view()),
@@ -22,4 +22,6 @@ urlpatterns = [
     path("learning/",StudentAvgAPIView.as_view()),
 
     path('translate/', flask_translate_proxy),
+
+    path("send-sms/",SendSmsToStudent.as_view()),
 ]

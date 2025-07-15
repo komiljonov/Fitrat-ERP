@@ -1,7 +1,7 @@
 import json
 
+from django.db.models import Q
 from django.http import JsonResponse
-from icecream import ic
 from django.views.decorators.csrf import csrf_exempt
 from googletrans import Translator
 from icecream import ic
@@ -12,15 +12,18 @@ from rest_framework.generics import (
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 
 from .models import Store, Strike, VersionUpdate
 from .serializers import StoresSerializer, StudentAPPSerializer, StudentFinanceSerializer, StrikeSerializer, \
     VersionUpdateSerializer
 from ..mastering.models import Mastering
+from ..student.sms import SayqalSms
 from ...finances.finance.models import Finance
 from ...notifications.models import Notification
 from ...notifications.serializers import NotificationSerializer
+from ...parents.models import Relatives
 from ...student.student.models import Student
 
 
@@ -279,3 +282,32 @@ async def flask_translate_proxy(request):
         import traceback
         print(traceback.format_exc())  # Logs the full traceback for debugging
         return JsonResponse({'error': str(e)}, status=500)
+
+sms = SayqalSms()
+class SendSmsToStudent(APIView):
+    def post(self, request, *args, **kwargs):
+        students = request.data.get("students", [])
+        message = request.data.get("message", "")
+
+        if not students or not message:
+            return JsonResponse(
+                {"error": "Missing 'students' list or 'message' text."},
+                status=HTTP_400_BAD_REQUEST
+            )
+
+        sent_count = 0
+
+        for student in students:
+            relatives = Relatives.objects.filter(
+                Q(lid__id=student.get("id")) | Q(student__id=student.get("id"))
+            )
+
+            for relative in relatives:
+                if relative.phone:
+                    sms.send_sms(relative.phone, message)
+                    sent_count += 1
+
+        return JsonResponse(
+            {"count": sent_count, "message": "SMS sent successfully."},
+            status=HTTP_200_OK
+        )
