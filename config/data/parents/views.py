@@ -17,12 +17,10 @@ class ParentListView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-
 class ParentDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Relatives.objects.all()
     serializer_class = RelativesSerializer
     permission_classes = [IsAuthenticated]
-
 
 
 class RelativesListNoPGView(ListAPIView):

@@ -543,6 +543,9 @@ class QuizCheckAPIView(APIView):
                 homework=homework,
                 student=student,
             ).first()
+
+            print(history)
+
             if history:
                 history.test_checked = True
                 history.save()
