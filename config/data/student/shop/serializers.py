@@ -152,8 +152,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         return rep
 
     def create(self, validated_data):
-
-        user = Student.objects.filter(id=validated_data["student"].get("id")).first()
+        user = validated_data["student"]
 
         if user.coins < validated_data.get("product").coin:
             raise serializers.ValidationError(
