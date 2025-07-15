@@ -1118,7 +1118,7 @@ class ExamRegisteredStudentAPIView(APIView):
 
         headers = [
             "F.I.O", "Telefon raqami", "Ro'yxatdan o'tish", "Imtihonda qatnashadimi?",
-            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi", "Ta'lim tili"
+            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi", "Ta'lim tili","Test turi","Test sanasi"
         ]
         ws.append(headers)
 
@@ -1146,7 +1146,16 @@ class ExamRegisteredStudentAPIView(APIView):
                 "\n".join([
                     "Uzbek" if o.lang_national else "Euro" if o.lang_foreign else "Tanlanmagan"
                     for o in reg.option.all()
-                ])
+                ]),
+                "Haftalik" if reg.exam.choice == "Weekly" else
+                "Oylik" if reg.exam.choice == "Weekly" else
+                "Unit test" if reg.exam.choice == "Unit" else
+                "Mid of course" if reg.exam.choice == "Mid_of_course" else
+                "Level" if reg.exam.choice == "Level" else
+                "Mock" if reg.exam.choice == "Mock" else
+                "Uy ishi" if reg.exam.choice == "Uy ishi" else "",
+                reg.exam.date.strftime("%m-%d-%Y")
+
             ]
 
             row = ws.append(row_data)
