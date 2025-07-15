@@ -1130,7 +1130,7 @@ class ExamRegisteredStudentAPIView(APIView):
 
             certificate = ExamCertificate.objects.filter(exam=exam, student=reg.student).first()
             has_certificate = False
-            if certificate and certificate.certificate:
+            if certificate and certificate.certificate and certificate.status == "Accepted":
                 has_certificate = True
 
             student = reg.student
