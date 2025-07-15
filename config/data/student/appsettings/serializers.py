@@ -125,6 +125,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             "new_student_stages",
             "new_student_date",
             "active_date",
+            "coins"
             "created_at",
             "updated_at",
         ]
