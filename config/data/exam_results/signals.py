@@ -1,15 +1,8 @@
-
-from decimal import Decimal
-from itertools import count
-
-from django.db.models import Count
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from icecream import ic
 
-from .models import MockExam, MockExamResult
+from .models import MockExamResult
 from ..student.mastering.models import Mastering
-from ..student.studentgroup.models import StudentGroup
 
 
 @receiver(post_save, sender=MockExamResult)
@@ -23,5 +16,3 @@ def on_create(sender, instance: MockExamResult, created, **kwargs):
             mock=instance.mock,
             test=None,
         )
-
-

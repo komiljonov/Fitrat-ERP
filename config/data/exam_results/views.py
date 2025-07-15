@@ -1,4 +1,4 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,11 +17,9 @@ class UnitTestListCreateAPIView(ListCreateAPIView):
     def get_queryset(self):
         queryset = UnitTest.objects.all()
 
-
         group = self.request.GET.get('group')
         theme_after = self.request.GET.get('theme_after')
         quiz = self.request.GET.get('quiz')
-
 
         if group:
             queryset = queryset.filter(group__id=group)
@@ -48,7 +46,6 @@ class UnitTestResultListCreateAPIView(ListCreateAPIView):
         student = self.request.GET.get('student')
         unit = self.request.GET.get('unit')
         user = self.request.GET.get('user')
-
 
         qs = UnitTestResult.objects.all()
 
@@ -182,7 +179,3 @@ class StudentsResultsListAPIView(APIView):
 
         # Return paginated response
         return paginator.get_paginated_response(data)
-
-
-
-

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.db.models import Sum, Count
 from django.utils.dateparse import parse_date
 from rest_framework import serializers
@@ -64,31 +62,34 @@ class CasherSerializer(serializers.ModelSerializer):
         end_date = request.GET.get('end_date')
 
         income = \
-        Finance.objects.filter(casher=obj, action='INCOME').aggregate(
-            Sum('amount'))['amount__sum'] or 0
+            Finance.objects.filter(casher=obj, action='INCOME').aggregate(
+                Sum('amount'))['amount__sum'] or 0
         expense = \
-        Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(
-            Sum('amount'))['amount__sum'] or 0
+            Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(
+                Sum('amount'))['amount__sum'] or 0
         if start_date:
-
-
             start = parse_date(start_date)
             end = parse_date(end_date) if end_date else start
 
-            from datetime import datetime, timedelta
+            from datetime import timedelta
             end = end + timedelta(days=1) - timedelta(seconds=1)
 
-            income = Finance.objects.filter(casher=obj, action='INCOME',created_at__gte=start,created_at__lte=end).aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher=obj, action='EXPENSE',created_at__gte=start,created_at__lte=end).aggregate(Sum('amount'))['amount__sum'] or 0
-
+            income = \
+            Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start, created_at__lte=end).aggregate(
+                Sum('amount'))['amount__sum'] or 0
+            expense = \
+            Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start, created_at__lte=end).aggregate(
+                Sum('amount'))['amount__sum'] or 0
 
         if start_date and end_date:
             income = \
-            Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start_date, created_at__lte=end_date).aggregate(
-                Sum('amount'))['amount__sum'] or 0
+                Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start_date,
+                                       created_at__lte=end_date).aggregate(
+                    Sum('amount'))['amount__sum'] or 0
             expense = \
-            Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start_date, created_at__lte=end_date).aggregate(
-                Sum('amount'))['amount__sum'] or 0
+                Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start_date,
+                                       created_at__lte=end_date).aggregate(
+                    Sum('amount'))['amount__sum'] or 0
 
         return income - expense
 
@@ -105,17 +106,19 @@ class CasherSerializer(serializers.ModelSerializer):
             start = parse_date(start_date)
             end = parse_date(end_date) if end_date else start
 
-            from datetime import datetime, timedelta
+            from datetime import timedelta
             end = end + timedelta(days=1) - timedelta(seconds=1)
 
             income = \
-            Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start, created_at__lte=end).aggregate(
-                Sum('amount'))['amount__sum'] or 0
+                Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start,
+                                       created_at__lte=end).aggregate(
+                    Sum('amount'))['amount__sum'] or 0
 
         if start_date and end_date:
             income = \
-            Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start_date, created_at__lte=end_date).aggregate(
-                Sum('amount'))['amount__sum'] or 0
+                Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start_date,
+                                       created_at__lte=end_date).aggregate(
+                    Sum('amount'))['amount__sum'] or 0
         return income
 
     def get_expense(self, obj):
@@ -130,22 +133,21 @@ class CasherSerializer(serializers.ModelSerializer):
             start = parse_date(start_date)
             end = parse_date(end_date) if end_date else start
 
-            from datetime import datetime, timedelta
+            from datetime import timedelta
             end = end + timedelta(days=1) - timedelta(seconds=1)
 
             expense = \
-            Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start, created_at__lte=end).aggregate(
-                Sum('amount'))['amount__sum'] or 0
+                Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start,
+                                       created_at__lte=end).aggregate(
+                    Sum('amount'))['amount__sum'] or 0
 
         if start_date and end_date:
-
             expense = \
                 Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start_date,
                                        created_at__lte=end_date).aggregate(
                     Sum('amount'))['amount__sum'] or 0
 
         return expense
-
 
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
@@ -157,7 +159,7 @@ class CasherSerializer(serializers.ModelSerializer):
         if not filial:
             raise serializers.ValidationError({"filial": "Filial could not be determined."})
         casher = Casher.objects.create(filial=filial, **validated_data)
-        return  casher
+        return casher
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -271,12 +273,13 @@ class FinanceSerializer(serializers.ModelSerializer):
 
         if instance.lid:
             representation["lid"] = {
-                "id" : instance.lid.id,
-                "full_name" : f"{instance.lid.first_name} {instance.lid.last_name}",
+                "id": instance.lid.id,
+                "full_name": f"{instance.lid.first_name} {instance.lid.last_name}",
             }
         representation["creator"] = UserListSerializer(instance.creator).data
         representation['kind'] = KindSerializer(instance.kind).data
-        representation["student"] = StudentSerializer(instance.student,include_only=["id","first_name","last_name"]).data
+        representation["student"] = StudentSerializer(instance.student,
+                                                      include_only=["id", "first_name", "last_name"]).data
         return representation
 
 
@@ -395,6 +398,7 @@ class KpiFinanceSerializer(serializers.ModelSerializer):
 class VoucherSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     number = serializers.SerializerMethodField()
+
     class Meta:
         model = Voucher
         fields = [
@@ -420,7 +424,6 @@ class VoucherSerializer(serializers.ModelSerializer):
         return data
 
 
-
 class VoucherStudentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
@@ -438,11 +441,13 @@ class VoucherStudentSerializer(serializers.ModelSerializer):
             "filial",
             "comment"
         ]
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['creator'] = UserListSerializer(instance.creator).data
         data['voucher'] = VoucherSerializer(instance.voucher).data
         return data
+
 
 class SalesSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
@@ -469,6 +474,7 @@ class SaleStudentSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     sale = serializers.PrimaryKeyRelatedField(queryset=Sale.objects.all(), allow_null=True)
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+
     class Meta:
         model = SaleStudent
         fields = [
@@ -483,7 +489,6 @@ class SaleStudentSerializer(serializers.ModelSerializer):
             "comment",
             "created_at",
         ]
-
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

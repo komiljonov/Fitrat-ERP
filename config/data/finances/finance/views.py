@@ -23,7 +23,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from data.account.models import CustomUser
-from data.finances.finance.models import Finance, Kind  # adjust if needed
+from data.finances.finance.models import Finance, Kind
 from data.student.student.models import Student
 from .models import Casher, Handover, PaymentMethod, Sale, SaleStudent, Voucher, VoucherStudent
 from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, KindSerializer, \
@@ -89,7 +89,8 @@ class FinanceListAPIView(ListCreateAPIView):
         end_date_str = self.request.query_params.get('end_date')
         casher_id = self.request.query_params.get('casher_id')
 
-        queryset = Finance.objects.all().exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+        queryset = Finance.objects.all().exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
 
         if action:
             queryset = queryset.filter(action=action)
@@ -155,7 +156,8 @@ class StudentFinanceListAPIView(ListAPIView):
 
     def get_queryset(self, **kwargs):
         # Initialize the queryset to all Finance records
-        queryset = Finance.objects.all().exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+        queryset = Finance.objects.all().exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
 
         # Get the pk from the URL kwargs
         pk = self.kwargs.get('pk')
@@ -226,13 +228,15 @@ class FinancePaymentMethodsAmountsListAPIView(APIView):
             casher=casher_obj,
             action='INCOME',
             payment_method=payment_method
-        ).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(Sum('amount'))['amount__sum'] or 0
+        ).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(Sum('amount'))[
+                     'amount__sum'] or 0
 
         expense = Finance.objects.filter(
             casher=casher_obj,
             action='EXPENSE',
             payment_method=payment_method
-        ).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(Sum('amount'))['amount__sum'] or 0
+        ).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(Sum('amount'))[
+                      'amount__sum'] or 0
 
         return Response({
             'income_amount': income,
@@ -321,12 +325,14 @@ class FinanceStatisticsAPIView(APIView):
         def get_balance(role):
 
             total_income = (
-                    Finance.objects.filter(casher__role=role, action="INCOME", **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+                    Finance.objects.filter(casher__role=role, action="INCOME", **filters).exclude(
+                        Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
                     .aggregate(total_income=Sum("amount"))["total_income"] or 0
             )
 
             total_outcome = (
-                    Finance.objects.filter(casher__role=role, action="EXPENSE", **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+                    Finance.objects.filter(casher__role=role, action="EXPENSE", **filters).exclude(
+                        Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
                     .aggregate(total_outcome=Sum("amount"))["total_outcome"] or 0
             )
 
@@ -397,9 +403,11 @@ class CasherStatisticsAPIView(APIView):
 
         # Check casher and return results
         if casher_id:
-            income = Finance.objects.filter(casher__id=casher_id, action='INCOME', **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")) \
+            income = Finance.objects.filter(casher__id=casher_id, action='INCOME', **filters).exclude(
+                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")) \
                          .aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher__id=casher_id, action='EXPENSE', **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")) \
+            expense = Finance.objects.filter(casher__id=casher_id, action='EXPENSE', **filters).exclude(
+                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")) \
                           .aggregate(Sum('amount'))['amount__sum'] or 0
             balance = income - expense
 
@@ -445,12 +453,10 @@ class TeacherGroupFinanceAPIView(APIView):
         default_start_date = make_aware(datetime(current_year, 1, 1))
         default_end_date = make_aware(datetime(current_year, 12, 31, 23, 59, 59))
 
-
         start_date, end_date = parse_date_range(start_date_str, end_date_str)
 
         start_date = start_date or default_start_date
         end_date = end_date or default_end_date
-
 
         group_filters = {"group__teacher_id": teacher_id}
         if start_date and end_date:
@@ -478,7 +484,8 @@ class TeacherGroupFinanceAPIView(APIView):
                 finance_filters["created_at__gte"] = start_date
 
             kind = Kind.objects.filter(action="INCOME", name__icontains="Lesson payment").first()
-            finance_records = Finance.objects.filter(**finance_filters, stuff__id=teacher_id, kind=kind).order_by("created_at")
+            finance_records = Finance.objects.filter(**finance_filters, stuff__id=teacher_id, kind=kind).order_by(
+                "created_at")
             created_at = finance_records.first().created_at if finance_records.exists() else None
             total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
 
@@ -587,7 +594,8 @@ class FinanceExcel(APIView):
         if action:
             filters &= Q(action=action)
 
-        finances = Finance.objects.filter(filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+        finances = Finance.objects.filter(filters).exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
 
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
@@ -707,7 +715,8 @@ class PaymentStatistics(APIView):
         ]
 
         def get_total_amount(payment_name, action_type):
-            return Finance.objects.filter(payment_method=payment_name, action=action_type, **filter).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
+            return Finance.objects.filter(payment_method=payment_name, action=action_type, **filter).exclude(
+                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                 total=Sum('amount'))['total'] or 0
 
         data = {}
@@ -747,7 +756,8 @@ class PaymentCasherStatistics(ListAPIView):
         valid_payment_methods = ['Click', 'Payme', 'Cash', 'Card', "Money_send"]
 
         def get_total_amount(payment_method, action_type):
-            qs = Finance.objects.filter(payment_method=payment_method, action=action_type).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+            qs = Finance.objects.filter(payment_method=payment_method, action=action_type).exclude(
+                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
             if cashier_id:
                 qs = qs.filter(casher__id=cashier_id)
 
@@ -872,7 +882,8 @@ class PaymentStatisticsByKind(APIView):
         # Function to get total amount for a given kind and action type
         def get_total_amount(kind, action_type):
             return (
-                    Finance.objects.filter(kind=kind, action=action_type, **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+                    Finance.objects.filter(kind=kind, action=action_type, **filters).exclude(
+                        Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
                     .aggregate(total=Sum('amount'))['total'] or 0
             )
 
@@ -998,11 +1009,13 @@ class GeneratePaymentExcelAPIView(APIView):
 
         for method in payment_methods:
             income = \
-                Finance.objects.filter(payment_method=method, action='INCOME', **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
+                Finance.objects.filter(payment_method=method, action='INCOME', **filters).exclude(
+                    Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                     total=Sum('amount'))[
                     'total'] or 0
             expense = \
-                Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
+                Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).exclude(
+                    Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                     total=Sum('amount'))[
                     'total'] or 0
             data[f"{method}_Income"] = income
