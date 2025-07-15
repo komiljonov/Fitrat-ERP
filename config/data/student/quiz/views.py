@@ -1028,7 +1028,6 @@ class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
-
         data = request.data.copy()
 
         data["status"] = "Active"
@@ -1436,7 +1435,3 @@ class MonthlyExam(APIView):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
-
-
-
-

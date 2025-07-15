@@ -59,18 +59,17 @@ urlpatterns = [
     path("registration/no-pg/", ExamRegistrationNoPgAPIView.as_view(), name='registration'),
     path("registration/<uuid:pk>", ExamRegistrationUpdate.as_view(), name='registration'),
 
-    path("monthly-registration/",MonthlyExam.as_view(), name='monthly-registration'),
+    path("monthly-registration/", MonthlyExam.as_view(), name='monthly-registration'),
 
-    path("registered-students/",ExamRegisteredStudentListAPIView.as_view(), name='registered-students'),
+    path("registered-students/", ExamRegisteredStudentListAPIView.as_view(), name='registered-students'),
 
     path("exam-students/", ExamRegisteredStudentAPIView.as_view(), name='exam-students'),
 
-    path("exam-certificats/",ExamCertificateAPIView.as_view(), name='exam-certificates'),
+    path("exam-certificats/", ExamCertificateAPIView.as_view(), name='exam-certificates'),
     path("exam-certificats/<uuid:pk>", ExamCertificateUpdate.as_view(), name='exam-certificates'),
 
+    path("exam-subject/", ExamSubjectListCreate.as_view(), name='exam-subject'),
+    path("exam-subject/<uuid:pk>/", ExamSubjectDetail.as_view()),
 
-    path("exam-subject/",ExamSubjectListCreate.as_view(), name='exam-subject'),
-    path("exam-subject/<uuid:pk>/",ExamSubjectDetail.as_view()),
-
-    path("student-option/",ExamOptionCreate.as_view(), name='student-option'),
+    path("student-option/", ExamOptionCreate.as_view(), name='student-option'),
 ]
