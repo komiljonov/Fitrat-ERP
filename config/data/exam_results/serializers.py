@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult, LevelExam, LevelExamResult
+from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult, LevelExam
 from ..student.course.models import Course
 from ..student.groups.models import Group
 from ..student.mastering.models import Mastering
@@ -294,6 +294,7 @@ class LevelExamSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True, required=False)
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True, required=False)
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), allow_null=True, required=False)
+
     class Meta:
         model = LevelExam
         fields = [

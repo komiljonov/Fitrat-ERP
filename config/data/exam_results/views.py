@@ -210,4 +210,3 @@ class LevelExamRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = LevelExam.objects.all()
     serializer_class = LevelExamSerializer
     permission_classes = (IsAuthenticated,)
-
