@@ -546,9 +546,19 @@ class QuizCheckAPIView(APIView):
 
             print(history)
 
-            if history:
-                history.test_checked = True
-                history.save()
+            if not history:
+                history = Homework_history.objects.create(
+                    homework=homework,
+                    student=student,
+                    status="Passed",
+                    is_active=True,
+                    mark=ball,
+                )
+
+            history.test_checked = True
+            history.save()
+
+
 
             if history:
                 Points.objects.create(
