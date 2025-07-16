@@ -11,6 +11,7 @@ from ..notifications.models import Notification
 from ..notifications.serializers import NotificationSerializer
 from ..student.mastering.models import Mastering
 from ..student.student.models import Student
+from ..student.studentgroup.models import StudentGroup
 
 
 # Create your views here.
@@ -140,7 +141,7 @@ class ParentStudentAvgAPIView(APIView):
                 "mock": [],
             }
 
-            course_scores = {}
+            course_scores = StudentGroup.objects.filter(student=student).values_list("course", flat=True)
 
             for m in mastering_records:
                 course = m.theme.course if m.theme and m.theme.course else None
