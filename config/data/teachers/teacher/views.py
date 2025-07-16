@@ -356,7 +356,7 @@ class StudentsAvgLearning(APIView):
                     "homework_id": homework_id.id if homework_id else None,
                     "mastering_id": m.id if m.choice in ["Speaking", "Unit_Test", "Mock","MidCourse", "Level"] else None,
                     "title": m.test.title if m.test else "N/A",
-                    "mock": mock_data if mock_data is not None else m.level_exam.id,
+                    "mock": mock_data if mock_data is not None else m.level_exam.id if m.level_exam else None,
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
                     "updater": homework_id.updater.full_name if homework_id and homework_id.updater else
