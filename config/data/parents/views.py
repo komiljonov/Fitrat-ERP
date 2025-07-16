@@ -9,6 +9,7 @@ from .models import Relatives
 from .serializers import RelativesSerializer
 from ..notifications.models import Notification
 from ..notifications.serializers import NotificationSerializer
+from ..student.course.models import Course
 from ..student.mastering.models import Mastering
 from ..student.student.models import Student
 from ..student.studentgroup.models import StudentGroup
@@ -127,6 +128,29 @@ class ParentStudentAvgAPIView(APIView):
         response_data = []
 
         for student in students:
+            # 🔹 Get course IDs the student is enrolled in
+            course_ids = (
+                StudentGroup.objects
+                .filter(student=student)
+                .values_list("group__course_id", flat=True)
+                .distinct()
+            )
+
+            # 🔹 Prepare course map for fast access
+            course_map = {
+                str(course.id): {
+                    "course_id": course.id,
+                    "course_name": course.name,
+                    "exams": [],
+                    "homeworks": [],
+                    "speaking": [],
+                    "unit": [],
+                    "mock": [],
+                }
+                for course in Course.objects.filter(id__in=course_ids)
+            }
+
+            # 🔹 Filter Mastering records for student and those course themes only
             mastering_records = (
                 Mastering.objects
                 .filter(student=student)
@@ -141,48 +165,36 @@ class ParentStudentAvgAPIView(APIView):
                 "mock": [],
             }
 
-            course_scores = {}
-
             for m in mastering_records:
-                if not m.theme or not m.theme.course:
-                    continue
-
                 course = m.theme.course
                 course_id = str(course.id)
 
-                if course_id not in course_scores:
-                    course_scores[course_id] = {
-                        "course_name": course.name,
-                        "course_id": course.id,
-                        "exams": [],
-                        "homeworks": [],
-                        "speaking": [],
-                        "unit": [],
-                        "mock": [],
-                    }
+                if course_id not in course_map:
+                    continue  # skip unexpected records
 
                 if m.test and m.test.type == "Offline" and m.choice == "Test":
                     overall_scores["exams"].append(m.ball)
-                    course_scores[course_id]["exams"].append(m.ball)
+                    course_map[course_id]["exams"].append(m.ball)
                 elif m.choice == "Speaking":
                     overall_scores["speaking"].append(m.ball)
-                    course_scores[course_id]["speaking"].append(m.ball)
+                    course_map[course_id]["speaking"].append(m.ball)
                 elif m.choice == "Unit_Test":
                     overall_scores["unit"].append(m.ball)
-                    course_scores[course_id]["unit"].append(m.ball)
+                    course_map[course_id]["unit"].append(m.ball)
                 elif m.choice == "Mock":
                     overall_scores["mock"].append(m.ball)
-                    course_scores[course_id]["mock"].append(m.ball)
+                    course_map[course_id]["mock"].append(m.ball)
                 else:
                     overall_scores["homeworks"].append(m.ball)
-                    course_scores[course_id]["homeworks"].append(m.ball)
+                    course_map[course_id]["homeworks"].append(m.ball)
 
             overall = round(
-                sum(avg(overall_scores[key]) for key in overall_scores) / 5, 2
+                sum(avg(overall_scores[key]) for key in overall_scores) / 5,
+                2
             )
 
             course_results = []
-            for c in course_scores.values():
+            for c in course_map.values():
                 course_avg = {
                     "course_id": c["course_id"],
                     "course_name": c["course_name"],
@@ -208,4 +220,5 @@ class ParentStudentAvgAPIView(APIView):
             })
 
         return Response(response_data)
+
 
