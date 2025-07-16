@@ -141,7 +141,7 @@ class ParentStudentAvgAPIView(APIView):
                 "mock": [],
             }
 
-            course_scores = StudentGroup.objects.filter(student=student).values_list("course", flat=True)
+            course_scores = StudentGroup.objects.filter(student=student).values_list("group__course", flat=True)
 
             for m in mastering_records:
                 course = m.theme.course if m.theme and m.theme.course else None
