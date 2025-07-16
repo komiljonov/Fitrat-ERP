@@ -181,8 +181,8 @@ PAYCOM_SETTINGS = {
 CLICK_SERVICE_ID = "your-service-id"
 CLICK_MERCHANT_ID = "your-merchant-id"
 CLICK_SECRET_KEY = "your-secret-key"
-CLICK_ACCOUNT_MODEL = "order.models.Order" # your order model path.
-CLICK_AMOUNT_FIELD = "amount" # your amount field that's belongs to your order model
+CLICK_ACCOUNT_MODEL = "clickuz.models.Order"
+CLICK_AMOUNT_FIELD = "amount"
 
 CLICK_COMMISSION_PERCENT = "(optional int field) your companies comission percent if applicable"
 CLICK_DISABLE_ADMIN = False
