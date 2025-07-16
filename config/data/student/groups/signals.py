@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from faker.providers.ssn.uk_UA import calculate_day_count
 
 from .lesson_date_calculator import calculate_lessons
-from .models import Group, SecondaryGroup, Day
+from .models import Group, SecondaryGroup, Day, GroupSaleStudent
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Theme
 from ...department.marketing_channel.models import Group_Type
@@ -85,4 +85,22 @@ def on_payment_method(sender, instance: Group, created: bool, **kwargs):
             )
 
 
+@receiver(post_save, sender=Group)
+def on_group_price_change(sender, instance: Group, created: bool, **kwargs):
+    if created:
+        return
+
+    try:
+        old_instance = Group.objects.get(pk=instance.pk)
+    except Group.DoesNotExist:
+        return
+
+    if old_instance.price != instance.price:
+        price = instance.price
+
+        group_students = GroupSaleStudent.objects.filter(group=instance)
+
+        for student in group_students:
+            student.amount = price
+            student.save()
 
