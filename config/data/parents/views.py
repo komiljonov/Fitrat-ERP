@@ -89,3 +89,10 @@ class ParentsNotificationsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'user__id'
+
+
+class ParentRetrieveAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Relatives.objects.all()
+    serializer_class = RelativesSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'user__id'
