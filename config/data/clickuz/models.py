@@ -1,5 +1,6 @@
 from django.db import models
-
+from data.lid.new_lid.models import Lid
+from data.student.student.models import Student
 
 # Create your models here.
 
@@ -19,3 +20,14 @@ class Transaction(models.Model):
 
     def __str__(self):
         return self.click_trans_id
+
+
+
+class Order(models.Model):
+    lid : "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True, related_name="ordered_lid")
+    student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="ordered_student")
+    type : str = models.CharField(choices=[
+        ("Payme","Payme"),
+        ("Click","Click"),
+    ],max_length=255,null=True,blank=True)
+    amount = models.CharField(max_length=255)
