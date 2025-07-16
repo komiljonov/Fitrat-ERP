@@ -303,6 +303,11 @@ class SendSmsToStudent(APIView):
             relatives = Relatives.objects.filter(
                 Q(lid__id=student) | Q(student__id=student)
             )
+            if not relatives.exists():
+                return JsonResponse(
+                    {"error": "Parent not found"},
+                    status=HTTP_400_BAD_REQUEST
+                )
 
             for relative in relatives:
                 if relative.phone:
