@@ -156,7 +156,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
         if user.coins < validated_data.get("product").coin:
             raise serializers.ValidationError(
-                "Student does not have enough coins to purchase product"
+                "Kechirasiz, mahsulotni xarid qilish uchun tangalaringiz yetarli emas"
             )
 
         return Purchase.objects.create(**validated_data)
