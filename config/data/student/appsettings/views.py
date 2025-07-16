@@ -150,7 +150,7 @@ class StudentAvgAPIView(APIView):
                 students = [student]
 
         elif user.role == "Parents":
-            related_students = Relatives.objects.filter(lid__user=user).values_list("student", flat=True)
+            related_students = Relatives.objects.filter(id=user.id).values_list("student", flat=True)
             students = Student.objects.filter(id__in=related_students)
 
         if not students:
