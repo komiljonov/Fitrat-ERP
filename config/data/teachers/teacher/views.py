@@ -401,6 +401,8 @@ class StudentsAvgLearning(APIView):
                 "speaking": {"items": speaking, "overall": overall_speaking},
                 "unit_test": {"items": unit, "overall": overall_unit},
                 "mock": {"items": mock, "overall": overall_mock},
+                "mid_course": {"items": mid_course, "overall": overall_mid_course},
+                "level": {"items": level, "overall": overall_level},
                 "overall": overall
             })
 
