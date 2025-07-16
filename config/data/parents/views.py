@@ -107,7 +107,6 @@ class ParentStudentAvgAPIView(APIView):
 
     def get(self, request):
         user = request.user
-
         students = []
 
         if user.role == "Student":
@@ -116,8 +115,8 @@ class ParentStudentAvgAPIView(APIView):
                 students = [student]
 
         elif user.role == "Parents":
-            related_students = Relatives.objects.filter(user=user).values_list("student", flat=True)
-            students = Student.objects.filter(id__in=related_students)
+            student_ids = Relatives.objects.filter(user=user).values_list("student", flat=True)
+            students = Student.objects.filter(id__in=student_ids)
 
         if not students:
             return Response({"error": "Student(s) not found."}, status=404)
@@ -129,7 +128,8 @@ class ParentStudentAvgAPIView(APIView):
 
         for student in students:
             mastering_records = (
-                Mastering.objects.filter(student=student)
+                Mastering.objects
+                .filter(student=student)
                 .select_related("test", "theme", "theme__course")
             )
 
@@ -141,14 +141,15 @@ class ParentStudentAvgAPIView(APIView):
                 "mock": [],
             }
 
-            course_scores = StudentGroup.objects.filter(student=student).values_list("group__course", flat=True)
+            course_scores = {}
 
             for m in mastering_records:
-                course = m.theme.course if m.theme and m.theme.course else None
-                if not course:
+                if not m.theme or not m.theme.course:
                     continue
 
+                course = m.theme.course
                 course_id = str(course.id)
+
                 if course_id not in course_scores:
                     course_scores[course_id] = {
                         "course_name": course.name,
@@ -177,19 +178,12 @@ class ParentStudentAvgAPIView(APIView):
                     course_scores[course_id]["homeworks"].append(m.ball)
 
             overall = round(
-                (
-                        avg(overall_scores["exams"]) +
-                        avg(overall_scores["homeworks"]) +
-                        avg(overall_scores["speaking"]) +
-                        avg(overall_scores["unit"]) +
-                        avg(overall_scores["mock"])
-                ) / 5,
-                2,
+                sum(avg(overall_scores[key]) for key in overall_scores) / 5, 2
             )
 
             course_results = []
             for c in course_scores.values():
-                course_results.append({
+                course_avg = {
                     "course_id": c["course_id"],
                     "course_name": c["course_name"],
                     "exams": avg(c["exams"]),
@@ -197,17 +191,12 @@ class ParentStudentAvgAPIView(APIView):
                     "speaking": avg(c["speaking"]),
                     "unit": avg(c["unit"]),
                     "mock": avg(c["mock"]),
-                    "overall": round(
-                        (
-                                avg(c["exams"]) +
-                                avg(c["homeworks"]) +
-                                avg(c["speaking"]) +
-                                avg(c["unit"]) +
-                                avg(c["mock"])
-                        ) / 5,
-                        2,
-                    )
-                })
+                }
+                course_avg["overall"] = round(
+                    sum(course_avg[k] for k in ["exams", "homeworks", "speaking", "unit", "mock"]) / 5,
+                    2
+                )
+                course_results.append(course_avg)
 
             response_data.append({
                 "student_id": student.id,
@@ -219,3 +208,4 @@ class ParentStudentAvgAPIView(APIView):
             })
 
         return Response(response_data)
+
