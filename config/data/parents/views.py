@@ -166,7 +166,7 @@ class ParentStudentAvgAPIView(APIView):
             }
 
             for m in mastering_records:
-                course = m.theme.course
+                course = m.theme.course if m.theme else None
                 course_id = str(course.id)
 
                 if course_id not in course_map:
