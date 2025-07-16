@@ -141,8 +141,13 @@ class StudentAvgAPIView(APIView):
 
     def get(self, request):
         user = request.user
-        student = Student.objects.filter(user=user).first()
 
+        student = None
+        if user.role == "Student":
+            student = Student.objects.filter(user=user).first()
+        if user.role == "Parents":
+            parent = Relatives.objects.filter(user=user).first().student
+            student = Student.objects.filter(id=parent.id).first()
         if not student:
             return Response({"error": "Student not found."}, status=404)
 
