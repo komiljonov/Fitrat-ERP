@@ -9,7 +9,7 @@ urlpatterns = [
     path('no-pg/', RelativesListNoPGView.as_view()),
     path('student/<uuid:pk>', StudentsRelativesListView.as_view()),
 
-    path("students/",ParentsStudentsAPIView.as_view()),
+    path("students/", ParentsStudentsAPIView.as_view()),
 
-    path("parent-notifications/<uuid:user__id>",ParentsNotificationsRetrieveAPIView.as_view()),
+    path("parent-notifications/<uuid:user__id>", ParentsNotificationsRetrieveAPIView.as_view()),
 ]

@@ -19,7 +19,6 @@ class ParentListView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-
         user = self.request.GET.get('user')
 
         queryset = Relatives.objects.all()
@@ -79,11 +78,10 @@ class ParentsStudentsAPIView(APIView):
                 students_data.append({
                     'id': student.student.id,
                     'full_name': f"{student.student.first_name} {student.student.last_name}",
-                    "phone" : student.student.phone,
+                    "phone": student.student.phone,
                     "balance": student.student.balance,
                 })
         return Response(students_data, status=status.HTTP_200_OK)
-
 
 
 class ParentsNotificationsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
