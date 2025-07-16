@@ -372,6 +372,10 @@ class StudentsAvgLearning(APIView):
                     unit.append(item)
                 elif m.choice == "Mock":
                     mock.append(item)
+                elif m.choice == "MidCourse":
+                    mid_course.append(item)
+                elif m.choice == "Level":
+                    level.append(item)
                 else:
                     homeworks.append(item)
 
