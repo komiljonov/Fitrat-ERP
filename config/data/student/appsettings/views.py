@@ -12,7 +12,7 @@ from rest_framework.generics import (
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.views import APIView
 
 from .models import Store, Strike, VersionUpdate
@@ -282,6 +282,7 @@ async def flask_translate_proxy(request):
         import traceback
         print(traceback.format_exc())  # Logs the full traceback for debugging
         return JsonResponse({'error': str(e)}, status=500)
+
 
 sms = SayqalSms()
 class SendSmsToStudent(APIView):

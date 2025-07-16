@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 
 from .models import Relatives
 from .serializers import RelativesSerializer
+from ..notifications.models import Notification
+from ..notifications.serializers import NotificationSerializer
 
 
 # Create your views here.
@@ -15,6 +17,16 @@ class ParentListView(ListCreateAPIView):
     queryset = Relatives.objects.all()
     serializer_class = RelativesSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+
+        user = self.request.GET.get('user')
+
+        queryset = Relatives.objects.all()
+
+        if user:
+            queryset = self.queryset.filter(user__id=user)
+        return queryset
 
 
 class ParentDetailView(RetrieveUpdateDestroyAPIView):
@@ -50,9 +62,12 @@ class ParentsStudentsAPIView(APIView):
 
         phone = request.GET.get('phone')
         id = self.kwargs.get('pk')
+        user = self.request.GET.get('user')
 
         students = Relatives.objects.all()
 
+        if user:
+            queryset = self.queryset.filter(user__id=user)
         if phone:
             students = students.filter(phone=phone)
         if id:
@@ -68,3 +83,11 @@ class ParentsStudentsAPIView(APIView):
                     "balance": student.student.balance,
                 })
         return Response(students_data, status=status.HTTP_200_OK)
+
+
+
+class ParentsNotificationsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'user__id'
