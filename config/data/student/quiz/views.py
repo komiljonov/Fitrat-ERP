@@ -558,8 +558,6 @@ class QuizCheckAPIView(APIView):
             history.test_checked = True
             history.save()
 
-
-
             if history:
                 Points.objects.create(
                     point=ball,

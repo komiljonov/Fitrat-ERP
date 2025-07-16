@@ -21,6 +21,7 @@ class RelativesSerializer(serializers.ModelSerializer):
           'name',
           'phone',
           'who',
+          'user',
         ]
 
 
@@ -61,6 +62,7 @@ class RelativesSerializer(serializers.ModelSerializer):
                 name=name,
                 phone=phone,
                 who=validated_data.get("who"),
+                user=parent,
                 lid=None
             )
             return relative
@@ -104,6 +106,7 @@ class RelativesSerializer(serializers.ModelSerializer):
         instance.name = name
         instance.phone = phone
         instance.who = who
+        instance.parent = parent_user
         if student and lid is None:
             instance.student = student
             instance.lid = None
