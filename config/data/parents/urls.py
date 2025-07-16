@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import ParentListView, ParentDetailView, RelativesListNoPGView, StudentsRelativesListView, \
-    ParentsStudentsAPIView, ParentsNotificationsRetrieveAPIView
+    ParentsStudentsAPIView, ParentsNotificationsRetrieveAPIView, ParentRetrieveAPIView
 
 urlpatterns = [
     path('', ParentListView.as_view()),
@@ -12,4 +12,6 @@ urlpatterns = [
     path("students/", ParentsStudentsAPIView.as_view()),
 
     path("parent-notifications/<uuid:user__id>", ParentsNotificationsRetrieveAPIView.as_view()),
+
+    path("retrive/<uuid:user__id>",ParentRetrieveAPIView.as_view()),
 ]
