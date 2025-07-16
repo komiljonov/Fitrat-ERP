@@ -211,6 +211,8 @@ class ParentStudentAvgAPIView(APIView):
             response_data.append({
                 "student_id": student.id,
                 "full_name": f"{student.first_name} {student.last_name}",
+                "phone": student.phone,
+                "balance": student.balance,
                 "overall_learning": overall,
                 "course_scores": course_results
             })
