@@ -9,10 +9,8 @@ from .models import Relatives
 from .serializers import RelativesSerializer
 from ..notifications.models import Notification
 from ..notifications.serializers import NotificationSerializer
-from ..student.course.models import Course
 from ..student.mastering.models import Mastering
 from ..student.student.models import Student
-from ..student.studentgroup.models import StudentGroup
 
 
 # Create your views here.
@@ -102,8 +100,6 @@ class ParentRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     lookup_field = 'user__id'
 
 
-
-
 class ParentStudentAvgAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -132,7 +128,6 @@ class ParentStudentAvgAPIView(APIView):
                 .select_related("test", "theme", "theme__course", "theme__course__subject")
             )
 
-
             overall_scores = {
                 "exams": [],
                 "homeworks": [],
@@ -147,7 +142,6 @@ class ParentStudentAvgAPIView(APIView):
             for m in mastering_records:
 
                 course = m.theme.course if m.theme and m.theme.course else None
-
 
                 if not course:
                     continue
@@ -188,11 +182,11 @@ class ParentStudentAvgAPIView(APIView):
             # Compute global overall average (based on 5 categories always)
             global_overall = round(
                 (
-                    avg(overall_scores["exams"]) +
-                    avg(overall_scores["homeworks"]) +
-                    avg(overall_scores["speaking"]) +
-                    avg(overall_scores["unit"]) +
-                    avg(overall_scores["mock"])
+                        avg(overall_scores["exams"]) +
+                        avg(overall_scores["homeworks"]) +
+                        avg(overall_scores["speaking"]) +
+                        avg(overall_scores["unit"]) +
+                        avg(overall_scores["mock"])
                 ) / 5,
                 2,
             )
