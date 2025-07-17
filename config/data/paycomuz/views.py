@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.conf import settings
+from django.db.models import Q
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
@@ -21,6 +22,9 @@ from .models import Transaction
 from .serializers.payme_operation import PaycomOperationSerialzer
 from .serializers.serializers import PaycomuzSerializer
 from .status import *
+from ..clickuz.models import Order
+from ..lid.new_lid.models import Lid
+from ..student.student.models import Student
 
 
 class MerchantAPIView(APIView):
@@ -159,6 +163,24 @@ class MerchantAPIView(APIView):
             status=Transaction.PROCESSING
         )
 
+        from data.clickuz.models import Order
+
+        student = None
+        lid = None
+
+        if Student.objects.filter(id=order_key).exists():
+            student=order_key
+        if Lid.objects.filter(id=lid).exists():
+            lid=order_key
+
+        Order.objects.create(
+            lid=lid,
+            student=student,
+            type="Payme",
+            amount=amount,
+            paid=False,
+        )
+
         self.reply = {
             "jsonrpc": "2.0",
             "id": validated_data["id"],
@@ -212,6 +234,12 @@ class MerchantAPIView(APIView):
                 obj.perform_datetime = perform_time
 
                 self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
+
+                order = Order.objects.filter(Q(lid=obj.order_key) | Q(student=obj.order_key)).first()
+                if order and order.amount == obj.amount:
+                    order.paid = True
+                    order.save()
+
                 obj.save()
 
                 self.reply = {
