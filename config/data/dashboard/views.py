@@ -337,7 +337,7 @@ class DashboardSecondView(APIView):
             "active_student": active_student.count(),
             "first_course_payment_archived": first_course_payment_archived.count() if first_course_payment_archived else 0,
             "course_ended": course_ended.count(),
-            "all_students": all_students.count(),
+            "all_students": new_student.count() + active_student.count(),
         }
 
         return Response(data)
