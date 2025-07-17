@@ -160,45 +160,39 @@ class StudentAvgAPIView(APIView):
         }
 
         course_scores = {}
+        course_is_language = {}
 
         for m in mastering_records:
             course = m.theme.course if m.theme and m.theme.course else None
             if not course:
-                continue  # skip if course is missing
+                continue
 
             course_id = str(course.id)
             if course_id not in course_scores:
+                course_is_language[course_id] = course.subject.is_language
                 course_scores[course_id] = {
                     "course_name": course.name,
                     "course_id": course.id,
                     "exams": [],
                     "homeworks": [],
-                    "speaking": [],
-                    "unit": [],
-                    "mock": [],
                 }
-
-            item = {
-                "id": m.id,
-                "ball": m.ball,
-                "title": m.test.title if m.test else None,
-                "created_at": m.created_at,
-                "theme": {
-                    "id": m.theme.id if m.theme else None,
-                    "name": m.theme.title if m.theme else None
-                }
-            }
+                if course.subject.is_language:
+                    course_scores[course_id].update({
+                        "speaking": [],
+                        "unit": [],
+                        "mock": [],
+                    })
 
             if m.test and m.test.type == "Offline" and m.choice == "Test":
                 overall_scores["exams"].append(m.ball)
                 course_scores[course_id]["exams"].append(m.ball)
-            elif m.choice == "Speaking":
+            elif m.choice == "Speaking" and "speaking" in course_scores[course_id]:
                 overall_scores["speaking"].append(m.ball)
                 course_scores[course_id]["speaking"].append(m.ball)
-            elif m.choice == "Unit_Test":
+            elif m.choice == "Unit_Test" and "unit" in course_scores[course_id]:
                 overall_scores["unit"].append(m.ball)
                 course_scores[course_id]["unit"].append(m.ball)
-            elif m.choice == "Mock":
+            elif m.choice == "Mock" and "mock" in course_scores[course_id]:
                 overall_scores["mock"].append(m.ball)
                 course_scores[course_id]["mock"].append(m.ball)
             else:
@@ -208,46 +202,48 @@ class StudentAvgAPIView(APIView):
         def avg(values):
             return round(sum(values) / len(values), 2) if values else 0
 
-        # Calculate overall
+        # Calculate global overall (you can adjust logic to exclude non-language categories if needed)
         overall = round(
             (
-                    avg(overall_scores["exams"]) +
-                    avg(overall_scores["homeworks"]) +
-                    avg(overall_scores["speaking"]) +
-                    avg(overall_scores["unit"]) +
-                    avg(overall_scores["mock"])
+                avg(overall_scores["exams"]) +
+                avg(overall_scores["homeworks"]) +
+                avg(overall_scores["speaking"]) +
+                avg(overall_scores["unit"]) +
+                avg(overall_scores["mock"])
             ) / 5,
             2,
         )
 
         # Prepare per-course averages
         course_results = []
-        for c in course_scores.values():
-            course_results.append({
+        for course_id, c in course_scores.items():
+            is_language = course_is_language[course_id]
+
+            course_result = {
                 "course_id": c["course_id"],
                 "course_name": c["course_name"],
                 "exams": avg(c["exams"]),
                 "homeworks": avg(c["homeworks"]),
-                "speaking": avg(c["speaking"]),
-                "unit": avg(c["unit"]),
-                "mock": avg(c["mock"]),
-                "overall": round(
-                    (
-                            avg(c["exams"]) +
-                            avg(c["homeworks"]) +
-                            avg(c["speaking"]) +
-                            avg(c["unit"]) +
-                            avg(c["mock"])
-                    ) / 5,
-                    2,
-                )
-            })
+            }
+
+            total_parts = 2  # exams + homeworks
+            total_score = course_result["exams"] + course_result["homeworks"]
+
+            if is_language:
+                course_result["speaking"] = avg(c["speaking"])
+                course_result["unit"] = avg(c["unit"])
+                course_result["mock"] = avg(c["mock"])
+                total_score += course_result["speaking"] + course_result["unit"] + course_result["mock"]
+                total_parts += 3
+
+            course_result["overall"] = round(total_score / total_parts, 2)
+            course_results.append(course_result)
 
         return Response({
             "student_id": student.id,
             "full_name": f"{student.first_name} {student.last_name}",
             "overall_learning": overall,
-            "course_scores": course_results
+            "course_scores": course_results,
         })
 
 
