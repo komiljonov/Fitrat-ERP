@@ -12,17 +12,26 @@ from ..upload.models import File
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
-    files: 'File' = models.ManyToManyField('upload.File',
-                                           blank=True, related_name='account_files')
+    files: 'File' = models.ManyToManyField('upload.File', blank=True, related_name='account_files')
+
     second_user = models.CharField(max_length=100, unique=True, null=True, blank=True)
+
     full_name = models.CharField(max_length=100, blank=True, null=True)
+
     first_name = models.CharField(max_length=100, blank=True, null=True)
+
     last_name = models.CharField(max_length=100, blank=True, null=True)
+
     phone = models.CharField(max_length=255, unique=True, blank=True, null=True)
+
     extra_number = models.CharField(max_length=255, blank=True, null=True)
+
     chat_id = models.CharField(max_length=255, blank=True, null=True)
+
     calculate_penalties = models.BooleanField(default=False)
+
     calculate_bonus = models.BooleanField(default=False)
+
     photo: 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, blank=True, null=True)
 
     date_of_birth = models.DateField(blank=True, null=True)
@@ -60,9 +69,11 @@ class CustomUser(AbstractUser):
     monitoring = models.FloatField(default=0)
 
     enter = models.TimeField(null=True, blank=True)
+
     leave = models.TimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     filial: 'Filial' = models.ManyToManyField('filial.Filial', blank=True, related_name='users_filials')
