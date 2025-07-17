@@ -1,15 +1,15 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
+
 from .models import Comment, StuffComments
 from ..account.models import CustomUser
-from ..account.serializers import UserSerializer
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
 
 class CommentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),allow_null=True)
+    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+
     class Meta:
         model = Comment
         fields = [
@@ -27,7 +27,7 @@ class CommentSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
 
         creator = instance.creator if instance.creator else None
-        rep["photo"] = FileUploadSerializer(instance.photo,context=self.context).data
+        rep["photo"] = FileUploadSerializer(instance.photo, context=self.context).data
 
         if creator:
             rep["full_name"] = f"{creator.first_name} {creator.last_name}"
