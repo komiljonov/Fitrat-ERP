@@ -1,5 +1,7 @@
-from .status import ORDER_FOUND, ORDER_NOT_FOUND, INVALID_AMOUNT
 from django.conf import settings
+
+from .status import ORDER_FOUND, ORDER_NOT_FOUND, INVALID_AMOUNT
+
 
 class ClickUz:
     ORDER_FOUND = ORDER_FOUND

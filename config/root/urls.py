@@ -44,6 +44,7 @@ urlpatterns = [
     # path('dash/', include('django_plotly_dash.urls')),
 
     path("webhook/", include("data.paycomuz.urls")),
+    path("clickuz/", include("data.clickuz.urls")),
 
     path("tasks/", include("data.tasks.urls")),
     path("comments/", include("data.comments.urls")),
