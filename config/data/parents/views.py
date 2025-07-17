@@ -104,7 +104,7 @@ class ParentRetrieveAPIView(RetrieveUpdateDestroyAPIView):
 
 
 
-class StudentAvgAPIView(APIView):
+class ParentStudentAvgAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
