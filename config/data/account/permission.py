@@ -1,12 +1,8 @@
 from django.contrib.auth.backends import BaseBackend
-from django.contrib.auth.hashers import check_password
-from django.core.exceptions import ObjectDoesNotExist
-from icecream import ic
-from rest_framework.exceptions import PermissionDenied, AuthenticationFailed
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from .models import CustomUser
-from ..student.student.models import Student
 
 
 class PhoneAuthBackend(BaseBackend):
@@ -69,12 +65,10 @@ class PhoneAuthBackend(BaseBackend):
 #             return None
 
 
-
 class FilialRestrictedQuerySetMixin:
     """
     Mixin to filter querysets by the user's filial and enforce data restrictions.
     """
-
 
     def get_queryset(self):
         # Get the base queryset from the view
@@ -89,7 +83,6 @@ class FilialRestrictedQuerySetMixin:
 
         if user.role == "DIRECTOR":
             return queryset
-
 
         if not user_filial:
             return queryset.none()
@@ -112,4 +105,3 @@ class FilialRestrictedQuerySetMixin:
             return serializer.save()
 
         serializer.save(filial=user_filial)
-
