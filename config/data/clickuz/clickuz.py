@@ -7,43 +7,48 @@ class ClickUz:
     INVALID_AMOUNT = INVALID_AMOUNT
 
     def check_order(self, order_id: str, amount: str):
-
-        from ..lid.new_lid.models import Lid
-        from ..student.student.models import Student
-
-        """
-        :Need to check order
-        :param order_id:
-        :param amount:
-        :return: ORDER_NOT_FOUND or ORDER_FOUND or INVALID_AMOUNT
-        """
-        student_order = Student.objects.filter(id=order_id).first()
+        from ..clickuz.models import Order
+        student_order = Order.objects.filter(id=order_id).first()
         if not student_order:
             return ORDER_NOT_FOUND
 
-        lid_order = Lid.objects.filter(id=order_id).first()
-        if not lid_order:
-            return ORDER_NOT_FOUND
+        if str(student_order.amount) != str(amount):
+            return INVALID_AMOUNT
 
         return ORDER_FOUND
 
     def successfully_payment(self, order_id: str, transaction: object):
-        """
+        from ..clickuz.models import Order
+        order = Order.objects.filter(id=order_id).first()
+        if not order:
+            return  # Optionally log this
 
-        :param order_id:
-        :return:
-        """
-        raise NotImplemented
+        order.paid = True  # You must add this field to your `Order` model
+        order.save()
+
+        # Example: update balance
+        if order.student and order.lid is None:
+            order.student.balance = order.student.balance + float(order.amount)
+            order.student.save()
+        elif order.lid and order.student is None:
+            order.lid.balance = order.lid.balance + float(order.amount)
+            order.lid.save()
 
     def cancel_payment(self, order_id: str, transaction: object):
-        """
-        ru: еще не добавлено отменить транзакцию
-        en: not yet added cancel transaction
-        :param order_id:
-        :param transaction:
-        :return:
-        """
-        pass
+        from ..clickuz.models import Order
+
+        order = Order.objects.filter(id=order_id).first()
+        if not order:
+            return
+
+
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Cancelling Click payment for order {order_id}, transaction {transaction.id}")
+
+
+        order.paid = False
+        order.save()
 
     @staticmethod
     def generate_url(order_id, amount, return_url=None):
