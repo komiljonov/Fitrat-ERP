@@ -395,6 +395,9 @@ class TransactionAPIView(ListCreateAPIView):
 
 class GeneratePaymeURLView(APIView):
     def post(self, request):
+
+        from root.settings import PAYCOM_SETTINGS
+
         print(request.data)
 
         # Correct way to access nested keys
@@ -403,7 +406,7 @@ class GeneratePaymeURLView(APIView):
         print(data)
 
         amount = data.get('amount')
-        account = data.get('account', {})
+        account = settings.PAYCOM_SETTINGS.get("KASSA_ID")
         order_id = account.get('order_id')
         return_url = request.data.get("return_url", None)  # Optional
 
