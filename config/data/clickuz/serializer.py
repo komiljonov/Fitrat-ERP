@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from ..clickuz.models import Order
+
 
 class ClickUzSerializer(serializers.Serializer):
     click_trans_id = serializers.CharField(allow_blank=True)
@@ -15,8 +17,6 @@ class ClickUzSerializer(serializers.Serializer):
     click_paydoc_id = serializers.CharField(allow_blank=True)
 
 
-from rest_framework import serializers
-from ..clickuz.models import Order
 
 class CreateOrderSerializer(serializers.ModelSerializer):
     class Meta:
