@@ -1,8 +1,10 @@
 from rest_framework.views import APIView, Response
+
+from . import ClickUz
 from .models import Transaction
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .click_authorization import click_authorization
-from .serializer import ClickUzSerializer
+from .serializer import ClickUzSerializer, CreateOrderSerializer
 from .status import *
 
 
@@ -125,3 +127,20 @@ class ClickUzMerchantAPIView(APIView):
             response_data.update(error=TRANSACTION_NOT_FOUND)
             return response_data
 
+
+
+class CreateClickOrderAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CreateOrderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        order = serializer.save()
+
+        payment_url = ClickUz.generate_url(order_id=order.id, amount=order.amount)
+
+        return Response({
+            "order_id": order.id,
+            "payment_url": payment_url
+        })
