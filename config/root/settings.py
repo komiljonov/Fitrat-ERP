@@ -178,9 +178,9 @@ PAYCOM_SETTINGS = {
 
 
 
-CLICK_SERVICE_ID = "your-service-id"
-CLICK_MERCHANT_ID = "your-merchant-id"
-CLICK_SECRET_KEY = "your-secret-key"
+CLICK_SERVICE_ID = "ZkSisTJOY8cS"
+CLICK_MERCHANT_ID = "ZkSisTJOY8cS"
+CLICK_SECRET_KEY = "78717"
 CLICK_ACCOUNT_MODEL = "clickuz.models.Order"
 CLICK_AMOUNT_FIELD = "amount"
 
