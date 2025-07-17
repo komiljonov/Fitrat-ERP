@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -61,11 +62,9 @@ class RegisterAPIView(CreateAPIView):
         tt = TimetrackerSinc()
         external_response = tt.create_data(external_data)
 
-
         if external_response and external_response.get("id"):
             user.second_user = external_response.get("id")
             user.save()
-
 
         return Response({
             "success": True,
@@ -86,7 +85,7 @@ class UserList(ListAPIView):
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
                                 include_only=["id", "first_name", "last_name", "full_name", "phone", "balance",
-                                              "monitoring","role","calculate_penalties", "created_at"])
+                                              "monitoring", "role", "calculate_penalties", "created_at"])
 
     def get_queryset(self):
         user = self.request.user
@@ -125,7 +124,6 @@ class TT_Data(APIView):
         tt = TimetrackerSinc()
         tt_data = tt.get_data()
 
-
         count = 0
         if tt_data:
 
@@ -154,9 +152,6 @@ class TT_Data(APIView):
         return Response({"count": count}, status=status.HTTP_200_OK)
 
 
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
-
 class CustomAuthToken(TokenObtainPairView):
     serializer_class = UserLoginSerializer
 
@@ -169,15 +164,14 @@ class CustomAuthToken(TokenObtainPairView):
         if not user:
             raise AuthenticationFailed("Invalid credentials or user does not exist.")
 
-
-        if user.phone !="+998911111111":
+        if user.phone != "+998911111111":
             for token in OutstandingToken.objects.filter(user=user):
                 try:
                     BlacklistedToken.objects.get_or_create(token=token)
                 except Exception:
                     return Response({
                         "token has been blacklisted",
-                    },status=status.HTTP_406_NOT_ACCEPTABLE)
+                    }, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # ✅ Issue new tokens
         refresh = RefreshToken.for_user(user)
@@ -196,7 +190,6 @@ class CustomAuthToken(TokenObtainPairView):
             'role': user.role,
             'filial': filial,
         }, status=status.HTTP_200_OK)
-
 
 
 class CustomRefreshTokenView(APIView):
@@ -230,7 +223,6 @@ class CustomRefreshTokenView(APIView):
 
         except TokenError as e:
             return Response({'detail': 'Invalid or expired refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 class UserUpdateAPIView(UpdateAPIView):
@@ -301,7 +293,7 @@ class StuffRolesView(ListAPIView):
         return serializer_class(
             *args, **kwargs,
             include_only=[
-                "id", "first_name", "last_name", "full_name", "phone","calculate_penalties",
+                "id", "first_name", "last_name", "full_name", "phone", "calculate_penalties",
                 "balance", "subject", "filial", "role", "is_call_operator"
             ]
         )
@@ -312,10 +304,9 @@ class StuffRolesView(ListAPIView):
         role = self.request.query_params.get('role')
         is_call_operator = self.request.query_params.get('is_call_operator')
         search = self.request.GET.get('search')
-        is_archived  = self.request.GET.get('is_archived')
+        is_archived = self.request.GET.get('is_archived')
 
         queryset = CustomUser.objects.all().order_by('-created_at')
-
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
@@ -327,7 +318,6 @@ class StuffRolesView(ListAPIView):
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
-
 
         if role:
             if role == "CALL_OPERATOR":
