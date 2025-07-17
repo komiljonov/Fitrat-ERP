@@ -177,6 +177,16 @@ PAYCOM_SETTINGS = {
 }
 
 
+# ✅ Add this to your settings.py
+
+CLICK_SETTINGS = {
+    "service_id": "ZkSisTJOY8cS",
+    "merchant_id": "ZkSisTJOY8cS",
+    "secret_key": "78717",
+    # optional
+    "commission_percent": 0,
+    "disable_admin": False,
+}
 
 CLICK_SERVICE_ID = "ZkSisTJOY8cS"
 CLICK_MERCHANT_ID = "ZkSisTJOY8cS"
