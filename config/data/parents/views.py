@@ -145,6 +145,9 @@ class ParentStudentAvgAPIView(APIView):
             course_is_language = {}
 
             for m in mastering_records:
+
+                print(m)
+
                 course = m.theme.course if m.theme and m.theme.course else None
 
                 print(course)
