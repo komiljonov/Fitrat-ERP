@@ -218,15 +218,20 @@ USE_I18N = True
 STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
 
+
 STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 AUTH_USER_MODEL = 'account.CustomUser'
 PAYME_ACCOUNT_MODEL = 'data.student.student.models.Student'
 
+
 DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 10 MB
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
