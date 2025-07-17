@@ -137,6 +137,7 @@ class MockExamResultRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 class StudentsResultsListAPIView(APIView):
     def get(self, request, *args, **kwargs):
         student = request.GET.get('student')
+        status = request.GET.get('status')
         results = Results.objects.filter(results="Certificate", who="Student")
 
         fk_name = self.request.GET.get('fk_name')
@@ -145,6 +146,9 @@ class StudentsResultsListAPIView(APIView):
 
         if student:
             results = results.filter(student__id=student)
+
+        if status:
+            results = results.filter(status=status)
 
         results = results.prefetch_related("student", "upload_file")
 
