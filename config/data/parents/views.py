@@ -132,6 +132,7 @@ class ParentStudentAvgAPIView(APIView):
                 .select_related("test", "theme", "theme__course", "theme__course__subject")
             )
 
+
             overall_scores = {
                 "exams": [],
                 "homeworks": [],
@@ -145,6 +146,8 @@ class ParentStudentAvgAPIView(APIView):
 
             for m in mastering_records:
                 course = m.theme.course if m.theme and m.theme.course else None
+
+                print(course)
                 if not course:
                     continue
 
