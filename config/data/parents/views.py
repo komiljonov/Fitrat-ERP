@@ -103,21 +103,20 @@ class ParentRetrieveAPIView(RetrieveUpdateDestroyAPIView):
 
 
 
-class ParentStudentAvgAPIView(APIView):
+
+class StudentAvgAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        students = []
 
         if user.role == "Student":
-            student = Student.objects.filter(user=user).first()
-            if student:
-                students = [student]
-
+            students = list(Student.objects.filter(user=user))
         elif user.role == "Parents":
             student_ids = Relatives.objects.filter(user=user).values_list("student", flat=True)
-            students = Student.objects.filter(id__in=student_ids)
+            students = list(Student.objects.filter(id__in=student_ids))
+        else:
+            return Response({"error": "Unauthorized user role."}, status=403)
 
         if not students:
             return Response({"error": "Student(s) not found."}, status=404)
@@ -125,36 +124,12 @@ class ParentStudentAvgAPIView(APIView):
         def avg(values):
             return round(sum(values) / len(values), 2) if values else 0
 
-        response_data = []
+        student_results = []
 
         for student in students:
-            # 🔹 Get course IDs the student is enrolled in
-            course_ids = (
-                StudentGroup.objects
-                .filter(student=student)
-                .values_list("group__course_id", flat=True)
-                .distinct()
-            )
-
-            # 🔹 Prepare course map for fast access
-            course_map = {
-                str(course.id): {
-                    "course_id": course.id,
-                    "course_name": course.name,
-                    "exams": [],
-                    "homeworks": [],
-                    "speaking": [],
-                    "unit": [],
-                    "mock": [],
-                }
-                for course in Course.objects.filter(id__in=course_ids)
-            }
-
-            # 🔹 Filter Mastering records for student and those course themes only
             mastering_records = (
-                Mastering.objects
-                .filter(student=student)
-                .select_related("test", "theme", "theme__course")
+                Mastering.objects.filter(student=student)
+                .select_related("test", "theme", "theme__course", "theme__course__subject")
             )
 
             overall_scores = {
@@ -165,60 +140,90 @@ class ParentStudentAvgAPIView(APIView):
                 "mock": [],
             }
 
-            for m in mastering_records:
-                course = m.theme.course if m.theme else m.test.theme.course if m.test else None
-                course_id = str(course.id)
+            course_scores = {}
+            course_is_language = {}
 
-                if course_id not in course_map:
-                    continue  # skip unexpected records
+            for m in mastering_records:
+                course = m.theme.course if m.theme and m.theme.course else None
+                if not course:
+                    continue
+
+                course_id = str(course.id)
+                if course_id not in course_scores:
+                    is_lang = course.subject.is_language
+                    course_is_language[course_id] = is_lang
+                    course_scores[course_id] = {
+                        "course_name": course.name,
+                        "course_id": course.id,
+                        "exams": [],
+                        "homeworks": [],
+                    }
+                    if is_lang:
+                        course_scores[course_id].update({
+                            "speaking": [],
+                            "unit": [],
+                            "mock": [],
+                        })
 
                 if m.test and m.test.type == "Offline" and m.choice == "Test":
                     overall_scores["exams"].append(m.ball)
-                    course_map[course_id]["exams"].append(m.ball)
-                elif m.choice == "Speaking":
+                    course_scores[course_id]["exams"].append(m.ball)
+                elif m.choice == "Speaking" and "speaking" in course_scores[course_id]:
                     overall_scores["speaking"].append(m.ball)
-                    course_map[course_id]["speaking"].append(m.ball)
-                elif m.choice == "Unit_Test":
+                    course_scores[course_id]["speaking"].append(m.ball)
+                elif m.choice == "Unit_Test" and "unit" in course_scores[course_id]:
                     overall_scores["unit"].append(m.ball)
-                    course_map[course_id]["unit"].append(m.ball)
-                elif m.choice == "Mock":
+                    course_scores[course_id]["unit"].append(m.ball)
+                elif m.choice == "Mock" and "mock" in course_scores[course_id]:
                     overall_scores["mock"].append(m.ball)
-                    course_map[course_id]["mock"].append(m.ball)
+                    course_scores[course_id]["mock"].append(m.ball)
                 else:
                     overall_scores["homeworks"].append(m.ball)
-                    course_map[course_id]["homeworks"].append(m.ball)
+                    course_scores[course_id]["homeworks"].append(m.ball)
 
-            overall = round(
-                sum(avg(overall_scores[key]) for key in overall_scores) / 5,
-                2
+            # Compute global overall average (based on 5 categories always)
+            global_overall = round(
+                (
+                    avg(overall_scores["exams"]) +
+                    avg(overall_scores["homeworks"]) +
+                    avg(overall_scores["speaking"]) +
+                    avg(overall_scores["unit"]) +
+                    avg(overall_scores["mock"])
+                ) / 5,
+                2,
             )
 
+            # Prepare per-course results
             course_results = []
-            for c in course_map.values():
-                course_avg = {
+            for course_id, c in course_scores.items():
+                is_language = course_is_language[course_id]
+
+                course_result = {
                     "course_id": c["course_id"],
                     "course_name": c["course_name"],
                     "exams": avg(c["exams"]),
                     "homeworks": avg(c["homeworks"]),
-                    "speaking": avg(c["speaking"]),
-                    "unit": avg(c["unit"]),
-                    "mock": avg(c["mock"]),
                 }
-                course_avg["overall"] = round(
-                    sum(course_avg[k] for k in ["exams", "homeworks", "speaking", "unit", "mock"]) / 5,
-                    2
-                )
-                course_results.append(course_avg)
 
-            response_data.append({
+                total_parts = 2
+                total_score = course_result["exams"] + course_result["homeworks"]
+
+                if is_language:
+                    course_result["speaking"] = avg(c["speaking"])
+                    course_result["unit"] = avg(c["unit"])
+                    course_result["mock"] = avg(c["mock"])
+                    total_score += course_result["speaking"] + course_result["unit"] + course_result["mock"]
+                    total_parts += 3
+
+                course_result["overall"] = round(total_score / total_parts, 2)
+                course_results.append(course_result)
+
+            # Append result for this student
+            student_results.append({
                 "student_id": student.id,
                 "full_name": f"{student.first_name} {student.last_name}",
-                "phone": student.phone,
-                "balance": student.balance,
-                "overall_learning": overall,
-                "course_scores": course_results
+                "overall_learning": global_overall,
+                "course_scores": course_results,
             })
 
-        return Response(response_data)
-
-
+        return Response(student_results)
