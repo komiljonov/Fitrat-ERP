@@ -10,6 +10,7 @@ from ..account.views import (
     UserList,
     UserInfo
 )
+
 urlpatterns = [
     path('', UserList.as_view(), name='user_list'),
     path('create', RegisterAPIView.as_view(), name='user_create'),

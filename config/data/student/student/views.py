@@ -1,7 +1,3 @@
-import cProfile
-import io
-import pstats
-
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
@@ -11,7 +7,6 @@ from drf_yasg.utils import swagger_auto_schema
 from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
-from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import (
     ListCreateAPIView,
@@ -232,13 +227,13 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             is_archived=False, student_stage_type="NEW_STUDENT", **filter
         ).count()
         total_debt = (
-            Student.objects.filter(
-                is_archived=False,
-                student_stage_type="NEW_STUDENT",
-                balance__lt=0,
-                **filter,
-            ).aggregate(total_debt=Sum("balance"))["total_debt"]
-            or 0
+                Student.objects.filter(
+                    is_archived=False,
+                    student_stage_type="NEW_STUDENT",
+                    balance__lt=0,
+                    **filter,
+                ).aggregate(total_debt=Sum("balance"))["total_debt"]
+                or 0
         )
         archived_new_students = Student.objects.filter(
             is_archived=True, student_stage_type="NEW_STUDENT", **filter
@@ -249,22 +244,22 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             is_archived=False, student_stage_type="ACTIVE_STUDENT", **filter
         ).count()
         total_income = (
-            Student.objects.filter(
-                is_archived=False,
-                student_stage_type="ACTIVE_STUDENT",
-                balance__gt=0,
-                **filter,
-            ).aggregate(total_income=Sum("balance"))["total_income"]
-            or 0
+                Student.objects.filter(
+                    is_archived=False,
+                    student_stage_type="ACTIVE_STUDENT",
+                    balance__gt=0,
+                    **filter,
+                ).aggregate(total_income=Sum("balance"))["total_income"]
+                or 0
         )
         student_total_debt = (
-            Student.objects.filter(
-                is_archived=False,
-                student_stage_type="ACTIVE_STUDENT",
-                balance__lt=0,
-                **filter,
-            ).aggregate(total_debt=Sum("balance"))["total_debt"]
-            or 0
+                Student.objects.filter(
+                    is_archived=False,
+                    student_stage_type="ACTIVE_STUDENT",
+                    balance__lt=0,
+                    **filter,
+                ).aggregate(total_debt=Sum("balance"))["total_debt"]
+                or 0
         )
 
         balance_active = Student.objects.filter(
