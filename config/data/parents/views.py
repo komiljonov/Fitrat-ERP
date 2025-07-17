@@ -146,11 +146,9 @@ class ParentStudentAvgAPIView(APIView):
 
             for m in mastering_records:
 
-                print(m)
-
                 course = m.theme.course if m.theme and m.theme.course else None
 
-                print(course)
+
                 if not course:
                     continue
 
