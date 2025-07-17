@@ -297,8 +297,6 @@ class SendSmsToStudent(APIView):
 
         sent_count = 0
 
-
-
         for student in students:
             relatives = Relatives.objects.filter(
                 Q(lid__id=student) | Q(student__id=student)
