@@ -169,12 +169,14 @@ class CustomAuthToken(TokenObtainPairView):
         if not user:
             raise AuthenticationFailed("Invalid credentials or user does not exist.")
 
-        # ✅ Blacklist old refresh tokens
+
         for token in OutstandingToken.objects.filter(user=user):
             try:
                 BlacklistedToken.objects.get_or_create(token=token)
             except Exception:
-                pass  # token may already be blacklisted
+                return Response({
+                    "token has been blacklisted",
+                },status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # ✅ Issue new tokens
         refresh = RefreshToken.for_user(user)
