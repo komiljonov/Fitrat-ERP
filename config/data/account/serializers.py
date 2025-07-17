@@ -19,8 +19,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "phone", "role","calculate_penalties","calculate_bonus", "password", "salary",
-            "photo", "filial", "balance", "ball", "files","extra_number","is_call_center",
+            "id", "full_name", "first_name", "last_name", "phone", "role", "calculate_penalties", "calculate_bonus",
+            "password", "salary",
+            "photo", "filial", "balance", "ball", "files", "extra_number", "is_call_center",
             "enter", "leave", "date_of_birth",
         )
         # We don't need to add extra_kwargs for password
@@ -43,7 +44,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.files.set(files)
         user.save()
         return user
-
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
@@ -76,10 +76,10 @@ class UserLoginSerializer(serializers.Serializer):
                 if balance < -100000:
                     raise PermissionDenied(detail="Sizning qarzdorligingiz sababli faoliyatingiz cheklangan!")
 
-            if user.is_archived ==True:
+            if user.is_archived == True:
                 raise serializers.ValidationError({"permission denied": "Sizning faoliyatingiz cheklangan!"},
                                                   code='permission_denied')
-        if phone and user.role not in ["TEACHER","ASSISTANT"]:
+        if phone and user.role not in ["TEACHER", "ASSISTANT"]:
 
             user = CustomUser.objects.filter(phone=phone).first()
 
@@ -117,12 +117,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True, required=False)
     password = serializers.CharField(max_length=128, write_only=True, required=False)
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, required=False)
-    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(),many=True, required=False)
+    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), many=True, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ["id", "phone", "full_name", "first_name", "last_name","calculate_penalties","calculate_bonus", "password","is_archived",
-                  "role", "photo", "salary", "enter", "leave", "files","filial","extra_number","is_call_center",
+        fields = ["id", "phone", "full_name", "first_name", "last_name", "calculate_penalties", "calculate_bonus",
+                  "password", "is_archived",
+                  "role", "photo", "salary", "enter", "leave", "files", "filial", "extra_number", "is_call_center",
                   "date_of_birth"]
 
     def update(self, instance, validated_data):
@@ -142,12 +143,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         # Update other fields except many-to-many
         for attr, value in validated_data.items():
-            if attr not in [ "files","filial"]:
+            if attr not in ["files", "filial"]:
                 setattr(instance, attr, value)
 
         if "first_name" or "last_name" in validated_data:
             instance.full_name = f"{instance.first_name} {instance.last_name}"
-
 
         if "files" in validated_data:
             print("Updating files:", validated_data["files"])  # Debugging
@@ -176,10 +176,10 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name", "first_name","calculate_penalties","calculate_bonus", "last_name", 'role',"balance","monitoring",
-                  "salary", "pages", "files","is_archived","extra_number","is_call_center",
-                  "photo", "filial", "bonus", "compensation","created_at" ]
-
+        fields = ['id', 'phone', "full_name", "first_name", "calculate_penalties", "calculate_bonus", "last_name",
+                  'role', "balance", "monitoring",
+                  "salary", "pages", "files", "is_archived", "extra_number", "is_call_center",
+                  "photo", "filial", "bonus", "compensation", "created_at"]
 
     def __init__(self, *args, include_only=None, **kwargs):
         # pop our custom arg before calling super
@@ -189,7 +189,6 @@ class UserListSerializer(ModelSerializer):
             for field_name in list(self.fields):
                 if field_name not in allowed:
                     self.fields.pop(field_name)
-
 
     def get_bonus(self, obj):
         bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
@@ -253,13 +252,14 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "is_linked","calculate_penalties","calculate_bonus","phone", "role", "penalty" ,"pages", "files",
-            "photo", "filial", "balance","salary","extra_number","is_call_center","second_user","student_id",
-            "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation","monitoring",
-            "updated_at","is_archived"
+            "id", "full_name", "first_name", "last_name", "is_linked", "calculate_penalties", "calculate_bonus",
+            "phone", "role", "penalty", "pages", "files",
+            "photo", "filial", "balance", "salary", "extra_number", "is_call_center", "second_user", "student_id",
+            "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation", "monitoring",
+            "updated_at", "is_archived"
         )
 
-    def get_student_id(self, obj) :
+    def get_student_id(self, obj):
         return Student.objects.filter(user=obj).values_list("id", flat=True).first()
 
     def get_penalty(self, obj):
@@ -303,4 +303,3 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CheckNumberSerializer(serializers.Serializer):
     phone = serializers.CharField()
-

@@ -11,4 +11,6 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
-get_tokens_for_user(user=CustomUser.objects.first() )
+
+
+get_tokens_for_user(user=CustomUser.objects.first())
