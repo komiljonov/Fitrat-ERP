@@ -205,11 +205,11 @@ class StudentAvgAPIView(APIView):
         # Calculate global overall (you can adjust logic to exclude non-language categories if needed)
         overall = round(
             (
-                avg(overall_scores["exams"]) +
-                avg(overall_scores["homeworks"]) +
-                avg(overall_scores["speaking"]) +
-                avg(overall_scores["unit"]) +
-                avg(overall_scores["mock"])
+                    avg(overall_scores["exams"]) +
+                    avg(overall_scores["homeworks"]) +
+                    avg(overall_scores["speaking"]) +
+                    avg(overall_scores["unit"]) +
+                    avg(overall_scores["mock"])
             ) / 5,
             2,
         )
