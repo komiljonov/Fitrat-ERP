@@ -13,3 +13,23 @@ class ClickUzSerializer(serializers.Serializer):
     sign_time = serializers.CharField()
     sign_string = serializers.CharField(allow_blank=True)
     click_paydoc_id = serializers.CharField(allow_blank=True)
+
+
+from rest_framework import serializers
+from ..clickuz.models import Order
+
+class CreateOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["id", "lid", "student", "amount", "type"]
+        extra_kwargs = {
+            "amount": {"required": True},
+            "type": {"required": True},
+        }
+
+    def validate(self, attrs):
+        if not attrs.get("lid") and not attrs.get("student"):
+            raise serializers.ValidationError("Either lid or student must be provided.")
+        if attrs.get("lid") and attrs.get("student"):
+            raise serializers.ValidationError("Provide only one of lid or student.")
+        return attrs

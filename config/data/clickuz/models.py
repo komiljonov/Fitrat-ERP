@@ -31,3 +31,4 @@ class Order(models.Model):
         ("Click","Click"),
     ],max_length=255,null=True,blank=True)
     amount = models.CharField(max_length=255)
+    paid = models.BooleanField(default=False)
