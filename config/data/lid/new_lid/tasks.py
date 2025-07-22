@@ -2,8 +2,11 @@ import logging
 from datetime import timedelta
 from celery import shared_task
 from django.utils.timezone import now
+from pymupdf import Story
+
 from .models import Lid
 from ...notifications.models import Notification
+from ...student.appsettings.models import Store
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,3 +33,17 @@ def check_daily_leads():
             logging.warning(f"No call operator assigned to lead {task.id}. Notification skipped.")
 
     logging.info("Celery task completed: Checked daily leads.")
+
+
+    # === STORY EXPIRATION ===
+    overdue_stories = Store.objects.filter(
+        has_expired=False,
+        expired_at__lte=now()
+    )
+
+    for story in overdue_stories:
+        story.has_expired = True
+        story.save()
+        logging.info(f"Story {story.id} marked as expired.")
+
+    logging.info("✅ Celery task complete: Daily lead & story checks.")
