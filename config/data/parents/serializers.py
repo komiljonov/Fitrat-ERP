@@ -31,30 +31,30 @@ class RelativesSerializer(serializers.ModelSerializer):
         name = validated_data.get("name")
 
         if phone and student:
-            # ✅ Generate strong 8-character password
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            parent = CustomUser.objects.filter(phone=phone).first()
+            if not parent:
+                password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
-            # ✅ Create CustomUser
-            parent = CustomUser.objects.create(
-                full_name=name,
-                phone=phone,
-                password=make_password(password),  # hash the password
-                role="Parents",  # or whatever your parent role is called
-            )
+                parent = CustomUser.objects.create(
+                    full_name=name,
+                    phone=phone,
+                    password=make_password(password),
+                    role="Parents",
+                )
 
-            # ✅ Optionally send or log password
-            print(f"Parent account created with phone {phone} and password: {password}")
-            sms.send_sms(
-                number=phone,
-                message=f"""
-                Fitrat Ota - Onalar uchun ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
-
-                Login: {phone}
-                Parol: {password}
-
-                Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
-                """
-            )
+                # ✅ Optionally send or log password
+                print(f"Parent account created with phone {phone} and password: {password}")
+                sms.send_sms(
+                    number=phone,
+                    message=f"""
+                    Fitrat Ota - Onalar uchun ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+    
+                    Login: {phone}
+                    Parol: {password}
+    
+                    Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
+                    """
+                )
 
             # ✅ Create Relative linking user to student
             relative = Relatives.objects.create(
