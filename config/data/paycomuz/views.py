@@ -302,27 +302,33 @@ class MerchantAPIView(APIView):
             }
 
     def cancel_transaction(self, validated_data):
-        self.context_id = validated_data["id"]  # ✅ Ensure correct response ID
+        self.context_id = validated_data["id"]
         tx_id = validated_data['params']['id']
         reason = validated_data['params']['reason']
 
         try:
             transaction = Transaction.objects.get(_id=tx_id)
-            if transaction.state == 1:
-                transaction.state = CANCEL_TRANSACTION_CODE
-            elif transaction.state == 2:
-                transaction.state = PERFORM_CANCELED_CODE
+            state = int(transaction.state)
+
+            if state == CREATE_TRANSACTION:
+                transaction.state = CANCEL_TRANSACTION_CODE  # -1
+            elif state == CLOSE_TRANSACTION:
+                transaction.state = PERFORM_CANCELED_CODE  # -2
+
+                # ⚠️ perform_datetime must be set if transaction was completed!
+                if not transaction.perform_datetime:
+                    transaction.perform_datetime = int(datetime.now().timestamp() * 1000)
+
+                # Call cancellation logic if needed
                 self.VALIDATE_CLASS().cancel_payment(validated_data['params'], transaction)
 
             transaction.reason = reason
             transaction.status = Transaction.CANCELED
 
-            now_ms = int(datetime.now().timestamp() * 1000)
             if not transaction.cancel_datetime:
-                transaction.cancel_datetime = now_ms
+                transaction.cancel_datetime = int(datetime.now().timestamp() * 1000)
 
             transaction.save()
-
             self.response_check_transaction(transaction)
 
         except Transaction.DoesNotExist:
@@ -334,7 +340,6 @@ class MerchantAPIView(APIView):
                     "message": TRANSACTION_NOT_FOUND_MESSAGE
                 }
             }
-
 
     def get_statement(self, validated_data):
         from_d = validated_data.get('params').get('from')
@@ -395,16 +400,19 @@ class MerchantAPIView(APIView):
             }
         }
 
-
     def response_check_transaction(self, transaction: Transaction):
-        self.reply = dict(result=dict(
-            create_time=int(transaction.created_datetime) if transaction.created_datetime else 0,
-            perform_time=int(transaction.perform_datetime) if transaction.perform_datetime else 0,
-            cancel_time=int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
-            transaction=str(transaction._id),
-            state=transaction.state,
-            reason=transaction.reason
-        ))
+        self.reply = {
+            "jsonrpc": "2.0",
+            "id": self.context_id,
+            "result": {
+                "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
+                "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
+                "cancel_time": int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
+                "transaction": str(transaction._id),
+                "state": transaction.state,
+                "reason": transaction.reason
+            }
+        }
 
 
 class PaycomWebhookView(MerchantAPIView):
