@@ -136,7 +136,7 @@ class CheckOrder(PayComResponse):
                 user.balance += amount
                 user.save()
 
-            Transaction.objects.update_or_create(
+            Transaction.objects.update(
                 _id=str(transaction.id),
                 defaults={
                     "request_id": transaction.request_id,
@@ -152,7 +152,7 @@ class CheckOrder(PayComResponse):
     def cancel_payment(self, account, transaction, *args, **kwargs):
         order_key = account.get(self.ORDER_KEY)
 
-        Transaction.objects.update_or_create(
+        Transaction.objects.update(
             _id=str(transaction.id),
             defaults={
                 "request_id": transaction.request_id,
