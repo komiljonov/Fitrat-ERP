@@ -11,7 +11,8 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = True
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,[::1]").split(",")
+# ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,[::1]").split(",")
+ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
@@ -232,7 +233,7 @@ PAYME_ACCOUNT_MODEL = 'data.student.student.models.Student'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 10 MB
 
-
+from corsheaders.defaults import default_headers
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
@@ -247,7 +248,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://ilm.fitrat.sector-soft.ru",
     "https://api.ilm.fitrat.sector-soft.ru",
     "https://api.ft.sector-soft.ru",
-    "https://ft.sector-soft.ru"
+    "https://ft.sector-soft.ru",
+    "https://8fc541a61a9e.ngrok-free.app"
 ]
 
 CORS_ALLOW_METHODS = (
@@ -267,6 +269,7 @@ CORS_ALLOW_HEADERS = (
     "user-agent",
     "x-csrftoken",
     "x-requested-with",
+    "ngrok-skip-browser-warning"
 )
 
 CORS_ALLOW_CREDENTIALS = True

@@ -8,14 +8,14 @@ from ..upload.serializers import FileUploadSerializer
 
 class CommentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
 
     class Meta:
         model = Comment
         fields = [
             "id",
             "creator",
-            "photo",
+            "file",
             "lid",
             "student",
             "comment",
@@ -27,7 +27,7 @@ class CommentSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
 
         creator = instance.creator if instance.creator else None
-        rep["photo"] = FileUploadSerializer(instance.photo, context=self.context).data
+        rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
 
         if creator:
             rep["full_name"] = f"{creator.first_name} {creator.last_name}"
