@@ -227,15 +227,13 @@ class MerchantAPIView(APIView):
                 obj.state = CLOSE_TRANSACTION
                 obj.status = Transaction.SUCCESS
                 obj.perform_datetime = perform_time
+                obj.save()
+                print(obj.state)
 
                 self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
 
-                # order = Order.objects.filter(Q(lid=obj.order_key) | Q(student=obj.order_key)).first()
-                # if order and order.amount == obj.amount:
-                #     order.paid = True
-                #     order.save()
-                #
                 obj.save()
+                print(obj.state)
 
                 self.reply = {
                     "jsonrpc": "2.0",
