@@ -4,7 +4,6 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.conf import settings
-from django.db.models import Q
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
@@ -13,7 +12,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from data.paycomuz.methods_subscribe_api import PayComResponse  # your custom PayComResponse
-from data.paycomuz.serializers import GeneratePaymentLinkSerializer
 from . import Paycom
 from .authentication import authentication
 from .check_order import CheckOrder
@@ -22,7 +20,6 @@ from .models import Transaction
 from .serializers.payme_operation import PaycomOperationSerialzer
 from .serializers.serializers import PaycomuzSerializer
 from .status import *
-from ..clickuz.models import Order
 from ..lid.new_lid.models import Lid
 from ..student.student.models import Student
 
@@ -163,8 +160,6 @@ class MerchantAPIView(APIView):
             status=Transaction.PROCESSING
         )
 
-        from data.clickuz.models import Order
-
         student = None
         lid = None
 
@@ -173,13 +168,13 @@ class MerchantAPIView(APIView):
         if Lid.objects.filter(id=lid).exists():
             lid=order_key
 
-        Order.objects.create(
-            lid=lid,
-            student=student,
-            type="Payme",
-            amount=amount,
-            paid=False,
-        )
+        # Order.objects.create(
+        #     lid=lid,
+        #     student=student,
+        #     type="Payme",
+        #     amount=amount,
+        #     paid=False,
+        # )
 
         self.reply = {
             "jsonrpc": "2.0",
@@ -235,12 +230,12 @@ class MerchantAPIView(APIView):
 
                 self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
 
-                order = Order.objects.filter(Q(lid=obj.order_key) | Q(student=obj.order_key)).first()
-                if order and order.amount == obj.amount:
-                    order.paid = True
-                    order.save()
-
-                obj.save()
+                # order = Order.objects.filter(Q(lid=obj.order_key) | Q(student=obj.order_key)).first()
+                # if order and order.amount == obj.amount:
+                #     order.paid = True
+                #     order.save()
+                #
+                # obj.save()
 
                 self.reply = {
                     "jsonrpc": "2.0",
@@ -423,8 +418,6 @@ class TransactionAPIView(ListCreateAPIView):
 
 class GeneratePaymeURLView(APIView):
     def post(self, request):
-
-        from root.settings import PAYCOM_SETTINGS
 
         print(request.data)
 
