@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class Comment(BaseModel):
 
     creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
-    photo : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True,blank=True, related_name='comments_photo')
+    file : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True,blank=True, related_name='comments_photo')
     lid : 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.CASCADE, null=True,blank=True)
     student : 'Student' = models.ForeignKey('student.Student', on_delete=models.CASCADE, null=True,blank=True)
     comment : str = models.TextField()
