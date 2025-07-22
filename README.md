@@ -5,7 +5,9 @@ Absolutely! Here's your complete `README.md` file content for **Fitrat ERP** —
 ````markdown
 # 💼 Fitrat ERP
 
-**Fitrat ERP** is a powerful, full-featured ERP system built for educational institutions and training centers. It’s developed using **Django**, **Django REST Framework**, **Docker**, and a modern **Next.js frontend**. Fitrat is modular, scalable, and ready for production with payment integrations, Telegram bots, attendance systems, and more.
+**Fitrat ERP** is a powerful, full-featured ERP system built for educational institutions and training centers.
+It’s developed using **Django**, **Django REST Framework**, **Docker**, and a modern **Next.js frontend**. 
+Fitrat is modular, scalable, and ready for production with payment integrations, Telegram bots, attendance systems, and more.
 
 ---
 
@@ -209,5 +211,10 @@ Fork the repo, create a branch, and make a PR. Contributions are more than welco
 MIT — Use, modify, and deploy freely.
 
 ---
+
+Developers:
+
+- 🧠 **Backend**: [Shohjahon Obruyev](https://github.com/ShohjahonObruyevOybekovich)
+- 🎨 **Frontend**: [Sadriddin Ravshanov](https://github.com/Sadriddin0124)
 
 Built with ❤️ by SectorSoft and contributors.
