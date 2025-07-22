@@ -30,4 +30,4 @@ class ConfirmationCode(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_valid(self):
-        return self.created_at > timezone.now() - timedelta(minutes=5)
+        return self.created_at > timezone.now() - timedelta(minutes=1)
