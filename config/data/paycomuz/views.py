@@ -20,8 +20,6 @@ from .models import Transaction
 from .serializers.payme_operation import PaycomOperationSerialzer
 from .serializers.serializers import PaycomuzSerializer
 from .status import *
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
 
 
 class MerchantAPIView(APIView):
@@ -95,7 +93,7 @@ class MerchantAPIView(APIView):
 
         # Step 2: Validate amount
         amount = validated_data["params"].get("amount", 0)
-        if amount <= 1000 or amount >= 999999999:
+        if amount <= 100000 or amount >= 999999999:
             return self.invalid_amount(validated_data)
 
         # ✅ Everything valid
@@ -384,10 +382,8 @@ class MerchantAPIView(APIView):
 
         self.reply = response
 
-
     def order_found(self, validated_data):
         self.reply = dict(result=dict(allow=True))
-
 
     def order_not_found(self, validated_data):
         self.reply = dict(error=dict(
@@ -395,7 +391,6 @@ class MerchantAPIView(APIView):
             code=ORDER_NOT_FOUND,
             message=ORDER_NOT_FOUND_MESSAGE
         ))
-
 
     def invalid_amount(self, validated_data):
         self.reply = {
@@ -434,7 +429,6 @@ class TransactionAPIView(ListCreateAPIView):
 
 class GeneratePaymeURLView(APIView):
     def post(self, request):
-
         print(request.data)
 
         # Correct way to access nested keys
