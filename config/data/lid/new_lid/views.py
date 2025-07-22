@@ -13,6 +13,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, \
     ListCreateAPIView, CreateAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,9 +24,16 @@ from ...student.lesson.models import FirstLLesson
 from ...student.student.models import Student
 
 
+class B(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class LidListCreateView(ListCreateAPIView):
     serializer_class = LidSerializer
-    # permission_classes = [IsAuthenticated]
+    pagination_class = B
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 
     search_fields = ["first_name", "last_name", "phone_number", ]
