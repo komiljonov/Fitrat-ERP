@@ -10,6 +10,9 @@ class Store(BaseModel):
     text = models.TextField(blank=True,null=True)
     seen = models.BooleanField(default=False)
 
+    expired_date = models.DateField(blank=True,null=True)
+    has_expired = models.BooleanField(default=False)
+
 
 class Strike(BaseModel):
     student : "Student" = models.ForeignKey("student.Student",on_delete=models.CASCADE,related_name="student_strike")

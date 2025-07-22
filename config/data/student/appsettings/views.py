@@ -39,6 +39,10 @@ class StoresListView(ListCreateAPIView):
         filial = self.request.query_params.get('filial', None)
 
         seen = self.request.query_params.get('seen', None)
+        has_expired = self.request.GET.get('has_expired', None)
+
+        if has_expired:
+            queryset = queryset.filter(has_expired=has_expired.capitalize())
         if filial:
             queryset = queryset.filter(filial__id=filial)
         if seen:
