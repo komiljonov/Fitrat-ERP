@@ -21,7 +21,9 @@ class CoinsSettingsCreateAPIView(ListCreateAPIView):
         queryset = CoinsSettings.objects.all()
 
         type = self.request.GET.get('type')
-
+        choice = self.request.GET.get('choice')
+        if choice:
+            queryset = queryset.filter(choice=choice)
         if type:
             queryset = queryset.filter(type=type)
         return queryset
