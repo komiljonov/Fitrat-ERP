@@ -137,7 +137,7 @@ class CheckOrder(PayComResponse):
                 user.save()
 
             Transaction.objects.update_or_create(
-                _id=str(transaction.id),
+                _id=str(transaction._id),
                 defaults={
                     "request_id": transaction.request_id,
                     "order_key": order_key,
