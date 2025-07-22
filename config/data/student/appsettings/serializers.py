@@ -34,6 +34,8 @@ class StoresSerializer(serializers.ModelSerializer):
             "video",
             "text",
             "seen",
+            "expired_date",
+            "has_expired",
             "created_at",
         ]
 
