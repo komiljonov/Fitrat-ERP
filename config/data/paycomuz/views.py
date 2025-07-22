@@ -290,11 +290,10 @@ class MerchantAPIView(APIView):
                 "result": {
                     "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
                     "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
-                    "cancel_time": int(
-                        transaction.cancel_datetime) if transaction.cancel_datetime and transaction.state < 0 else 0,
+                    "cancel_time": 0 if transaction.state == 2 else int(transaction.cancel_datetime or 0),
                     "transaction": str(transaction._id),
                     "state": transaction.state,
-                    "reason": transaction.reason if transaction.state < 0 else None
+                    "reason": None if transaction.state == 2 else transaction.reason,
                 }
             }
 
