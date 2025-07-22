@@ -108,6 +108,9 @@ class MerchantAPIView(APIView):
         }
 
     def create_transaction(self, validated_data):
+
+        print(f"[CREATE] Incoming transaction ID: {validated_data['params']['id']}")
+
         order_key = validated_data['params']['account'].get(self.ORDER_KEY)
         if not order_key:
             raise serializers.ValidationError(f"{self.ORDER_KEY} is required")
@@ -190,6 +193,9 @@ class MerchantAPIView(APIView):
             return
 
     def perform_transaction(self, validated_data):
+
+        print(f"[PERFORM] Requested ID: {validated_data['params']['id']}")
+
         _id = validated_data['params']['id']
         request_id = validated_data['id']
 
