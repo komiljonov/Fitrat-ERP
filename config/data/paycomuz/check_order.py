@@ -136,7 +136,7 @@ class CheckOrder(PayComResponse):
                 user.balance += amount
                 user.save()
 
-            Transaction.objects.update(
+            Transaction.objects.update_or_create(
                 _id=str(transaction.id),
                 defaults={
                     "request_id": transaction.request_id,
