@@ -24,6 +24,7 @@ from ..lesson.serializers import LessonSerializer
 from ..studentgroup.models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...finances.finance.models import Finance
+from ...lid.new_lid.views import B
 
 
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
@@ -31,6 +32,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         "marketing_channel", "sales_manager", "service_manager"
     )
     serializer_class = StudentSerializer
+    pagination_class = B
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ["first_name", "last_name", "phone"]
@@ -41,9 +43,8 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         "student_stage_type",
         "balance_status",
         "is_archived",
-        "sales_manager",  # Added sales_manager filter
-        "call_operator",  # Added call_operator filter
-        # "course",  # Added courses filter
+        "sales_manager",
+        "call_operator",
     ]
 
     def get_serializer(self, *args, **kwargs):
@@ -159,21 +160,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
                 pass  # Handle invalid date format, if necessary
 
         return queryset
-
-    # def get(self, *args, **kwargs):
-    #     profiler = cProfile.Profile()
-    #     profiler.enable()
-    #
-    #     res = super().get(*args, **kwargs)
-    #
-    #     profiler.disable()
-    #     stream = io.StringIO()
-    #     stats = pstats.Stats(profiler, stream=stream).sort_stats('cumulative')
-    #     stats.print_stats(10)  # print top 10 functions by cumulative time
-    #
-    #     print(stream.getvalue())  # print the profiling results
-    #
-    #     return res
 
 
 class StudentDetailView(RetrieveUpdateDestroyAPIView):
