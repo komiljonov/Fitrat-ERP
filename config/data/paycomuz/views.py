@@ -160,22 +160,6 @@ class MerchantAPIView(APIView):
             status=Transaction.PROCESSING
         )
 
-        # student = None
-        # lid = None
-        #
-        # if Student.objects.filter(id=order_key).exists():
-        #     student=order_key
-        # if Lid.objects.filter(id=lid).exists():
-        #     lid=order_key
-
-        # Order.objects.create(
-        #     lid=lid,
-        #     student=student,
-        #     type="Payme",
-        #     amount=amount,
-        #     paid=False,
-        # )
-
         self.reply = {
             "jsonrpc": "2.0",
             "id": validated_data["id"],
@@ -185,6 +169,25 @@ class MerchantAPIView(APIView):
                 "state": CREATE_TRANSACTION
             }
         }
+
+        _id = validated_data['params']['id']
+        existing_tx = Transaction.objects.filter(_id=_id).first()
+
+        if existing_tx and existing_tx.state != CREATE_TRANSACTION:
+            self.reply = {
+                "jsonrpc": "2.0",
+                "id": validated_data["id"],
+                "error": {
+                    "code": -31008,  # already performed or cancelled
+                    "message": {
+                        "uz": "Transaksiya allaqachon bajarilgan yoki bekor qilingan",
+                        "ru": "Транзакция уже завершена или отменена",
+                        "en": "Transaction already completed or cancelled"
+                    },
+                    "data": None
+                }
+            }
+            return
 
     def perform_transaction(self, validated_data):
         _id = validated_data['params']['id']
