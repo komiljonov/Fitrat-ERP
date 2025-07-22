@@ -25,9 +25,9 @@ UNABLE_TO_PERFORM_OPERATION_MESSAGE = {
     "en": "Unable to perform operation"
 }
 INVALID_AMOUNT_MESSAGE = {
-    "uz": "Miqdori notog'ri",
-    "ru": "Неверная сумма",
-    "en": "Invalid amount"
+    "uz": "To‘lov miqdori noto‘g‘ri",
+    "ru": "Неверная сумма платежа",
+    "en": "Invalid payment amount"
 }
 
 AUTH_ERROR = {
