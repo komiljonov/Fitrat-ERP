@@ -309,13 +309,14 @@ class MerchantAPIView(APIView):
         try:
             transaction = Transaction.objects.get(_id=tx_id)
             state = int(transaction.state)
+            print(state)
+            print(CLOSE_TRANSACTION)
 
             if state == CREATE_TRANSACTION:
                 transaction.state = CANCEL_TRANSACTION_CODE  # -1
             elif state == CLOSE_TRANSACTION:
                 transaction.state = PERFORM_CANCELED_CODE  # -2
 
-                # ⚠️ perform_datetime must be set if transaction was completed!
                 if not transaction.perform_datetime:
                     transaction.perform_datetime = int(datetime.now().timestamp() * 1000)
 
