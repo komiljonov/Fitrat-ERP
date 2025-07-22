@@ -42,6 +42,7 @@ class CoinsSettingsSerializer(serializers.ModelSerializer):
             "type",
             "from_point",
             "to_point",
+            "choice",
             "coin",
             "created_at",
         ]
