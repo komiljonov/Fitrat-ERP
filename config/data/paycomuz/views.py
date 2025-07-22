@@ -160,13 +160,13 @@ class MerchantAPIView(APIView):
             status=Transaction.PROCESSING
         )
 
-        student = None
-        lid = None
-
-        if Student.objects.filter(id=order_key).exists():
-            student=order_key
-        if Lid.objects.filter(id=lid).exists():
-            lid=order_key
+        # student = None
+        # lid = None
+        #
+        # if Student.objects.filter(id=order_key).exists():
+        #     student=order_key
+        # if Lid.objects.filter(id=lid).exists():
+        #     lid=order_key
 
         # Order.objects.create(
         #     lid=lid,
@@ -235,7 +235,7 @@ class MerchantAPIView(APIView):
                 #     order.paid = True
                 #     order.save()
                 #
-                # obj.save()
+                obj.save()
 
                 self.reply = {
                     "jsonrpc": "2.0",
