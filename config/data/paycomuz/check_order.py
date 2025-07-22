@@ -152,7 +152,7 @@ class CheckOrder(PayComResponse):
     def cancel_payment(self, account, transaction, *args, **kwargs):
         order_key = account.get(self.ORDER_KEY)
 
-        Transaction.objects.update(
+        Transaction.objects.update_or_create(
             _id=str(transaction.id),
             defaults={
                 "request_id": transaction.request_id,
