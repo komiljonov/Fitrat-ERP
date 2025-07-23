@@ -1,5 +1,5 @@
 from django.core.exceptions import FieldError
-from django.db.models import Q, Sum, Prefetch
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
@@ -20,12 +20,8 @@ from rest_framework.views import APIView
 
 from .models import Lid
 from .serializers import LidSerializer
-from ...finances.finance.models import VoucherStudent, SaleStudent
-from ...parents.models import Relatives
-from ...student.attendance.models import Attendance
 from ...student.lesson.models import FirstLLesson
 from ...student.student.models import Student
-from ...student.studentgroup.models import StudentGroup
 
 
 class B(PageNumberPagination):
@@ -69,23 +65,7 @@ class LidListCreateView(ListCreateAPIView):
         if user.is_anonymous:
             return Lid.objects.none()
 
-        queryset = (
-            Lid.objects
-            .select_related(
-                "filial", "marketing_channel", "call_operator", "sales_manager", "service_manager"
-            )
-            .prefetch_related(
-                "file",  # M2M
-                Prefetch("relatives_set", queryset=Relatives.objects.only("name", "phone", "who")),
-                Prefetch("studentgroup_set",
-                         queryset=StudentGroup.objects.select_related("group__course", "group__teacher")),
-                Prefetch("attendance_set", queryset=Attendance.objects.only("id", "reason")),
-                Prefetch("firstllesson_set", queryset=FirstLLesson.objects.only("date", "time")),
-                Prefetch("voucherstudent_set", queryset=VoucherStudent.objects.select_related("voucher")),
-                Prefetch("salestudent_set", queryset=SaleStudent.objects.select_related("sale")),
-            )
-        )
-
+        queryset = Lid.objects.all()
         filial = self.request.query_params.get("filial")
 
         if user.role == "CALL_OPERATOR" or user.is_call_center:
