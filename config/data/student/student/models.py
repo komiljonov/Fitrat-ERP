@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 class Student(BaseModel):
 
+
     user : "CustomUser" = models.ForeignKey("account.CustomUser",
                             on_delete=models.SET_NULL,null=True,blank=True, related_name="students_user")
 

@@ -25,6 +25,8 @@ from ...upload.serializers import FileUploadSerializer
 
 
 class StudentSerializer(serializers.ModelSerializer):
+
+
     photo = serializers.PrimaryKeyRelatedField(
         queryset=File.objects.all(), allow_null=True
     )
