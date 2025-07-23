@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Count, Q
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
@@ -103,6 +103,11 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         subject_id = self.request.query_params.get("subject")
         filial_id = self.request.query_params.get("filial")
         student_stage_type = self.request.query_params.get("stt")
+
+        queryset = queryset.annotate(
+            attendance_count=Count("attendance", filter=Q(attendance__reason="IS_PRESENT"))
+        )
+
 
         if student_stage_type:
             queryset = queryset.filter(new_student_stages=student_stage_type)
