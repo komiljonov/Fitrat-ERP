@@ -69,7 +69,7 @@ class LidListCreateView(ListCreateAPIView):
             return Lid.objects.none()
 
         queryset = Lid.objects.all()
-        filial = self.request.query_params.get("filial")
+        filial = self.request.GET.get("filial")
 
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
@@ -82,16 +82,16 @@ class LidListCreateView(ListCreateAPIView):
             )
 
         # ✅ Additional Filters
-        is_archived = self.request.query_params.get("is_archived")
-        search_term = self.request.query_params.get("search", "")
-        course_id = self.request.query_params.get("course")
-        call_operator_id = self.request.query_params.get("call_operator")
-        service_manager = self.request.query_params.get("service_manager")
-        sales_manager = self.request.query_params.get("sales_manager")
-        teacher = self.request.query_params.get("teacher")
-        channel = self.request.query_params.get("channel")
-        subject = self.request.query_params.get("subject")
-        is_student = self.request.query_params.get("is_student")
+        is_archived = self.request.GET.get("is_archived")
+        search_term = self.request.GET.get("search", "")
+        course_id = self.request.GET.get("course")
+        call_operator_id = self.request.GET.get("call_operator")
+        service_manager = self.request.GET.get("service_manager")
+        sales_manager = self.request.GET.get("sales_manager")
+        teacher = self.request.GET.get("teacher")
+        channel = self.request.GET.get("channel")
+        subject = self.request.GET.get("subject")
+        is_student = self.request.GET.get("is_student")
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
@@ -131,8 +131,8 @@ class LidListCreateView(ListCreateAPIView):
                 print(f"FieldError: {e}")
 
         # ✅ Date Filtering
-        start_date = self.request.query_params.get("start_date")
-        end_date = self.request.query_params.get("end_date")
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
         ic(start_date, end_date)
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
@@ -158,9 +158,9 @@ class LidListNoPG(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        filial = self.request.query_params.get("filial")
-        is_archived = self.request.query_params.get("is_archived")
-        is_student = self.request.query_params.get("is_student")
+        filial = self.request.GET.get("filial")
+        is_archived = self.request.GET.get("is_archived")
+        is_student = self.request.GET.get("is_student")
         queryset = Lid.objects.all()
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
@@ -201,19 +201,19 @@ class ExportLidToExcelAPIView(APIView):
     )
     def get(self, request):
         # Get filters from query parameters
-        start_date = request.query_params.get("start_date")
-        end_date = request.query_params.get("end_date")
-        lid_stage_type = request.query_params.get("lid_stage_type")
-        filial = self.request.query_params.get("filial")
-        is_archived = self.request.query_params.get("is_archived")
-        course_id = self.request.query_params.get("course")
-        call_operator_id = self.request.query_params.get("call_operator")
-        service_manager = self.request.query_params.get("service_manager")
-        sales_manager = self.request.query_params.get("sales_manager")
-        teacher = self.request.query_params.get("teacher")
-        channel = self.request.query_params.get("marketing_channel")
-        subject = self.request.query_params.get("subject")
-        is_student = self.request.query_params.get("is_student")
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        lid_stage_type = request.GET.get("lid_stage_type")
+        filial = self.request.GET.get("filial")
+        is_archived = self.request.GET.get("is_archived")
+        course_id = self.request.GET.get("course")
+        call_operator_id = self.request.GET.get("call_operator")
+        service_manager = self.request.GET.get("service_manager")
+        sales_manager = self.request.GET.get("sales_manager")
+        teacher = self.request.GET.get("teacher")
+        channel = self.request.GET.get("marketing_channel")
+        subject = self.request.GET.get("subject")
+        is_student = self.request.GET.get("is_student")
 
         filter = {}
         if filial:
@@ -317,16 +317,16 @@ class LidStatisticsView(ListAPIView):
         user = request.user
         queryset = Lid.objects.all()
 
-        filial = self.request.query_params.get("filial")
-        is_archived = self.request.query_params.get("is_archived")
-        # course_id = self.request.query_params.get("course")
-        call_operator_id = self.request.query_params.get("call_operator")
-        service_manager = self.request.query_params.get("service_manager")
-        sales_manager = self.request.query_params.get("sales_manager")
-        # teacher = self.request.query_params.get("teacher")
-        # channel = self.request.query_params.get("channel")
-        # subject = self.request.query_params.get("subject")
-        is_student = self.request.query_params.get("is_student")
+        filial = self.request.GET.get("filial")
+        is_archived = self.request.GET.get("is_archived")
+        # course_id = self.request.GET.get("course")
+        call_operator_id = self.request.GET.get("call_operator")
+        service_manager = self.request.GET.get("service_manager")
+        sales_manager = self.request.GET.get("sales_manager")
+        # teacher = self.request.GET.get("teacher")
+        # channel = self.request.GET.get("channel")
+        # subject = self.request.GET.get("subject")
+        is_student = self.request.GET.get("is_student")
 
         filter = {}
 
@@ -497,7 +497,7 @@ class LidStatistics(ListAPIView):
             return Lid.objects.none()
 
         queryset = Lid.objects.all()
-        filial = self.request.query_params.get("filial")
+        filial = self.request.GET.get("filial")
 
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
@@ -509,16 +509,16 @@ class LidStatistics(ListAPIView):
                 Q(filial_id=filial) | Q(filial__isnull=True)
             )
 
-        is_archived = self.request.query_params.get("is_archived")
-        search_term = self.request.query_params.get("search", "")
-        course_id = self.request.query_params.get("course")
-        call_operator_id = self.request.query_params.get("call_operator")
-        service_manager = self.request.query_params.get("service_manager")
-        sales_manager = self.request.query_params.get("sales_manager")
-        teacher = self.request.query_params.get("teacher")
-        channel = self.request.query_params.get("channel")
-        subject = self.request.query_params.get("subject")
-        is_student = self.request.query_params.get("is_student")
+        is_archived = self.request.GET.get("is_archived")
+        search_term = self.request.GET.get("search", "")
+        course_id = self.request.GET.get("course")
+        call_operator_id = self.request.GET.get("call_operator")
+        service_manager = self.request.GET.get("service_manager")
+        sales_manager = self.request.GET.get("sales_manager")
+        teacher = self.request.GET.get("teacher")
+        channel = self.request.GET.get("channel")
+        subject = self.request.GET.get("subject")
+        is_student = self.request.GET.get("is_student")
 
         if is_archived == "True":
             queryset = queryset.filter(is_archived=True)
@@ -558,8 +558,8 @@ class LidStatistics(ListAPIView):
                 print(f"FieldError: {e}")
 
         # ✅ Date Filtering
-        start_date = self.request.query_params.get("start_date")
-        end_date = self.request.query_params.get("end_date")
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
