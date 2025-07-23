@@ -59,21 +59,23 @@ class LidSerializer(serializers.ModelSerializer):
 
         super(LidSerializer, self).__init__(*args, **kwargs)
 
+    def get_voucher(self, obj):
+        voucher = VoucherStudent.objects.filter(lid__id=obj.id)
+        return [{
+                "id":voucher.voucher.id,
+                "amount":voucher.voucher.amount,
+                "is_expired":voucher.voucher.is_expired,
+                "created_at": voucher.created_at,
+            } for voucher in voucher]
+
     def get_sales(self, obj):
+        sales = SaleStudent.objects.filter(lid__id=obj.id)
         return [{
             "id": sale.sale.id,
             "amount": sale.sale.amount,
-            "sale_status": sale.sale.status,
-            "date": sale.expire_date.strftime('%Y-%m-%d') if sale.expire_date else "Unlimited"
-        } for sale in obj.salestudent_set.all()]
-
-    def get_voucher(self, obj):
-        return [{
-            "id": vs.voucher.id,
-            "amount": vs.voucher.amount,
-            "is_expired": vs.voucher.is_expired,
-            "created_at": vs.created_at,
-        } for vs in obj.voucherstudent_set.all()]
+            "sale_status":sale.sale.status ,
+            "date": sale.expire_date.strftime('%Y-%m-%d')
+        if sale.expire_date else "Unlimited"} for sale in sales]
 
     def get_filtered_queryset(self):
         request = self.context.get('request')
@@ -95,9 +97,12 @@ class LidSerializer(serializers.ModelSerializer):
         return queryset
 
     def get_is_attendance(self, obj):
-        fl = obj.firstllesson_set.first()
-        if fl:
-            return {"date": fl.date, "time": fl.time}
+        first_lesson = FirstLLesson.objects.filter(lid=obj).first()
+        if first_lesson :
+            return {
+                "date": first_lesson.date,
+                "time": first_lesson.time,
+            }
 
     def get_lessons_count(self, obj):
         return Attendance.objects.filter(lid=obj, reason="IS_PRESENT").count()
@@ -123,8 +128,7 @@ class LidSerializer(serializers.ModelSerializer):
             "id": instance.call_operator.id,
             "full_name": instance.call_operator.full_name,
         } if instance.call_operator else None
-        files = instance._prefetched_objects_cache.get("file", instance.file.all())
-        representation["file"] = FileUploadSerializer(files, many=True, context=self.context).data
+        representation['file'] = FileUploadSerializer(instance.file.all(), many=True,context=self.context).data
         representation["sales_manager"] = {
             "id":instance.sales_manager.id,
             "full_name":instance.sales_manager.full_name,
