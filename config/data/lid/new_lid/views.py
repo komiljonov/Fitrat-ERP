@@ -48,6 +48,7 @@ class LidListCreateView(ListCreateAPIView):
         "is_dubl",
         "is_archived",
     ]
+
     def get_serializer(self, *args, **kwargs):
 
         # super().get_serializer()
@@ -55,9 +56,11 @@ class LidListCreateView(ListCreateAPIView):
         serializer_class = self.get_serializer_class()
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
-        include_only=["id","first_name","last_name","middle_name","photo","phone_number",
-                      "filial","lid_stages","lid_stage_type","ordered_stages","call_operator","sales_manager","is_archived"
-                      ,"ordered_date","created_at"])
+                                include_only=["id", "first_name", "last_name", "middle_name", "photo", "phone_number",
+                                              "filial", "lid_stages", "lid_stage_type", "ordered_stages",
+                                              "call_operator", "sales_manager", "is_archived", "ordered_date",
+                                              "created_at"
+                                              ])
 
     def get_queryset(self):
         user = self.request.user
@@ -130,7 +133,7 @@ class LidListCreateView(ListCreateAPIView):
         # ✅ Date Filtering
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
-        ic(start_date,end_date)
+        ic(start_date, end_date)
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
 
@@ -376,7 +379,7 @@ class LidStatisticsView(ListAPIView):
         ordered_archived = queryset.filter(is_archived=True, is_student=False, lid_stage_type="ORDERED_LID",
                                            **filter).count()
         first_lesson = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                       ordered_stages="BIRINCHI_DARS_BELGILANGAN",is_student=False, **filter).count()
+                                       ordered_stages="BIRINCHI_DARS_BELGILANGAN", is_student=False, **filter).count()
         first_lesson_not = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                            ordered_stages="BIRINCHI_DARSGA_KELMAGAN", **filter).count()
         all_archived = queryset.filter(is_archived=True, is_student=False, **filter).count()
@@ -384,26 +387,34 @@ class LidStatisticsView(ListAPIView):
 
         first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID", **filter).count()
 
-        new_student = Student.objects.filter(is_archived=True,student_stage_type="NEW_STUDENT",**filter).count()
-        active_student = Student.objects.filter(is_archived=True,student_stage_type="ACTIVE_STUDENT",**filter).count()
+        new_student = Student.objects.filter(is_archived=True, student_stage_type="NEW_STUDENT", **filter).count()
+        active_student = Student.objects.filter(is_archived=True, student_stage_type="ACTIVE_STUDENT", **filter).count()
 
         print(f"all_archived: {all_archived}", queryset.filter(is_archived=True, is_student=False, **filter))
-        print(f"active_student: {active_student}", Student.objects.filter(is_archived=True,student_stage_type="ACTIVE_STUDENT",**filter))
-        print(f"new_student: {new_student}", Student.objects.filter(is_archived=True,student_stage_type="NEW_STUDENT",**filter))
+        print(f"active_student: {active_student}",
+              Student.objects.filter(is_archived=True, student_stage_type="ACTIVE_STUDENT", **filter))
+        print(f"new_student: {new_student}",
+              Student.objects.filter(is_archived=True, student_stage_type="NEW_STUDENT", **filter))
 
-        no_debt = Student.objects.filter(is_archived=True,balance__gte=100000, **filter).count()
+        no_debt = Student.objects.filter(is_archived=True, balance__gte=100000, **filter).count()
 
-        lead_no_debt = Lid.objects.filter(is_archived=True,is_student=False,balance__gte=100000,**filter).count()
+        lead_no_debt = Lid.objects.filter(is_archived=True, is_student=False, balance__gte=100000, **filter).count()
 
-        debt = Student.objects.filter(is_archived=True,balance__lt=100000, **filter).count()
+        debt = Student.objects.filter(is_archived=True, balance__lt=100000, **filter).count()
 
-        lead_debt = Lid.objects.filter(is_archived=True,is_student=False,balance__lt=100000, **filter).count()
+        lead_debt = Lid.objects.filter(is_archived=True, is_student=False, balance__lt=100000, **filter).count()
 
-        no_debt_sum = Student.objects.filter(is_archived=True,balance__gte=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
-        lead_no_debt_sum = Lid.objects.filter(is_archived=True,is_student=False,balance__gte=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
-        debt_sum = Student.objects.filter(is_archived=True,balance__lt=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
-        lead_debt_sum = Lid.objects.filter(is_archived=True,is_student=False,balance__lt=100000, **filter).aggregate(total=Sum("balance"))["total"] or 0
-
+        no_debt_sum = \
+            Student.objects.filter(is_archived=True, balance__gte=100000, **filter).aggregate(total=Sum("balance"))[
+                "total"] or 0
+        lead_no_debt_sum = \
+            Lid.objects.filter(is_archived=True, is_student=False, balance__gte=100000, **filter).aggregate(
+                total=Sum("balance"))["total"] or 0
+        debt_sum = \
+            Student.objects.filter(is_archived=True, balance__lt=100000, **filter).aggregate(total=Sum("balance"))[
+                "total"] or 0
+        lead_debt_sum = Lid.objects.filter(is_archived=True, is_student=False, balance__lt=100000, **filter).aggregate(
+            total=Sum("balance"))["total"] or 0
 
         response_data = {
             "new_lid_statistics": {
@@ -416,12 +427,12 @@ class LidStatisticsView(ListAPIView):
             "ordered_statistics": {
                 "ordered_leads_count": ordered_leads_count,
                 "ordered_new": ordered_new,
-                "ordered_new_fix" :ordered_new_fix,
+                "ordered_new_fix": ordered_new_fix,
                 "ordered_waiting_leads": ordered_waiting_leads,
                 "ordered_first_lesson_not_come": first_lesson_not,
                 "ordered_first_lesson": first_lesson,
                 "ordered_archived": ordered_archived,
-                "first_lesson_all":first_lesson_all
+                "first_lesson_all": first_lesson_all
             },
             "lid_archived": {
                 "all": all_archived,
@@ -429,7 +440,7 @@ class LidStatisticsView(ListAPIView):
                 "order": ordered_archived,
             },
             "student_archived": {
-                "all":all_archived + new_student + active_student,
+                "all": all_archived + new_student + active_student,
                 "new_students": new_student,
                 "active_students": active_student,
                 "no-debt": no_debt + lead_no_debt,
