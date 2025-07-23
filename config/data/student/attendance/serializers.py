@@ -200,6 +200,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
                                 status="Passed",
                                 mark=0
                             )
+                        else:
+                            print(f"No homework found for theme: {theme}")
+
                     except Exception as e:
                         print(f"Error creating homework history: {e}")
 
