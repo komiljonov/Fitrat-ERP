@@ -71,7 +71,7 @@ class ClickUzMerchantAPIView(APIView):
             sign_string=sign_string,
             sign_datetime=sign_time,
         )
-        response_data.update(merchant_prepare_id=transaction.id)
+        response_data.update(merchant_prepare_id=transaction.pk)
         return response_data
 
     def complete(self, click_trans_id, amount, error, merchant_prepare_id,
@@ -125,7 +125,7 @@ class ClickUzMerchantAPIView(APIView):
             self.VALIDATE_CLASS().successfully_payment(transaction.merchant_trans_id, transaction)
 
             # Respond with success
-            response_data.update(merchant_confirm_id=transaction.id)
+            response_data.update(merchant_confirm_id=transaction.pk)
             return response_data
 
         except Transaction.DoesNotExist:
