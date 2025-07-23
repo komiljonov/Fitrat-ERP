@@ -1,9 +1,8 @@
 import datetime
 import hashlib
 
-from django.db.models import F, Avg
+from django.db.models import Avg
 from django.utils.module_loading import import_string
-from icecream import ic
 from rest_framework import serializers
 
 from .models import Student, FistLesson_data
@@ -21,7 +20,6 @@ from ...department.filial.serializers import FilialSerializer
 from ...department.marketing_channel.models import MarketingChannel
 from ...department.marketing_channel.serializers import MarketingChannelSerializer
 from ...finances.finance.models import SaleStudent, VoucherStudent
-from ...parents.models import Relatives
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
@@ -140,8 +138,7 @@ class StudentSerializer(serializers.ModelSerializer):
             created_at__gt=datetime.datetime.today(),
             created_at__lte=datetime.datetime.today() + datetime.timedelta(days=2),
         )
-        if homeworks and homeworks.first().mark >=75:
-
+        if homeworks and homeworks.first().mark >= 75:
             return homeworks.exists()
 
     def get_voucher(self, obj):
@@ -300,12 +297,13 @@ class StudentSerializer(serializers.ModelSerializer):
         return list(courses)
 
     def get_relatives(self, obj):
-        relative = Relatives.objects.filter(student=obj).values("name", "phone", "who")
-        return list(relative)
+        return list(obj.relatives_set.values("name", "phone", "who"))
 
     def get_attendance_count(self, obj):
-        attendance = Attendance.objects.filter(student=obj)
-        return attendance.count() + 1
+        count = getattr(obj, "attendance_count", None)
+        if count is not None:
+            return count + 1
+        return Attendance.objects.filter(student=obj, reason="IS_PRESENT").count() + 1
 
     def update(self, instance, validated_data):
         password = validated_data.get("password")
@@ -313,17 +311,12 @@ class StudentSerializer(serializers.ModelSerializer):
             instance.password = hashlib.sha512(password.encode("utf-8")).hexdigest()
             instance.save()
 
-        # Handle file updates with set()
         files = validated_data.get("file", None)
         if files is not None:
-            # Convert the provided list of files to a set to avoid duplicates
             instance.file.set(files)
 
-        # Update other fields
         for attr, value in validated_data.items():
-            if (
-                attr != "password" and attr != "file"
-            ):  # Skip the password and file fields
+            if (attr != "password" and attr != "file"):
                 setattr(instance, attr, value)
 
         instance.save()
@@ -357,6 +350,7 @@ class StudentSerializer(serializers.ModelSerializer):
                 if instance.sales_manager
                 else None
             )
+
         if "service_manager" in representation:
             representation["service_manager"] = (
                 UserSerializer(
