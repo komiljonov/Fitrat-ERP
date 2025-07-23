@@ -55,7 +55,7 @@ class ClickUz:
     @staticmethod
     def generate_url(order_id, amount, return_url=None):
         service_id = settings.CLICK_SETTINGS['service_id']
-        merchant_id = settings.CLICK_SETTINGS['merchant_id']
+        merchant_id = settings.CLICK_MERCHANT_ID
 
         print(service_id, merchant_id)
 
