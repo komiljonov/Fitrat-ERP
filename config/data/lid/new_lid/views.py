@@ -390,12 +390,6 @@ class LidStatisticsView(ListAPIView):
         new_student = Student.objects.filter(is_archived=True, student_stage_type="NEW_STUDENT", **filter).count()
         active_student = Student.objects.filter(is_archived=True, student_stage_type="ACTIVE_STUDENT", **filter).count()
 
-        print(f"all_archived: {all_archived}", queryset.filter(is_archived=True, is_student=False, **filter))
-        print(f"active_student: {active_student}",
-              Student.objects.filter(is_archived=True, student_stage_type="ACTIVE_STUDENT", **filter))
-        print(f"new_student: {new_student}",
-              Student.objects.filter(is_archived=True, student_stage_type="NEW_STUDENT", **filter))
-
         no_debt = Student.objects.filter(is_archived=True, balance__gte=100000, **filter).count()
 
         lead_no_debt = Lid.objects.filter(is_archived=True, is_student=False, balance__gte=100000, **filter).count()
