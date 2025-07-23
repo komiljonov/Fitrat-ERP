@@ -105,7 +105,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         student_stage_type = self.request.query_params.get("stt")
 
         queryset = queryset.annotate(
-            attendance_count=Count("attendance", filter=Q(attendance__reason="IS_PRESENT"))
+            attendance_count=Count("attendance_student,", filter=Q(attendance__reason="IS_PRESENT"))
         )
 
 
