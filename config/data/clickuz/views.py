@@ -14,6 +14,9 @@ class ClickUzMerchantAPIView(APIView):
     VALIDATE_CLASS = None
 
     def post(self, request):
+
+        print(request.data)
+
         serializer = ClickUzSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -21,6 +24,8 @@ class ClickUzMerchantAPIView(APIView):
             PREPARE: self.prepare,
             COMPLETE: self.complete
         }
+
+        print("methods:", METHODS.items())
 
         merchant_trans_id = serializer.validated_data['merchant_trans_id']
         amount = serializer.validated_data['amount']

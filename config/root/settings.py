@@ -160,6 +160,14 @@ PAYCOM_SETTINGS = {
     },
 }
 
+
+CLICK_SERVICE_ID = config("CLICK_SERVICE_ID")
+CLICK_MERCHANT_ID = config("CLICK_MERCHANT_ID")
+CLICK_SECRET_KEY = config("CLICK_SECRET_KEY")
+CLICK_ACCOUNT_MODEL = "clickuz.models.Order"
+CLICK_AMOUNT_FIELD = "amount"
+
+
 CLICK_SETTINGS = {
     "service_id": config("CLICK_SERVICE_ID"),
     "merchant_id": config("CLICK_MERCHANT_ID"),
@@ -169,11 +177,7 @@ CLICK_SETTINGS = {
     "disable_admin": False,
 }
 
-CLICK_SERVICE_ID = config("CLICK_SERVICE_ID")
-CLICK_MERCHANT_ID = config("CLICK_MERCHANT_ID")
-CLICK_SECRET_KEY = config("CLICK_SECRET_KEY")
-CLICK_ACCOUNT_MODEL = "clickuz.models.Order"
-CLICK_AMOUNT_FIELD = "amount"
+
 
 CLICK_COMMISSION_PERCENT = "(optional int field) your companies comission percent if applicable"
 CLICK_DISABLE_ADMIN = False
