@@ -173,7 +173,12 @@ class AttendanceSerializer(serializers.ModelSerializer):
         print(validated_data_list)
 
         for data in validated_data_list:
-            themes = data.pop('theme', [])
+
+            serializer = cls(data=data)
+            serializer.is_valid(raise_exception=True)
+            validated_data = serializer.validated_data
+
+            themes = validated_data.pop('theme', [])
 
             # Create attendance instance
             attendance = Attendance.objects.create(**data)

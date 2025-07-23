@@ -9,6 +9,7 @@ CREATE_TRANSACTION = 1
 CLOSE_TRANSACTION = 2
 CANCEL_TRANSACTION_CODE = -1
 PERFORM_CANCELED_CODE = -2
+
 ORDER_NOT_FOUND_MESSAGE = {
     "uz": "Buyurtma topilmadi",
     "ru": "Заказ не найден",
