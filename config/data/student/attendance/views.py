@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import datetime
 
 from django.db import transaction
 from django.db.models import Q
@@ -87,7 +87,8 @@ class AttendanceBulkUpdateAPIView(APIView):
                 serializer.save()
                 updated.append(serializer.data)
             except Attendance.DoesNotExist:
-                return Response({"detail": f"Attendance with id {item['id']} not found."}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"detail": f"Attendance with id {item['id']} not found."},
+                                status=status.HTTP_404_NOT_FOUND)
 
         return Response({
             "updated": updated

@@ -52,7 +52,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                     "name": rel.name,
                     "id": rel.id,
                     "phone": rel.phone,
-                    "who" : rel.who,
+                    "who": rel.who,
                 })
 
         else:
@@ -62,7 +62,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                     "name": rel.name,
                     "id": rel.id,
                     "phone": rel.phone,
-                    "who" : rel.who,
+                    "who": rel.who,
                 })
 
         return parents
