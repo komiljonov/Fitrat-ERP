@@ -91,23 +91,22 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         queryset = self.queryset.all()
 
         # Add filters based on query parameters (for sales managment and operators)
-        sales_manager_id = self.request.query_params.get("sales_manager")
-        call_operator_id = self.request.query_params.get("call_operator")
-        from_price = self.request.query_params.get("from_price")
-        edu_langauge = self.request.query_params.get("language")
-        to_price = self.request.query_params.get("to_price")
-        course_id = self.request.query_params.get("course")
-        teacher_id = self.request.query_params.get("teacher")
-        service_manager = self.request.query_params.get("service_manager")
-        group_id = self.request.query_params.get("group")
-        subject_id = self.request.query_params.get("subject")
-        filial_id = self.request.query_params.get("filial")
-        student_stage_type = self.request.query_params.get("stt")
+        sales_manager_id = self.request.GET.get("sales_manager")
+        call_operator_id = self.request.GET.get("call_operator")
+        from_price = self.request.GET.get("from_price")
+        edu_langauge = self.request.GET.get("language")
+        to_price = self.request.GET.get("to_price")
+        course_id = self.request.GET.get("course")
+        teacher_id = self.request.GET.get("teacher")
+        service_manager = self.request.GET.get("service_manager")
+        group_id = self.request.GET.get("group")
+        subject_id = self.request.GET.get("subject")
+        filial_id = self.request.GET.get("filial")
+        student_stage_type = self.request.GET.get("stt")
 
         queryset = queryset.annotate(
             attendance_count=Count("attendance_student", filter=Q(attendance_student__reason="IS_PRESENT"))
         )
-
 
         if student_stage_type:
             queryset = queryset.filter(new_student_stages=student_stage_type)
@@ -146,8 +145,8 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         if group_id:
             queryset = queryset.filter(students_group__group__id=group_id)
 
-        start_date = self.request.query_params.get("start_date")
-        end_date = self.request.query_params.get("end_date")
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__range=[start_date, end_date])
@@ -180,7 +179,7 @@ class StudentListNoPG(FilialRestrictedQuerySetMixin, ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        filial_id = self.request.query_params.get("filial")
+        filial_id = self.request.GET.get("filial")
         queryset = Student.objects.all()
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id, is_archived=False)
@@ -208,7 +207,7 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        filial = self.request.query_params.get("filial")
+        filial = self.request.GET.get("filial")
 
         filter = {}
         if filial:
@@ -305,7 +304,7 @@ class StudentAllStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
     def get(self, request, *args, **kwargs):
 
         filter = {}
-        filial = self.request.query_params.get("filial")
+        filial = self.request.GET.get("filial")
         if filial:
             filter["filial__id"] = filial
 
@@ -372,22 +371,22 @@ class ExportLidToExcelAPIView(APIView):
         responses={200: "Excel file generated"},
     )
     def get(self, request):
-        start_date = request.query_params.get("start_date")
-        end_date = request.query_params.get("end_date")
-        student_stage_type = request.query_params.get("student_stage_type")
-        sales_manager_id = self.request.query_params.get("sales_manager")
-        call_operator_id = self.request.query_params.get("call_operator")
-        from_price = self.request.query_params.get("from_price")
-        edu_langauge = self.request.query_params.get("language")
-        to_price = self.request.query_params.get("to_price")
-        balance_status = self.request.query_params.get("balance_status")
-        course_id = self.request.query_params.get("course")
-        teacher_id = self.request.query_params.get("teacher")
-        service_manager = self.request.query_params.get("service_manager")
-        group_id = self.request.query_params.get("group")
-        subject_id = self.request.query_params.get("subject")
-        filial_id = self.request.query_params.get("filial")
-        is_archived = self.request.query_params.get("is_archived")
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        student_stage_type = request.GET.get("student_stage_type")
+        sales_manager_id = self.request.GET.get("sales_manager")
+        call_operator_id = self.request.GET.get("call_operator")
+        from_price = self.request.GET.get("from_price")
+        edu_langauge = self.request.GET.get("language")
+        to_price = self.request.GET.get("to_price")
+        balance_status = self.request.GET.get("balance_status")
+        course_id = self.request.GET.get("course")
+        teacher_id = self.request.GET.get("teacher")
+        service_manager = self.request.GET.get("service_manager")
+        group_id = self.request.GET.get("group")
+        subject_id = self.request.GET.get("subject")
+        filial_id = self.request.GET.get("filial")
+        is_archived = self.request.GET.get("is_archived")
 
         queryset = Student.objects.all()
 
@@ -556,7 +555,7 @@ class FistLesson_dataList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = FistLesson_data.objects.all()
-        id = self.request.query_params.get("id")
+        id = self.request.GET.get("id")
         if id:
             queryset = queryset.filter(lid__id=id)
         return queryset
