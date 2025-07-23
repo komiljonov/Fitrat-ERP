@@ -334,6 +334,15 @@ class StudentAllStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         return Response(response_data)
 
 
+# class StudentNewLeadStatistics(ListAPIView):
+#     permission_classes = [IsAuthenticated]
+#
+#     def get(self, request, *args, **kwargs):
+#         filter = {}
+#         filial = self.request.GET.get("filial")
+#
+
+
 class ExportLidToExcelAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
