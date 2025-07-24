@@ -40,8 +40,8 @@ class CoinsSettings(BaseModel):
         ("Monthly", "Monthly"),
     ], max_length=10, null=True, blank=True)
 
-    from_point = models.CharField(max_length=15, null=True, blank=True)
-    to_point = models.CharField(max_length=15, null=True, blank=True)
+    from_point = models.FloatField(null=True, blank=True)
+    to_point = models.FloatField(null=True, blank=True)
 
     coin = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
