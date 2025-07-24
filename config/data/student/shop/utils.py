@@ -14,6 +14,8 @@ def give_coin(choice, student, from_point, result_type=None):
         "Monthly": "Siz Oylik imtihonida qatnashganingiz uchun {coin} coinlar berildi.",
     }
 
+    print(choice,student,from_point)
+
     if choice not in valid_choices:
         return "Choice is not valid"
 
@@ -23,6 +25,8 @@ def give_coin(choice, student, from_point, result_type=None):
         type="Single",
         from_point_float__lte=from_point
     ).order_by('-from_point_float').first()
+
+    print(coin_setting)
 
     # ✅ Try Double type if no match in Single
     if not coin_setting:
@@ -34,6 +38,8 @@ def give_coin(choice, student, from_point, result_type=None):
         ).order_by('-from_point_float', '-to_point_float').first()
 
     if coin_setting:
+        print(coin_setting)
+
         Coins.objects.create(
             student=student,
             choice=choice,
