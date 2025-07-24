@@ -15,13 +15,15 @@ def give_coin(type, choice, student, from_point, to_point=None, result_type=None
     }
 
     if choice not in valid_choices:
-        return
+        return "Choice is not valid"
 
     filters = {
         'choice': choice,
         'type': type,
         'from_point_float__lte': from_point,
     }
+
+    print(filters)
 
     if type == "Single":
         coin_setting = CoinsSettings.objects.filter(**filters).order_by('-from_point_float').first()
@@ -37,6 +39,8 @@ def give_coin(type, choice, student, from_point, to_point=None, result_type=None
         coin_setting = None
 
     if coin_setting:
+
+        print(coin_setting)
         Coins.objects.create(
             student=student,
             choice=choice,
