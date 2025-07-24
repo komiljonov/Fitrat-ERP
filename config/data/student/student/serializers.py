@@ -26,7 +26,6 @@ from ...upload.serializers import FileUploadSerializer
 
 class StudentSerializer(serializers.ModelSerializer):
 
-
     photo = serializers.PrimaryKeyRelatedField(
         queryset=File.objects.all(), allow_null=True
     )
@@ -186,27 +185,23 @@ class StudentSerializer(serializers.ModelSerializer):
     def get_learning(self, obj):
         mastering_qs = Mastering.objects.filter(student=obj)
 
-        if not mastering_qs.exists():  # If no records, return default values
+        if not mastering_qs.exists():
             return {
-                "score": 1,  # Default lowest score
-                "learning": 0,  # Default lowest percentage
+                "score": 1,
+                "learning": 0,
             }
 
-        # Calculate the average score from 1 to 5
         average_score = mastering_qs.aggregate(avg_ball=Avg("ball"))["avg_ball"] or 0
 
-        # Scale the score between 1 to 5 (assuming 0-100 scores exist)
         score_scaled = min(
             max(round(average_score / 20), 1), 5
-        )  # Ensure it's between 1 to 5
+        )
 
-        # Scale the percentage between 1 to 100
         percentage_scaled = min(max(round((average_score / 100) * 100), 0), 100)
 
         return {"score": score_scaled, "learning": percentage_scaled}
 
     def get_is_attendance(self, obj):
-        # Prefetch only related scheduled_day_type once
         groups = (
             StudentGroup.objects.filter(student=obj)
             .select_related("group")  # ensures group exists
@@ -243,7 +238,6 @@ class StudentSerializer(serializers.ModelSerializer):
             )
 
             if lesson_dates:
-                # If any attendance date found, return True
                 return True
 
         return False
@@ -285,8 +279,6 @@ class StudentSerializer(serializers.ModelSerializer):
         return list(courses)
 
     def get_group(self, obj: Student):
-
-        # courses = (StudentGroup.objects.filter(student=obj)
         courses = obj.students_group.values(
             "group__id",
             "group__name",
