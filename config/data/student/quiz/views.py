@@ -568,7 +568,6 @@ class QuizCheckAPIView(APIView):
                 )
             coin = give_coin(
                 student=student,
-                type="Double",
                 choice="Homework",
                 from_point=ball,
             )

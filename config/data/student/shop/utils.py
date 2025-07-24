@@ -1,8 +1,8 @@
 from .models import Coins, CoinsSettings
 
-def give_coin(type, choice, student, from_point, to_point=None, result_type=None):
+def give_coin(choice, student, from_point, result_type=None):
     """
-    Assign coins to a student based on task type and performance.
+    Assign coins to a student based on task and performance.
     """
 
     valid_choices = {
@@ -17,30 +17,23 @@ def give_coin(type, choice, student, from_point, to_point=None, result_type=None
     if choice not in valid_choices:
         return "Choice is not valid"
 
-    filters = {
-        'choice': choice,
-        'type': type,
-        'from_point_float__lte': from_point,
-    }
+    # Try Single type
+    coin_setting = CoinsSettings.objects.filter(
+        choice=choice,
+        type="Single",
+        from_point_float__gte=from_point
+    ).order_by('from_point_float').first()
 
-    print(filters)
-
-    if type == "Single":
-        coin_setting = CoinsSettings.objects.filter(**filters).order_by('-from_point_float').first()
-
-    elif type == "Double" and to_point is not None:
-        filters.update({
-            'to_point_float__lte': to_point
-        })
-
-        coin_setting = CoinsSettings.objects.filter(**filters).order_by('-from_point_float', '-to_point_float').first()
-
-    else:
-        coin_setting = None
+    # If not found, try Double type
+    if not coin_setting:
+        coin_setting = CoinsSettings.objects.filter(
+            choice=choice,
+            type="Double",
+            from_point_float__gte=from_point,
+            to_point_float__lte=from_point
+        ).order_by('from_point_float', 'to_point_float').first()
 
     if coin_setting:
-
-        print(coin_setting)
         Coins.objects.create(
             student=student,
             choice=choice,
