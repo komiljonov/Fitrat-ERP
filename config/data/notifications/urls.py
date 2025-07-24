@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import NotificationListAPIView, NotificationListNoPG, NotificationRetrieveUpdateDestroyAPIView, \
-    MarkAllNotificationsReadAPIView
+    MarkAllNotificationsReadAPIView, UserRFTokenListCreateAPIView
 
 urlpatterns = [
     path('',NotificationListAPIView.as_view()),
@@ -9,4 +9,8 @@ urlpatterns = [
     path('no-pg/',NotificationListNoPG.as_view()),
 
     path("mark-all-read/",MarkAllNotificationsReadAPIView.as_view()),
+
+    path("rftoken/", UserRFTokenListCreateAPIView.as_view()),
+    path("rftoken/<uuid:pk>", UserRFTokenRetrieveUpdateDestroyAPIView.as_view()),
+
 ]

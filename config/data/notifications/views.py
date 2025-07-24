@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Notification
-from .serializers import NotificationSerializer
+from .models import Notification, UserRFToken
+from .serializers import NotificationSerializer, UserRFTokenSerializer
 from ..account.models import CustomUser
 
 
@@ -55,3 +55,20 @@ class MarkAllNotificationsReadAPIView(APIView):
             {"message": f"{updated_count} notifications marked as read."},
             status=status.HTTP_200_OK
         )
+
+
+
+class UserRFTokenListCreateAPIView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserRFTokenSerializer
+    queryset = UserRFToken.objects.all()
+
+    def get_queryset(self):
+        queryset = UserRFToken.objects.filter(user=self.request.user).first()
+        return queryset
+
+
+class UserRFTokenRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = UserRFTokenSerializer
+    queryset = UserRFToken.objects.all()
+    permission_classes = [IsAuthenticated]
