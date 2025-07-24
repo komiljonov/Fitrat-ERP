@@ -16,10 +16,7 @@ def give_coin(choice, student, from_point, result_type=None):
 
     print(choice,student,from_point)
 
-    if choice not in valid_choices:
-        return "Choice is not valid"
 
-    # ✅ Try Single type: match highest where threshold <= student point
     coin_setting = CoinsSettings.objects.filter(
         choice=choice,
         type="Single",
