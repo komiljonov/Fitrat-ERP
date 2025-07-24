@@ -41,5 +41,3 @@ class Complaint(BaseModel):
 class UserRFToken(BaseModel):
     user : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,blank=True,related_name='user_rf_token')
     token = models.TextField(null=True,blank=True)
-    def __str__(self):
-        return f"{self.user.full_name}"
