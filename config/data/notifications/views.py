@@ -17,6 +17,7 @@ class NotificationListAPIView(ListCreateAPIView):
         user = CustomUser.objects.filter(id=self.request.user.id).first()
         return Notification.objects.filter(user=user)
 
+
 class NotificationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = NotificationSerializer
     queryset = Notification.objects.all()
@@ -43,7 +44,6 @@ class NotificationListNoPG(ListAPIView):
         return Response(data)
 
 
-
 class MarkAllNotificationsReadAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -57,15 +57,12 @@ class MarkAllNotificationsReadAPIView(APIView):
         )
 
 
-
 class UserRFTokenListCreateAPIView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = UserRFTokenSerializer
     queryset = UserRFToken.objects.all()
 
     def get_queryset(self):
-        queryset = UserRFToken.objects.filter(user=self.request.user).first()
-        return queryset
+        return UserRFToken.objects.filter(user=self.request.user)
 
 
 class UserRFTokenRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
