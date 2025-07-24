@@ -16,23 +16,23 @@ def give_coin(choice, student, from_point, result_type=None):
 
     print(choice,student,from_point)
 
+    from_point = float(from_point)
 
     coin_setting = CoinsSettings.objects.filter(
         choice=choice,
         type="Single",
-        from_point_float__lte=from_point
-    ).order_by('-from_point_float').first()
-
+        from_point=from_point
+    ).first()
     print(coin_setting)
 
-    # ✅ Try Double type if no match in Single
+
     if not coin_setting:
         coin_setting = CoinsSettings.objects.filter(
             choice=choice,
             type="Double",
-            from_point_float__lte=from_point,
-            to_point_float__gte=from_point
-        ).order_by('-from_point_float', '-to_point_float').first()
+            from_point__lte=from_point,
+            to_point__gte=from_point
+        ).first()
 
     if coin_setting:
         print(coin_setting)
