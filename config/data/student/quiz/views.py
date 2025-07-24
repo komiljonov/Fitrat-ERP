@@ -571,6 +571,8 @@ class QuizCheckAPIView(APIView):
                 choice="Homework",
                 from_point=ball,
             )
+
+            print(coin)
         except Exception:
             pass
 

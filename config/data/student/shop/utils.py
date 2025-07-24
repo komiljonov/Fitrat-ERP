@@ -17,21 +17,21 @@ def give_coin(choice, student, from_point, result_type=None):
     if choice not in valid_choices:
         return "Choice is not valid"
 
-    # Try Single type
+    # ✅ Try Single type: match highest where threshold <= student point
     coin_setting = CoinsSettings.objects.filter(
         choice=choice,
         type="Single",
-        from_point_float__gte=from_point
-    ).order_by('from_point_float').first()
+        from_point_float__lte=from_point
+    ).order_by('-from_point_float').first()
 
-    # If not found, try Double type
+    # ✅ Try Double type if no match in Single
     if not coin_setting:
         coin_setting = CoinsSettings.objects.filter(
             choice=choice,
             type="Double",
-            from_point_float__gte=from_point,
-            to_point_float__lte=from_point
-        ).order_by('from_point_float', 'to_point_float').first()
+            from_point_float__lte=from_point,
+            to_point_float__gte=from_point
+        ).order_by('-from_point_float', '-to_point_float').first()
 
     if coin_setting:
         Coins.objects.create(
