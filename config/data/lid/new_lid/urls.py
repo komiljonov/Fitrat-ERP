@@ -22,4 +22,5 @@ urlpatterns = [
     path("webhook/",LidWebhook.as_view(), name="lid_webhook"),
 
     path("stats/",LidStatistics.as_view(), name="lid_statistic"),
+
 ]
