@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.core.exceptions import FieldError
 from django.db.models import Q, Sum
 from django.http import HttpResponse
@@ -131,17 +133,25 @@ class LidListCreateView(ListCreateAPIView):
                 print(f"FieldError: {e}")
 
         # ✅ Date Filtering
-        start_date = self.request.GET.get("start_date")
-        end_date = self.request.GET.get("end_date")
-        ic(start_date, end_date)
-        if start_date:
-            queryset = queryset.filter(created_at__gte=start_date)
+        start_date_str = self.request.GET.get("start_date")
+        end_date_str = self.request.GET.get("end_date")
 
-        if end_date:
-            queryset = queryset.filter(created_at__lte=end_date)
+        date_format = "%Y-%m-%d"
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
 
-        if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = start_datetime + timedelta(days=1)
+            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
+
+
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            end_date = datetime.strptime(end_date_str, date_format).date()
+
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
+            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
 
         return queryset
 
