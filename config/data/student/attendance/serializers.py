@@ -149,13 +149,14 @@ class AttendanceSerializer(serializers.ModelSerializer):
                                 ball=0
                             )
 
-                            Mastering.objects.create(
-                                student=student,
-                                theme=theme,
-                                test=None,
-                                choice="Speaking",
-                                ball=0
-                            )
+                            if theme.course.subject.is_language == True:
+                                Mastering.objects.create(
+                                    student=student,
+                                    theme=theme,
+                                    test=None,
+                                    choice="Speaking",
+                                    ball=0
+                                )
                         else:
                             print(f"No homework found for theme: {theme}")
                     except Exception as e:
