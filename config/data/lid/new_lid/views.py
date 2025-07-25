@@ -211,8 +211,10 @@ class ExportLidToExcelAPIView(APIView):
     )
     def get(self, request):
         # Get filters from query parameters
-        start_date = request.GET.get("start_date")
-        end_date = request.GET.get("end_date")
+        start_date_str = request.GET.get("start_date")
+        end_date_str = request.GET.get("end_date")
+
+
         lid_stage_type = request.GET.get("lid_stage_type")
         filial = self.request.GET.get("filial")
         is_archived = self.request.GET.get("is_archived")
@@ -249,8 +251,24 @@ class ExportLidToExcelAPIView(APIView):
 
         queryset = Lid.objects.filter(**filter)
 
-        if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+        date_format = "%Y-%m-%d"
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = start_datetime + timedelta(days=1)
+            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
+
+
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            end_date = datetime.strptime(end_date_str, date_format).date()
+
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
+            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
+
+
         if lid_stage_type:
             queryset = queryset.filter(lid_stage_type=lid_stage_type)
 
@@ -359,6 +377,32 @@ class LidStatisticsView(ListAPIView):
         if is_student:
             filter["is_student"] = is_student.capitalize()
 
+        start_date_str = request.GET.get("start_date")
+        end_date_str = request.GET.get("end_date")
+
+        date_format = "%Y-%m-%d"
+
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            end_date = datetime.strptime(end_date_str, date_format).date()
+
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
+
+            filter["created_at__gte"] = start_datetime
+            filter["created_at__lt"] = end_datetime
+
+        elif start_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = start_datetime + timedelta(days=1)
+
+            filter["created_at__gte"] = start_datetime
+            filter["created_at__lt"] = end_datetime
+
+
+
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
                 Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
@@ -395,7 +439,7 @@ class LidStatisticsView(ListAPIView):
         all_archived = queryset.filter(is_archived=True, is_student=False, **filter).count()
         archived_lid = queryset.filter(lid_stage_type="NEW_LID", is_student=False, is_archived=True, **filter).count()
 
-        first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID", **filter).count()
+        first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID", **filter,).count()
 
         new_student = Student.objects.filter(is_archived=True, student_stage_type="NEW_STUDENT", **filter).count()
         active_student = Student.objects.filter(is_archived=True, student_stage_type="ACTIVE_STUDENT", **filter).count()
