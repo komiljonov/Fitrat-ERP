@@ -39,7 +39,7 @@ class CasherListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        role = self.request.query_params.get('role', None)
+        role = self.request.GET.get('role', None)
         is_archived = self.request.GET.get('is_archived', False)
 
         filter = {}
@@ -65,7 +65,7 @@ class CasherNoPg(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        role = self.request.query_params.get('role', None)
+        role = self.request.GET.get('role', None)
 
         filter = {}
         if role:
@@ -83,11 +83,11 @@ class FinanceListAPIView(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        kind = self.request.query_params.get('kind')
-        action = self.request.query_params.get('action')
-        start_date_str = self.request.query_params.get('start_date')
-        end_date_str = self.request.query_params.get('end_date')
-        casher_id = self.request.query_params.get('casher_id')
+        kind = self.request.GET.get('kind')
+        action = self.request.GET.get('action')
+        start_date_str = self.request.GET.get('start_date')
+        end_date_str = self.request.GET.get('end_date')
+        casher_id = self.request.GET.get('casher_id')
 
         queryset = Finance.objects.all().exclude(
             Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
@@ -172,8 +172,8 @@ class StudentFinanceListAPIView(ListAPIView):
         elif lid:
             queryset = queryset.filter(lid=lid)
 
-        start_date = self.request.query_params.get("start_date")
-        end_date = self.request.query_params.get("end_date")
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
 
         if start_date and end_date:
             try:
@@ -313,8 +313,8 @@ class FinanceStatisticsAPIView(APIView):
     # permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        kind = self.request.query_params.get("kind", None)
-        filial = self.request.query_params.get("filial", None)
+        kind = self.request.GET.get("kind", None)
+        filial = self.request.GET.get("filial", None)
 
         filters = {}
         if kind:
@@ -366,9 +366,9 @@ class CasherStatisticsAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         casher_id = self.kwargs.get('pk')
-        kind_id = request.query_params.get('kind')
-        start_date_str = request.query_params.get('start_date')
-        end_date_str = request.query_params.get('end_date')
+        kind_id = request.GET.get('kind')
+        start_date_str = request.GET.get('start_date')
+        end_date_str = request.GET.get('end_date')
 
         filters = {}
 
@@ -446,8 +446,8 @@ class TeacherGroupFinanceAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         teacher_id = self.kwargs.get('pk')
-        start_date_str = request.query_params.get('start_date')
-        end_date_str = request.query_params.get('end_date')
+        start_date_str = request.GET.get('start_date')
+        end_date_str = request.GET.get('end_date')
 
         current_year = datetime.today().year
         default_start_date = make_aware(datetime(current_year, 1, 1))
@@ -556,8 +556,8 @@ class FinanceTeacher(ListAPIView):
 
     def get_queryset(self):
         teacher = self.request.user
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
         ic(teacher)
         if teacher:
             queryset = Finance.objects.filter(
@@ -661,7 +661,7 @@ class KindList(ListCreateAPIView):
     queryset = Kind.objects.all()
 
     def get_queryset(self):
-        kind = self.request.query_params.get('action')
+        kind = self.request.GET.get('action')
         if kind:
             queryset = Kind.objects.filter(
                 action=kind,
@@ -695,10 +695,10 @@ class PaymentStatistics(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-        filial = self.request.query_params.get('filial')
-        casher_id = self.request.query_params.get('casher')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        filial = self.request.GET.get('filial')
+        casher_id = self.request.GET.get('casher')
         filter = {}
 
         if casher_id:
@@ -738,8 +738,8 @@ class PaymentCasherStatistics(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         cashier_id = self.kwargs.get('pk')
-        start_date_str = request.query_params.get('start_date')
-        end_date_str = request.query_params.get('end_date')
+        start_date_str = request.GET.get('start_date')
+        end_date_str = request.GET.get('end_date')
 
         # ✅ Safely parse dates from string to datetime
         start_date = None
@@ -796,7 +796,7 @@ class SalesList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        filial = self.request.query_params.get('filial')
+        filial = self.request.GET.get('filial')
         if filial:
             return Sale.objects.filter(filial__in=filial)
         return Sale.objects.filter(filial__in=self.request.user.filial.all())
@@ -809,7 +809,7 @@ class SalesStudentNoPG(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        filial = self.request.query_params.get('filial')
+        filial = self.request.GET.get('filial')
         if filial:
             return Sale.objects.filter(filial__in=filial)
         return Sale.objects.filter(filial__in=self.request.user.filial.all())
@@ -824,8 +824,8 @@ class SalesStudentList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        filial = self.request.query_params.get('filial')
-        type = self.request.query_params.get('type')
+        filial = self.request.GET.get('filial')
+        type = self.request.GET.get('type')
 
         queryset = SaleStudent.objects.filter(sale__status="ACTIVE")
 
@@ -863,9 +863,9 @@ class PaymentStatisticsByKind(APIView):
 
     def get(self, request):
         # Parse and validate dates
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        filial = request.query_params.get('filial')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        filial = request.GET.get('filial')
 
         filters = {}
         if start_date:
@@ -935,8 +935,8 @@ class VoucherNoPG(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        is_expired = self.request.query_params.get('is_expired')
-        filial = self.request.query_params.get('filial')
+        is_expired = self.request.GET.get('is_expired')
+        filial = self.request.GET.get('filial')
 
         queryset = Voucher.objects.all()
         if filial:
@@ -956,7 +956,7 @@ class VoucherStudentList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.request.query_params.get('id')
+        id = self.request.GET.get('id')
         if id:
             return VoucherStudent.objects.filter(Q(lid__id=id) | Q(student__id=id))
         else:
@@ -987,9 +987,9 @@ class GeneratePaymentExcelAPIView(APIView):
         }
     )
     def get(self, request, *args, **kwargs):
-        casher_id = request.query_params.get('casher_id')
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
+        casher_id = request.GET.get('casher_id')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
 
         if not casher_id:
             return Response({'error': 'Casher ID is required'}, status=400)
