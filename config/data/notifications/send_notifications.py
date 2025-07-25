@@ -1,6 +1,5 @@
-import os
 import firebase_admin
-from firebase_admin import credentials, messaging, exceptions
+from firebase_admin import credentials, messaging
 from icecream import ic
 
 # Avoid re-initialization
@@ -22,13 +21,13 @@ def initialize_firebase():
 
 
 def send_push_notification(
-    title: str,
-    body: str,
-    token: str = None,
-    topic: str = None,
-    image: str = None,
-    data: dict | None = None,
-    badge_count: int = 0,
+        title: str,
+        body: str,
+        token: str = None,
+        topic: str = None,
+        image: str = None,
+        data: dict | None = None,
+        badge_count: int = 0,
 ):
     initialize_firebase()
 

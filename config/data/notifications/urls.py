@@ -4,11 +4,11 @@ from .views import NotificationListAPIView, NotificationListNoPG, NotificationRe
     MarkAllNotificationsReadAPIView, UserRFTokenListCreateAPIView, UserRFTokenRetrieveUpdateDestroyAPIView
 
 urlpatterns = [
-    path('',NotificationListAPIView.as_view()),
-    path('<uuid:pk>',NotificationRetrieveUpdateDestroyAPIView.as_view()),
-    path('no-pg/',NotificationListNoPG.as_view()),
+    path('', NotificationListAPIView.as_view()),
+    path('<uuid:pk>', NotificationRetrieveUpdateDestroyAPIView.as_view()),
+    path('no-pg/', NotificationListNoPG.as_view()),
 
-    path("mark-all-read/",MarkAllNotificationsReadAPIView.as_view()),
+    path("mark-all-read/", MarkAllNotificationsReadAPIView.as_view()),
 
     path("rftoken/", UserRFTokenListCreateAPIView.as_view()),
     path("rftoken/<uuid:pk>", UserRFTokenRetrieveUpdateDestroyAPIView.as_view()),
