@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from .models import Notification, UserRFToken
-from ..account.models import CustomUser
 from ..account.serializers import UserSerializer
 
 

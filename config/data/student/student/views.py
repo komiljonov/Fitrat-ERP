@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.db.models import Sum, Count, Q
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
@@ -444,12 +446,16 @@ class ExportLidToExcelAPIView(APIView):
             queryset = queryset.filter(students_group__group__id=group_id)
 
         if start_date and end_date:
-            queryset = queryset.filter(
-                created_at__gte=start_date, created_at__lte=end_date
-            )
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
+
+            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
 
         if start_date:
-            queryset = queryset.filter(created_at__gte=start_date)
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = start_datetime + timedelta(days=1)
+
+            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
 
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id)

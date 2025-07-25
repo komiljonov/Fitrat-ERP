@@ -14,7 +14,7 @@ def on_attendance_create(sender, instance: Notification, created, **kwargs):
 
 
 @receiver(post_save, sender=Notification)
-def send_notification_on_create(sender, instance : Notification, created, **kwargs):
+def send_notification_on_create(sender, instance: Notification, created, **kwargs):
     if not created:
         return
 
