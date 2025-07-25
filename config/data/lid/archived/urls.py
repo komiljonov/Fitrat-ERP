@@ -14,4 +14,7 @@ urlpatterns = [
 
     path("frozen/",FrozenListCreateList.as_view(),name="frozen"),
     path("frozen/<uuid:pk>",FrozenDetailAPIView.as_view(),name="frozen-detail"),
+
+    path("archived/",ExportLidsExcelView.as_view(),name="archived"),
+
 ]

@@ -1,17 +1,24 @@
-from datetime import timedelta
+import io
+from datetime import timedelta, datetime
 
 import icecream
 from django.db.models import Q
+from django.http import HttpResponse
 from django.utils.dateparse import parse_date
+from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Archived, Frozen
 from .serializers import ArchivedSerializer, StuffArchivedSerializer, FrozenSerializer
+from ..new_lid.models import Lid
 from ...account.models import CustomUser
 
 
@@ -202,3 +209,120 @@ class FrozenDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Frozen.objects.all()
     serializer_class = FrozenSerializer
     permission_classes = (IsAuthenticated,)
+
+
+
+class ExportLidsExcelView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        queryset = Lid.objects.all()
+        filters = {}
+
+        # Query params
+        filial = request.GET.get("filial")
+        is_archived = request.GET.get("is_archived")
+        call_operator = request.GET.get("call_operator")
+        service_manager = request.GET.get("service_manager")
+        sales_manager = request.GET.get("sales_manager")
+        is_student = request.GET.get("is_student")
+        start_date_str = request.GET.get("start_date")
+        end_date_str = request.GET.get("end_date")
+
+        if filial:
+            filters["filial__id"] = filial
+        if is_archived is not None:
+            filters["is_archived"] = is_archived.lower() == "true"
+        if call_operator:
+            filters["call_operator__id"] = call_operator
+        if service_manager:
+            filters["service_manager__id"] = service_manager
+        if sales_manager:
+            filters["sales_manager__id"] = sales_manager
+        if is_student is not None:
+            filters["is_student"] = is_student.lower() == "true"
+
+        # Date range
+        date_format = "%Y-%m-%d"
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, date_format)
+            end_date = datetime.strptime(end_date_str, date_format) + timedelta(days=1)
+            filters["created_at__gte"] = start_date
+            filters["created_at__lt"] = end_date
+        elif start_date_str:
+            start_date = datetime.strptime(start_date_str, date_format)
+            end_date = start_date + timedelta(days=1)
+            filters["created_at__gte"] = start_date
+            filters["created_at__lt"] = end_date
+
+        # Access limitation
+        if user.role == "CALL_OPERATOR" or getattr(user, "is_call_center", False):
+            queryset = queryset.filter(
+                Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
+                Q(call_operator=user) | Q(call_operator__isnull=True)
+            )
+        else:
+            queryset = queryset.filter(Q(filial__in=user.filial.all()) | Q(filial__isnull=True))
+
+        lids = queryset.filter(**filters)
+
+        # Generate Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Lidlar ro'yxati"
+
+        headers = [
+            "Ism", "Familiya", "Sharif", "Telefon", "Qo‘shimcha raqam",
+            "Tug‘ilgan sana", "Ta’lim tili", "Talaba turi", "O‘quv darajasi",
+            "Fan", "Ball", "Filial", "Marketing kanali", "Lid bosqichi turi",
+            "Lid bosqichi", "Buyurtma bosqichi", "Arxivlanganmi?", "Dublikatmi?",
+            "Muzlatilganmi?", "Call operator", "Servis menejeri", "Sotuv menejeri",
+            "Studentmi?", "Balans"
+        ]
+        ws.append(headers)
+
+        for lid in lids:
+            row = [
+                lid.first_name,
+                lid.last_name or "",
+                lid.middle_name or "",
+                lid.phone_number or "",
+                lid.extra_number or "",
+                lid.date_of_birth.strftime("%Y-%m-%d") if lid.date_of_birth else "",
+                lid.education_lang,
+                lid.student_type,
+                lid.edu_level or "",
+                lid.subject.name if lid.subject else "",
+                lid.ball or 0,
+                lid.filial.name if lid.filial else "",
+                lid.marketing_channel.name if lid.marketing_channel else "",
+                lid.lid_stage_type,
+                lid.lid_stages or "",
+                lid.ordered_stages or "",
+                "Ha" if lid.is_archived else "Yo‘q",
+                "Ha" if lid.is_dubl else "Yo‘q",
+                "Ha" if lid.is_frozen else "Yo‘q",
+                lid.call_operator.get_full_name() if lid.call_operator else "",
+                lid.service_manager.get_full_name() if lid.service_manager else "",
+                lid.sales_manager.get_full_name() if lid.sales_manager else "",
+                "Ha" if lid.is_student else "Yo‘q",
+                float(lid.balance or 0),
+            ]
+            ws.append(row)
+
+        for col in ws.columns:
+            max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
+            ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 4
+
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer.read(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        filename = f"lidlar_{now().strftime('%Y%m%d_%H%M')}.xlsx"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
