@@ -382,8 +382,8 @@ class ExportLidToExcelAPIView(APIView):
         responses={200: "Excel file generated"},
     )
     def get(self, request):
-        start_date = request.GET.get("start_date")
-        end_date = request.GET.get("end_date")
+        start_date_str = request.GET.get("start_date")
+        end_date_str = request.GET.get("end_date")
         student_stage_type = request.GET.get("student_stage_type")
         sales_manager_id = self.request.GET.get("sales_manager")
         call_operator_id = self.request.GET.get("call_operator")
@@ -445,17 +445,23 @@ class ExportLidToExcelAPIView(APIView):
         if group_id:
             queryset = queryset.filter(students_group__group__id=group_id)
 
-        if start_date and end_date:
-            start_datetime = datetime.combine(start_date, datetime.min.time())
-            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
+        date_format = "%Y-%m-%d"
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
 
-            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
-
-        if start_date:
             start_datetime = datetime.combine(start_date, datetime.min.time())
             end_datetime = start_datetime + timedelta(days=1)
-
             queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
+
+
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            end_date = datetime.strptime(end_date_str, date_format).date()
+
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
+            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
+
 
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id)
