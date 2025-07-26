@@ -95,7 +95,11 @@ class LidListCreateView(ListCreateAPIView):
         subject = self.request.GET.get("subject")
         is_student = self.request.GET.get("is_student")
         lid_stage_type = self.request.GET.get("lid_stage_type")
+        no_first_lesson = self.request.GET.get("no_first_lesson")
+        ordered_stages = self.request.GET.get("ordered_stages")
 
+        if no_first_lesson:
+            queryset = queryset.filter().exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
         if lid_stage_type:
             queryset = queryset.filter(lid_stage_type=lid_stage_type)
         if is_archived:
