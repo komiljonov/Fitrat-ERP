@@ -427,13 +427,13 @@ class LidStatisticsView(ListAPIView):
         ordered_leads_count = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, **filter).count()
         ordered_waiting_leads = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                                 ordered_stages="KUTULMOQDA", **filter).count()
-        ordered_archived = Archived.objects.filter(lid__isnull=False, lid__is_student=False, is_archived=True, lid__lid_stage_type="ORDERED_LID").count()
+        ordered_archived = Archived.objects.filter(lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID").count()
         first_lesson = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                        ordered_stages="BIRINCHI_DARS_BELGILANGAN", is_student=False, **filter).count()
         first_lesson_not = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                            ordered_stages="BIRINCHI_DARSGA_KELMAGAN", **filter).count()
         all_archived = queryset.filter(is_archived=True, is_student=False, **filter).count()
-        archived_lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID",lid__isnull=False, lid__is_student=False, is_archived=True).count()
+        archived_lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID",lid__isnull=False, is_archived=True).count()
 
         first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID", **filter, ).count()
 
