@@ -47,6 +47,10 @@ class StudentGroupsView(ListCreateAPIView):
         level = self.request.GET.get('course__level__id', None)
         not_added = self.request.GET.get('not_added', None)
         student = self.request.GET.get('student', None)
+        is_archived = self.request.GET.get('is_archived', None)
+
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if student:
             queryset = queryset.filter(student_groups__student__id=student)
