@@ -4,7 +4,7 @@ from django.utils.dateparse import parse_datetime
 from icecream import ic
 from rest_framework import status
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -206,6 +206,27 @@ class UserTimeLineDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = UserTimeLineSerializer
     permission_classes = [IsAuthenticated]
 
+    def update(self, request, *args, **kwargs):
+        if not isinstance(request.data, list):
+            return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
+
+        ids = [item["id"] for item in request.data if "id" in item]
+        instances = list(UserTimeLine.objects.filter(id__in=ids))
+
+        serializer = self.get_serializer(instances, data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+        if not isinstance(ids, list):
+            return Response({"detail": "Expected a list of ids."}, status=status.HTTP_400_BAD_REQUEST)
+
+        deleted_count, _ = UserTimeLine.objects.filter(id__in=ids).delete()
+        return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
+
 
 class TimeLineBulkCreate(CreateAPIView):
     serializer_class = UserTimeLineSerializer
@@ -219,3 +240,5 @@ class TimeLineBulkCreate(CreateAPIView):
         self.perform_create(serializer)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
