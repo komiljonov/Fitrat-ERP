@@ -135,17 +135,12 @@ class LidListCreateView(ListCreateAPIView):
             except FieldError as e:
                 print(f"FieldError: {e}")
 
-        # ✅ Date Filtering
+        from datetime import datetime, timedelta
+
         start_date_str = self.request.GET.get("start_date")
         end_date_str = self.request.GET.get("end_date")
 
         date_format = "%Y-%m-%d"
-        if start_date_str:
-            start_date = datetime.strptime(start_date_str, date_format).date()
-
-            start_datetime = datetime.combine(start_date, datetime.min.time())
-            end_datetime = start_datetime + timedelta(days=1)
-            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
 
         if start_date_str and end_date_str:
             start_date = datetime.strptime(start_date_str, date_format).date()
@@ -153,6 +148,15 @@ class LidListCreateView(ListCreateAPIView):
 
             start_datetime = datetime.combine(start_date, datetime.min.time())
             end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
+
+            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
+
+        elif start_date_str:
+            # only filter 1 day if end_date is not present
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = start_datetime + timedelta(days=1)
+
             queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
 
         return queryset
