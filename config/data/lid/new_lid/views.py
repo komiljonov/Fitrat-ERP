@@ -453,32 +453,28 @@ class LidStatisticsView(ListAPIView):
         no_debt_sum = Archived.objects.filter(
             is_archived=True,
             student__isnull=False,
-            student__balance__gte=100000,
-            **filter
-        ).aggregate(total=Sum("student__balance"))["total"] or 0
+            student__balance__gte=100000
+        ).aggregate(total=Sum("student__balance"))["total"]
 
         lead_no_debt_sum = Archived.objects.filter(
             is_archived=True,
             lid__isnull=False,
             lid__is_student=False,
-            lid__balance__gte=100000,
-            **filter
-        ).aggregate(total=Sum("lid__balance"))["total"] or 0
+            lid__balance__gte=100000
+        ).aggregate(total=Sum("lid__balance"))["total"]
 
         debt_sum = Archived.objects.filter(
             is_archived=True,
             student__isnull=False,
-            student__balance__lt=100000,
-            **filter
-        ).aggregate(total=Sum("student__balance"))["total"] or 0
+            student__balance__lt=100000
+        ).aggregate(total=Sum("student__balance"))["total"]
 
         lead_debt_sum = Archived.objects.filter(
             is_archived=True,
             lid__isnull=False,
             lid__is_student=False,
-            lid__balance__lt=100000,
-            **filter
-        ).aggregate(total=Sum("lid__balance"))["total"] or 0
+            lid__balance__lt=100000
+        ).aggregate(total=Sum("lid__balance"))["total"]
 
         response_data = {
             "new_lid_statistics": {
