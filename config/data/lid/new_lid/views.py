@@ -441,26 +441,38 @@ class LidStatisticsView(ListAPIView):
         new_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="NEW_STUDENT").count()
         active_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="ACTIVE_STUDENT").count()
 
-        no_debt = Archived.objects.filter(is_archived=True,student__isnull=False, student__balance__gte=100000).count()
+        no_debt = Archived.objects.filter(
+            is_archived=True,
+            student__isnull=False,
+            student__balance__isnull=False,
+            student__balance__gte=100000
+        ).count()
 
-        lead_no_debt = Archived.objects.filter(is_archived=True, lid__isnull=False,lid__is_student=False, lid__balance__gte=100000).count()
+        lead_no_debt = Archived.objects.filter(
+            is_archived=True,
+            lid__isnull=False,
+            lid__is_student=False,
+            lid__balance__isnull=False,
+            lid__balance__gte=100000
+        ).count()
 
         debt = Archived.objects.filter(is_archived=True,student__isnull=False, student__balance__lt=100000).count()
 
         lead_debt = Archived.objects.filter(is_archived=True,lid__isnull=False, lid__is_student=False, lid__balance__lt=100000).count()
 
-        # 💰 Corrected SUMs
         no_debt_sum = Archived.objects.filter(
             is_archived=True,
             student__isnull=False,
-            student__balance__gt=100000
+            student__balance__isnull=False,
+            student__balance__gte=100000
         ).aggregate(total=Sum("student__balance"))["total"] or 0
 
         lead_no_debt_sum = Archived.objects.filter(
             is_archived=True,
             lid__isnull=False,
             lid__is_student=False,
-            lid__balance__gt=100000
+            lid__balance__isnull=False,
+            lid__balance__gte=100000
         ).aggregate(total=Sum("lid__balance"))["total"] or 0
 
         debt_sum = Archived.objects.filter(
