@@ -98,6 +98,8 @@ class LidListCreateView(ListCreateAPIView):
         no_first_lesson = self.request.GET.get("no_first_lesson")
         ordered_stages = self.request.GET.get("ordered_stages")
 
+        if ordered_stages:
+            queryset = queryset.filter(ordered_stages=ordered_stages)
         if no_first_lesson:
             queryset = queryset.filter().exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
         if lid_stage_type:
