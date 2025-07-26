@@ -854,13 +854,13 @@ class ArchivedView(APIView):
 
         if filial:
             lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID",lid__isnull=False, is_archived=True,
-                                     filial_id=filial).count()
+                                     lid__filial__id=filial).count()
             order = Archived.objects.filter(lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID",
-                                       filial_id=filial).count()
+                                       lid__filial__id=filial).count()
             new_student = Archived.objects.filter(student__student_stage_type="NEW_STUDENT", is_archived=True,
-                                                 filial_id=filial).count()
+                                                 student__filial__id=filial).count()
             student = Archived.objects.filter(student__student_stage_type="ACTIVE_STUDENT", is_archived=True,
-                                             filial_id=filial).count()
+                                             student__filial__id=filial).count()
 
         return Response({
             "lid": lid,
