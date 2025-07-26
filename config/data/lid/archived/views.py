@@ -332,7 +332,7 @@ class ExportLidsExcelView(APIView):
 
 class LidStudentArchivedStatistics(APIView):
     def get(self, request, *args, **kwargs):
-        queryset = Archived.objects.all()
+        queryset = Archived.objects.filter(is_archived=True)
 
         # --- Filters ---
         is_lid = request.GET.get("is_lid", "") == "true"
