@@ -350,7 +350,7 @@ class LidStatisticsView(ListAPIView):
         # teacher = self.request.GET.get("teacher")
         # channel = self.request.GET.get("channel")
         # subject = self.request.GET.get("subject")
-        is_student = self.request.GET.get("is_student")
+        # is_student = self.request.GET.get("is_student")
 
         filter = {}
 
