@@ -370,8 +370,8 @@ class LidStatisticsView(ListAPIView):
         #     filter["lids_group__teacher__id"] = teacher
         # if channel:
         #     filter["subject__id"] = subject
-        if is_student:
-            filter["is_student"] = is_student.capitalize()
+        # if is_student:
+        #     filter["is_student"] = is_student.capitalize()
 
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
