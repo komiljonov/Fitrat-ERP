@@ -453,14 +453,14 @@ class LidStatisticsView(ListAPIView):
         no_debt_sum = Archived.objects.filter(
             is_archived=True,
             student__isnull=False,
-            student__balance__gte=100000
+            student__balance__gt=100000
         ).aggregate(total=Sum("student__balance"))["total"] or 0
 
         lead_no_debt_sum = Archived.objects.filter(
             is_archived=True,
             lid__isnull=False,
             lid__is_student=False,
-            lid__balance__gte=100000
+            lid__balance__gt=100000
         ).aggregate(total=Sum("lid__balance"))["total"] or 0
 
         debt_sum = Archived.objects.filter(
