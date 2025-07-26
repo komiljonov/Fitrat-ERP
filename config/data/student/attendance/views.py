@@ -122,8 +122,14 @@ class LessonAttendanceList(ListAPIView):
     serializer_class = AttendanceSerializer
 
     def get_queryset(self, *args, **kwargs):
+
+        from django.utils.timezone import now
+        from datetime import timedelta
+
+
         themes = self.request.query_params.getlist('theme', None)
         group_id = self.kwargs.get('pk', None)
+        day = "today"
 
         if group_id == "":
             group_id = None
@@ -138,6 +144,11 @@ class LessonAttendanceList(ListAPIView):
 
         if group_id:
             query &= Q(group__id=group_id)
+
+        if day == "today":
+            today = now().date()
+            tomorrow = today + timedelta(days=1)
+            query &= Q(created_at__gte=today, created_at__lt=tomorrow)
 
         return Attendance.objects.filter(query)
 
