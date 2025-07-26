@@ -94,7 +94,10 @@ class LidListCreateView(ListCreateAPIView):
         channel = self.request.GET.get("channel")
         subject = self.request.GET.get("subject")
         is_student = self.request.GET.get("is_student")
+        lid_stage_type = self.request.GET.get("lid_stage_type")
 
+        if lid_stage_type:
+            queryset = queryset.filter(lid_stage_type=lid_stage_type)
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
