@@ -64,6 +64,12 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         return list(attendance)
 
     def get_lesson_count(self, obj):
+        if not obj.group or not obj.group.course:
+            return {
+                "lessons": 0,
+                "attended": 0,
+            }
+
         total_lessons = Theme.objects.filter(course=obj.group.course).count()
 
         attended_lessons = (
@@ -74,8 +80,8 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         )
 
         return {
-            "lessons": total_lessons,  # Total lessons in the group
-            "attended": attended_lessons,  # Lessons that have attendance records
+            "lessons": total_lessons,
+            "attended": attended_lessons,
         }
 
     def validate(self, attrs):
