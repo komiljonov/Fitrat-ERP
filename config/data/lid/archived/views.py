@@ -33,7 +33,7 @@ class ArchivedListAPIView(ListCreateAPIView):
     ordering_fields = ('reason',)
 
     def get_queryset(self):
-        queryset = Archived.objects.filter(Q(lid__is_student=False))
+        queryset = Archived.objects.all()
 
         get = self.request.GET.get
 
