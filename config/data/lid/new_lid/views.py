@@ -22,6 +22,7 @@ from rest_framework.views import APIView
 
 from .models import Lid
 from .serializers import LidSerializer
+from ..archived.models import Archived
 from ...student.lesson.models import FirstLLesson
 from ...student.student.models import Student
 
@@ -441,8 +442,8 @@ class LidStatisticsView(ListAPIView):
 
         first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID", **filter,).count()
 
-        new_student = Student.objects.filter(is_archived=True, student_stage_type="NEW_STUDENT", **filter).count()
-        active_student = Student.objects.filter(is_archived=True, student_stage_type="ACTIVE_STUDENT", **filter).count()
+        new_student = Archived.objects.filter(is_archived=True, student__student_stage_type="NEW_STUDENT", **filter).count()
+        active_student = Archived.objects.filter(is_archived=True, student_stage_type="ACTIVE_STUDENT", **filter).count()
 
         no_debt = Student.objects.filter(is_archived=True, balance__gte=100000, **filter).count()
 
