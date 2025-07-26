@@ -349,7 +349,7 @@ class LidStatisticsView(ListAPIView):
         queryset = Lid.objects.all()
 
         filial = self.request.GET.get("filial")
-        is_archived = self.request.GET.get("is_archived")
+        is_archived = True
         # course_id = self.request.GET.get("course")
         call_operator_id = self.request.GET.get("call_operator")
         service_manager = self.request.GET.get("service_manager")
@@ -363,8 +363,8 @@ class LidStatisticsView(ListAPIView):
 
         if filial:
             filter["filial__id"] = filial
-        if is_archived:
-            filter["is_archived"] = True
+        # if is_archived:
+        #     filter["is_archived"] = True
         # if course_id:
         #     filter["lids_group__course__id"] = course_id
         if call_operator_id:
@@ -427,7 +427,7 @@ class LidStatisticsView(ListAPIView):
         ordered_new = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                       ordered_stages="YANGI_BUYURTMA", **filter).count()
 
-        ordered_new_fix = queryset.filter(ordered_date__isnull=False, **filter).count()
+        ordered_new_fix = queryset.filter(ordered_date__isnull=False,is_archived=False, **filter).count()
         ordered_leads_count = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, **filter).count()
         ordered_waiting_leads = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
                                                 ordered_stages="KUTULMOQDA", **filter).count()
@@ -439,7 +439,7 @@ class LidStatisticsView(ListAPIView):
         all_archived = queryset.filter(is_archived=True, is_student=False, **filter).count()
         archived_lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID",lid__isnull=False, is_archived=True).count()
 
-        first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID", **filter, ).count()
+        first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID",lid__is_archived=False, **filter, ).count()
 
         new_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="NEW_STUDENT").count()
         active_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="ACTIVE_STUDENT").count()
