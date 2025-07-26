@@ -160,13 +160,11 @@ PAYCOM_SETTINGS = {
     },
 }
 
-
 CLICK_SERVICE_ID = config("CLICK_SERVICE_ID")
 CLICK_MERCHANT_ID = config("CLICK_MERCHANT_ID")
 CLICK_SECRET_KEY = config("CLICK_SECRET_KEY")
 CLICK_ACCOUNT_MODEL = "clickuz.models.Order"
 CLICK_AMOUNT_FIELD = "amount"
-
 
 CLICK_SETTINGS = {
     "service_id": config("CLICK_SERVICE_ID"),
@@ -176,8 +174,6 @@ CLICK_SETTINGS = {
     "commission_percent": 0,
     "disable_admin": False,
 }
-
-
 
 CLICK_COMMISSION_PERCENT = "(optional int field) your companies comission percent if applicable"
 CLICK_DISABLE_ADMIN = False
@@ -223,21 +219,16 @@ USE_I18N = True
 STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
 
-
 STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 AUTH_USER_MODEL = 'account.CustomUser'
 PAYME_ACCOUNT_MODEL = 'data.student.student.models.Student'
 
-
 DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 10 MB
 
-from corsheaders.defaults import default_headers
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
