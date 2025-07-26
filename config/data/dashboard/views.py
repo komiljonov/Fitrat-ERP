@@ -205,7 +205,9 @@ class DashboardSecondView(APIView):
         orders = Lid.objects.filter(lid_stage_type="ORDERED_LID", **filters).exclude(
             ordered_stages="BIRINCHI_DARS_BELGILANGAN")
         orders_archived = orders.filter(is_archived=True)
-        first_lesson = FirstLLesson.objects.filter(**filters)
+        # first_lesson = FirstLLesson.objects.filter(**filters)
+        first_lesson = Lid.objects.filter(ordered_stages="BIRINCHI_DARS_BELGILANGAN",is_student=False,is_archived=False,
+                                          **filters)
 
         # Students with One Attendance
         students_with_one_attendance = Attendance.objects.values("student").annotate(
