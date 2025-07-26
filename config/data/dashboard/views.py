@@ -8,6 +8,7 @@ from django.db.models import Sum, F, DecimalField, Value
 from django.db.models.functions import ExtractWeekDay, Concat
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
+from django.utils.timezone import make_aware
 from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
@@ -49,13 +50,12 @@ class DashboardView(APIView):
         # Common Filters
         filters = {}
         if start_date and end_date:
-            start_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
-            end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
-            filters["created_at__date__range"] = (start_dt, end_dt)
-
+            start_dt = make_aware(datetime.strptime(start_date, "%Y-%m-%d"))
+            end_dt = make_aware(datetime.strptime(end_date, "%Y-%m-%d"))
+            filters["created_at__range"] = (start_dt, end_dt)
         elif start_date:
-            filters["created_at__date"] = datetime.strptime(start_date, "%Y-%m-%d").date()
-
+            start_dt = make_aware(datetime.strptime(start_date, "%Y-%m-%d"))
+            filters["created_at__date"] = start_dt.date()  # this one is safe as date
         if filial:
             filters["filial"] = filial
 
