@@ -847,15 +847,15 @@ class ArchivedView(APIView):
     def get(self, request, *args, **kwargs):
         filial = request.query_params.get('filial', None)
 
-        lid = Archived.objects.filter(is_archived=True, lid__lid_stage_type="NEW_LID", lid__is_student=False).count()
-        order = Archived.objects.filter(is_archived=True, lid__lid_stage_type="ORDERED_LID", lid__is_student=False).count()
+        lid = Archived.objects.filter(is_archived=True, lid__lid_stage_type="NEW_LID").count()
+        order = Archived.objects.filter(is_archived=True, lid__lid_stage_type="ORDERED_LID").count()
         new_student = Archived.objects.filter(student__student_stage_type="NEW_STUDENT", is_archived=True).count()
         student = Archived.objects.filter(student__student_stage_type="ACTIVE_STUDENT", is_archived=True).count()
 
         if filial:
-            lid = Archived.objects.filter(is_archived=True, lid__lid_stage_type="NEW_LID", lid__is_student=False,
+            lid = Archived.objects.filter(is_archived=True, lid__lid_stage_type="NEW_LID",
                                      filial_id=filial).count()
-            order = Archived.objects.filter(is_archived=True, lid__lid_stage_type="ORDERED_LID", lid__is_student=False,
+            order = Archived.objects.filter(is_archived=True, lid__lid_stage_type="ORDERED_LID",
                                        filial_id=filial).count()
             new_student = Archived.objects.filter(student__student_stage_type="NEW_STUDENT", is_archived=True,
                                                  filial_id=filial).count()
