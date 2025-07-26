@@ -9,6 +9,7 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Employee_attendance
 from .models import UserTimeLine, Stuff_Attendance
@@ -242,3 +243,29 @@ class TimeLineBulkCreate(CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class UserTimeLineBulkUpdateDelete(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):
+        if not isinstance(request.data, list):
+            return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
+
+        ids = [item.get("id") for item in request.data if "id" in item]
+        instances = list(UserTimeLine.objects.filter(id__in=ids))
+
+        if len(instances) != len(ids):
+            return Response({"detail": "Some IDs not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserTimeLineSerializer(instances, data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+        if not isinstance(ids, list):
+            return Response({"detail": "Expected a list of ids."}, status=status.HTTP_400_BAD_REQUEST)
+
+        deleted_count, _ = UserTimeLine.objects.filter(id__in=ids).delete()
+        return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
