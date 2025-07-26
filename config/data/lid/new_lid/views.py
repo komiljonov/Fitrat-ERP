@@ -21,6 +21,7 @@ from rest_framework.views import APIView
 
 from .models import Lid
 from .serializers import LidSerializer
+from ..archived.models import Archived
 from ...student.lesson.models import FirstLLesson
 from ...student.student.models import Student
 
@@ -434,27 +435,27 @@ class LidStatisticsView(ListAPIView):
 
         first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID", **filter, ).count()
 
-        new_student = Student.objects.filter(is_archived=True, student_stage_type="NEW_STUDENT", **filter).count()
-        active_student = Student.objects.filter(is_archived=True, student_stage_type="ACTIVE_STUDENT", **filter).count()
+        new_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="NEW_STUDENT", **filter).count()
+        active_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="ACTIVE_STUDENT", **filter).count()
 
-        no_debt = Student.objects.filter(is_archived=True, balance__gte=100000, **filter).count()
+        no_debt = Archived.objects.filter(is_archived=True,student__isnull=False, student__balance__gte=100000, **filter).count()
 
-        lead_no_debt = Lid.objects.filter(is_archived=True, is_student=False, balance__gte=100000, **filter).count()
+        lead_no_debt = Archived.objects.filter(is_archived=True, lid__isnull=False,lid__is_student=False, lid__balance__gte=100000, **filter).count()
 
-        debt = Student.objects.filter(is_archived=True, balance__lt=100000, **filter).count()
+        debt = Archived.objects.filter(is_archived=True,student__isnull=False, student__balance__lt=100000, **filter).count()
 
-        lead_debt = Lid.objects.filter(is_archived=True, is_student=False, balance__lt=100000, **filter).count()
+        lead_debt = Archived.objects.filter(is_archived=True,lid__isnull=False, lid__is_student=False, lid__balance__lt=100000, **filter).count()
 
         no_debt_sum = \
-            Student.objects.filter(is_archived=True, balance__gte=100000, **filter).aggregate(total=Sum("balance"))[
+            Archived.objects.filter(is_archived=True,student__isnull=False, student__balance__gte=100000, **filter).aggregate(total=Sum("balance"))[
                 "total"] or 0
         lead_no_debt_sum = \
-            Lid.objects.filter(is_archived=True, is_student=False, balance__gte=100000, **filter).aggregate(
+            Lid.objects.filter(is_archived=True,lid__isnull=False, lid__is_student=False, lid__balance__gte=100000, **filter).aggregate(
                 total=Sum("balance"))["total"] or 0
         debt_sum = \
-            Student.objects.filter(is_archived=True, balance__lt=100000, **filter).aggregate(total=Sum("balance"))[
+            Archived.objects.filter(is_archived=True,student__isnull=False, student__balance__lt=100000, **filter).aggregate(total=Sum("balance"))[
                 "total"] or 0
-        lead_debt_sum = Lid.objects.filter(is_archived=True, is_student=False, balance__lt=100000, **filter).aggregate(
+        lead_debt_sum = Lid.objects.filter(is_archived=True, lid__isnull=False ,lid__is_student=False, lid__balance__lt=100000, **filter).aggregate(
             total=Sum("balance"))["total"] or 0
 
         response_data = {
