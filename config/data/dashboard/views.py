@@ -48,12 +48,13 @@ class DashboardView(APIView):
 
         # Common Filters
         filters = {}
-        if start_date:
-            filters["created_at__date"] = start_date
-
         if start_date and end_date:
-            filters["created_at__gte"] = start_date
-            filters["created_at__lte"] = end_date
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
+            filters["created_at__date__range"] = (start_dt, end_dt)
+
+        elif start_date:
+            filters["created_at__date"] = datetime.strptime(start_date, "%Y-%m-%d").date()
 
         if filial:
             filters["filial"] = filial
