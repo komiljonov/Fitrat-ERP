@@ -111,6 +111,22 @@ class UserTimeLineBulkSerializer(serializers.ListSerializer):
         return UserTimeLine.objects.bulk_create([
             UserTimeLine(**item) for item in validated_data
         ])
+    def update(self, instances, validated_data):
+        # map instance id -> instance
+        instance_mapping = {instance.id: instance for instance in instances}
+        updated_objs = []
+
+        for item in validated_data:
+            instance = instance_mapping.get(item.get("id"))
+            if instance:
+                for attr, value in item.items():
+                    setattr(instance, attr, value)
+                updated_objs.append(instance)
+
+        return UserTimeLine.objects.bulk_update(
+            updated_objs,
+            fields=["day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
+        )
 
 
 class UserTimeLineSerializer(serializers.ModelSerializer):
