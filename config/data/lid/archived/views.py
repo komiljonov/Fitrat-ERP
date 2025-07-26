@@ -326,3 +326,93 @@ class ExportLidsExcelView(APIView):
         filename = f"lidlar_{now().strftime('%Y%m%d_%H%M')}.xlsx"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
+
+
+
+
+class LidStudentArchivedStatistics(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = Archived.objects.all()
+
+        # --- Filters ---
+        is_lid = request.GET.get("is_lid", "") == "true"
+        education_lang = request.GET.get("education_lang")
+        subject = request.GET.get("subject")
+        call_operator = request.GET.get("call_operator")
+        service_manager = request.GET.get("service_manager")
+        sales_manager = request.GET.get("sales_manager")
+        balance_from = request.GET.get("balance_from")
+        balance_to = request.GET.get("balance_to")
+        start_date = parse_date(request.GET.get("start_date", ""))
+        end_date = parse_date(request.GET.get("end_date", ""))
+
+        if is_lid:
+            queryset = queryset.filter(lid__isnull=False)
+        elif is_lid == False:
+            queryset = queryset.filter(student__isnull=False)
+
+        if education_lang:
+            field = "lid__education_lang" if is_lid else "student__education_lang"
+            queryset = queryset.filter(**{field: education_lang})
+
+        if subject:
+            field = "lid__subject__id" if is_lid else "student__subject__id"
+            queryset = queryset.filter(**{field: subject})
+
+        if call_operator:
+            field = "lid__call_operator__id" if is_lid else "student__call_operator__id"
+            queryset = queryset.filter(**{field: call_operator})
+
+        if service_manager:
+            field = "lid__service_manager__id" if is_lid else "student__service_manager__id"
+            queryset = queryset.filter(**{field: service_manager})
+
+        if sales_manager:
+            field = "lid__sales_manager__id" if is_lid else "student__sales_manager__id"
+            queryset = queryset.filter(**{field: sales_manager})
+
+        if balance_from and balance_to:
+            field_from = "lid__balance_from__lte" if is_lid else "student__balance_from__lte"
+            field_to = "lid__balance_to__gte" if is_lid else "student__balance_to__gte"
+            queryset = queryset.filter(**{
+                field_from: balance_from,
+                field_to: balance_to
+            })
+        elif balance_from:
+            field = "lid__balance_from__lte" if is_lid else "student__balance_from__lte"
+            queryset = queryset.filter(**{field: balance_from})
+
+        if start_date and end_date:
+            queryset = queryset.filter(
+                created_at__gte=start_date,
+                created_at__lte=end_date + timedelta(days=1) - timedelta(seconds=1)
+            )
+        elif start_date:
+            queryset = queryset.filter(
+                created_at__gte=start_date,
+                created_at__lte=start_date + timedelta(days=1) - timedelta(seconds=1)
+            )
+
+        # --- Stats ---
+        all_archived = queryset.count()
+        archived_lids = queryset.filter(lid__isnull=False,lid__lid_stage_type="NEW_LID").count()
+        archived_orders = queryset.filter(lid__isnull=False,lid__lid_stage_type="ORDERED_LID").count()  # or another field for "order"
+        archived_new_students = queryset.filter(student__isnull=False, student__student_stage_type="NEW_STUDENT").count()
+        archived_active_students = queryset.filter(student__isnull=False, student__student_stage_type="ACTIVE_STUDENT").count()
+        debt_lid = queryset.filter(lid__isnull=False,lid__balance__gte=100000).count()
+        deb_student = queryset.filter(student__isnull=False,student__balance__gte=100000).count()
+
+        no_debt_lid = queryset.filter(lid__isnull=False,lid__balance__lte=100000).count()
+        no_debt_student = queryset.filter(student__isnull=False,student__balance__lte=100000).count()
+
+        return Response({
+            "debt" : debt_lid + deb_student,
+            "no_debt" : no_debt_lid + no_debt_student,
+
+            "all_archived": all_archived,
+            "archived_lids": archived_lids,
+            "archived_orders": archived_orders,
+            "archived_new_students": archived_new_students,
+            "archived_active_students": archived_active_students,
+
+        })

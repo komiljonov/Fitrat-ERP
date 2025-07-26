@@ -17,4 +17,6 @@ urlpatterns = [
 
     path("archived/",ExportLidsExcelView.as_view(),name="archived"),
 
+    path("static",LidStudentArchivedStatistics.as_view(),name="static"),
+
 ]
