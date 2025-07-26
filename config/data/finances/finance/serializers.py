@@ -1,4 +1,4 @@
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from django.utils.dateparse import parse_date
 from rest_framework import serializers
 
@@ -65,7 +65,8 @@ class CasherSerializer(serializers.ModelSerializer):
             Finance.objects.filter(casher=obj, action='INCOME').aggregate(
                 Sum('amount'))['amount__sum'] or 0
         expense = \
-            Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(
+            Finance.objects.filter(casher=obj, action='EXPENSE').exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                 Sum('amount'))['amount__sum'] or 0
         if start_date:
             start = parse_date(start_date)
@@ -78,7 +79,8 @@ class CasherSerializer(serializers.ModelSerializer):
             Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start, created_at__lte=end).aggregate(
                 Sum('amount'))['amount__sum'] or 0
             expense = \
-            Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start, created_at__lte=end).aggregate(
+            Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start, created_at__lte=end).exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                 Sum('amount'))['amount__sum'] or 0
 
         if start_date and end_date:
@@ -88,7 +90,8 @@ class CasherSerializer(serializers.ModelSerializer):
                     Sum('amount'))['amount__sum'] or 0
             expense = \
                 Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start_date,
-                                       created_at__lte=end_date).aggregate(
+                                       created_at__lte=end_date).exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                     Sum('amount'))['amount__sum'] or 0
 
         return income - expense
@@ -127,7 +130,8 @@ class CasherSerializer(serializers.ModelSerializer):
         end_date = request.GET.get('end_date')
 
         expense = \
-            Finance.objects.filter(casher=obj, action='EXPENSE').aggregate(
+            Finance.objects.filter(casher=obj, action='EXPENSE').exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                 Sum('amount'))['amount__sum'] or 0
         if start_date:
             start = parse_date(start_date)
@@ -138,13 +142,15 @@ class CasherSerializer(serializers.ModelSerializer):
 
             expense = \
                 Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start,
-                                       created_at__lte=end).aggregate(
+                                       created_at__lte=end).exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                     Sum('amount'))['amount__sum'] or 0
 
         if start_date and end_date:
             expense = \
                 Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start_date,
-                                       created_at__lte=end_date).aggregate(
+                                       created_at__lte=end_date).exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
                     Sum('amount'))['amount__sum'] or 0
 
         return expense
