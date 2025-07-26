@@ -7,7 +7,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import ListAPIView, get_object_or_404, RetrieveAPIView
+from rest_framework.generics import ListAPIView, get_object_or_404
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -633,9 +633,7 @@ class GroupIsActiveNowAPIView(APIView):
 
         group = get_object_or_404(Group, id=group_id)
 
-
         now_time = datetime.datetime.now()
-
 
         print(now_time)
 
@@ -749,6 +747,7 @@ class StudentSaleGroupListCreateAPIView(ListCreateAPIView):
         if student:
             qs = qs.filter(student__id=student)
         return qs
+
 
 class StudentSaleGroupDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = GroupSaleStudent.objects.all()
