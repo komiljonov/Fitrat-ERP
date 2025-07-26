@@ -38,18 +38,18 @@ class LidListCreateView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 
-    search_fields = ["first_name", "last_name", "phone_number", ]
-    filterset_fields = [
-        "student_type",
-        "education_lang",
-        "filial",
-        "marketing_channel",
-        "lid_stage_type",
-        "lid_stages",
-        "ordered_stages",
-        "is_dubl",
-        "is_archived",
-    ]
+    # search_fields = ["first_name", "last_name", "phone_number", ]
+    # filterset_fields = [
+    #     "student_type",
+    #     "education_lang",
+    #     "filial",
+    #     "marketing_channel",
+    #     "lid_stage_type",
+    #     "lid_stages",
+    #     "ordered_stages",
+    #     "is_dubl",
+    #     "is_archived",
+    # ]
 
     def get_serializer(self, *args, **kwargs):
 
