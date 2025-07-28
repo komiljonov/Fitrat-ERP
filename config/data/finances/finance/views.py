@@ -600,12 +600,6 @@ class FinanceExcel(APIView):
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
 
-        if start_date_str:
-            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
-            finances = finances.filter(
-                created_at__gte=start_date,
-                created_at__lt=start_date + timedelta(days=1) - timedelta(seconds=1)
-            )
 
         if start_date_str and end_date_str:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
@@ -614,6 +608,15 @@ class FinanceExcel(APIView):
                 created_at__gte=start_date,
                 created_at__lt=end_date + timedelta(days=1) - timedelta(seconds=1)
             )
+
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            finances = finances.filter(
+                created_at__gte=start_date,
+                created_at__lt=start_date + timedelta(days=1) - timedelta(seconds=1)
+            )
+
+
 
         # Create an Excel workbook
         workbook = openpyxl.Workbook()
