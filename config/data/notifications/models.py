@@ -11,13 +11,15 @@ class Notification(BaseModel):
         ("TeacherFinance", "TeacherFinance"),
         ("Bonus", "Bonus"),
         ("New_Student", "New_Student"),
+        ("First_Lesson_Lid", "First_Lesson_Lid"),
         ("Tasks", "Tasks"),
         ("Students", "Students"),
         ("Comments", "Comments"),
         ("Monitoring", "Monitoring"),
         ("Results", "Results"),
         ("Examination", "Examination"),
-        ("Shopping", "Shopping")
+        ("Shopping", "Shopping"),
+        ("Homework", "Homework"),
     ])
     come_from = models.TextField(null=True, blank=True)
     is_read = models.BooleanField(default=False)

@@ -24,7 +24,8 @@ def check_daily_tasks():
         Notification.objects.create(
             user=task.creator,
             comment=f"You have an expired task.\nComment: {task.comment or 'No comment'}",
-            come_from=task
+            come_from=task.id,
+            choice="Tasks"
         )
         logger.info(f"Task {task.id} marked as EXPIRED and notification sent to user {task.creator_id}")
 
