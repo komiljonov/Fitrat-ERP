@@ -896,10 +896,10 @@ class SalesApiView(APIView):
             VoucherStudent.objects.filter(**filters).aggregate(total=Sum('voucher__amount'))['total'] or 0
         total_sale_discount = \
             SaleStudent.objects.filter(**filters).aggregate(total=Sum('sale__amount'))['total'] or 0
-        total_debt = Student.objects.filter(balance__lt=0, **filters).aggregate(total=Sum('balance'))['total'] or 0
+        total_debt = Student.objects.filter(balance__lt=100000, **filters).aggregate(total=Sum('balance'))['total'] or 0
 
         # FIX: Removed incorrect `balance__status` lookup
-        total_income = Student.objects.filter(**filters).aggregate(total=Sum('balance'))['total'] or 0
+        total_income = Student.objects.filter(balance__gte=100000,**filters).aggregate(total=Sum('balance'))['total'] or 0
 
         chart_data.append({
             "total_students": total_students,
