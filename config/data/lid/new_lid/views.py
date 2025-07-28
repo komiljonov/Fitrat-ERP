@@ -372,9 +372,12 @@ class LidStatisticsView(ListAPIView):
         # subject = self.request.GET.get("subject")
         # is_student = self.request.GET.get("is_student")
         marketing_channel = self.request.GET.get("marketing_channel")
+        subject = self.request.GET.get("subject")
 
         filter = {}
 
+        if subject:
+            filter["subject__id"] = subject
         if filial:
             filter["filial__id"] = filial
         # if is_archived:
