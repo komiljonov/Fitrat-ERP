@@ -56,5 +56,8 @@ def on_update(sender, instance: Homework_history, created, **kwargs):
             mastering.updater = instance.updater
             mastering.save(update_fields=['updater'])
             print(f"✅ Updated mastering updater to {mastering.ball}")
+
+            instance.test_checked = True
+            instance.save(update_fields=['test_checked'])
         else:
             print("❗ Mastering not found.")
