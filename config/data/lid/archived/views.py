@@ -274,9 +274,9 @@ class ExportLidsExcelView(APIView):
 
         headers = [
             "Ism", "Familiya", "Sharif", "Telefon", "Qo‘shimcha raqam",
-            "Tug‘ilgan sana", "Ta’lim tili", "Talaba turi", "O‘quv darajasi",
+            "Tug‘ilgan sana", "Ta’lim tili", "O‘quv darajasi",
             "Fan", "Ball", "Filial", "Marketing kanali", "Lid bosqichi turi",
-            "Lid bosqichi", "Buyurtma bosqichi", "Arxivlanganmi?", "Dublikatmi?",
+            "Lid bosqichi", "Buyurtma bosqichi", "Arxivlanganmi?",
             "Muzlatilganmi?", "Call operator", "Servis menejeri", "Sotuv menejeri",
             "Studentmi?", "Balans"
         ]
@@ -291,7 +291,6 @@ class ExportLidsExcelView(APIView):
                 lid.extra_number or "",
                 lid.date_of_birth.strftime("%Y-%m-%d") if lid.date_of_birth else "",
                 lid.education_lang,
-                lid.student_type,
                 lid.edu_level or "",
                 lid.subject.name if lid.subject else "",
                 lid.ball or 0,
@@ -301,7 +300,6 @@ class ExportLidsExcelView(APIView):
                 lid.lid_stages or "",
                 lid.ordered_stages or "",
                 "Ha" if lid.is_archived else "Yo‘q",
-                "Ha" if lid.is_dubl else "Yo‘q",
                 "Ha" if lid.is_frozen else "Yo‘q",
                 lid.call_operator.get_full_name() if lid.call_operator else "",
                 lid.service_manager.get_full_name() if lid.service_manager else "",
