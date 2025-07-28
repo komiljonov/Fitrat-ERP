@@ -60,15 +60,15 @@ class ArchivedListAPIView(ListCreateAPIView):
         if no_debts:
             # Student or lid exists and their balance is >= 100000
             queryset = queryset.filter(
-                Q(student__isnull=False, student__balance__gte=100000) |
-                Q(lid__isnull=False, lid__balance__gte=100000, lid__is_student=False)
+                Q(student__balance__gte=100000) |
+                Q(lid__balance__gte=100000,)
             )
 
         if debts:
             # Student or lid exists and their balance is < 100000
             queryset = queryset.filter(
-                Q(student__isnull=False, student__balance__lt=100000) |
-                Q(lid__isnull=False, lid__balance__lt=100000, lid__is_student=False)
+                Q(student__balance__lt=100000) |
+                Q(lid__balance__lt=100000)
             )
         if student_stage:
             queryset = queryset.filter(student__student_stage_type=student_stage)
