@@ -234,7 +234,10 @@ class ExportLidsExcelView(APIView):
         to_balance = request.GET.get("to_balance")
         debt = request.GET.get("debt")
         no_debt = request.GET.get("no_debt")
+        education_lang = request.GET.get("education_lang")
 
+        if education_lang:
+            queryset = queryset.filter(Q(lid__education_lang=education_lang) | Q(student__education_lang=education_lang))
         if call_operator:
             queryset = queryset.filter(
                 Q(lid__call_operator__id=call_operator) | Q(student__call_operator__id=call_operator)
