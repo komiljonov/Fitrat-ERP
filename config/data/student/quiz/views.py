@@ -555,7 +555,8 @@ class QuizCheckAPIView(APIView):
                     mark=ball,
                 )
 
-            Homework_history.objects.filter(id=history.id).update(test_checked=True)
+            history.test_checked = True
+            history.save()
 
             print("history",Homework_history.objects.filter(pk=history.pk).get("test_checked"))
 
