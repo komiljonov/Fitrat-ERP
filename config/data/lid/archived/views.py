@@ -230,10 +230,8 @@ class ExportLidsExcelView(APIView):
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
 
-        if is_archived.lower() == "true":
-            filters["is_archived"] = True
-        else:
-            filters["is_archived"] = False
+        if is_archived:
+            filters["is_archived"] = is_archived.capitalize()
         if call_operator:
             filters["call_operator__id"] = call_operator
         if service_manager:
@@ -262,19 +260,19 @@ class ExportLidsExcelView(APIView):
                 Q(lid__isnull=False, student__isnull=True, lid__is_student=is_student_bool)
             )
 
-        # Access restriction
-        if user.role == "CALL_OPERATOR" or getattr(user, "is_call_center", False):
-            archived_objects = archived_objects.filter(
-                Q(lid__filial__in=user.filial.all()) | Q(student__filial__in=user.filial.all()) |
-                Q(lid__filial__isnull=True) | Q(student__filial__isnull=True),
-                Q(lid__call_operator=user) | Q(student__call_operator=user) |
-                Q(lid__call_operator__isnull=True) | Q(student__call_operator__isnull=True)
-            )
-        else:
-            archived_objects = archived_objects.filter(
-                Q(lid__filial__in=user.filial.all()) | Q(student__filial__in=user.filial.all()) |
-                Q(lid__filial__isnull=True) | Q(student__filial__isnull=True)
-            )
+        # # Access restriction
+        # if user.role == "CALL_OPERATOR" or getattr(user, "is_call_center", False):
+        #     archived_objects = archived_objects.filter(
+        #         Q(lid__filial__in=user.filial.all()) | Q(student__filial__in=user.filial.all()) |
+        #         Q(lid__filial__isnull=True) | Q(student__filial__isnull=True),
+        #         Q(lid__call_operator=user) | Q(student__call_operator=user) |
+        #         Q(lid__call_operator__isnull=True) | Q(student__call_operator__isnull=True)
+        #     )
+        # else:
+        #     archived_objects = archived_objects.filter(
+        #         Q(lid__filial__in=user.filial.all()) | Q(student__filial__in=user.filial.all()) |
+        #         Q(lid__filial__isnull=True) | Q(student__filial__isnull=True)
+        #     )
 
         # Generate Excel
         wb = Workbook()
