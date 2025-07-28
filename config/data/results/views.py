@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView
@@ -187,6 +189,26 @@ class ResultsView(ListAPIView):
         nations = self.request.GET.get('nations')
         res_name = self.request.GET.get('res_name')
         who = self.request.GET.get('who')
+
+        start_date_str = self.request.GET.get('start_date')
+        end_date_str = self.request.GET.get('end_date')
+
+        date_format = "%Y-%m-%d"
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            end_date = datetime.strptime(end_date_str, date_format).date()
+
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(end_date, datetime.max.time())
+
+            queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
+
+        elif start_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(start_date, datetime.max.time())
+
+            queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
         if who:
             queryset = queryset.filter(who=who)
