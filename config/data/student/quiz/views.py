@@ -576,6 +576,7 @@ class QuizCheckAPIView(APIView):
 
             print(coin)
         except Exception:
+            print("error")
             pass
 
 
