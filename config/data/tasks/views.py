@@ -26,7 +26,7 @@ class TaskListCreateView(ListCreateAPIView):
     def get_queryset(self):
         # Filter tasks by the current user as the creator
 
-        filial = self.request.query_params.get("filial")
+        filial = self.request.GET.get("filial")
         creator = self.request.GET.get("creator")
         performer = self.request.GET.get("performer")
         queryset = Task.objects.all()
@@ -52,7 +52,7 @@ class TaskListNoPGView(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        filial = self.request.query_params.get("filial")
+        filial = self.request.GET.get("filial")
         queryset = Task.objects.all()
         if filial:
             queryset = queryset.filter(filial__id=filial)
