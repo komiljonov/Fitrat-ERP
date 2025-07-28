@@ -22,6 +22,7 @@ from rest_framework.views import APIView
 from .models import Lid
 from .serializers import LidSerializer
 from ..archived.models import Archived
+from ...department import marketing_channel
 from ...student.lesson.models import FirstLLesson
 from ...student.student.models import Student
 
@@ -385,6 +386,8 @@ class LidStatisticsView(ListAPIView):
             filter["service_manager__id"] = service_manager
         if sales_manager:
             filter["sales_manager__id"] = sales_manager
+        if marketing_channel:
+            filter["marketing_channel__id"] = marketing_channel
         # if teacher:
         #     filter["lids_group__teacher__id"] = teacher
         # if channel:
@@ -451,7 +454,7 @@ class LidStatisticsView(ListAPIView):
         all_archived = queryset.filter(is_archived=True, is_student=False, **filter).count()
         archived_lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID",lid__isnull=False, is_archived=True).count()
 
-        first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID",lid__is_archived=False, **filter, ).count()
+        first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID",lid__is_archived=False).count()
 
         new_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="NEW_STUDENT").count()
         active_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="ACTIVE_STUDENT").count()
