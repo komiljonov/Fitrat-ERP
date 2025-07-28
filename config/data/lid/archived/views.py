@@ -297,7 +297,7 @@ class ExportLidsExcelView(APIView):
                 obj.first_name,
                 obj.last_name or "",
                 obj.middle_name or "",
-                obj.phone_number or obj.phone or "",
+                getattr(obj, "phone_number", "") or getattr(obj, "phone", ""),
                 getattr(obj, "extra_number", "") or "",
                 obj.date_of_birth.strftime("%Y-%m-%d") if obj.date_of_birth else "",
                 getattr(obj, "education_lang", "") or "",
