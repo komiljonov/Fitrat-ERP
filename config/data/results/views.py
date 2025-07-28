@@ -213,7 +213,7 @@ class ResultsView(ListAPIView):
             queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
         if search:
-            queryset = queryset.filter(Q(student__first_name__icontains=search) | Q(student__last_name__icontains=search) | Q(teacher__full_name__icontains=search))
+            queryset = queryset.filter(Q(student__first_name__icontains=search) | Q(student__last_name__icontains=search))
         if who:
             queryset = queryset.filter(who=who)
         if res_name:
