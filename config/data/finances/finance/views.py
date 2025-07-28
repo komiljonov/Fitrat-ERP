@@ -607,7 +607,7 @@ class FinanceExcel(APIView):
                 created_at__lt=start_date + timedelta(days=1) - timedelta(seconds=1)
             )
 
-        if end_date_str:
+        if start_date_str and end_date_str:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
             finances = finances.filter(
