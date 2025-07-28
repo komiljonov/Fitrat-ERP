@@ -9,7 +9,7 @@ from .serializers import NotificationSerializer, UserRFTokenSerializer
 from ..account.models import CustomUser
 
 
-class NotificationListAPIView(ListCreateAPIView):
+class  NotificationListAPIView(ListCreateAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
 
