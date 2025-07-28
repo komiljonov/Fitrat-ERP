@@ -555,10 +555,9 @@ class QuizCheckAPIView(APIView):
                     mark=ball,
                 )
 
-            history.test_checked = True
-            history.save()
+            Homework_history.objects.filter(pk=history.pk).update(test_checked=True)
 
-            print("history",history.test_checked)
+            print("history",Homework_history.objects.filter(pk=history.pk).get("test_checked"))
 
             if history:
                 Points.objects.create(
