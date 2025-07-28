@@ -218,7 +218,6 @@ class StuffFinanceListAPIView(ListAPIView):
 
 
 class FinancePaymentMethodsAmountsListAPIView(APIView):
-
     def get(self, request):
         payment_method = request.GET.get('payment_method')
         filial = request.GET.get('filial')
