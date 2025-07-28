@@ -155,18 +155,15 @@ class StudentFinanceListAPIView(ListAPIView):
     filterset_fields = ("action", "kind")
 
     def get_queryset(self, **kwargs):
-        # Initialize the queryset to all Finance records
+
         queryset = Finance.objects.all().exclude(
             Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
 
-        # Get the pk from the URL kwargs
         pk = self.kwargs.get('pk')
 
-        # Try to fetch the student or lid based on the pk
-        student = Student.objects.filter(id=pk).first()  # Safer query, returns None if not found
-        lid = Lid.objects.filter(id=pk).first()  # Safer query for lid, returns None if not found
+        student = Student.objects.filter(id=pk).first()
+        lid = Lid.objects.filter(id=pk).first()
 
-        # Filter by student or lid if present
         if student:
             queryset = queryset.filter(student=student)
         elif lid:
@@ -174,6 +171,11 @@ class StudentFinanceListAPIView(ListAPIView):
 
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
+
+        is_paid = self.request.GET.get("is_paid", False)
+
+        if is_paid:
+            queryset = queryset.filter().exclude(kind__name="Lesson payment")
 
         if start_date and end_date:
             try:
@@ -614,8 +616,6 @@ class FinanceExcel(APIView):
                 created_at__gte=start_date,
                 created_at__lt=start_date + timedelta(days=1) - timedelta(seconds=1)
             )
-
-
 
         # Create an Excel workbook
         workbook = openpyxl.Workbook()
