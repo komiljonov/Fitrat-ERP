@@ -51,8 +51,8 @@ class ArchivedListAPIView(ListCreateAPIView):
         service_manager = get('service_manager')
         balance_from = get('balance_from')
         balance_to = get('balance_to')
-        start_date = get('start_date')
-        end_date = get('end_date')
+        start_date_str = get('start_date')
+        end_date_str = get('end_date')
         filial = get("filial")
         debts = get("debts")
         no_debts = get("no_debts")
@@ -114,23 +114,23 @@ class ArchivedListAPIView(ListCreateAPIView):
 
             queryset = queryset.filter(student_q | lid_q)
 
-        # handle date
-        if start_date and end_date:
-            try:
-                start = parse_date(start_date)
-                end = parse_date(end_date)
-                if start and end:
-                    end_dt = end + timedelta(days=1) - timedelta(seconds=1)
-                    queryset = queryset.filter(created__gte=start, created__lte=end_dt)
-            except Exception:
-                pass
-        elif start_date:
-            try:
-                start = parse_date(start_date)
-                if start:
-                    queryset = queryset.filter(created__gte=start)
-            except Exception:
-                pass
+        date_format = "%Y-%m-%d"
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            end_date = datetime.strptime(end_date_str, date_format).date()
+
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(end_date, datetime.max.time())
+
+            queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
+
+        elif start_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(start_date, datetime.max.time())
+
+            queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
+
 
         return queryset
 
