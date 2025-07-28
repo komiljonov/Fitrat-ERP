@@ -232,12 +232,7 @@ class ExportLidsExcelView(APIView):
 
         if is_archived:
             filters["is_archived"] = is_archived.capitalize()
-        if call_operator:
-            filters["call_operator__id"] = call_operator
-        if service_manager:
-            filters["service_manager__id"] = service_manager
-        if sales_manager:
-            filters["sales_manager__id"] = sales_manager
+
         if filial:
             filters["filial__id"] = filial
 
@@ -252,8 +247,10 @@ class ExportLidsExcelView(APIView):
         # Get filtered archived objects
         archived_objects = queryset.filter(**filters)
 
+        print(archived_objects)
+
         if is_student:
-            is_student_bool = is_student.lower() == "true"
+            is_student_bool = is_student.capitalize()
 
             # Only filter on lid.is_student if lid exists and student is null
             archived_objects = archived_objects.filter(
@@ -291,6 +288,8 @@ class ExportLidsExcelView(APIView):
 
         for archived in archived_objects:
             obj = archived.lid or archived.student
+
+            print(obj)
             if not obj:
                 continue
 
