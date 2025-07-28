@@ -217,6 +217,7 @@ class ExportLidsExcelView(APIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         queryset = Archived.objects.select_related("lid", "student", "creator", "comment","filial")
+        print(queryset)
 
         # Filters
         filters = {}
@@ -243,6 +244,8 @@ class ExportLidsExcelView(APIView):
 
         # Get filtered archived objects
         archived_objects = queryset.filter(**filters)
+
+        print(archived_objects)
 
         if is_archived:
             archived_objects = archived_objects.filter(is_archived=is_archived.capitalize())
