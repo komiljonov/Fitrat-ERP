@@ -60,15 +60,15 @@ class ArchivedListAPIView(ListCreateAPIView):
         if no_debts:
             # Student or lid exists and their balance is >= 100000
             queryset = queryset.filter(
-                Q(student__balance__gte=0) |
-                Q(lid__balance__gte=0,)
+                Q(student__balance__gte=100000) |
+                Q(lid__balance__gte=100000,)
             )
 
         if debts:
-            # Student or lid exists and their balance is < 0
+            # Student or lid exists and their balance is < 100000
             queryset = queryset.filter(
-                Q(student__balance__lt=0) |
-                Q(lid__balance__lt=0)
+                Q(student__balance__lt=100000) |
+                Q(lid__balance__lt=100000)
             )
 
         if student_stage:
@@ -282,14 +282,14 @@ class ExportLidsExcelView(APIView):
 
         if debt:
             queryset = queryset.filter(
-                Q(lid__balance__lte=0) |
-                Q(student__balance__lte=0)
+                Q(lid__balance__lte=100000) |
+                Q(student__balance__lte=100000)
             )
 
         if no_debt:
             queryset = queryset.filter(
-                Q(lid__balance__gt=0) |
-                Q(student__balance__gt=0)
+                Q(lid__balance__gt=100000) |
+                Q(student__balance__gt=100000)
             )
 
         date_format = "%Y-%m-%d"
