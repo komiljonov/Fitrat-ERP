@@ -216,12 +216,13 @@ class ExportLidsExcelView(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        queryset = Lid.objects.all()
+        queryset = Archived.objects.select_related("lid", "student", "creator", "comment")
+
+        # Filters
         filters = {}
 
-        # Query params
         filial = request.GET.get("filial")
-        is_archived = request.GET.get("is_archived")
+        is_archived = request.GET.get("is_archived", "true")
         call_operator = request.GET.get("call_operator")
         service_manager = request.GET.get("service_manager")
         sales_manager = request.GET.get("sales_manager")
@@ -229,85 +230,99 @@ class ExportLidsExcelView(APIView):
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
 
-        if filial:
-            filters["filial__id"] = filial
-        if is_archived is not None:
-            filters["is_archived"] = is_archived.lower() == "true"
+        if is_archived.lower() == "true":
+            filters["is_archived"] = True
+        else:
+            filters["is_archived"] = False
         if call_operator:
             filters["call_operator__id"] = call_operator
         if service_manager:
             filters["service_manager__id"] = service_manager
         if sales_manager:
             filters["sales_manager__id"] = sales_manager
-        if is_student is not None:
-            filters["is_student"] = is_student.lower() == "true"
+        if filial:
+            filters["filial__id"] = filial
 
-        # Date range
-        date_format = "%Y-%m-%d"
-        if start_date_str and end_date_str:
-            start_date = datetime.strptime(start_date_str, date_format)
-            end_date = datetime.strptime(end_date_str, date_format) + timedelta(days=1)
+        # Date filter on base model's created_at
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             filters["created_at__gte"] = start_date
-            filters["created_at__lt"] = end_date
-        elif start_date_str:
-            start_date = datetime.strptime(start_date_str, date_format)
-            end_date = start_date + timedelta(days=1)
-            filters["created_at__gte"] = start_date
+        if end_date_str:
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d") + timedelta(days=1)
             filters["created_at__lt"] = end_date
 
-        # Access limitation
+        # Get filtered archived objects
+        archived_objects = queryset.filter(**filters)
+
+        if is_student:
+            is_student_bool = is_student.lower() == "true"
+
+            # Only filter on lid.is_student if lid exists and student is null
+            archived_objects = archived_objects.filter(
+                Q(lid__isnull=False, student__isnull=True, lid__is_student=is_student_bool)
+            )
+
+        # Access restriction
         if user.role == "CALL_OPERATOR" or getattr(user, "is_call_center", False):
-            queryset = queryset.filter(
-                Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
-                Q(call_operator=user) | Q(call_operator__isnull=True)
+            archived_objects = archived_objects.filter(
+                Q(lid__filial__in=user.filial.all()) | Q(student__filial__in=user.filial.all()) |
+                Q(lid__filial__isnull=True) | Q(student__filial__isnull=True),
+                Q(lid__call_operator=user) | Q(student__call_operator=user) |
+                Q(lid__call_operator__isnull=True) | Q(student__call_operator__isnull=True)
             )
         else:
-            queryset = queryset.filter(Q(filial__in=user.filial.all()) | Q(filial__isnull=True))
-
-        lids = queryset.filter(**filters)
+            archived_objects = archived_objects.filter(
+                Q(lid__filial__in=user.filial.all()) | Q(student__filial__in=user.filial.all()) |
+                Q(lid__filial__isnull=True) | Q(student__filial__isnull=True)
+            )
 
         # Generate Excel
         wb = Workbook()
         ws = wb.active
-        ws.title = "Lidlar ro'yxati"
+        ws.title = "Arxivlar"
 
         headers = [
             "Ism", "Familiya", "Sharif", "Telefon", "Qo‘shimcha raqam",
             "Tug‘ilgan sana", "Ta’lim tili", "O‘quv darajasi",
-            "Fan", "Ball", "Filial", "Marketing kanali", "Lid bosqichi turi",
-            "Lid bosqichi", "Buyurtma bosqichi", "Arxivlanganmi?",
+            "Fan", "Ball", "Filial", "Marketing kanali", "Lid/Student bosqichi turi",
+            "Lid/Student bosqichi", "Buyurtma bosqichi", "Arxivlanganmi?",
             "Muzlatilganmi?", "Call operator", "Servis menejeri", "Sotuv menejeri",
             "Studentmi?", "Balans"
         ]
         ws.append(headers)
 
-        for lid in lids:
+        for archived in archived_objects:
+            obj = archived.lid or archived.student
+            if not obj:
+                continue
+
             row = [
-                lid.first_name,
-                lid.last_name or "",
-                lid.middle_name or "",
-                lid.phone_number or "",
-                lid.extra_number or "",
-                lid.date_of_birth.strftime("%Y-%m-%d") if lid.date_of_birth else "",
-                lid.education_lang,
-                lid.edu_level or "",
-                lid.subject.name if lid.subject else "",
-                lid.ball or 0,
-                lid.filial.name if lid.filial else "",
-                lid.marketing_channel.name if lid.marketing_channel else "",
-                lid.lid_stage_type,
-                lid.lid_stages or "",
-                lid.ordered_stages or "",
-                "Ha" if lid.is_archived else "Yo‘q",
-                "Ha" if lid.is_frozen else "Yo‘q",
-                lid.call_operator.get_full_name() if lid.call_operator else "",
-                lid.service_manager.get_full_name() if lid.service_manager else "",
-                lid.sales_manager.get_full_name() if lid.sales_manager else "",
-                "Ha" if lid.is_student else "Yo‘q",
-                float(lid.balance or 0),
+                obj.first_name,
+                obj.last_name or "",
+                obj.middle_name or "",
+                obj.phone_number or "",
+                getattr(obj, "extra_number", "") or "",
+                obj.date_of_birth.strftime("%Y-%m-%d") if obj.date_of_birth else "",
+                getattr(obj, "education_lang", "") or "",
+                getattr(obj, "edu_level", "") or "",
+                obj.subject.name if getattr(obj, "subject", None) else "",
+                obj.ball if hasattr(obj, "ball") else "",
+                obj.filial.name if getattr(obj, "filial", None) else "",
+                obj.marketing_channel.name if getattr(obj, "marketing_channel", None) else "",
+                getattr(obj, "lid_stage_type", "") or getattr(obj, "student_stage_type","") or "",
+                getattr(obj, "lid_stages", "") or getattr(obj, "new_student_stages","") or "",
+                getattr(obj, "ordered_stages", "") or "",
+                "Ha" if archived.is_archived else "Yo‘q",
+                "Ha" if getattr(obj, "is_frozen", False) else "Yo‘q",
+                obj.call_operator.get_full_name() if getattr(obj, "call_operator", None) else "",
+                obj.service_manager.get_full_name() if getattr(obj, "service_manager", None) else "",
+                obj.sales_manager.get_full_name() if getattr(obj, "sales_manager", None) else "",
+                "Ha" if getattr(obj, "is_student", False) else "Yo‘q",
+                float(getattr(obj, "balance", 0)) if hasattr(obj, "balance") else 0
             ]
             ws.append(row)
 
+        # Auto-size columns
         for col in ws.columns:
             max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
             ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 4
@@ -320,10 +335,9 @@ class ExportLidsExcelView(APIView):
             buffer.read(),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        filename = f"lidlar_{now().strftime('%Y%m%d_%H%M')}.xlsx"
+        filename = f"archived_lids_{now().strftime('%Y%m%d_%H%M')}.xlsx"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
-
 
 class LidStudentArchivedStatistics(APIView):
     def get(self, request, *args, **kwargs):
