@@ -98,7 +98,10 @@ class LidListCreateView(ListCreateAPIView):
         no_first_lesson = self.request.GET.get("no_first_lesson")
         ordered_stages = self.request.GET.get("ordered_stages")
         lid_stages = self.request.GET.get("lid_stages")
+        marketing_channel = self.request.GET.get("marketing_channel")
 
+        if marketing_channel:
+            queryset = queryset.filter(marketing_channel__id=marketing_channel)
         if lid_stages:
             queryset = queryset.filter(lid_stages=lid_stages)
         if ordered_stages:
