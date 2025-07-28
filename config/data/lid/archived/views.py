@@ -231,8 +231,6 @@ class ExportLidsExcelView(APIView):
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
 
-        if filial:
-            filters["filial__id"] = filial
 
         # Date filter on base model's created_at
         if start_date_str:
