@@ -121,8 +121,10 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         if from_price:
             queryset = queryset.filter(balance__gte=from_price)
+
         if to_price:
             queryset = queryset.filter(balance__lte=to_price)
+
         if from_price and to_price:
             queryset = queryset.filter(balance__gte=from_price, balance__lte=to_price)
 
