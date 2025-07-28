@@ -27,7 +27,7 @@ def on_create(sender, instance: Student, created, **kwargs):
                     user=instance.call_operator,
                     comment=f"{instance.first_name} {instance.last_name} ning balance miqdori {instance.balance} sum,"
                             f" to'lov amalga oshirishi haqida eslating!",
-                    come_from=instance,
+                    come_from=instance.id,
                     choice="Tasks",
                 )
                 if instance.balance_status == "ACTIVE":

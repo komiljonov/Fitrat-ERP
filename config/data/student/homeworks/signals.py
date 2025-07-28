@@ -25,7 +25,9 @@ def on_create(sender, instance: Homework_history, created, **kwargs):
                     comment=f"Sizga {instance.homework.theme.title} mavzusi uchun {
                     instance.mark} ball quyildi va vazifa {"qayta topshirish" if instance.status == "Retake" else 
                     "bajarilmadi" if instance.status == "Failed" else "bajarildi"
-                    } deb belgilandi ."
+                    } deb belgilandi .",
+                    choice="Homework",
+                    come_from=instance.id
                 )
 
 

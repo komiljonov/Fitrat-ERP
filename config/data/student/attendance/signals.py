@@ -1,6 +1,7 @@
 import calendar
 import datetime
 from decimal import Decimal
+from random import choice
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -74,8 +75,8 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
             Notification.objects.create(
                 user=instance.lid.call_operator,
                 comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan !",
-                come_from=instance.lid,
-                choice="New_Student",
+                come_from=instance.lid.id,
+                choice="First_Lesson_Lid",
             )
 
         instance.lid.is_student = True
@@ -114,13 +115,14 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 Notification.objects.create(
                     user=instance.student.sales_manager,
                     comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashdi va balansi statusi inactive, To'lov haqida ogohlantiring!",
-                    come_from=instance.lid,
+                    come_from=instance.lid.id,
+                    choice="First_Lesson_Lid"
                 )
             elif instance.reason == "UNREASONED":
                 Notification.objects.create(
                     user=instance.student.sales_manager,
                     comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashmagan!",
-                    come_from=instance.student,
+                    come_from=instance.student.id,
                     choice="New_Student",
                 )
                 parents = Relatives.objects.filter(student=instance.student).all()
@@ -128,7 +130,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                     Notification.objects.create(
                         user=parent,
                         comment=f"Talaba {instance.student.first_name} {instance.student.last_name}  -  bugungi {instance.group.name} guruhidagi {attendances_count} darsiga qatnashmadi!",
-                        come_from=instance.student,
+                        come_from=instance.student.id,
                         choice="Students",
                     )
 

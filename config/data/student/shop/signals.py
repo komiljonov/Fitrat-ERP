@@ -60,6 +60,7 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
                 f"sizga taqdim etish uchun tayyor.\n"
                 f"Filial : {instance.product.filial}\n"
             ),
+            come_from=instance.id,
             choice="Shopping"
         )
 
@@ -81,6 +82,7 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
                 f"bekor qilindi.\n"
                 f"Filial : {instance.product.filial}\n"
             ),
+            come_from=instance.id,
             choice="Shopping"
         )
 
@@ -95,5 +97,6 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
                         f"coin orqali to'lov amalga oshirdi.\n"
                         f"Filial : {instance.product.filial}\n"
                     ),
+                    come_from=instance.id,
                     choice="Shopping"
                 )

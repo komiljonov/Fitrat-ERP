@@ -26,7 +26,7 @@ def check_daily_leads():
             Notification.objects.create(
                 user=task.call_operator,
                 comment=f"Lead {task.first_name} {task.last_name} - {task.phone_number} bilan aloqa bo'lmaganiga 3 kun bo'ldi!",
-                come_from=task
+                come_from=task.id
             )
             logging.info(f"Notification created for lead {task.id}.")
         else:

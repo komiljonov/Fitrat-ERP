@@ -576,7 +576,7 @@ class ExamSerializer(serializers.ModelSerializer):
                     Notification.objects.create(
                         user=teacher,
                         choice="Examination",
-                        come_from=exam,
+                        come_from=exam.id,
                         comment=f"{exam.date} sanasida {subject.name} fanidan imtihon yaratildi!"
                     )
 
