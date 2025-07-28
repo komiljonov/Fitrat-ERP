@@ -338,15 +338,6 @@ class StudentAllStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
         return Response(response_data)
 
 
-# class StudentNewLeadStatistics(ListAPIView):
-#     permission_classes = [IsAuthenticated]
-#
-#     def get(self, request, *args, **kwargs):
-#         filter = {}
-#         filial = self.request.GET.get("filial")
-#
-
-
 class ExportLidToExcelAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
@@ -439,7 +430,7 @@ class ExportLidToExcelAPIView(APIView):
         if course_id:
             queryset = queryset.filter(
                 students_group__group__course__id=course_id
-            )  # Assuming Many-to-Many relation in groups
+            )
 
         if service_manager:
             queryset = queryset.filter(service_manager__id=service_manager)
@@ -455,7 +446,6 @@ class ExportLidToExcelAPIView(APIView):
             end_datetime = start_datetime + timedelta(days=1)
             queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
 
-
         if start_date_str and end_date_str:
             start_date = datetime.strptime(start_date_str, date_format).date()
             end_date = datetime.strptime(end_date_str, date_format).date()
@@ -464,19 +454,16 @@ class ExportLidToExcelAPIView(APIView):
             end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
             queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
 
-
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id)
 
         if student_stage_type:
             queryset = queryset.filter(student_stage_type=student_stage_type)
 
-        # Create Excel workbook
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = "Student Data"
 
-        # Define headers
         headers = [
             "Ism",
             "Familiya",
@@ -560,7 +547,6 @@ class ExportLidToExcelAPIView(APIView):
             cell.alignment = Alignment(horizontal="center", vertical="center")
             sheet.column_dimensions[cell.column_letter].width = 20
 
-        # Create the HTTP response with the Excel file
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
