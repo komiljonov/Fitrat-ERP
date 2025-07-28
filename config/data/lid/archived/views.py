@@ -229,15 +229,66 @@ class ExportLidsExcelView(APIView):
         is_student = request.GET.get("is_student")
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
+        subject = request.GET.get("subject")
+        from_balance = request.GET.get("from_balance")
+        to_balance = request.GET.get("to_balance")
+        debt = request.GET.get("debt")
+        no_debt = request.GET.get("no_debt")
 
 
-        # Date filter on base model's created_at
-        if start_date_str:
-            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-            filters["created_at__gte"] = start_date
-        if end_date_str:
-            end_date = datetime.strptime(end_date_str, "%Y-%m-%d") + timedelta(days=1)
-            filters["created_at__lt"] = end_date
+
+        if call_operator:
+            queryset = queryset.filter(Q(lid__call_operator__id=call_operator) | Q(student__call_operator__id=call_operator))
+        if sales_manager:
+            queryset = queryset.filter(Q(lid__sales_manager__id=sales_manager) | Q(student__sales_manager__id=sales_manager))
+        if service_manager:
+            queryset = queryset.filter(Q(lid__service_manager__id=service_manager) | Q(student__service_manager__id=service_manager))
+
+        if filial:
+            queryset = queryset.filter(Q(lid__filial__id=filial) | Q(student__filial__id=filial))
+
+        if subject:
+            queryset = queryset.filter(Q(lid__subject__id=subject) | Q(student__subject__id=subject))
+        if from_balance and to_balance:
+            queryset = queryset.filter(
+                Q(lid__balance__gte=from_balance, lid__balance__lte=to_balance) |
+                Q(student__balance__gte=from_balance, student__balance__lte=to_balance)
+            )
+        elif from_balance:
+            queryset = queryset.filter(
+                Q(lid__balance__gte=from_balance) |
+                Q(student__balance__gte=from_balance)
+            )
+        if debt:
+            queryset = queryset.filter(
+                Q(lid__balance__lte=0) |
+                Q(student__balance__lte=0)
+            )
+
+        if no_debt:
+            queryset = queryset.filter(
+                Q(lid__balance__gt=0) |
+                Q(student__balance__gt=0)
+            )
+
+
+        date_format = "%Y-%m-%d"
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            end_date = datetime.strptime(end_date_str, date_format).date()
+
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(end_date, datetime.max.time())
+
+            queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
+
+        elif start_date_str:
+            start_date = datetime.strptime(start_date_str, date_format).date()
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(start_date, datetime.max.time())
+
+            queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
+
 
         # Get filtered archived objects
         archived_objects = queryset.filter(**filters)
