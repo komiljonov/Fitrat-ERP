@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView
@@ -189,6 +190,7 @@ class ResultsView(ListAPIView):
         nations = self.request.GET.get('nations')
         res_name = self.request.GET.get('res_name')
         who = self.request.GET.get('who')
+        search = self.request.GET.get('search')
 
         start_date_str = self.request.GET.get('start_date')
         end_date_str = self.request.GET.get('end_date')
@@ -210,6 +212,8 @@ class ResultsView(ListAPIView):
 
             queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
+        if search:
+            queryset = queryset.filter(Q(student__first_name__icontains=search) | Q(student__last_name__icontains=search) | Q(teacher__full_name__icontains=search))
         if who:
             queryset = queryset.filter(who=who)
         if res_name:
