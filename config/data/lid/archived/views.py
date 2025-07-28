@@ -235,20 +235,29 @@ class ExportLidsExcelView(APIView):
         debt = request.GET.get("debt")
         no_debt = request.GET.get("no_debt")
 
-
-
         if call_operator:
-            queryset = queryset.filter(Q(lid__call_operator__id=call_operator) | Q(student__call_operator__id=call_operator))
+            queryset = queryset.filter(
+                Q(lid__call_operator__id=call_operator) | Q(student__call_operator__id=call_operator)
+            )
         if sales_manager:
-            queryset = queryset.filter(Q(lid__sales_manager__id=sales_manager) | Q(student__sales_manager__id=sales_manager))
+            queryset = queryset.filter(
+                Q(lid__sales_manager__id=sales_manager) | Q(student__sales_manager__id=sales_manager)
+            )
         if service_manager:
-            queryset = queryset.filter(Q(lid__service_manager__id=service_manager) | Q(student__service_manager__id=service_manager))
+            queryset = queryset.filter(
+                Q(lid__service_manager__id=service_manager) | Q(student__service_manager__id=service_manager)
+            )
 
         if filial:
-            queryset = queryset.filter(Q(lid__filial__id=filial) | Q(student__filial__id=filial))
+            queryset = queryset.filter(
+                Q(lid__filial__id=filial) | Q(student__filial__id=filial)
+            )
 
         if subject:
-            queryset = queryset.filter(Q(lid__subject__id=subject) | Q(student__subject__id=subject))
+            queryset = queryset.filter(
+                Q(lid__subject__id=subject) | Q(student__subject__id=subject)
+            )
+
         if from_balance and to_balance:
             queryset = queryset.filter(
                 Q(lid__balance__gte=from_balance, lid__balance__lte=to_balance) |
@@ -259,6 +268,7 @@ class ExportLidsExcelView(APIView):
                 Q(lid__balance__gte=from_balance) |
                 Q(student__balance__gte=from_balance)
             )
+
         if debt:
             queryset = queryset.filter(
                 Q(lid__balance__lte=0) |
@@ -270,7 +280,6 @@ class ExportLidsExcelView(APIView):
                 Q(lid__balance__gt=0) |
                 Q(student__balance__gt=0)
             )
-
 
         date_format = "%Y-%m-%d"
         if start_date_str and end_date_str:
