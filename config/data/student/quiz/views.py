@@ -544,7 +544,7 @@ class QuizCheckAPIView(APIView):
                 student=student,
             ).first()
 
-            print(history)
+            print("history",history)
 
             if not history:
                 history = Homework_history.objects.create(
