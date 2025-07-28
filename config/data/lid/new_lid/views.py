@@ -371,6 +371,7 @@ class LidStatisticsView(ListAPIView):
         # channel = self.request.GET.get("channel")
         # subject = self.request.GET.get("subject")
         # is_student = self.request.GET.get("is_student")
+        marketing_channel = self.request.GET.get("marketing_channel")
 
         filter = {}
 
