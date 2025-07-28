@@ -236,7 +236,10 @@ class ExportLidsExcelView(APIView):
         no_debt = request.GET.get("no_debt")
         education_lang = request.GET.get("education_lang")
         student_stage_type = request.GET.get("student_stage_type")
+        lid_stage_type = request.GET.get("lid_stage_type")
 
+        if lid_stage_type:
+            queryset = queryset.filter(lid__lid_stage_type=lid_stage_type)
         if student_stage_type:
             queryset = queryset.filter(student__student_stage_type=student_stage_type)
 
