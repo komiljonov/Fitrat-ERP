@@ -524,7 +524,6 @@ class ExportLidToExcelAPIView(APIView):
                         else "Universitet" if student.edu_class == "UNIVERSITY" else ""
                     ),
                     student.subject.name if student.subject else "",
-                    student.ball if student.ball else "",
                     student.ball,
                     student.filial.name if student.filial else "",
                     student.marketing_channel.name if student.marketing_channel else "",
