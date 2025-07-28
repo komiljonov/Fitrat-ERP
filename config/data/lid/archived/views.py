@@ -61,14 +61,14 @@ class ArchivedListAPIView(ListCreateAPIView):
             # Student or lid exists and their balance is >= 100000
             queryset = queryset.filter(
                 Q(student__isnull=False, student__balance__gte=100000) |
-                Q(lid__isnull=False, lid__balance__gte=100000,lid__is_student=False)
+                Q(lid__isnull=False, lid__balance__gte=100000, lid__is_student=False)
             )
 
         if debts:
             # Student or lid exists and their balance is < 100000
             queryset = queryset.filter(
                 Q(student__isnull=False, student__balance__lt=100000) |
-                Q(lid__isnull=False, lid__balance__lt=100000,lid__is_student=False)
+                Q(lid__isnull=False, lid__balance__lt=100000, lid__is_student=False)
             )
         if student_stage:
             queryset = queryset.filter(student__student_stage_type=student_stage)
@@ -211,7 +211,6 @@ class FrozenDetailAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
 
-
 class ExportLidsExcelView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -326,8 +325,6 @@ class ExportLidsExcelView(APIView):
         return response
 
 
-
-
 class LidStudentArchivedStatistics(APIView):
     def get(self, request, *args, **kwargs):
         queryset = Archived.objects.filter(is_archived=True)
@@ -393,19 +390,22 @@ class LidStudentArchivedStatistics(APIView):
 
         # --- Stats ---
         all_archived = queryset.count()
-        archived_lids = queryset.filter(lid__isnull=False,lid__lid_stage_type="NEW_LID").count()
-        archived_orders = queryset.filter(lid__isnull=False,lid__lid_stage_type="ORDERED_LID").count()  # or another field for "order"
-        archived_new_students = queryset.filter(student__isnull=False, student__student_stage_type="NEW_STUDENT").count()
-        archived_active_students = queryset.filter(student__isnull=False, student__student_stage_type="ACTIVE_STUDENT").count()
-        debt_lid = queryset.filter(lid__isnull=False,lid__balance__gte=100000).count()
-        deb_student = queryset.filter(student__isnull=False,student__balance__gte=100000).count()
+        archived_lids = queryset.filter(lid__isnull=False, lid__lid_stage_type="NEW_LID").count()
+        archived_orders = queryset.filter(lid__isnull=False,
+                                          lid__lid_stage_type="ORDERED_LID").count()  # or another field for "order"
+        archived_new_students = queryset.filter(student__isnull=False,
+                                                student__student_stage_type="NEW_STUDENT").count()
+        archived_active_students = queryset.filter(student__isnull=False,
+                                                   student__student_stage_type="ACTIVE_STUDENT").count()
+        debt_lid = queryset.filter(lid__isnull=False, lid__balance__gte=100000).count()
+        deb_student = queryset.filter(student__isnull=False, student__balance__gte=100000).count()
 
-        no_debt_lid = queryset.filter(lid__isnull=False,lid__balance__lte=100000).count()
-        no_debt_student = queryset.filter(student__isnull=False,student__balance__lte=100000).count()
+        no_debt_lid = queryset.filter(lid__isnull=False, lid__balance__lte=100000).count()
+        no_debt_student = queryset.filter(student__isnull=False, student__balance__lte=100000).count()
 
         return Response({
-            "debt" : debt_lid + deb_student,
-            "no_debt" : no_debt_lid + no_debt_student,
+            "debt": debt_lid + deb_student,
+            "no_debt": no_debt_lid + no_debt_student,
 
             "all_archived": all_archived,
             "archived_lids": archived_lids,
