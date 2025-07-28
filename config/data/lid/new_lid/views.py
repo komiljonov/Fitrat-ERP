@@ -270,20 +270,20 @@ class ExportLidToExcelAPIView(APIView):
         queryset = Lid.objects.filter(**filter)
 
         date_format = "%Y-%m-%d"
-        if start_date_str:
-            start_date = datetime.strptime(start_date_str, date_format).date()
-
-            start_datetime = datetime.combine(start_date, datetime.min.time())
-            end_datetime = start_datetime + timedelta(days=1)
-            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
 
         if start_date_str and end_date_str:
-            start_date = datetime.strptime(start_date_str, date_format).date()
-            end_date = datetime.strptime(end_date_str, date_format).date()
-
+            start_date = datetime.strptime(start_date_str, date_format)
+            end_date = datetime.strptime(end_date_str, date_format)
             start_datetime = datetime.combine(start_date, datetime.min.time())
-            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
-            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
+            end_datetime = datetime.combine(end_date, datetime.max.time())
+            queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
+
+        elif start_date_str:
+            start_date = datetime.strptime(start_date_str, date_format)
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            end_datetime = datetime.combine(start_date, datetime.max.time())
+            queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
+
 
         if lid_stage_type:
             queryset = queryset.filter(lid_stage_type=lid_stage_type)
