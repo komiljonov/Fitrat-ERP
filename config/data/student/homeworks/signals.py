@@ -10,6 +10,8 @@ from ...notifications.models import Notification
 @receiver(post_save, sender=Homework_history)
 def on_create(sender, instance: Homework_history, created, **kwargs):
     if created:
+        instance.test_checked = True
+        instance.save(update_fields=['test_checked'])
         quiz = Quiz.objects.filter(homework=instance.homework).first()
         if instance.mark:
             mastering = Mastering.objects.create(
@@ -57,7 +59,6 @@ def on_update(sender, instance: Homework_history, created, **kwargs):
             mastering.save(update_fields=['updater'])
             print(f"✅ Updated mastering updater to {mastering.ball}")
 
-            instance.test_checked = True
-            instance.save(update_fields=['test_checked'])
+
         else:
             print("❗ Mastering not found.")
