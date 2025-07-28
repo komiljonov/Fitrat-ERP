@@ -216,7 +216,7 @@ class ExportLidsExcelView(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        queryset = Archived.objects.select_related("lid", "student", "creator", "comment")
+        queryset = Archived.objects.select_related("lid", "student", "creator", "comment","is_archived","filial")
 
         # Filters
         filters = {}
