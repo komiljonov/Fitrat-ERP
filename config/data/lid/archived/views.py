@@ -242,12 +242,10 @@ class ExportLidsExcelView(APIView):
         # Get filtered archived objects
         archived_objects = queryset.filter(**filters)
 
-        print(archived_objects)
 
         if is_archived:
             archived_objects = archived_objects.filter(is_archived=is_archived.capitalize())
 
-        print(archived_objects)
 
         if is_student:
             is_student_bool = is_student.capitalize()
