@@ -70,7 +70,7 @@ class RegisterAPIView(CreateAPIView):
 
         external_response = tt.create_data(external_data)
 
-        print(external_response.json())
+        print(external_response)
 
         if external_response and external_response.get("id"):
             user.second_user = external_response.get("id")
