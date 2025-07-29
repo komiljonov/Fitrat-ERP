@@ -1037,8 +1037,8 @@ class StudentLanguage(APIView):
             "is_frozen": False
         }
         first_lesson_filter = {
-            "lid__is_archived": False,
-            "lid__is_frozen": False
+            "is_archived": False,
+            "is_frozen": False
         }
         lid_filter = {
             "lid_stage_type": "NEW_LID",
@@ -1056,7 +1056,7 @@ class StudentLanguage(APIView):
         if filial_id:
             student_base_filter["filial__id"] = filial_id
             new_student_filter["filial__id"] = filial_id
-            first_lesson_filter["lid__filial__id"] = filial_id
+            first_lesson_filter["filial__id"] = filial_id
             lid_filter["filial__id"] = filial_id
             order_filter["filial__id"] = filial_id
 
@@ -1068,9 +1068,9 @@ class StudentLanguage(APIView):
         new_student_eng = Student.objects.filter(education_lang="ENG", **new_student_filter).count()
         new_student_ru = Student.objects.filter(education_lang="RU", **new_student_filter).count()
 
-        first_lesson_uz = Lid.objects.filter(lid__education_lang="UZB", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        first_lesson_eng = Lid.objects.filter(lid__education_lang="ENG", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        first_lesson_ru = Lid.objects.filter(lid__education_lang="RU", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_uz = Lid.objects.filter(education_lang="UZB", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_eng = Lid.objects.filter(education_lang="ENG", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_ru = Lid.objects.filter(education_lang="RU", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
 
         lid_uz = Lid.objects.filter(education_lang="UZB", **lid_filter).count()
         lid_eng = Lid.objects.filter(education_lang="ENG", **lid_filter).count()
