@@ -8,6 +8,7 @@ from ..account.permission import PhoneAuthBackend
 from ..department.filial.models import Filial
 from ..finances.compensation.models import Compensation, Bonus, Page
 from ..finances.finance.models import Casher
+from ..finances.timetracker.sinx import TimetrackerSinc
 from ..student.student.models import Student
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
@@ -127,36 +128,64 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                   "date_of_birth"]
 
     def update(self, instance, validated_data):
+        tt = TimetrackerSinc()
+        should_sync = False
+        updated_fields = {}
+
         password = validated_data.pop("password", None)
         if password:
             instance.set_password(password)
 
+        # 1. PHONE
         phone = validated_data.get("phone")
         if phone and phone != instance.phone:
             if CustomUser.objects.exclude(id=instance.id).filter(phone=phone).exists():
                 raise serializers.ValidationError({"phone": "already_used_number"})
             instance.phone = phone
+            updated_fields["phone_number"] = phone
+            should_sync = True
 
-        # Update `photo` field manually
+        # 2. PHOTO
         if "photo" in validated_data:
-            instance.photo = validated_data["photo"]
+            new_photo = validated_data["photo"]
+            if instance.photo != new_photo:
+                instance.photo = new_photo
+                upload = tt.upload_tt_foto(new_photo.file)
+                if upload and upload.get("id"):
+                    updated_fields["image"] = upload.get("id")
+                    should_sync = True
 
-        # Update other fields except many-to-many
+        # 3. Other fields (excluding M2M)
         for attr, value in validated_data.items():
             if attr not in ["files", "filial"]:
                 setattr(instance, attr, value)
 
-        if "first_name" or "last_name" in validated_data:
+        # 4. Full name update if name fields changed
+        if "first_name" in validated_data or "last_name" in validated_data:
             instance.full_name = f"{instance.first_name} {instance.last_name}"
+            updated_fields["name"] = instance.full_name
+            should_sync = True
 
+        # 5. FILES
         if "files" in validated_data:
-            print("Updating files:", validated_data["files"])  # Debugging
             instance.files.set(validated_data["files"] or [])
 
+        # 6. FILIALS (ManyToMany)
         if "filial" in validated_data:
-            instance.filial.set(validated_data["filial"] or [])
+            new_filials = set(validated_data["filial"])
+            old_filials = set(instance.filial.all())
+            if new_filials != old_filials:
+                instance.filial.set(list(new_filials))
+                updated_fields["filials"] = list(f.id for f in new_filials)
+                should_sync = True
 
         instance.save()
+
+        # 7. Sync to Timetracker if needed
+        if should_sync and instance.second_user:
+            print("🔁 Syncing update to Timetracker:", updated_fields)
+            tt.update_data(instance.second_user, updated_fields)
+
         return instance
 
     def to_representation(self, instance):
