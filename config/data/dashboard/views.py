@@ -1,7 +1,9 @@
+import io
 from collections import defaultdict
 from datetime import datetime, timedelta
 from operator import itemgetter
 
+import openpyxl
 from django.db.models import Case, When, Q
 from django.db.models import Count
 from django.db.models import Sum, F, DecimalField, Value
@@ -11,8 +13,7 @@ from django.utils.dateparse import parse_date
 from django.utils.timezone import make_aware
 from icecream import ic
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
-from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font, Alignment
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -684,66 +685,108 @@ class MonitoringView(APIView):
         return Response(sorted_data, status=status.HTTP_200_OK)
 
 
-class GenerateExcelView(APIView):
+
+
+class MonitoringExcelExportView(APIView):
     def get(self, request, *args, **kwargs):
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Monitoring Table"
+        full_name = request.query_params.get('search')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        subject_id = request.query_params.get('subject')
+        course_id = request.query_params.get('course')
+        filial = request.query_params.get('filial')
+        teacher = request.query_params.get('teacher')
+        role = request.query_params.get('role')
 
-        # 1. Merge and style header
-        ws.merge_cells('A1:A3')
-        ws.merge_cells('B1:N1')
-        ws['A1'] = "ASOSLAR"
-        ws['A1'].font = Font(bold=True)
-        ws['A1'].alignment = Alignment(horizontal='center', vertical='center')
+        teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
+            name=Concat(F('first_name'), Value(' '), F('last_name')),
+            overall_point=F('monitoring')
+        )
 
-        # Then fill merged headings manually
-        ws['B1'] = "OYLIK HISOBDA"
+        if role:
+            teachers = teachers.filter(role=role)
+        if teacher:
+            teachers = teachers.filter(id=teacher)
+        if course_id:
+            teachers = teachers.filter(teachers_groups__course__id=course_id)
+        if subject_id:
+            teachers = teachers.filter(teachers_groups__course__subject__id=subject_id)
+        if full_name:
+            teachers = teachers.filter(name__icontains=full_name)
+        if filial:
+            teachers = teachers.filter(filial__id=filial)
+        if start_date and end_date:
+            teachers = teachers.filter(created_at__date__gte=start_date, created_at__date__lte=end_date)
+        elif start_date:
+            teachers = teachers.filter(created_at__date__gte=start_date)
+        elif end_date:
+            teachers = teachers.filter(created_at__date__lte=end_date)
 
-        # Other headers manually or in a loop
-        headers = [
-            "USTOZ", "MAX BALL",  # continue all the way to JAMI
-            # ...
-        ]
-
-        ws.append(headers)
-
-        # 2. Set column widths
-        for col in range(1, len(headers) + 1):
-            col_letter = get_column_letter(col)
-            ws.column_dimensions[col_letter].width = 18
-
-        # 3. Fetch teachers and their monitoring scores
-        teachers = CustomUser.objects.filter(role="TEACHER")
+        teacher_data = []
 
         for teacher in teachers:
-            # calculate all points manually
-            max_ball = 15  # example
-            ball_plus_40 = 40  # example
-            ball_plus_1000 = 1000  # etc.
+            subjects_qs = Group.objects.filter(teacher=teacher).annotate(
+                subject_name=F("course__subject__name")
+            ).values("subject_name")
 
-            total_score = ball_plus_40 + ball_plus_1000  # etc.
+            if subject_id:
+                subjects_qs = subjects_qs.filter(subject__id=subject_id)
 
-            row = [
-                teacher.full_name,
-                max_ball,
-                ball_plus_40,
-                ball_plus_1000,
-                # etc
-                total_score
-            ]
-            ws.append(row)
+            subjects = list(subjects_qs)
+            subject_names = ", ".join(sorted(set(s['subject_name'] for s in subjects)))
 
-        # 4. Set color fills (optional for columns)
-        fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-        for cell in ws["N"]:  # example for yellow JAMI column
-            cell.fill = fill
+            result_qs = Results.objects.filter(teacher=teacher)
+            if start_date:
+                result_qs = result_qs.filter(created_at__gte=start_date)
+            if end_date:
+                result_qs = result_qs.filter(created_at__lte=end_date)
 
-        # 5. Return response
+            teacher_data.append({
+                "name": teacher.name,
+                "role": teacher.role,
+                "filial": teacher.filial.name if teacher.filial else "-",
+                "subjects": subject_names or "-",
+                "results": result_qs.count(),
+                "points": teacher.overall_point or 0,
+            })
+
+        # Sort by points
+        sorted_teachers = sorted(teacher_data, key=itemgetter("points"), reverse=True)
+
+        # Excel part
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Monitoring"
+
+        # Header row (Uzbek style 💯)
+        headers = ["O'qituvchi", "Roli", "Filial", "Fanlar", "Natijalar soni", "Monitoring ball"]
+        ws.append(headers)
+
+        total_results = 0
+        total_points = 0
+
+        for teacher in sorted_teachers:
+            ws.append([
+                teacher["name"],
+                "O'qituvchi" if teacher["role"] == "TEACHER" else "Assistent",
+                teacher["filial"],
+                teacher["subjects"],
+                teacher["results"],
+                teacher["points"]
+            ])
+            total_results += teacher["results"]
+            total_points += teacher["points"]
+
+        # Add totals at the end
+        ws.append([])
+        ws.append(["", "", "", "Umumiy natijalar soni:", total_results])
+        ws.append(["", "", "", "Umumiy monitoring ball:", total_points])
+
+        # Return response
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-        response['Content-Disposition'] = 'attachment; filename="monitoring_table.xlsx"'
+        response['Content-Disposition'] = 'attachment; filename="monitoring_report.xlsx"'
         wb.save(response)
         return response
 
