@@ -85,7 +85,7 @@ class DashboardView(APIView):
             archived_lid = archived_lid.filter(is_student=is_student_value)
             orders = orders.filter(is_student=is_student_value, is_archived=False)
             orders_archived = orders_archived.filter(is_student=is_student_value)
-            first_lesson = first_lesson.filter(is_student=is_student_value, is_archived=False)
+            first_lesson = first_lesson.filter(lid__is_student=is_student_value, is_archived=False)
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 
             first_lesson_come_archived = first_lesson_come.filter(
@@ -142,7 +142,7 @@ class DashboardView(APIView):
             archived_lid = archived_lid.filter(lids_group__group__teacher_id=teacher)
             orders = orders.filter(lids_group__group__teacher_id=teacher)
             orders_archived = orders_archived.filter(lids_group__group__teacher_id=teacher)
-            first_lesson = first_lesson.filter(lids_group__group__teacher__id=teacher)
+            first_lesson = first_lesson.filter(group__teacher__id=teacher)
             first_lesson_come = first_lesson_come.filter(students_group__group__teacher_id=teacher)
             first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__teacher_id=teacher)
 
