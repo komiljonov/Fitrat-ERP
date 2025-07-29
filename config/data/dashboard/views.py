@@ -691,13 +691,22 @@ class MonitoringView(APIView):
 class MonitoringExcelExportView(APIView):
     def get(self, request, *args, **kwargs):
         full_name = request.query_params.get('search')
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
         subject_id = request.query_params.get('subject')
         course_id = request.query_params.get('course')
         filial = request.query_params.get('filial')
         teacher = request.query_params.get('teacher')
         role = request.query_params.get('role')
+
+        start_date_str = request.GET.get("start_date")
+        end_date_str = request.GET.get("end_date")
+        start_date = end_date = None
+
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d") + timedelta(days=1)
+        elif start_date_str:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+            end_date = start_date + timedelta(days=1)
 
         asos_ids = {
             "ASOS_1": Asos.objects.filter(name="ASOS_1").first().id,
@@ -726,19 +735,13 @@ class MonitoringExcelExportView(APIView):
         if filial:
             teachers = teachers.filter(filial__id=filial)
         if start_date and end_date:
-            teachers = teachers.filter(created_at__date__gte=start_date, created_at__date__lte=end_date)
-        elif start_date:
-            teachers = teachers.filter(created_at__date__gte=start_date)
-        elif end_date:
-            teachers = teachers.filter(created_at__date__lte=end_date)
+            teachers = teachers.filter(created_at__date__gte=start_date.date(), created_at__date__lt=end_date.date())
 
         def get_asos_ball(model, filter_kwargs):
-            print(filter_kwargs)
-
-            return (
-                model.objects.filter(**filter_kwargs)
-                .aggregate(total=Sum(Cast("ball", FloatField())))['total'] or 0
-            )
+            qs = model.objects.filter(**filter_kwargs)
+            if start_date and end_date:
+                qs = qs.filter(created_at__gte=start_date, created_at__lt=end_date)
+            return qs.aggregate(total=Sum(Cast("ball", FloatField())))['total'] or 0
 
         teacher_data = []
         for teacher in teachers:
@@ -752,10 +755,8 @@ class MonitoringExcelExportView(APIView):
             subject_names = ", ".join(sorted(set(s['subject_name'] for s in subjects_qs)))
 
             result_qs = Results.objects.filter(teacher=teacher)
-            if start_date:
-                result_qs = result_qs.filter(created_at__gte=start_date)
-            if end_date:
-                result_qs = result_qs.filter(created_at__lte=end_date)
+            if start_date and end_date:
+                result_qs = result_qs.filter(created_at__gte=start_date, created_at__lt=end_date)
 
             teacher_data.append({
                 "name": teacher.name,
@@ -776,7 +777,7 @@ class MonitoringExcelExportView(APIView):
         ws = wb.active
         ws.title = "Monitoring"
 
-        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=12)
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=14)
         title_cell = ws.cell(row=1, column=1)
         title_cell.value = "📊 Monitoring hisoboti"
         title_cell.font = Font(size=14, bold=True)
@@ -784,7 +785,7 @@ class MonitoringExcelExportView(APIView):
 
         headers = [
             "O'qituvchi", "Roli", "Filial", "Fanlar",
-            "ASOS_1_2", "ASOS_3", "ASOS_4","ASOS_5","ASOS_6","ASOS_7","ASOS_8_9","ASOS_10_11", "ASOS_12_13_14",
+            "ASOS_1_2", "ASOS_3", "ASOS_4", "ASOS_5", "ASOS_6", "ASOS_7", "ASOS_8_9", "ASOS_10_11", "ASOS_12_13_14",
             "Natijalar soni", "Monitoring ball"
         ]
         ws.append(headers)
@@ -796,7 +797,7 @@ class MonitoringExcelExportView(APIView):
                 "O'qituvchi" if teacher["role"] == "TEACHER" else "Assistent",
                 teacher["filial"],
                 teacher["subjects"],
-                teacher["asos_1"], teacher["asos_3"], teacher["asos_4"],"","","","","",
+                teacher["asos_1"], teacher["asos_3"], teacher["asos_4"], "", "", "", "", "",
                 teacher["asos_12_13_14"],
                 teacher["results"], teacher["points"]
             ])
