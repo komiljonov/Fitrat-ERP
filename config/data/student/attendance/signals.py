@@ -1,28 +1,20 @@
 import calendar
 import datetime
 from decimal import Decimal
-from random import choice
+from threading import local
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from icecream import ic
-from lxml.saxparser import comment
 
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import GroupSaleStudent
-from ..homeworks.models import Homework_history, Homework
-from ..student.models import Student
-from ..studentgroup.models import StudentGroup
 from ..subject.models import Theme, Level
 from ...exam_results.models import UnitTest
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import Finance, Kind, SaleStudent
-from ...lid.new_lid.models import Lid
 from ...notifications.models import Notification
-
-from threading import local
-
 from ...parents.models import Relatives
 
 _signal_state = local()
@@ -85,30 +77,31 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
         instance.lid.is_student = True
         instance.lid.save()
 
-        #student = Lid.objects.filter(id=instance.lid.id).first()
-#<<<<<<< HEAD
-        #if student:
-         #   student = Student.objects.filter(id=student.student.id).first()
-          #  if student:
-           #     student.new_student_stages="BIRINCHI_DARSGA_KELMAGAN"
-            #    student.save()
-#=======
-        # if student:
-        #     student = Student.objects.filter(id=student.student.id).first()
-        #     if student:
-        #         student.new_student_stages="BIRINCHI_DARSGA_KELMAGAN"
-        #         student.save()
-#>>>>>>> 1f1c02891d07ea6b4087b5cdb765975f411551c9
+        # student = Lid.objects.filter(id=instance.lid.id).first()
+    # <<<<<<< HEAD
+    # if student:
+    #   student = Student.objects.filter(id=student.student.id).first()
+    #  if student:
+    #     student.new_student_stages="BIRINCHI_DARSGA_KELMAGAN"
+    #    student.save()
+    # =======
+    # if student:
+    #     student = Student.objects.filter(id=student.student.id).first()
+    #     if student:
+    #         student.new_student_stages="BIRINCHI_DARSGA_KELMAGAN"
+    #         student.save()
+    # >>>>>>> 1f1c02891d07ea6b4087b5cdb765975f411551c9
 
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
-        dn_come_attendance_count = Attendance.objects.filter(student=instance.student,reason__in=["REASONED","UNREASONED"]).count()
+        dn_come_attendance_count = Attendance.objects.filter(student=instance.student,
+                                                             reason__in=["REASONED", "UNREASONED"]).count()
 
         if dn_come_attendance_count >= 5:
             instance.student.is_frozen = True
             instance.student.save()
 
-        if attendances_count <= 3 :
+        if attendances_count <= 3:
             stage = "BIRINCHI_DARS" if instance.reason == "IS_PRESENT" else "BIRINCHI_DARSGA_KELMAGAN"
             instance.student.new_student_stages = stage
             instance.student.save()
@@ -136,7 +129,6 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                         come_from=instance.student.id,
                         choice="Students",
                     )
-
 
 
 @receiver(post_save, sender=Attendance)
@@ -240,15 +232,12 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 per_lesson_price = price / lesson_count
                 per_lesson_price = apply_discount(per_lesson_price, sale)
 
-
                 ic("MINUS FROM STUDENT BALANCE:", per_lesson_price)
                 instance.student.balance -= per_lesson_price
                 instance.student.save(update_fields=["balance"])
 
                 instance.amount = per_lesson_price
                 instance.save(update_fields=["amount"])
-
-
 
                 bonus_amount, income_amount = calculate_bonus_and_income(per_lesson_price, bonus_percent)
 
@@ -277,6 +266,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
     finally:
         _signal_state.processing = False
+
 
 #
 # @receiver(post_save, sender=Attendance)
@@ -360,12 +350,11 @@ def group_level_update(sender, instance: Attendance, created, **kwargs):
         group.level = next_level
         group.save(update_fields=["level"])
 
-        
-
 
 from data.exam_results.tasks import send_unit_test_notification
 from datetime import timedelta
 from django.utils import timezone
+
 
 @receiver(post_save, sender=Attendance)
 def on_unit_test(sender, instance: Attendance, created, **kwargs):
@@ -386,5 +375,3 @@ def on_unit_test(sender, instance: Attendance, created, **kwargs):
             args=[unit_test.id, instance.group.id],
             eta=timezone.now() + timedelta(minutes=1)
         )
-
-
