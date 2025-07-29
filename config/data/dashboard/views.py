@@ -733,6 +733,8 @@ class MonitoringExcelExportView(APIView):
             teachers = teachers.filter(created_at__date__lte=end_date)
 
         def get_asos_ball(model, filter_kwargs):
+            print(filter_kwargs)
+
             return (
                 model.objects.filter(**filter_kwargs)
                 .aggregate(total=Sum(Cast("ball", FloatField())))['total'] or 0
