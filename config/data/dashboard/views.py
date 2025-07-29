@@ -758,7 +758,16 @@ class MonitoringExcelExportView(APIView):
         ws = wb.active
         ws.title = "Monitoring"
 
-        # Header row (Uzbek style 💯)
+        from openpyxl.styles import Font, Alignment
+
+        # Add title row
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=6)
+        title_cell = ws.cell(row=1, column=1)
+        title_cell.value = "📊 Monitoring hisoboti"
+        title_cell.font = Font(size=14, bold=True)
+        title_cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        # Add header row below title
         headers = ["O'qituvchi", "Roli", "Filial", "Fanlar", "Natijalar soni", "Monitoring ball"]
         ws.append(headers)
 
