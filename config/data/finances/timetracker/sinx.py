@@ -49,7 +49,7 @@ class TimetrackerSinc:
 
         import mimetypes
 
-        url = self.url + "api/files/upload"
+        url = "https://api.tictac.sector-soft.ru/api/files/upload"
         try:
             django_file.open("rb")
             mime_type, _ = mimetypes.guess_type(django_file.name)
