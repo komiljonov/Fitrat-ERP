@@ -60,7 +60,7 @@ class RegisterAPIView(CreateAPIView):
             "image": photo_id,
             "name": user.full_name,
             "phone_number": user.phone,
-            "filials": [],
+            "filials": list(user.filial.values_list("tt_filial", flat=True)),
             "salary": user.salary,
             **build_weekly_schedule(user),
             "lunch_time": None
