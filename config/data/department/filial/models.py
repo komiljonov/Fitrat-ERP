@@ -4,8 +4,7 @@ from django.db import models
 class Filial(models.Model):
     name = models.CharField(max_length=100)
 
-    latitude = models.FloatField(default=0.0)
-    longitude = models.FloatField(default=0.0)
+    tt_filial = models.CharField(max_length=100)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

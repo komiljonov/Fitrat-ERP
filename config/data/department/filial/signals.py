@@ -4,6 +4,7 @@ from django.dispatch import receiver
 
 from data.account.models import CustomUser
 from data.command.models import UserFilial
+from data.finances.timetracker.sinx import TimetrackerSinc
 
 
 # Handle additions and removals
@@ -23,3 +24,17 @@ def create_user_filials_on_create(sender, instance: CustomUser, created, **kwarg
     if created:
         for filial in instance.filial.all():
             UserFilial.objects.get_or_create(user=instance, filial=filial)
+
+
+@receiver(post_save, sender=Filial)
+def create_user_filials_on_save(sender, instance: Filial, created, **kwargs):
+    if created:
+        tt = TimetrackerSinc()
+        data = {
+            "name": instance.name,
+        }
+        response = tt.create_filial(**data)
+        id = response.get("id")
+        instance.tt_filial = id
+        instance.save()
+        print(response)

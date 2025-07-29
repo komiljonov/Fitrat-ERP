@@ -79,6 +79,19 @@ class TimetrackerSinc:
             print(f"[POST] Error: {e}")
             return None
 
+
+    def create_filial(self, data):
+        url = self.url + "filials"
+        try:
+            response = self.session.post(url, headers=self.headers, json=data, timeout=10)
+            response.raise_for_status()
+            return response.json()
+
+        except requests.exceptions.RequestException as e:
+            print(f"[POST] Error: {e}")
+            return None
+
+
     def retrieve_data(self, employee_id):
         url = self.url + f"employees/{employee_id}"
         try:
