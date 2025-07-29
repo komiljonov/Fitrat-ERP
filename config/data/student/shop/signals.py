@@ -43,6 +43,9 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
     student = instance.student
 
     if created:
+        instance.filial = instance.student.filial
+        instance.save()
+
         Coins.objects.create(
             student=student,
             coin=instance.product.coin,
