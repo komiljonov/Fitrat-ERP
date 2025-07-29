@@ -630,7 +630,12 @@ class FinanceExcel(APIView):
         total_amount = 0
         for finance in finances:
             amount = finance.amount or 0
-            total_amount += amount
+
+            # Subtract for expense, add for income
+            if finance.action == "OUTCOME":
+                total_amount -= amount
+            else:
+                total_amount += amount
 
             sheet.append([
                 finance.casher.name if finance.casher else "-",
