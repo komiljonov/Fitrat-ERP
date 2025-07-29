@@ -89,17 +89,17 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
             choice="Shopping"
         )
 
-    if created:
-        notifier_users = Page.objects.filter(is_readable=True)
-        if notifier_users:
-            for user in notifier_users:
-                Notification.objects.create(
-                    user=user.user,
-                    comment=(
-                        f"{instance.student.first_name} {instance.student.last_name} talaba  {instance.product.name} nomli mahsulot uchun "
-                        f"coin orqali to'lov amalga oshirdi.\n"
-                        f"Filial : {instance.product.filial}\n"
-                    ),
-                    come_from=instance.id,
-                    choice="Shopping"
-                )
+    # if created:
+    #     notifier_users = Page.objects.filter(is_readable=True)
+    #     if notifier_users:
+    #         for user in notifier_users:
+    #             Notification.objects.create(
+    #                 user=user.user,
+    #                 comment=(
+    #                     f"{instance.student.first_name} {instance.student.last_name} talaba  {instance.product.name} nomli mahsulot uchun "
+    #                     f"coin orqali to'lov amalga oshirdi.\n"
+    #                     f"Filial : {instance.product.filial}\n"
+    #                 ),
+    #                 come_from=instance.id,
+    #                 choice="Shopping"
+    #             )
