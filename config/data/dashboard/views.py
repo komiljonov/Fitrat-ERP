@@ -1068,17 +1068,17 @@ class StudentLanguage(APIView):
         new_student_eng = Student.objects.filter(education_lang="ENG", **new_student_filter).count()
         new_student_ru = Student.objects.filter(education_lang="RU", **new_student_filter).count()
 
-        first_lesson_uz = FirstLLesson.objects.filter(lid__education_lang="UZB", **first_lesson_filter).count()
-        first_lesson_eng = FirstLLesson.objects.filter(lid__education_lang="ENG", **first_lesson_filter).count()
-        first_lesson_ru = FirstLLesson.objects.filter(lid__education_lang="RU", **first_lesson_filter).count()
+        first_lesson_uz = Lid.objects.filter(lid__education_lang="UZB", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_eng = Lid.objects.filter(lid__education_lang="ENG", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_ru = Lid.objects.filter(lid__education_lang="RU", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
 
         lid_uz = Lid.objects.filter(education_lang="UZB", **lid_filter).count()
         lid_eng = Lid.objects.filter(education_lang="ENG", **lid_filter).count()
         lid_ru = Lid.objects.filter(education_lang="RU", **lid_filter).count()
 
-        order_uz = Lid.objects.filter(education_lang="UZB", **order_filter).count()
-        order_eng = Lid.objects.filter(education_lang="ENG", **order_filter).count()
-        order_ru = Lid.objects.filter(education_lang="RU", **order_filter).count()
+        order_uz = Lid.objects.filter(education_lang="UZB", **order_filter).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        order_eng = Lid.objects.filter(education_lang="ENG", **order_filter).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        order_ru = Lid.objects.filter(education_lang="RU", **order_filter).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
 
         return Response({
             "student_uz": student_uz,
