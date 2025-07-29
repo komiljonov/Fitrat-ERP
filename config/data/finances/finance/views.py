@@ -656,7 +656,7 @@ class FinanceExcel(APIView):
 
         # ✅ Add total row
         sheet.append([])
-        sheet.append(["", "", "", "", "JAMI:", total_amount])
+        sheet.append(["", "", "", "JAMI:", total_amount])
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="finance_report.xlsx"'
