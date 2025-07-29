@@ -3,8 +3,9 @@ from datetime import datetime, timedelta, time
 
 import openpyxl
 import pandas as pd
-from django.db.models import Q
+from django.db.models import Q, When, Case, Value, F
 from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_date
@@ -403,19 +404,27 @@ class CasherStatisticsAPIView(APIView):
                 return Response({"error": "Kind not found."}, status=404)
 
         # Check casher and return results
+
         if casher_id:
-            income = Finance.objects.filter(casher__id=casher_id, action='INCOME', **filters).exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")) \
-                         .aggregate(Sum('amount'))['amount__sum'] or 0
-            expense = Finance.objects.filter(casher__id=casher_id, action='EXPENSE', **filters).exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")) \
-                          .aggregate(Sum('amount'))['amount__sum'] or 0
-            balance = income - expense
+            queryset = Finance.objects.filter(casher__id=casher_id, **filters).exclude(
+                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            )
+
+            balance_data = queryset.aggregate(
+                income=Coalesce(Sum(Case(When(action="INCOME", then=F("amount")))), Value(0)),
+                expense=Coalesce(Sum(Case(When(action="EXPENSE", then=F("amount")))), Value(0)),
+                balance=Coalesce(Sum(
+                    Case(
+                        When(action="INCOME", then=F("amount")),
+                        When(action="EXPENSE", then=F("amount") * -1),
+                    )
+                ), Value(0))
+            )
 
             return Response({
-                "income": income,
-                "expense": expense,
-                "balance": balance
+                "income": round(balance_data["income"], 2),
+                "expense": round(balance_data["expense"], 2),
+                "balance": round(balance_data["balance"], 2),
             })
 
         return Response({"error": "Casher ID is required."}, status=400)
