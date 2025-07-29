@@ -370,7 +370,7 @@ def on_unit_test(sender, instance: Attendance, created, **kwargs):
         return
 
     if unit_test.themes.filter(id=attendance_theme.id).exists():
-        # ⏳ Schedule Celery task 3 hours later
+
         send_unit_test_notification.apply_async(
             args=[unit_test.id, instance.group.id],
             eta=timezone.now() + timedelta(minutes=1)

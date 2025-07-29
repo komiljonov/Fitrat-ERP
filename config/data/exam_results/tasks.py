@@ -13,6 +13,8 @@ def send_unit_test_notification(unit_test_id, group_id):
     if not unit_test:
         return
 
+    print("Tasks started -----------------------")
+
     group_students = StudentGroup.objects.filter(group_id=group_id).select_related("student__user", "group__teacher")
     theme_names = ", ".join(t.name for t in unit_test.themes.all())
 
