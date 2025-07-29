@@ -33,7 +33,7 @@ def create_user_filials_on_save(sender, instance: Filial, created, **kwargs):
         data = {
             "name": instance.name,
         }
-        response = tt.create_filial(**data)
+        response = tt.create_filial(data)
 
         print(response)
 
