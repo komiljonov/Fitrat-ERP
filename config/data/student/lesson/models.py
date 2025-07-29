@@ -57,7 +57,7 @@ class FirstLLesson(BaseModel):
         'new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True
     )
 
-    group: 'Group | None' = models.ForeignKey(
+    group: 'Group' = models.ForeignKey(
         'groups.Group', on_delete=models.SET_NULL, null=True,
         blank=True, related_name="groups_first_lessons"
     )
