@@ -1,4 +1,5 @@
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Case, When, FloatField, F, Value
+from django.db.models.functions import Coalesce
 from django.utils.dateparse import parse_date
 from rest_framework import serializers
 
@@ -61,40 +62,23 @@ class CasherSerializer(serializers.ModelSerializer):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
 
-        income = \
-            Finance.objects.filter(casher=obj, action='INCOME').aggregate(
-                Sum('amount'))['amount__sum'] or 0
-        expense = \
-            Finance.objects.filter(casher=obj, action='EXPENSE').exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
-                Sum('amount'))['amount__sum'] or 0
-        if start_date:
-            start = parse_date(start_date)
-            end = parse_date(end_date) if end_date else start
+        all_qs = Finance.objects.filter(casher__id=obj).exclude(
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+        )
 
-            from datetime import timedelta
-            end = end + timedelta(days=1) - timedelta(seconds=1)
-
-            income = \
-            Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start, created_at__lte=end).aggregate(
-                Sum('amount'))['amount__sum'] or 0
-            expense = \
-            Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start, created_at__lte=end).exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
-                Sum('amount'))['amount__sum'] or 0
-
-        if start_date and end_date:
-            income = \
-                Finance.objects.filter(casher=obj, action='INCOME', created_at__gte=start_date,
-                                       created_at__lte=end_date).aggregate(
-                    Sum('amount'))['amount__sum'] or 0
-            expense = \
-                Finance.objects.filter(casher=obj, action='EXPENSE', created_at__gte=start_date,
-                                       created_at__lte=end_date).exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
-                    Sum('amount'))['amount__sum'] or 0
-
-        return income - expense
+        balance = all_qs.aggregate(
+            total=Coalesce(
+                Sum(
+                    Case(
+                        When(action="INCOME", then=F("amount")),
+                        When(action="EXPENSE", then=F("amount") * -1),
+                        output_field=FloatField()
+                    )
+                ),
+                Value(0.0)
+            )
+        )["total"]
+        return round(balance, 2)
 
     def get_income(self, obj):
         request = self.context.get('request')
