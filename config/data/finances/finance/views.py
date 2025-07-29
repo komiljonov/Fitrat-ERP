@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, time
 
 import openpyxl
 import pandas as pd
-from django.db.models import Q, When, Case, Value, F
+from django.db.models import Q, When, Case, Value, F, FloatField
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
@@ -411,14 +411,24 @@ class CasherStatisticsAPIView(APIView):
             )
 
             balance_data = queryset.aggregate(
-                income=Coalesce(Sum(Case(When(action="INCOME", then=F("amount")))), Value(0)),
-                expense=Coalesce(Sum(Case(When(action="EXPENSE", then=F("amount")))), Value(0)),
-                balance=Coalesce(Sum(
-                    Case(
-                        When(action="INCOME", then=F("amount")),
-                        When(action="EXPENSE", then=F("amount") * -1),
-                    )
-                ), Value(0))
+                income=Coalesce(
+                    Sum(Case(When(action="INCOME", then=F("amount")), output_field=FloatField())),
+                    Value(0.0)
+                ),
+                expense=Coalesce(
+                    Sum(Case(When(action="EXPENSE", then=F("amount")), output_field=FloatField())),
+                    Value(0.0)
+                ),
+                balance=Coalesce(
+                    Sum(
+                        Case(
+                            When(action="INCOME", then=F("amount")),
+                            When(action="EXPENSE", then=F("amount") * -1),
+                            output_field=FloatField()
+                        )
+                    ),
+                    Value(0.0)
+                )
             )
 
             return Response({
