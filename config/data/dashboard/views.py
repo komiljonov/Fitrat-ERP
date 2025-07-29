@@ -744,7 +744,7 @@ class MonitoringExcelExportView(APIView):
             teacher_data.append({
                 "name": teacher.name,
                 "role": teacher.role,
-                "filial": teacher.filial.name if teacher.filial else "-",
+                "filial": ", ".join(f.name for f in teacher.filial.all()) if teacher.filial.exists() else "-",
                 "subjects": subject_names or "-",
                 "results": result_qs.count(),
                 "points": teacher.overall_point or 0,
@@ -763,7 +763,6 @@ class MonitoringExcelExportView(APIView):
         ws.append(headers)
 
         total_results = 0
-        total_points = 0
 
         for teacher in sorted_teachers:
             ws.append([
@@ -775,12 +774,10 @@ class MonitoringExcelExportView(APIView):
                 teacher["points"]
             ])
             total_results += teacher["results"]
-            total_points += teacher["points"]
 
         # Add totals at the end
         ws.append([])
         ws.append(["", "", "", "Umumiy natijalar soni:", total_results])
-        ws.append(["", "", "", "Umumiy monitoring ball:", total_points])
 
         # Return response
         response = HttpResponse(
