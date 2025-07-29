@@ -763,9 +763,7 @@ class MonitoringExcelExportView(APIView):
                 "asos_1": round(get_asos_ball(MonitoringAsos1_2, {"user": teacher, "asos": "asos1"}), 2),
                 "asos_3": round(get_asos_ball(Monitoring, {"user": teacher, "point__asos__id": asos_ids["ASOS_3"]}), 2),
                 "asos_4": round(get_asos_ball(MonitoringAsos4, {"user": teacher, "asos__id": asos_ids["ASOS_4"]}), 2),
-                "asos_12": round(get_asos_ball(MonitoringAsos4, {"user": teacher, "asos__id": asos_ids["ASOS_12"]}), 2),
-                "asos_13": round(get_asos_ball(MonitoringAsos4, {"user": teacher, "asos__id": asos_ids["ASOS_13"]}), 2),
-                "asos_14": round(get_asos_ball(MonitoringAsos4, {"user": teacher, "asos__id": asos_ids["ASOS_14"]}), 2),
+                "asos_12_13_14": round(get_asos_ball(MonitoringAsos4, {"user": teacher, "asos__id": asos_ids["ASOS_12"]}), 2),
                 "results": result_qs.count(),
                 "points": teacher.overall_point or 0,
             })
@@ -784,7 +782,7 @@ class MonitoringExcelExportView(APIView):
 
         headers = [
             "O'qituvchi", "Roli", "Filial", "Fanlar",
-            "ASOS_1_2", "ASOS_3", "ASOS_4","ASOS_5","ASOS_6","ASOS_7","ASOS_8_9","ASOS_10_11", "ASOS_12", "ASOS_13", "ASOS_14",
+            "ASOS_1_2", "ASOS_3", "ASOS_4","ASOS_5","ASOS_6","ASOS_7","ASOS_8_9","ASOS_10_11", "ASOS_12_13_14",
             "Natijalar soni", "Monitoring ball"
         ]
         ws.append(headers)
@@ -797,7 +795,7 @@ class MonitoringExcelExportView(APIView):
                 teacher["filial"],
                 teacher["subjects"],
                 teacher["asos_1"], teacher["asos_3"], teacher["asos_4"],"","","","","",
-                teacher["asos_12"], teacher["asos_13"], teacher["asos_14"],
+                teacher["asos_12_13_14"],
                 teacher["results"], teacher["points"]
             ])
             total_results += teacher["results"]
