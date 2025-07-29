@@ -61,7 +61,7 @@ class RegisterAPIView(CreateAPIView):
         print(photo_id)
 
         external_data = {
-            "photo": photo_id,
+            "image": photo_id,
             "name": user.full_name,
             "phone_number": user.phone,
             "filials": [],
