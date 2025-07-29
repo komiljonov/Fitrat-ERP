@@ -441,8 +441,6 @@ class GeneratePaymeURLView(APIView):
         order_id = data.get('order_id')
         return_url = request.data.get("return_url", None)  # Optional
 
-        if not all([amount, order_id]):
-            return Response({"detail": "Missing required fields."}, status=400)
 
         paycom = PayComResponse()
         url = paycom.create_initialization(
