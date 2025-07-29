@@ -46,21 +46,30 @@ class TimetrackerSinc:
             return None
 
     def upload_tt_foto(self, django_file):
-
         import mimetypes
 
         url = "https://api.tictac.sector-soft.ru/api/files/upload"
         try:
             django_file.open("rb")
             mime_type, _ = mimetypes.guess_type(django_file.name)
+
             files = {'file': (django_file.name, django_file.file, mime_type or 'application/octet-stream')}
-            response = self.session.post(url, headers=self.headers, files=files, timeout=10)
+
+            # Don't send Content-Type with multipart
+            headers = {k: v for k, v in self.headers.items() if k.lower() != 'content-type'}
+
+            print("Uploading file:", django_file.name, "Size:", django_file.size)
+
+            response = self.session.post(url, headers=headers, files=files, timeout=10)
             response.raise_for_status()
 
-            print(response.json())
+            print("UPLOAD SUCCESS:", response.json())
             return response.json()
+
         except requests.exceptions.RequestException as e:
             print(f"[POST] Error: {e}")
+            if e.response is not None:
+                print("Response content:", e.response.text)
             return None
         finally:
             django_file.close()
