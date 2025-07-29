@@ -181,15 +181,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
 
-        # 7. Sync to Timetracker if needed
         if should_sync and instance.second_user:
-            print("🔁 Syncing update to Timetracker:", updated_fields)
             tt.update_data(instance.second_user, updated_fields)
 
         return instance
 
+
     def to_representation(self, instance):
-        # Get the base URL for media
         representation = super().to_representation(instance)
         if instance.photo:
             representation['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
