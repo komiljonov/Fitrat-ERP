@@ -627,7 +627,11 @@ class FinanceExcel(APIView):
         sheet.append(headers)
 
         # Add data
+        total_amount = 0
         for finance in finances:
+            amount = finance.amount or 0
+            total_amount += amount
+
             sheet.append([
                 finance.casher.name if finance.casher else "-",
                 "Asosiy kassa " if finance.casher.role == "WEALTH" else
@@ -639,9 +643,9 @@ class FinanceExcel(APIView):
                 "Kurs to'lovi" if finance.kind.name == "Course payment" else
                 "1 dars uchun to'lov" if finance.kind.name == "Lesson payment" else
                 "Pul qaytarish" if finance.kind.name == "Money back" else
-                finance.kind.name if hasattr(finance.kind, "name") else str(finance.kind),  # ✅ Fix applied here
+                finance.kind.name if hasattr(finance.kind, "name") else str(finance.kind),
                 "Kirim" if finance.action == "INCOME" else "Xarajat",
-                finance.amount,
+                amount,
                 "Naqt pul" if finance.payment_method == "Cash" else
                 "Pul kuchirish" if finance.payment_method == "Money_send" else
                 "Karta orqali" if finance.payment_method == "Card" else
@@ -649,6 +653,10 @@ class FinanceExcel(APIView):
                 finance.comment or "-",
                 finance.created_at.strftime("%d-%m-%Y %H:%M:%S"),
             ])
+
+        # ✅ Add total row
+        sheet.append([])
+        sheet.append(["", "", "", "", "JAMI:", total_amount])
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="finance_report.xlsx"'
