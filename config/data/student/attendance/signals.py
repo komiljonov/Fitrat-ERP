@@ -68,9 +68,9 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 
         if attendances_count == 1 and instance.reason != "IS_PRESENT":
             Notification.objects.create(
-                user=instance.lid.call_operator,
+                user=instance.lid.call_operator if instance.lid else instance.student.id,
                 comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan !",
-                come_from=instance.lid.id,
+                come_from=instance.lid.id if instance.lid else instance.student.id,
                 choice="First_Lesson_Lid",
             )
 
