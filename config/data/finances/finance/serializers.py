@@ -62,7 +62,7 @@ class CasherSerializer(serializers.ModelSerializer):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
 
-        all_qs = Finance.objects.filter(casher__id=obj).exclude(
+        all_qs = Finance.objects.filter(casher=obj).exclude(
             Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
         )
 
