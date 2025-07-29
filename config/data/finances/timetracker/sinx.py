@@ -3,7 +3,6 @@ from decouple import config
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-
 base_url = config('TT_URL')
 token = config('INTEGRATION_TOKEN')
 
@@ -55,15 +54,11 @@ class TimetrackerSinc:
 
             files = {'file': (django_file.name, django_file.file, mime_type or 'application/octet-stream')}
 
-            # Don't send Content-Type with multipart
             headers = {k: v for k, v in self.headers.items() if k.lower() != 'content-type'}
-
-            print("Uploading file:", django_file.name, "Size:", django_file.size)
 
             response = self.session.post(url, headers=headers, files=files, timeout=10)
             response.raise_for_status()
 
-            print("UPLOAD SUCCESS:", response.json())
             return response.json()
 
         except requests.exceptions.RequestException as e:
@@ -83,7 +78,6 @@ class TimetrackerSinc:
         except requests.exceptions.RequestException as e:
             print(f"[POST] Error: {e}")
             return None
-
 
     def retrieve_data(self, employee_id):
         url = self.url + f"employees/{employee_id}"
