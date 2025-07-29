@@ -50,7 +50,13 @@ class RegisterAPIView(CreateAPIView):
 
         user = serializer.save()
         user_serializer = UserCreateSerializer(user)
+
+        tt = TimetrackerSinc()
+        photo_id_data = tt.upload_tt_foto(user.photo.file)
+        photo_id = photo_id_data.get("id") if photo_id_data else None
+
         external_data = {
+            "photo": photo_id,
             "name": user.full_name,
             "phone_number": user.phone,
             "filials": [],
@@ -59,7 +65,7 @@ class RegisterAPIView(CreateAPIView):
             "lunch_time": None
         }
 
-        tt = TimetrackerSinc()
+
         external_response = tt.create_data(external_data)
 
         if external_response and external_response.get("id"):

@@ -45,8 +45,22 @@ class TimetrackerSinc:
             print(f"[GET] Error: {e}")
             return None
 
+    def upload_tt_foto(self, django_file):
+        url = self.url + "api/files/upload"
+        try:
+            django_file.open("rb")
+            files = {'file': (django_file.name, django_file.file, django_file.content_type)}
+            response = self.session.post(url, headers=self.headers, files=files, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"[POST] Error: {e}")
+            return None
+        finally:
+            django_file.close()
+
     def create_data(self, data):
-        url = self.url + "employees"
+        url = self.url + "employees/create"
         try:
             response = self.session.post(url, headers=self.headers, json=data, timeout=10)
             response.raise_for_status()
