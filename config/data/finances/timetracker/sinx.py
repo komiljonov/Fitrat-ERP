@@ -46,10 +46,14 @@ class TimetrackerSinc:
             return None
 
     def upload_tt_foto(self, django_file):
+
+        import mimetypes
+
         url = self.url + "api/files/upload"
         try:
             django_file.open("rb")
-            files = {'file': (django_file.name, django_file.file, django_file.content_type)}
+            mime_type, _ = mimetypes.guess_type(django_file.name)
+            files = {'file': (django_file.name, django_file.file, mime_type or 'application/octet-stream')}
             response = self.session.post(url, headers=self.headers, files=files, timeout=10)
             response.raise_for_status()
             return response.json()
