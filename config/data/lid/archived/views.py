@@ -241,6 +241,7 @@ class ExportLidsExcelView(APIView):
 
         if lid_stage_type:
             queryset = queryset.filter(lid__lid_stage_type=lid_stage_type)
+
         if student_stage_type:
             queryset = queryset.filter(student__student_stage_type=student_stage_type)
 

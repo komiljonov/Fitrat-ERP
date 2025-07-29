@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from icecream import ic
+
 
 from .models import Finance, VoucherStudent, Casher, Kind, KpiFinance
 
@@ -83,9 +83,6 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
             )
             finance.student.balance += Decimal(finance.amount)
             finance.student.save()
-
-
-        ic(f"For {finance.lid.first_name if finance.lid else finance.student.first_name} voucher created ...")
 
 
 
