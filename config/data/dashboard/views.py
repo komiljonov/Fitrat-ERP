@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from operator import itemgetter
 
-from django.db.models import Case, When
+from django.db.models import Case, When, Q
 from django.db.models import Count
 from django.db.models import Sum, F, DecimalField, Value
 from django.db.models.functions import ExtractWeekDay, Concat
@@ -133,9 +133,9 @@ class DashboardView(APIView):
             archived_lid = archived_lid.filter(subject_id=subjects)
             orders = orders.filter(subject_id=subjects)
             orders_archived = orders_archived.filter(subject_id=subjects)
-            first_lesson = first_lesson.filter(group__course__subject__id=subjects)
-            first_lesson_come = first_lesson_come.filter(group__course__subject__id=subjects)
-            first_lesson_come_archived = first_lesson_come_archived.filter(group__course__subject__id=subjects)
+            first_lesson = first_lesson.filter(Q(lid__subject__id=subjects) | Q(student__subject__id=subjects))
+            first_lesson_come = first_lesson_come.filter(Q(lid__subject__id=subjects) | Q(student__subject__id=subjects))
+            first_lesson_come_archived = first_lesson_come_archived.filter(Q(lid__subject__id=subjects) | Q(student__subject__id=subjects))
 
         if teacher:
             lid = lid.filter(lids_group__group__teacher_id=teacher)
