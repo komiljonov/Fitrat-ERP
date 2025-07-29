@@ -34,6 +34,9 @@ def create_user_filials_on_save(sender, instance: Filial, created, **kwargs):
             "name": instance.name,
         }
         response = tt.create_filial(**data)
+
+        print(response)
+
         id = response.get("id")
         instance.tt_filial = id
         instance.save()
