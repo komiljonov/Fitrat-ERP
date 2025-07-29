@@ -6,9 +6,10 @@ from freezegun import freeze_time
 
 try:
     import colorama
-    colorama.init(strip=True, convert=False, wrap=False)
+    colorama.init(strip=False, convert=False, wrap=False)
 except ImportError:
     pass
+
 
 
 # @freeze_time("2025-05-26 16:00:00")
