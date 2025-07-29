@@ -4,11 +4,11 @@ import os
 import sys
 from freezegun import freeze_time
 
-try:
-    import colorama
-    colorama.init(strip=False, convert=False, wrap=False)
-except ImportError:
-    pass
+# try:
+#     import colorama
+#     colorama.init(strip=False, convert=False, wrap=False)
+# except ImportError:
+#     pass
 
 
 
