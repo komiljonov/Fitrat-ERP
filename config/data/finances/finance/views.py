@@ -369,32 +369,8 @@ class CasherStatisticsAPIView(APIView):
     def get(self, request, *args, **kwargs):
         casher_id = self.kwargs.get('pk')
         kind_id = request.GET.get('kind')
-        start_date_str = request.GET.get('start_date')
-        end_date_str = request.GET.get('end_date')
 
         filters = {}
-
-        # Handle start date
-        if start_date_str:
-            try:
-                start_dt = make_aware(datetime.strptime(start_date_str, "%Y-%m-%d"))
-                filters["created_at__gte"] = start_dt
-
-                if not end_date_str:
-                    # Set end of day as end date
-                    end_dt = start_dt + timedelta(days=1) - timedelta(seconds=1)
-                    filters["created_at__lte"] = end_dt
-            except ValueError:
-                return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=400)
-
-        # Handle end date
-        if end_date_str:
-            try:
-                end_dt = datetime.strptime(end_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
-                end_dt = make_aware(end_dt)
-                filters["created_at__lte"] = end_dt
-            except ValueError:
-                return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=400)
 
         # Handle kind filtering
         if kind_id:
