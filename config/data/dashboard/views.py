@@ -25,7 +25,7 @@ from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group, Day
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
-from ..finances.compensation.models import MonitoringAsos1_2, Monitoring, MonitoringAsos4
+from ..finances.compensation.models import MonitoringAsos1_2, Monitoring, MonitoringAsos4, Asos
 from ..lid.archived.models import Archived
 from ..lid.new_lid.serializers import LidSerializer
 from ..results.models import Results
@@ -700,12 +700,12 @@ class MonitoringExcelExportView(APIView):
         role = request.query_params.get('role')
 
         asos_ids = {
-            "ASOS_1": "49b9bcb8-b8a5-45e7-9581-adb4f7cc2b22",
-            "ASOS_3": "00b724d9-8807-48cc-93a1-9fa5ebb3df7b",
-            "ASOS_4": "94845dff-cc08-4be6-9067-36b4f55b9a6f",
-            "ASOS_12": "0d4a1512-d6af-4c34-8d1b-7d116f4288df",
-            "ASOS_13": "47b5d545-f54e-4279-8076-c571b94ee6b0",
-            "ASOS_14": "fa409c70-403e-44a2-ae76-1b76c60ebe3b",
+            "ASOS_1": Asos.objects.filter(name="ASOS_1").first().id,
+            "ASOS_3": Asos.objects.filter(name="ASOS_3").first().id,
+            "ASOS_4": Asos.objects.filter(name="ASOS_4").first().id,
+            "ASOS_12": Asos.objects.filter(name="ASOS_12").first().id,
+            "ASOS_13": Asos.objects.filter(name="ASOS_13").first().id,
+            "ASOS_14": Asos.objects.filter(name="ASOS_14").first().id,
         }
 
         teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
@@ -784,7 +784,7 @@ class MonitoringExcelExportView(APIView):
 
         headers = [
             "O'qituvchi", "Roli", "Filial", "Fanlar",
-            "ASOS_1", "ASOS_3", "ASOS_4", "ASOS_12", "ASOS_13", "ASOS_14",
+            "ASOS_1_2", "ASOS_3", "ASOS_4","ASOS_5","ASOS_6","ASOS_7","ASOS_8_9","ASOS_10_11", "ASOS_12", "ASOS_13", "ASOS_14",
             "Natijalar soni", "Monitoring ball"
         ]
         ws.append(headers)
@@ -796,7 +796,7 @@ class MonitoringExcelExportView(APIView):
                 "O'qituvchi" if teacher["role"] == "TEACHER" else "Assistent",
                 teacher["filial"],
                 teacher["subjects"],
-                teacher["asos_1"], teacher["asos_3"], teacher["asos_4"],
+                teacher["asos_1"], teacher["asos_3"], teacher["asos_4"],"","","","","",
                 teacher["asos_12"], teacher["asos_13"], teacher["asos_14"],
                 teacher["results"], teacher["points"]
             ])
