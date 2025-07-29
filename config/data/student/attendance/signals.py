@@ -111,8 +111,8 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 Notification.objects.create(
                     user=instance.student.sales_manager,
                     comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashdi va balansi statusi inactive, To'lov haqida ogohlantiring!",
-                    come_from=instance.lid.id,
-                    choice="First_Lesson_Lid"
+                    come_from=instance.student.id,
+                    choice="New_Student"
                 )
             elif instance.reason == "UNREASONED":
                 Notification.objects.create(
