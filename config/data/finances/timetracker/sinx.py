@@ -56,6 +56,8 @@ class TimetrackerSinc:
             files = {'file': (django_file.name, django_file.file, mime_type or 'application/octet-stream')}
             response = self.session.post(url, headers=self.headers, files=files, timeout=10)
             response.raise_for_status()
+
+            print(response.json())
             return response.json()
         except requests.exceptions.RequestException as e:
             print(f"[POST] Error: {e}")

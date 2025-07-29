@@ -55,6 +55,8 @@ class RegisterAPIView(CreateAPIView):
         photo_id_data = tt.upload_tt_foto(user.photo.file)
         photo_id = photo_id_data.get("id") if photo_id_data else None
 
+        print(photo_id)
+
         external_data = {
             "photo": photo_id,
             "name": user.full_name,
@@ -67,6 +69,8 @@ class RegisterAPIView(CreateAPIView):
 
 
         external_response = tt.create_data(external_data)
+
+        print(external_response.json())
 
         if external_response and external_response.get("id"):
             user.second_user = external_response.get("id")
