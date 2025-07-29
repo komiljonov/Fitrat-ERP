@@ -53,12 +53,8 @@ class RegisterAPIView(CreateAPIView):
 
         tt = TimetrackerSinc()
 
-        print(user.photo.file)
-
         photo_id_data = tt.upload_tt_foto(user.photo.file)
         photo_id = photo_id_data.get("id") if photo_id_data else None
-
-        print(photo_id)
 
         external_data = {
             "image": photo_id,
