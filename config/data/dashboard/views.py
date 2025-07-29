@@ -549,16 +549,13 @@ class DashboardLineGraphAPIView(APIView):
                 return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-        # Define weekdays mapping
         weekday_map = {
             1: 'Sunday', 2: 'Monday', 3: 'Tuesday', 4: 'Wednesday',
             5: 'Thursday', 6: 'Friday', 7: 'Saturday'
         }
 
-        # Initialize default structure for all weekdays
         full_week_data = {day: {"income": 0, "expense": 0} for day in weekday_map.values()}
 
-        # Fetch income data
         income_queryset = (
             Finance.objects
             .filter(action="INCOME", **filters)
