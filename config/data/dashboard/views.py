@@ -1024,27 +1024,84 @@ class StudentLanguage(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        filial = self.request.query_params.get('filial')
-        if filial:
-            student_uz = Student.objects.filter(education_lang="UZB", student_stage_type="ACTIVE_STUDENT",
-                                                is_archived=False, is_frozen=False).count()
-            student_eng = Student.objects.filter(education_lang="ENG", student_stage_type="ACTIVE_STUDENT",
-                                                 is_archived=False, is_frozen=False).count()
-            student_ru = Student.objects.filter(education_lang="RU", student_stage_type="ACTIVE_STUDENT",
-                                                is_archived=False, is_frozen=False).count()
-        else:
-            student_uz = Student.objects.filter(education_lang="UZB", student_stage_type="ACTIVE_STUDENT",
-                                                is_archived=False, is_frozen=False).count()
-            student_eng = Student.objects.filter(education_lang="ENG", student_stage_type="ACTIVE_STUDENT",
-                                                 is_archived=False, is_frozen=False).count()
-            student_ru = Student.objects.filter(education_lang="RU", student_stage_type="ACTIVE_STUDENT",
-                                                is_archived=False, is_frozen=False).count()
+        filial_id = request.query_params.get("filial")
+
+        student_base_filter = {
+            "student_stage_type": "ACTIVE_STUDENT",
+            "is_archived": False,
+            "is_frozen": False
+        }
+        new_student_filter = {
+            "student_stage_type": "NEW_STUDENT",
+            "is_archived": False,
+            "is_frozen": False
+        }
+        first_lesson_filter = {
+            "lid__is_archived": False,
+            "lid__is_frozen": False
+        }
+        lid_filter = {
+            "lid_stage_type": "NEW_LID",
+            "is_archived": False,
+            "is_student": False,
+            "is_frozen": False
+        }
+        order_filter = {
+            "lid_stage_type": "ORDERED_LID",
+            "is_archived": False,
+            "is_student": False,
+            "is_frozen": False
+        }
+
+        if filial_id:
+            student_base_filter["filial__id"] = filial_id
+            new_student_filter["filial__id"] = filial_id
+            first_lesson_filter["lid__filial__id"] = filial_id
+            lid_filter["filial__id"] = filial_id
+            order_filter["filial__id"] = filial_id
+
+        student_uz = Student.objects.filter(education_lang="UZB", **student_base_filter).count()
+        student_eng = Student.objects.filter(education_lang="ENG", **student_base_filter).count()
+        student_ru = Student.objects.filter(education_lang="RU", **student_base_filter).count()
+
+        new_student_uz = Student.objects.filter(education_lang="UZB", **new_student_filter).count()
+        new_student_eng = Student.objects.filter(education_lang="ENG", **new_student_filter).count()
+        new_student_ru = Student.objects.filter(education_lang="RU", **new_student_filter).count()
+
+        first_lesson_uz = FirstLLesson.objects.filter(lid__education_lang="UZB", **first_lesson_filter).count()
+        first_lesson_eng = FirstLLesson.objects.filter(lid__education_lang="ENG", **first_lesson_filter).count()
+        first_lesson_ru = FirstLLesson.objects.filter(lid__education_lang="RU", **first_lesson_filter).count()
+
+        lid_uz = Lid.objects.filter(education_lang="UZB", **lid_filter).count()
+        lid_eng = Lid.objects.filter(education_lang="ENG", **lid_filter).count()
+        lid_ru = Lid.objects.filter(education_lang="RU", **lid_filter).count()
+
+        order_uz = Lid.objects.filter(education_lang="UZB", **order_filter).count()
+        order_eng = Lid.objects.filter(education_lang="ENG", **order_filter).count()
+        order_ru = Lid.objects.filter(education_lang="RU", **order_filter).count()
 
         return Response({
             "student_uz": student_uz,
             "student_eng": student_eng,
             "student_ru": student_ru,
+
+            "new_student_uz": new_student_uz,
+            "new_student_eng": new_student_eng,
+            "new_student_ru": new_student_ru,
+
+            "first_lesson_uz": first_lesson_uz,
+            "first_lesson_eng": first_lesson_eng,
+            "first_lesson_ru": first_lesson_ru,
+
+            "lid_uz": lid_uz,
+            "lid_eng": lid_eng,
+            "lid_ru": lid_ru,
+
+            "order_uz": order_uz,
+            "order_eng": order_eng,
+            "order_ru": order_ru,
         })
+
 
 
 class ExportDashboardToExcelAPIView(APIView):
