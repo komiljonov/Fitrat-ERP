@@ -57,6 +57,10 @@ class UnitTestSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep["group"] = {
+            "id": instance.group.id,
+            "name": instance.group.name
+        }
         rep["themes"] = ThemeSerializer(instance.themes.all(), many=True).data
         rep["theme_after"] = (
             ThemeSerializer(instance.theme_after).data if instance.theme_after else None
