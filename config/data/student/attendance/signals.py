@@ -6,13 +6,16 @@ from random import choice
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from icecream import ic
+from lxml.saxparser import comment
 
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import GroupSaleStudent
 from ..homeworks.models import Homework_history, Homework
 from ..student.models import Student
+from ..studentgroup.models import StudentGroup
 from ..subject.models import Theme, Level
+from ...exam_results.models import UnitTest
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import Finance, Kind, SaleStudent
 from ...lid.new_lid.models import Lid
@@ -359,5 +362,29 @@ def group_level_update(sender, instance: Attendance, created, **kwargs):
 
         
 
+
+from data.exam_results.tasks import send_unit_test_notification
+from datetime import timedelta
+from django.utils import timezone
+
+@receiver(post_save, sender=Attendance)
+def on_unit_test(sender, instance: Attendance, created, **kwargs):
+    if not created:
+        return
+
+    unit_test = UnitTest.objects.filter(group=instance.group).first()
+    if not unit_test:
+        return
+
+    attendance_theme = instance.theme.first()
+    if not attendance_theme:
+        return
+
+    if unit_test.themes.filter(id=attendance_theme.id).exists():
+        # ⏳ Schedule Celery task 3 hours later
+        send_unit_test_notification.apply_async(
+            args=[unit_test.id, instance.group.id],
+            eta=timezone.now() + timedelta(minutes=1)
+        )
 
 
