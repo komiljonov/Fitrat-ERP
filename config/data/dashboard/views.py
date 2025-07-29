@@ -133,9 +133,9 @@ class DashboardView(APIView):
             archived_lid = archived_lid.filter(subject_id=subjects)
             orders = orders.filter(subject_id=subjects)
             orders_archived = orders_archived.filter(subject_id=subjects)
-            first_lesson = first_lesson.filter(subject_id=subjects)
-            first_lesson_come = first_lesson_come.filter(subject_id=subjects)
-            first_lesson_come_archived = first_lesson_come_archived.filter(subject_id=subjects)
+            first_lesson = first_lesson.filter(group__subject__id=subjects)
+            first_lesson_come = first_lesson_come.filter(group__subject__id=subjects)
+            first_lesson_come_archived = first_lesson_come_archived.filter(group__subject__id=subjects)
 
         if teacher:
             lid = lid.filter(lids_group__group__teacher_id=teacher)
