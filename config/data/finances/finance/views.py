@@ -628,13 +628,17 @@ class FinanceExcel(APIView):
 
         # Add data
         total_amount = 0
+        total_income = 0
+        total_expense = 0
         for finance in finances:
             amount = finance.amount or 0
 
             # Subtract for expense, add for income
             if finance.action == "INCOME":
+                total_income += amount
                 total_amount += amount
             else:
+                total_expense -= amount
                 total_amount -= amount
 
             sheet.append([
@@ -661,6 +665,8 @@ class FinanceExcel(APIView):
 
         # ✅ Add total row
         sheet.append([])
+        sheet.append(["", "", "", "Jami Kirim:", total_income])
+        sheet.append(["", "", "", "Jami Chiqim:", total_expense])
         sheet.append(["", "", "", "JAMI:", total_amount])
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
