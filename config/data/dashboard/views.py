@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 from operator import itemgetter
 
 import openpyxl
-from django.db.models import Case, When, Q
+from django.db.models import Case, When, Q, FloatField
 from django.db.models import Count
 from django.db.models import Sum, F, DecimalField, Value
-from django.db.models.functions import ExtractWeekDay, Concat
+from django.db.models.functions import ExtractWeekDay, Concat, Cast
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
 from django.utils.timezone import make_aware
@@ -25,6 +25,7 @@ from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group, Day
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
+from ..finances.compensation.models import MonitoringAsos1_2, Monitoring, MonitoringAsos4
 from ..lid.archived.models import Archived
 from ..lid.new_lid.serializers import LidSerializer
 from ..results.models import Results
@@ -750,29 +751,22 @@ class MonitoringExcelExportView(APIView):
                 "points": teacher.overall_point or 0,
             })
 
-        # Sort by points
         sorted_teachers = sorted(teacher_data, key=itemgetter("points"), reverse=True)
 
-        # Excel part
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Monitoring"
 
-        from openpyxl.styles import Font, Alignment
-
-        # Add title row
         ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=6)
         title_cell = ws.cell(row=1, column=1)
         title_cell.value = "📊 Monitoring hisoboti"
         title_cell.font = Font(size=14, bold=True)
         title_cell.alignment = Alignment(horizontal="center", vertical="center")
 
-        # Add header row below title
         headers = ["O'qituvchi", "Roli", "Filial", "Fanlar", "Natijalar soni", "Monitoring ball"]
         ws.append(headers)
 
         total_results = 0
-
         for teacher in sorted_teachers:
             ws.append([
                 teacher["name"],
@@ -784,11 +778,54 @@ class MonitoringExcelExportView(APIView):
             ])
             total_results += teacher["results"]
 
-        # Add totals at the end
         ws.append([])
         ws.append(["", "", "", "Umumiy natijalar soni:", total_results])
 
-        # Return response
+        asos_ids = {
+            "ASOS_1": "49b9bcb8-b8a5-45e7-9581-adb4f7cc2b22",
+            "ASOS_3": "00b724d9-8807-48cc-93a1-9fa5ebb3df7b",
+            "ASOS_4": "94845dff-cc08-4be6-9067-36b4f55b9a6f",
+            "ASOS_12": "0d4a1512-d6af-4c34-8d1b-7d116f4288df",
+            "ASOS_13": "47b5d545-f54e-4279-8076-c571b94ee6b0",
+            "ASOS_14": "fa409c70-403e-44a2-ae76-1b76c60ebe3b",
+        }
+
+        def write_asos_section(title, rows):
+            ws.append([])
+            ws.append([title])
+            ws.append(["Foydalanuvchi", "Ball"])
+            for name, ball in rows:
+                ws.append([name, ball])
+
+        # ASOS 1
+        asos1_data = MonitoringAsos1_2.objects.filter(asos="asos1").values("user__first_name", "user__last_name").annotate(
+            total_ball=Sum("ball")
+        )
+        write_asos_section("ASOS 1", [
+            (f"{d['user__first_name']} {d['user__last_name']}", d["total_ball"] or 0) for d in asos1_data
+        ])
+
+        # ASOS 3
+        asos3_data = Monitoring.objects.filter(point__asos__id=asos_ids["ASOS_3"]).values("user__first_name", "user__last_name").annotate(
+            total_ball=Sum(Cast("ball", FloatField()))
+        )
+        write_asos_section("ASOS 3", [
+            (f"{d['user__first_name']} {d['user__last_name']}", d["total_ball"] or 0) for d in asos3_data
+        ])
+
+        # ASOS 4, 12, 13, 14
+        for asos_num in ["ASOS_4", "ASOS_12", "ASOS_13", "ASOS_14"]:
+            asos_data = MonitoringAsos4.objects.filter(asos__id=asos_ids[asos_num]).values("user__first_name", "user__last_name").annotate(
+                total_ball=Sum(Cast("ball", FloatField()))
+            )
+            write_asos_section(asos_num, [
+                (f"{d['user__first_name']} {d['user__last_name']}", d["total_ball"] or 0) for d in asos_data
+            ])
+
+        for i in range(6, 12):
+            ws.append([])
+            ws.append([f"ASOS_{i} (data not included)"])
+
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
