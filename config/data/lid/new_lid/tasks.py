@@ -38,7 +38,7 @@ def check_daily_leads():
     # === STORY EXPIRATION ===
     overdue_stories = Store.objects.filter(
         has_expired=False,
-        expired_at__lte=now()
+        expired_date__lte=now()
     )
 
     for story in overdue_stories:
