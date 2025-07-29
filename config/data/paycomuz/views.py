@@ -434,12 +434,10 @@ class GeneratePaymeURLView(APIView):
         # Correct way to access nested keys
         data = request.data.get("params", {})  # ✅ fix
 
-        print(data)
-
         amount = data.get('amount')
         account = settings.PAYCOM_SETTINGS.get("KASSA_ID")
         print(account)
-        order_id = account.get('order_id')
+        order_id = account
         return_url = request.data.get("return_url", None)  # Optional
 
         print(amount, order_id, return_url)
