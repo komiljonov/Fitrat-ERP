@@ -602,6 +602,7 @@ class DashboardLineGraphAPIView(APIView):
 
         return Response({
             "data": result,
+            "balance": total_income - total_expense,
             "total_income": total_income,
             "total_expense": total_expense
         }, status=status.HTTP_200_OK)
