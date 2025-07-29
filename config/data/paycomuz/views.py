@@ -427,28 +427,36 @@ class TransactionAPIView(ListCreateAPIView):
     serializer_class = PaycomuzSerializer
 
 
+from rest_framework.exceptions import ValidationError
+
 class GeneratePaymeURLView(APIView):
     def post(self, request):
-        print(request.data)
+        print("🔥 Incoming Data:", request.data)
 
-        # Correct way to access nested keys
-        data = request.data.get("params", {})  # ✅ fix
-
-        print(data)
+        # Safely extract nested data
+        data = request.data.get("params", {})
+        print("🧩 Extracted Params:", data)
 
         amount = data.get('amount')
-
         order_id = data.get('order_id')
-        return_url = request.data.get("return_url", None)  # Optional
+        return_url = request.data.get("return_url", None)
 
-        print(amount, order_id, return_url)
+        print("Parsed:", amount, order_id, return_url)
+
+        if amount is None or order_id is None:
+            raise ValidationError("Missing 'amount' or 'order_id' in 'params'")
+
+        try:
+            amount_decimal = Decimal(amount)
+        except Exception as e:
+            raise ValidationError(f"Invalid amount value: {amount} ({e})")
 
         paycom = PayComResponse()
         url = paycom.create_initialization(
-
-            amount=Decimal(amount),
+            amount=amount_decimal,
             order_id=str(order_id),
             return_url=return_url
         )
 
         return Response({'payment_url': url}, status=status.HTTP_200_OK)
+
