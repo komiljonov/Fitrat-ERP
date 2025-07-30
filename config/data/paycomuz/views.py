@@ -61,10 +61,14 @@ class MerchantAPIView(APIView):
 
         check = authentication(request)
         if check is False or not check:
+            print("Authentication failed")
             return Response(AUTH_ERROR)
         serializer = PaycomOperationSerialzer(data=request.data, many=False)
         serializer.is_valid(raise_exception=True)
         method = serializer.validated_data['method']
+
+        print("method", method)
+
         self.METHODS[method](serializer.validated_data)
 
         assert self.reply != None
