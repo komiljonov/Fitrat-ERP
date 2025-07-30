@@ -10,7 +10,7 @@ def on_pre_save(sender, instance : Order,created ,**kwargs):
 
     if created:
 
-        kind = Kind.objects.filter(name="Course payment").first()
+        kind = Kind.objects.filter(name="Lesson payment").first()
 
         finance = Finance.objects.create(
             action="INCOME",
