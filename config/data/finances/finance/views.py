@@ -89,12 +89,17 @@ class FinanceListAPIView(ListCreateAPIView):
         start_date_str = self.request.GET.get('start_date')
         end_date_str = self.request.GET.get('end_date')
         casher_id = self.request.GET.get('casher_id')
+        creator = self.request.GET.get('creator')
+
 
         queryset = Finance.objects.all().exclude(
             Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
 
         if action:
             queryset = queryset.filter(action=action)
+
+        if creator:
+            queryset = queryset.filter(creator__id=creator)
 
         if casher_id:
             queryset = queryset.filter(casher__id=casher_id)
