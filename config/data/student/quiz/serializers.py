@@ -497,7 +497,7 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             "is_language": instance.subject.is_language,
         } if instance.subject else None
         rep["certificate"] = FileUploadSerializer(instance.certificate,
-        context=self.context).data if instance.certificate else None
+                                                  context=self.context).data if instance.certificate else None
 
         return rep
 
@@ -631,14 +631,14 @@ class ExamSerializer(serializers.ModelSerializer):
 
 
 class ExamMonthlySerializer(serializers.ModelSerializer):
-    first_subject = serializers.UUIDField(required=False,allow_null=True)
-    second_subject = serializers.UUIDField(required=False,allow_null=True)
-    first_has_certificate = serializers.BooleanField(required=False,allow_null=True)
-    second_has_certificate = serializers.BooleanField(required=False,allow_null=True)
-    first_certificate = serializers.UUIDField(required=False,allow_null=True)
-    second_certificate = serializers.UUIDField(required=False,allow_null=True)
-    expire_date = serializers.DateTimeField(required=False,allow_null=True)
-    option = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(),many=True,allow_null=True)
+    first_subject = serializers.UUIDField(required=False, allow_null=True)
+    second_subject = serializers.UUIDField(required=False, allow_null=True)
+    first_has_certificate = serializers.BooleanField(required=False, allow_null=True)
+    second_has_certificate = serializers.BooleanField(required=False, allow_null=True)
+    first_certificate = serializers.UUIDField(required=False, allow_null=True)
+    second_certificate = serializers.UUIDField(required=False, allow_null=True)
+    expire_date = serializers.DateTimeField(required=False, allow_null=True)
+    option = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(), many=True, allow_null=True)
 
     class Meta:
         model = ExamRegistration
@@ -672,15 +672,13 @@ class ExamMonthlySerializer(serializers.ModelSerializer):
         return rep
 
 
-
 class ExamRegistrationSerializer(serializers.ModelSerializer):
     option = serializers.PrimaryKeyRelatedField(
-        queryset=ExamSubject.objects.all(), many=True, allow_null=True,required=False
+        queryset=ExamSubject.objects.all(), many=True, allow_null=True, required=False
     )
 
     date = serializers.SerializerMethodField()
     exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), allow_null=True, required=False)
-
 
     class Meta:
         model = ExamRegistration
@@ -704,7 +702,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
         return exam.date if exam else None
 
     def validate(self, attrs):
-        exam =  getattr(self.instance, "exam", None)
+        exam = getattr(self.instance, "exam", None)
         student = attrs.get("student")
 
         if not exam:
@@ -761,7 +759,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "type": instance.exam.type,
             "is_mandatory": instance.exam.is_mandatory,
         }
-        rep["option"] = ExamSubjectSerializer(instance.option,context=self.context, many=True).data
+        rep["option"] = ExamSubjectSerializer(instance.option, context=self.context, many=True).data
         rep["student"] = StudentSerializer(instance.student, include_only=["id", "first_name", "last_name"]).data
         return rep
 
@@ -791,5 +789,3 @@ class ExamCertificateSerializer(serializers.ModelSerializer):
         rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data
         rep["student"] = StudentSerializer(instance.student, include_only=["id", "first_name", "last_name"]).data
         return rep
-
-
