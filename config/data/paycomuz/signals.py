@@ -14,7 +14,7 @@ def on_pre_save(sender, instance : Transaction,created ,**kwargs):
 
     if created and instance.state=="success":
 
-        kind = Kind.objects.filter(name="Lesson payment").first()
+        kind = Kind.objects.filter(name="Course payment").first()
 
         student = Student.objects.filter(id=instance.order_key).first()
         lid = Lid.objects.filter(id=instance.order_key).first()
