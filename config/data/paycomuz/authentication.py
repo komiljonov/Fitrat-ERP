@@ -12,6 +12,8 @@ def authentication(request):
            """
     auth = get_authorization_header(request).split()
 
+    print(auth)
+
     if not auth or auth[0].lower() != b'basic':
         return False
 
@@ -26,6 +28,9 @@ def authentication(request):
         return False
 
     userid, password = auth_parts[0], auth_parts[2]
+
+    print(userid, password)
+
     return authenticate_credentials(userid, password, request)
 
 
