@@ -1,5 +1,8 @@
 from django.db import models
 
+from data.account.models import CustomUser
+from root import settings
+
 
 class Transaction(models.Model):
     PROCESSING = 'processing'
@@ -23,6 +26,8 @@ class Transaction(models.Model):
     cancel_datetime = models.CharField(null=True, max_length=255)
     created_datetime = models.CharField(null=True, max_length=255)
     reason = models.IntegerField(null=True)
+
+    creator : "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL,null=True,blank=True)
 
     def __str__(self):
         return f"{self._id}"

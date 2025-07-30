@@ -23,6 +23,7 @@ def on_pre_save(sender, instance : Transaction,created ,**kwargs):
             action="INCOME",
             amount=instance.amount,
             kind=kind,
+            creator=instance.creator,
             payment_method='Payme',
             student=student if student else None,
             lid=lid if lid else None,
