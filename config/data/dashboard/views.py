@@ -729,8 +729,7 @@ class MonitoringAsosAPIView(APIView):
             teachers = teachers.filter(name__icontains=full_name)
         if filial:
             teachers = teachers.filter(filial__id=filial)
-        if start_date and end_date:
-            teachers = teachers.filter(created_at__date__gte=start_date.date(), created_at__date__lt=end_date.date())
+
 
         def get_asos_ball(model, filter_kwargs):
             qs = model.objects.filter(**filter_kwargs)
