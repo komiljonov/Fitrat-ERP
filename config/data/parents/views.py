@@ -221,7 +221,7 @@ class ParentStudentAvgAPIView(APIView):
                 "student_id": student.id,
                 "full_name": f"{student.first_name} {student.last_name}",
                 "overall_learning": global_overall,
-                "balance":student.balance,
+                "balance": student.balance,
                 "course_scores": course_results,
             })
 
