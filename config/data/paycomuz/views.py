@@ -163,6 +163,8 @@ class MerchantAPIView(APIView):
             }
             return
 
+        user = self.request.user
+
         tx = Transaction.objects.create(
             request_id=validated_data['id'],
             _id=_id,
@@ -170,7 +172,8 @@ class MerchantAPIView(APIView):
             order_key=order_key,
             state=CREATE_TRANSACTION,
             created_datetime=now,
-            status=Transaction.PROCESSING
+            status=Transaction.PROCESSING,
+            creator=user,
         )
 
         self.reply = {
