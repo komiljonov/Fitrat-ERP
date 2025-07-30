@@ -1,11 +1,11 @@
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
 from data.clickuz.models import Order
 from data.finances.finance.models import Finance, Kind
 
 
-@receiver(pre_save, sender=Order)
+@receiver(post_save, sender=Order)
 def on_pre_save(sender, instance : Order,created ,**kwargs):
 
     if created:
