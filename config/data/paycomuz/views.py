@@ -71,6 +71,9 @@ class MerchantAPIView(APIView):
 
         self.METHODS[method](serializer.validated_data)
 
+        if self.reply != None:
+            print("reply", self.reply)
+
         assert self.reply != None
 
         print("Response is:", self.reply)
