@@ -56,6 +56,9 @@ class MerchantAPIView(APIView):
         super(MerchantAPIView, self).__init__()
 
     def post(self, request):
+
+        print("request", request)
+
         check = authentication(request)
         if check is False or not check:
             return Response(AUTH_ERROR)
