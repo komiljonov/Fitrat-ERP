@@ -26,7 +26,8 @@ class Comment(BaseModel):
         ordering = []
 
 class StuffComments(BaseModel):
-    comment : str = models.TextField()
+    comment : str = models.TextField(null=True,blank=True)
+    file : "File" = models.ForeignKey("upload.File", on_delete=models.SET_NULL, null=True,blank=True, related_name='stuff_comments_photo')
     creator : "CustomUser" = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE,
                                                related_name='comments_stuff')
     stuff : 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True,blank=True,
