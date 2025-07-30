@@ -65,6 +65,8 @@ class MerchantAPIView(APIView):
         self.METHODS[method](serializer.validated_data)
 
         assert self.reply != None
+
+        print("Response is:", self.reply)
         return Response(self.reply)
 
     def check_perform_transaction(self, validated_data):
