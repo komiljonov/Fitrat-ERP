@@ -570,6 +570,11 @@ class ExamSerializer(serializers.ModelSerializer):
             if int(option.options) > 0:  # ✅ Use the actual field name, not dict-style access
                 subject = option.subject
                 group = Group.objects.filter(course__subject=subject).first()
+
+
+                print(group,group.teacher)
+
+
                 teacher = group.teacher if group else None
 
                 if teacher:
