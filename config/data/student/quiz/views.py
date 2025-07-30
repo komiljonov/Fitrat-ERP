@@ -615,6 +615,8 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
 
             for item in request.data:
 
+                print(item)
+
                 item_id = item.get("id")
                 if not item_id:
                     errors.append({"error": "Missing ID", "item": item})
