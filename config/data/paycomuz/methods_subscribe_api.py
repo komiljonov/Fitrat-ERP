@@ -20,6 +20,8 @@ class PayComResponse(object):
 
         >>> self.create_initialization(amount=Decimal(5000.00), order_id='1', return_url='https://example.com/success/')
         """
+
+        print(TOKEN, KEY,order_id,amount, return_url)
         params = f"m={TOKEN};ac.{KEY}={order_id};a={amount};c={return_url}"
         encode_params = base64.b64encode(params.encode("utf-8"))
         encode_params = str(encode_params, 'utf-8')
