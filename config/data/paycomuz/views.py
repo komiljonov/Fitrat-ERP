@@ -460,6 +460,7 @@ class GeneratePaymeURLView(APIView):
 
         try:
             amount_decimal = Decimal(amount)
+            amount_decimal = amount_decimal * 100
         except Exception as e:
             raise ValidationError(f"Invalid amount value: {amount} ({e})")
 
