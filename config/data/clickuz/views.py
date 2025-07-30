@@ -138,7 +138,7 @@ class CreateClickOrderAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = CreateOrderSerializer(data=request.data)
+        serializer = CreateOrderSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
         order = serializer.save()

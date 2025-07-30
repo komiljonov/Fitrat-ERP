@@ -36,6 +36,8 @@ class CreateOrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get("request")
+        print(request.user)
+
         if request and request.user and request.user.is_authenticated:
             validated_data["creator"] = request.user
 
