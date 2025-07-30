@@ -10,6 +10,7 @@ from .serializers import TeacherSerializer
 from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...exam_results.models import MockExamResult
+from ...lid.new_lid.models import Lid
 from ...results.models import Results
 from ...student.groups.models import Group, SecondaryGroup
 from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
@@ -18,10 +19,8 @@ from ...student.lesson.models import Lesson
 from ...student.lesson.serializers import LessonSerializer
 from ...student.mastering.models import Mastering, MasteringTeachers
 from ...student.mastering.serializers import StuffMasteringSerializer
-from ...student.student.models import Student
 from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ...student.studentgroup.serializers import StudentsGroupSerializer
-from ...lid.new_lid.models import Lid
 from ...student.subject.models import GroupThemeStart
 
 
@@ -112,7 +111,7 @@ class TeacherStatistics(ListAPIView):
                 ordered_stages="BIRINCHI_DARS_BELGILANGAN",
                 is_student=False
             ).count(),
-            "first_lesson_archived" : Lid.objects.filter(
+            "first_lesson_archived": Lid.objects.filter(
                 lid_stage_type="ORDERED_LID",
                 is_archived=True,
                 lids_group__group__teacher=teacher,
@@ -122,21 +121,25 @@ class TeacherStatistics(ListAPIView):
             "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
             "new_students": StudentGroup.objects.filter(group__teacher=teacher,
                                                         student__student_stage_type="NEW_STUDENT", **filters).count(),
-            "new_student_active" : StudentGroup.objects.filter(group__teacher=teacher,student__student_stage_type="ACTIVE_STUDENT",
-                                                               student__new_student_date__isnull=False, **filters).count(),
-            "new_student_archived" : StudentGroup.objects.filter(group__teacher=teacher,student__student_stage_type="NEW_STUDENT",
-                                                                 student__is_archived=True, **filters).count(),
-            "new_student_still" : StudentGroup.objects.filter(group__teacher=teacher,student__student_stage_type="NEW_STUDENT",
-                                                              student__is_archived=False, **filters).count(),
+            "new_student_active": StudentGroup.objects.filter(group__teacher=teacher,
+                                                              student__student_stage_type="ACTIVE_STUDENT",
+                                                              student__new_student_date__isnull=False,
+                                                              **filters).count(),
+            "new_student_archived": StudentGroup.objects.filter(group__teacher=teacher,
+                                                                student__student_stage_type="NEW_STUDENT",
+                                                                student__is_archived=True, **filters).count(),
+            "new_student_still": StudentGroup.objects.filter(group__teacher=teacher,
+                                                             student__student_stage_type="NEW_STUDENT",
+                                                             student__is_archived=False, **filters).count(),
 
-            "active_students": StudentGroup.objects.filter(group__teacher=teacher,student__is_archived=False,
+            "active_students": StudentGroup.objects.filter(group__teacher=teacher, student__is_archived=False,
                                                            student__student_stage_type="ACTIVE_STUDENT",
                                                            **filters).count(),
 
             "results": Results.objects.filter(teacher=teacher, **filters).count(),
-            "results_progress" : Results.objects.filter(teacher=teacher,status="In_progress", **filters).count(),
-            "results_accepted" : Results.objects.filter(teacher=teacher,status="Accepted", **filters).count(),
-            "results_rejected" : Results.objects.filter(teacher=teacher,status="Rejected",**filters).count(),
+            "results_progress": Results.objects.filter(teacher=teacher, status="In_progress", **filters).count(),
+            "results_accepted": Results.objects.filter(teacher=teacher, status="Accepted", **filters).count(),
+            "results_rejected": Results.objects.filter(teacher=teacher, status="Rejected", **filters).count(),
 
             "average_assimilation": total_avg_scaled,
             "low_assimilation": low_assimilation_count,
@@ -174,7 +177,8 @@ class TeachersGroupsView(ListAPIView):
     serializer_class = GroupSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
-    ordering_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status', 'student_count')
+    ordering_fields = (
+    "lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status', 'student_count')
     filterser_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
 
     def get_queryset(self):
@@ -225,7 +229,7 @@ class AssistantStatisticsView(ListAPIView):
         if end_date:
             filters["created_at__lte"] = end_date
 
-        students = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user,**filters).count()
+        students = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user, **filters).count()
         average_assimilation = None
         low_assimilation = None
         high_assimilation = None
@@ -320,7 +324,7 @@ class StudentsAvgLearning(APIView):
                     'is_frozen': sg.lid.is_frozen,
                 }
 
-            exams, homeworks, speaking, unit, mock , mid_course , level = [], [], [], [], [], [], []
+            exams, homeworks, speaking, unit, mock, mid_course, level = [], [], [], [], [], [], []
 
             for m in student_record:
                 homework_id = Homework_history.objects.filter(
@@ -352,13 +356,15 @@ class StudentsAvgLearning(APIView):
                         "name": m.theme.title,
                     } if m.theme else None,
                     "homework_id": homework_id.id if homework_id else None,
-                    "mastering_id": m.id if m.choice in ["Speaking", "Unit_Test", "Mock","MidCourse", "Level"] else None,
+                    "mastering_id": m.id if m.choice in ["Speaking", "Unit_Test", "Mock", "MidCourse",
+                                                         "Level"] else None,
                     "title": m.test.title if m.test else "N/A",
                     "mock": mock_data if mock_data is not None else m.level_exam.id if m.level_exam else None,
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
                     "updater": homework_id.updater.full_name if homework_id and homework_id.updater else
-                        m.updater.full_name if m.choice in ["Speaking", "Unit_Test","MidCourse", "Level"] and m.updater else "N/A",
+                    m.updater.full_name if m.choice in ["Speaking", "Unit_Test", "MidCourse",
+                                                        "Level"] and m.updater else "N/A",
                     "created_at": m.created_at,
                 }
 
@@ -388,7 +394,8 @@ class StudentsAvgLearning(APIView):
             overall_mid_course = avg(mid_course)
             overall_level = avg(level)
 
-            all_parts = [overall_exam, overall_homework, overall_speaking, overall_unit, overall_mock, overall_mid_course, overall_level]
+            all_parts = [overall_exam, overall_homework, overall_speaking, overall_unit, overall_mock,
+                         overall_mid_course, overall_level]
             filled = [p for p in all_parts if p > 0]
             overall = round(sum(filled) / len(filled), 2) if filled else 0
 
