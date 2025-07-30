@@ -54,7 +54,7 @@ class CommentStuffSerializer(serializers.ModelSerializer):
             "id",
             "creator",
             "stuff",
-            "file"
+            "file",
             "comment",
             "created_at",
         ]
