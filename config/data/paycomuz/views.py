@@ -438,7 +438,7 @@ class GeneratePaymeURLView(APIView):
         print("🧩 Extracted Params:", data)
 
         amount = data.get('amount')
-        order_id = data.get('order_id')
+        order_id : str = data.get('order_id')
         return_url = request.data.get("return_url", None)
 
         print("Parsed:", amount, order_id, return_url)
@@ -454,7 +454,7 @@ class GeneratePaymeURLView(APIView):
         paycom = PayComResponse()
         url = paycom.create_initialization(
             amount=amount_decimal,
-            order_id=str(order_id),
+            order_id=order_id,
             return_url=return_url
         )
 
