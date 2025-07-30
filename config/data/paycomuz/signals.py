@@ -1,6 +1,6 @@
 
 
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
 from data.finances.finance.models import Finance, Kind
@@ -9,7 +9,7 @@ from data.paycomuz.models import Transaction
 from data.student.student.models import Student
 
 
-@receiver(pre_save, sender=Transaction)
+@receiver(post_save, sender=Transaction)
 def on_pre_save(sender, instance : Transaction,created ,**kwargs):
 
     if created and instance.state=="success":
