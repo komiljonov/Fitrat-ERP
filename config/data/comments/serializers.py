@@ -47,13 +47,14 @@ class CommentStuffSerializer(serializers.ModelSerializer):
         queryset=CustomUser.objects.all(),
         allow_null=True,
     )
-
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
     class Meta:
         model = StuffComments
         fields = [
             "id",
             "creator",
             "stuff",
+            "file"
             "comment",
             "created_at",
         ]
@@ -64,6 +65,7 @@ class CommentStuffSerializer(serializers.ModelSerializer):
 
         # Ensure the 'creator' field exists in the representation
         creator = instance.creator if instance.creator else None
+        rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
 
         if creator:
             rep[
