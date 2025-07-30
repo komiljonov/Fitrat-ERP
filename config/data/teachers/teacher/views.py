@@ -154,15 +154,15 @@ class Teacher_StudentsView(ListAPIView):
 
     def get_queryset(self):
 
-        students = self.request.GET.get("status", None)
+        status = self.request.GET.get("status", None)
         is_archived = self.request.GET.get("is_archived", None)
 
         group = StudentGroup.objects.filter(group__teacher=self.request.user)
 
         if is_archived:
-            queryset = group.filter(is_archived=is_archived.capitalize())
-        if students:
-            group = group.filter(student__student_stage_type=students)
+            group = group.filter(is_archived=is_archived.capitalize())
+        if status:
+            group = group.filter(Q(student__student_stage_type=status) | Q(lid__lid_stage_type=status))
         if group:
             return group
         return StudentGroup.objects.none()
