@@ -164,7 +164,7 @@ class Teacher_StudentsView(ListAPIView):
         if status:
             group = group.filter(Q(student__student_stage_type=status) | Q(lid__lid_stage_type=status))
         if group:
-            return group
+            return group.distinct()
         return StudentGroup.objects.none()
 
 
