@@ -8,7 +8,7 @@ from data.finances.finance.models import Finance, Kind
 @receiver(post_save, sender=Order)
 def on_pre_save(sender, instance : Order,created ,**kwargs):
 
-    if created:
+    if not created and instance.paid == True:
 
         kind = Kind.objects.filter(name="Lesson payment").first()
 
@@ -17,6 +17,7 @@ def on_pre_save(sender, instance : Order,created ,**kwargs):
             amount=instance.amount,
             kind=kind,
             payment_method='Click',
+            creator=instance.creator,
             student=instance.student if instance.student else None,
             lid=instance.lid if instance.lid else None,
             comment=f"{instance.student.first_name + "  " + instance.student.last_name if instance.student else 

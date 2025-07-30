@@ -33,3 +33,10 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         if attrs.get("lid") and attrs.get("student"):
             raise serializers.ValidationError("Provide only one of lid or student.")
         return attrs
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        if user:
+            validated_data["creator"] = user
+
+        return Order.objects.create(**validated_data)

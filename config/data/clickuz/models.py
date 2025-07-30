@@ -32,3 +32,4 @@ class Order(models.Model):
     ],max_length=255,null=True,blank=True)
     amount = models.CharField(max_length=255)
     paid = models.BooleanField(default=False)
+    creator = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True,related_name="order_creator")
