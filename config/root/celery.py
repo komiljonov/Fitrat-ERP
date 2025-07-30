@@ -37,10 +37,10 @@ app.conf.beat_schedule = {
         "task":"data.tasks.tasks.check_today_task",
         "schedule": crontab(hour=0, minute=0),
     },
-    "send_daily_excel_report": {
-        "task": "data.dashboard.tasks.send_daily_excel_report",
-        "schedule": crontab(hour=9, minute=0),
-    },
+    # "send_daily_excel_report": {
+    #     "task": "data.dashboard.tasks.send_daily_excel_report",
+    #     "schedule": crontab(hour=9, minute=0),
+    # },
     "activate_group": {
         "task": "data.student.groups.tasks.activate_group",
         "schedule": crontab(hour=0, minute=0),

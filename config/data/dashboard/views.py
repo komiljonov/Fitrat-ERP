@@ -685,6 +685,103 @@ class MonitoringView(APIView):
 
 
 
+class MonitoringAsosAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        full_name = request.query_params.get('search')
+        start_date_str = request.query_params.get("start_date")
+        end_date_str = request.query_params.get("end_date")
+        subject_id = request.query_params.get('subject')
+        course_id = request.query_params.get('course')
+        filial = request.query_params.get('filial')
+        teacher = request.query_params.get('teacher')
+        role = request.query_params.get('role')
+
+        # Parse date
+        start_date = end_date = None
+        if start_date_str and end_date_str:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d") + timedelta(days=1)
+        elif start_date_str:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+            end_date = start_date + timedelta(days=1)
+
+        # ASOS IDs
+        asos_ids = {
+            "ASOS_1": Asos.objects.filter(name="ASOS_1").first().id,
+            "ASOS_3": Asos.objects.filter(name="ASOS_3").first().id,
+            "ASOS_4": Asos.objects.filter(name="ASOS_4").first().id,
+            "ASOS_12": Asos.objects.filter(name="ASOS_12").first().id,
+        }
+
+        teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
+            name=Concat(F('first_name'), Value(' '), F('last_name'))
+        )
+
+        if role:
+            teachers = teachers.filter(role=role)
+        if teacher:
+            teachers = teachers.filter(id=teacher)
+        if course_id:
+            teachers = teachers.filter(teachers_groups__course__id=course_id)
+        if subject_id:
+            teachers = teachers.filter(teachers_groups__course__subject__id=subject_id)
+        if full_name:
+            teachers = teachers.filter(name__icontains=full_name)
+        if filial:
+            teachers = teachers.filter(filial__id=filial)
+        if start_date and end_date:
+            teachers = teachers.filter(created_at__date__gte=start_date.date(), created_at__date__lt=end_date.date())
+
+        def get_asos_ball(model, filter_kwargs):
+            qs = model.objects.filter(**filter_kwargs)
+            if start_date and end_date:
+                qs = qs.filter(created_at__gte=start_date, created_at__lt=end_date)
+            return qs.aggregate(total=Sum(Cast("ball", FloatField())))['total'] or 0
+
+        teacher_data = []
+
+        for teacher in teachers:
+            # Get subjects
+            subjects_qs = Group.objects.filter(teacher=teacher).annotate(
+                subject_name=F("course__subject__name")
+            ).values("subject_name")
+            if subject_id:
+                subjects_qs = subjects_qs.filter(subject__id=subject_id)
+
+            subject_names = ", ".join(sorted(set(s['subject_name'] for s in subjects_qs)))
+
+            result_qs = Results.objects.filter(teacher=teacher)
+            if start_date and end_date:
+                result_qs = result_qs.filter(created_at__gte=start_date, created_at__lt=end_date)
+
+            image_data = FileUploadSerializer(teacher.photo, context={"request": request}).data if teacher.photo else None
+
+            # ASOS ballarni oldin hisobla
+            asos_1 = round(get_asos_ball(MonitoringAsos1_2, {"user": teacher.id, "asos": "asos1"}), 2)
+            asos_3 = round(get_asos_ball(Monitoring, {"user": teacher.id, "point__asos__id": asos_ids["ASOS_3"]}), 2)
+            asos_4 = round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_4"]}), 2)
+            asos_12_13_14 = round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_12"]}), 2)
+
+            teacher_data.append({
+                "id": teacher.id,
+                "full_name": teacher.name,
+                "image": image_data,
+                "role": teacher.role,
+                "filial": ", ".join(f.name for f in teacher.filial.all()) if teacher.filial.exists() else "-",
+                "subjects": subject_names or "-",
+                "asos_1": asos_1,
+                "asos_3": asos_3,
+                "asos_4": asos_4,
+                "asos_12_13_14": asos_12_13_14,
+                "results": result_qs.count(),
+                "points": round(asos_1 + asos_3 + asos_4 + asos_12_13_14, 2),
+            })
+
+        sorted_data = sorted(teacher_data, key=itemgetter("points"), reverse=True)
+        return Response(sorted_data, status=status.HTTP_200_OK)
+
+
+
 
 class MonitoringExcelExportView(APIView):
     def get(self, request, *args, **kwargs):
