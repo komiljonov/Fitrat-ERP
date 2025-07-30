@@ -571,9 +571,7 @@ class ExamSerializer(serializers.ModelSerializer):
                 subject = option.subject
                 group = Group.objects.filter(course__subject=subject).first()
 
-
-                print(group,group.teacher)
-
+                print(group)
 
                 teacher = group.teacher if group else None
 
