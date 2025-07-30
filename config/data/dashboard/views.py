@@ -1,4 +1,3 @@
-import io
 from collections import defaultdict
 from datetime import datetime, timedelta
 from operator import itemgetter
@@ -135,9 +134,9 @@ class DashboardView(APIView):
             archived_lid = archived_lid.filter(subject_id=subjects)
             orders = orders.filter(subject_id=subjects)
             orders_archived = orders_archived.filter(subject_id=subjects)
-            first_lesson = first_lesson.filter(Q(lid__subject__id=subjects) )
-            first_lesson_come = first_lesson_come.filter(Q(lid__subject__id=subjects) )
-            first_lesson_come_archived = first_lesson_come_archived.filter(Q(lid__subject__id=subjects) )
+            first_lesson = first_lesson.filter(Q(lid__subject__id=subjects))
+            first_lesson_come = first_lesson_come.filter(Q(lid__subject__id=subjects))
+            first_lesson_come_archived = first_lesson_come_archived.filter(Q(lid__subject__id=subjects))
 
         if teacher:
             lid = lid.filter(lids_group__group__teacher_id=teacher)
@@ -209,7 +208,8 @@ class DashboardSecondView(APIView):
             ordered_stages="BIRINCHI_DARS_BELGILANGAN")
         orders_archived = orders.filter(is_archived=True)
         # first_lesson = FirstLLesson.objects.filter(**filters)
-        first_lesson = Lid.objects.filter(ordered_stages="BIRINCHI_DARS_BELGILANGAN",is_student=False,is_archived=False,
+        first_lesson = Lid.objects.filter(ordered_stages="BIRINCHI_DARS_BELGILANGAN", is_student=False,
+                                          is_archived=False,
                                           **filters)
 
         # Students with One Attendance
@@ -228,8 +228,8 @@ class DashboardSecondView(APIView):
         first_course_payment_archived = first_course_payment.filter(is_archived=True)
 
         # Active and Ended Courses
-        new_student = Student.objects.filter(student_stage_type="NEW_STUDENT",is_archived=False ,**filters)
-        active_student = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", is_archived=False,**filters)
+        new_student = Student.objects.filter(student_stage_type="NEW_STUDENT", is_archived=False, **filters)
+        active_student = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", is_archived=False, **filters)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
         all_students = Student.objects.filter(is_archived=False)
 
@@ -684,7 +684,6 @@ class MonitoringView(APIView):
         return Response(sorted_data, status=status.HTTP_200_OK)
 
 
-
 class MonitoringAsosAPIView(APIView):
     def get(self, request, *args, **kwargs):
         full_name = request.query_params.get('search')
@@ -730,7 +729,6 @@ class MonitoringAsosAPIView(APIView):
         if filial:
             teachers = teachers.filter(filial__id=filial)
 
-
         def get_asos_ball(model, filter_kwargs):
             qs = model.objects.filter(**filter_kwargs)
             if start_date and end_date:
@@ -753,13 +751,15 @@ class MonitoringAsosAPIView(APIView):
             if start_date and end_date:
                 result_qs = result_qs.filter(created_at__gte=start_date, created_at__lt=end_date)
 
-            image_data = FileUploadSerializer(teacher.photo, context={"request": request}).data if teacher.photo else None
+            image_data = FileUploadSerializer(teacher.photo,
+                                              context={"request": request}).data if teacher.photo else None
 
             # ASOS ballarni oldin hisobla
             asos_1 = round(get_asos_ball(MonitoringAsos1_2, {"user": teacher.id, "asos": "asos1"}), 2)
             asos_3 = round(get_asos_ball(Monitoring, {"user": teacher.id, "point__asos__id": asos_ids["ASOS_3"]}), 2)
             asos_4 = round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_4"]}), 2)
-            asos_12_13_14 = round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_12"]}), 2)
+            asos_12_13_14 = round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_12"]}),
+                                  2)
 
             teacher_data.append({
                 "id": teacher.id,
@@ -778,8 +778,6 @@ class MonitoringAsosAPIView(APIView):
 
         sorted_data = sorted(teacher_data, key=itemgetter("points"), reverse=True)
         return Response(sorted_data, status=status.HTTP_200_OK)
-
-
 
 
 class MonitoringExcelExportView(APIView):
@@ -858,9 +856,12 @@ class MonitoringExcelExportView(APIView):
                 "filial": ", ".join(f.name for f in teacher.filial.all()) if teacher.filial.exists() else "-",
                 "subjects": subject_names or "-",
                 "asos_1": round(get_asos_ball(MonitoringAsos1_2, {"user": teacher.id, "asos": "asos1"}), 2),
-                "asos_3": round(get_asos_ball(Monitoring, {"user": teacher.id, "point__asos__id": asos_ids["ASOS_3"]}), 2),
-                "asos_4": round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_4"]}), 2),
-                "asos_12_13_14": round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_12"]}), 2),
+                "asos_3": round(get_asos_ball(Monitoring, {"user": teacher.id, "point__asos__id": asos_ids["ASOS_3"]}),
+                                2),
+                "asos_4": round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_4"]}),
+                                2),
+                "asos_12_13_14": round(
+                    get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_12"]}), 2),
                 "results": result_qs.count(),
                 "points": teacher.overall_point or 0,
             })
@@ -1007,20 +1008,20 @@ class ArchivedView(APIView):
     def get(self, request, *args, **kwargs):
         filial = request.query_params.get('filial', None)
 
-        lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID",lid__isnull=False, is_archived=True).count()
+        lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID", lid__isnull=False, is_archived=True).count()
         order = Archived.objects.filter(lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID").count()
         new_student = Archived.objects.filter(student__student_stage_type="NEW_STUDENT", is_archived=True).count()
         student = Archived.objects.filter(student__student_stage_type="ACTIVE_STUDENT", is_archived=True).count()
 
         if filial:
-            lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID",lid__isnull=False, is_archived=True,
-                                     lid__filial__id=filial).count()
+            lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID", lid__isnull=False, is_archived=True,
+                                          lid__filial__id=filial).count()
             order = Archived.objects.filter(lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID",
-                                       lid__filial__id=filial).count()
+                                            lid__filial__id=filial).count()
             new_student = Archived.objects.filter(student__student_stage_type="NEW_STUDENT", is_archived=True,
-                                                 student__filial__id=filial).count()
+                                                  student__filial__id=filial).count()
             student = Archived.objects.filter(student__student_stage_type="ACTIVE_STUDENT", is_archived=True,
-                                             student__filial__id=filial).count()
+                                              student__filial__id=filial).count()
 
         return Response({
             "lid": lid,
@@ -1056,10 +1057,12 @@ class SalesApiView(APIView):
             VoucherStudent.objects.filter(**filters).aggregate(total=Sum('voucher__amount'))['total'] or 0
         total_sale_discount = \
             SaleStudent.objects.filter(**filters).aggregate(total=Sum('sale__amount'))['total'] or 0
-        total_debt = Student.objects.filter(student_stage_type="ACTIVE_STUDENT",balance__lt=0, **filters).aggregate(total=Sum('balance'))['total'] or 0
+        total_debt = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", balance__lt=0, **filters).aggregate(
+            total=Sum('balance'))['total'] or 0
 
         # FIX: Removed incorrect `balance__status` lookup
-        total_income = Student.objects.filter(balance__gte=100000,**filters).aggregate(total=Sum('balance'))['total'] or 0
+        total_income = Student.objects.filter(balance__gte=100000, **filters).aggregate(total=Sum('balance'))[
+                           'total'] or 0
 
         chart_data.append({
             "total_students": total_students,
@@ -1179,17 +1182,23 @@ class StudentLanguage(APIView):
         new_student_eng = Student.objects.filter(education_lang="ENG", **new_student_filter).count()
         new_student_ru = Student.objects.filter(education_lang="RU", **new_student_filter).count()
 
-        first_lesson_uz = Lid.objects.filter(education_lang="UZB", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        first_lesson_eng = Lid.objects.filter(education_lang="ENG", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        first_lesson_ru = Lid.objects.filter(education_lang="RU", **order_filter,ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_uz = Lid.objects.filter(education_lang="UZB", **order_filter,
+                                             ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_eng = Lid.objects.filter(education_lang="ENG", **order_filter,
+                                              ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_ru = Lid.objects.filter(education_lang="RU", **order_filter,
+                                             ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
 
         lid_uz = Lid.objects.filter(education_lang="UZB", **lid_filter).count()
         lid_eng = Lid.objects.filter(education_lang="ENG", **lid_filter).count()
         lid_ru = Lid.objects.filter(education_lang="RU", **lid_filter).count()
 
-        order_uz = Lid.objects.filter(education_lang="UZB", **order_filter).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        order_eng = Lid.objects.filter(education_lang="ENG", **order_filter).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        order_ru = Lid.objects.filter(education_lang="RU", **order_filter).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        order_uz = Lid.objects.filter(education_lang="UZB", **order_filter).exclude(
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        order_eng = Lid.objects.filter(education_lang="ENG", **order_filter).exclude(
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        order_ru = Lid.objects.filter(education_lang="RU", **order_filter).exclude(
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
 
         return Response({
             "student_uz": student_uz,
@@ -1212,7 +1221,6 @@ class StudentLanguage(APIView):
             "order_eng": order_eng,
             "order_ru": order_ru,
         })
-
 
 
 class ExportDashboardToExcelAPIView(APIView):
