@@ -1045,7 +1045,7 @@ class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         data = request.data.copy()
 
-        print(data.items())
+        print(data)
 
         data["status"] = "Active"
 
