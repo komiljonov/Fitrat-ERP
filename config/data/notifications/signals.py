@@ -23,11 +23,16 @@ def send_notification_on_create(sender, instance: Notification, created, **kwarg
     if not fcm_token:
         print("❌ No FCM token found for user.")
         return
-    model_dict = Notification.objects.filter(id=instance.id).values().first()
 
-    send_push_notification(
-        title="Fitrat",
-        body=instance.comment,
-        token=fcm_token.token,
-        data=model_dict
-    )
+    model_dict = Notification.objects.filter(id=instance.id).values().first()
+    stringified_data = {k: str(v) for k, v in model_dict.items() if v is not None}
+
+    try:
+        send_push_notification(
+            title="Fitrat",
+            body=instance.comment,
+            token=fcm_token.token,
+            data=stringified_data
+        )
+    except Exception as e:
+        print("❌ Error sending push notification:", e)
