@@ -113,14 +113,13 @@ class TeacherStatistics(ListAPIView):
                 lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
                 lid__is_student=False
             ).count(),
-            "first_lesson_archived": Lid.objects.filter(
+            "first_lesson_archived" : StudentGroup.objects.filter(
+                Q(lid__is_archived=False) | Q(is_archived=False),
                 student__isnull=True,
                 lid__lid_stage_type="ORDERED_LID",
-                lid__is_archived=True,
-                is_archived=False,
-                group__teacher=teacher,
                 lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-                lid__is_student=False
+                lid__is_student=False,
+                group__teacher=teacher
             ).count(),
             "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
             "new_students": StudentGroup.objects.filter(group__teacher=teacher,
