@@ -104,3 +104,31 @@ def on_group_price_change(sender, instance: Group, created: bool, **kwargs):
             student.amount = price
             student.save()
 
+
+UZBEK_WEEKDAYS = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"]
+
+@receiver(post_save, sender=Group)
+def group_finish_date(sender, instance: Group, created: bool, **kwargs):
+    if created and instance.finish_date is None:
+        themes = Theme.objects.filter(course=instance.course, level=instance.level)
+        total_lessons = themes.count()
+
+        scheduled_days = instance.scheduled_day_type.all()  # Assume this gives Uzbek day names
+        scheduled_day_numbers = [
+            UZBEK_WEEKDAYS.index(day.name) for day in scheduled_days if day.name in UZBEK_WEEKDAYS
+        ]
+
+        if not scheduled_day_numbers:
+            return  # Can't calculate finish date without schedule
+
+        start_date = instance.start_date
+        finish_date = start_date
+        lessons_scheduled = 0
+
+        while lessons_scheduled < total_lessons:
+            if finish_date.weekday() in scheduled_day_numbers:
+                lessons_scheduled += 1
+            finish_date += timedelta(days=1)
+
+        instance.finish_date = finish_date - timedelta(days=1)  # subtract last extra day
+        instance.save(update_fields=["finish_date"])
