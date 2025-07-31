@@ -227,25 +227,21 @@ class ThemePgList(ListCreateAPIView):
                 ).exclude(theme__isnull=True).order_by('-created_at').first()
 
                 if last_att and last_att.theme.exists():
-                    # Get the most recent theme from the last attendance
                     last_theme = last_att.theme.order_by('-created_at').first()
 
                     if last_theme:
-                        # Find the next theme after the last one used
                         next_theme = qs.filter(created_at__gt=last_theme.created_at).first()
                         if next_theme:
                             return Theme.objects.filter(id=next_theme.id)
                         else:
                             return Theme.objects.none()
 
-                # Fallback: return first theme if no valid last attendance found
                 first_theme = qs.first()
                 if first_theme:
                     return Theme.objects.filter(id=first_theme.id)
                 else:
                     return Theme.objects.none()
 
-        # Return all themes for the course if no specific filter
         return qs
 
 
