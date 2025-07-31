@@ -10,7 +10,6 @@ from .serializers import TeacherSerializer
 from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...exam_results.models import MockExamResult
-from ...lid.new_lid.models import Lid
 from ...results.models import Results
 from ...student.groups.models import Group, SecondaryGroup
 from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
@@ -113,7 +112,8 @@ class TeacherStatistics(ListAPIView):
                 lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
                 lid__is_student=False
             ).count(),
-            "first_lesson_archived" : StudentGroup.objects.filter(
+
+            "first_lesson_archived": StudentGroup.objects.filter(
                 Q(lid__is_archived=False) | Q(is_archived=False),
                 student__isnull=True,
                 lid__lid_stage_type="ORDERED_LID",
@@ -121,6 +121,7 @@ class TeacherStatistics(ListAPIView):
                 lid__is_student=False,
                 group__teacher=teacher
             ).count(),
+
             "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
             "new_students": StudentGroup.objects.filter(group__teacher=teacher,
                                                         student__student_stage_type="NEW_STUDENT", **filters).count(),
@@ -134,7 +135,6 @@ class TeacherStatistics(ListAPIView):
             "new_student_still": StudentGroup.objects.filter(group__teacher=teacher,
                                                              student__student_stage_type="NEW_STUDENT",
                                                              student__is_archived=False, **filters).count(),
-
             "active_students": StudentGroup.objects.filter(group__teacher=teacher, student__is_archived=False,
                                                            student__student_stage_type="ACTIVE_STUDENT",
                                                            **filters).count(),
@@ -181,7 +181,7 @@ class TeachersGroupsView(ListAPIView):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
     ordering_fields = (
-    "lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status', 'student_count')
+        "lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status', 'student_count')
     filterser_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
 
     def get_queryset(self):
