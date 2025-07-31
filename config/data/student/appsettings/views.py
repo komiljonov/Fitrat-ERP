@@ -36,9 +36,9 @@ class StoresListView(ListCreateAPIView):
     def get_queryset(self):
         queryset = Store.objects.filter(has_expired=False)
 
-        filial = self.request.query_params.get('filial', None)
+        filial = self.request.GET.get('filial', None)
 
-        seen = self.request.query_params.get('seen', None)
+        seen = self.request.GET.get('seen', None)
         has_expired = self.request.GET.get('has_expired', None)
 
         if has_expired:
@@ -74,10 +74,10 @@ class FinanceListView(ListAPIView):
     def get_queryset(self):
         id = self.kwargs.get('pk')
 
-        action = self.request.query_params.get('action', None)
-        kind = self.request.query_params.get('kind', None)
-        payment_method = self.request.query_params.get('payment_method', None)
-        search = self.request.query_params.get('search', None)
+        action = self.request.GET.get('action', None)
+        kind = self.request.GET.get('kind', None)
+        payment_method = self.request.GET.get('payment_method', None)
+        search = self.request.GET.get('search', None)
 
         queryset = Finance.objects.all()
         ic(id)
@@ -105,7 +105,7 @@ class StrikeListView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.request.query_params.get('id', None)
+        id = self.request.GET.get('id', None)
         if id:
             return Strike.objects.filter(student__user__id=id)
         return Strike.objects.none()
@@ -117,7 +117,7 @@ class VersionUpdateView(ListCreateAPIView):
     serializer_class = VersionUpdateSerializer
 
     def get_queryset(self):
-        app_name = self.request.query_params.get('app_name', None)
+        app_name = self.request.GET.get('app_name', None)
         if app_name:
             queryset = VersionUpdate.objects.filter(app_name=app_name).first()
             return queryset
@@ -131,7 +131,7 @@ class StudentNotificationsView(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        id = self.request.query_params.get('id', None)
+        id = self.request.GET.get('id', None)
         if id:
             return Notification.objects.filter(user__id=id)
         return Notification.objects.none()
