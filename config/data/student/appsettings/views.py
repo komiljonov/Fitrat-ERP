@@ -34,7 +34,7 @@ class StoresListView(ListCreateAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        queryset = Store.objects.all()
+        queryset = Store.objects.filter(has_expired=False)
 
         filial = self.request.query_params.get('filial', None)
 
