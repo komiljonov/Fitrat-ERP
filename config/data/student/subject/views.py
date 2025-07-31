@@ -325,7 +325,7 @@ class ImportStudentsAPIView(APIView):
                     level_name = str(row.get("Daraja", "")).strip()
 
                     course = Course.objects.filter(name__icontains=course_name).first()
-                    level = Level.objects.filter(name__iexact=level_name,course=course).first()
+                    level = Level.objects.filter(name__iexact=level_name, course=course).first()
                     subject = Subject.objects.filter(name__iexact=subject_name).first()
 
                     if not course or not subject:
