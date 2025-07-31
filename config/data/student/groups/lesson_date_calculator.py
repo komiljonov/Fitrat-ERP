@@ -23,9 +23,8 @@ def calculate_lessons(start_date, end_date:None, lesson_type, holidays, days_off
 
     # Set default end date to today + 365 days if not provided
 
-    print(end_date)
 
-    if end_date is None:
+    if not end_date:
         end_date = datetime.today() + timedelta(days=365)
     else:
         end_date = datetime.strptime(str(end_date), "%Y-%m-%d")
