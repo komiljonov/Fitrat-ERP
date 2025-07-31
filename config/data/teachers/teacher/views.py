@@ -163,11 +163,11 @@ class Teacher_StudentsView(ListAPIView):
         status = self.request.GET.get("status", None)
         is_archived = self.request.GET.get("is_archived", None)
 
-        group = StudentGroup.objects.filter(group__teacher=self.request.user,lid__is_archived=False, is_archived=False)
+        group = StudentGroup.objects.filter(group__teacher=self.request.user,)
 
         if is_archived:
             group = group.filter(
-                Q(lid__is_archived=is_archived.capitalize()) | Q(is_archived=is_archived.capitalize()) |  Q(
+                Q(lid__is_archived=is_archived.capitalize())  |  Q(
                     student__is_archived=is_archived.capitalize()))
         if status:
             group = group.filter(Q(student__student_stage_type=status) | Q(lid__lid_stage_type=status))
