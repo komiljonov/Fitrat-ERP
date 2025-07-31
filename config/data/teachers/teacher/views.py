@@ -104,19 +104,23 @@ class TeacherStatistics(ListAPIView):
         # }
 
         statistics1 = {
-            "first_lesson": Lid.objects.filter(
-                lid_stage_type="ORDERED_LID",
+            "first_lesson": StudentGroup.objects.filter(
+                student__isnull=True,
+                lid__lid_stage_type="ORDERED_LID",
+                lid__is_archived=False,
                 is_archived=False,
-                lids_group__group__teacher=teacher,
-                ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-                is_student=False
+                group__teacher=teacher,
+                lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+                lid__is_student=False
             ).count(),
             "first_lesson_archived": Lid.objects.filter(
-                lid_stage_type="ORDERED_LID",
-                is_archived=True,
-                lids_group__group__teacher=teacher,
-                ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-                is_student=False,
+                student__isnull=True,
+                lid__lid_stage_type="ORDERED_LID",
+                lid__is_archived=True,
+                is_archived=False,
+                group__teacher=teacher,
+                lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+                lid__is_student=False
             ).count(),
             "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
             "new_students": StudentGroup.objects.filter(group__teacher=teacher,
