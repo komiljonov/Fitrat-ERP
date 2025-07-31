@@ -747,7 +747,7 @@ class MonitoringAsosAPIView(APIView):
 
             subject_names = ", ".join(sorted(set(s['subject_name'] for s in subjects_qs)))
 
-            result_qs = Results.objects.filter(teacher=teacher)
+            result_qs = Results.objects.filter(teacher=teacher,status="Accepted")
             if start_date and end_date:
                 result_qs = result_qs.filter(created_at__gte=start_date, created_at__lt=end_date)
 
@@ -846,7 +846,7 @@ class MonitoringExcelExportView(APIView):
 
             subject_names = ", ".join(sorted(set(s['subject_name'] for s in subjects_qs)))
 
-            result_qs = Results.objects.filter(teacher=teacher)
+            result_qs = Results.objects.filter(teacher=teacher,status="Accepted")
             if start_date and end_date:
                 result_qs = result_qs.filter(created_at__gte=start_date, created_at__lt=end_date)
 
