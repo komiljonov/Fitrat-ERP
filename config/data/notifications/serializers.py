@@ -5,12 +5,14 @@ from ..account.serializers import UserSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):
+    click_action = serializers.SerializerMethodField()
     class Meta:
         model = Notification
         fields = [
             'id',
             'user',
             'comment',
+            'click_action',
             'come_from',
             "choice",
             'is_read',
@@ -18,6 +20,9 @@ class NotificationSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+    def get_click_action(self, obj):
+        return "FLUTTER_NOTIFICATION_CLICK"
 
     # def to_representation(self, instance):
     #     rep = super().to_representation(instance)
