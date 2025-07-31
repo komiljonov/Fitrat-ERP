@@ -1,12 +1,15 @@
 import calendar
 import datetime
+from datetime import timedelta
 from decimal import Decimal
 from threading import local
 
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
+from django.utils import timezone
 from icecream import ic
 
+from data.exam_results.tasks import send_unit_test_notification
 from .models import Attendance
 from ..groups.lesson_date_calculator import calculate_lessons
 from ..groups.models import GroupSaleStudent
@@ -328,9 +331,9 @@ def group_level_update(sender, instance: Attendance, action, **kwargs):
     course = group.course
     level = theme_instance.level
 
-    next_level = Level.objects.filter(order=level.order + 1,courses=course).first()
+    next_level = Level.objects.filter(order=level.order + 1, courses=course).first()
     if not next_level:
-        group.status="INACTIVE"
+        group.status = "INACTIVE"
         group.save(update_fields=["status"])
         return
 
@@ -347,12 +350,6 @@ def group_level_update(sender, instance: Attendance, action, **kwargs):
         group.save(update_fields=["level"])
 
 
-
-from data.exam_results.tasks import send_unit_test_notification
-from datetime import timedelta
-from django.utils import timezone
-
-
 @receiver(post_save, sender=Attendance)
 def on_unit_test(sender, instance: Attendance, created, **kwargs):
     if not created:
@@ -367,7 +364,6 @@ def on_unit_test(sender, instance: Attendance, created, **kwargs):
         return
 
     if unit_test.themes.filter(id=attendance_theme.id).exists():
-
         send_unit_test_notification.apply_async(
             args=[unit_test.id, instance.group.id],
             eta=timezone.now() + timedelta(minutes=1)
