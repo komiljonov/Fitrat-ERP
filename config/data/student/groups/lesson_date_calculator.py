@@ -26,6 +26,9 @@ def calculate_lessons(start_date, end_date:None, lesson_type, holidays, days_off
 
     end_date = datetime.strptime(str(end_date), "%Y-%m-%d")
 
+    if end_date is None:
+        end_date = today() + timedelta(days=365)
+
     holidays = set(datetime.strptime(date, "%Y-%m-%d") for date in holidays if date)
 
     days_off_numbers = {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].index(day) for
