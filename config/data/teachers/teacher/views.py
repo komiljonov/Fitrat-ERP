@@ -163,7 +163,7 @@ class Teacher_StudentsView(ListAPIView):
         status = self.request.GET.get("status", None)
         is_archived = self.request.GET.get("is_archived", None)
 
-        group = StudentGroup.objects.filter(group__teacher=self.request.user)
+        group = StudentGroup.objects.filter(group__teacher=self.request.user,lid__is_archived=False, is_archived=False)
 
         if is_archived:
             group = group.filter(
