@@ -53,7 +53,7 @@ class SubjectNoPG(ListAPIView):
 
     def get_queryset(self):
         queryset = Subject.objects.all()
-        filial = self.request.query_params.get('filial', None)
+        filial = self.request.GET.get('filial', None)
         if filial:
             queryset = queryset.filter(filial__id=filial)
         return queryset
@@ -68,9 +68,9 @@ class LevelList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        subject = self.request.query_params.get('subject', None)
-        filial = self.request.query_params.get('filial', None)
-        course = self.request.query_params.get('course', None)
+        subject = self.request.GET.get('subject', None)
+        filial = self.request.GET.get('filial', None)
+        course = self.request.GET.get('course', None)
 
         queryset = Level.objects.all()
 
@@ -98,8 +98,8 @@ class LevelNoPG(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        filial = self.request.query_params.get('filial', None)
-        subject = self.request.query_params.get('subject', None)
+        filial = self.request.GET.get('filial', None)
+        subject = self.request.GET.get('subject', None)
 
         queryset = Level.objects.all()
 
@@ -122,20 +122,20 @@ class ThemeList(ListCreateAPIView):
     def get_queryset(self):
         queryset = Theme.objects.all()
 
-        theme = self.request.query_params.get('theme')
-        level = self.request.query_params.get('level')
+        theme = self.request.GET.get('theme')
+        level = self.request.GET.get('level')
         is_archived = self.request.GET.get('is_archived', None)
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
         if theme:
             queryset = queryset.filter(theme=theme)
-        course = self.request.query_params.get('course')
+        course = self.request.GET.get('course')
         if course:
             queryset = queryset.filter(course__id=course)
 
-        id = self.request.query_params.get('id')
-        group_id = self.request.query_params.get('group')
+        id = self.request.GET.get('id')
+        group_id = self.request.GET.get('group')
         if group_id:
             try:
                 group = Group.objects.get(id=group_id)
@@ -169,9 +169,9 @@ class ThemePgList(ListCreateAPIView):
 
     def get_queryset(self):
         request = self.request
-        search = request.query_params.get('search')
-        theme_filter = request.query_params.get('theme')  # 'Lesson' or 'Repeat'
-        group_id = request.query_params.get('group')
+        search = request.GET.get('search')
+        theme_filter = request.GET.get('theme')  # 'Lesson' or 'Repeat'
+        group_id = request.GET.get('group')
 
         ic(group_id, theme_filter)
 
@@ -266,11 +266,11 @@ class ThemeNoPG(ListAPIView):
     def get_queryset(self):
         queryset = Theme.objects.all()
 
-        theme = self.request.query_params.get('theme')
+        theme = self.request.GET.get('theme')
         if theme:
             queryset = queryset.filter(theme=theme)
 
-        group_id = self.request.query_params.get('id')
+        group_id = self.request.GET.get('id')
         if group_id:
             try:
                 group = Group.objects.get(id=group_id)
