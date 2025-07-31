@@ -344,7 +344,12 @@ def group_level_update(sender, instance: Attendance, created, **kwargs):
         subject=course.subject
     )
 
+    print(group_themes.last().theme.name)
+
     last_theme = group_themes.last()
+    print(last_theme)
+    print(theme_instance.name)
+    print(next_level.name)
 
     if last_theme and theme_instance == last_theme:
         group.level = next_level
