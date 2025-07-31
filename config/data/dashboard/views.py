@@ -1061,7 +1061,7 @@ class SalesApiView(APIView):
             total=Sum('balance'))['total'] or 0
 
         # FIX: Removed incorrect `balance__status` lookup
-        total_income = Student.objects.filter(balance__gte=100000, **filters).aggregate(total=Sum('balance'))[
+        total_income = Student.objects.filter(balance__gte=0, **filters).aggregate(total=Sum('balance'))[
                            'total'] or 0
 
         chart_data.append({
