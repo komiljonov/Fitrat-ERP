@@ -3,7 +3,7 @@ import datetime
 from decimal import Decimal
 from threading import local
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from icecream import ic
 
@@ -323,37 +323,34 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 #             )
 
 
-@receiver(post_save, sender=Attendance)
-def group_level_update(sender, instance: Attendance, created, **kwargs):
-    if created:
+@receiver(m2m_changed, sender=Attendance.theme.through)
+def group_level_update(sender, instance: Attendance, action, **kwargs):
+    if action != "post_add":
+        return
 
-        theme_instance = instance.theme.first()
-        if not theme_instance:
-            return
+    theme_instance = instance.theme.first()
+    if not theme_instance:
+        return
 
-        group = instance.group
-        course = group.course
-        level = theme_instance.level
+    group = instance.group
+    course = group.course
+    level = theme_instance.level
 
-        next_level = Level.objects.filter(order=level.order + 1).first()
+    next_level = Level.objects.filter(order=level.order + 1).first()
 
-        group_themes = Theme.objects.filter(
-            course=course,
-            level=level,
-            subject=course.subject
-        )
+    group_themes = Theme.objects.filter(
+        course=course,
+        level=level,
+        subject=course.subject
+    )
 
-        print("-------------------------------------------",group_themes.last().theme.name)
+    print(">>> Group Themes:", group_themes)
+    print(">>> Given Theme:", theme_instance)
 
-        last_theme = group_themes.last()
-        print("-------------------------------------------",last_theme)
-        print("-------------------------------------------",theme_instance.name)
-        print("-------------------------------------------",next_level.name)
-
-        if last_theme and theme_instance == last_theme:
-            group.level = next_level
-            group.save(update_fields=["level"])
-
+    last_theme = group_themes.last()
+    if last_theme and theme_instance == last_theme:
+        group.level = next_level
+        group.save(update_fields=["level"])
 
 from data.exam_results.tasks import send_unit_test_notification
 from datetime import timedelta
