@@ -42,7 +42,6 @@ def calculate_bonus_and_income(price, bonus_percent):
     bonus_amount = price * bonus_percent / Decimal("100")
     income_amount = price - bonus_amount
 
-    ic("Bonus:", bonus_amount, "income:", income_amount)
     return bonus_amount, income_amount
 
 
