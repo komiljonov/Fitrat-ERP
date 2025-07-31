@@ -340,6 +340,9 @@ def group_level_update(sender, instance: Attendance, action, **kwargs):
     print(">>> Given Theme:", theme_instance)
 
     last_theme = group_themes.last()
+
+    print("last_theme*-------------------------------:", last_theme)
+
     if last_theme and theme_instance == last_theme:
         group.level = next_level
         group.save(update_fields=["level"])
