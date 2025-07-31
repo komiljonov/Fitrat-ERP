@@ -48,3 +48,4 @@ def attendance_group():
             created_at__lte=today + datetime.timedelta(days=1),
 
         )
+
