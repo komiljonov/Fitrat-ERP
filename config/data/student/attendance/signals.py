@@ -328,7 +328,7 @@ def group_level_update(sender, instance: Attendance, action, **kwargs):
     course = group.course
     level = theme_instance.level
 
-    next_level = Level.objects.filter(order=level.order + 1).first()
+    next_level = Level.objects.filter(order=level.order + 1,courses=course).first()
 
     group_themes = Theme.objects.filter(
         course=course,
