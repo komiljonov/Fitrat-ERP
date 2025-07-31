@@ -26,6 +26,7 @@ def send_notification_on_create(sender, instance: Notification, created, **kwarg
 
     model_dict = Notification.objects.filter(id=instance.id).values().first()
     stringified_data = {k: str(v) for k, v in model_dict.items() if v is not None}
+    stringified_data["click_action"] = "FLUTTER_NOTIFICATION_CLICK"
 
     try:
         send_push_notification(
