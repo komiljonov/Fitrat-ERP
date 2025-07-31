@@ -30,10 +30,8 @@ def apply_discount(price, sale):
     if sale and sale.sale and sale.sale.amount and sale.expire_date >= datetime.date.today():
         try:
             sale_percent = Decimal(sale.sale.amount)
-            ic("sales_percent", sale_percent)
 
             discount = price * sale_percent / Decimal("100")
-            ic("Discount:", discount)
             return price - discount
         except (TypeError, ValueError, Decimal.InvalidOperation):
             ic("Invalid sale amount")
@@ -169,13 +167,11 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         if instance.group.price_type == "DAILY":
             final_price = apply_discount(price, sale)
 
-            ic("Before save - balance:", instance.student.balance)
             instance.amount = final_price
             instance.save(update_fields=["amount"])
 
             instance.student.balance -= final_price
             instance.student.save(update_fields=["balance"])
-            ic("After save - balance:", instance.student.balance)
 
             bonus_amount, income_amount = calculate_bonus_and_income(final_price, bonus_percent)
 
@@ -226,13 +222,10 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             lessons = lessons_per_month.get(month_key, [])
             lesson_count = len(lessons)
 
-            ic("lesson_count", lesson_count)
-
             if lesson_count > 0:
                 per_lesson_price = price / lesson_count
                 per_lesson_price = apply_discount(per_lesson_price, sale)
 
-                ic("MINUS FROM STUDENT BALANCE:", per_lesson_price)
                 instance.student.balance -= per_lesson_price
                 instance.student.save(update_fields=["balance"])
 
