@@ -217,6 +217,7 @@ class GroupLessonSerializer(serializers.ModelSerializer):
         # Retrieve required data from the Group instance
         start_date = obj.start_date.strftime("%Y-%m-%d") if obj.start_date else None
         end_date = obj.finish_date.strftime("%Y-%m-%d") if obj.finish_date else None
+        print(end_date)
 
         # If the lesson type is a Many-to-Many field, get the weekday names
         lesson_days_queryset = obj.scheduled_day_type.all()  # This retrieves the related days
