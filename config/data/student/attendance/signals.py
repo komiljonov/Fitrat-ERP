@@ -329,6 +329,10 @@ def group_level_update(sender, instance: Attendance, action, **kwargs):
     level = theme_instance.level
 
     next_level = Level.objects.filter(order=level.order + 1,courses=course).first()
+    if not next_level:
+        group.status="INACTIVE"
+        group.save(update_fields=["status"])
+        return
 
     group_themes = Theme.objects.filter(
         course=course,
@@ -341,6 +345,8 @@ def group_level_update(sender, instance: Attendance, action, **kwargs):
     if last_theme and theme_instance == last_theme:
         group.level = next_level
         group.save(update_fields=["level"])
+
+
 
 from data.exam_results.tasks import send_unit_test_notification
 from datetime import timedelta
