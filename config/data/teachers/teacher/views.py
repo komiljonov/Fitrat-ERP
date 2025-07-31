@@ -166,6 +166,7 @@ class Teacher_StudentsView(ListAPIView):
         group = StudentGroup.objects.filter(group__teacher=self.request.user)
 
         if is_archived:
+            print(is_archived)
             group = group.filter(
                 Q(is_archived=is_archived.capitalize()) | Q(lid__is_archived=is_archived.capitalize()) | Q(
                     student__is_archived=is_archived.capitalize()))

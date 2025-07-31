@@ -280,7 +280,6 @@ class ResultStudentListAPIView(ListAPIView):
             queryset = Results.objects.filter(filial__id=filial)
         if student:
             queryset = queryset.filter(student__id=student)
-
         if status:
             queryset = queryset.filter(status=status)
         if type:
