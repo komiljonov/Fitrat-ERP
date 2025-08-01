@@ -225,7 +225,7 @@ class TT_Data(APIView):
                 continue
 
         # ✅ Now create missing TT users from our local DB
-        custom_users = CustomUser.objects.exclude(phone__in=tt_phones)
+        custom_users = CustomUser.objects.exclude(phone__in=tt_phones, role__in=["Parents","Student"])
 
         for user in custom_users:
             try:
