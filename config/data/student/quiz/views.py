@@ -544,7 +544,7 @@ class QuizCheckAPIView(APIView):
                 student=student,
             ).first()
 
-            print("history",history)
+            print("history", history)
 
             if history is None:
                 history = Homework_history.objects.create(
@@ -558,7 +558,7 @@ class QuizCheckAPIView(APIView):
             history.test_checked = True
             history.save()
 
-            print("history",Homework_history.objects.filter(pk=history.pk).first().test_checked)
+            print("history", Homework_history.objects.filter(pk=history.pk).first().test_checked)
 
             if history:
                 Points.objects.create(
@@ -1144,7 +1144,7 @@ class ExamRegisteredStudentAPIView(APIView):
 
         headers = [
             "F.I.O", "Telefon raqami", "Ro'yxatdan o'tish", "Imtihonda qatnashadimi?",
-            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi", "Ta'lim tili","Test turi","Test sanasi"
+            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi", "Ta'lim tili", "Test turi", "Test sanasi"
         ]
         ws.append(headers)
 
