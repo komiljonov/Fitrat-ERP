@@ -836,8 +836,11 @@ class ExamListView(ListCreateAPIView):
         user = CustomUser.objects.filter(id=self.request.user.id).first()
 
         if user.role == "TEACHER":
-            three_days_later = datetime.today() + timedelta(days=3)
-            queryset = queryset.filter(date__gt=three_days_later)
+            queryset = queryset.filter(date__gt=datetime.today() + timedelta(days=3))
+
+            teacher_subjects = Subject.objects.filter(courses__groups_course__teacher=user).distinct()
+
+            queryset = queryset.filter(options__subject__in=teacher_subjects).distinct()
 
         if user.role == "Student":
             two_days_later = datetime.today() + timedelta(days=3)
