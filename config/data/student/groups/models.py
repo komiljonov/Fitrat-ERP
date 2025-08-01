@@ -38,7 +38,7 @@ def one_year_from_now():
 class Group(BaseModel):
     name = models.CharField(max_length=100)
 
-    course: 'Course' = models.ForeignKey('course.Course', on_delete=models.CASCADE)
+    course: 'Course' = models.ForeignKey('course.Course', on_delete=models.CASCADE,related_name='groups_course')
 
     level: "Level" = models.ForeignKey('subject.Level', on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='groups_level')
