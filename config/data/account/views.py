@@ -184,7 +184,7 @@ class TT_Data(APIView):
                             tt_id = None
 
                         if not tt_id:
-                            # Create in TT
+
                             created_tt = tt.create_filial({"name": filial.name})
                             tt_id = created_tt.get("id") if created_tt else None
 
