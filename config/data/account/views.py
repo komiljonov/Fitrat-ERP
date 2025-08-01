@@ -61,7 +61,7 @@ class RegisterAPIView(CreateAPIView):
 
             print(filial,filial.tt_filial)
 
-            if not filial.tt_filial:
+            if filial.tt_filial is None:
                 response = tt.get_filial({filial.name})
 
                 print(response)
