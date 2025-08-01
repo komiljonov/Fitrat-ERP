@@ -77,6 +77,8 @@ class RegisterAPIView(CreateAPIView):
             if filial.tt_filial:
                 filial_ids.append(filial.tt_filial)
 
+        print(filial_ids)
+
         external_data = {
             "image": photo_id,
             "name": user.full_name,
