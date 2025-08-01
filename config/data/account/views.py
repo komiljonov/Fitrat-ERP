@@ -35,6 +35,7 @@ from ..student.student.sms import SayqalSms
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
+
 class RegisterAPIView(CreateAPIView):
     serializer_class = UserCreateSerializer
 
@@ -52,15 +53,12 @@ class RegisterAPIView(CreateAPIView):
 
         tt = TimetrackerSinc()
 
-        # 🖼️ Upload photo to TT
         photo_id_data = tt.upload_tt_foto(user.photo.file) if user.photo else None
         photo_id = photo_id_data.get("id") if photo_id_data else None
 
-        # 🏢 Ensure filials are created in TT
         filial_ids = []
         for filial in user.filial.all():
             if not filial.tt_filial:
-                # 🔨 Create in TT if missing
                 response = tt.create_filial({"name": filial.name})
                 tt_id = response.get("id")
                 if tt_id:
@@ -69,7 +67,6 @@ class RegisterAPIView(CreateAPIView):
             if filial.tt_filial:
                 filial_ids.append(filial.tt_filial)
 
-        # 📤 Prepare external TT payload
         external_data = {
             "image": photo_id,
             "name": user.full_name,
@@ -84,7 +81,6 @@ class RegisterAPIView(CreateAPIView):
         external_response = tt.create_data(external_data)
         print(external_response)
 
-        # 💾 Save TT ID to our user
         if external_response and external_response.get("id"):
             user.second_user = external_response["id"]
             user.save()
@@ -107,18 +103,18 @@ class UserList(ListAPIView):
         serializer_class = self.get_serializer_class()
         kwargs.setdefault('context', self.get_serializer_context())
         return serializer_class(*args, **kwargs,
-                                include_only=["id", "first_name", "last_name", "full_name", "phone", "balance","photo",
+                                include_only=["id", "first_name", "last_name", "full_name", "phone", "balance", "photo",
                                               "monitoring", "role", "calculate_penalties", "created_at"])
 
     def get_queryset(self):
         user = self.request.user
-        filial = self.request.query_params.get('filial', None)
+        filial = self.request.GET.get('filial', None)
 
-        role = self.request.query_params.get('role', None)
+        role = self.request.GET.get('role', None)
 
-        is_archived = self.request.query_params.get('is_archived', None)
+        is_archived = self.request.GET.get('is_archived', None)
 
-        subject = self.request.query_params.get('subject', None)
+        subject = self.request.GET.get('subject', None)
 
         search = self.request.GET.get('search', None)
 
@@ -322,10 +318,10 @@ class StuffRolesView(ListAPIView):
         )
 
     def get_queryset(self):
-        subject = self.request.query_params.get('subject')
-        filial = self.request.query_params.get('filial')
-        role = self.request.query_params.get('role')
-        is_call_operator = self.request.query_params.get('is_call_operator')
+        subject = self.request.GET.get('subject')
+        filial = self.request.GET.get('filial')
+        role = self.request.GET.get('role')
+        is_call_operator = self.request.GET.get('is_call_operator')
         search = self.request.GET.get('search')
         is_archived = self.request.GET.get('is_archived')
 
