@@ -283,7 +283,7 @@ class Exam(BaseModel):
 
     homework: "Homework" = models.ForeignKey('homeworks.Homework', on_delete=models.SET_NULL, null=True, blank=True,
                                              related_name='homeworks_quiz')
-    options : "ExamSubject" = models.ManyToManyField("quiz.ExamSubject", related_name='exam_subject_options')
+    options: "ExamSubject" = models.ManyToManyField("quiz.ExamSubject", related_name='exam_subject_options')
 
     def __str__(self):
         return self.name
