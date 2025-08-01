@@ -564,10 +564,15 @@ class ExamSerializer(serializers.ModelSerializer):
         options = validated_data.pop("options", [])
         exam = super().create(validated_data)
 
-        exam.options.set(options)  # ✅ Set the many-to-many relationship
+        exam.options.set(options)
+
+        print(options)
 
         for option in options:
-            if int(option.options) > 0:  # ✅ Use the actual field name, not dict-style access
+
+            print(option.options)
+
+            if int(option.options) > 0:
                 subject = option.subject
                 group = Group.objects.filter(course__subject=subject).first()
 
