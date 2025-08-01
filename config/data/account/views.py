@@ -150,14 +150,13 @@ class TT_Data(APIView):
     def get(self, request):
         tt = TimetrackerSinc()
         tt_data = tt.get_data()
-
         count = 0
+
         if not tt_data:
             return Response({"count": 0, "message": "No data from TT"}, status=status.HTTP_200_OK)
 
         for user in tt_data:
             ic(user)
-
             phone = "+" + user["phone_number"] if not user["phone_number"].startswith('+') else user["phone_number"]
             ic(phone)
 
@@ -167,33 +166,48 @@ class TT_Data(APIView):
             try:
                 custom_user = CustomUser.objects.get(phone=phone)
 
+                # ✅ 1. Update second_user
                 custom_user.second_user = user["id"]
                 custom_user.save()
 
+                # ✅ 2. Ensure our filials are linked to TT (if not)
                 for filial in custom_user.filial.all():
                     if not filial.tt_filial:
-
-                        existing_tt = tt.get_filial({filial.name})
-                        print(existing_tt)
-
+                        existing_tt = tt.get_filial(filial.name)  # corrected usage
                         if isinstance(existing_tt, list) and existing_tt:
                             tt_id = existing_tt[0].get("id")
-
                         elif isinstance(existing_tt, dict):
                             tt_id = existing_tt.get("id")
-
                         else:
                             tt_id = None
 
                         if not tt_id:
-
                             created_tt = tt.create_filial({"name": filial.name})
                             tt_id = created_tt.get("id") if created_tt else None
 
                         if tt_id:
                             filial.tt_filial = tt_id
                             filial.save()
-                            ic(f"🆕 TT filial created/linked for {filial.name}: {tt_id}")
+                            ic(f"🆕 TT Filial created: {filial.name}")
+
+                # ✅ 3. Prepare updated data for TT (only if needed)
+                update_payload = {}
+                tt_user_filials = set(user.get("filials", []))
+                local_tt_filials = set(custom_user.filial.filter(tt_filial__isnull=False).values_list("tt_filial", flat=True))
+
+                if not tt_user_filials or tt_user_filials != local_tt_filials:
+                    update_payload["filials"] = list(local_tt_filials)
+
+                if not user.get("image") and custom_user.photo:
+                    uploaded = tt.upload_tt_foto(custom_user.photo.file)
+                    if uploaded and uploaded.get("id"):
+                        update_payload["image"] = uploaded["id"]
+                        ic(f"📸 TT photo uploaded for {phone}")
+
+                # ✅ 4. Update TT user if anything is off
+                if update_payload:
+                    ic(f"🔁 TT UPDATE: {update_payload}")
+                    tt.update_data(user["id"], update_payload)
 
                 count += 1
                 ic(f"✅ Updated user: {phone}")
@@ -204,6 +218,7 @@ class TT_Data(APIView):
 
         ic(count)
         return Response({"count": count}, status=status.HTTP_200_OK)
+
 
 
 class CustomAuthToken(TokenObtainPairView):
