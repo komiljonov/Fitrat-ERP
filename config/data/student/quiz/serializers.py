@@ -572,7 +572,7 @@ class ExamSerializer(serializers.ModelSerializer):
 
             print(option.options)
 
-            if int(option.options) > 0:
+            if int(option.options) > 0 or option.options is None:
                 subject = option.subject
                 group = Group.objects.filter(course__subject=subject).first()
 
