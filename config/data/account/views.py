@@ -155,25 +155,34 @@ class TT_Data(APIView):
         if not tt_data:
             return Response({"count": 0, "message": "No data from TT"}, status=status.HTTP_200_OK)
 
+        # Collect all TT user phones to detect missing ones later
+        tt_phones = set()
+        tt_ids_by_phone = {}
+
         for user in tt_data:
-            ic(user)
             phone = "+" + user["phone_number"] if not user["phone_number"].startswith('+') else user["phone_number"]
+            tt_phones.add(phone)
+            tt_ids_by_phone[phone] = user["id"]
+
+        for phone in tt_phones:
             ic(phone)
 
+        for phone in tt_phones:
             if not CustomUser.objects.filter(phone=phone).exists():
                 continue
 
             try:
                 custom_user = CustomUser.objects.get(phone=phone)
+                user_id = tt_ids_by_phone[phone]
 
-                # ✅ 1. Update second_user
-                custom_user.second_user = user["id"]
+                # ✅ Update second_user
+                custom_user.second_user = user_id
                 custom_user.save()
 
-                # ✅ 2. Ensure our filials are linked to TT (if not)
+                # ✅ Ensure filials have tt_filial
                 for filial in custom_user.filial.all():
                     if not filial.tt_filial:
-                        existing_tt = tt.get_filial(filial.name)  # corrected usage
+                        existing_tt = tt.get_filial(filial.name)
                         if isinstance(existing_tt, list) and existing_tt:
                             tt_id = existing_tt[0].get("id")
                         elif isinstance(existing_tt, dict):
@@ -190,7 +199,7 @@ class TT_Data(APIView):
                             filial.save()
                             ic(f"🆕 TT Filial created: {filial.name}")
 
-                # ✅ 3. Prepare updated data for TT (only if needed)
+                # ✅ Update photo or filials if needed
                 update_payload = {}
                 tt_user_filials = set(user.get("filials", []))
                 local_tt_filials = set(custom_user.filial.filter(tt_filial__isnull=False).values_list("tt_filial", flat=True))
@@ -204,10 +213,9 @@ class TT_Data(APIView):
                         update_payload["image"] = uploaded["id"]
                         ic(f"📸 TT photo uploaded for {phone}")
 
-                # ✅ 4. Update TT user if anything is off
                 if update_payload:
                     ic(f"🔁 TT UPDATE: {update_payload}")
-                    tt.update_data(user["id"], update_payload)
+                    tt.update_data(user_id, update_payload)
 
                 count += 1
                 ic(f"✅ Updated user: {phone}")
@@ -216,9 +224,51 @@ class TT_Data(APIView):
                 ic(f"❌ Error processing user {phone}: {e}")
                 continue
 
+        # ✅ Now create missing TT users from our local DB
+        custom_users = CustomUser.objects.exclude(phone__in=tt_phones)
+
+        for user in custom_users:
+            try:
+                photo_id_data = tt.upload_tt_foto(user.photo.file) if user.photo else None
+                photo_id = photo_id_data.get("id") if photo_id_data else None
+
+                filial_ids = []
+                for filial in user.filial.all():
+                    if filial.tt_filial is None:
+                        response = tt.get_filial(filial.name)
+                        tt_id = response[0].get("id") if isinstance(response, list) and response else None
+                        if not tt_id:
+                            filial_tt = tt.create_filial({"name": filial.name})
+                            tt_id = filial_tt.get("id") if filial_tt else None
+                        if tt_id:
+                            filial.tt_filial = tt_id
+                            filial.save()
+                    if filial.tt_filial:
+                        filial_ids.append(filial.tt_filial)
+
+                external_data = {
+                    "image": photo_id,
+                    "name": user.full_name,
+                    "phone_number": user.phone,
+                    "filials": filial_ids,
+                    "salary": user.salary,
+                    **build_weekly_schedule(user),
+                    "lunch_time": None
+                }
+
+                external_response = tt.create_data(external_data)
+                if external_response and external_response.get("id"):
+                    user.second_user = external_response["id"]
+                    user.save()
+                    ic(f"✅ Created TT user: {user.phone}")
+                    count += 1
+
+            except Exception as e:
+                ic(f"❌ Failed to create TT user for {user.phone}: {e}")
+                continue
+
         ic(count)
         return Response({"count": count}, status=status.HTTP_200_OK)
-
 
 
 class CustomAuthToken(TokenObtainPairView):
