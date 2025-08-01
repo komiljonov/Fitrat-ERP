@@ -96,7 +96,7 @@ class TimetrackerSinc:
     def get_filial(self, filial):
         url = self.url + "filials"
         try:
-            response = self.session.get(url, headers=self.headers, params={'name': filial}, timeout=10)
+            response = self.session.get(url, headers=self.headers, params={'q': filial}, timeout=10)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
