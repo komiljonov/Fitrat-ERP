@@ -466,25 +466,31 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get("request")
         user = request.user
-        student = Student.objects.filter(user=user).first()
+        if user.role == "Student":
+            user = Student.objects.filter(user=user).first()
 
-        # Create the ExamSubject object
         exam_subject = ExamSubject.objects.create(**validated_data)
 
         # Fetch related ExamRegistration
         option_ids = [exam_subject.id]  # since `id` is the primary key of the created object
         exam = ExamRegistration.objects.filter(
-            student=student,
+            student=user,
             option__in=option_ids
         ).first()
 
-        exam.status = "Waiting"
-        exam.save()
+        if exam:
+            exam.status = "Waiting"
+            exam.save()
+        else:
+            exam = ExamRegistration.objects.filter(
+                option__in=option_ids,
+            ).first()
+            exam.status = "Waiting"
+            exam.save()
 
-        # If there's a certificate to attach
         if validated_data.get("has_certificate") and validated_data.get("certificate"):
             ExamCertificate.objects.create(
-                student=student,
+                student=user,
                 certificate=validated_data["certificate"],
                 exam=exam
             )
