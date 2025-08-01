@@ -60,6 +60,9 @@ class RegisterAPIView(CreateAPIView):
         for filial in user.filial.all():
             if not filial.tt_filial:
                 response = tt.get_filial({filial.name})
+
+                print(response)
+
                 tt_id = response[0].get("id") if isinstance(response, list) and response else None
 
                 if tt_id:
