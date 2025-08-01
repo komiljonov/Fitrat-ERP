@@ -472,21 +472,24 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
         exam_subject = ExamSubject.objects.create(**validated_data)
 
         # Fetch related ExamRegistration
-        option_ids = [exam_subject.id]  # since `id` is the primary key of the created object
-        exam = ExamRegistration.objects.filter(
-            student=user,
-            option__in=option_ids
-        ).first()
+        option_ids = [exam_subject.id]
 
-        if exam:
-            exam.status = "Waiting"
-            exam.save()
-        else:
+        exam = None
+        if request.user.role == "Student":
             exam = ExamRegistration.objects.filter(
-                option__in=option_ids,
+                student=user,
+                option__in=option_ids
             ).first()
-            exam.status = "Waiting"
-            exam.save()
+
+            if exam:
+                exam.status = "Waiting"
+                exam.save()
+            else:
+                exam = ExamRegistration.objects.filter(
+                    option__in=option_ids,
+                ).first()
+                exam.status = "Waiting"
+                exam.save()
 
         if validated_data.get("has_certificate") and validated_data.get("certificate") and request.user.role == "Student":
             ExamCertificate.objects.create(
