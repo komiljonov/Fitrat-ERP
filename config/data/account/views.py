@@ -165,19 +165,20 @@ class TT_Data(APIView):
             try:
                 custom_user = CustomUser.objects.get(phone=phone)
 
-                # ✅ Update second_user
                 custom_user.second_user = user["id"]
                 custom_user.save()
 
-                # ✅ Now handle filial syncing to TT
                 for filial in custom_user.filial.all():
                     if not filial.tt_filial:
-                        # Try to find in TT by name
+
                         existing_tt = tt.get_filial({"name": filial.name})
+
                         if isinstance(existing_tt, list) and existing_tt:
                             tt_id = existing_tt[0].get("id")
+
                         elif isinstance(existing_tt, dict):
                             tt_id = existing_tt.get("id")
+
                         else:
                             tt_id = None
 
