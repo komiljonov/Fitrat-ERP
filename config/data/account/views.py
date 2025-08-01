@@ -171,7 +171,8 @@ class TT_Data(APIView):
                 for filial in custom_user.filial.all():
                     if not filial.tt_filial:
 
-                        existing_tt = tt.get_filial({"name": filial.name})
+                        existing_tt = tt.get_filial({"q": filial.name})
+                        print(existing_tt)
 
                         if isinstance(existing_tt, list) and existing_tt:
                             tt_id = existing_tt[0].get("id")
