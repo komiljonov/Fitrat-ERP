@@ -1,5 +1,3 @@
-from http.client import responses
-
 import requests
 from decouple import config
 from requests.adapters import HTTPAdapter
@@ -81,7 +79,6 @@ class TimetrackerSinc:
             print(f"[POST] Error: {e}")
             return None
 
-
     def create_filial(self, data):
         url = self.url + "filials"
         try:
@@ -102,7 +99,6 @@ class TimetrackerSinc:
         except requests.exceptions.RequestException as e:
             print(f"[GET] Error: {e}")
             return None
-
 
     def retrieve_data(self, employee_id):
         url = self.url + f"employees/{employee_id}"
