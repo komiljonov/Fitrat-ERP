@@ -601,11 +601,7 @@ class ExamSerializer(serializers.ModelSerializer):
         if user.role == "TEACHER":
             teacher_subjects = Subject.objects.filter(course__groups_course__teacher=user).distinct()
 
-            print("teacher_subjects",teacher_subjects)
-
             teacher_exam_subjects = instance.options.filter(subject__in=teacher_subjects)
-
-            print("teacher_exam_subjects",teacher_exam_subjects)
 
             options_list = []
             for exam_subject in teacher_exam_subjects:
@@ -623,7 +619,6 @@ class ExamSerializer(serializers.ModelSerializer):
                     "lang_type": lang_value,
                     "option": exam_subject.options,
                 })
-            print("options_list",options_list)
             rep["options"] = options_list
 
         else:
