@@ -35,7 +35,6 @@ from ..student.student.sms import SayqalSms
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
-
 class RegisterAPIView(CreateAPIView):
     serializer_class = UserCreateSerializer
 
@@ -53,26 +52,41 @@ class RegisterAPIView(CreateAPIView):
 
         tt = TimetrackerSinc()
 
-        photo_id_data = tt.upload_tt_foto(user.photo.file)
+        # 🖼️ Upload photo to TT
+        photo_id_data = tt.upload_tt_foto(user.photo.file) if user.photo else None
         photo_id = photo_id_data.get("id") if photo_id_data else None
 
+        # 🏢 Ensure filials are created in TT
+        filial_ids = []
+        for filial in user.filial.all():
+            if not filial.tt_filial:
+                # 🔨 Create in TT if missing
+                response = tt.create_filial({"name": filial.name})
+                tt_id = response.get("id")
+                if tt_id:
+                    filial.tt_filial = tt_id
+                    filial.save()
+            if filial.tt_filial:
+                filial_ids.append(filial.tt_filial)
+
+        # 📤 Prepare external TT payload
         external_data = {
             "image": photo_id,
             "name": user.full_name,
             "phone_number": user.phone,
-            "filials": list(user.filial.values_list("tt_filial", flat=True)),
+            "filials": filial_ids,
             "salary": user.salary,
             **build_weekly_schedule(user),
             "lunch_time": None
         }
 
-
+        # 🚀 Send to TT
         external_response = tt.create_data(external_data)
-
         print(external_response)
 
+        # 💾 Save TT ID to our user
         if external_response and external_response.get("id"):
-            user.second_user = external_response.get("id")
+            user.second_user = external_response["id"]
             user.save()
 
         return Response({

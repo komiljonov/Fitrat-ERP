@@ -1,3 +1,5 @@
+from http.client import responses
+
 import requests
 from decouple import config
 from requests.adapters import HTTPAdapter
@@ -89,6 +91,16 @@ class TimetrackerSinc:
 
         except requests.exceptions.RequestException as e:
             print(f"[POST] Error: {e}")
+            return None
+
+    def get_filial(self, filial_id):
+        url = self.url + "filials"
+        try:
+            response = self.session.get(url, headers=self.headers, params={'': filial_id}, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"[GET] Error: {e}")
             return None
 
 
