@@ -566,17 +566,11 @@ class ExamSerializer(serializers.ModelSerializer):
 
         exam.options.set(options)
 
-        print(options)
-
         for option in options:
-
-            print(option.options)
 
             if int(option.options) > 0 or option.options is None:
                 subject = option.subject
                 group = Group.objects.filter(course__subject=subject).first()
-
-                print(group)
 
                 teacher = group.teacher if group else None
 
@@ -605,13 +599,11 @@ class ExamSerializer(serializers.ModelSerializer):
         rep["results"] = FileUploadSerializer(instance.results).data if instance.results else None
 
         if user.role == "TEACHER":
-            teacher_subject = Group.objects.filter(teacher=user).first().course.subject
-
-            teacher_exam_subjects = instance.options.filter(subject=teacher_subject).all()
+            teacher_subjects = Subject.objects.filter(course__groups_course__teacher=user).distinct()
+            teacher_exam_subjects = instance.options.filter(subject__in=teacher_subjects)
 
             options_list = []
             for exam_subject in teacher_exam_subjects:
-
                 if exam_subject.lang_national:
                     lang_value = "national"
                 elif exam_subject.lang_foreign:
