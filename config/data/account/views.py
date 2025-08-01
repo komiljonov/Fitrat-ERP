@@ -150,30 +150,55 @@ class TT_Data(APIView):
         tt_data = tt.get_data()
 
         count = 0
-        if tt_data:
+        if not tt_data:
+            return Response({"count": 0, "message": "No data from TT"}, status=status.HTTP_200_OK)
 
-            for user in tt_data:
-                ic(user)
-                phone = "+" + user["phone_number"] if not user["phone_number"].startswith('+') else user["phone_number"]
-                ic(phone)
-                if user:
-                    check = CustomUser.objects.filter(phone=phone).exists()
-                    if check:
-                        custom_user = CustomUser.objects.get(phone=phone)
-                        try:
-                            custom_user.second_user = user['id']
-                            custom_user.save()
-                        except Exception as e:
-                            ic(e)
-                            continue
-                        count += 1
-                        ic("updated")
-                        if user:
-                            continue
-                else:
-                    continue
-            ic(count)
+        for user in tt_data:
+            ic(user)
 
+            phone = "+" + user["phone_number"] if not user["phone_number"].startswith('+') else user["phone_number"]
+            ic(phone)
+
+            if not CustomUser.objects.filter(phone=phone).exists():
+                continue
+
+            try:
+                custom_user = CustomUser.objects.get(phone=phone)
+
+                # ✅ Update second_user
+                custom_user.second_user = user["id"]
+                custom_user.save()
+
+                # ✅ Now handle filial syncing to TT
+                for filial in custom_user.filial.all():
+                    if not filial.tt_filial:
+                        # Try to find in TT by name
+                        existing_tt = tt.get_filial({"name": filial.name})
+                        if isinstance(existing_tt, list) and existing_tt:
+                            tt_id = existing_tt[0].get("id")
+                        elif isinstance(existing_tt, dict):
+                            tt_id = existing_tt.get("id")
+                        else:
+                            tt_id = None
+
+                        if not tt_id:
+                            # Create in TT
+                            created_tt = tt.create_filial({"name": filial.name})
+                            tt_id = created_tt.get("id") if created_tt else None
+
+                        if tt_id:
+                            filial.tt_filial = tt_id
+                            filial.save()
+                            ic(f"🆕 TT filial created/linked for {filial.name}: {tt_id}")
+
+                count += 1
+                ic(f"✅ Updated user: {phone}")
+
+            except Exception as e:
+                ic(f"❌ Error processing user {phone}: {e}")
+                continue
+
+        ic(count)
         return Response({"count": count}, status=status.HTTP_200_OK)
 
 
