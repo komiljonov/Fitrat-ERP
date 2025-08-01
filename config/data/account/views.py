@@ -59,11 +59,18 @@ class RegisterAPIView(CreateAPIView):
         filial_ids = []
         for filial in user.filial.all():
             if not filial.tt_filial:
-                response = tt.create_filial({"name": filial.name})
-                tt_id = response.get("id")
+                response = tt.get_filial({"name": filial.name})
+                tt_id = response[0].get("id") if isinstance(response, list) and response else None
+
                 if tt_id:
                     filial.tt_filial = tt_id
                     filial.save()
+                else:
+                    filial_tt = tt.create_filial({"name": filial.name})
+                    if filial_tt:
+                        filial.tt_filial = filial_tt.get("id")
+                        filial.save()
+
             if filial.tt_filial:
                 filial_ids.append(filial.tt_filial)
 
@@ -77,7 +84,6 @@ class RegisterAPIView(CreateAPIView):
             "lunch_time": None
         }
 
-        # 🚀 Send to TT
         external_response = tt.create_data(external_data)
         print(external_response)
 
