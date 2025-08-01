@@ -468,6 +468,7 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
         user = request.user
         student = Student.objects.filter(user=user).first()
 
+
         # Create the ExamSubject object
         exam_subject = ExamSubject.objects.create(**validated_data)
 
@@ -477,6 +478,9 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             student=student,
             option__in=option_ids
         ).first()
+
+        exam.status = "Waiting"
+        exam.save()
 
         # If there's a certificate to attach
         if validated_data.get("has_certificate") and validated_data.get("certificate"):
