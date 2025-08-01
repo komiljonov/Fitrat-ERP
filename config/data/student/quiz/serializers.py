@@ -468,7 +468,6 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
         user = request.user
         student = Student.objects.filter(user=user).first()
 
-
         # Create the ExamSubject object
         exam_subject = ExamSubject.objects.create(**validated_data)
 
