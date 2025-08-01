@@ -1,12 +1,14 @@
 from django.db.models import Q
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Filial
 
 from .serializers import FilialSerializer, UserFilialSerializer
 from ...command.models import UserFilial
+from ...finances.timetracker.sinx import TimetrackerSinc
 
 
 class FilialListCreate(ListCreateAPIView):
@@ -56,3 +58,4 @@ class UserFilialListCreate(ListCreateAPIView):
 class UserFilialRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     queryset = UserFilial.objects.all()
     serializer_class = UserFilialSerializer
+
