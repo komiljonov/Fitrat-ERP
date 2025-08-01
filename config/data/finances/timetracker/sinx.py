@@ -75,7 +75,6 @@ class TimetrackerSinc:
         url = self.url + "employees/create"
         try:
             response = self.session.post(url, headers=self.headers, json=data, timeout=10)
-            print(response.json())
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:

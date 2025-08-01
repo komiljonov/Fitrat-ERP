@@ -59,12 +59,8 @@ class RegisterAPIView(CreateAPIView):
         filial_ids = []
         for filial in user.filial.all():
 
-            print(filial,filial.tt_filial)
-
             if filial.tt_filial is None:
                 response = tt.get_filial({filial.name})
-
-                print(response)
 
                 tt_id = response[0].get("id") if isinstance(response, list) and response else None
 
@@ -79,8 +75,6 @@ class RegisterAPIView(CreateAPIView):
 
             if filial.tt_filial:
                 filial_ids.append(filial.tt_filial)
-
-        print(filial_ids)
 
         external_data = {
             "image": photo_id,
