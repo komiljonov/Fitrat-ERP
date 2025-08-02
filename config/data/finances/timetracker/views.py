@@ -331,7 +331,7 @@ class UserAttendanceListView(ListAPIView):
             if from_date and to_date:
                 attendance_filter &= Q(date__lte=to_date)
 
-            attendance_qs = Stuff_Attendance.objects.filter(action="In_side").order_by("-check_in")
+            attendance_qs = Stuff_Attendance.objects.filter(action="In_side").order_by("check_in")
 
             employee_attendance_qs = (
                 Employee_attendance.objects
@@ -343,7 +343,7 @@ class UserAttendanceListView(ListAPIView):
                 "id": user.id,
                 "full_name": user.full_name,
             }
-            attendance_data = TimeTrackerSerializer(employee_attendance_qs, many=True).data
+            attendance_data = TimeTrackerSerializer(employee_attendance_qs.order_by("attendance__check_in"), many=True).data
 
             results.append({
                 "user": user_data,
