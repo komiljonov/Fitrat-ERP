@@ -179,7 +179,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             user=instance.teacher,
                             comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
                                                                                          f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!",
-                            come_from=json.dumps(instance_obj),
+                            come_from=json.dumps(instance_obj,default=str),
                             choice="Results",
                         )
                         logging.info(f"Sizga {level.amount} sum qo'shildi!")
@@ -189,7 +189,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             user=instance.teacher,
                             comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
                                                                                          f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.coin} ball qo'shildi!",
-                            come_from=json.dumps(instance_obj),
+                            come_from=json.dumps(instance_obj,default=str),
                             choice="Results",
                         )
 
@@ -280,7 +280,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                                                                              instance.university_type == "Unofficial" else f"Xorijiy {instance.university_name} universitet"} imtihonida {instance.result_score} '
                                                                                              f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!",
 
-                                come_from=json.dumps(instance_obj),
+                                come_from=json.dumps(instance_obj,default=str),
                                 choice="Results",
                             )
                             logging.info(f"Sizga {level.amount} sum qo'shildi!")
@@ -292,7 +292,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                                                                              f'  {"DTM" if instance.university_type == "Official" else f"Xususiy {instance.university_name} universitet" if
                                                                                              instance.university_type == "Unofficial" else f"Xorijiy {instance.university_name} universitet"} imtihonida {instance.result_score} '
                                                                                              f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.max_ball} ball qo'shildi!",
-                                come_from=json.dumps(instance_obj),
+                                come_from=json.dumps(instance_obj,default=str),
                                 choice="Results",
                             )
 
@@ -534,7 +534,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                 f"{instance.result_fk_name.name} sertifikati imtihonida "
                                 f"{instance.band_score} ball uchun {subject.amount} so'm qo'shildi!"
                             ),
-                            come_from=json.dumps(instance_obj),
+                            come_from=json.dumps(instance_obj,default=str),
                             choice="Results",
                         )
                         logging.info(f"Sizga {subject.amount} sum qo'shildi!")
@@ -548,7 +548,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                 f"{instance.result_fk_name.name} sertifikati imtihonida "
                                 f"{instance.band_score} ball uchun {subject.max_ball} ball qo'shildi!"
                             ),
-                            come_from=json.dumps(instance_obj),
+                            come_from=json.dumps(instance_obj,default=str),
                             choice="Results",
                         )
 
@@ -571,6 +571,6 @@ def send_notf(sender, instance: Results, created, **kwargs):
             Notification.objects.create(
                 user=instance.teacher,
                 comment=f"Sizning {instance.band_score if instance.band_score else instance.result_score} ballik natijangiz bekor qilindi!",
-                come_from=json.dumps(instance_obj),
+                come_from=json.dumps(instance_obj,default=str),
                 choice="Results",
             )
