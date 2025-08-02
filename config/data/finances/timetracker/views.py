@@ -331,7 +331,7 @@ class UserAttendanceListView(ListAPIView):
             if from_date and to_date:
                 attendance_filter &= Q(date__lte=to_date)
 
-            attendance_qs = Stuff_Attendance.objects.filter(action="In_side")
+            attendance_qs = Stuff_Attendance.objects.filter(action="In_side").order_by("-check_in")
 
             employee_attendance_qs = (
                 Employee_attendance.objects
