@@ -108,9 +108,9 @@ def on_update(sender, instance: Results, created, **kwargs):
                         casher = None
 
                     # Check if bonus kind exists
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Results").first()
                     if not bonus_kind:
-                        raise ValueError("Bonus turi topilmadi!")
+                        raise ValueError("Results turi topilmadi!")
 
                     # Create monitoring record
                     ball = MonitoringAsos4.objects.create(
@@ -148,7 +148,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
                                                                                          f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!",
                             come_from=instance,
-                            choice="Bonus",
+                            choice="Results",
                         )
                         logging.info(f"Sizga {level.amount} sum qo'shildi!")
 
@@ -158,7 +158,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
                                                                                          f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.coin} ball qo'shildi!",
                             come_from=instance,
-                            choice="Bonus",
+                            choice="Results",
                         )
 
                 elif instance.results == "University":
@@ -182,9 +182,9 @@ def on_update(sender, instance: Results, created, **kwargs):
                         casher = None
 
                     # Check if bonus kind exists
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Results").first()
                     if not bonus_kind:
-                        raise ValueError("Bonus turi topilmadi!")
+                        raise ValueError("Results turi topilmadi!")
 
                     if instance.who == "Mine" or instance.who == "Student":
                         entry = "Grant" if instance.university_entering_type == "Grant" else "Contract"
@@ -249,7 +249,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                                                                              f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!",
 
                                 come_from=instance,
-                                choice="Bonus",
+                                choice="Results",
                             )
                             logging.info(f"Sizga {level.amount} sum qo'shildi!")
 
@@ -261,7 +261,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                                                                              instance.university_type == "Unofficial" else f"Xorijiy {instance.university_name} universitet"} imtihonida {instance.result_score} '
                                                                                              f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.max_ball} ball qo'shildi!",
                                 come_from=instance,
-                                choice="Bonus",
+                                choice="Results",
                             )
 
                 elif instance.results == "Certificate":
@@ -284,9 +284,9 @@ def on_update(sender, instance: Results, created, **kwargs):
                     if not casher:
                         casher = None
 
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Results").first()
                     if not bonus_kind:
-                        raise ValueError("Bonus turi topilmadi!")
+                        raise ValueError("Results turi topilmadi!")
 
                     who = "Mine" if instance.who == "Mine" else "Student"
                     DEGREE_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"]
@@ -503,7 +503,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                 f"{instance.band_score} ball uchun {subject.amount} so'm qo'shildi!"
                             ),
                             come_from=instance,
-                            choice="Bonus",
+                            choice="Results",
                         )
                         logging.info(f"Sizga {subject.amount} sum qo'shildi!")
 
@@ -517,7 +517,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                 f"{instance.band_score} ball uchun {subject.max_ball} ball qo'shildi!"
                             ),
                             come_from=instance,
-                            choice="Bonus",
+                            choice="Results",
                         )
 
                 else:
@@ -538,5 +538,5 @@ def send_notf(sender, instance: Results, created, **kwargs):
                 user=instance.teacher,
                 comment=f"Sizning {instance.band_score if instance.band_score else instance.result_score} ballik natijangiz bekor qilindi!",
                 come_from=instance,
-                choice="Bonus",
+                choice="Results",
             )
