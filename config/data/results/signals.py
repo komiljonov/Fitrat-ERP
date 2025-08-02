@@ -101,7 +101,12 @@ def on_update(sender, instance: Results, created, **kwargs):
 
                 "university_entering_type": getattr(in_obj, "university_entering_type", None),
                 "degree": getattr(in_obj, "degree", None),
-                "file": getattr(in_obj.upload_file, "file", None),
+                "file": {
+                    "id": getattr(in_obj, "id", None),
+                    "choice": getattr(in_obj, "choice", None),
+                    "file": getattr(in_obj, "file", None),
+                },
+
                 "created_at": getattr(in_obj, "created_at", None),
             }
 
