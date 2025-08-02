@@ -83,6 +83,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                 "band_score": getattr(in_obj, "band_score", None),
                 "result_score": getattr(in_obj, "result_score", None),
                 "university_name": getattr(instance, "university_name", None),
+                "status": getattr(instance, "status", None),
 
                 "result_fk_name": {
                     # "id": getattr(in_obj.result_fk_name, "id", None),
