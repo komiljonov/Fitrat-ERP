@@ -84,16 +84,16 @@ def on_update(sender, instance: Results, created, **kwargs):
                 "university_name": getattr(instance, "university_name", None),
 
                 "result_fk_name": {
-                    "id": getattr(in_obj.result_fk_name, "id", None),
+                    # "id": getattr(in_obj.result_fk_name, "id", None),
                     "name": getattr(in_obj.result_fk_name, "name", None),
-                    "description": getattr(in_obj.result_fk_name, "who", None),
+                    # "description": getattr(in_obj.result_fk_name, "who", None),
                 } if getattr(in_obj, "result_fk_name", None) else None,
 
                 "student": {
-                    "id": getattr(in_obj.student, "id", None),
+                    # "id": getattr(in_obj.student, "id", None),
                     "first_name": getattr(in_obj.student, "first_name", None),
                     "last_name": getattr(in_obj.student, "last_name", None),
-                    "phone": getattr(in_obj.student, "phone", None),  # example, add more as needed
+                    # "phone": getattr(in_obj.student, "phone", None),
                 } if getattr(in_obj, "student", None) else None,
 
                 "university_entering_type": getattr(in_obj, "university_entering_type", None),
