@@ -343,7 +343,7 @@ class UserAttendanceListView(ListAPIView):
                 "id": user.id,
                 "full_name": user.full_name,
             }
-            attendance_data = TimeTrackerSerializer(employee_attendance_qs.order_by("attendance__check_in"), many=True).data
+            attendance_data = TimeTrackerSerializer(employee_attendance_qs.order_by("-attendance__check_in"), many=True).data
 
             results.append({
                 "user": user_data,
