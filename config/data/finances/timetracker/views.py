@@ -33,7 +33,10 @@ class TimeTrackerList(ListCreateAPIView):
         is_weekend = self.request.GET.get('is_weekend')
         from_date = self.request.GET.get('start_date')
         to_date = self.request.GET.get('end_date')
+        action = self.request.GET.get('action')
 
+        if action:
+            queryset = queryset.filter(attendance__action__in=action)
         if from_date:
             queryset = queryset.filter(date__gte=from_date)
         if from_date and to_date:
