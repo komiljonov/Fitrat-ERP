@@ -1,10 +1,11 @@
 from datetime import datetime
 
+from django.db.models import Prefetch
 from django.utils.dateparse import parse_datetime
 from icecream import ic
 from rest_framework import status
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import CreateAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, UpdateAPIView, ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -275,3 +276,23 @@ class UserTimeLineBulkUpdateDelete(APIView):
 
         deleted_count, _ = UserTimeLine.objects.filter(id__in=ids).delete()
         return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
+
+
+class EmployeeAttendanceListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        # Prefetch only Stuff_Attendance with action="In_side"
+        attendance_qs = Stuff_Attendance.objects.filter(action="In_side")
+
+        # Get Employee_attendance records, include employee and filtered attendance
+        queryset = (
+            Employee_attendance.objects
+            .filter(employee__is_archived=False)
+            .select_related("employee")
+            .prefetch_related(Prefetch("attendance", queryset=attendance_qs))
+        )
+
+        # Optional: exclude duplicate employee-attendance entries
+        serializer = TimeTrackerSerializer(queryset, many=True)
+        return Response(serializer.data)
