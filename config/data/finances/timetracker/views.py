@@ -19,6 +19,7 @@ from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
 from .utils import calculate_amount, delete_user_actions, get_updated_datas
 from ...account.models import CustomUser
+from ...account.serializers import UserSerializer
 
 
 class TimeTrackerList(ListCreateAPIView):
@@ -278,45 +279,30 @@ class UserTimeLineBulkUpdateDelete(APIView):
         return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
 
 
-class EmployeeAttendanceListView(ListAPIView):
+class UserAttendanceListView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def list(self, request, *args, **kwargs):
+    def get(self, request):
+        users = CustomUser.objects.filter(is_archived=False)
+
         attendance_qs = Stuff_Attendance.objects.filter(action="In_side")
+        results = []
 
-        queryset = (
-            Employee_attendance.objects
-            .filter(employee__is_archived=False)
-            .select_related("employee")
-            .prefetch_related(Prefetch("attendance", queryset=attendance_qs))
-        )
+        for user in users:
+            employee_attendance_qs = (
+                Employee_attendance.objects
+                .filter(employee=user)
+                .prefetch_related(Prefetch("attendance", queryset=attendance_qs))
+            )
 
-        employee = self.request.GET.get('employee')
-        status = self.request.GET.get('status')
-        date = self.request.GET.get('date')
-        is_weekend = self.request.GET.get('is_weekend')
-        from_date = self.request.GET.get('start_date')
-        to_date = self.request.GET.get('end_date')
-        action = self.request.GET.get('action')
-        is_archived = self.request.GET.get('is_archived')
+            user_data = UserSerializer(user).data
+            attendance_data = TimeTrackerSerializer(employee_attendance_qs, many=True).data
 
-        if is_archived:
-            queryset = queryset.filter(employee__is_archived=is_archived.capitalize())
-        if action:
-            queryset = queryset.filter(attendance__action=action)
-        if from_date:
-            queryset = queryset.filter(date__gte=from_date)
-        if from_date and to_date:
-            queryset = queryset.filter(date__gte=from_date, date__lte=to_date)
+            results.append({
+                "user": user_data,
+                "tt_data": attendance_data
+            })
 
-        if is_weekend:
-            queryset = queryset.filter(is_weekend=is_weekend.capitalize())
-        if employee:
-            queryset = queryset.filter(employee__id=employee)
-        if status:
-            queryset = queryset.filter(status=status)
-        if date:
-            queryset = queryset.filter(date=parse_datetime(date))
+        return Response(results)
 
-        serializer = TimeTrackerSerializer(queryset, many=True)
-        return Response(serializer.data)
+
