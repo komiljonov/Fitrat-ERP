@@ -536,6 +536,8 @@ def on_update(sender, instance: Results, created, **kwargs):
 @receiver(post_save, sender=Results)
 def send_notf(sender, instance: Results, created, **kwargs):
     if not created:
+        instance_obj = Results.objects.filter(id=instance.id).first()
+
         if instance.status == "Rejected":
             Notification.objects.create(
                 user=instance.teacher,
