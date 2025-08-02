@@ -73,9 +73,7 @@ def on_update(sender, instance: Results, created, **kwargs):
     if not created:
         try:
 
-            instance_obj = Results.objects.filter(id=instance.id).first()
-            serializer = ResultsSerializer(instance_obj)
-            instance_obj = serializer.data
+            instance_obj = Results.objects.filter(id=instance.id).first().id
 
             if instance.status == "Accepted":
 
