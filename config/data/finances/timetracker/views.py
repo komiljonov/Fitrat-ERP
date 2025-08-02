@@ -369,8 +369,8 @@ class TimeTrackerStatisticsListView(ListAPIView):
             gone = gone.filter(date__lte=parse_date(date))
             absent = absent.filter(date__lte=parse_date(date))
 
-        return {
-            "in_office": in_office.count(),
-            "gone": gone.count(),
-            "absent": absent.count(),
-        }
+        return Response({
+            "in_office": in_office,
+            "gone": gone,
+            "absent": absent,
+        }, status=200)
