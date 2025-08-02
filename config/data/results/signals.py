@@ -76,7 +76,7 @@ def on_update(sender, instance: Results, created, **kwargs):
             in_obj = Results.objects.filter(id=instance.id).first()
 
             instance_obj = {
-                "id": getattr(in_obj, "id", None),
+                "id": instance.id,
                 "universityEnteringBall": getattr(in_obj, "university_entering_ball", None),
                 "results": getattr(in_obj, "results", None),
                 "band_score": getattr(in_obj, "band_score", None),
