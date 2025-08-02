@@ -25,7 +25,7 @@ class TimeTrackerList(ListCreateAPIView):
     serializer_class = TimeTrackerSerializer
 
     def get_queryset(self):
-        queryset = Employee_attendance.objects.all()
+        queryset = Employee_attendance.objects.filter(attendance__action__in="In_side",employee__is_archived=False)
 
         employee = self.request.GET.get('employee')
         status = self.request.GET.get('status')
