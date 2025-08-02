@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.utils.dateparse import parse_date
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
+from icecream import ic
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from rest_framework import status
@@ -20,6 +21,7 @@ from .models import Archived, Frozen
 from .serializers import ArchivedSerializer, StuffArchivedSerializer, FrozenSerializer
 from ..new_lid.models import Lid
 from ...account.models import CustomUser
+from ...finances.timetracker.sinx import TimetrackerSinc
 
 
 class ArchivedListAPIView(ListCreateAPIView):
@@ -166,24 +168,40 @@ class StudentArchivedListAPIView(ListAPIView):
         return queryset
 
 
+
 class StuffArchive(CreateAPIView):
     serializer_class = StuffArchivedSerializer
     permission_classes = (IsAuthenticated,)
 
     def create(self, request, *args, **kwargs):
-        user = CustomUser.objects.filter(id=request.data.get('stuff')).first()  # Birinchi foydalanuvchini olish
+        user_id = request.data.get('stuff')
+        user = CustomUser.objects.filter(id=user_id).first()
 
-        icecream.ic(user)  # Debug uchun
+        ic.ic(user)  # Debug
 
-        if user:
-            if not user.is_archived:
-                user.is_archived = True
-                user.save()
-                return Response({"message": "Xodim arxivlandi!"}, status=status.HTTP_200_OK)
-            return Response({"error": "Xodim arxivlangan, qayta arxivlash amalga oshirib bulmaydi!"},
-                            status=status.HTTP_400_BAD_REQUEST)
+        if not user:
+            return Response({"error": "Xodim topilmadi!"}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response({"error": "Xodim topilmadi!"}, status=status.HTTP_404_NOT_FOUND)
+        if user.is_archived:
+            return Response({"error": "Xodim allaqachon arxivlangan!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Archive in TimeTracker
+        tt = TimetrackerSinc()
+        if user.second_user:
+            tt_response = tt.archive_employee(user.second_user)
+            ic.ic(tt_response)  # Debug
+
+            if not tt_response or "error" in tt_response:
+                return Response(
+                    {"error": "TimeTracker bilan bog'lanib bo'lmadi."},
+                    status=status.HTTP_502_BAD_GATEWAY
+                )
+
+        # Local archive
+        user.is_archived = True
+        user.save()
+
+        return Response({"message": "Xodim arxivlandi!"}, status=status.HTTP_200_OK)
 
 
 class FrozenListCreateList(ListCreateAPIView):
