@@ -48,6 +48,7 @@ class TimetrackerSinc:
         url = self.url + f"employees/{employee_id}"
         try:
             response = self.session.delete(url, headers=self.headers, timeout=10)
+            print(response.json())
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
