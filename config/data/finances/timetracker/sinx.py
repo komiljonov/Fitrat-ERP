@@ -49,8 +49,9 @@ class TimetrackerSinc:
         try:
             response = self.session.delete(url, headers=self.headers, timeout=10)
             response.raise_for_status()
-            print("Archived successfully")
-            return response.json()
+            if response.text:  # Only try to decode if there's something
+                return response.json()
+            return {"message": "Archived successfully without response body."}
         except requests.exceptions.RequestException as e:
             print(f"[DELETE] Error: {e}")
 
