@@ -5,9 +5,10 @@ from django.utils.dateparse import parse_datetime
 from icecream import ic
 from rest_framework import status
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import CreateAPIView, UpdateAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,7 +20,6 @@ from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
 from .utils import calculate_amount, delete_user_actions, get_updated_datas
 from ...account.models import CustomUser
-from ...account.serializers import UserSerializer
 
 
 class TimeTrackerList(ListCreateAPIView):
@@ -27,7 +27,7 @@ class TimeTrackerList(ListCreateAPIView):
     serializer_class = TimeTrackerSerializer
 
     def get_queryset(self):
-        queryset = Employee_attendance.objects.filter(attendance__action="In_side",employee__is_archived=False)
+        queryset = Employee_attendance.objects.filter(attendance__action="In_side", employee__is_archived=False)
 
         employee = self.request.GET.get('employee')
         status = self.request.GET.get('status')
@@ -279,23 +279,35 @@ class UserTimeLineBulkUpdateDelete(APIView):
         return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
 
 
-class UserAttendanceListView(APIView):
+class CustomUserPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
+class UserAttendanceListView(ListAPIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomUserPagination
 
-    def get(self, request):
-        users = CustomUser.objects.filter(is_archived=False)
+    def get_queryset(self):
+        return CustomUser.objects.filter(is_archived=False)
 
+    def list(self, request, *args, **kwargs):
+        paginated_users = self.paginate_queryset(self.get_queryset())
         attendance_qs = Stuff_Attendance.objects.filter(action="In_side")
         results = []
 
-        for user in users:
+        for user in paginated_users:
             employee_attendance_qs = (
                 Employee_attendance.objects
                 .filter(employee=user)
                 .prefetch_related(Prefetch("attendance", queryset=attendance_qs))
             )
 
-            user_data = UserSerializer(user).data
+            user_data = {
+                "id": user.id,
+                "full_name": user.full_name,
+            }
             attendance_data = TimeTrackerSerializer(employee_attendance_qs, many=True).data
 
             results.append({
@@ -303,6 +315,4 @@ class UserAttendanceListView(APIView):
                 "tt_data": attendance_data
             })
 
-        return Response(results)
-
-
+        return self.get_paginated_response(results)
