@@ -341,13 +341,16 @@ class UserAttendanceListView(ListAPIView):
                     stuff_attendance_set.append(att)
 
             serialized_tt_data = Stuff_AttendanceSerializer(stuff_attendance_set, many=True).data
+            timeline = TimeTrackerSerializer(emp_attendance_qs, many=True).data
+            groups_only = [item.get("groups") for item in timeline]
 
             results.append({
                 "user": {
                     "id": user.id,
                     "full_name": user.full_name,
                 },
-                "tt_data": serialized_tt_data
+                "tt_data": serialized_tt_data,
+                "groups": groups_only,
             })
 
         return self.get_paginated_response(results)
