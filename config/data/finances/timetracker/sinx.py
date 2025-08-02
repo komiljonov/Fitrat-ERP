@@ -44,6 +44,15 @@ class TimetrackerSinc:
             print(f"[GET] Error: {e}")
             return None
 
+    def archive_employee(self,employee_id):
+        url = self.url + f"employees/{employee_id}"
+        try:
+            response = self.session.delete(url, headers=self.headers, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"[DELETE] Error: {e}")
+
     def upload_tt_foto(self, django_file):
         import mimetypes
 

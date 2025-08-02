@@ -179,6 +179,17 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                 updated_fields["filials"] = list(f.id for f in new_filials)
                 should_sync = True
 
+        if "is_archived" in validated_data:
+            status = validated_data["is_archived"] in [True, "true", "True", 1, "1"]
+            if instance.is_archived != status:
+                if status:  # user is being archived
+                    user_archived = tt.archive_employee(employee_id=instance.id)
+                    if user_archived:
+                        updated_fields["is_archived"] = user_archived
+                        should_sync = True
+                instance.is_archived = status
+
+
         instance.save()
 
         if should_sync and instance.second_user:
