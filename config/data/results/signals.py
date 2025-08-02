@@ -82,10 +82,21 @@ def on_update(sender, instance: Results, created, **kwargs):
                 "band_score": getattr(in_obj, "band_score", None),
                 "result_score": getattr(in_obj, "result_score", None),
                 "university_name": getattr(instance, "university_name", None),
-                "result_fk_name": getattr(in_obj.result_fk_name, "name", None) if getattr(in_obj, "result_fk_name",
-                                                                                          None) else None,
+
+                "result_fk_name": {
+                    "id": getattr(in_obj.result_fk_name, "id", None),
+                    "name": getattr(in_obj.result_fk_name, "name", None),
+                    "description": getattr(in_obj.result_fk_name, "who", None),
+                } if getattr(in_obj, "result_fk_name", None) else None,
+
+                "student": {
+                    "id": getattr(in_obj.student, "id", None),
+                    "first_name": getattr(in_obj.student, "first_name", None),
+                    "last_name": getattr(in_obj.student, "last_name", None),
+                    "phone": getattr(in_obj.student, "phone", None),  # example, add more as needed
+                } if getattr(in_obj, "student", None) else None,
+
                 "university_entering_type": getattr(in_obj, "university_entering_type", None),
-                "student": getattr(in_obj.student, "id", None) if getattr(in_obj, "student", None) else None,
                 "degree": getattr(in_obj, "degree", None),
                 "file": getattr(in_obj.upload_file, "file", None),
                 "created_at": getattr(in_obj, "created_at", None),
