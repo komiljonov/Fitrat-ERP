@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from django.db.models import Prefetch
-from django.utils.dateparse import parse_datetime
+from django.db.models import Prefetch, Q
+from django.utils.dateparse import parse_datetime, parse_date
 from icecream import ic
 from rest_framework import status
 from rest_framework.exceptions import NotFound
@@ -290,17 +290,53 @@ class UserAttendanceListView(ListAPIView):
     pagination_class = CustomUserPagination
 
     def get_queryset(self):
-        return CustomUser.objects.filter(is_archived=False).exclude(role__in=["Parents","Student"])
+        qs = CustomUser.objects.filter(is_archived=False).exclude(role__in=["Parents","Student"])
+
+        filial = self.request.GET.get("filial")
+        if filial:
+            qs = qs.filter(filial__id__in=filial)
+
+        return qs
 
     def list(self, request, *args, **kwargs):
         paginated_users = self.paginate_queryset(self.get_queryset())
-        attendance_qs = Stuff_Attendance.objects.filter(action="In_side")
+
+        # 🔍 Get filters from request
+        employee = request.GET.get('employee')
+        status = request.GET.get('status')
+        date = request.GET.get('date')
+        is_weekend = request.GET.get('is_weekend')
+        from_date = request.GET.get('start_date')
+        to_date = request.GET.get('end_date')
+        is_archived = request.GET.get('is_archived')
+
         results = []
 
         for user in paginated_users:
+            # 🔍 Filter Employee_attendance per user
+            attendance_filter = Q(employee=user)
+
+            if is_archived:
+                attendance_filter &= Q(employee__is_archived=is_archived.capitalize())
+            if employee:
+                attendance_filter &= Q(employee__id=employee)
+            if status:
+                attendance_filter &= Q(status=status)
+            if is_weekend:
+                attendance_filter &= Q(is_weekend=is_weekend.capitalize())
+            if date:
+                attendance_filter &= Q(date=parse_date(date))
+            if from_date:
+                attendance_filter &= Q(date__gte=from_date)
+            if from_date and to_date:
+                attendance_filter &= Q(date__lte=to_date)
+
+            # 👇 Prefetch only "In_side" Stuff_Attendance
+            attendance_qs = Stuff_Attendance.objects.filter(action="In_side")
+
             employee_attendance_qs = (
                 Employee_attendance.objects
-                .filter(employee=user)
+                .filter(attendance_filter)
                 .prefetch_related(Prefetch("attendance", queryset=attendance_qs))
             )
 
