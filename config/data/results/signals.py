@@ -73,7 +73,22 @@ def on_update(sender, instance: Results, created, **kwargs):
     if not created:
         try:
 
-            instance_obj = Results.objects.filter(id=instance.id).first().id
+            in_obj = Results.objects.filter(id=instance.id).first()
+
+            instance_obj = {
+                "id": getattr(in_obj, "id", None),
+                "universityEnteringBall": getattr(in_obj, "university_entering_ball", None),
+                "results": getattr(in_obj, "results", None),
+                "band_score": getattr(in_obj, "band_score", None),
+                "result_score": getattr(in_obj, "result_score", None),
+                "university_name": getattr(instance, "university_name", None),
+                "result_fk_name": getattr(in_obj.result_fk_name, "name", None) if getattr(in_obj, "result_fk_name",
+                                                                                          None) else None,
+                "university_entering_type": getattr(in_obj, "university_entering_type", None),
+                "student": getattr(in_obj.student, "id", None) if getattr(in_obj, "student", None) else None,
+                "degree": getattr(in_obj, "degree", None),
+                "created_at": getattr(in_obj, "created_at", None),
+            }
 
             if instance.status == "Accepted":
 
