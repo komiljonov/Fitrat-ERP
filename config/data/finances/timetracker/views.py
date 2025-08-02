@@ -331,13 +331,13 @@ class UserAttendanceListView(ListAPIView):
             if from_date and to_date:
                 attendance_filter &= Q(date__lte=to_date)
 
-            attendance_qs = Stuff_Attendance.objects.filter(action="In_side")
+            attendance_qs = Stuff_Attendance.objects.filter(action="In_side").distinct()
 
             employee_attendance_qs = (
                 Employee_attendance.objects
                 .filter(attendance_filter)
                 .prefetch_related(Prefetch("attendance", queryset=attendance_qs))
-            )
+            ).distinct()
 
             user_data = {
                 "id": user.id,
