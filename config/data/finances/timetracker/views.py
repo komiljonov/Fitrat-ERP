@@ -321,8 +321,6 @@ class UserAttendanceListView(ListAPIView):
 
             if is_archived:
                 attendance_filter &= Q(employee__is_archived=is_archived.capitalize())
-            if employee:
-                attendance_filter &= Q(employee__id=employee)
             if status:
                 attendance_filter &= Q(status=status)
             if is_weekend:
