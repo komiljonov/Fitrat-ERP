@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .views import AttendanceList, UserTimeLineList, UserTimeLineDetail, TimeTrackerList, \
-    TimeLineBulkCreate, AttendanceDetail, UserTimeLineBulkUpdateDelete, UserAttendanceListView
+    TimeLineBulkCreate, AttendanceDetail, UserTimeLineBulkUpdateDelete, UserAttendanceListView, \
+    TimeTrackerStatisticsListView
 
 urlpatterns = [
     path("", AttendanceList.as_view()),
@@ -15,4 +16,6 @@ urlpatterns = [
     path("timeline/bulk/update", UserTimeLineBulkUpdateDelete.as_view()),
 
     path("all/fixed/", UserAttendanceListView.as_view()),
+
+    path("statistics",TimeTrackerStatisticsListView.as_view()),
 ]
