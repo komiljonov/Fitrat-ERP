@@ -316,7 +316,6 @@ class UserAttendanceListView(ListAPIView):
         results = []
 
         for user in paginated_users:
-            # 🔍 Filter Employee_attendance per user
             attendance_filter = Q(employee=user)
 
             if is_archived:
@@ -332,23 +331,24 @@ class UserAttendanceListView(ListAPIView):
             if from_date and to_date:
                 attendance_filter &= Q(date__lte=to_date)
 
-            attendance_qs = Stuff_Attendance.objects.filter(action="In_side").distinct()
+            # Get all Employee_attendance for user
+            emp_attendance_qs = Employee_attendance.objects.filter(attendance_filter)
 
-            employee_attendance_qs = (
-                Employee_attendance.objects
-                .filter(attendance_filter)
-                .prefetch_related(Prefetch("attendance", queryset=attendance_qs))
-            ).distinct()
+            # Flatten all Stuff_Attendance linked to these attendances (filtered to In_side)
+            all_attendance_records = []
+            for emp_att in emp_attendance_qs:
+                matched_attendance = emp_att.attendance.filter(action="In_side")
+                all_attendance_records.extend(matched_attendance)
 
-            user_data = {
-                "id": user.id,
-                "full_name": user.full_name,
-            }
-            attendance_data = TimeTrackerSerializer(employee_attendance_qs, many=True).data
+            # Serialize flattened Stuff_Attendance list
+            serialized_tt_data = Stuff_AttendanceSerializer(all_attendance_records, many=True).data
 
             results.append({
-                "user": user_data,
-                "tt_data": attendance_data
+                "user": {
+                    "id": user.id,
+                    "full_name": user.full_name,
+                },
+                "tt_data": serialized_tt_data
             })
 
         return self.get_paginated_response(results)
