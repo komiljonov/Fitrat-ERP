@@ -291,8 +291,11 @@ class UserAttendanceListView(ListAPIView):
 
     def get_queryset(self):
         qs = CustomUser.objects.filter(is_archived=False).exclude(role__in=["Parents", "Student"])
-
+        employee = self.request.GET.get('employee')
         filial = self.request.GET.get("filial")
+
+        if employee:
+            qs = qs.filter(id=employee)
         if filial:
             qs = qs.filter(filial__id__in=filial)
 
