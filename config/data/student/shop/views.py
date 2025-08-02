@@ -42,11 +42,11 @@ class CoinsList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Coins.objects.all()
-        student = self.request.query_params.get('student')
-        status = self.request.query_params.get('status')
+        student = self.request.GET.get('student')
+        status = self.request.GET.get('status')
 
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
 
         if status:
             queryset = queryset.filter(status=status)
@@ -73,13 +73,13 @@ class PointsList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Points.objects.all()
-        student = self.request.query_params.get('student')
-        is_exchanged = self.request.query_params.get('is_exchanged')
-        from_test = self.request.query_params.get('from_test')
-        from_homework = self.request.query_params.get('from_homework')
+        student = self.request.GET.get('student')
+        is_exchanged = self.request.GET.get('is_exchanged')
+        from_test = self.request.GET.get('from_test')
+        from_homework = self.request.GET.get('from_homework')
 
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
@@ -110,8 +110,8 @@ class ProductsList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        category = self.request.query_params.get('category')
-        search = self.request.query_params.get('search')
+        category = self.request.GET.get('category')
+        search = self.request.GET.get('search')
 
         queryset = Products.objects.all()
 
@@ -136,13 +136,13 @@ class PurchaseList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Purchase.objects.all()
-        user = self.request.query_params.get('user')
-        student = self.request.query_params.get('student')
+        user = self.request.GET.get('user')
+        student = self.request.GET.get('student')
 
         status = self.request.GET.get('status')
 
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
 
         if status:
             queryset = queryset.filter(status=status)
@@ -205,7 +205,7 @@ class CategoryList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Category.objects.all()
-        search = self.request.query_params.get('search')
+        search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(name__icontains=search)
         return queryset
