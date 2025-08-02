@@ -87,6 +87,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                 "university_entering_type": getattr(in_obj, "university_entering_type", None),
                 "student": getattr(in_obj.student, "id", None) if getattr(in_obj, "student", None) else None,
                 "degree": getattr(in_obj, "degree", None),
+                "file": getattr(in_obj.upload_file, "file", None),
                 "created_at": getattr(in_obj, "created_at", None),
             }
 
