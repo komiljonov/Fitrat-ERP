@@ -290,7 +290,7 @@ class UserAttendanceListView(ListAPIView):
     pagination_class = CustomUserPagination
 
     def get_queryset(self):
-        return CustomUser.objects.filter(is_archived=False)
+        return CustomUser.objects.filter(is_archived=False).exclude(role__in=["Parents","Student"])
 
     def list(self, request, *args, **kwargs):
         paginated_users = self.paginate_queryset(self.get_queryset())
