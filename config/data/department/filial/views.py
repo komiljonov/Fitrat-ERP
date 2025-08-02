@@ -1,14 +1,11 @@
 from django.db.models import Q
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from .models import Filial
-
 from .serializers import FilialSerializer, UserFilialSerializer
 from ...command.models import UserFilial
-from ...finances.timetracker.sinx import TimetrackerSinc
 
 
 class FilialListCreate(ListCreateAPIView):
@@ -22,6 +19,7 @@ class FilialRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     serializer_class = FilialSerializer
     permission_classes = [IsAuthenticated]
 
+
 class FilialListNoPG(ListAPIView):
     queryset = Filial.objects.all()
     serializer_class = FilialSerializer
@@ -29,7 +27,6 @@ class FilialListNoPG(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
-
 
 
 class UserFilialListCreate(ListCreateAPIView):
@@ -58,4 +55,3 @@ class UserFilialListCreate(ListCreateAPIView):
 class UserFilialRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     queryset = UserFilial.objects.all()
     serializer_class = UserFilialSerializer
-
