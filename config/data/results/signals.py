@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from icecream import ic
 
 from .models import Results
+from .serializers import ResultsSerializer
 from .utils import validate_olimpiada_requirements, validate_university_requirements, validate_certificate_requirements
 from ..finances.compensation.models import MonitoringAsos4, Asos, ResultName, ResultSubjects
 from ..finances.finance.models import Finance, Casher, Kind
@@ -73,6 +74,8 @@ def on_update(sender, instance: Results, created, **kwargs):
         try:
 
             instance_obj = Results.objects.filter(id=instance.id).first()
+            serializer = ResultsSerializer(instance_obj)
+            instance_obj = serializer.data
 
             if instance.status == "Accepted":
 
