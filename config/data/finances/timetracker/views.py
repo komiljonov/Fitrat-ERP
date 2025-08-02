@@ -304,11 +304,9 @@ class UserAttendanceListView(ListAPIView):
     def list(self, request, *args, **kwargs):
         paginated_users = self.paginate_queryset(self.get_queryset())
 
-        # 🔍 Get filters from request
-        employee = request.GET.get('employee')
         status = request.GET.get('status')
-        date = request.GET.get('date')
         is_weekend = request.GET.get('is_weekend')
+        date = request.GET.get('date')
         from_date = request.GET.get('start_date')
         to_date = request.GET.get('end_date')
         is_archived = request.GET.get('is_archived')
@@ -331,18 +329,20 @@ class UserAttendanceListView(ListAPIView):
             if from_date and to_date:
                 attendance_filter &= Q(date__lte=to_date)
 
-            # Get all Employee_attendance for user
+            # Step 1: Get all Employee_attendance for the user
             emp_attendance_qs = Employee_attendance.objects.filter(attendance_filter)
 
-            # Flatten all Stuff_Attendance linked to these attendances (filtered to In_side)
-            all_attendance_records = []
+            # Step 2: Flatten all their Stuff_Attendance (In_side only)
+            stuff_attendance_set = []
             for emp_att in emp_attendance_qs:
-                matched_attendance = emp_att.attendance.filter(action="In_side")
-                all_attendance_records.extend(matched_attendance)
+                # Only include Stuff_Attendance with action == In_side
+                for att in emp_att.attendance.filter(action="In_side"):
+                    stuff_attendance_set.append(att)
 
-            # Serialize flattened Stuff_Attendance list
-            serialized_tt_data = Stuff_AttendanceSerializer(all_attendance_records, many=True).data
+            # Step 3: Serialize once
+            serialized_tt_data = Stuff_AttendanceSerializer(stuff_attendance_set, many=True).data
 
+            # Step 4: Only one user entry
             results.append({
                 "user": {
                     "id": user.id,
