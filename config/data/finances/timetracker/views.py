@@ -312,7 +312,6 @@ class UserAttendanceListView(ListAPIView):
         is_archived = request.GET.get('is_archived')
 
         results = []
-        print(paginated_users.count())
 
         for user in paginated_users:
 
