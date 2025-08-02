@@ -290,7 +290,7 @@ class UserAttendanceListView(ListAPIView):
     pagination_class = CustomUserPagination
 
     def get_queryset(self):
-        qs = CustomUser.objects.filter(is_archived=False).exclude(role__in=["Parents","Student"])
+        qs = CustomUser.objects.filter(is_archived=False).exclude(role__in=["Parents", "Student"])
 
         filial = self.request.GET.get("filial")
         if filial:
@@ -331,7 +331,6 @@ class UserAttendanceListView(ListAPIView):
             if from_date and to_date:
                 attendance_filter &= Q(date__lte=to_date)
 
-            # 👇 Prefetch only "In_side" Stuff_Attendance
             attendance_qs = Stuff_Attendance.objects.filter(action="In_side")
 
             employee_attendance_qs = (
