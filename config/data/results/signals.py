@@ -107,8 +107,8 @@ def on_update(sender, instance: Results, created, **kwargs):
                 if instance.results == "Olimpiada":
                     who = "Mine" if instance.who == "Mine" else "Student"
 
-                    # Check if ASOS_4 exists
                     asos = Asos.objects.filter(name__icontains="ASOS_4").first()
+
                     if not asos:
                         raise ValueError("ASOS_4 topilmadi! Avval ASOS_4 yarating.")
 
