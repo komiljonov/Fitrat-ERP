@@ -34,7 +34,10 @@ class TimeTrackerList(ListCreateAPIView):
         from_date = self.request.GET.get('start_date')
         to_date = self.request.GET.get('end_date')
         action = self.request.GET.get('action')
+        is_archived = self.request.GET.get('is_archived')
 
+        if is_archived:
+            queryset = queryset.filter(employee__is_archived=is_archived.capitalize())
         if action:
             queryset = queryset.filter(attendance__action__in=action)
         if from_date:
