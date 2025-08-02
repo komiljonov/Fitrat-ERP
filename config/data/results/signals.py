@@ -111,7 +111,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         casher = None
 
                     # Check if bonus kind exists
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Results").first()
+                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
                     if not bonus_kind:
                         raise ValueError("Results turi topilmadi!")
 
@@ -185,7 +185,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         casher = None
 
                     # Check if bonus kind exists
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Results").first()
+                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
                     if not bonus_kind:
                         raise ValueError("Results turi topilmadi!")
 
@@ -287,7 +287,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                     if not casher:
                         casher = None
 
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Results").first()
+                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
                     if not bonus_kind:
                         raise ValueError("Results turi topilmadi!")
 
