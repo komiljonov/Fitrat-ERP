@@ -1,7 +1,6 @@
 import io
 from datetime import timedelta, datetime
 
-import icecream
 from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
@@ -19,7 +18,6 @@ from rest_framework.views import APIView
 
 from .models import Archived, Frozen
 from .serializers import ArchivedSerializer, StuffArchivedSerializer, FrozenSerializer
-from ..new_lid.models import Lid
 from ...account.models import CustomUser
 from ...finances.timetracker.sinx import TimetrackerSinc
 
@@ -63,7 +61,7 @@ class ArchivedListAPIView(ListCreateAPIView):
             # Student or lid exists and their balance is >= 100000
             queryset = queryset.filter(
                 Q(student__balance__gte=100000) |
-                Q(lid__balance__gte=100000,)
+                Q(lid__balance__gte=100000, )
             )
 
         if debts:
@@ -134,7 +132,6 @@ class ArchivedListAPIView(ListCreateAPIView):
 
             queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
-
         return queryset
 
 
@@ -168,7 +165,6 @@ class StudentArchivedListAPIView(ListAPIView):
         return queryset
 
 
-
 class StuffArchive(CreateAPIView):
     serializer_class = StuffArchivedSerializer
     permission_classes = (IsAuthenticated,)
@@ -177,7 +173,7 @@ class StuffArchive(CreateAPIView):
         user_id = request.data.get('stuff')
         user = CustomUser.objects.filter(id=user_id).first()
 
-        ic.ic(user)  # Debug
+        ic(user)  # Debug
 
         if not user:
             return Response({"error": "Xodim topilmadi!"}, status=status.HTTP_404_NOT_FOUND)
@@ -189,7 +185,7 @@ class StuffArchive(CreateAPIView):
         tt = TimetrackerSinc()
         if user.second_user:
             tt_response = tt.archive_employee(user.second_user)
-            ic.ic(tt_response)  # Debug
+            ic(tt_response)  # Debug
 
             if not tt_response or "error" in tt_response:
                 return Response(
@@ -235,7 +231,7 @@ class ExportLidsExcelView(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        queryset = Archived.objects.select_related("lid", "student", "creator", "comment","filial")
+        queryset = Archived.objects.select_related("lid", "student", "creator", "comment", "filial")
 
         # Filters
         filters = {}
@@ -264,7 +260,8 @@ class ExportLidsExcelView(APIView):
             queryset = queryset.filter(student__student_stage_type=student_stage_type)
 
         if education_lang:
-            queryset = queryset.filter(Q(lid__education_lang=education_lang) | Q(student__education_lang=education_lang))
+            queryset = queryset.filter(
+                Q(lid__education_lang=education_lang) | Q(student__education_lang=education_lang))
         if call_operator:
             queryset = queryset.filter(
                 Q(lid__call_operator__id=call_operator) | Q(student__call_operator__id=call_operator)
@@ -328,14 +325,11 @@ class ExportLidsExcelView(APIView):
 
             queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
-
         # Get filtered archived objects
         archived_objects = queryset.filter(**filters)
 
-
         if is_archived:
             archived_objects = archived_objects.filter(is_archived=is_archived.capitalize())
-
 
         if is_student:
             is_student_bool = is_student.capitalize()
@@ -394,8 +388,8 @@ class ExportLidsExcelView(APIView):
                 obj.ball if hasattr(obj, "ball") else "",
                 obj.filial.name if getattr(obj, "filial", None) else "",
                 obj.marketing_channel.name if getattr(obj, "marketing_channel", None) else "",
-                getattr(obj, "lid_stage_type", "") or getattr(obj, "student_stage_type","") or "",
-                getattr(obj, "lid_stages", "") or getattr(obj, "new_student_stages","") or "",
+                getattr(obj, "lid_stage_type", "") or getattr(obj, "student_stage_type", "") or "",
+                getattr(obj, "lid_stages", "") or getattr(obj, "new_student_stages", "") or "",
                 getattr(obj, "ordered_stages", "") or "",
                 "Ha" if archived.is_archived else "Yo‘q",
                 "Ha" if getattr(obj, "is_frozen", False) else "Yo‘q",
@@ -423,6 +417,7 @@ class ExportLidsExcelView(APIView):
         filename = f"archived_lids_{now().strftime('%Y%m%d_%H%M')}.xlsx"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
+
 
 class LidStudentArchivedStatistics(APIView):
     def get(self, request, *args, **kwargs):
