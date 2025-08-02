@@ -17,5 +17,5 @@ urlpatterns = [
 
     path("all/fixed/", UserAttendanceListView.as_view()),
 
-    path("statistics",TimeTrackerStatisticsListView.as_view()),
+    path("statistics/", TimeTrackerStatisticsListView.as_view()),
 ]
