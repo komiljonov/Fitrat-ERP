@@ -353,24 +353,24 @@ class UserAttendanceListView(ListAPIView):
         return self.get_paginated_response(results)
 
 
-
 class TimeTrackerStatisticsListView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-
-        in_office = Employee_attendance.objects.filter(status="In_office")
-        gone = Employee_attendance.objects.filter(status="Gone")
-        absent = Employee_attendance.objects.filter(status="Absent")
-
         date = request.GET.get("date")
+
         if date:
-            in_office = in_office.filter(date__gte=parse_date(date))
-            gone = gone.filter(date__lte=parse_date(date))
-            absent = absent.filter(date__lte=parse_date(date))
+            date = parse_date(date)
+            filters = {"date": date}
+        else:
+            filters = {}
+
+        in_office_count = Employee_attendance.objects.filter(status="In_office", **filters).count()
+        gone_count = Employee_attendance.objects.filter(status="Gone", **filters).count()
+        absent_count = Employee_attendance.objects.filter(status="Absent", **filters).count()
 
         return Response({
-            "in_office": in_office,
-            "gone": gone,
-            "absent": absent,
+            "in_office": in_office_count,
+            "gone": gone_count,
+            "absent": absent_count,
         }, status=200)
