@@ -202,7 +202,8 @@ class TT_Data(APIView):
                 # ✅ Update photo or filials if needed
                 update_payload = {}
                 tt_user_filials = set(user.get("filials", []))
-                local_tt_filials = set(custom_user.filial.filter(tt_filial__isnull=False).values_list("tt_filial", flat=True))
+                local_tt_filials = set(
+                    custom_user.filial.filter(tt_filial__isnull=False).values_list("tt_filial", flat=True))
 
                 if not tt_user_filials or tt_user_filials != local_tt_filials:
                     update_payload["filials"] = list(local_tt_filials)
@@ -225,7 +226,7 @@ class TT_Data(APIView):
                 continue
 
         # ✅ Now create missing TT users from our local DB
-        custom_users = CustomUser.objects.exclude(phone__in=tt_phones, role__in=["Parents","Student"])
+        custom_users = CustomUser.objects.exclude(phone__in=tt_phones, role__in=["Parents", "Student"])
 
         for user in custom_users:
             try:
