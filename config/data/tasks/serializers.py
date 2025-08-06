@@ -9,6 +9,7 @@ from ..student.student.models import Student
 from ..student.student.serializers import StudentSerializer
 from ..tasks.models import Task
 from ..account.serializers import UserListSerializer
+from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
 
@@ -17,6 +18,7 @@ class TaskSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     performer = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
 
     class Meta:
         model = Task
@@ -28,7 +30,7 @@ class TaskSerializer(serializers.ModelSerializer):
             'performer',
             "filial",
             "task",
-            # "file",
+            "file",
             "comment",
             "date_of_expired",
             "status",
@@ -88,8 +90,8 @@ class TaskSerializer(serializers.ModelSerializer):
         representation['performer'] = UserListSerializer(instance.performer,context=self.context).data
         # Corrected the syntax for `UserListSerializer`
 
-        # if instance.file:
-        #     representation['file'] = FileUploadSerializer(instance.file,context=self.context).data
+        if instance.file:
+            representation['file'] = FileUploadSerializer(instance.file,context=self.context).data
 
         if instance.lid:
             representation['lid'] = LidSerializer(instance.lid).data
