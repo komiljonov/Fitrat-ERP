@@ -1,3 +1,4 @@
+import json
 import logging
 import random
 
@@ -723,7 +724,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                 comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
                         f" {attrs.get('student_comment')} sabab bilan inkor etdingiz.",
                 choice="Examination",
-                come_from=attrs.get("id")
+                come_from=json.dumps(self.instance)
             )
             kind = Kind.objects.get(name="Money back")
 
@@ -747,7 +748,11 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                         comment=f"Farzandingiz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
                                 f" {attrs.get('student_comment')} sabab bilan inkor etdi.",
                         choice="Examination",
-                        come_from=attrs.get("id")
+                        come_from=json.dumps({
+                            "id": self.instance.id,
+                            "exam_id": self.instance.exam.id,
+                            "group_id": self.instance.group.id,
+                        })
                     )
 
         # If less than 12 hours remain before the exam starts
