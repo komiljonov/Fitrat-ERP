@@ -86,8 +86,18 @@ class TaskSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        representation["creator"] = UserListSerializer(instance.creator,context=self.context).data
-        representation['performer'] = UserListSerializer(instance.performer,context=self.context).data
+        representation["creator"] = {
+            "id": instance.creator.id,
+            "full_name": instance.creator.full_name,
+            "phone": instance.creator.phone,
+            "photo": instance.creator.photo,
+        }
+        representation['performer'] = {
+            "id": instance.creator.id,
+            "full_name": instance.creator.full_name,
+            "phone": instance.creator.phone,
+            "photo": instance.creator.photo,
+        }
         # Corrected the syntax for `UserListSerializer`
 
         if instance.file:
