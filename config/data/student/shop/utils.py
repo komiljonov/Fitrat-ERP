@@ -1,4 +1,8 @@
+import json
+
 from .models import Coins, CoinsSettings
+from ...notifications.models import Notification
+
 
 def give_coin(choice, student, from_point, result_type=None):
     """
@@ -37,10 +41,17 @@ def give_coin(choice, student, from_point, result_type=None):
     if coin_setting:
         print(coin_setting)
 
-        Coins.objects.create(
+        coin = Coins.objects.create(
             student=student,
             choice=choice,
             status="Given",
             coin=coin_setting.coin,
             comment=valid_choices[choice].format(choice=choice, coin=coin_setting.coin)
+        )
+
+        Notification.objects.create(
+            user=student.user,
+            choice="Shopping",
+            come_from=json.dumps(Coins.objects.filter(id=coin.id).first()),
+            comment=f"Sizga {coin_setting.coin} miqdorida tangalar qo'shildi!"
         )
