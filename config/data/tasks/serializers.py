@@ -1,5 +1,3 @@
-from django.contrib.auth import get_user_model
-from icecream import ic
 from rest_framework import serializers
 
 from ..account.models import CustomUser
@@ -8,7 +6,6 @@ from ..lid.new_lid.serializers import LidSerializer
 from ..student.student.models import Student
 from ..student.student.serializers import StudentSerializer
 from ..tasks.models import Task
-from ..account.serializers import UserListSerializer
 from ..upload.models import File
 from ..upload.serializers import FileUploadSerializer
 
@@ -101,7 +98,7 @@ class TaskSerializer(serializers.ModelSerializer):
         # Corrected the syntax for `UserListSerializer`
 
         if instance.file:
-            representation['file'] = FileUploadSerializer(instance.file,context=self.context).data
+            representation['file'] = FileUploadSerializer(instance.file, context=self.context).data
 
         if instance.lid:
             representation['lid'] = LidSerializer(instance.lid).data
@@ -118,4 +115,3 @@ class TaskSerializer(serializers.ModelSerializer):
         # Filter out unwanted values
         filtered_data = {key: value for key, value in representation.items() if value not in [{}, [], None, "", False]}
         return filtered_data
-
