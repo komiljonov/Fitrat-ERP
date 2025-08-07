@@ -30,7 +30,11 @@ class AttendanceList(ListCreateAPIView):
         reason = self.request.GET.get('reason')
         student = self.request.GET.get('student')
         group = self.request.GET.get('group')
+        filial = self.request.GET.get('filial')
         queryset = Attendance.objects.all()
+
+        if filial:
+            queryset = queryset.filter(group__filial__id=filial)
 
         if start_date and end_date:
             start_date = make_aware(datetime.strptime(start_date, '%Y-%m-%d'))
