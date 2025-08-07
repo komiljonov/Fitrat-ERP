@@ -10,6 +10,7 @@ from .serializers import TeacherSerializer
 from ...account.models import CustomUser
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...exam_results.models import MockExamResult
+from ...lid.new_lid.models import Lid
 from ...results.models import Results
 from ...student.groups.models import Group, SecondaryGroup
 from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
@@ -113,15 +114,21 @@ class TeacherStatistics(ListAPIView):
                 lid__is_student=False
             ).count(),
 
-            "first_lesson_archived": StudentGroup.objects.filter(
-                Q(lid__is_archived=False) | Q(is_archived=False),
-                student__isnull=True,
-                lid__lid_stage_type="ORDERED_LID",
-                lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-                lid__is_student=False,
-                group__teacher=teacher
+            # "first_lesson_archived": StudentGroup.objects.filter(
+            #     Q(lid__is_archived=False) | Q(is_archived=False),
+            #     student__isnull=True,
+            #     lid__lid_stage_type="ORDERED_LID",
+            #     lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+            #     lid__is_student=False,
+            #     group__teacher=teacher
+            # ).count(),
+            "first_lesson_archived":Lid.objects.filter(
+                lid_stage_type="ORDERED_LID",
+                ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+                is_archived=True,
+                is_student=False,
+                teacher=teacher,
             ).count(),
-
             "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
             "new_students": StudentGroup.objects.filter(group__teacher=teacher,
                                                         student__student_stage_type="NEW_STUDENT", **filters).count(),
