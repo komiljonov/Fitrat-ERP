@@ -288,10 +288,9 @@ class CustomAuthToken(TokenObtainPairView):
             for token in OutstandingToken.objects.filter(user=user):
                 try:
                     BlacklistedToken.objects.get_or_create(token=token)
-                except Exception:
-                    return Response({
-                        "token has been blacklisted",
-                    }, status=status.HTTP_406_NOT_ACCEPTABLE)
+                except Exception as e:
+                    print(f"[Token Blacklist Error] token_id={token.id}, error={str(e)}")
+                    continue
 
         # ✅ Issue new tokens
         refresh = RefreshToken.for_user(user)
