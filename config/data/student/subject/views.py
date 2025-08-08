@@ -306,56 +306,56 @@ class ImportStudentsAPIView(APIView):
         if not file or not file.name.endswith(('.xlsx', '.xls')):
             return Response({'error': 'Excel fayl (.xlsx/.xls) yuboring'}, status=400)
 
-        df = pd.read_excel(file)
+        try:
+            df = pd.read_excel(file)
 
-        required_fields = {'Mavzu', 'Dars mazmuni', 'Uyga vazifa', 'Uyga vazifa mazmuni', 'Kurslar', "Daraja",
-                           'Fanlar'}
-        if not required_fields.issubset(df.columns):
+            required_fields = {'Mavzu', 'Dars mazmuni', 'Uyga vazifa', 'Uyga vazifa mazmuni', 'Kurslar', "Daraja",
+                               'Fanlar'}
+            if not required_fields.issubset(df.columns):
+                return Response({
+                    'error': f'Excel faylda quyidagi ustunlar bo\'lishi shart: {required_fields}'}, status=400)
+
+            created = 0
+            errors = []
+
+            with transaction.atomic():
+                for idx, row in df.iterrows():
+                    course_name = str(row.get("Kurslar", "")).strip()
+                    subject_name = str(row.get("Fanlar", "")).strip()
+                    level_name = str(row.get("Daraja", "")).strip()
+
+                    course = Course.objects.filter(name__icontains=course_name).first()
+                    level = Level.objects.filter(name__iexact=level_name, courses=course).first()
+                    subject = Subject.objects.filter(name__iexact=subject_name).first()
+
+                    if not course or not subject:
+                        errors.append({
+                            'row': idx + 2,
+                            'error': f"Course yoki Subject topilmadi: {row['Course']}, {row['Subject']}"
+                        })
+                        continue
+
+
+                    theme = Theme.objects.create(
+                        title=row['Mavzu'],
+                        description=row['Dars mazmuni'],
+                        theme="Lesson",
+                        course=course,
+                        level=level,
+                        subject=subject,
+                    )
+
+                    Homework.objects.create(
+                        theme=theme,
+                        title=row['Uyga vazifa'],
+                        body=row['Uyga vazifa mazmuni'],
+                    )
+                    created += 1
+
             return Response({
-                'error': f'Excel faylda quyidagi ustunlar bo\'lishi shart: {required_fields}'}, status=400)
+                'message': f"{created} ta tema va uyga vazifa import qilindi",
+                'errors': errors
+            }, status=201)
 
-        created = 0
-        errors = []
-
-        with transaction.atomic():
-            for idx, row in df.iterrows():
-                course_name = str(row.get("Kurslar", "")).strip()
-                subject_name = str(row.get("Fanlar", "")).strip()
-                level_name = str(row.get("Daraja", "")).strip()
-
-                course = Course.objects.filter(name__icontains=course_name).first()
-                level = Level.objects.filter(name__iexact=level_name, courses=course).first()
-                subject = Subject.objects.filter(name__iexact=subject_name).first()
-
-                if not course or not subject:
-                    errors.append({
-                        'row': idx + 2,
-                        'error': f"Course yoki Subject topilmadi: {row['Course']}, {row['Subject']}"
-                    })
-                    continue
-
-                print(course)
-
-                theme = Theme.objects.create(
-                    title=row['Mavzu'],
-                    description=row['Dars mazmuni'],
-                    theme="Lesson",
-                    course=course,
-                    level=level,
-                    subject=subject,
-                )
-
-                Homework.objects.create(
-                    theme=theme,
-                    title=row['Uyga vazifa'],
-                    body=row['Uyga vazifa mazmuni'],
-                )
-                created += 1
-
-        return Response({
-            'message': f"{created} ta tema va uyga vazifa import qilindi",
-            'errors': errors
-        }, status=201)
-
-        # except Exception as e:
-        #     return Response({'error': str(e)}, status=500)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
