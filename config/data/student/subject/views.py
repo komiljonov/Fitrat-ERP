@@ -335,6 +335,8 @@ class ImportStudentsAPIView(APIView):
                         })
                         continue
 
+                    print(course)
+
                     theme = Theme.objects.create(
                         title=row['Mavzu'],
                         description=row['Dars mazmuni'],
