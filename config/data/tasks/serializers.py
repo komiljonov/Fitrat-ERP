@@ -87,14 +87,16 @@ class TaskSerializer(serializers.ModelSerializer):
             "id": instance.creator.id,
             "full_name": instance.creator.full_name,
             "phone": instance.creator.phone,
-            "photo": instance.creator.photo,
+            "photo": instance.creator.photo.url if instance.creator.photo else None,
         }
-        representation['performer'] = {
-            "id": instance.creator.id,
-            "full_name": instance.creator.full_name,
-            "phone": instance.creator.phone,
-            "photo": instance.creator.photo,
+
+        representation["performer"] = {
+            "id": instance.performer.id if instance.performer else None,
+            "full_name": instance.performer.full_name if instance.performer else None,
+            "phone": instance.performer.phone if instance.performer else None,
+            "photo": instance.performer.photo.url if instance.performer and instance.performer.photo else None,
         }
+
         # Corrected the syntax for `UserListSerializer`
 
         if instance.file:
