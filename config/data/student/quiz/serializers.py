@@ -720,7 +720,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
 
         if attrs.get("is_participating") == False:
             Notification.objects.create(
-                user=student,
+                user=student.user,
                 comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
                         f" {attrs.get('student_comment')} sabab bilan inkor etdingiz.",
                 choice="Examination",
