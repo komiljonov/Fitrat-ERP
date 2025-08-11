@@ -20,6 +20,9 @@ class Group_Type(BaseModel):
     ],
         default='DAILY',
         max_length=100)
+
+    comment = models.TextField(null=True,blank=True)
+
     def __str__(self):
         return self.price_type
 
