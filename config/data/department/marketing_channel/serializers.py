@@ -14,6 +14,7 @@ class Group_typeSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "price_type",
+            "comment",
             "created_at",
             "updated_at",
         ]

@@ -129,7 +129,7 @@ class UserList(ListAPIView):
         queryset = CustomUser.objects.filter().exclude(role__in=["Student", "Parents"])
 
         if search:
-            queryset = queryset.filter(full_name__icontains=search)
+            queryset = queryset.filter(Q(full_name__icontains=search) | Q(phone__icontains=search))
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())

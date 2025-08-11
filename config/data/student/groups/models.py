@@ -97,6 +97,8 @@ class GroupSaleStudent(BaseModel):
                                    related_name='sale_student_lid')
     amount = models.FloatField(default=0, null=True, blank=True)
 
+    comment = models.TextField(null=True, blank=True)
+
 
 class SecondaryGroup(BaseModel):
     name = models.CharField(max_length=100, null=True, blank=True)

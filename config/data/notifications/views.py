@@ -15,7 +15,15 @@ class  NotificationListAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         user = CustomUser.objects.filter(id=self.request.user.id).first()
-        return Notification.objects.filter(user=user)
+        qs = Notification.objects.filter(user=user)
+
+        is_read = self.request.GET.get('is_read')
+        has_read = self.request.GET.get('has_read')
+        if is_read:
+            qs = qs.filter(is_read=is_read.capitalize())
+        if has_read:
+            qs = qs.filter(has_read=has_read.capitalize())
+        return qs
 
 
 class NotificationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -38,7 +46,7 @@ class NotificationListNoPG(ListAPIView):
             qs = qs.filter(is_read=is_read.capitalize())
         if has_read:
             qs = qs.filter(has_read=has_read.capitalize())
-        return
+        return qs
 
     def get_paginated_response(self, data):
         return Response(data)
