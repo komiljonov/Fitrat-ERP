@@ -31,6 +31,8 @@ class Level(BaseModel):
 
     order = models.IntegerField(default=0)
 
+    is_archived = models.BooleanField(default=False)
+
     class Meta:
         ordering = ['created_at']
 

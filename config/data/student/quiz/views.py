@@ -693,6 +693,10 @@ class QuizListCreateView(ListCreateAPIView):
         theme = self.request.GET.get("theme")
         homework = self.request.GET.get("homework")
         search = self.request.GET.get("search")
+        filial = self.request.GET.get("filial")
+
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
 
         if homework:
             queryset = queryset.filter(homework__id=homework)
@@ -828,6 +832,7 @@ class ExamListView(ListCreateAPIView):
         homework = self.request.GET.get("homework")
         is_language = self.request.GET.get("is_language")
         lang_foreign = self.request.GET.get("lang_foreign")
+        filial = self.request.GET.get("filial")
         lang_national = self.request.GET.get("lang_national")
         options = self.request.GET.get("options")
 
@@ -849,6 +854,9 @@ class ExamListView(ListCreateAPIView):
         if user.role == "Student":
             two_days_later = datetime.today() + timedelta(days=3)
             queryset = queryset.filter(date__gt=two_days_later)
+
+        if filial:
+            queryset = queryset.filter(student__filial__id=filial)
 
         if options:
             queryset = queryset.filter(options=options)
@@ -1283,7 +1291,10 @@ class ExamCertificateAPIView(ListCreateAPIView):
         exam = self.request.GET.get("exam")
         expire_date = self.request.GET.get("expire_date")
         status = self.request.GET.get("status")
+        filial = self.request.GET.get("filial")
 
+        if filial:
+            qs = qs.filter(student__filial__id=filial)
         if student:
             qs = qs.filter(student__id=student)
         if exam:

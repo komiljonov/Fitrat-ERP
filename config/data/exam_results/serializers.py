@@ -317,6 +317,9 @@ class LevelExamSerializer(serializers.ModelSerializer):
         subject = validated_data.get("subject")
         group = validated_data.get("group")
 
+        if not validated_data.get("filial"):
+            validated_data["filial"] = getattr(course, "filial", None)
+
         # Create the LevelExam instance
         level_exam = LevelExam.objects.create(**validated_data)
 
@@ -329,18 +332,24 @@ class LevelExamSerializer(serializers.ModelSerializer):
             groups = []
 
         if groups:
-            students = StudentGroup.objects.filter(group__in=groups)
+            students = StudentGroup.objects.filter(group__in=groups).select_related("student", "lid")
 
-            for student in students:
-                Mastering.objects.create(
-                    student=student.student if student.student else None,
-                    lid=student.lid if student.lid else None,
+            # Prepare Mastering entries for bulk insert
+            mastering_entries = [
+                Mastering(
+                    student=s.student,
+                    lid=s.lid,
                     test=None,
                     choice=level_exam.choice,
                     mock=None,
                     level_exam=level_exam,
                     ball=0
                 )
+                for s in students
+            ]
+
+            if mastering_entries:
+                Mastering.objects.bulk_create(mastering_entries, batch_size=500)
 
         return level_exam
 
