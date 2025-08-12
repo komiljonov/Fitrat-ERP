@@ -7,7 +7,7 @@ from .models import CustomUser
 from ..account.permission import PhoneAuthBackend
 from ..department.filial.models import Filial
 from ..finances.compensation.models import Compensation, Bonus, Page
-from ..finances.finance.models import Casher
+from ..finances.finance.models import Casher, Finance
 from ..finances.timetracker.sinx import TimetrackerSinc
 from ..student.student.models import Student
 from ..upload.models import File
@@ -258,6 +258,10 @@ class UserSerializer(serializers.ModelSerializer):
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
     is_linked = serializers.SerializerMethodField()
     student_id = serializers.SerializerMethodField()
+    lessons_payment = serializers.SerializerMethodField()
+    given_bonus = serializers.SerializerMethodField()
+    given_penalty = serializers.SerializerMethodField()
+
 
     #
     # # def __init__(self, *args, **kwargs):
@@ -291,11 +295,50 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             "id", "full_name", "first_name", "last_name", "is_linked", "calculate_penalties", "calculate_bonus",
-            "phone", "role", "penalty", "pages", "files",
+            "phone", "role", "penalty", "pages", "files","lessons_payment","given_bonus", "given_penalty",
             "photo", "filial", "balance", "salary", "extra_number", "is_call_center", "second_user", "student_id",
             "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation", "monitoring",
             "updated_at", "is_archived"
         )
+
+    def get_lessons_payment(self, obj):
+        finances = (
+                Finance.objects
+                .filter(
+                    stuff=obj,
+                    kind__name__icontains="Lesson payment",
+                    action="EXPENSE"
+                )
+                .aggregate(total=Sum("amount"))
+                .get("total") or 0
+        )
+        return finances
+
+    def get_given_bonus(self, obj):
+        finances = (
+                Finance.objects
+                .filter(
+                    stuff=obj,
+                    kind__name__icontains="Bonus",
+                    action="EXPENSE"
+                )
+                .aggregate(total=Sum("amount"))
+                .get("total") or 0
+        )
+        return finances
+
+    def get_given_penalty(self, obj):
+        finances = (
+                Finance.objects
+                .filter(
+                    stuff=obj,
+                    kind__name__icontains="Money back",
+                    action="INCOME"
+                )
+                .aggregate(total=Sum("amount"))
+                .get("total") or 0
+        )
+        return finances
 
     def get_student_id(self, obj):
         return Student.objects.filter(user=obj).values_list("id", flat=True).first()
