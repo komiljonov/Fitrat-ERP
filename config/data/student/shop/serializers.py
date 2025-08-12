@@ -104,8 +104,10 @@ class ProductsSerializer(serializers.ModelSerializer):
             "coin",
             "image",
             "selling_counts",
+            "quantity",
             "created_at",
         ]
+
 
     def get_selling_counts(self, instance):
         return Purchase.objects.filter(product=instance).count()

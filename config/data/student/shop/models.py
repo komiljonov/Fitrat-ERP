@@ -87,6 +87,8 @@ class Products(BaseModel):
                                              related_name="product_category", )
     image: "File" = models.ManyToManyField("upload.File", related_name="product_image")
 
+    quantity = models.IntegerField(default=0)
+
     def __str__(self):
         return f"{self.name} -- {str(self.coin)}"
 
