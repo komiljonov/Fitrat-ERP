@@ -856,7 +856,7 @@ class ExamListView(ListCreateAPIView):
             queryset = queryset.filter(date__gt=two_days_later)
 
         if filial:
-            queryset = queryset.filter(student__filial__id=filial)
+            queryset = queryset.filter(filial__id=filial)
 
         if options:
             queryset = queryset.filter(options=options)

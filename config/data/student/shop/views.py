@@ -214,6 +214,10 @@ class CategoryList(ListCreateAPIView):
     def get_queryset(self):
         queryset = Category.objects.all()
         search = self.request.GET.get('search')
+        filial = self.request.GET.get('filial')
+
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
         if search:
             queryset = queryset.filter(name__icontains=search)
         return queryset
