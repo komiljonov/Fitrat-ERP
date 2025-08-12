@@ -31,6 +31,7 @@ class RelativesSerializer(serializers.ModelSerializer):
         phone = validated_data.get("phone")
         student = validated_data.get("student")
         name = validated_data.get("name")
+        lid = validated_data.get("lid")
 
         if phone:
             parent = CustomUser.objects.filter(phone=phone).first()
@@ -65,7 +66,7 @@ class RelativesSerializer(serializers.ModelSerializer):
                 phone=phone,
                 who=validated_data.get("who"),
                 user=parent,
-                lid=None
+                lid=lid
             )
             return relative
 
