@@ -32,7 +32,7 @@ class RelativesSerializer(serializers.ModelSerializer):
         student = validated_data.get("student")
         name = validated_data.get("name")
 
-        if phone and student:
+        if phone:
             parent = CustomUser.objects.filter(phone=phone).first()
             if not parent:
                 password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
