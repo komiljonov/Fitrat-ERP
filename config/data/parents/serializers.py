@@ -6,12 +6,14 @@ from rest_framework import serializers
 
 from data.account.models import CustomUser
 from data.parents.models import Relatives
+from data.student.student.models import Student
 from data.student.student.sms import SayqalSms
 
 sms = SayqalSms()
 
 
 class RelativesSerializer(serializers.ModelSerializer):
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
     class Meta:
         model = Relatives
         fields = [
