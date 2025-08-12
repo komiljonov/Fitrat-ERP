@@ -123,12 +123,14 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 )
                 parents = Relatives.objects.filter(student=instance.student).all()
                 for parent in parents:
-                    Notification.objects.create(
-                        user=parent,
-                        comment=f"Talaba {instance.student.first_name} {instance.student.last_name}  -  bugungi {instance.group.name} guruhidagi {attendances_count} darsiga qatnashmadi!",
-                        come_from=instance.student.id,
-                        choice="Students",
-                    )
+
+                    if parent:
+                        Notification.objects.create(
+                            user=parent.user,
+                            comment=f"Talaba {instance.student.first_name} {instance.student.last_name}  -  bugungi {instance.group.name} guruhidagi {attendances_count} darsiga qatnashmadi!",
+                            come_from=instance.student.id,
+                            choice="Students",
+                        )
 
 
 @receiver(post_save, sender=Attendance)
