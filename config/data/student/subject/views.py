@@ -71,8 +71,12 @@ class LevelList(ListCreateAPIView):
         subject = self.request.GET.get('subject', None)
         filial = self.request.GET.get('filial', None)
         course = self.request.GET.get('course', None)
+        is_archived = self.request.GET.get('is_archived', None)
 
         queryset = Level.objects.all()
+
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if course:
             queryset = queryset.filter(courses__id=course)
@@ -100,8 +104,12 @@ class LevelNoPG(ListAPIView):
     def get_queryset(self):
         filial = self.request.GET.get('filial', None)
         subject = self.request.GET.get('subject', None)
+        is_archived = self.request.GET.get('is_archived', None)
 
         queryset = Level.objects.all()
+
+        if is_archived:
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if subject:
             queryset = queryset.filter(subject__id=subject)

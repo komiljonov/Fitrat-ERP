@@ -138,6 +138,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
                 'teacher': instance.group.teacher.full_name if instance.group.teacher else None,
                 'room_number': instance.group.room_number.room_number,
                 'course_id': instance.group.course.id,
+                'finish_date': instance.group.finish_date if instance.group.finish_date else None,
             }
             rep['group'] = group_data
 

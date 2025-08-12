@@ -81,6 +81,7 @@ class LevelSerializer(serializers.ModelSerializer):
             "courses",
             "all_themes",
             "order",
+            "is_archived",
         ]
 
     def get_all_themes(self, obj):

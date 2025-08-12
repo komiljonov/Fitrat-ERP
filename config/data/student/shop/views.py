@@ -112,8 +112,12 @@ class ProductsList(ListCreateAPIView):
     def get_queryset(self):
         category = self.request.GET.get('category')
         search = self.request.GET.get('search')
+        filial = self.request.GET.get('filial')
 
         queryset = Products.objects.all()
+
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
 
         if search:
             queryset = queryset.filter(name__icontains=search)
@@ -140,9 +144,13 @@ class PurchaseList(ListCreateAPIView):
         student = self.request.GET.get('student')
 
         status = self.request.GET.get('status')
+        filial = self.request.GET.get('filial')
 
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
+
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
 
         if status:
             queryset = queryset.filter(status=status)
@@ -228,6 +236,12 @@ class OrdersStatisList(APIView):
         student = self.request.GET.get('student')
         status = self.request.GET.get('status')
         updater = self.request.GET.get('updater')
+        filial = self.request.GET.get('filial')
+
+        filters = {}
+
+        if filial:
+            filters['filial__id'] = filial
 
         # if status:
         #     queryset = queryset.filter(status=status)
@@ -238,9 +252,9 @@ class OrdersStatisList(APIView):
         # if updater:
         #     queryset = queryset.filter(updater__id=updater)
 
-        complated_orders = Purchase.objects.filter(status="Completed")
-        pending_orders = Purchase.objects.filter(status="Pending")
-        cancalled_orders = Purchase.objects.filter(status="Cancelled")
+        complated_orders = Purchase.objects.filter(status="Completed",**filters)
+        pending_orders = Purchase.objects.filter(status="Pending",**filters)
+        cancalled_orders = Purchase.objects.filter(status="Cancelled",**filters)
 
         return Response({
             "complated_orders": complated_orders.count(),

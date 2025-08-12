@@ -199,7 +199,10 @@ class LevelExamListCreateAPIView(ListCreateAPIView):
         group = self.request.GET.get('group')
         course = self.request.GET.get('course')
         subject = self.request.GET.get('subject')
+        filial = self.request.GET.get('filial')
 
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
         if choice:
             queryset = queryset.filter(choice=choice)
         if group:

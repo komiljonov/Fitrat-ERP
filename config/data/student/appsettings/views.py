@@ -316,3 +316,41 @@ class SendSmsToStudent(APIView):
             {"count": sent_count, "message": "SMS sent successfully."},
             status=HTTP_200_OK
         )
+
+
+
+class SendNotifToStudent(APIView):
+    def post(self, request, *args, **kwargs):
+        students = request.data.get("students", [])
+        message = request.data.get("message", "")
+
+        if not students or not message:
+            return JsonResponse(
+                {"error": "Missing 'students' list or 'message' text."},
+                status=HTTP_400_BAD_REQUEST
+            )
+
+        sent_count = 0
+
+        for student in students:
+            relatives = Relatives.objects.filter(
+                Q(lid__id=student) | Q(student__id=student)
+            )
+            if not relatives.exists():
+                return JsonResponse(
+                    {"error": "Parent not found"},
+                    status=HTTP_400_BAD_REQUEST
+                )
+
+            for relative in relatives:
+                if relative.user:
+                    Notification.objects.create(
+                        user=relative.user,
+                        comment=message,
+                        choice="Admin_Message",
+                        come_from="Admin_Message"
+                    )
+        return JsonResponse(
+            {"count": sent_count, "message": "Notifications sent successfully."},
+            status=HTTP_200_OK
+        )
