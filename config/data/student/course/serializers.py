@@ -4,21 +4,41 @@ from rest_framework import serializers
 
 from data.student.course.models import Course
 from data.student.subject.models import Level, Theme, Subject
-from data.student.subject.serializers import SubjectSerializer, ThemeSerializer, LevelSerializer
+from data.student.subject.serializers import (
+    SubjectSerializer,
+    ThemeSerializer,
+    LevelSerializer,
+)
+
 
 class CourseSerializer(serializers.ModelSerializer):
-    level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all(),allow_null=True)
+    level = serializers.PrimaryKeyRelatedField(
+        queryset=Level.objects.all(), allow_null=True
+    )
     theme = serializers.PrimaryKeyRelatedField(
         queryset=Theme.objects.all(), many=True, required=False, allow_null=True
     )
-    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
+    subject = serializers.PrimaryKeyRelatedField(
+        queryset=Subject.objects.all(), allow_null=True
+    )
     lessons_number = serializers.SerializerMethodField()
 
     level_counts = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
-        fields = ["id", "name", "level","filial", "lessons_number", "level_counts" ,"theme", "subject", "status","is_archived"]
+        fields = [
+            "id",
+            "name",
+            "level",
+            "filial",
+            "lessons_number",
+            "level_counts",
+            "theme",
+            "subject",
+            "status",
+            "is_archived",
+        ]
 
     def to_internal_value(self, data):
         res = super().to_internal_value(data)
@@ -26,10 +46,13 @@ class CourseSerializer(serializers.ModelSerializer):
         return res
 
     def get_level_counts(self, obj):
-        return Level.objects.filter(courses=obj).count()
+        return Level.objects.filter(courses=obj, is_archived=False).count()
 
-    def get_lessons_number(self, obj):
-        return Course.objects.filter(id=obj.id).aggregate(total_lessons=Count('theme'))['total_lessons']
+    def get_lessons_number(self, obj: Course):
+        # return Course.objects.filter(id=obj.id).aggregate(total_lessons=Count("theme"))[
+        #     "total_lessons"
+        # ]
+        return obj.theme.count()
 
     def validate_theme(self, value):
         """Allow theme to be an empty list or a list of valid theme UUIDs"""
@@ -48,7 +71,9 @@ class CourseSerializer(serializers.ModelSerializer):
                 filial = request.user.filial.first()
 
         if not filial:
-            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+            raise serializers.ValidationError(
+                {"filial": "Filial could not be determined."}
+            )
 
         course = Course.objects.create(filial=filial, **validated_data)
 
@@ -60,9 +85,16 @@ class CourseSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
-        if instance.level:
-            rep["level"] = LevelSerializer(instance.level).data
-        else:
-            rep["level"] = None
-        rep["theme"] = ThemeSerializer(instance.theme.all(), many=True,context=self.context).data  # Return full theme data
+
+        # if instance.level:
+        rep["level"] = (
+            LevelSerializer(instance.level, context=self.context).data
+            if instance.level
+            else None
+        )
+
+        rep["theme"] = ThemeSerializer(
+            instance.theme.all(), many=True, context=self.context
+        ).data  # Return full theme data
+
         return rep

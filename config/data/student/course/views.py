@@ -6,7 +6,11 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 # Create your views here.
 
-from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -27,15 +31,20 @@ class CourseList(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     # Use valid fields that exist in the Course model
-    search_fields = ('name', 'subject__name')  # Ensure these are text-based fields (e.g., CharField)
-    ordering_fields = ('status',)  # Ensure 'status' exists in the model and supports ordering
-    filterset_fields = ('name', 'subject__name')
+    search_fields = (
+        "name",
+        "subject__name",
+    )  # Ensure these are text-based fields (e.g., CharField)
+    ordering_fields = (
+        "status",
+    )  # Ensure 'status' exists in the model and supports ordering
+    filterset_fields = ("name", "subject__name")
 
     def get_queryset(self):
-        level = self.request.query_params.get('level', None)
-        filial = self.request.query_params.get('filial', None)
-        subject = self.request.query_params.get('subject', None)
-        is_archived = self.request.GET.get('is_archived', False)
+        level = self.request.query_params.get("level", None)
+        filial = self.request.query_params.get("filial", None)
+        subject = self.request.query_params.get("subject", None)
+        is_archived = self.request.GET.get("is_archived", False)
 
         queryset = Course.objects.all()
 
@@ -71,10 +80,10 @@ class CourseNoPG(ListAPIView):
     def get_queryset(self):
         queryset = Course.objects.all()
 
-        is_archived = self.request.GET.get('is_archived', False)
+        is_archived = self.request.GET.get("is_archived", False)
 
-        subject = self.request.GET.get('subject', None)
-        filial = self.request.GET.get('filial', None)
+        subject = self.request.GET.get("subject", None)
+        filial = self.request.GET.get("filial", None)
 
         if filial:
             queryset = queryset.filter(filial=filial)
@@ -91,10 +100,12 @@ class StudentCourse(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
 
         # Get all StudentGroups that match the filter (either by lid or student id)
-        groups = StudentGroup.objects.filter(Q(lid__id=id) | Q(student__id=id)).select_related('group')
+        groups = StudentGroup.objects.filter(
+            Q(lid__id=id) | Q(student__id=id)
+        ).select_related("group")
 
         courses = set()  # Use a set to avoid duplicates
         for group in groups:
@@ -111,7 +122,7 @@ class CourseTheme(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
         course = Group.objects.filter(id=id).first()
         print(course)
         if course:
@@ -125,24 +136,28 @@ class CourseTeacher(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        teacher_id = self.kwargs.get('pk')
+        teacher_id = self.kwargs.get("pk")
         user = CustomUser.objects.filter(id=teacher_id).first()
         icecream.ic(user)
-        if user.role == 'TEACHER':
+        if user.role == "TEACHER":
 
             student_groups = StudentGroup.objects.filter(group__teacher__id=teacher_id)
 
-            courses = Course.objects.filter(id__in=student_groups.values('group__course__id')).distinct()
+            courses = Course.objects.filter(
+                id__in=student_groups.values("group__course__id")
+            ).distinct()
 
             return courses
-        elif user.role == 'ASSISTANT':
+        elif user.role == "ASSISTANT":
 
-            student_groups = SecondaryStudentGroup.objects.filter(group__teacher__id=teacher_id)
+            student_groups = SecondaryStudentGroup.objects.filter(
+                group__teacher__id=teacher_id
+            )
 
-            courses = Course.objects.filter(id__in=student_groups.values('group__group__course__id')).distinct()
+            courses = Course.objects.filter(
+                id__in=student_groups.values("group__group__course__id")
+            ).distinct()
 
             return courses
 
         return Course.objects.none()
-
-

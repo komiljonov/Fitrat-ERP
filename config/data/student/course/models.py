@@ -17,7 +17,7 @@ class Course(BaseModel):
         max_length=100, null=True, blank=True, help_text="Number of lessons"
     )
 
-    theme: "Theme" = models.ManyToManyField(
+    theme: "models.ManyToManyField[Theme]" = models.ManyToManyField(
         "subject.Theme", related_name="courses", blank=True
     )
 
