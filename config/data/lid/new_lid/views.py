@@ -201,16 +201,16 @@ class LidListCreateView(ListCreateAPIView):
             )
 
         if order_by:
-            if order_by in ["order_index","-order_index"]:
+            if order_by in ["order_index", "-order_index"]:
                 queryset = queryset.annotate(
-                order_index=Case(
-                    When(lid_stages="YANGI_LEAD", then=1),
-                    default=0,
-                    output_field=IntegerField(),
-                )
-            ).order_by(
-                order_by
-            )  # '-' if you want YANGI_LEAD first
+                    order_index=Case(
+                        When(lid_stages="YANGI_LEAD", then=1),
+                        default=0,
+                        output_field=IntegerField(),
+                    )
+                ).order_by(
+                    order_by
+                )  # '-' if you want YANGI_LEAD first
 
         return queryset
 
@@ -606,7 +606,10 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         first_lesson_all = FirstLLesson.objects.filter(
-            lid__lid_stage_type="ORDERED_LID", lid__is_archived=False
+            lid__lid_stage_type="ORDERED_LID",
+            lid__is_archived=False,
+            created_at__gte=start_datetime,
+            created_at__lt=end_datetime,
         ).count()
 
         new_student = Archived.objects.filter(
