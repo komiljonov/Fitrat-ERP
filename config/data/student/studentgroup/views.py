@@ -5,7 +5,6 @@ from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
-from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import (
     ListCreateAPIView,
@@ -18,8 +17,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from config.data.lid.new_lid.models import Lid
-from config.data.student.student.models import Student
+from data.lid.new_lid.models import Lid
+from data.student.student.models import Student
 
 from .models import StudentGroup, SecondaryStudentGroup
 from .serializers import (
