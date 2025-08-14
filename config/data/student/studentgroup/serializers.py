@@ -313,14 +313,14 @@ class StudentGroupUpdateSerializer(serializers.Serializer):
             )
 
         if student != None:
-            self.validate_student(attrs)
+            self.custom_validate_student(attrs)
 
         if order != None:
-            self.validate_order(attrs)
+            self.custom_validate_order(attrs)
 
         return attrs
 
-    def validate_student(self, attrs):
+    def custom_validate_student(self, attrs):
 
         student: Student = attrs["student"]
 
@@ -329,7 +329,7 @@ class StudentGroupUpdateSerializer(serializers.Serializer):
                 "Can't  add students group to already existing  one."
             )
 
-    def validate_order(self, attrs):
+    def custom_validate_order(self, attrs):
 
         order: Lid = attrs["order"]
 
