@@ -7,19 +7,42 @@ from data.student.student.models import Student
 
 
 class StudentGroup(BaseModel):
-    group: "Group" = models.ForeignKey('groups.Group', on_delete=models.SET_NULL, null=True, blank=True,
-                                       related_name="student_groups")
-    student: "Student" = models.ForeignKey('student.Student', on_delete=models.SET_NULL, null=True, blank=True,
-                                           related_name="students_group")
-    lid: "Lid" = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True,
-                                   related_name="lids_group")
+    group: "Group" = models.ForeignKey(
+        "groups.Group",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="student_groups",
+    )
+    
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="students_group",
+    )
+    
+    lid: "Lid | None" = models.ForeignKey(
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lids_group",
+    )
 
-    is_archived : bool = models.BooleanField(default=False)
+    is_archived: bool = models.BooleanField(default=False)
 
-    homework_type = models.CharField(choices=[
-        ("Online", "Online"),
-        ("Offline", "Offline"),
-    ],default="Offline",null=True,blank=True,max_length=20)
+    homework_type = models.CharField(
+        choices=[
+            ("Online", "Online"),
+            ("Offline", "Offline"),
+        ],
+        default="Offline",
+        null=True,
+        blank=True,
+        max_length=20,
+    )
 
     class Meta:
         verbose_name = "Add Group"
@@ -30,12 +53,23 @@ class StudentGroup(BaseModel):
 
 
 class SecondaryStudentGroup(BaseModel):
-    group: "SecondaryGroup" = models.ForeignKey('groups.SecondaryGroup',
-                                                on_delete=models.SET_NULL, null=True, blank=True)
-    student: "Student" = models.ForeignKey('student.Student', on_delete=models.SET_NULL,
-                                           related_name="students_secondary_group", null=True, blank=True)
-    lid: "Lid" = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL,
-                                   related_name="lids_secondary_group", null=True, blank=True)
+    group: "SecondaryGroup" = models.ForeignKey(
+        "groups.SecondaryGroup", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    student: "Student" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        related_name="students_secondary_group",
+        null=True,
+        blank=True,
+    )
+    lid: "Lid" = models.ForeignKey(
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        related_name="lids_secondary_group",
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         verbose_name = "Secondary Add group"

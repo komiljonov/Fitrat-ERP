@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from decimal import Decimal
 from django.db import models
 from django.utils import timezone
@@ -8,6 +10,9 @@ from ...command.models import BaseModel
 from ...department.filial.models import Filial
 from ...department.marketing_channel.models import MarketingChannel
 from ...upload.models import File
+
+if TYPE_CHECKING:
+    from config.data.student.studentgroup.models import StudentGroup
 
 
 class Lid(BaseModel):
@@ -157,6 +162,8 @@ class Lid(BaseModel):
     balance = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0.00")
     )
+
+    lids_group: "models.QuerySet[StudentGroup]"
 
     def __str__(self):
         return (

@@ -7,14 +7,26 @@ from icecream import ic
 from rest_framework import status
 from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, get_object_or_404, \
-    UpdateAPIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    ListAPIView,
+    get_object_or_404,
+    UpdateAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.data.lid.new_lid.models import Lid
+from config.data.student.student.models import Student
+
 from .models import StudentGroup, SecondaryStudentGroup
-from .serializers import StudentsGroupSerializer, SecondaryStudentsGroupSerializer
+from .serializers import (
+    StudentGroupUpdateSerializer,
+    StudentsGroupSerializer,
+    SecondaryStudentsGroupSerializer,
+)
 from ..attendance.models import Attendance
 from ..attendance.serializers import AttendanceSerializer
 from ..groups.models import SecondaryGroup, Group
@@ -27,23 +39,23 @@ class StudentsGroupList(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     search_fields = (
-        'group__name',
-        'student__first_name',
-        'lid__first_name',
-        'student__last_name',
-        'lid__last_name',
-        'group__status',
-        'group__teacher__id'
+        "group__name",
+        "student__first_name",
+        "lid__first_name",
+        "student__last_name",
+        "lid__last_name",
+        "group__status",
+        "group__teacher__id",
     )
     filter_fields = filterset_fields = search_fields
 
     def get_queryset(self):
-        status = self.request.query_params.get('status')
+        status = self.request.query_params.get("status")
         today = datetime.date.today()
         user = self.request.user
-        is_archived = self.request.GET.get('is_archived', False)
+        is_archived = self.request.GET.get("is_archived", False)
 
-        if user.role == 'TEACHER':
+        if user.role == "TEACHER":
             queryset = StudentGroup.objects.filter(group__teacher__id=user.id)
         else:
             queryset = StudentGroup.objects.filter(group__filial__in=user.filial.all())
@@ -55,26 +67,26 @@ class StudentsGroupList(ListCreateAPIView):
 
         # **Exclude students who have attended today**
         attended_today = Attendance.objects.filter(
-            student=OuterRef("student"),  # Ensure this matches your Attendance model field
+            student=OuterRef(
+                "student"
+            ),  # Ensure this matches your Attendance model field
             group=OuterRef("group"),
-            created_at__date=today
+            created_at__date=today,
         )
 
         # Apply filters
-        queryset = queryset.annotate(
-            has_attended_today=Exists(attended_today)
-        ).filter(
+        queryset = queryset.annotate(has_attended_today=Exists(attended_today)).filter(
             has_attended_today=False,  # Exclude students who attended today
-            lid__isnull=False  # Exclude null `lid`
+            lid__isnull=False,  # Exclude null `lid`
         )
 
-        search = self.request.GET.get('search')
+        search = self.request.GET.get("search")
         if search:
             queryset = queryset.filter(
-                Q(student__first_name__icontains=search) |
-                Q(lid__first_name__icontains=search) |
-                Q(student__last_name__icontains=search) |
-                Q(lid__last_name__icontains=search)
+                Q(student__first_name__icontains=search)
+                | Q(lid__first_name__icontains=search)
+                | Q(student__last_name__icontains=search)
+                | Q(lid__last_name__icontains=search)
             )
 
         return queryset
@@ -96,11 +108,15 @@ class StudentGroupNopg(ListAPIView):
         return Response(data)
 
     def get_queryset(self):
-        if self.request.user.role == 'TEACHER':
-            queryset = StudentGroup.objects.filter(group__teacher__id=self.request.user.id)
+        if self.request.user.role == "TEACHER":
+            queryset = StudentGroup.objects.filter(
+                group__teacher__id=self.request.user.id
+            )
             return queryset
         else:
-            queryset = StudentGroup.objects.filter(group__filial__in=self.request.user.filial.all())
+            queryset = StudentGroup.objects.filter(
+                group__filial__in=self.request.user.filial.all()
+            )
             return queryset
 
 
@@ -112,13 +128,13 @@ class GroupStudentList(ListAPIView):
         """
         Fetch students related to a specific group, filtering based on attendance reason and date.
         """
-        group_id = self.kwargs.get('pk')
-        reason = self.request.query_params.get('reason', None)
+        group_id = self.kwargs.get("pk")
+        reason = self.request.query_params.get("reason", None)
 
-        status = self.request.query_params.get('status')
-        is_archived = self.request.GET.get('is_archived', False)
+        status = self.request.query_params.get("status")
+        is_archived = self.request.GET.get("is_archived", False)
 
-        search = self.request.GET.get('search')
+        search = self.request.GET.get("search")
 
         print(is_archived)
 
@@ -130,12 +146,19 @@ class GroupStudentList(ListAPIView):
 
         if search:
             queryset = queryset.filter(
-                Q(student__first_name__icontains=search) | Q(lid__first_name__icontains=search) | Q(student__last_name__icontains=search) |
-                Q(lid__last_name__icontains=search) | Q(lid__phone_number__icontains=search) | Q(student__phone__icontains=search)
+                Q(student__first_name__icontains=search)
+                | Q(lid__first_name__icontains=search)
+                | Q(student__last_name__icontains=search)
+                | Q(lid__last_name__icontains=search)
+                | Q(lid__phone_number__icontains=search)
+                | Q(student__phone__icontains=search)
             )
 
         if is_archived:
-            queryset = queryset.filter(Q(student__is_archived=is_archived.capitalize()) | Q(lid__is_archived=is_archived.capitalize())).distinct("id")
+            queryset = queryset.filter(
+                Q(student__is_archived=is_archived.capitalize())
+                | Q(lid__is_archived=is_archived.capitalize())
+            ).distinct("id")
 
         if status:
             queryset = queryset.filter(student__student_stage_type=status)
@@ -147,8 +170,8 @@ class GroupStudentList(ListAPIView):
                 reason="IS_PRESENT",
                 lid__isnull=True,
                 created_at__gte=start_of_day,
-                created_at__lte=end_of_day
-            ).values_list('student_id', 'lid_id', flat=False)
+                created_at__lte=end_of_day,
+            ).values_list("student_id", "lid_id", flat=False)
 
         elif reason == "0":
             present_attendance = Attendance.objects.filter(
@@ -156,8 +179,8 @@ class GroupStudentList(ListAPIView):
                 reason__in=["UNREASONED", "REASONED"],
                 lid__isnull=True,
                 created_at__gte=start_of_day,
-                created_at__lte=end_of_day
-            ).values_list('student_id', 'lid_id', flat=False)
+                created_at__lte=end_of_day,
+            ).values_list("student_id", "lid_id", flat=False)
 
         else:
             return queryset
@@ -165,8 +188,9 @@ class GroupStudentList(ListAPIView):
         student_ids = {entry[0] for entry in present_attendance if entry[0] is not None}
         lid_ids = {entry[1] for entry in present_attendance if entry[1] is not None}
 
-        queryset = queryset.filter(Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids))
-
+        queryset = queryset.filter(
+            Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids)
+        )
 
         return queryset
 
@@ -174,7 +198,7 @@ class GroupStudentList(ListAPIView):
         seen = set()
         unique_data = []
         for item in data:
-            item_id = item.get('id')
+            item_id = item.get("id")
             if item_id not in seen:
                 seen.add(item_id)
                 unique_data.append(item)
@@ -189,7 +213,7 @@ class SecondaryGroupStudentList(ListAPIView):
         """
         Fetch the students related to a specific group from the URL path parameter.
         """
-        group_id = self.kwargs.get('pk')
+        group_id = self.kwargs.get("pk")
         queryset = SecondaryStudentGroup.objects.filter(group__id=group_id)
 
         return queryset
@@ -202,24 +226,28 @@ class SecondaryGroupUpdate(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, *args, **kwargs):
-        student_id = self.kwargs.get('student_id')
-        group_id = request.GET.get('group_id')
-        new_group_id = request.GET.get('new_group_id')
-
+        student_id = self.kwargs.get("student_id")
+        group_id = request.GET.get("group_id")
+        new_group_id = request.GET.get("new_group_id")
 
         if not group_id or not new_group_id:
-            return Response({"error": "Both 'group_id' and 'new_group_id' are required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Both 'group_id' and 'new_group_id' are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         ic(group_id, new_group_id, student_id)
 
         # Get the existing record
         instance = SecondaryStudentGroup.objects.filter(
-            group__id=group_id,
-            student__id=student_id
+            group__id=group_id, student__id=student_id
         ).first()
 
         if not instance:
-            return Response({"error": "Secondary student group record not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Secondary student group record not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         # Get the new secondary group
         new_group = get_object_or_404(SecondaryGroup, id=new_group_id)
@@ -231,6 +259,7 @@ class SecondaryGroupUpdate(APIView):
         serializer = SecondaryStudentsGroupSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class StudentGroupDelete(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -239,7 +268,10 @@ class StudentGroupDelete(APIView):
         group_id = self.request.query_params.get("group")
 
         if not student_id or not group_id:
-            return Response({"error": "Missing student or group ID"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Missing student or group ID"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         ic(group_id)
 
@@ -247,8 +279,12 @@ class StudentGroupDelete(APIView):
         if hasattr(StudentGroup, "lid"):
             filters |= Q(lid__id=student_id)
 
-        student = StudentGroup.objects.filter(group__id=group_id).filter(filters).first()
-        attendance = Attendance.objects.filter(group__id=group_id).filter(filters).first()
+        student = (
+            StudentGroup.objects.filter(group__id=group_id).filter(filters).first()
+        )
+        attendance = (
+            Attendance.objects.filter(group__id=group_id).filter(filters).first()
+        )
         ic(student)
 
         if student:
@@ -256,7 +292,9 @@ class StudentGroupDelete(APIView):
             student.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
 class SecondaryStudentGroupDelete(APIView):
@@ -267,7 +305,10 @@ class SecondaryStudentGroupDelete(APIView):
         group_id = self.request.query_params.get("group")
 
         if not student_id or not group_id:
-            return Response({"error": "Missing student or group ID"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Missing student or group ID"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         ic(group_id)
 
@@ -275,14 +316,20 @@ class SecondaryStudentGroupDelete(APIView):
         if hasattr(SecondaryStudentGroup, "lid"):
             filters |= Q(lid__id=student_id)
 
-        student = SecondaryStudentGroup.objects.filter(group__id=group_id).filter(filters).first()
+        student = (
+            SecondaryStudentGroup.objects.filter(group__id=group_id)
+            .filter(filters)
+            .first()
+        )
         ic(student)
 
         if student:
             student.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
 class GroupStudentStatistics(APIView):
@@ -308,27 +355,31 @@ class GroupStudentStatistics(APIView):
             group=group,
             created_at__gte=start_of_day,
             created_at__lte=end_of_day,
-            reason="IS_PRESENT"
+            reason="IS_PRESENT",
         ).count()
 
         is_absent = Attendance.objects.filter(
             group=group,
             reason__in=["REASONED", "UNREASONED"],
             created_at__gte=start_of_day,
-            created_at__lte=end_of_day
+            created_at__lte=end_of_day,
         ).count()
 
         # Calculate attendance percentages
-        percentage_is_attendanded = (is_attendanded / students * 100) if students > 0 else 0
+        percentage_is_attendanded = (
+            (is_attendanded / students * 100) if students > 0 else 0
+        )
         percentage_is_apcent = (is_absent / students * 100) if students > 0 else 0
 
-        return Response({
-            "students": students,
-            "is_attendant": is_attendanded,
-            "is_absent": is_absent,
-            "percentage_is_attendant": round(percentage_is_attendanded, 2),
-            "percentage_is_absent": round(percentage_is_apcent, 2),
-        })
+        return Response(
+            {
+                "students": students,
+                "is_attendant": is_attendanded,
+                "is_absent": is_absent,
+                "percentage_is_attendant": round(percentage_is_attendanded, 2),
+                "percentage_is_absent": round(percentage_is_apcent, 2),
+            }
+        )
 
 
 class GroupAttendedStudents(ListAPIView):
@@ -336,15 +387,14 @@ class GroupAttendedStudents(ListAPIView):
     serializer_class = AttendanceSerializer
 
     def get_queryset(self):
-        group_id = self.kwargs.get('pk')
+        group_id = self.kwargs.get("pk")
 
         group = Group.objects.get(id=group_id)
 
         reason = self.request.query_params.get("reason")
         filial = self.request.query_params.get("filial")
 
-
-        queryset =  Attendance.objects.filter(
+        queryset = Attendance.objects.filter(
             group=group,
             created_at__gte=datetime.date.today(),
         ).distinct()
@@ -352,17 +402,10 @@ class GroupAttendedStudents(ListAPIView):
         ic(reason)
 
         if reason and reason == "1":
-            queryset = queryset.filter(
-                reason="IS_PRESENT"
-            )
+            queryset = queryset.filter(reason="IS_PRESENT")
         if reason and reason == "0":
-            queryset = queryset.filter(
-                reason__in = [
-                    "REASONED","UNREASONED"
-                ]
-            )
+            queryset = queryset.filter(reason__in=["REASONED", "UNREASONED"])
         return queryset.distinct()
-
 
     def get_paginated_response(self, data):
         return Response(data)
@@ -373,7 +416,7 @@ class GroupStudentDetail(ListAPIView):
     serializer_class = StudentsGroupSerializer
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
         print(id)
 
         qs = StudentGroup.objects.filter(Q(student=id) | Q(lid=id))
@@ -388,16 +431,20 @@ class GroupStudentDetail(ListAPIView):
 
         return qs
 
+
 class GroupStudentNoPgDetail(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = StudentsGroupSerializer
     pagination_class = None
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
         print(id)
 
-        return StudentGroup.objects.filter(Q(student=id) | Q(lid=id),)
+        return StudentGroup.objects.filter(
+            Q(student=id) | Q(lid=id),
+        )
+
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -417,15 +464,19 @@ class SecondaryStudentList(ListCreateAPIView):
         if group:
             qs = qs.filter(group__id=group)
         if search:
-            student_search = Q(student__first_name__icontains=search) | Q(student__last_name__icontains=search)
-            lid_search = Q(lid__first_name__icontains=search) | Q(lid__last_name__icontains=search)
+            student_search = Q(student__first_name__icontains=search) | Q(
+                student__last_name__icontains=search
+            )
+            lid_search = Q(lid__first_name__icontains=search) | Q(
+                lid__last_name__icontains=search
+            )
 
             qs = qs.filter(student_search | lid_search)
         if status:
             qs = qs.filter(
                 student__student_stage_type=status,
             )
-        if self.request.user.role == 'ASSISTANT':
+        if self.request.user.role == "ASSISTANT":
             qs = qs.filter(group__teacher__id=self.request.user.id)
         return qs
 
@@ -437,7 +488,7 @@ class SecondaryGroupList(ListAPIView):
 
     def get_queryset(self):
         status = self.request.query_params.get("status")
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
 
         queryset = SecondaryGroup.objects.all()
 
@@ -462,7 +513,9 @@ class StudentGroupStatistics(APIView):
         end_date = self.request.query_params.get("end_date")
 
         # Base queryset - fix the filial filter
-        base_queryset = StudentGroup.objects.filter(Q(student__is_archived=False) | Q(lid__is_archived=False))
+        base_queryset = StudentGroup.objects.filter(
+            Q(student__is_archived=False) | Q(lid__is_archived=False)
+        )
 
         # Apply filial filter if provided
         if filial:
@@ -476,9 +529,7 @@ class StudentGroupStatistics(APIView):
 
         # Orders: groups with lids that are ordered and not students
         orders = base_queryset.filter(
-            lid__isnull=False,
-            lid__lid_stage_type="ORDERED_LID",
-            lid__is_student=False
+            lid__isnull=False, lid__lid_stage_type="ORDERED_LID", lid__is_student=False
         )
 
         # Students: groups that have actual students
@@ -486,9 +537,13 @@ class StudentGroupStatistics(APIView):
 
         # Apply date filters
         if start_date and end_date:
-            all_groups = all_groups.filter(created_at__gte=start_date, created_at__lte=end_date)
+            all_groups = all_groups.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
             orders = orders.filter(created_at__gte=start_date, created_at__lte=end_date)
-            students = students.filter(created_at__gte=start_date, created_at__lte=end_date)
+            students = students.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
         elif start_date:  # Only start_date provided
             all_groups = all_groups.filter(created_at__gte=start_date)
             orders = orders.filter(created_at__gte=start_date)
@@ -510,13 +565,17 @@ class StudentGroupStatistics(APIView):
         students_count = students.count()
         orders_count = orders.count()
 
-        print(f"Counts - All: {all_count}, Students: {students_count}, Orders: {orders_count}")
+        print(
+            f"Counts - All: {all_count}, Students: {students_count}, Orders: {orders_count}"
+        )
 
-        return Response({
-            "all": all_count,
-            "students": students_count,
-            "orders": orders_count,
-        })
+        return Response(
+            {
+                "all": all_count,
+                "students": students_count,
+                "orders": orders_count,
+            }
+        )
 
 
 class SecondaryStudentCreate(ListCreateAPIView):
@@ -527,7 +586,7 @@ class SecondaryStudentCreate(ListCreateAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        id = self.request.query_params.get('group')
+        id = self.request.query_params.get("group")
         filial = self.request.query_params.get("filial")
         search = self.request.query_params.get("search")
 
@@ -545,47 +604,78 @@ class SecondaryStudentCreate(ListCreateAPIView):
 
 
 class StudentGroupUpdate(APIView):
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request, **kwargs):
-        group = request.data.get("group")
-        student = request.data.get("student")
-        add_group = request.data.get("add_group")
 
-        if group and student and add_group:
-            try:
-                # Get the StudentGroup instance
-                st = StudentGroup.objects.get(
-                    student=student,
-                    id=add_group,
-                )
+        serializer = StudentGroupUpdateSerializer(data=request.data)
 
-                # Get the new group object
-                new_group = get_object_or_404(Group, id=group)
+        serializer.is_valid(raise_exception=True)
 
-                # Update the group
-                st.group = new_group
-                st.save()
+        data = serializer.validated_data
 
-                return Response(
-                    {"message": "Student group updated successfully"},
-                    status=status.HTTP_200_OK
-                )
+        group = data["add_group"]
+        new_group = data["group"]
+        student: "Student | None" = data["student"]
+        order: "Lid | None" = data["order"]
 
-            except StudentGroup.DoesNotExist:
-                return Response(
-                    {"error": "Student Group does not exist"},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            except Group.DoesNotExist:
-                return Response(
-                    {"error": "Target group does not exist"},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+        student_group = student.students_group.filter(group=group).first()
+        order_group = order.lids_group.filter(group=group).first()
 
-        else:
-            return Response(
-                {"error": "Missing required parameters: group, student, and add_group"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        sg = student_group or order_group
 
+        sg.group = new_group
+        sg.save()
+
+        return Response(
+            {"message": "Student group updated successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+
+# class StudentGroupUpdate(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, **kwargs):
+#         group = request.data.get("group")
+#         student = request.data.get("student")
+#         add_group = request.data.get("add_group")
+#         order = request.data.get("order")
+
+#         if group and add_group and (student or order):
+#             try:
+#                 # Get the StudentGroup instance
+#                 st = StudentGroup.objects.get(
+#                     student=student,
+#                     id=add_group,
+#                 )
+
+#                 # Get the new group object
+#                 new_group = get_object_or_404(Group, id=group)
+
+#                 # Update the group
+#                 st.group = new_group
+#                 st.save()
+
+#                 return Response(
+#                     {"message": "Student group updated successfully"},
+#                     status=status.HTTP_200_OK,
+#                 )
+
+#             except StudentGroup.DoesNotExist:
+#                 return Response(
+#                     {"error": "Student Group does not exist"},
+#                     status=status.HTTP_404_NOT_FOUND,
+#                 )
+#             except Group.DoesNotExist:
+#                 return Response(
+#                     {"error": "Target group does not exist"},
+#                     status=status.HTTP_404_NOT_FOUND,
+#                 )
+
+#         else:
+#             return Response(
+#                 {"error": "Missing required parameters: group, student, and add_group"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )

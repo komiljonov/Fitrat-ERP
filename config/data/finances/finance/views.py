@@ -917,7 +917,15 @@ class PaymentStatistics(APIView):
         if end_date:
             filter["created_at__lte"] = end_date
 
-        valid_payment_methods = ["Click", "Payme", "Cash", "Card", "Money_send","PLASTIC","BONUS"]
+        valid_payment_methods = [
+            "Click",
+            "Payme",
+            "Cash",
+            "Card",
+            "Money_send",
+            "PLASTIC",
+            "BONUS",
+        ]
 
         def get_total_amount(payment_name, action_type):
             return (
@@ -973,7 +981,15 @@ class PaymentCasherStatistics(ListAPIView):
             )
 
         # ✅ Supported payment methods
-        valid_payment_methods = ["Click", "Payme", "Cash", "Card", "Money_send","PLASTIC","BONUS"]
+        valid_payment_methods = [
+            "Click",
+            "Payme",
+            "Cash",
+            "Card",
+            "Money_send",
+            "PLASTIC",
+            "BONUS",
+        ]
 
         def get_total_amount(payment_method, action_type):
             qs = Finance.objects.filter(
