@@ -9,12 +9,11 @@ from .models import Finance, VoucherStudent, Casher, Kind, KpiFinance
 
 @receiver(post_save, sender=Finance)
 def on_create(sender, instance: Finance, created, **kwargs):
-    if created :
-        if instance.lid :
+    if created:
+        if instance.lid:
             if instance.action == "INCOME":
                 instance.lid.balance += Decimal(instance.amount)
                 instance.lid.save()
-
 
         if instance.student and not instance.kind.name == "Lesson payment":
             if instance.action == "INCOME":
@@ -27,9 +26,9 @@ def on_create(sender, instance: Finance, created, **kwargs):
 
         if instance.stuff:
             if (
-                    instance.action == "EXPENSE"
-                    and instance.kind is not None
-                    and instance.kind.name == "Salary"
+                instance.action == "EXPENSE"
+                and instance.kind is not None
+                and instance.kind.name == "Salary"
             ):
                 instance.stuff.balance -= Decimal(instance.amount)
                 instance.stuff.save()
@@ -38,11 +37,11 @@ def on_create(sender, instance: Finance, created, **kwargs):
                     instance.stuff.balance += Decimal(instance.amount)
                     instance.stuff.save()
 
+
 # @receiver(post_save, sender=Finance)
 # def on_finance_create(sender, instance: Finance,created, **kwargs):
 #     if created:
 #         if instance.
-
 
 
 @receiver(post_save, sender=VoucherStudent)
@@ -51,22 +50,26 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
 
         if instance.voucher:
             # Count the number of VoucherStudent objects for the given voucher
-            voucher_student_count = VoucherStudent.objects.filter(voucher=instance.voucher).count()
+            voucher_student_count = VoucherStudent.objects.filter(
+                voucher=instance.voucher
+            ).count()
 
             if voucher_student_count >= instance.voucher.count:
                 instance.voucher.is_expired = True
                 instance.voucher.save()
-        casher = Casher.objects.filter(filial__in=instance.creator.filial.all(),
-                                       role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first()
+        casher = Casher.objects.filter(
+            filial__in=instance.creator.filial.all(),
+            role__in=["ADMINISTRATOR", "ACCOUNTANT"],
+        ).first()
         if instance.lid:
             finance = Finance.objects.create(
-                casher = casher,
-                action = "EXPENSE",
-                amount = instance.voucher.amount,
-                kind = Kind.objects.filter(name="Voucher").first(),
+                casher=casher,
+                action="EXPENSE",
+                amount=instance.voucher.amount,
+                kind=Kind.objects.filter(name="Voucher").first(),
                 payment_method="Cash",
                 lid=instance.lid,
-                comment = f"Ushbu buyurtma uchun {instance.voucher.amount} so'm miqdorida voucher qo'shildi!"
+                comment=f"Ushbu buyurtma uchun {instance.voucher.amount} so'm miqdorida voucher qo'shildi!",
             )
             finance.lid.balance += Decimal(finance.amount)
             finance.lid.save()
@@ -79,11 +82,10 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
                 kind=Kind.objects.filter(name="Voucher").first(),
                 payment_method="Cash",
                 student=instance.student,
-                comment= f"Ushbu o'quvchi uchun {instance.voucher.amount} so'm miqdorida voucher qo'shildi!"
+                comment=f"Ushbu o'quvchi uchun {instance.voucher.amount} so'm miqdorida voucher qo'shildi!",
             )
             finance.student.balance += Decimal(finance.amount)
             finance.student.save()
-
 
 
 @receiver(post_save, sender=KpiFinance)
@@ -94,13 +96,16 @@ def on_create(sender, instance: KpiFinance, created, **kwargs):
             instance.user.save()
 
             Finance.objects.create(
-                casher = Casher.objects.filter(filial__in=instance.user.filial.all(),
-                                               role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
-                action = "EXPENSE",
-                amount = instance.amount,
-                kind = Kind.objects.filter(name="Bonus").first(),
-                stuff = instance.user,
-                comment = "Xodim uchun bonus sifatida qo'shildi!"
+                casher=Casher.objects.filter(
+                    filial__in=instance.user.filial.all(),
+                    role__in=["ADMINISTRATOR", "ACCOUNTANT"],
+                ).first(),
+                action="EXPENSE",
+                amount=instance.amount,
+                kind=Kind.objects.filter(name="Bonus").first(),
+                stuff=instance.user,
+                # comment = "Xodim uchun bonus sifatida qo'shildi!"
+                comment=instance.reason,
             )
         else:
 
@@ -108,12 +113,13 @@ def on_create(sender, instance: KpiFinance, created, **kwargs):
             instance.user.save()
 
             Finance.objects.create(
-                casher=Casher.objects.filter(filial__in=instance.user.filial.all(),
-                                             role__in=["ADMINISTRATOR", "ACCOUNTANT"]).first(),
+                casher=Casher.objects.filter(
+                    filial__in=instance.user.filial.all(),
+                    role__in=["ADMINISTRATOR", "ACCOUNTANT"],
+                ).first(),
                 action="INCOME",
                 amount=instance.amount,
                 kind=Kind.objects.filter(name="Money back").first(),
                 stuff=instance.user,
-                comment="Xodim uchun jarima sifatida qo'shildi!"
+                comment="Xodim uchun jarima sifatida qo'shildi!",
             )
-

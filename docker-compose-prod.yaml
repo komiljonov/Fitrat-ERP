@@ -1,7 +1,6 @@
 version: "3.8"
 
 services:
-
   redis:
     image: redis:alpine
     container_name: "redis_fitrat"
@@ -60,7 +59,6 @@ services:
     environment:
       - TZ=Etc/GMT+5
 
-
   celery:
     build:
       context: ./config
@@ -117,4 +115,3 @@ services:
 volumes:
   postgres_data_fitrat_ilm:
   redis-data:
-

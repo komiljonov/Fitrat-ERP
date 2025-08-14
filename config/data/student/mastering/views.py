@@ -1,13 +1,22 @@
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 
 # Create your views here.
 from rest_framework import status
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Mastering, MasteringTeachers
+
 # Create your views here.
 from .serializers import MasteringSerializer, StuffMasteringSerializer
 from ..attendance.models import Attendance
@@ -55,7 +64,7 @@ class MasteringQuizFilter(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        quiz_id = self.kwargs.get('quiz_id')
+        quiz_id = self.kwargs.get("quiz_id")
         quiz = Mastering.objects.filter(test__id=quiz_id)
         if quiz:
             return quiz
@@ -68,7 +77,7 @@ class TeacherMasteringList(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
         if id:
             return MasteringTeachers.objects.filter(teacher__id=id)
         return MasteringTeachers.objects.none()
@@ -80,9 +89,10 @@ class StuffMasteringList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.request.query_params.get('id')
+        id = self.request.query_params.get("id")
         if id:
             return KpiFinance.objects.filter(user__id=id)
+
         return KpiFinance.objects.all()
 
 
@@ -98,9 +108,9 @@ class MasteringStudentFilter(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        quiz_id = self.request.query_qaram.get('quiz_id')
-        student = self.request.query_param.get('student')
-        user = self.queryset.query_param.get('user')
+        quiz_id = self.request.query_qaram.get("quiz_id")
+        student = self.request.query_param.get("student")
+        user = self.queryset.query_param.get("user")
         queryset = Mastering.objects.all()
         if quiz_id:
             queryset = queryset.filter(test__id=quiz_id)
@@ -119,21 +129,23 @@ class ChangeGroupTheme(APIView):
     def put(self, request, *args, **kwargs):
         data = request.data
 
-        group_id = data.get('group')
-        course_id = data.get('course')
-        theme_number = data.get('theme_number')
-        starter_theme_id = data.get('starter_theme')
-        level_id = data.get('level')
+        group_id = data.get("group")
+        course_id = data.get("course")
+        theme_number = data.get("theme_number")
+        starter_theme_id = data.get("starter_theme")
+        level_id = data.get("level")
 
         theme = Theme.objects.filter(id=starter_theme_id).first()
         theme_order = Theme.objects.filter(
-            level__id=level_id,
-            course__id=course_id
+            level__id=level_id, course__id=course_id
         ).order_by("-created_at")[:theme_number]
 
         group = Group.objects.filter(id=group_id).first()
         if not group or not theme:
-            return Response({"detail": "Invalid group or theme."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invalid group or theme."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if theme_order and theme.id == theme_order.first().id:
             att = Attendance.objects.filter(group__id=group_id).first()
@@ -143,11 +155,8 @@ class ChangeGroupTheme(APIView):
 
             if att_theme_id == theme.id:
                 return Response(
-                    {
-                        "invalid_data": True,
-                        "detail": "Theme has already been attended"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
+                    {"invalid_data": True, "detail": "Theme has already been attended"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             updated_theme = GroupThemeStart.objects.create(
@@ -166,6 +175,11 @@ class ChangeGroupTheme(APIView):
                         come_from=group.id,
                     )
 
-                return Response({"detail": "Theme successfully updated."}, status=status.HTTP_200_OK)
+                return Response(
+                    {"detail": "Theme successfully updated."}, status=status.HTTP_200_OK
+                )
 
-        return Response({"detail": "Invalid theme order or theme mismatch."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"detail": "Invalid theme order or theme mismatch."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
