@@ -616,16 +616,14 @@ class StudentGroupUpdate(APIView):
 
         group = data["add_group"]
         new_group = data["group"]
-        student: "Student | None" = data["student"]
-        order: "Lid | None" = data["order"]
 
-        student_group = student.students_group.filter(group=group).first()
-        order_group = order.lids_group.filter(group=group).first()
+        # student_group = student.students_group.filter(group=group).first()
+        # order_group = order.lids_group.filter(group=group).first()
 
-        sg = student_group or order_group
+        # sg = student_group or order_group
 
-        sg.group = new_group
-        sg.save()
+        group.group = new_group
+        group.save()
 
         return Response(
             {"message": "Student group updated successfully"},
