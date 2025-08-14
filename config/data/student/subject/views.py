@@ -3,7 +3,11 @@ from django.db import transaction
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from icecream import ic
-from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    ListAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -11,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Subject, Level, Theme
+
 # Create your views here.
 from .serializers import SubjectSerializer, LevelSerializer, ThemeSerializer
 from ..attendance.models import Attendance
@@ -26,9 +31,9 @@ class SubjectList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Subject.objects.all()
-        filial = self.request.GET.get('filial', None)
-        is_language = self.request.GET.get('is_language', None)
-        is_archived = self.request.GET.get('is_archived', None)
+        filial = self.request.GET.get("filial", None)
+        is_language = self.request.GET.get("is_language", None)
+        is_archived = self.request.GET.get("is_archived", None)
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
@@ -36,6 +41,7 @@ class SubjectList(ListCreateAPIView):
             queryset = queryset.filter(is_language=is_language.capitalize())
         if filial:
             queryset = queryset.filter(filial=filial)
+
         return queryset
 
 
@@ -53,7 +59,7 @@ class SubjectNoPG(ListAPIView):
 
     def get_queryset(self):
         queryset = Subject.objects.all()
-        filial = self.request.GET.get('filial', None)
+        filial = self.request.GET.get("filial", None)
         if filial:
             queryset = queryset.filter(filial__id=filial)
         return queryset
@@ -68,10 +74,10 @@ class LevelList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        subject = self.request.GET.get('subject', None)
-        filial = self.request.GET.get('filial', None)
-        course = self.request.GET.get('course', None)
-        is_archived = self.request.GET.get('is_archived', None)
+        subject = self.request.GET.get("subject", None)
+        filial = self.request.GET.get("filial", None)
+        course = self.request.GET.get("course", None)
+        is_archived = self.request.GET.get("is_archived", None)
 
         queryset = Level.objects.all()
 
@@ -102,9 +108,9 @@ class LevelNoPG(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        filial = self.request.GET.get('filial', None)
-        subject = self.request.GET.get('subject', None)
-        is_archived = self.request.GET.get('is_archived', None)
+        filial = self.request.GET.get("filial", None)
+        subject = self.request.GET.get("subject", None)
+        is_archived = self.request.GET.get("is_archived", None)
 
         queryset = Level.objects.all()
 
@@ -130,20 +136,20 @@ class ThemeList(ListCreateAPIView):
     def get_queryset(self):
         queryset = Theme.objects.all()
 
-        theme = self.request.GET.get('theme')
-        level = self.request.GET.get('level')
-        is_archived = self.request.GET.get('is_archived', None)
+        theme = self.request.GET.get("theme")
+        level = self.request.GET.get("level")
+        is_archived = self.request.GET.get("is_archived", None)
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
         if theme:
             queryset = queryset.filter(theme=theme)
-        course = self.request.GET.get('course')
+        course = self.request.GET.get("course")
         if course:
             queryset = queryset.filter(course__id=course)
 
-        id = self.request.GET.get('id')
-        group_id = self.request.GET.get('group')
+        id = self.request.GET.get("id")
+        group_id = self.request.GET.get("group")
         if group_id:
             try:
                 group = Group.objects.get(id=group_id)
@@ -153,7 +159,9 @@ class ThemeList(ListCreateAPIView):
 
         if id:
             try:
-                course = Group.objects.get(id=id)  # Agar id yo'q bo'lsa, xatolik qaytaradi
+                course = Group.objects.get(
+                    id=id
+                )  # Agar id yo'q bo'lsa, xatolik qaytaradi
                 queryset = queryset.filter(course=course.course)
             except Group.DoesNotExist:
                 pass  # Agar Group topilmasa, filtr qo'llanilmaydi
@@ -166,7 +174,7 @@ class ThemeList(ListCreateAPIView):
 
 class DynamicPageSizePagination(PageNumberPagination):
     page_size = 10
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
@@ -177,9 +185,9 @@ class ThemePgList(ListCreateAPIView):
 
     def get_queryset(self):
         request = self.request
-        search = request.GET.get('search')
-        theme_filter = request.GET.get('theme')  # 'Lesson' or 'Repeat'
-        group_id = request.GET.get('group')
+        search = request.GET.get("search")
+        theme_filter = request.GET.get("theme")  # 'Lesson' or 'Repeat'
+        group_id = request.GET.get("group")
 
         ic(group_id, theme_filter)
 
@@ -188,7 +196,7 @@ class ThemePgList(ListCreateAPIView):
             if not group or not group.course:
                 return Theme.objects.none()
 
-            qs = Theme.objects.filter(course=group.course).order_by('created_at')
+            qs = Theme.objects.filter(course=group.course).order_by("created_at")
         else:
             qs = Theme.objects.all()
 
@@ -204,9 +212,9 @@ class ThemePgList(ListCreateAPIView):
                     return Theme.objects.none()
 
                 # Get themes that have been used in attendance records for this group
-                attendance_qs = Attendance.objects.filter(
-                    group__id=group_id
-                ).exclude(theme__isnull=True)
+                attendance_qs = Attendance.objects.filter(group__id=group_id).exclude(
+                    theme__isnull=True
+                )
 
                 ic(attendance_qs.all())
 
@@ -214,11 +222,11 @@ class ThemePgList(ListCreateAPIView):
                     return Theme.objects.none()
 
                 # Get unique theme IDs from attendance records
-                theme_ids = attendance_qs.values_list('theme__id', flat=True).distinct()
+                theme_ids = attendance_qs.values_list("theme__id", flat=True).distinct()
                 ic(theme_ids)
 
                 # Return only themes that have been used in attendance
-                return Theme.objects.filter(id__in=theme_ids).order_by('created_at')
+                return Theme.objects.filter(id__in=theme_ids).order_by("created_at")
 
             elif theme_filter == "Lesson":
                 if attendance_count == 0:
@@ -230,15 +238,20 @@ class ThemePgList(ListCreateAPIView):
                         return Theme.objects.none()
 
                 # Find the last attendance record for this group
-                last_att = Attendance.objects.filter(
-                    group_id=group_id
-                ).exclude(theme__isnull=True).order_by('-created_at').first()
+                last_att = (
+                    Attendance.objects.filter(group_id=group_id)
+                    .exclude(theme__isnull=True)
+                    .order_by("-created_at")
+                    .first()
+                )
 
                 if last_att and last_att.theme.exists():
-                    last_theme = last_att.theme.order_by('-created_at').first()
+                    last_theme = last_att.theme.order_by("-created_at").first()
 
                     if last_theme:
-                        next_theme = qs.filter(created_at__gt=last_theme.created_at).first()
+                        next_theme = qs.filter(
+                            created_at__gt=last_theme.created_at
+                        ).first()
                         if next_theme:
                             return Theme.objects.filter(id=next_theme.id)
                         else:
@@ -270,11 +283,11 @@ class ThemeNoPG(ListAPIView):
     def get_queryset(self):
         queryset = Theme.objects.all()
 
-        theme = self.request.GET.get('theme')
+        theme = self.request.GET.get("theme")
         if theme:
             queryset = queryset.filter(theme=theme)
 
-        group_id = self.request.GET.get('id')
+        group_id = self.request.GET.get("id")
         if group_id:
             try:
                 group = Group.objects.get(id=group_id)
@@ -295,33 +308,46 @@ class ImportStudentsAPIView(APIView):
         operation_summary="Exceldan studentlar import qilish",
         manual_parameters=[
             openapi.Parameter(
-                name='file',
+                name="file",
                 in_=openapi.IN_FORM,
                 type=openapi.TYPE_FILE,
                 required=True,
-                description='Excel (.xlsx) fayl',
+                description="Excel (.xlsx) fayl",
             ),
         ],
         responses={
-            201: openapi.Response(description="Import qilingan mavzular va uyga vazifalar"),
+            201: openapi.Response(
+                description="Import qilingan mavzular va uyga vazifalar"
+            ),
             400: "Xatolik yuz berdi",
             500: "Ichki server xatoligi",
-        }
+        },
     )
     def post(self, request):
-        file = request.FILES.get('file')
+        file = request.FILES.get("file")
 
-        if not file or not file.name.endswith(('.xlsx', '.xls')):
-            return Response({'error': 'Excel fayl (.xlsx/.xls) yuboring'}, status=400)
+        if not file or not file.name.endswith((".xlsx", ".xls")):
+            return Response({"error": "Excel fayl (.xlsx/.xls) yuboring"}, status=400)
 
         try:
             df = pd.read_excel(file)
 
-            required_fields = {'Mavzu', 'Dars mazmuni', 'Uyga vazifa', 'Uyga vazifa mazmuni', 'Kurslar', "Daraja",
-                               'Fanlar'}
+            required_fields = {
+                "Mavzu",
+                "Dars mazmuni",
+                "Uyga vazifa",
+                "Uyga vazifa mazmuni",
+                "Kurslar",
+                "Daraja",
+                "Fanlar",
+            }
             if not required_fields.issubset(df.columns):
-                return Response({
-                    'error': f'Excel faylda quyidagi ustunlar bo\'lishi shart: {required_fields}'}, status=400)
+                return Response(
+                    {
+                        "error": f"Excel faylda quyidagi ustunlar bo'lishi shart: {required_fields}"
+                    },
+                    status=400,
+                )
 
             created = 0
             errors = []
@@ -333,20 +359,23 @@ class ImportStudentsAPIView(APIView):
                     level_name = str(row.get("Daraja", "")).strip()
 
                     course = Course.objects.filter(name__icontains=course_name).first()
-                    level = Level.objects.filter(name__iexact=level_name, courses=course).first()
+                    level = Level.objects.filter(
+                        name__iexact=level_name, courses=course
+                    ).first()
                     subject = Subject.objects.filter(name__iexact=subject_name).first()
 
                     if not course or not subject:
-                        errors.append({
-                            'row': idx + 2,
-                            'error': f"Course yoki Subject topilmadi: {row['Course']}, {row['Subject']}"
-                        })
+                        errors.append(
+                            {
+                                "row": idx + 2,
+                                "error": f"Course yoki Subject topilmadi: {row['Course']}, {row['Subject']}",
+                            }
+                        )
                         continue
 
-
                     theme = Theme.objects.create(
-                        title=row['Mavzu'],
-                        description=row['Dars mazmuni'],
+                        title=row["Mavzu"],
+                        description=row["Dars mazmuni"],
                         theme="Lesson",
                         course=course,
                         level=level,
@@ -355,15 +384,18 @@ class ImportStudentsAPIView(APIView):
 
                     Homework.objects.create(
                         theme=theme,
-                        title=row['Uyga vazifa'],
-                        body=row['Uyga vazifa mazmuni'],
+                        title=row["Uyga vazifa"],
+                        body=row["Uyga vazifa mazmuni"],
                     )
                     created += 1
 
-            return Response({
-                'message': f"{created} ta tema va uyga vazifa import qilindi",
-                'errors': errors
-            }, status=201)
+            return Response(
+                {
+                    "message": f"{created} ta tema va uyga vazifa import qilindi",
+                    "errors": errors,
+                },
+                status=201,
+            )
 
         except Exception as e:
-            return Response({'error': str(e)}, status=500)
+            return Response({"error": str(e)}, status=500)
