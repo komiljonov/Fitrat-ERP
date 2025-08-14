@@ -208,7 +208,7 @@ class LidListCreateView(ListCreateAPIView):
                     output_field=IntegerField(),
                 )
             ).order_by(
-                "-order_index"
+                order_by
             )  # '-' if you want YANGI_LEAD first
 
         return queryset
