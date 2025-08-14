@@ -201,7 +201,8 @@ class LidListCreateView(ListCreateAPIView):
             )
 
         if order_by:
-            queryset = queryset.annotate(
+            if order_by in ["order_index","-order_index"]:
+                queryset = queryset.annotate(
                 order_index=Case(
                     When(lid_stages="YANGI_LEAD", then=1),
                     default=0,
