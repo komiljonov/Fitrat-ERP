@@ -72,6 +72,7 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
             and instance.filial is not None
             and is_bonused == 0
             and instance.call_operator
+            and bonus.amount > 0
         ):
             KpiFinance.objects.create(
                 user=instance.call_operator,
