@@ -973,7 +973,7 @@ class PaymentCasherStatistics(ListAPIView):
             )
 
         # ✅ Supported payment methods
-        valid_payment_methods = ["Click", "Payme", "Cash", "Card", "Money_send"]
+        valid_payment_methods = ["Click", "Payme", "Cash", "Card", "Money_send","PLASTIC","BONUS"]
 
         def get_total_amount(payment_method, action_type):
             qs = Finance.objects.filter(
