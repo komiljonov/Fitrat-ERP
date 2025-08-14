@@ -13,16 +13,19 @@ from ...lid.new_lid.models import Lid
 from ...student.student.models import Student
 from ..groups.models import Room
 
+
 class Lesson(BaseModel):
     name = models.CharField(max_length=100)
-    subject: 'Subject' = models.ForeignKey(
-        'subject.Subject', on_delete=models.SET_NULL, null=True, blank=True
+    subject: "Subject" = models.ForeignKey(
+        "subject.Subject", on_delete=models.SET_NULL, null=True, blank=True
     )
     group: "Group" = models.ForeignKey(
         "groups.Group", on_delete=models.CASCADE, related_name="lessons"
     )
 
-    theme: 'Theme' = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL, null=True, blank=True)
+    theme: "Theme" = models.ForeignKey(
+        "subject.Theme", on_delete=models.SET_NULL, null=True, blank=True
+    )
     comment = models.TextField(null=True, blank=True)
     type = models.CharField(
         choices=[
@@ -49,17 +52,22 @@ class Lesson(BaseModel):
     day = models.DateField(null=True, blank=True)  # Specific day of the lesson
 
     def __str__(self):
-        return f"Lesson {self.name}      {self.group}      Room {self.group.room_number}"
+        return (
+            f"Lesson {self.name}      {self.group}      Room {self.group.room_number}"
+        )
 
 
 class FirstLLesson(BaseModel):
-    lid: 'Lid' = models.ForeignKey(
-        'new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True
+    lid: "Lid" = models.ForeignKey(
+        "new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True
     )
 
-    group: 'Group' = models.ForeignKey(
-        'groups.Group', on_delete=models.SET_NULL, null=True,
-        blank=True, related_name="groups_first_lessons"
+    group: "Group" = models.ForeignKey(
+        "groups.Group",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="groups_first_lessons",
     )
 
     date = models.DateField(null=True, blank=True)
@@ -67,8 +75,8 @@ class FirstLLesson(BaseModel):
 
     comment = models.TextField(null=True, blank=True)
 
-    creator: 'CustomUser' = models.ForeignKey(
-        'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True
+    creator: "CustomUser" = models.ForeignKey(
+        "account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True
     )
 
     class Meta:
@@ -81,17 +89,28 @@ class FirstLLesson(BaseModel):
 
 class ExtraLessonGroup(BaseModel):
     group: "Group" = models.ForeignKey(
-        'groups.Group', on_delete=models.SET_NULL, null=True, blank=True, related_name="groups_extra_lesson"
+        "groups.Group",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="groups_extra_lesson",
     )
-    room : "Room" = models.ForeignKey(
-        'groups.Room', on_delete=models.SET_NULL, null=True, blank=True, related_name="extra_group_lessons_room"
+    room: "Room" = models.ForeignKey(
+        "groups.Room",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="extra_group_lessons_room",
     )
     date = models.DateField(null=True, blank=True)
     started_at = models.TimeField(null=True, blank=True)
     ended_at = models.TimeField(null=True, blank=True)
-    creator: 'CustomUser' = models.ForeignKey(
-        'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name="groups_extra_lesson_creator"
+    creator: "CustomUser" = models.ForeignKey(
+        "account.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="groups_extra_lesson_creator",
     )
     comment = models.TextField(null=True, blank=True)
     is_payable = models.BooleanField(default=False)
@@ -103,20 +122,32 @@ class ExtraLessonGroup(BaseModel):
 
 class ExtraLesson(BaseModel):
     student: "Student" = models.ForeignKey(
-        'student.Student', on_delete=models.SET_NULL, null=True, blank=True, related_name="students_extra_lesson"
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="students_extra_lesson",
     )
     teacher: "CustomUser" = models.ForeignKey(
-        'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name="teachers_extra_lesson"
+        "account.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="teachers_extra_lesson",
     )
     date = models.DateField(null=True, blank=True)
     started_at = models.TimeField(null=True, blank=True)
     ended_at = models.TimeField(null=True, blank=True)
     room: "Room" = models.ForeignKey(
-        'groups.Room', on_delete=models.SET_NULL, null=True, blank=True, related_name="rooms_extra_lesson"
+        "groups.Room",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="rooms_extra_lesson",
     )
     comment = models.TextField(null=True, blank=True)
-    creator: 'CustomUser' = models.ForeignKey(
-        'account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True
+    creator: "CustomUser" = models.ForeignKey(
+        "account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True
     )
     is_payable = models.BooleanField(default=False)
     is_attendance = models.BooleanField(default=False)

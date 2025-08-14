@@ -475,25 +475,36 @@ class LidStatisticsView(ListAPIView):
         filter = {}
 
         if subject:
-            filter["subject__id"] = subject
+            filter["subject_id"] = subject
+
         if filial:
-            filter["filial__id"] = filial
+            filter["filial_id"] = filial
+            queryset = queryset.filter(filial_id=filial)
+
         # if is_archived:
         #     filter["is_archived"] = True
+
         # if course_id:
         #     filter["lids_group__course__id"] = course_id
+
         if call_operator_id:
-            filter["call_operator__id"] = call_operator_id
+            filter["call_operator_id"] = call_operator_id
+
         if service_manager:
-            filter["service_manager__id"] = service_manager
+            filter["service_manager_id"] = service_manager
+
         if sales_manager:
-            filter["sales_manager__id"] = sales_manager
+            filter["sales_manager_id"] = sales_manager
+
         if marketing_channel:
-            filter["marketing_channel__id"] = marketing_channel
+            filter["marketing_channel_id"] = marketing_channel
+
         # if teacher:
         #     filter["lids_group__teacher__id"] = teacher
+
         # if channel:
         #     filter["subject__id"] = subject
+
         # if is_student:
         #     filter["is_student"] = is_student.capitalize()
 
@@ -523,6 +534,9 @@ class LidStatisticsView(ListAPIView):
             filter["created_at__gte"] = start_datetime
             filter["created_at__lt"] = end_datetime
 
+        f_start_date = filter.get("created_at__gte")
+        f_end_date = filter.get("created_at__lt")
+
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
                 Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
@@ -537,18 +551,21 @@ class LidStatisticsView(ListAPIView):
         leads_count = queryset.filter(
             lid_stage_type="NEW_LID", is_archived=False, **filter
         ).count()
+
         new_leads = queryset.filter(
             lid_stage_type="NEW_LID",
             lid_stages="YANGI_LEAD",
             is_archived=False,
             **filter,
         ).count()
+
         in_progress = queryset.filter(
             lid_stage_type="NEW_LID",
             is_archived=False,
             lid_stages="KUTULMOQDA",
             **filter,
         ).count()
+
         order_created = (
             queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID", **filter)
             .exclude(call_operator__isnull=True)
@@ -571,20 +588,26 @@ class LidStatisticsView(ListAPIView):
             is_archived=False,
             **filter,
         ).count()
+
         ordered_leads_count = (
             queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, **filter)
             .exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
             .count()
         )
+
         ordered_waiting_leads = queryset.filter(
             lid_stage_type="ORDERED_LID",
             is_archived=False,
             ordered_stages="KUTULMOQDA",
             **filter,
         ).count()
+
         ordered_archived = Archived.objects.filter(
-            lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID"
+            lid__isnull=False,
+            is_archived=True,
+            lid__lid_stage_type="ORDERED_LID",
         ).count()
+
         first_lesson = queryset.filter(
             lid_stage_type="ORDERED_LID",
             is_archived=False,
@@ -592,6 +615,7 @@ class LidStatisticsView(ListAPIView):
             is_student=False,
             **filter,
         ).count()
+
         first_lesson_not = queryset.filter(
             lid_stage_type="ORDERED_LID",
             is_archived=False,
@@ -600,40 +624,64 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         all_archived = queryset.filter(
-            is_archived=True, is_student=False, **filter
+            is_archived=True,
+            is_student=False,
+            **filter,
         ).count()
 
         archived_lid = Archived.objects.filter(
-            lid__lid_stage_type="NEW_LID", lid__isnull=False, is_archived=True
+            (
+                (Q(lid__filial_id=filial) | Q(student__filial_id=filial))
+                if filial
+                else Q()
+            ),
+            lid__lid_stage_type="NEW_LID",
+            lid__isnull=False,
+            is_archived=True,
         ).count()
 
         first_lesson_all = FirstLLesson.objects.filter(
+            Q(lid__filial_id=filial) if filial else Q(),
+            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             lid__lid_stage_type="ORDERED_LID",
             lid__is_archived=False,
-            # created_at__gte=filter["created_at__gte"],
-            # created_at__lt=filter["created_at__lt"],
         ).count()
-        
-        
-        if filter.get("created_at__gte") is not None:
-            first_lesson_all = first_lesson_all.filter(created_at__gte=filter["created_at__gte"])
 
-        if filter.get("created_at__lt") is not None:
-            first_lesson_all = first_lesson_all.filter(created_at__lt=filter["created_at__lt"])
+        # if filter.get("created_at__gte") is not None:
+        #     first_lesson_all = first_lesson_all.filter(
+        #         created_at__gte=filter["created_at__gte"]
+        #     )
+
+        # if filter.get("created_at__lt") is not None:
+        #     first_lesson_all = first_lesson_all.filter(
+        #         created_at__lt=filter["created_at__lt"]
+        #     )
 
         new_student = Archived.objects.filter(
+            # Make filter my lid_filial_id and created_at optional,
+            # without any branching
+            Q(studeent__filial_id=filial) if filial else Q(),
+            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             is_archived=True,
             student__isnull=False,
             student__student_stage_type="NEW_STUDENT",
         ).count()
 
         active_student = Archived.objects.filter(
+            Q(student__filial_id=filial) if filial else Q(),
+            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             is_archived=True,
             student__isnull=False,
             student__student_stage_type="ACTIVE_STUDENT",
         ).count()
 
         no_debt = Archived.objects.filter(
+            Q(student__filial_id=filial) if filial else Q(),
+            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             is_archived=True,
             student__isnull=False,
             student__balance__isnull=False,
@@ -641,6 +689,9 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         lead_no_debt = Archived.objects.filter(
+            Q(lid__filial_id=filial) if filial else Q(),
+            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             is_archived=True,
             lid__isnull=False,
             lid__is_student=False,
@@ -649,10 +700,18 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         debt = Archived.objects.filter(
-            is_archived=True, student__isnull=False, student__balance__lt=100000
+            Q(student__filial_id=filial) if filial else Q(),
+            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+            is_archived=True,
+            student__isnull=False,
+            student__balance__lt=100000,
         ).count()
 
         lead_debt = Archived.objects.filter(
+            Q(lid__filial_id=filial) if filial else Q(),
+            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             is_archived=True,
             lid__isnull=False,
             lid__is_student=False,
@@ -661,6 +720,9 @@ class LidStatisticsView(ListAPIView):
 
         no_debt_sum = (
             Archived.objects.filter(
+                Q(student__filial_id=filial) if filial else Q(),
+                Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+                Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
                 is_archived=True,
                 student__isnull=False,
                 student__balance__isnull=False,
@@ -671,6 +733,9 @@ class LidStatisticsView(ListAPIView):
 
         lead_no_debt_sum = (
             Archived.objects.filter(
+                Q(lid__filial_id=filial) if filial else Q(),
+                Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+                Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
                 is_archived=True,
                 lid__isnull=False,
                 lid__is_student=False,
@@ -682,13 +747,21 @@ class LidStatisticsView(ListAPIView):
 
         debt_sum = (
             Archived.objects.filter(
-                is_archived=True, student__isnull=False, student__balance__lt=100000
+                Q(student__filial_id=filial) if filial else Q(),
+                Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+                Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+                is_archived=True,
+                student__isnull=False,
+                student__balance__lt=100000,
             ).aggregate(total=Sum("student__balance"))["total"]
             or 0
         )
 
         lead_debt_sum = (
             Archived.objects.filter(
+                Q(lid__filial_id=filial) if filial else Q(),
+                Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+                Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
                 is_archived=True,
                 lid__isnull=False,
                 lid__is_student=False,
