@@ -1,6 +1,10 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    ListAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -8,6 +12,7 @@ from ..lid.new_lid.models import Lid
 from ..student.student.models import Student
 from ..tasks.models import Task
 from ..tasks.serializers import TaskSerializer
+
 
 class TaskListCreateView(ListCreateAPIView):
     queryset = Task.objects.all()
@@ -17,7 +22,14 @@ class TaskListCreateView(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     # Updated search_fields
-    search_fields = ("creator__first_name", "creator__last_name", "task", "comment", "date_of_expired", "status")
+    search_fields = (
+        "creator__first_name",
+        "creator__last_name",
+        "task",
+        "comment",
+        "date_of_expired",
+        "status",
+    )
 
     # Ordering and filtering fields
     ordering_fields = ("date_of_expired",)
@@ -33,9 +45,13 @@ class TaskListCreateView(ListCreateAPIView):
         if filial:
             queryset = queryset.filter(filial__id=filial)
         if creator:
-            queryset = queryset.filter(creator=self.request.user).order_by("-date_of_expired")
+            queryset = queryset.filter(creator=self.request.user).order_by(
+                "-date_of_expired"
+            )
         if performer:
-            queryset = queryset.filter(performer=self.request.user).order_by("-date_of_expired")
+            queryset = queryset.filter(performer=self.request.user).order_by(
+                "-date_of_expired"
+            )
         return queryset
 
 
@@ -56,7 +72,9 @@ class TaskListNoPGView(ListAPIView):
         queryset = Task.objects.all()
         if filial:
             queryset = queryset.filter(filial__id=filial)
-        queryset = queryset.filter(creator=self.request.user).order_by("-date_of_expired")
+        queryset = queryset.filter(creator=self.request.user).order_by(
+            "-date_of_expired"
+        )
         return queryset
 
     def get_paginated_response(self, data):
@@ -68,13 +86,14 @@ class TaskStudentRetrieveListAPIView(ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        pk = self.kwargs.get('pk')
+        pk = self.kwargs.get("pk")
         student = Student.objects.filter(id=pk).first()
         lid = Lid.objects.filter(id=pk).first()
 
         if lid:
             return Task.objects.filter(lid=lid)  # Return queryset instead of .first()
         elif student:
-            return Task.objects.filter(student=student)  # Return queryset instead of .first()
+            return Task.objects.filter(
+                student=student
+            )  # Return queryset instead of .first()
         return Task.objects.none()  # Re
-
