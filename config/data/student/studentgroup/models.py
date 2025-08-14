@@ -14,7 +14,7 @@ class StudentGroup(BaseModel):
         blank=True,
         related_name="student_groups",
     )
-    
+
     student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
@@ -22,7 +22,7 @@ class StudentGroup(BaseModel):
         blank=True,
         related_name="students_group",
     )
-    
+
     lid: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
@@ -74,3 +74,4 @@ class SecondaryStudentGroup(BaseModel):
     class Meta:
         verbose_name = "Secondary Add group"
         verbose_name_plural = "Secondary Add group"
+    

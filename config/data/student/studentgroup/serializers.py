@@ -312,4 +312,28 @@ class StudentGroupUpdateSerializer(serializers.Serializer):
                 "Either 'student' or 'order' must be provided, but not both."
             )
 
+        if student != None:
+            self.validate_student(attrs)
+
+        if order != None:
+            self.validate_order(attrs)
+
         return attrs
+
+    def validate_student(self, attrs):
+
+        student: Student = attrs["student"]
+
+        if student.students_group.filter(group=attrs["group"]).exists():
+            raise serializers.ValidationError(
+                "Can't  add students group to already existing  one."
+            )
+
+    def validate_student(self, attrs):
+
+        order: Lid = attrs["order"]
+
+        if order.lids_group.filter(group=attrs["group"]).exists():
+            raise serializers.ValidationError(
+                "Can't  add students group to already existing  one."
+            )
