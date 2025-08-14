@@ -17,7 +17,12 @@ from drf_yasg.utils import swagger_auto_schema
 from icecream import ic
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    CreateAPIView,
+)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -26,9 +31,26 @@ from rest_framework.views import APIView
 from data.account.models import CustomUser
 from data.finances.finance.models import Finance, Kind
 from data.student.student.models import Student
-from .models import Casher, Handover, PaymentMethod, Sale, SaleStudent, Voucher, VoucherStudent
-from .serializers import FinanceSerializer, CasherSerializer, CasherHandoverSerializer, KindSerializer, \
-    PaymentMethodSerializer, SalesSerializer, SaleStudentSerializer, VoucherSerializer, VoucherStudentSerializer
+from .models import (
+    Casher,
+    Handover,
+    PaymentMethod,
+    Sale,
+    SaleStudent,
+    Voucher,
+    VoucherStudent,
+)
+from .serializers import (
+    FinanceSerializer,
+    CasherSerializer,
+    CasherHandoverSerializer,
+    KindSerializer,
+    PaymentMethodSerializer,
+    SalesSerializer,
+    SaleStudentSerializer,
+    VoucherSerializer,
+    VoucherStudentSerializer,
+)
 from ...lid.new_lid.models import Lid
 from ...student.attendance.models import Attendance
 from ...student.groups.models import Group
@@ -40,15 +62,15 @@ class CasherListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        role = self.request.GET.get('role', None)
-        is_archived = self.request.GET.get('is_archived', False)
+        role = self.request.GET.get("role", None)
+        is_archived = self.request.GET.get("is_archived", False)
 
         filter = {}
 
         if is_archived:
-            filter['is_archived'] = is_archived.capitalize()
+            filter["is_archived"] = is_archived.capitalize()
         if role:
-            filter['role'] = role
+            filter["role"] = role
 
         return Casher.objects.filter(filial=self.request.user.filial.first(), **filter)
 
@@ -66,11 +88,11 @@ class CasherNoPg(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        role = self.request.GET.get('role', None)
+        role = self.request.GET.get("role", None)
 
         filter = {}
         if role:
-            filter['role'] = role
+            filter["role"] = role
 
         return Casher.objects.filter(filial=self.request.user.filial.first(), **filter)
 
@@ -84,16 +106,16 @@ class FinanceListAPIView(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        kind = self.request.GET.get('kind')
-        action = self.request.GET.get('action')
-        start_date_str = self.request.GET.get('start_date')
-        end_date_str = self.request.GET.get('end_date')
-        casher_id = self.request.GET.get('casher_id')
-        creator = self.request.GET.get('creator')
-
+        kind = self.request.GET.get("kind")
+        action = self.request.GET.get("action")
+        start_date_str = self.request.GET.get("start_date")
+        end_date_str = self.request.GET.get("end_date")
+        casher_id = self.request.GET.get("casher_id")
+        creator = self.request.GET.get("creator")
 
         queryset = Finance.objects.all().exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+        )
 
         if action:
             queryset = queryset.filter(action=action)
@@ -129,7 +151,7 @@ class FinanceListAPIView(ListCreateAPIView):
 
             queryset = queryset.filter(
                 created_at__gte=datetime.combine(start, datetime.min.time()),
-                created_at__lt=end_dt
+                created_at__lt=end_dt,
             )
 
         return queryset
@@ -142,7 +164,9 @@ class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class FinanceNoPGList(ListAPIView):
-    queryset = Finance.objects.all().exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+    queryset = Finance.objects.all().exclude(
+        Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+    )
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
     pagination_class = None
@@ -163,9 +187,10 @@ class StudentFinanceListAPIView(ListAPIView):
     def get_queryset(self, **kwargs):
 
         queryset = Finance.objects.all().exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+        )
 
-        pk = self.kwargs.get('pk')
+        pk = self.kwargs.get("pk")
 
         student = Student.objects.filter(id=pk).first()
         lid = Lid.objects.filter(id=pk).first()
@@ -216,7 +241,7 @@ class StuffFinanceListAPIView(ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self, **kwargs):
-        stuff = CustomUser.objects.get(id=self.kwargs.get('pk'))
+        stuff = CustomUser.objects.get(id=self.kwargs.get("pk"))
 
         if stuff:
             return Finance.objects.filter(stuff=stuff)
@@ -225,34 +250,44 @@ class StuffFinanceListAPIView(ListAPIView):
 
 class FinancePaymentMethodsAmountsListAPIView(APIView):
     def get(self, request):
-        payment_method = request.GET.get('payment_method')
-        filial = request.GET.get('filial')
-        casher_id = request.GET.get('casher')
+        payment_method = request.GET.get("payment_method")
+        filial = request.GET.get("filial")
+        casher_id = request.GET.get("casher")
 
         casher_obj = Casher.objects.filter(id=casher_id).first()
 
-        income = Finance.objects.filter(
-            casher=casher_obj,
-            action='INCOME',
-            payment_method=payment_method
-        ).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(Sum('amount'))[
-                     'amount__sum'] or 0
+        income = (
+            Finance.objects.filter(
+                casher=casher_obj, action="INCOME", payment_method=payment_method
+            )
+            .exclude(
+                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            )
+            .aggregate(Sum("amount"))["amount__sum"]
+            or 0
+        )
 
-        expense = Finance.objects.filter(
-            casher=casher_obj,
-            action='EXPENSE',
-            payment_method=payment_method
-        ).exclude(Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(Sum('amount'))[
-                      'amount__sum'] or 0
+        expense = (
+            Finance.objects.filter(
+                casher=casher_obj, action="EXPENSE", payment_method=payment_method
+            )
+            .exclude(
+                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            )
+            .aggregate(Sum("amount"))["amount__sum"]
+            or 0
+        )
 
-        return Response({
-            'income_amount': income,
-            'expense_amount': expense,
-            "payment_method": payment_method,
-            "filial": filial,
-            "casher": casher_obj.name,
-            "current_amount": income - expense,
-        })
+        return Response(
+            {
+                "income_amount": income,
+                "expense_amount": expense,
+                "payment_method": payment_method,
+                "filial": filial,
+                "casher": casher_obj.name,
+                "current_amount": income - expense,
+            }
+        )
 
 
 class CasherHandoverAPIView(CreateAPIView):
@@ -270,33 +305,37 @@ class CasherHandoverAPIView(CreateAPIView):
 
         if int(amount) > 0:
             # Get the Kind instance (unpacking the tuple)
-            handover, _ = Kind.objects.get_or_create(name="CASHIER_HANDOVER", action="EXPENSE")
+            handover, _ = Kind.objects.get_or_create(
+                name="CASHIER_HANDOVER", action="EXPENSE"
+            )
 
             # Deduct from sender (casher)
             Finance.objects.create(
                 casher=casher,
                 amount=amount,
                 payment_method=payment_method,
-                action='EXPENSE',
+                action="EXPENSE",
                 kind=handover,
                 creator=request.user,
                 comment=f"{casher.name}  - {amount}  so'm  "
-                        f"{receiver.name}  ga kassa topshirdi ."
+                f"{receiver.name}  ga kassa topshirdi .",
             )
 
             # Get the Kind instance (unpacking the tuple)
-            acception, _ = Kind.objects.get_or_create(name="CASHIER_ACCEPTANCE", action="INCOME")
+            acception, _ = Kind.objects.get_or_create(
+                name="CASHIER_ACCEPTANCE", action="INCOME"
+            )
 
             # Add to receiver
             Finance.objects.create(
                 casher=receiver,
                 amount=amount,
                 payment_method=payment_method,
-                action='INCOME',
+                action="INCOME",
                 kind=acception,
                 creator=request.user,
                 comment=f"{receiver.name}  - {amount}  so'm  "
-                        f"{casher.name}  dan kassa qabul qildi ."
+                f"{casher.name}  dan kassa qabul qildi .",
             )
 
             Handover.objects.create(
@@ -307,12 +346,12 @@ class CasherHandoverAPIView(CreateAPIView):
 
             return Response(
                 {"message": "Cashier handover completed successfully"},
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
 
         return Response(
             {"error": "Insufficient balance for handover"},
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
 
@@ -332,15 +371,23 @@ class FinanceStatisticsAPIView(APIView):
         def get_balance(role):
 
             total_income = (
-                    Finance.objects.filter(casher__role=role, action="INCOME", **filters).exclude(
-                        Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
-                    .aggregate(total_income=Sum("amount"))["total_income"] or 0
+                Finance.objects.filter(casher__role=role, action="INCOME", **filters)
+                .exclude(
+                    Q(kind__name__icontains="Bonus")
+                    | Q(kind__name__icontains="Money back")
+                )
+                .aggregate(total_income=Sum("amount"))["total_income"]
+                or 0
             )
 
             total_outcome = (
-                    Finance.objects.filter(casher__role=role, action="EXPENSE", **filters).exclude(
-                        Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
-                    .aggregate(total_outcome=Sum("amount"))["total_outcome"] or 0
+                Finance.objects.filter(casher__role=role, action="EXPENSE", **filters)
+                .exclude(
+                    Q(kind__name__icontains="Bonus")
+                    | Q(kind__name__icontains="Money back")
+                )
+                .aggregate(total_outcome=Sum("amount"))["total_outcome"]
+                or 0
             )
 
             balance = total_income - total_outcome
@@ -362,7 +409,7 @@ class CasherHandoverHistory(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self, **kwargs):
-        casher = self.kwargs.get('pk')
+        casher = self.kwargs.get("pk")
         if casher:
             return Handover.objects.filter(casher__id=casher)
         return Finance.objects.none()
@@ -372,10 +419,10 @@ class CasherStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        casher_id = self.kwargs.get('pk')
-        kind_id = request.GET.get('kind')
-        start_date_str = request.GET.get('start_date')
-        end_date_str = request.GET.get('end_date')
+        casher_id = self.kwargs.get("pk")
+        kind_id = request.GET.get("kind")
+        start_date_str = request.GET.get("start_date")
+        end_date_str = request.GET.get("end_date")
 
         filters = {}
 
@@ -390,21 +437,29 @@ class CasherStatisticsAPIView(APIView):
                     end_dt = start_dt + timedelta(days=1) - timedelta(seconds=1)
                     filters["created_at__lte"] = end_dt
             except ValueError:
-                return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=400)
+                return Response(
+                    {"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=400
+                )
 
         # Handle end date
         if end_date_str:
             try:
-                end_dt = datetime.strptime(end_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+                end_dt = (
+                    datetime.strptime(end_date_str, "%Y-%m-%d")
+                    + timedelta(days=1)
+                    - timedelta(seconds=1)
+                )
                 end_dt = make_aware(end_dt)
                 filters["created_at__lte"] = end_dt
             except ValueError:
-                return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=400)
+                return Response(
+                    {"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=400
+                )
 
         # Handle kind filtering
         if kind_id:
             try:
-                filters['kind'] = Kind.objects.get(id=kind_id)
+                filters["kind"] = Kind.objects.get(id=kind_id)
             except Kind.DoesNotExist:
                 return Response({"error": "Kind not found."}, status=404)
 
@@ -417,12 +472,22 @@ class CasherStatisticsAPIView(APIView):
 
             balance_data = queryset.aggregate(
                 income=Coalesce(
-                    Sum(Case(When(action="INCOME", then=F("amount")), output_field=FloatField())),
-                    Value(0.0)
+                    Sum(
+                        Case(
+                            When(action="INCOME", then=F("amount")),
+                            output_field=FloatField(),
+                        )
+                    ),
+                    Value(0.0),
                 ),
                 expense=Coalesce(
-                    Sum(Case(When(action="EXPENSE", then=F("amount")), output_field=FloatField())),
-                    Value(0.0)
+                    Sum(
+                        Case(
+                            When(action="EXPENSE", then=F("amount")),
+                            output_field=FloatField(),
+                        )
+                    ),
+                    Value(0.0),
                 ),
             )
 
@@ -436,25 +501,27 @@ class CasherStatisticsAPIView(APIView):
                         Case(
                             When(action="INCOME", then=F("amount")),
                             When(action="EXPENSE", then=F("amount") * -1),
-                            output_field=FloatField()
+                            output_field=FloatField(),
                         )
                     ),
-                    Value(0.0)
+                    Value(0.0),
                 )
             )["total"]
 
-            return Response({
-                "income": round(balance_data["income"], 2),
-                "expense": round(balance_data["expense"], 2),
-                "balance": round(balance, 2),
-            })
+            return Response(
+                {
+                    "income": round(balance_data["income"], 2),
+                    "expense": round(balance_data["expense"], 2),
+                    "balance": round(balance, 2),
+                }
+            )
 
         return Response({"error": "Casher ID is required."}, status=400)
 
 
 class CustomPagination(PageNumberPagination):
     page_size = 10
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
@@ -465,9 +532,13 @@ def parse_date_range(start_date_str, end_date_str):
     start = end = None
 
     if start_date_str:
-        start = make_aware(datetime.combine(datetime.strptime(start_date_str, "%Y-%m-%d"), time.min))
+        start = make_aware(
+            datetime.combine(datetime.strptime(start_date_str, "%Y-%m-%d"), time.min)
+        )
     if end_date_str:
-        end = make_aware(datetime.combine(datetime.strptime(end_date_str, "%Y-%m-%d"), time.max))
+        end = make_aware(
+            datetime.combine(datetime.strptime(end_date_str, "%Y-%m-%d"), time.max)
+        )
 
     return start, end
 
@@ -477,9 +548,9 @@ class TeacherGroupFinanceAPIView(APIView):
     pagination_class = CustomPagination
 
     def get(self, request, *args, **kwargs):
-        teacher_id = self.kwargs.get('pk')
-        start_date_str = request.GET.get('start_date')
-        end_date_str = request.GET.get('end_date')
+        teacher_id = self.kwargs.get("pk")
+        start_date_str = request.GET.get("start_date")
+        end_date_str = request.GET.get("end_date")
 
         current_year = datetime.today().year
         default_start_date = make_aware(datetime(current_year, 1, 1))
@@ -496,7 +567,11 @@ class TeacherGroupFinanceAPIView(APIView):
         elif start_date:
             group_filters["created_at__gte"] = start_date
 
-        attended_groups = Attendance.objects.filter(**group_filters).values_list('group_id', flat=True).distinct()
+        attended_groups = (
+            Attendance.objects.filter(**group_filters)
+            .values_list("group_id", flat=True)
+            .distinct()
+        )
         unique_group_ids = list(set(attended_groups))
 
         group_data_list = []
@@ -515,16 +590,26 @@ class TeacherGroupFinanceAPIView(APIView):
             elif start_date:
                 finance_filters["created_at__gte"] = start_date
 
-            kind = Kind.objects.filter(action="INCOME", name__icontains="Lesson payment").first()
-            finance_records = Finance.objects.filter(**finance_filters, stuff__id=teacher_id, kind=kind).order_by(
-                "created_at")
-            created_at = finance_records.first().created_at if finance_records.exists() else None
-            total_group_payment = finance_records.aggregate(Sum('amount'))['amount__sum'] or 0
+            kind = Kind.objects.filter(
+                action="INCOME", name__icontains="Lesson payment"
+            ).first()
+            finance_records = Finance.objects.filter(
+                **finance_filters, stuff__id=teacher_id, kind=kind
+            ).order_by("created_at")
+            created_at = (
+                finance_records.first().created_at if finance_records.exists() else None
+            )
+            total_group_payment = (
+                finance_records.aggregate(Sum("amount"))["amount__sum"] or 0
+            )
 
             # Student filter
             student_filters = {"attendance_student__group__id": group_id}
             if start_date and end_date:
-                student_filters["attendance_student__created_at__range"] = (start_date, end_date)
+                student_filters["attendance_student__created_at__range"] = (
+                    start_date,
+                    end_date,
+                )
             elif start_date:
                 student_filters["attendance_student__created_at__gte"] = start_date
 
@@ -534,31 +619,42 @@ class TeacherGroupFinanceAPIView(APIView):
             for student in students:
                 student_attendance_filters = {"group_id": group_id, "student": student}
                 if start_date and end_date:
-                    student_attendance_filters["created_at__range"] = (start_date, end_date)
+                    student_attendance_filters["created_at__range"] = (
+                        start_date,
+                        end_date,
+                    )
                 elif start_date:
                     student_attendance_filters["created_at__gte"] = start_date
 
-                student_attendances = Attendance.objects.filter(**student_attendance_filters)
+                student_attendances = Attendance.objects.filter(
+                    **student_attendance_filters
+                )
                 student_finance_filters = {"attendance__in": student_attendances}
                 if start_date and end_date:
-                    student_finance_filters["created_at__range"] = (start_date, end_date)
+                    student_finance_filters["created_at__range"] = (
+                        start_date,
+                        end_date,
+                    )
                 elif start_date:
                     student_finance_filters["created_at__gte"] = start_date
 
                 if student_attendances.exists():
-                    total_student_payment = Finance.objects.filter(
-                        **student_finance_filters,
-                        stuff__id=teacher_id,
-                        kind=kind
-                    ).aggregate(Sum('amount'))['amount__sum'] or 0
+                    total_student_payment = (
+                        Finance.objects.filter(
+                            **student_finance_filters, stuff__id=teacher_id, kind=kind
+                        ).aggregate(Sum("amount"))["amount__sum"]
+                        or 0
+                    )
                 else:
                     total_student_payment = 0
 
-                student_data.append({
-                    "student_id": str(student.id),
-                    "student_name": f"{student.first_name} {student.last_name}",
-                    "total_payment": total_student_payment
-                })
+                student_data.append(
+                    {
+                        "student_id": str(student.id),
+                        "student_name": f"{student.first_name} {student.last_name}",
+                        "total_payment": total_student_payment,
+                    }
+                )
 
             try:
                 group = Group.objects.get(id=group_id)
@@ -566,15 +662,19 @@ class TeacherGroupFinanceAPIView(APIView):
             except Group.DoesNotExist:
                 group_name = "Unknown Group"
 
-            group_data_list.append({
-                "group_id": str(group_id),
-                "group_name": group_name,
-                "total_group_payment": total_group_payment,
-                "students": student_data,
-                "created_at": created_at,
-            })
+            group_data_list.append(
+                {
+                    "group_id": str(group_id),
+                    "group_name": group_name,
+                    "total_group_payment": total_group_payment,
+                    "students": student_data,
+                    "created_at": created_at,
+                }
+            )
 
-        group_data_list.sort(key=lambda x: x['created_at'] or timezone.now(), reverse=True)
+        group_data_list.sort(
+            key=lambda x: x["created_at"] or timezone.now(), reverse=True
+        )
 
         paginator = self.pagination_class()
         paginated_data = paginator.paginate_queryset(group_data_list, request)
@@ -588,18 +688,17 @@ class FinanceTeacher(ListAPIView):
 
     def get_queryset(self):
         teacher = self.request.user
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
         ic(teacher)
         if teacher:
-            queryset = Finance.objects.filter(
-                stuff=teacher,
-                attendance__isnull=True
-            )
+            queryset = Finance.objects.filter(stuff=teacher, attendance__isnull=True)
             if start_date:
                 queryset = queryset.filter(created_at__gte=start_date)
             if start_date and end_date:
-                queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+                queryset = queryset.filter(
+                    created_at__gte=start_date, created_at__lte=end_date
+                )
             return queryset
 
         return Finance.objects.none()
@@ -608,11 +707,11 @@ class FinanceTeacher(ListAPIView):
 class FinanceExcel(APIView):
 
     def get(self, request, *args, **kwargs):
-        filial = request.GET.get('filial')
-        casher_id = request.GET.get('cashier')
-        casher_role = request.GET.get('casher_role')
-        kind_id = request.GET.get('kind')
-        action = request.GET.get('action')
+        filial = request.GET.get("filial")
+        casher_id = request.GET.get("cashier")
+        casher_role = request.GET.get("casher_role")
+        kind_id = request.GET.get("kind")
+        action = request.GET.get("action")
 
         filters = Q()
         if filial:
@@ -627,7 +726,8 @@ class FinanceExcel(APIView):
             filters &= Q(action=action)
 
         finances = Finance.objects.filter(filters).exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+        )
 
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
@@ -636,15 +736,14 @@ class FinanceExcel(APIView):
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
             finances = finances.filter(
-                created_at__gte=start_date,
-                created_at__lt=end_date + timedelta(days=1)
+                created_at__gte=start_date, created_at__lt=end_date + timedelta(days=1)
             )
 
         elif start_date_str:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             finances = finances.filter(
                 created_at__gte=start_date,
-                created_at__lt=start_date + timedelta(days=1) - timedelta(seconds=1)
+                created_at__lt=start_date + timedelta(days=1) - timedelta(seconds=1),
             )
 
         # Create an Excel workbook
@@ -653,8 +752,16 @@ class FinanceExcel(APIView):
         sheet.title = "Finance Report"
 
         # Add headers
-        headers = ["Cassa egasi", "Role", "To'lov turi", "Action", "Miqdor", "To'lov metodi", "Comment",
-                   "Yaratilgan vaqti"]
+        headers = [
+            "Cassa egasi",
+            "Role",
+            "To'lov turi",
+            "Action",
+            "Miqdor",
+            "To'lov metodi",
+            "Comment",
+            "Yaratilgan vaqti",
+        ]
         sheet.append(headers)
 
         # Add data
@@ -672,27 +779,74 @@ class FinanceExcel(APIView):
                 total_expense -= amount
                 total_amount -= amount
 
-            sheet.append([
-                finance.casher.name if finance.casher else "-",
-                "Asosiy kassa " if finance.casher.role == "WEALTH" else
-                "Buxgalteriya kassa" if finance.casher.role == "ACCOUNTANT" else
-                "Filial kassa" if finance.casher.role == "ADMINISTRATOR" else "",
-                "Kassa qabul qilish" if finance.kind.name == "CASHIER_ACCEPTANCE" else
-                "Kassa topshirish" if finance.kind.name == "CASHIER_HANDOVER" else
-                "Oylik maosh" if finance.kind.name == "Salary" else
-                "Kurs to'lovi" if finance.kind.name == "Course payment" else
-                "1 dars uchun to'lov" if finance.kind.name == "Lesson payment" else
-                "Pul qaytarish" if finance.kind.name == "Money back" else
-                finance.kind.name if hasattr(finance.kind, "name") else str(finance.kind),
-                "Kirim" if finance.action == "INCOME" else "Xarajat",
-                amount,
-                "Naqt pul" if finance.payment_method == "Cash" else
-                "Pul kuchirish" if finance.payment_method == "Money_send" else
-                "Karta orqali" if finance.payment_method == "Card" else
-                "Payme" if finance.payment_method == "Payme" else "Click",
-                finance.comment or "-",
-                finance.created_at.strftime("%d-%m-%Y %H:%M:%S"),
-            ])
+            sheet.append(
+                [
+                    finance.casher.name if finance.casher else "-",
+                    (
+                        "Asosiy kassa "
+                        if finance.casher.role == "WEALTH"
+                        else (
+                            "Buxgalteriya kassa"
+                            if finance.casher.role == "ACCOUNTANT"
+                            else (
+                                "Filial kassa"
+                                if finance.casher.role == "ADMINISTRATOR"
+                                else ""
+                            )
+                        )
+                    ),
+                    (
+                        "Kassa qabul qilish"
+                        if finance.kind.name == "CASHIER_ACCEPTANCE"
+                        else (
+                            "Kassa topshirish"
+                            if finance.kind.name == "CASHIER_HANDOVER"
+                            else (
+                                "Oylik maosh"
+                                if finance.kind.name == "Salary"
+                                else (
+                                    "Kurs to'lovi"
+                                    if finance.kind.name == "Course payment"
+                                    else (
+                                        "1 dars uchun to'lov"
+                                        if finance.kind.name == "Lesson payment"
+                                        else (
+                                            "Pul qaytarish"
+                                            if finance.kind.name == "Money back"
+                                            else (
+                                                finance.kind.name
+                                                if hasattr(finance.kind, "name")
+                                                else str(finance.kind)
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    "Kirim" if finance.action == "INCOME" else "Xarajat",
+                    amount,
+                    (
+                        "Naqt pul"
+                        if finance.payment_method == "Cash"
+                        else (
+                            "Pul kuchirish"
+                            if finance.payment_method == "Money_send"
+                            else (
+                                "Karta orqali"
+                                if finance.payment_method == "Card"
+                                else (
+                                    "Payme"
+                                    if finance.payment_method == "Payme"
+                                    else "Click"
+                                )
+                            )
+                        )
+                    ),
+                    finance.comment or "-",
+                    finance.created_at.strftime("%d-%m-%Y %H:%M:%S"),
+                ]
+            )
 
         # ✅ Add total row
         sheet.append([])
@@ -700,8 +854,10 @@ class FinanceExcel(APIView):
         sheet.append(["", "", "", "Jami Chiqim:", total_expense])
         sheet.append(["", "", "", "JAMI:", total_amount])
 
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="finance_report.xlsx"'
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="finance_report.xlsx"'
         workbook.save(response)
         return response
 
@@ -712,7 +868,7 @@ class KindList(ListCreateAPIView):
     queryset = Kind.objects.all()
 
     def get_queryset(self):
-        kind = self.request.GET.get('action')
+        kind = self.request.GET.get("action")
         if kind:
             queryset = Kind.objects.filter(
                 action=kind,
@@ -746,29 +902,35 @@ class PaymentStatistics(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
-        filial = self.request.GET.get('filial')
-        casher_id = self.request.GET.get('casher')
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
+        filial = self.request.GET.get("filial")
+        casher_id = self.request.GET.get("casher")
         filter = {}
 
         if casher_id:
-            filter['casher__id'] = casher_id
+            filter["casher__id"] = casher_id
         if filial:
-            filter['filial'] = filial
+            filter["filial"] = filial
         if start_date:
-            filter['created_at__gte'] = start_date
+            filter["created_at__gte"] = start_date
         if end_date:
-            filter['created_at__lte'] = end_date
+            filter["created_at__lte"] = end_date
 
-        valid_payment_methods = [
-            'Click', 'Payme', 'Cash', 'Card', "Money_send"
-        ]
+        valid_payment_methods = ["Click", "Payme", "Cash", "Card", "Money_send"]
 
         def get_total_amount(payment_name, action_type):
-            return Finance.objects.filter(payment_method=payment_name, action=action_type, **filter).exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
-                total=Sum('amount'))['total'] or 0
+            return (
+                Finance.objects.filter(
+                    payment_method=payment_name, action=action_type, **filter
+                )
+                .exclude(
+                    Q(kind__name__icontains="Bonus")
+                    | Q(kind__name__icontains="Money back")
+                )
+                .aggregate(total=Sum("amount"))["total"]
+                or 0
+            )
 
         data = {}
 
@@ -778,8 +940,13 @@ class PaymentStatistics(APIView):
             data[f"{formatted_name}_expense"] = get_total_amount(payment, "EXPENSE")
 
         # Compute total income and expense
-        data["total_income"] = sum(data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods)
-        data["total_expense"] = sum(data[f"{p.lower().replace(' ', '_')}_expense"] for p in valid_payment_methods)
+        data["total_income"] = sum(
+            data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods
+        )
+        data["total_expense"] = sum(
+            data[f"{p.lower().replace(' ', '_')}_expense"]
+            for p in valid_payment_methods
+        )
 
         return Response(data)
 
@@ -788,9 +955,9 @@ class PaymentCasherStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
-        cashier_id = self.kwargs.get('pk')
-        start_date_str = request.GET.get('start_date')
-        end_date_str = request.GET.get('end_date')
+        cashier_id = self.kwargs.get("pk")
+        start_date_str = request.GET.get("start_date")
+        end_date_str = request.GET.get("end_date")
 
         # ✅ Safely parse dates from string to datetime
         start_date = None
@@ -801,29 +968,34 @@ class PaymentCasherStatistics(ListAPIView):
             if end_date_str:
                 end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
         except ValueError:
-            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+            return Response(
+                {"error": "Invalid date format. Use YYYY-MM-DD."}, status=400
+            )
 
         # ✅ Supported payment methods
-        valid_payment_methods = ['Click', 'Payme', 'Cash', 'Card', "Money_send"]
+        valid_payment_methods = ["Click", "Payme", "Cash", "Card", "Money_send"]
 
         def get_total_amount(payment_method, action_type):
-            qs = Finance.objects.filter(payment_method=payment_method, action=action_type).exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
+            qs = Finance.objects.filter(
+                payment_method=payment_method, action=action_type
+            ).exclude(
+                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            )
             if cashier_id:
                 qs = qs.filter(casher__id=cashier_id)
 
             if start_date and not end_date:
                 qs = qs.filter(
                     created_at__gte=start_date,
-                    created_at__lt=start_date + timedelta(days=1)
+                    created_at__lt=start_date + timedelta(days=1),
                 )
             elif start_date and end_date:
                 qs = qs.filter(
                     created_at__gte=start_date,
-                    created_at__lt=end_date + timedelta(days=1)
+                    created_at__lt=end_date + timedelta(days=1),
                 )
 
-            return qs.aggregate(total=Sum('amount'))['total'] or 0
+            return qs.aggregate(total=Sum("amount"))["total"] or 0
 
         # ✅ Build statistics data
         data = {}
@@ -832,8 +1004,13 @@ class PaymentCasherStatistics(ListAPIView):
             data[f"{key}_income"] = get_total_amount(payment, "INCOME")
             data[f"{key}_expense"] = get_total_amount(payment, "EXPENSE")
 
-        data["total_income"] = sum(data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods)
-        data["total_expense"] = sum(data[f"{p.lower().replace(' ', '_')}_expense"] for p in valid_payment_methods)
+        data["total_income"] = sum(
+            data[f"{p.lower().replace(' ', '_')}_income"] for p in valid_payment_methods
+        )
+        data["total_expense"] = sum(
+            data[f"{p.lower().replace(' ', '_')}_expense"]
+            for p in valid_payment_methods
+        )
 
         return Response(data)
 
@@ -847,7 +1024,7 @@ class SalesList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        filial = self.request.GET.get('filial')
+        filial = self.request.GET.get("filial")
         if filial:
             return Sale.objects.filter(filial__in=filial)
         return Sale.objects.filter(filial__in=self.request.user.filial.all())
@@ -860,7 +1037,7 @@ class SalesStudentNoPG(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        filial = self.request.GET.get('filial')
+        filial = self.request.GET.get("filial")
         if filial:
             return Sale.objects.filter(filial__in=filial)
         return Sale.objects.filter(filial__in=self.request.user.filial.all())
@@ -875,8 +1052,8 @@ class SalesStudentList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        filial = self.request.GET.get('filial')
-        type = self.request.GET.get('type')
+        filial = self.request.GET.get("filial")
+        type = self.request.GET.get("type")
 
         queryset = SaleStudent.objects.filter(sale__status="ACTIVE")
 
@@ -894,9 +1071,11 @@ class SaleStudentRetrieve(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
         if id:
-            return SaleStudent.objects.filter(Q(lid__id=id) | Q(student__id=id)).filter(sale__status="ACTIVE")
+            return SaleStudent.objects.filter(Q(lid__id=id) | Q(student__id=id)).filter(
+                sale__status="ACTIVE"
+            )
         return SaleStudent.objects.none()
 
     def get_paginated_response(self, data):
@@ -914,28 +1093,32 @@ class PaymentStatisticsByKind(APIView):
 
     def get(self, request):
         # Parse and validate dates
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
-        filial = request.GET.get('filial')
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        filial = request.GET.get("filial")
 
         filters = {}
         if start_date:
             start_date = parse_date(start_date)
-            filters['created_at__gte'] = start_date
+            filters["created_at__gte"] = start_date
         if end_date:
             end_date = parse_date(end_date)
-            filters['created_at__lte'] = end_date
+            filters["created_at__lte"] = end_date
         if filial:
-            filters['filial_id'] = filial
+            filters["filial_id"] = filial
 
         kinds = Kind.objects.all()
 
         # Function to get total amount for a given kind and action type
         def get_total_amount(kind, action_type):
             return (
-                    Finance.objects.filter(kind=kind, action=action_type, **filters).exclude(
-                        Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back"))
-                    .aggregate(total=Sum('amount'))['total'] or 0
+                Finance.objects.filter(kind=kind, action=action_type, **filters)
+                .exclude(
+                    Q(kind__name__icontains="Bonus")
+                    | Q(kind__name__icontains="Money back")
+                )
+                .aggregate(total=Sum("amount"))["total"]
+                or 0
             )
 
         # Function to get distinct actions for a given kind
@@ -954,12 +1137,16 @@ class PaymentStatisticsByKind(APIView):
                 "income": get_total_amount(kind, "INCOME"),
                 "expense": get_total_amount(kind, "EXPENSE"),
                 "action": kind.action,
-                "color": kind.color
+                "color": kind.color,
             }
 
         # Compute total income and expense **only from kinds**, excluding any integers in data
-        total_income = sum(item["income"] for item in data.values() if isinstance(item, dict))
-        total_expense = sum(item["expense"] for item in data.values() if isinstance(item, dict))
+        total_income = sum(
+            item["income"] for item in data.values() if isinstance(item, dict)
+        )
+        total_expense = sum(
+            item["expense"] for item in data.values() if isinstance(item, dict)
+        )
 
         data["total_income"] = total_income
         data["total_expense"] = total_expense
@@ -986,8 +1173,8 @@ class VoucherNoPG(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        is_expired = self.request.GET.get('is_expired')
-        filial = self.request.GET.get('filial')
+        is_expired = self.request.GET.get("is_expired")
+        filial = self.request.GET.get("filial")
 
         queryset = Voucher.objects.all()
         if filial:
@@ -1007,7 +1194,7 @@ class VoucherStudentList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.request.GET.get('id')
+        id = self.request.GET.get("id")
         if id:
             return VoucherStudent.objects.filter(Q(lid__id=id) | Q(student__id=id))
         else:
@@ -1025,25 +1212,38 @@ class GeneratePaymentExcelAPIView(APIView):
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter('casher_id', openapi.IN_QUERY, description="Casher ID (Required)",
-                              type=openapi.FORMAT_UUID, required=True),
-            openapi.Parameter('start_date', openapi.IN_QUERY, description="Start date (Optional, format: YYYY-MM-DD)",
-                              type=openapi.TYPE_STRING),
-            openapi.Parameter('end_date', openapi.IN_QUERY, description="End date (Optional, format: YYYY-MM-DD)",
-                              type=openapi.TYPE_STRING),
+            openapi.Parameter(
+                "casher_id",
+                openapi.IN_QUERY,
+                description="Casher ID (Required)",
+                type=openapi.FORMAT_UUID,
+                required=True,
+            ),
+            openapi.Parameter(
+                "start_date",
+                openapi.IN_QUERY,
+                description="Start date (Optional, format: YYYY-MM-DD)",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "end_date",
+                openapi.IN_QUERY,
+                description="End date (Optional, format: YYYY-MM-DD)",
+                type=openapi.TYPE_STRING,
+            ),
         ],
         responses={
             200: "Excel file containing payment statistics",
             400: "Bad Request - Missing required parameters",
-        }
+        },
     )
     def get(self, request, *args, **kwargs):
-        casher_id = request.GET.get('casher_id')
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
+        casher_id = request.GET.get("casher_id")
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
 
         if not casher_id:
-            return Response({'error': 'Casher ID is required'}, status=400)
+            return Response({"error": "Casher ID is required"}, status=400)
 
         # Base filter
         filters = {"casher_id": casher_id}
@@ -1053,22 +1253,34 @@ class GeneratePaymentExcelAPIView(APIView):
             filters["created_at__lte"] = end_date
 
         # Payment methods
-        payment_methods = ['Click', 'Payme', 'Cash', 'Card', 'Money_send']
+        payment_methods = ["Click", "Payme", "Cash", "Card", "Money_send"]
 
         # Aggregating income and expense per payment method
         data = {"Casher ID": casher_id}
 
         for method in payment_methods:
-            income = \
-                Finance.objects.filter(payment_method=method, action='INCOME', **filters).exclude(
-                    Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
-                    total=Sum('amount'))[
-                    'total'] or 0
-            expense = \
-                Finance.objects.filter(payment_method=method, action='EXPENSE', **filters).exclude(
-                    Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")).aggregate(
-                    total=Sum('amount'))[
-                    'total'] or 0
+            income = (
+                Finance.objects.filter(
+                    payment_method=method, action="INCOME", **filters
+                )
+                .exclude(
+                    Q(kind__name__icontains="Bonus")
+                    | Q(kind__name__icontains="Money back")
+                )
+                .aggregate(total=Sum("amount"))["total"]
+                or 0
+            )
+            expense = (
+                Finance.objects.filter(
+                    payment_method=method, action="EXPENSE", **filters
+                )
+                .exclude(
+                    Q(kind__name__icontains="Bonus")
+                    | Q(kind__name__icontains="Money back")
+                )
+                .aggregate(total=Sum("amount"))["total"]
+                or 0
+            )
             data[f"{method}_Income"] = income
             data[f"{method}_Expense"] = expense
 
@@ -1081,10 +1293,12 @@ class GeneratePaymentExcelAPIView(APIView):
 
         # Generate Excel file
         file_name = f"payment_casher_statistics_{now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename={file_name}'
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
 
-        with pd.ExcelWriter(response, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Payment Statistics')
+        with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
+            df.to_excel(writer, index=False, sheet_name="Payment Statistics")
 
         return response

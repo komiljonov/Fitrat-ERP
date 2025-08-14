@@ -95,6 +95,7 @@ class Finance(BaseModel):
             ("Card", "Card"),
             ("Money_send", "Pul o'tkazish"),
             ("PLASTIC", "Plastik"),
+            ("BONUS", "Bonus"),
         ],
         max_length=100,
         null=True,
