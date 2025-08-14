@@ -187,7 +187,6 @@ utils
 /data/
 tg_bot
 
-<<<<<<< HEAD
 
 
 docker-compose.prod.yaml
@@ -195,11 +194,3 @@ docker-compose.yaml
 
 
 send_notif.json
-=======
-<<<<<<< HEAD
-docker-compose.prod.yamlpg_hba.conf
-=======
-docker-compose.prod.yaml
-docker-compose.yaml
->>>>>>> 21c012eec38d3a6cdf4a3137409b55a5751ddbd7
->>>>>>> 55acdb770bafea1d8d0794cea03992bf27283abc
