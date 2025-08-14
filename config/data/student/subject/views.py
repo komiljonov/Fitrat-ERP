@@ -368,7 +368,7 @@ class ImportStudentsAPIView(APIView):
                         errors.append(
                             {
                                 "row": idx + 2,
-                                "error": f"Course yoki Subject topilmadi: {row['Course']}, {row['Subject']}",
+                                "error": f"Course yoki Subject topilmadi: {course_name}, {subject_name}",
                             }
                         )
                         continue
