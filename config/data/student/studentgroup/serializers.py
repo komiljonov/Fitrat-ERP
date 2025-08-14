@@ -3,7 +3,7 @@ from datetime import date
 from django.db.models import Count
 from rest_framework import serializers
 
-from config.data.upload.serializers import FileUploadSerializer
+from data.upload.serializers import FileUploadSerializer
 
 from .models import StudentGroup, SecondaryStudentGroup
 from ..attendance.models import Attendance
