@@ -12,7 +12,9 @@ from ..upload.models import File
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
-    files: 'File' = models.ManyToManyField('upload.File', blank=True, related_name='account_files')
+    files: "File" = models.ManyToManyField(
+        "upload.File", blank=True, related_name="account_files"
+    )
 
     second_user = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
@@ -32,7 +34,9 @@ class CustomUser(AbstractUser):
 
     calculate_bonus = models.BooleanField(default=False)
 
-    photo: 'File' = models.ForeignKey('upload.File', on_delete=models.SET_NULL, blank=True, null=True)
+    photo: "File" = models.ForeignKey(
+        "upload.File", on_delete=models.SET_NULL, blank=True, null=True
+    )
 
     date_of_birth = models.DateField(blank=True, null=True)
 
@@ -60,7 +64,9 @@ class CustomUser(AbstractUser):
 
     role = models.CharField(choices=ROLE_CHOICES, max_length=30, default="DIRECTOR")
 
-    balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    balance = models.DecimalField(
+        max_digits=12, decimal_places=2, default=Decimal("0.00")
+    )
 
     salary = models.FloatField(default=0)
 
@@ -76,17 +82,19 @@ class CustomUser(AbstractUser):
 
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
-    filial: 'Filial' = models.ManyToManyField('filial.Filial', blank=True, related_name='users_filials')
+    filial: "Filial" = models.ManyToManyField(
+        "filial.Filial", blank=True, related_name="users_filials"
+    )
 
     is_archived = models.BooleanField(default=False)
 
-    USERNAME_FIELD = 'phone'
+    USERNAME_FIELD = "phone"
     # REQUIRED_FIELDS = ['phone']
 
     objects = UserManager()
 
     class Meta:
-        ordering = ('-created_at',)
+        ordering = ("-created_at",)
 
     def __str__(self):
         return self.full_name or self.phone
