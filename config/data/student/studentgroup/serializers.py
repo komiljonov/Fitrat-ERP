@@ -15,7 +15,6 @@ from ..subject.models import Theme
 from ...account.serializers import UserSerializer
 from ...lid.new_lid.models import Lid
 from ...lid.new_lid.serializers import LidSerializer
-from ...parents.models import Relatives
 
 
 class StudentsGroupSerializer(serializers.ModelSerializer):
@@ -155,6 +154,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             group_data = {
                 "group_is": instance.group.id,
                 "group_name": instance.group.name,
+                "start_date": instance.group.start_date.strftime("%d/%m/%Y, %H:%M:%S"),
                 "level": (
                     instance.group.level.id
                     if instance.group and instance.group.level
