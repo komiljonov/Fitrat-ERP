@@ -146,7 +146,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             subject_data = {
                 "name": subject.name,
                 "image": (
-                    FileUploadSerializer(subject.image,context=self.context).data
+                    FileUploadSerializer(subject.image, context=self.context).data
                     if subject.image
                     else None
                 ),
