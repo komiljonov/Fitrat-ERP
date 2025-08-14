@@ -608,8 +608,8 @@ class LidStatisticsView(ListAPIView):
         first_lesson_all = FirstLLesson.objects.filter(
             lid__lid_stage_type="ORDERED_LID",
             lid__is_archived=False,
-            created_at__gte=start_datetime,
-            created_at__lt=end_datetime,
+            created_at__gte=filter["created_at__gte"],
+            created_at__lt=filter["created_at__lt"],
         ).count()
 
         new_student = Archived.objects.filter(
