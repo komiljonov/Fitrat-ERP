@@ -598,9 +598,11 @@ class LidStatisticsView(ListAPIView):
             ordered_stages="BIRINCHI_DARSGA_KELMAGAN",
             **filter,
         ).count()
+
         all_archived = queryset.filter(
             is_archived=True, is_student=False, **filter
         ).count()
+
         archived_lid = Archived.objects.filter(
             lid__lid_stage_type="NEW_LID", lid__isnull=False, is_archived=True
         ).count()
@@ -617,6 +619,7 @@ class LidStatisticsView(ListAPIView):
             student__isnull=False,
             student__student_stage_type="NEW_STUDENT",
         ).count()
+
         active_student = Archived.objects.filter(
             is_archived=True,
             student__isnull=False,

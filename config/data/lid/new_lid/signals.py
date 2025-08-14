@@ -19,6 +19,7 @@ from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 
 sms = SayqalSms()
 
+
 @receiver(pre_save, sender=Lid)
 def on_pre_save(sender, instance, **kwargs):
     """
@@ -32,9 +33,9 @@ def on_pre_save(sender, instance, **kwargs):
         previous_instance = sender.objects.get(pk=instance.pk)
 
         if (
-                previous_instance.lid_stage_type == "NEW_LID"
-                and instance.lid_stage_type == "ORDERED_LID"
-                and instance.call_operator is None
+            previous_instance.lid_stage_type == "NEW_LID"
+            and instance.lid_stage_type == "ORDERED_LID"
+            and instance.call_operator is None
         ):
             call_operator = CustomUser.objects.filter(role="CALL_OPERATOR").first()
             if call_operator:
@@ -55,6 +56,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
         if instance.lid_stage_type == "NEW_LID":
             if instance.lid_stages == "YANGI_LEAD":
                 instance.lid_stages = "KUTULMOQDA"
+
         if instance.lid_stage_type == "ORDERED_LID":
             if instance.ordered_date == None:
                 instance.ordered_date = datetime.now()
@@ -65,8 +67,10 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             instance.is_expired = False
             instance.save()
 
-        if instance.is_student and instance.filial :
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+        if instance.is_student and instance.filial:
+            password = "".join(
+                random.choices(string.ascii_letters + string.digits, k=8)
+            )
             student, student_created = Student.objects.get_or_create(
                 phone=instance.phone_number,
                 defaults={
@@ -87,8 +91,8 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                     "marketing_channel": instance.marketing_channel,
                     "call_operator": instance.call_operator,
                     "service_manager": instance.service_manager,
-                    "sales_manager":instance.sales_manager,
-                    "new_student_date":datetime.now(),
+                    "sales_manager": instance.sales_manager,
+                    "new_student_date": datetime.now(),
                 },
             )
 
@@ -122,7 +126,11 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 student.call_operator = instance.call_operator
                 student.service_manager = instance.service_manager
                 student.sales_manager = instance.sales_manager
-                student.balance = instance.balance if instance.balance == 0 else student.balance + instance.balance
+                student.balance = (
+                    instance.balance
+                    if instance.balance == 0
+                    else student.balance + instance.balance
+                )
                 student.save()
 
                 # sms.send_sms(
@@ -137,10 +145,12 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                 #     """
                 # )
 
-            StudentGroup.objects.filter(lid=instance).update(student=student,lid=None)
+            StudentGroup.objects.filter(lid=instance).update(student=student, lid=None)
 
             if SecondaryStudentGroup.objects.filter(lid=instance):
-                SecondaryStudentGroup.objects.filter(lid=instance).update(student=student,lid=None)
+                SecondaryStudentGroup.objects.filter(lid=instance).update(
+                    student=student, lid=None
+                )
 
             Attendance.objects.filter(lid=instance).update(student=student, lid=None)
 
@@ -155,7 +165,9 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
 
         else:
             if instance.filial is None:
-                print("This lead's education branch is not updated, please add education branch.")
+                print(
+                    "This lead's education branch is not updated, please add education branch."
+                )
 
             post_save.disconnect(on_details_create, sender=Lid)
             instance.save()
@@ -170,6 +182,6 @@ def on_expired_delete(sender, instance: Lid, created, **kwargs):
             instance.save()
 
     if created:
-        if (instance.lid_stage_type != None and instance.lid_stages == None):
+        if instance.lid_stage_type != None and instance.lid_stages == None:
             instance.lid_stages = "YANGI_LEAD"
             instance.save()
