@@ -142,7 +142,7 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
                 amount=amount.amount if amount else 0,
                 type="INCOME",
                 reason=f"{instance.student.first_name} {instance.student.last_name} "
-                f"ning active o'quvchiga o'tganligi uchun bonus ",
+                f"ning active o'quvchiga o'tganligi uchun bonus",
             )
 
 

@@ -14,8 +14,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Group, Room, SecondaryGroup, Day, GroupSaleStudent
-from .serializers import GroupSerializer, GroupLessonSerializer, RoomsSerializer, SecondaryGroupSerializer, \
-    DaySerializer, RoomFilterSerializer, GroupSaleStudentSerializer
+from .serializers import (
+    GroupSerializer,
+    GroupLessonSerializer,
+    RoomsSerializer,
+    SecondaryGroupSerializer,
+    DaySerializer,
+    RoomFilterSerializer,
+    GroupSaleStudentSerializer,
+)
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
 from ..studentgroup.models import SecondaryStudentGroup
@@ -27,27 +34,44 @@ class StudentGroupsView(ListCreateAPIView):
     serializer_class = GroupSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
 
-    search_fields = ('name', 'scheduled_day_type__name', "status", 'teacher__id',
-                     'course__subject__id',)
-    ordering_fields = ('name', 'scheduled_day_type', 'start_date',
-                       'end_date', 'price_type', "status", 'teacher__id',
-                       'course__subject__id',)
-    filterset_fields = ('name', 'scheduled_day_type__name',
-                        'price_type', "status", 'teacher__id',
-                        'course__subject__id',)
+    search_fields = (
+        "name",
+        "scheduled_day_type__name",
+        "status",
+        "teacher__id",
+        "course__subject__id",
+    )
+    ordering_fields = (
+        "name",
+        "scheduled_day_type",
+        "start_date",
+        "end_date",
+        "price_type",
+        "status",
+        "teacher__id",
+        "course__subject__id",
+    )
+    filterset_fields = (
+        "name",
+        "scheduled_day_type__name",
+        "price_type",
+        "status",
+        "teacher__id",
+        "course__subject__id",
+    )
 
     def get_queryset(self):
         queryset = Group.objects.all()
-        teacher = self.request.GET.get('teacher', None)
-        course = self.request.GET.get('course', None)
-        subject = self.request.GET.get('subject', None)
-        filial = self.request.GET.get('filial', None)
-        day = self.request.GET.get('day', None)
-        price_type = self.request.GET.get('price_type', None)
-        level = self.request.GET.get('course__level__id', None)
-        not_added = self.request.GET.get('not_added', None)
-        student = self.request.GET.get('student', None)
-        is_archived = self.request.GET.get('is_archived', None)
+        teacher = self.request.GET.get("teacher", None)
+        course = self.request.GET.get("course", None)
+        subject = self.request.GET.get("subject", None)
+        filial = self.request.GET.get("filial", None)
+        day = self.request.GET.get("day", None)
+        price_type = self.request.GET.get("price_type", None)
+        level = self.request.GET.get("course__level__id", None)
+        not_added = self.request.GET.get("not_added", None)
+        student = self.request.GET.get("student", None)
+        is_archived = self.request.GET.get("is_archived", None)
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
@@ -103,40 +127,39 @@ class GroupListAPIView(ListAPIView):
         # super().get_serializer()
 
         serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
-        return serializer_class(*args, **kwargs,
-                                include_only=["id", "name"])
+        kwargs.setdefault("context", self.get_serializer_context())
+        return serializer_class(*args, **kwargs, include_only=["id", "name"])
 
     def get_queryset(self):
         filter = {}
         queryset = Group.objects.all()
-        subject = self.request.GET.get('subject', None)
-        status = self.request.GET.get('status', None)
-        filial = self.request.GET.get('filial', None)
-        course = self.request.GET.get('course', None)
-        teacher = self.request.GET.get('teacher', None)
-        start_date = self.request.GET.get('start_date', None)
-        end_date = self.request.GET.get('end_date', None)
-        student = self.request.GET.get('student', None)
-        not_added = self.request.GET.get('not_added', None)
-        is_archived = self.request.GET.get('is_archived', None)
+        subject = self.request.GET.get("subject", None)
+        status = self.request.GET.get("status", None)
+        filial = self.request.GET.get("filial", None)
+        course = self.request.GET.get("course", None)
+        teacher = self.request.GET.get("teacher", None)
+        start_date = self.request.GET.get("start_date", None)
+        end_date = self.request.GET.get("end_date", None)
+        student = self.request.GET.get("student", None)
+        not_added = self.request.GET.get("not_added", None)
+        is_archived = self.request.GET.get("is_archived", None)
 
         if is_archived:
             filter["is_archived"] = is_archived.capitalize()
         if status:
-            filter['status'] = status
+            filter["status"] = status
         if student:
             filter["student_groups__student__id"] = student
         if filial:
-            filter['filial__id'] = filial
+            filter["filial__id"] = filial
         if course:
-            filter['course__id'] = course
+            filter["course__id"] = course
         if teacher:
-            filter['teacher__id'] = teacher
+            filter["teacher__id"] = teacher
         if start_date:
-            filter['created_at__gte'] = start_date
+            filter["created_at__gte"] = start_date
         if end_date:
-            filter['created_at__lte'] = end_date
+            filter["created_at__lte"] = end_date
         if subject:
             queryset = queryset.filter(course__subject__id=subject)
         if not_added and not_added.lower() == "true":
@@ -155,15 +178,14 @@ class GroupLessonScheduleView(APIView):
     def get(self, request, **kwargs):
         try:
             # Fetch the group by ID
-            group = Group.objects.get(id=kwargs.get('pk'))
+            group = Group.objects.get(id=kwargs.get("pk"))
             # Serialize the group with the lesson schedule
             serializer = GroupLessonSerializer(group)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Group.DoesNotExist:
             # Return a 404 response if the group is not found
             return Response(
-                {"error": "Group not found."},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Group not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -173,7 +195,7 @@ class TeachersGroupsView(ListAPIView):
     serializer_class = GroupSerializer
 
     def get_queryset(self):
-        teacher_id = self.kwargs.get('pk')
+        teacher_id = self.kwargs.get("pk")
         if teacher_id:
             teacher_groups = Group.objects.filter(teacher__id=teacher_id)
             return teacher_groups
@@ -185,12 +207,12 @@ class RoomListAPIView(ListCreateAPIView):
     serializer_class = RoomsSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
-    search_fields = ('room_number', 'room_filling')
-    ordering_fields = ('room_number', 'room_filling')
-    filterset_fields = ('room_number', 'room_filling')
+    search_fields = ("room_number", "room_filling")
+    ordering_fields = ("room_number", "room_filling")
+    filterset_fields = ("room_number", "room_filling")
 
     def get_queryset(self):
-        filial = self.request.GET.get('filial', None)
+        filial = self.request.GET.get("filial", None)
         if filial:
             return Room.objects.filter(filial=filial)
         return Room.objects.all()  # Ensure it always returns a queryset
@@ -206,7 +228,7 @@ class RoomFilterView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        filial = self.request.GET.get('filial', None)
+        filial = self.request.GET.get("filial", None)
         queryset = Room.objects.filter(filial__id=filial)
         return queryset
 
@@ -215,22 +237,22 @@ class CheckRoomLessonScheduleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        filial = request.GET.get('filial')
-        room_id = request.GET.get('room')
-        date_str = request.GET.get('date')
-        started_at_str = request.GET.get('started_at')
-        ended_at_str = request.GET.get('ended_at')
+        filial = request.GET.get("filial")
+        room_id = request.GET.get("room")
+        date_str = request.GET.get("date")
+        started_at_str = request.GET.get("started_at")
+        ended_at_str = request.GET.get("ended_at")
 
         # Validate required fields
         if not all([room_id, date_str, started_at_str, ended_at_str]):
-            return Response({'error': 'Missing required parameters'}, status=400)
+            return Response({"error": "Missing required parameters"}, status=400)
 
         try:
             date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
             started_at = datetime.datetime.strptime(started_at_str, "%H:%M").time()
             ended_at = datetime.datetime.strptime(ended_at_str, "%H:%M").time()
         except ValueError:
-            return Response({'error': 'Invalid date or time format'}, status=400)
+            return Response({"error": "Invalid date or time format"}, status=400)
 
         # Convert weekday to Uzbek
         weekday_name = date.strftime("%A")
@@ -245,43 +267,44 @@ class CheckRoomLessonScheduleView(APIView):
         }
         uzbek_day = uzbek_weekdays.get(weekday_name)
         if not uzbek_day:
-            return Response({'error': f'Could not determine Uzbek weekday for "{weekday_name}"'}, status=400)
+            return Response(
+                {"error": f'Could not determine Uzbek weekday for "{weekday_name}"'},
+                status=400,
+            )
 
         try:
             day = Day.objects.get(name=uzbek_day)
         except Day.DoesNotExist:
-            return Response({'error': f'Day "{uzbek_day}" not found in the database'}, status=400)
+            return Response(
+                {"error": f'Day "{uzbek_day}" not found in the database'}, status=400
+            )
 
         # Calculate current week parity (0 for even, 1 for odd)
         current_week_parity = date.isocalendar()[1] % 2
 
         # Get all group lessons in that room, that day, overlapping in time and same week parity
-        conflicting_groups = Group.objects.filter(
-            room_number_id=room_id,
-            start_date__lte=date,
-            finish_date__gte=date,
-            scheduled_day_type=day,
-        ).annotate(
-            start_week_parity=F('start_date__week') % 2
-        ).filter(
-            Q(started_at__lt=ended_at, ended_at__gt=started_at),
-            start_week_parity=current_week_parity
+        conflicting_groups = (
+            Group.objects.filter(
+                room_number_id=room_id,
+                start_date__lte=date,
+                finish_date__gte=date,
+                scheduled_day_type=day,
+            )
+            .annotate(start_week_parity=F("start_date__week") % 2)
+            .filter(
+                Q(started_at__lt=ended_at, ended_at__gt=started_at),
+                start_week_parity=current_week_parity,
+            )
         )
 
         # Extra lessons (groups)
         conflicting_extra_group_lessons = ExtraLessonGroup.objects.filter(
-            room_id=room_id,
-            date=date,
-            started_at__lt=ended_at,
-            ended_at__gt=started_at
+            room_id=room_id, date=date, started_at__lt=ended_at, ended_at__gt=started_at
         )
 
         # Extra lessons (students)
         conflicting_extra_lessons = ExtraLesson.objects.filter(
-            room_id=room_id,
-            date=date,
-            started_at__lt=ended_at,
-            ended_at__gt=started_at
+            room_id=room_id, date=date, started_at__lt=ended_at, ended_at__gt=started_at
         )
 
         # Format conflicts
@@ -292,8 +315,9 @@ class CheckRoomLessonScheduleView(APIView):
                     "group": lesson.group.name,
                     "date": lesson.date,
                     "started_at": lesson.started_at,
-                    "ended_at": lesson.ended_at
-                } for lesson in conflicting_extra_group_lessons
+                    "ended_at": lesson.ended_at,
+                }
+                for lesson in conflicting_extra_group_lessons
             ],
             "extra_lessons": [
                 {
@@ -301,19 +325,22 @@ class CheckRoomLessonScheduleView(APIView):
                     "teacher": lesson.teacher.username if lesson.teacher else None,
                     "date": lesson.date,
                     "started_at": lesson.started_at,
-                    "ended_at": lesson.ended_at
-                } for lesson in conflicting_extra_lessons
-            ]
+                    "ended_at": lesson.ended_at,
+                }
+                for lesson in conflicting_extra_lessons
+            ],
         }
 
-        if any([
-            conflicting_groups.exists(),
-            conflicting_extra_group_lessons.exists(),
-            conflicting_extra_lessons.exists()
-        ]):
-            return Response({'available': False, 'conflicts': conflicts})
+        if any(
+            [
+                conflicting_groups.exists(),
+                conflicting_extra_group_lessons.exists(),
+                conflicting_extra_lessons.exists(),
+            ]
+        ):
+            return Response({"available": False, "conflicts": conflicts})
 
-        return Response({'available': True})
+        return Response({"available": True})
 
 
 class RoomRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -327,13 +354,13 @@ class RoomNoPG(ListAPIView):
     serializer_class = RoomsSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
-    search_fields = ('room_number', 'room_filling')
-    ordering_fields = ('room_number', 'room_filling')
-    filterset_fields = ('room_number', 'room_filling')
+    search_fields = ("room_number", "room_filling")
+    ordering_fields = ("room_number", "room_filling")
+    filterset_fields = ("room_number", "room_filling")
     pagination_class = None
 
     def get_queryset(self):
-        filial = self.request.GET.get('filial', None)
+        filial = self.request.GET.get("filial", None)
         if filial:
             return Room.objects.filter(filial=filial)
         return Room.objects.filter(filial=self.request.user.filial.first())
@@ -351,19 +378,25 @@ class SecondaryGroupsView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
-    search_fields = ('name', 'scheduled_day_type__name')
-    ordering_fields = ('name', 'scheduled_day_type', 'start_date', 'end_date')
-    filterset_fields = ('name', 'scheduled_day_type')
+    search_fields = ("name", "scheduled_day_type__name")
+    ordering_fields = ("name", "scheduled_day_type", "start_date", "end_date")
+    filterset_fields = ("name", "scheduled_day_type")
 
     def get_queryset(self):
         queryset = SecondaryGroup.objects.all()
-        start_date = parse_date(self.request.GET.get('start_date')) if self.request.GET.get(
-            'start_date') else None
-        end_date = parse_date(self.request.GET.get('end_date')) if self.request.GET.get(
-            'end_date') else None
-        teacher = self.request.GET.get('teacher')
-        course = self.request.GET.get('course')
-        filial = self.request.GET.get('filial')
+        start_date = (
+            parse_date(self.request.GET.get("start_date"))
+            if self.request.GET.get("start_date")
+            else None
+        )
+        end_date = (
+            parse_date(self.request.GET.get("end_date"))
+            if self.request.GET.get("end_date")
+            else None
+        )
+        teacher = self.request.GET.get("teacher")
+        course = self.request.GET.get("course")
+        filial = self.request.GET.get("filial")
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
@@ -376,7 +409,9 @@ class SecondaryGroupsView(ListCreateAPIView):
         if course:
             queryset = queryset.filter(group__course__id=course)
 
-        queryset = queryset.annotate(student_count=Count('secondarystudentgroup')).order_by('-student_count')
+        queryset = queryset.annotate(
+            student_count=Count("secondarystudentgroup")
+        ).order_by("-student_count")
         return queryset
 
 
@@ -393,11 +428,11 @@ class SecondaryNoPG(ListAPIView):
     def get_queryset(self):
         queryset = SecondaryGroup.objects.all()
 
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
-        teacher = self.request.GET.get('teacher')
-        course = self.request.GET.get('course')
-        filial = self.request.GET.get('filial')
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
+        teacher = self.request.GET.get("teacher")
+        course = self.request.GET.get("course")
+        filial = self.request.GET.get("filial")
 
         # Apply filters correctly
         if filial:
@@ -440,24 +475,24 @@ class GroupSchedule(ListAPIView):
 
     def get_queryset(self):
         queryset = Group.objects.all()
-        start_date = self.request.GET.get('from', None)
-        end_date = self.request.GET.get('to', None)
+        start_date = self.request.GET.get("from", None)
+        end_date = self.request.GET.get("to", None)
 
         filial = self.request.user.filial
-        room_id = self.request.GET.get('room')
+        room_id = self.request.GET.get("room")
         if room_id:
-            return (queryset.filter(
+            return queryset.filter(
                 room_number=room_id,
                 room_number__filial=filial,
-            ).order_by('started_at'))
+            ).order_by("started_at")
 
         if start_date and end_date:
-            return (queryset.filter(
+            return queryset.filter(
                 room_number=room_id,
                 room_number__filial=filial,
                 created_at__gte=start_date,
                 created_at__lte=end_date,
-            ).order_by('started_at'))
+            ).order_by("started_at")
         return queryset
 
 
@@ -470,12 +505,16 @@ class LessonScheduleListApi(ListAPIView):
         queryset = self.get_queryset()
 
         # Apply filters
-        teacher = request.GET.get('teacher')
-        name = request.GET.get('name')
-        subject = request.GET.get('subject')
-        room = request.GET.get('room')
-        date_filter = request.GET.get('date', None)
-        date_filter = datetime.datetime.strptime(date_filter, "%d-%m-%Y").date() if date_filter else None
+        teacher = request.GET.get("teacher")
+        name = request.GET.get("name")
+        subject = request.GET.get("subject")
+        room = request.GET.get("room")
+        date_filter = request.GET.get("date", None)
+        date_filter = (
+            datetime.datetime.strptime(date_filter, "%d-%m-%Y").date()
+            if date_filter
+            else None
+        )
 
         if name:
             queryset = queryset.filter(name=name)
@@ -492,12 +531,12 @@ class LessonScheduleListApi(ListAPIView):
         lessons_by_date = defaultdict(list)
 
         for item in serializer.data:
-            days = item.get('days', [])
+            days = item.get("days", [])
             for day in days:
-                lesson_date = datetime.datetime.strptime(day['date'], "%d-%m-%Y").date()
+                lesson_date = datetime.datetime.strptime(day["date"], "%d-%m-%Y").date()
                 if date_filter and lesson_date != date_filter:
                     continue
-                lessons_by_date[lesson_date].extend(day['lessons'])
+                lessons_by_date[lesson_date].extend(day["lessons"])
 
         # Extra lessons (group-based)
         extra_lessons_group = ExtraLessonGroup.objects.filter(
@@ -510,14 +549,30 @@ class LessonScheduleListApi(ListAPIView):
             if date_filter and lesson_date != date_filter:
                 continue
             lesson_data = {
-                "subject": extra.group.course.subject.name if extra.group.course and extra.group.course.subject else None,
-                "subject_label": extra.group.course.subject.label if extra.group.course and extra.group.course.subject else None,
+                "subject": (
+                    extra.group.course.subject.name
+                    if extra.group.course and extra.group.course.subject
+                    else None
+                ),
+                "subject_label": (
+                    extra.group.course.subject.label
+                    if extra.group.course and extra.group.course.subject
+                    else None
+                ),
                 "teacher_name": f"{extra.group.teacher.first_name if extra.group.teacher.first_name else ''} {extra.group.teacher.last_name if extra.group.teacher else ''}",
-                "room": extra.group.room_number.room_number if extra.group.room_number else None,
+                "room": (
+                    extra.group.room_number.room_number
+                    if extra.group.room_number
+                    else None
+                ),
                 "name": extra.group.name,
                 "status": "Extra_lessons",
-                "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
-                "ended_at": extra.ended_at.strftime('%H:%M') if extra.ended_at else None,
+                "started_at": (
+                    extra.started_at.strftime("%H:%M") if extra.started_at else None
+                ),
+                "ended_at": (
+                    extra.ended_at.strftime("%H:%M") if extra.ended_at else None
+                ),
             }
 
             lessons_by_date[lesson_date].append(lesson_data)
@@ -532,13 +587,25 @@ class LessonScheduleListApi(ListAPIView):
             if date_filter and lesson_date != date_filter:
                 continue
             lesson_data = {
-                "name": f"{extra.student.first_name} {extra.student.last_name}" if extra.student else None,
+                "name": (
+                    f"{extra.student.first_name} {extra.student.last_name}"
+                    if extra.student
+                    else None
+                ),
                 "comment": extra.comment,
-                "teacher_name": f"{extra.teacher.first_name} {extra.teacher.last_name}" if extra.teacher else None,
+                "teacher_name": (
+                    f"{extra.teacher.first_name} {extra.teacher.last_name}"
+                    if extra.teacher
+                    else None
+                ),
                 "status": "Extra_lessons",
                 "room": extra.room.room_number if extra.room else None,
-                "started_at": extra.started_at.strftime('%H:%M') if extra.started_at else None,
-                "ended_at": extra.ended_at.strftime('%H:%M') if extra.ended_at else None,
+                "started_at": (
+                    extra.started_at.strftime("%H:%M") if extra.started_at else None
+                ),
+                "ended_at": (
+                    extra.ended_at.strftime("%H:%M") if extra.ended_at else None
+                ),
                 "is_payable": extra.is_payable,
                 "is_attendance": extra.is_attendance,
             }
@@ -551,10 +618,9 @@ class LessonScheduleListApi(ListAPIView):
         for lesson_date in sorted_dates:
             lessons = lessons_by_date[lesson_date]
             lessons.sort(key=lambda x: x.get("started_at"))
-            sorted_lessons.append({
-                "date": lesson_date.strftime('%d-%m-%Y'),
-                "lessons": lessons
-            })
+            sorted_lessons.append(
+                {"date": lesson_date.strftime("%d-%m-%Y"), "lessons": lessons}
+            )
 
         return Response(sorted_lessons)
 
@@ -564,15 +630,15 @@ class LessonScheduleWebListApi(ListAPIView):
     queryset = Group.objects.filter(status="ACTIVE")
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
 
-    ordering_fields = ['start_date', 'end_date', 'name']
-    search_fields = ['name', 'teacher__id', 'course__subject__name', 'room_number']
-    filterset_fields = ('name', 'teacher__id', 'course__subject__name', 'room_number')
+    ordering_fields = ["start_date", "end_date", "name"]
+    search_fields = ["name", "teacher__id", "course__subject__name", "room_number"]
+    filterset_fields = ("name", "teacher__id", "course__subject__name", "room_number")
 
     def get_queryset(self):
-        group = self.request.GET.get('group', None)
-        subject = self.request.GET.get('subject')
-        teacher = self.request.GET.get('teacher')
-        start_date_str = self.request.GET.get('started_at')
+        group = self.request.GET.get("group", None)
+        subject = self.request.GET.get("subject")
+        teacher = self.request.GET.get("teacher")
+        start_date_str = self.request.GET.get("started_at")
 
         queryset = self.queryset.all()
 
@@ -626,9 +692,9 @@ class GroupIsActiveNowAPIView(APIView):
             "Thursday": "payshanba",
             "Friday": "juma",
             "Saturday": "shanba",
-            "Sunday": "yakshanba"
+            "Sunday": "yakshanba",
         }
-        group_id = self.kwargs.get('pk', None)
+        group_id = self.kwargs.get("pk", None)
         ic(group_id)
 
         group = get_object_or_404(Group, id=group_id)
@@ -637,7 +703,7 @@ class GroupIsActiveNowAPIView(APIView):
 
         print(now_time)
 
-        current_weekday_en = now_time.strftime('%A')
+        current_weekday_en = now_time.strftime("%A")
         current_weekday_uz = WEEKDAYS_UZ[current_weekday_en]
         current_time = now_time.time()
 
@@ -665,16 +731,16 @@ class SecondaryGroupIsActiveNowAPIView(APIView):
             "Thursday": "payshanba",
             "Friday": "juma",
             "Saturday": "shanba",
-            "Sunday": "yakshanba"
+            "Sunday": "yakshanba",
         }
 
-        group_id = self.kwargs.get('pk', None)
+        group_id = self.kwargs.get("pk", None)
         ic(group_id)
 
         group = get_object_or_404(SecondaryGroup, id=group_id)
 
         now_time = datetime.datetime.now()
-        current_weekday_en = now_time.strftime('%A')
+        current_weekday_en = now_time.strftime("%A")
         current_weekday_uz = WEEKDAYS_UZ[current_weekday_en]
         current_time = now_time.time()
 
@@ -702,16 +768,18 @@ class StudentGroupIsActiveNowAPIView(APIView):
             "Thursday": "payshanba",
             "Friday": "juma",
             "Saturday": "shanba",
-            "Sunday": "yakshanba"
+            "Sunday": "yakshanba",
         }
 
-        student_id = self.kwargs.get('pk', None)
+        student_id = self.kwargs.get("pk", None)
         ic(student_id)
 
-        group = get_object_or_404(SecondaryStudentGroup, Q(student_id=student_id) | Q(lid_id=student_id))
+        group = get_object_or_404(
+            SecondaryStudentGroup, Q(student_id=student_id) | Q(lid_id=student_id)
+        )
 
         now_time = datetime.datetime.now()
-        current_weekday_en = now_time.strftime('%A')
+        current_weekday_en = now_time.strftime("%A")
         current_weekday_uz = WEEKDAYS_UZ[current_weekday_en]
         current_time = now_time.time()
 
@@ -722,10 +790,7 @@ class StudentGroupIsActiveNowAPIView(APIView):
                 end = group.group.ended_at
 
                 if start <= current_time <= end:
-                    return Response({
-                        "is_scheduled_now": True,
-                        "group_id": group.id
-                    })
+                    return Response({"is_scheduled_now": True, "group_id": group.id})
 
         return Response({"is_scheduled_now": False, "group_id": None})
 
@@ -737,9 +802,9 @@ class StudentSaleGroupListCreateAPIView(ListCreateAPIView):
     def get_queryset(self):
         qs = GroupSaleStudent.objects.all()
 
-        group = self.request.GET.get('group', None)
-        student = self.request.GET.get('student', None)
-        lid = self.request.GET.get('lid_id', None)
+        group = self.request.GET.get("group", None)
+        student = self.request.GET.get("student", None)
+        lid = self.request.GET.get("lid_id", None)
         if lid:
             qs = qs.filter(lid__id=lid)
         if group:

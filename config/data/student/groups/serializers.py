@@ -22,47 +22,58 @@ from ...lid.new_lid.models import Lid
 class DaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Day
-        fields = ["id", "name", ]
+        fields = [
+            "id",
+            "name",
+        ]
 
 
 class GroupSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    scheduled_day_type = serializers.PrimaryKeyRelatedField(queryset=Day.objects.all(), many=True)
+    scheduled_day_type = serializers.PrimaryKeyRelatedField(
+        queryset=Day.objects.all(), many=True
+    )
     student_count = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
     current_theme = serializers.SerializerMethodField()
-    room_number = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all(), allow_null=True)
-    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True)
+    room_number = serializers.PrimaryKeyRelatedField(
+        queryset=Room.objects.all(), allow_null=True
+    )
+    course = serializers.PrimaryKeyRelatedField(
+        queryset=Course.objects.all(), allow_null=True
+    )
     subject = serializers.SerializerMethodField()
-    level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all(), allow_null=True)
+    level = serializers.PrimaryKeyRelatedField(
+        queryset=Level.objects.all(), allow_null=True
+    )
     real_student = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
         fields = [
-            'id',
-            'name',
-            'teacher',
-            'secondary_teacher',
-            'status',
-            'course',
-            'subject',
+            "id",
+            "name",
+            "teacher",
+            "secondary_teacher",
+            "status",
+            "course",
+            "subject",
             "level",
-            'student_count',
-            'lessons_count',
-            'room_number',
-            'price_type',
-            'price',
-            'scheduled_day_type',
-            'comment',
-            'started_at',
-            'ended_at',
-            'start_date',
-            'finish_date',
-            'real_student',
-            'is_secondary',
+            "student_count",
+            "lessons_count",
+            "room_number",
+            "price_type",
+            "price",
+            "scheduled_day_type",
+            "comment",
+            "started_at",
+            "ended_at",
+            "start_date",
+            "finish_date",
+            "real_student",
+            "is_secondary",
             "is_archived",
-            'current_theme',
+            "current_theme",
             "created_at",
         ]
 
@@ -71,7 +82,9 @@ class GroupSerializer(serializers.ModelSerializer):
         include_only: list | None = kwargs.pop("include_only", None)
 
         if fields_to_remove and include_only:
-            raise ValueError("You cannot use 'remove_fields' and 'include_only' at the same time.")
+            raise ValueError(
+                "You cannot use 'remove_fields' and 'include_only' at the same time."
+            )
 
         super(GroupSerializer, self).__init__(*args, **kwargs)
 
@@ -91,17 +104,24 @@ class GroupSerializer(serializers.ModelSerializer):
         ).count()
 
         first = StudentGroup.objects.filter(
-            Q(group=obj) & (Q(student__isnull=True) | Q(
-                lid__lid_stage_type="ORDERED_LID",
-                lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN"
-            ))
+            Q(group=obj)
+            & (
+                Q(student__isnull=True)
+                | Q(
+                    lid__lid_stage_type="ORDERED_LID",
+                    lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+                )
+            )
         ).count()
 
         return student_count - first
 
     def get_subject(self, obj):
-        return Group.objects.filter(pk=obj.pk).values("course__subject",
-                                                      "course__subject__name").first()
+        return (
+            Group.objects.filter(pk=obj.pk)
+            .values("course__subject", "course__subject__name")
+            .first()
+        )
 
     def get_current_theme(self, obj):
         today = date.today()
@@ -141,21 +161,23 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
-        if 'level' in res:
+        if "level" in res:
             res["level"] = LevelSerializer(instance.level).data
-        if 'teacher' in res:
-            res['teacher'] = UserSerializer(instance.teacher,
-                                            include_only=["id", "first_name", "last_name", "full_name"]).data
+        if "teacher" in res:
+            res["teacher"] = UserSerializer(
+                instance.teacher,
+                include_only=["id", "first_name", "last_name", "full_name"],
+            ).data
 
-        if 'room_number' in res:
+        if "room_number" in res:
             res["room_number"] = RoomsSerializer(instance.room_number).data
-        if 'course' in res:
+        if "course" in res:
             res["course"] = CourseSerializer(instance.course).data
         return res
 
     def create(self, validated_data):
         status = validated_data.pop("status", None)
-        scheduled_day_type_data = validated_data.pop('scheduled_day_type', [])
+        scheduled_day_type_data = validated_data.pop("scheduled_day_type", [])
         filial = validated_data.pop("filial", None)
 
         if not filial:
@@ -164,7 +186,9 @@ class GroupSerializer(serializers.ModelSerializer):
                 filial = request.user.filial.first()
 
         if not filial:
-            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+            raise serializers.ValidationError(
+                {"filial": "Filial could not be determined."}
+            )
 
         if not status:
             group_type = Group_Type.objects.filter().first()
@@ -192,22 +216,21 @@ class GroupLessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = [
-            'id',
-            'name',
-            'teacher',
-            'status',
-            'room_number',
-            'price_type',
-            'course',
-            'price',
-            'scheduled_day_type',
-            'comment',
-            'started_at',
-            'ended_at',
-
-            'start_date',
-            'finish_date',
-            'group_lesson_dates',  # Include the new field
+            "id",
+            "name",
+            "teacher",
+            "status",
+            "room_number",
+            "price_type",
+            "course",
+            "price",
+            "scheduled_day_type",
+            "comment",
+            "started_at",
+            "ended_at",
+            "start_date",
+            "finish_date",
+            "group_lesson_dates",  # Include the new field
         ]
 
     def get_group_lesson_dates(self, obj):
@@ -220,16 +243,27 @@ class GroupLessonSerializer(serializers.ModelSerializer):
         print(end_date)
 
         # If the lesson type is a Many-to-Many field, get the weekday names
-        lesson_days_queryset = obj.scheduled_day_type.all()  # This retrieves the related days
-        lesson_days = [day.name for day in
-                       lesson_days_queryset]  # Assuming 'name' stores the weekday name (e.g., 'Monday')
+        lesson_days_queryset = (
+            obj.scheduled_day_type.all()
+        )  # This retrieves the related days
+        lesson_days = [
+            day.name for day in lesson_days_queryset
+        ]  # Assuming 'name' stores the weekday name (e.g., 'Monday')
 
-        holidays = ['']  # Replace with actual logic to fetch holidays, e.g., from another model
+        holidays = [
+            ""
+        ]  # Replace with actual logic to fetch holidays, e.g., from another model
         days_off = ["Yakshanba"]  # Replace or fetch from settings/config
 
         if start_date and end_date:
             # Use the calculate_lessons function to get lesson dates
-            lesson_dates = calculate_lessons(start_date, end_date, ','.join(lesson_days), holidays, days_off, )
+            lesson_dates = calculate_lessons(
+                start_date,
+                end_date,
+                ",".join(lesson_days),
+                holidays,
+                days_off,
+            )
             return lesson_dates
         return []
 
@@ -238,11 +272,11 @@ class RoomsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = [
-            'id',
-            'room_number',
-            'room_filling',
-            'created_at',
-            'updated_at',
+            "id",
+            "room_number",
+            "room_filling",
+            "created_at",
+            "updated_at",
         ]
 
     def create(self, validated_data):
@@ -253,7 +287,9 @@ class RoomsSerializer(serializers.ModelSerializer):
                 filial = request.user.filial.first()
 
         if not filial:
-            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+            raise serializers.ValidationError(
+                {"filial": "Filial could not be determined."}
+            )
 
         room = Room.objects.create(filial=filial, **validated_data)
         return room
@@ -267,14 +303,14 @@ class RoomFilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = [
-            'id',
-            'room_number',
-            'room_filling',
-            'created_at',
-            'updated_at',
-            'lessons_start_time',  # Include here
-            'lessons_end_time',  # Include here
-            'average_lesson_hours'  # Include here
+            "id",
+            "room_number",
+            "room_filling",
+            "created_at",
+            "updated_at",
+            "lessons_start_time",  # Include here
+            "lessons_end_time",  # Include here
+            "average_lesson_hours",  # Include here
         ]
 
     def calculate(self, validated_data):
@@ -282,8 +318,12 @@ class RoomFilterSerializer(serializers.ModelSerializer):
         lessons_end_time = validated_data.pop("lessons_end_time", None)
         average_lesson_hours = validated_data.pop("average_lesson_hours", 2)
 
-        lessons_start_time = lessons_start_time.strftime("%H:%M") if lessons_start_time else "08:00"
-        lessons_end_time = lessons_end_time.strftime("%H:%M") if lessons_end_time else "20:00"
+        lessons_start_time = (
+            lessons_start_time.strftime("%H:%M") if lessons_start_time else "08:00"
+        )
+        lessons_end_time = (
+            lessons_end_time.strftime("%H:%M") if lessons_end_time else "20:00"
+        )
 
         average_students_filling = calculate_room_filling_statistics(
             room_id=validated_data.get("id"),
@@ -310,26 +350,38 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecondaryGroup
         fields = [
-            'id', 'name', 'group', 'teacher', 'scheduled_day_type',
-            'status', 'student_count', 'current_theme',
-            'started_at', 'ended_at', 'start_date', 'finish_date',
-            'created_at', 'updated_at'
+            "id",
+            "name",
+            "group",
+            "teacher",
+            "scheduled_day_type",
+            "status",
+            "student_count",
+            "current_theme",
+            "started_at",
+            "ended_at",
+            "start_date",
+            "finish_date",
+            "created_at",
+            "updated_at",
         ]
         list_serializer_class = SecondaryGroupListSerializer
 
     def get_current_theme(self, obj):
         today = date.today()
         attendance = (
-            SecondaryAttendance.objects
-            .filter(group=obj, created_at__date=today)
-            .values("theme", )
+            SecondaryAttendance.objects.filter(group=obj, created_at__date=today)
+            .values(
+                "theme",
+            )
             .distinct()
         )
         return list(attendance)
 
     def get_student_count(self, obj):
         return SecondaryStudentGroup.objects.filter(
-            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))).count()
+            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+        ).count()
 
     def create(self, validated_data):
         scheduled_day_types = validated_data.pop("scheduled_day_type", [])
@@ -340,7 +392,9 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
             filial = request.user.filial.first()
 
         if not filial:
-            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+            raise serializers.ValidationError(
+                {"filial": "Filial could not be determined."}
+            )
 
         group = SecondaryGroup.objects.create(filial=filial, **validated_data)
 
@@ -358,28 +412,25 @@ class SecondaryGroupSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['teacher'] = UserSerializer(instance.teacher).data
-        rep['group'] = GroupSerializer(instance.group).data
+        rep["teacher"] = UserSerializer(instance.teacher).data
+        rep["group"] = GroupSerializer(instance.group).data
         return rep
 
 
 class SecondaryGroupModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecondaryGroup
-        fields = ['id', 'name']
+        fields = ["id", "name"]
 
 
 class GroupSaleStudentSerializer(serializers.ModelSerializer):
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True
+    )
+    lid = serializers.PrimaryKeyRelatedField(
+        queryset=Lid.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = GroupSaleStudent
-        fields = [
-            "id",
-            "group",
-            "student",
-            "lid",
-            "amount",
-            "comment"
-        ]
+        fields = ["id", "group", "student", "lid", "amount", "comment"]
