@@ -2,12 +2,11 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 
-from config.data.upload.models import File
-
 
 if TYPE_CHECKING:
     from data.student.course.models import Course
     from data.student.groups.models import Group
+    from config.data.upload.models import File
 from ...command.models import BaseModel
 
 
