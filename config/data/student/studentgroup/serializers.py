@@ -3,6 +3,8 @@ from datetime import date
 from django.db.models import Count
 from rest_framework import serializers
 
+from config.data.upload.serializers import FileUploadSerializer
+
 from .models import StudentGroup, SecondaryStudentGroup
 from ..attendance.models import Attendance
 from ..groups.models import Group, SecondaryGroup, GroupSaleStudent
@@ -143,7 +145,11 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             subject = instance.group.course.subject
             subject_data = {
                 "name": subject.name,
-                "image": subject.image.file.url if subject.image else None,
+                "image": (
+                    FileUploadSerializer(subject.image,context=self.context).data
+                    if subject.image
+                    else None
+                ),
             }
 
             group_data = {
