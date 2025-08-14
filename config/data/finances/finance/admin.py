@@ -1,19 +1,50 @@
 from django.contrib import admin
 
-from .models import Finance, SaleStudent
+from .models import Finance, KpiFinance, SaleStudent
 
 
 # Register your models here.
 
+
 @admin.register(Finance)
 class FinansAdmin(admin.ModelAdmin):
-    list_display = ("casher__name", "stuff__first_name","casher__role","action",'amount','kind')
-    search_fields = ("action",'kind',)
-    list_filter = ("action",'kind',)
+    list_display = (
+        "casher__name",
+        "stuff__first_name",
+        "casher__role",
+        "action",
+        "amount",
+        "kind",
+    )
+    search_fields = (
+        "action",
+        "kind",
+    )
+    list_filter = (
+        "action",
+        "kind",
+    )
 
 
 @admin.register(SaleStudent)
 class SaleStudentAdmin(admin.ModelAdmin):
-    list_display = ("creator__full_name","sale__name","sale__amount","expire_date", "comment", "created_at")
-    search_fields = ("sale__name","sale__amount")
+    list_display = (
+        "creator__full_name",
+        "sale__name",
+        "sale__amount",
+        "expire_date",
+        "comment",
+        "created_at",
+    )
+    search_fields = ("sale__name", "sale__amount")
     list_filter = ("sale__amount",)
+
+
+@admin.register(KpiFinance)
+class KpiFinanceAdmin(admin.ModelAdmin):
+
+    list_display = ["user", "lid", "student", "reason", "amount", "type"]
+
+    list_filter = ["user", "student"]
+
+    search_fields = ["user__full_name", "user__phone"]

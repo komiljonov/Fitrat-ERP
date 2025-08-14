@@ -10,17 +10,17 @@ from data.student.student.models import Student
 class Casher(BaseModel):
     name = models.CharField(max_length=100)
     user: "CustomUser" = models.ForeignKey(
-        'account.CustomUser',
+        "account.CustomUser",
         on_delete=models.CASCADE,
-        related_name='finances',
+        related_name="finances",
     )
     role = models.CharField(
         choices=[
-            ('ADMINISTRATOR', 'ADMINISTRATOR'),
-            ('WEALTH', 'WEALTH'),
+            ("ADMINISTRATOR", "ADMINISTRATOR"),
+            ("WEALTH", "WEALTH"),
             ("ACCOUNTANT", "ACCOUNTANT"),
         ],
-        default='ADMINISTRATOR',
+        default="ADMINISTRATOR",
         max_length=20,
     )
 
@@ -34,10 +34,10 @@ class Casher(BaseModel):
 class Kind(BaseModel):
     action = models.CharField(
         choices=[
-            ('INCOME', 'INCOME'),
-            ('EXPENSE', 'EXPENSE'),
+            ("INCOME", "INCOME"),
+            ("EXPENSE", "EXPENSE"),
         ],
-        default='INCOME',
+        default="INCOME",
         max_length=20,
     )
     name = models.CharField(max_length=100)
@@ -60,53 +60,76 @@ class PaymentMethod(BaseModel):
 
 class Finance(BaseModel):
     casher: "Casher" = models.ForeignKey(
-        'finance.Casher',
+        "finance.Casher",
         on_delete=models.SET_NULL,
-        related_name='finances_casher',
+        related_name="finances_casher",
         null=True,
         blank=True,
     )
 
     action = models.CharField(
         choices=[
-            ('INCOME', 'INCOME'),
-            ('EXPENSE', 'EXPENSE'),
+            ("INCOME", "INCOME"),
+            ("EXPENSE", "EXPENSE"),
         ],
-        default='INCOME',
+        default="INCOME",
         max_length=20,
     )
 
     amount = models.FloatField(default=0)
 
     kind: "Kind" = models.ForeignKey(
-        "finance.Kind", on_delete=models.SET_NULL,
-        related_name='finances_kind',
-        null=True, blank=True
+        "finance.Kind",
+        on_delete=models.SET_NULL,
+        related_name="finances_kind",
+        null=True,
+        blank=True,
     )
 
     payment_method = models.CharField(
         choices=[
-            ('Click', 'Click'),
-            ('Payme', 'Payme'),
-            ('Cash', 'Naqt pul'),
-            ('Card', 'Card'),
-            ('Money_send', "Pul o'tkazish")
-        ], max_length=100, null=True, blank=True
+            ("Click", "Click"),
+            ("Payme", "Payme"),
+            ("Cash", "Naqt pul"),
+            ("Card", "Card"),
+            ("Money_send", "Pul o'tkazish"),
+        ],
+        max_length=100,
+        null=True,
+        blank=True,
     )
 
-    attendance: "Attendance" = models.ForeignKey('attendance.Attendance', on_delete=models.SET_NULL, null=True,
-                                                 blank=True,
-                                                 related_name='attendance_finances')
+    attendance: "Attendance" = models.ForeignKey(
+        "attendance.Attendance",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attendance_finances",
+    )
 
-    student: 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL, null=True, blank=True)
+    student: "Student" = models.ForeignKey(
+        "student.Student", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
-    lid: 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True)
+    lid: "Lid" = models.ForeignKey(
+        "new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
-    stuff: 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True,
-                                            related_name='finance_stuff')
+    stuff: "CustomUser" = models.ForeignKey(
+        "account.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="finance_stuff",
+    )
 
-    creator: 'CustomUser' = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True,
-                                              related_name='finance_creator')
+    creator: "CustomUser" = models.ForeignKey(
+        "account.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="finance_creator",
+    )
 
     comment = models.TextField(null=True, blank=True)
 
@@ -118,49 +141,63 @@ class Finance(BaseModel):
     is_given = models.BooleanField(default=False, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.amount}  {self.action}'
+        return f"{self.amount}  {self.action}"
 
 
 class Handover(BaseModel):
     casher: "Casher" = models.ForeignKey(
-        'finance.Casher',
+        "finance.Casher",
         on_delete=models.CASCADE,
-        related_name='finances_casher_handover',
+        related_name="finances_casher_handover",
     )
     receiver: "Casher" = models.ForeignKey(
-        'finance.Casher',
+        "finance.Casher",
         on_delete=models.CASCADE,
-        related_name='finances_receiver_handover',
+        related_name="finances_receiver_handover",
     )
     amount = models.FloatField(default=0)
 
     def __str__(self):
-        return f'{self.casher} {self.receiver} {self.amount}'
+        return f"{self.casher} {self.receiver} {self.amount}"
 
 
 class KpiFinance(BaseModel):
+
     user: "CustomUser" = models.ForeignKey(
-        'account.CustomUser',
+        "account.CustomUser",
         on_delete=models.CASCADE,
     )
+
     lid: "Lid" = models.ForeignKey(
-        'new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True, related_name='finances_kpi_lid'
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="finances_kpi_lid",
     )
+
     student: "Student" = models.ForeignKey(
-        'student.Student', on_delete=models.SET_NULL, null=True, blank=True, related_name='finances_kpi_student'
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="finances_kpi_student",
     )
 
     reason = models.CharField(
-        max_length=100, null=True, blank=True,
+        max_length=100,
+        null=True,
+        blank=True,
     )
+
     amount = models.FloatField(default=0)
 
     type = models.CharField(
         choices=[
-            ('INCOME', 'INCOME'),
-            ('EXPENSE', 'EXPENSE'),
+            ("INCOME", "INCOME"),
+            ("EXPENSE", "EXPENSE"),
         ],
-        default='INCOME',
+        default="INCOME",
         max_length=20,
     )
 
@@ -170,9 +207,9 @@ class KpiFinance(BaseModel):
 
 class Voucher(BaseModel):
     creator: "CustomUser" = models.ForeignKey(
-        'account.CustomUser',
+        "account.CustomUser",
         on_delete=models.CASCADE,
-        related_name='finances_voucher_creator',
+        related_name="finances_voucher_creator",
     )
     name = models.CharField(
         max_length=100,
@@ -185,16 +222,16 @@ class Voucher(BaseModel):
 
     is_expired = models.BooleanField(default=False)
     lid: "Lid" = models.ForeignKey(
-        'new_lid.Lid',
+        "new_lid.Lid",
         on_delete=models.SET_NULL,
-        related_name='finances_voucher_lid',
+        related_name="finances_voucher_lid",
         null=True,
         blank=True,
     )
     student: "Student" = models.ForeignKey(
-        'student.Student',
+        "student.Student",
         on_delete=models.SET_NULL,
-        related_name='finances_voucher_student',
+        related_name="finances_voucher_student",
         null=True,
         blank=True,
     )
@@ -205,9 +242,9 @@ class Voucher(BaseModel):
 
 class Sale(BaseModel):
     creator: "CustomUser" = models.ForeignKey(
-        'account.CustomUser',
+        "account.CustomUser",
         on_delete=models.CASCADE,
-        related_name='finances_creator_sale',
+        related_name="finances_creator_sale",
     )
     name = models.CharField(
         max_length=100,
@@ -222,7 +259,7 @@ class Sale(BaseModel):
         max_length=20,
         null=True,
         blank=True,
-        default='ACTIVE',
+        default="ACTIVE",
     )
     amount = models.FloatField(default=0)
 
@@ -232,31 +269,36 @@ class Sale(BaseModel):
 
 class SaleStudent(BaseModel):
     creator: "CustomUser" = models.ForeignKey(
-        'account.CustomUser',
+        "account.CustomUser",
         on_delete=models.CASCADE,
-        related_name='finances_creator_student_sale',
+        related_name="finances_creator_student_sale",
     )
     sale: "Sale" = models.ForeignKey(
-        'finance.Sale',
+        "finance.Sale",
         on_delete=models.CASCADE,
-        related_name='finances_sale_student',
+        related_name="finances_sale_student",
     )
     student: "Student" = models.ForeignKey(
-        'student.Student',
+        "student.Student",
         on_delete=models.SET_NULL,
-        related_name='finances_student_sale',
+        related_name="finances_student_sale",
         null=True,
         blank=True,
     )
     lid: "Lid" = models.ForeignKey(
-        'new_lid.Lid',
+        "new_lid.Lid",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
 
-    group = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True,
-                              related_name='finances_group_sale_student')
+    group = models.ForeignKey(
+        "groups.Group",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="finances_group_sale_student",
+    )
 
     expire_date = models.DateField(null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
@@ -267,31 +309,33 @@ class SaleStudent(BaseModel):
 
 class VoucherStudent(BaseModel):
     creator: "CustomUser" = models.ForeignKey(
-        'account.CustomUser',
+        "account.CustomUser",
         on_delete=models.CASCADE,
-        related_name='finances_creator_student_voucher',
+        related_name="finances_creator_student_voucher",
     )
     voucher: "Voucher" = models.ForeignKey(
-        'finance.Voucher',
+        "finance.Voucher",
         on_delete=models.CASCADE,
-        related_name='finances_voucher_voucher',
+        related_name="finances_voucher_voucher",
     )
     student: "Student" = models.ForeignKey(
-        'student.Student',
+        "student.Student",
         on_delete=models.SET_NULL,
-        related_name='finances_student_voucher',
+        related_name="finances_student_voucher",
         null=True,
         blank=True,
     )
     lid: "Lid" = models.ForeignKey(
-        'new_lid.Lid',
+        "new_lid.Lid",
         on_delete=models.SET_NULL,
-        related_name='finances_lid_voucher',
+        related_name="finances_lid_voucher",
         null=True,
         blank=True,
     )
     comment = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return (f"{self.student.phone if self.student else self.lid.phone_number}"
-                f"{self.voucher.name} {self.created_at}")
+        return (
+            f"{self.student.phone if self.student else self.lid.phone_number}"
+            f"{self.voucher.name} {self.created_at}"
+        )
