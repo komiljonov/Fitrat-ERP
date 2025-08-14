@@ -661,7 +661,7 @@ class LidStatisticsView(ListAPIView):
         new_student = Archived.objects.filter(
             # Make filter my lid_filial_id and created_at optional,
             # without any branching
-            Q(studeent__filial_id=filial) if filial else Q(),
+            Q(student__filial_id=filial) if filial else Q(),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             is_archived=True,
