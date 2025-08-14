@@ -74,4 +74,3 @@ class SecondaryStudentGroup(BaseModel):
     class Meta:
         verbose_name = "Secondary Add group"
         verbose_name_plural = "Secondary Add group"
-    

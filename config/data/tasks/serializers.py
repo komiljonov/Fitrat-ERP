@@ -123,13 +123,13 @@ class TaskSerializer(serializers.ModelSerializer):
             else None
         )
 
-        
-        representation["lid"] = LidSerializer(instance.lid).data if instance.lid else None
+        representation["lid"] = (
+            LidSerializer(instance.lid).data if instance.lid else None
+        )
 
-
-        
-        representation["student"] = StudentSerializer(instance.student).data if instance.student else None
-
+        representation["student"] = (
+            StudentSerializer(instance.student).data if instance.student else None
+        )
 
         # Filter out unwanted values
         filtered_data = {
@@ -137,4 +137,5 @@ class TaskSerializer(serializers.ModelSerializer):
             for key, value in representation.items()
             if value not in [{}, [], None, "", False]
         }
+        
         return filtered_data

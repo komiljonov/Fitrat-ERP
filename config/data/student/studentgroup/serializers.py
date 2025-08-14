@@ -136,14 +136,14 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
         room = StudentGroup.objects.create(filial=filial, **validated_data)
         return room
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: StudentGroup):
         rep = super().to_representation(instance)
         if instance.group:
 
             subject = instance.group.course.subject
             subject_data = {
                 "name": subject.name,
-                "photo": subject.image.url if subject.image else None,
+                "image": subject.image.file.url if subject.image else None,
             }
 
             group_data = {
