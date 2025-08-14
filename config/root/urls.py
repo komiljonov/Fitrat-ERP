@@ -24,7 +24,6 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-import debug_toolbar
 from debug_toolbar.toolbar import debug_toolbar_urls
 
 schema_view = get_schema_view(

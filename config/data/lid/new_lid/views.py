@@ -4,6 +4,8 @@ from django.core.exceptions import FieldError
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
+from django.db.models import Case, When, IntegerField
+
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -12,8 +14,12 @@ from openpyxl.styles import Font, Alignment
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, \
-    ListCreateAPIView, CreateAPIView
+from rest_framework.generics import (
+    RetrieveUpdateDestroyAPIView,
+    ListAPIView,
+    ListCreateAPIView,
+    CreateAPIView,
+)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -22,14 +28,13 @@ from rest_framework.views import APIView
 from .models import Lid
 from .serializers import LidSerializer
 from ..archived.models import Archived
-from ...department import marketing_channel
 from ...student.lesson.models import FirstLLesson
-from ...student.student.models import Student
+from datetime import datetime, timedelta
 
 
 class B(PageNumberPagination):
     page_size = 20
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
@@ -57,13 +62,28 @@ class LidListCreateView(ListCreateAPIView):
         # super().get_serializer()
 
         serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
-        return serializer_class(*args, **kwargs,
-                                include_only=["id", "first_name", "last_name", "middle_name", "photo", "phone_number",
-                                              "filial", "lid_stages", "lid_stage_type", "ordered_stages",
-                                              "call_operator", "sales_manager", "is_archived", "ordered_date",
-                                              "created_at"
-                                              ])
+        kwargs.setdefault("context", self.get_serializer_context())
+        return serializer_class(
+            *args,
+            **kwargs,
+            include_only=[
+                "id",
+                "first_name",
+                "last_name",
+                "middle_name",
+                "photo",
+                "phone_number",
+                "filial",
+                "lid_stages",
+                "lid_stage_type",
+                "ordered_stages",
+                "call_operator",
+                "sales_manager",
+                "is_archived",
+                "ordered_date",
+                "created_at",
+            ],
+        )
 
     def get_queryset(self):
         user = self.request.user
@@ -72,12 +92,12 @@ class LidListCreateView(ListCreateAPIView):
             return Lid.objects.none()
 
         queryset = Lid.objects.all()
-        filial = self.request.GET.get("filial")
+        # filial = self.request.GET.get("filial")
 
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
                 Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
-                Q(call_operator=user) | Q(call_operator__isnull=True)
+                Q(call_operator=user) | Q(call_operator__isnull=True),
             )
         else:
             queryset = queryset.filter(
@@ -101,6 +121,8 @@ class LidListCreateView(ListCreateAPIView):
         lid_stages = self.request.GET.get("lid_stages")
         marketing_channel = self.request.GET.get("marketing_channel")
 
+        order_by = self.request.GET.get("order_by")
+
         if marketing_channel:
             queryset = queryset.filter(marketing_channel__id=marketing_channel)
         if lid_stages:
@@ -108,7 +130,9 @@ class LidListCreateView(ListCreateAPIView):
         if ordered_stages:
             queryset = queryset.filter(ordered_stages=ordered_stages)
         if no_first_lesson:
-            queryset = queryset.filter().exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
+            queryset = queryset.filter().exclude(
+                ordered_stages="BIRINCHI_DARS_BELGILANGAN"
+            )
         if lid_stage_type:
             queryset = queryset.filter(lid_stage_type=lid_stage_type)
         if is_archived:
@@ -141,14 +165,12 @@ class LidListCreateView(ListCreateAPIView):
         if search_term:
             try:
                 queryset = queryset.filter(
-                    Q(first_name__icontains=search_term) |
-                    Q(last_name__icontains=search_term) |
-                    Q(phone_number__icontains=search_term)
+                    Q(first_name__icontains=search_term)
+                    | Q(last_name__icontains=search_term)
+                    | Q(phone_number__icontains=search_term)
                 )
             except FieldError as e:
                 print(f"FieldError: {e}")
-
-        from datetime import datetime, timedelta
 
         start_date_str = self.request.GET.get("start_date")
         end_date_str = self.request.GET.get("end_date")
@@ -160,9 +182,13 @@ class LidListCreateView(ListCreateAPIView):
             end_date = datetime.strptime(end_date_str, date_format).date()
 
             start_datetime = datetime.combine(start_date, datetime.min.time())
-            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
+            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(
+                days=1
+            )
 
-            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
+            queryset = queryset.filter(
+                created_at__gte=start_datetime, created_at__lt=end_datetime
+            )
 
         elif start_date_str:
             # only filter 1 day if end_date is not present
@@ -170,7 +196,20 @@ class LidListCreateView(ListCreateAPIView):
             start_datetime = datetime.combine(start_date, datetime.min.time())
             end_datetime = start_datetime + timedelta(days=1)
 
-            queryset = queryset.filter(created_at__gte=start_datetime, created_at__lt=end_datetime)
+            queryset = queryset.filter(
+                created_at__gte=start_datetime, created_at__lt=end_datetime
+            )
+
+        if order_by:
+            queryset = queryset.annotate(
+                order_index=Case(
+                    When(lid_stages="YANGI_LEAD", then=1),
+                    default=0,
+                    output_field=IntegerField(),
+                )
+            ).order_by(
+                "-order_index"
+            )  # '-' if you want YANGI_LEAD first
 
         return queryset
 
@@ -214,19 +253,38 @@ class FirstLessonCreate(CreateAPIView):
 class ExportLidToExcelAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter("start_date", openapi.IN_QUERY, description="Filter by start date (YYYY-MM-DD)",
-                              type=openapi.TYPE_STRING),
-            openapi.Parameter("end_date", openapi.IN_QUERY, description="Filter by end date (YYYY-MM-DD)",
-                              type=openapi.TYPE_STRING),
-            openapi.Parameter("is_student", openapi.IN_QUERY,
-                              description="Filter by whether the lead is a student (true/false)",
-                              type=openapi.TYPE_STRING),
-            openapi.Parameter("filial_id", openapi.IN_QUERY, description="Filter by filial ID",
-                              type=openapi.TYPE_INTEGER),
-            openapi.Parameter("lid_stage_type", openapi.IN_QUERY, description="Filter by lid stage type",
-                              type=openapi.TYPE_STRING),
+            openapi.Parameter(
+                "start_date",
+                openapi.IN_QUERY,
+                description="Filter by start date (YYYY-MM-DD)",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "end_date",
+                openapi.IN_QUERY,
+                description="Filter by end date (YYYY-MM-DD)",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "is_student",
+                openapi.IN_QUERY,
+                description="Filter by whether the lead is a student (true/false)",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "filial_id",
+                openapi.IN_QUERY,
+                description="Filter by filial ID",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "lid_stage_type",
+                openapi.IN_QUERY,
+                description="Filter by lid stage type",
+                type=openapi.TYPE_STRING,
+            ),
         ],
-        responses={200: "Excel file generated"}
+        responses={200: "Excel file generated"},
     )
     def get(self, request):
         # Get filters from query parameters
@@ -284,7 +342,6 @@ class ExportLidToExcelAPIView(APIView):
             end_datetime = datetime.combine(start_date, datetime.max.time())
             queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
-
         if lid_stage_type:
             queryset = queryset.filter(lid_stage_type=lid_stage_type)
 
@@ -295,11 +352,25 @@ class ExportLidToExcelAPIView(APIView):
 
         # Define headers
         headers = [
-            "Ism", "Familiya", "Telefon raqami",
-            "Tug'ulgan sanasi", "O'quv tili", "O'quv sinfi",
-            "Fan", "Ball", "Filial", "Marketing kanali", "Lead varonkasi",
-            "Lead etapi", "Buyurtma etapi", "Arxivlangan",
-            "Call Operator", "Sotuv menejeri", "O'quvchi bo'lgan", "Service manager", "Yaratilgan vaqti"
+            "Ism",
+            "Familiya",
+            "Telefon raqami",
+            "Tug'ulgan sanasi",
+            "O'quv tili",
+            "O'quv sinfi",
+            "Fan",
+            "Ball",
+            "Filial",
+            "Marketing kanali",
+            "Lead varonkasi",
+            "Lead etapi",
+            "Buyurtma etapi",
+            "Arxivlangan",
+            "Call Operator",
+            "Sotuv menejeri",
+            "O'quvchi bo'lgan",
+            "Service manager",
+            "Yaratilgan vaqti",
         ]
         sheet.append(headers)
 
@@ -314,27 +385,53 @@ class ExportLidToExcelAPIView(APIView):
             "KUTULMOQDA": "Jarayonda",
         }
         for lid in queryset:
-            sheet.append([
-                lid.first_name,
-                lid.last_name,
-                lid.phone_number,
-                lid.date_of_birth.strftime('%d-%m-%Y') if lid.date_of_birth else "",
-                "Uzbek tili" if lid.education_lang == "UZB" else "Ingliz tili" if lid.education_lang == "ENG" else "Rus tili" if lid.education_lang == "RU" else "",
-                "Maktab" if lid.edu_class == "SCHOOL" else "Universitet" if lid.edu_class == "UNIVERSITY" else "Abutirent" if lid.edu_class else "",
-                lid.subject.name if lid.subject else "",
-                lid.ball,
-                lid.filial.name if lid.filial else "",
-                lid.marketing_channel.name if lid.marketing_channel else "",
-                "Buyurtma yaratilgan" if lid.lid_stage_type == "ORDERED_LID" else "Yangi lead",
-                Lid_STAGE_LABELS.get(lid.lid_stages, ""),
-                ORDERED_STAGE_LABELS.get(lid.ordered_stages, ""),
-                "Ha" if lid.is_archived else "Yo'q",
-                lid.call_operator.full_name if lid.call_operator else "",
-                lid.sales_manager.full_name if lid.sales_manager else "",
-                "Ha" if lid.is_student else "Yo'q",
-                lid.service_manager.full_name if lid.service_manager else "",
-                lid.created_at.strftime('%d-%m-%Y %H:%M:%S') if lid.created_at else "",
-            ])
+            sheet.append(
+                [
+                    lid.first_name,
+                    lid.last_name,
+                    lid.phone_number,
+                    lid.date_of_birth.strftime("%d-%m-%Y") if lid.date_of_birth else "",
+                    (
+                        "Uzbek tili"
+                        if lid.education_lang == "UZB"
+                        else (
+                            "Ingliz tili"
+                            if lid.education_lang == "ENG"
+                            else "Rus tili" if lid.education_lang == "RU" else ""
+                        )
+                    ),
+                    (
+                        "Maktab"
+                        if lid.edu_class == "SCHOOL"
+                        else (
+                            "Universitet"
+                            if lid.edu_class == "UNIVERSITY"
+                            else "Abutirent" if lid.edu_class else ""
+                        )
+                    ),
+                    lid.subject.name if lid.subject else "",
+                    lid.ball,
+                    lid.filial.name if lid.filial else "",
+                    lid.marketing_channel.name if lid.marketing_channel else "",
+                    (
+                        "Buyurtma yaratilgan"
+                        if lid.lid_stage_type == "ORDERED_LID"
+                        else "Yangi lead"
+                    ),
+                    Lid_STAGE_LABELS.get(lid.lid_stages, ""),
+                    ORDERED_STAGE_LABELS.get(lid.ordered_stages, ""),
+                    "Ha" if lid.is_archived else "Yo'q",
+                    lid.call_operator.full_name if lid.call_operator else "",
+                    lid.sales_manager.full_name if lid.sales_manager else "",
+                    "Ha" if lid.is_student else "Yo'q",
+                    lid.service_manager.full_name if lid.service_manager else "",
+                    (
+                        lid.created_at.strftime("%d-%m-%Y %H:%M:%S")
+                        if lid.created_at
+                        else ""
+                    ),
+                ]
+            )
 
         # Style headers
         for col_num, header in enumerate(headers, 1):
@@ -409,7 +506,9 @@ class LidStatisticsView(ListAPIView):
             end_date = datetime.strptime(end_date_str, date_format).date()
 
             start_datetime = datetime.combine(start_date, datetime.min.time())
-            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(days=1)
+            end_datetime = datetime.combine(end_date, datetime.min.time()) + timedelta(
+                days=1
+            )
 
             filter["created_at__gte"] = start_datetime
             filter["created_at__lt"] = end_datetime
@@ -426,7 +525,7 @@ class LidStatisticsView(ListAPIView):
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
                 Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
-                Q(call_operator=user) | Q(call_operator__isnull=True)
+                Q(call_operator=user) | Q(call_operator__isnull=True),
             )
 
         else:
@@ -434,40 +533,97 @@ class LidStatisticsView(ListAPIView):
                 Q(filial__in=user.filial.all()) | Q(filial__isnull=True)
             )
 
-        leads_count = queryset.filter(lid_stage_type="NEW_LID", is_archived=False, **filter).count()
-        new_leads = queryset.filter(lid_stage_type="NEW_LID", lid_stages="YANGI_LEAD", is_archived=False,
-                                    **filter).count()
-        in_progress = queryset.filter(lid_stage_type="NEW_LID", is_archived=False, lid_stages="KUTULMOQDA",
-                                      **filter).count()
-        order_created = queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID", **filter).exclude(
-            call_operator__isnull=True).count()
-        archived_new_leads = queryset.filter(is_archived=True, lid_stage_type="NEW_LID", **filter).count()
+        leads_count = queryset.filter(
+            lid_stage_type="NEW_LID", is_archived=False, **filter
+        ).count()
+        new_leads = queryset.filter(
+            lid_stage_type="NEW_LID",
+            lid_stages="YANGI_LEAD",
+            is_archived=False,
+            **filter,
+        ).count()
+        in_progress = queryset.filter(
+            lid_stage_type="NEW_LID",
+            is_archived=False,
+            lid_stages="KUTULMOQDA",
+            **filter,
+        ).count()
+        order_created = (
+            queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID", **filter)
+            .exclude(call_operator__isnull=True)
+            .count()
+        )
+        archived_new_leads = queryset.filter(
+            is_archived=True, lid_stage_type="NEW_LID", **filter
+        ).count()
 
-        ordered_new = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                      ordered_stages="YANGI_BUYURTMA", **filter).count()
+        ordered_new = queryset.filter(
+            lid_stage_type="ORDERED_LID",
+            is_archived=False,
+            ordered_stages="YANGI_BUYURTMA",
+            **filter,
+        ).count()
 
-        ordered_new_fix = queryset.filter(ordered_date__isnull=False,ordered_stages="YANGI_BUYURTMA",is_archived=False, **filter).count()
-        ordered_leads_count = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, **filter).exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        ordered_waiting_leads = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                                ordered_stages="KUTULMOQDA", **filter).count()
-        ordered_archived = Archived.objects.filter(lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID").count()
-        first_lesson = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                       ordered_stages="BIRINCHI_DARS_BELGILANGAN", is_student=False, **filter).count()
-        first_lesson_not = queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False,
-                                           ordered_stages="BIRINCHI_DARSGA_KELMAGAN", **filter).count()
-        all_archived = queryset.filter(is_archived=True, is_student=False, **filter).count()
-        archived_lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID",lid__isnull=False, is_archived=True).count()
+        ordered_new_fix = queryset.filter(
+            ordered_date__isnull=False,
+            ordered_stages="YANGI_BUYURTMA",
+            is_archived=False,
+            **filter,
+        ).count()
+        ordered_leads_count = (
+            queryset.filter(lid_stage_type="ORDERED_LID", is_archived=False, **filter)
+            .exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
+            .count()
+        )
+        ordered_waiting_leads = queryset.filter(
+            lid_stage_type="ORDERED_LID",
+            is_archived=False,
+            ordered_stages="KUTULMOQDA",
+            **filter,
+        ).count()
+        ordered_archived = Archived.objects.filter(
+            lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID"
+        ).count()
+        first_lesson = queryset.filter(
+            lid_stage_type="ORDERED_LID",
+            is_archived=False,
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+            is_student=False,
+            **filter,
+        ).count()
+        first_lesson_not = queryset.filter(
+            lid_stage_type="ORDERED_LID",
+            is_archived=False,
+            ordered_stages="BIRINCHI_DARSGA_KELMAGAN",
+            **filter,
+        ).count()
+        all_archived = queryset.filter(
+            is_archived=True, is_student=False, **filter
+        ).count()
+        archived_lid = Archived.objects.filter(
+            lid__lid_stage_type="NEW_LID", lid__isnull=False, is_archived=True
+        ).count()
 
-        first_lesson_all = FirstLLesson.objects.filter(lid__lid_stage_type="ORDERED_LID",lid__is_archived=False).count()
+        first_lesson_all = FirstLLesson.objects.filter(
+            lid__lid_stage_type="ORDERED_LID", lid__is_archived=False
+        ).count()
 
-        new_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="NEW_STUDENT").count()
-        active_student = Archived.objects.filter(is_archived=True,student__isnull=False, student__student_stage_type="ACTIVE_STUDENT").count()
+        new_student = Archived.objects.filter(
+            is_archived=True,
+            student__isnull=False,
+            student__student_stage_type="NEW_STUDENT",
+        ).count()
+        active_student = Archived.objects.filter(
+            is_archived=True,
+            student__isnull=False,
+            student__student_stage_type="ACTIVE_STUDENT",
+        ).count()
 
         no_debt = Archived.objects.filter(
             is_archived=True,
             student__isnull=False,
             student__balance__isnull=False,
-            student__balance__gte=100000
+            student__balance__gte=100000,
         ).count()
 
         lead_no_debt = Archived.objects.filter(
@@ -475,40 +631,57 @@ class LidStatisticsView(ListAPIView):
             lid__isnull=False,
             lid__is_student=False,
             lid__balance__isnull=False,
-            lid__balance__gte=100000
+            lid__balance__gte=100000,
         ).count()
 
-        debt = Archived.objects.filter(is_archived=True,student__isnull=False, student__balance__lt=100000).count()
+        debt = Archived.objects.filter(
+            is_archived=True, student__isnull=False, student__balance__lt=100000
+        ).count()
 
-        lead_debt = Archived.objects.filter(is_archived=True,lid__isnull=False, lid__is_student=False, lid__balance__lt=100000).count()
-
-        no_debt_sum = Archived.objects.filter(
-            is_archived=True,
-            student__isnull=False,
-            student__balance__isnull=False,
-            student__balance__gte=100000
-        ).aggregate(total=Sum("student__balance"))["total"] or 0
-
-        lead_no_debt_sum = Archived.objects.filter(
+        lead_debt = Archived.objects.filter(
             is_archived=True,
             lid__isnull=False,
             lid__is_student=False,
-            lid__balance__isnull=False,
-            lid__balance__gte=100000
-        ).aggregate(total=Sum("lid__balance"))["total"] or 0
+            lid__balance__lt=100000,
+        ).count()
 
-        debt_sum = Archived.objects.filter(
-            is_archived=True,
-            student__isnull=False,
-            student__balance__lt=100000
-        ).aggregate(total=Sum("student__balance"))["total"] or 0
+        no_debt_sum = (
+            Archived.objects.filter(
+                is_archived=True,
+                student__isnull=False,
+                student__balance__isnull=False,
+                student__balance__gte=100000,
+            ).aggregate(total=Sum("student__balance"))["total"]
+            or 0
+        )
 
-        lead_debt_sum = Archived.objects.filter(
-            is_archived=True,
-            lid__isnull=False,
-            lid__is_student=False,
-            lid__balance__lt=100000
-        ).aggregate(total=Sum("lid__balance"))["total"] or 0
+        lead_no_debt_sum = (
+            Archived.objects.filter(
+                is_archived=True,
+                lid__isnull=False,
+                lid__is_student=False,
+                lid__balance__isnull=False,
+                lid__balance__gte=100000,
+            ).aggregate(total=Sum("lid__balance"))["total"]
+            or 0
+        )
+
+        debt_sum = (
+            Archived.objects.filter(
+                is_archived=True, student__isnull=False, student__balance__lt=100000
+            ).aggregate(total=Sum("student__balance"))["total"]
+            or 0
+        )
+
+        lead_debt_sum = (
+            Archived.objects.filter(
+                is_archived=True,
+                lid__isnull=False,
+                lid__is_student=False,
+                lid__balance__lt=100000,
+            ).aggregate(total=Sum("lid__balance"))["total"]
+            or 0
+        )
 
         response_data = {
             "new_lid_statistics": {
@@ -526,7 +699,7 @@ class LidStatisticsView(ListAPIView):
                 "ordered_first_lesson_not_come": first_lesson_not,
                 "ordered_first_lesson": first_lesson,
                 "ordered_archived": ordered_archived,
-                "first_lesson_all": first_lesson_all
+                "first_lesson_all": first_lesson_all,
             },
             "lid_archived": {
                 "all": all_archived,
@@ -541,7 +714,7 @@ class LidStatisticsView(ListAPIView):
                 "debt": debt + lead_debt,
                 "no_debt_sum": no_debt_sum + lead_no_debt_sum,
                 "debt_sum": debt_sum + lead_debt_sum,
-            }
+            },
         }
 
         return Response(response_data)
@@ -551,7 +724,7 @@ class BulkUpdate(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        data = request.data.get('lids', [])
+        data = request.data.get("lids", [])
 
         if not data:
             raise ValidationError("No lids data provided.")
@@ -560,8 +733,10 @@ class BulkUpdate(APIView):
 
         try:
             updated_lids = serializer.update_bulk_lids(data)
-            return Response({"message": "Bulk update successful.", "updated_lids": updated_lids},
-                            status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Bulk update successful.", "updated_lids": updated_lids},
+                status=status.HTTP_200_OK,
+            )
         except ValidationError as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -571,7 +746,11 @@ class LidStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 
-    search_fields = ["first_name", "last_name", "phone_number", ]
+    search_fields = [
+        "first_name",
+        "last_name",
+        "phone_number",
+    ]
     filterset_fields = [
         "student_type",
         "education_lang",
@@ -596,12 +775,10 @@ class LidStatistics(ListAPIView):
         if user.role == "CALL_OPERATOR" or user.is_call_center:
             queryset = queryset.filter(
                 Q(filial__in=user.filial.all()) | Q(filial__isnull=True),
-                Q(call_operator=user) | Q(call_operator__isnull=True)
+                Q(call_operator=user) | Q(call_operator__isnull=True),
             )
         else:
-            queryset = queryset.filter(
-                Q(filial_id=filial) | Q(filial__isnull=True)
-            )
+            queryset = queryset.filter(Q(filial_id=filial) | Q(filial__isnull=True))
 
         is_archived = self.request.GET.get("is_archived")
         search_term = self.request.GET.get("search", "")
@@ -644,9 +821,9 @@ class LidStatistics(ListAPIView):
         if search_term:
             try:
                 queryset = queryset.filter(
-                    Q(first_name__icontains=search_term) |
-                    Q(last_name__icontains=search_term) |
-                    Q(phone_number__icontains=search_term)
+                    Q(first_name__icontains=search_term)
+                    | Q(last_name__icontains=search_term)
+                    | Q(phone_number__icontains=search_term)
                 )
             except FieldError as e:
                 print(f"FieldError: {e}")
@@ -656,7 +833,9 @@ class LidStatistics(ListAPIView):
         end_date = self.request.GET.get("end_date")
 
         if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = queryset.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
         elif start_date:
             try:
                 start_date = parse_datetime(start_date).date()
