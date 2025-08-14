@@ -26,7 +26,7 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - "postgres_data_fitrat:/var/lib/postgresql/data"
+      - "postgres_data_fitrat_ilm:/var/lib/postgresql/data"
 
   django:
     container_name: "django_fitrat"
@@ -115,6 +115,6 @@ services:
 #      - SYS_PTRACE
 
 volumes:
-  postgres_data_fitrat:
+  postgres_data_fitrat_ilm:
   redis-data:
 
