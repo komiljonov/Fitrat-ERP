@@ -329,7 +329,7 @@ class StudentGroupUpdateSerializer(serializers.Serializer):
                 "Can't  add students group to already existing  one."
             )
 
-    def validate_student(self, attrs):
+    def validate_order(self, attrs):
 
         order: Lid = attrs["order"]
 
