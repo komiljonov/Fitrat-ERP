@@ -293,9 +293,13 @@ class StudentGroupUpdateSerializer(serializers.Serializer):
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
     add_group = serializers.PrimaryKeyRelatedField(queryset=StudentGroup.objects.all())
 
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), required=False, allow_null=True
+    )
 
-    order = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
+    order = serializers.PrimaryKeyRelatedField(
+        queryset=Lid.objects.all(), required=False, allow_null=True
+    )
 
     def validate(self, attrs):
         student = attrs.get("student")
