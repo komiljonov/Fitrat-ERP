@@ -25,12 +25,21 @@ _signal_state = local()
 
 def get_sale_for_instance(instance):
     if instance.student:
-        return SaleStudent.objects.filter(student=instance.student).select_related("sale").first()
+        return (
+            SaleStudent.objects.filter(student=instance.student)
+            .select_related("sale")
+            .first()
+        )
     return SaleStudent.objects.filter(lid=instance.lid).select_related("sale").first()
 
 
 def apply_discount(price, sale):
-    if sale and sale.sale and sale.sale.amount and sale.expire_date >= datetime.date.today():
+    if (
+        sale
+        and sale.sale
+        and sale.sale.amount
+        and sale.expire_date >= datetime.date.today()
+    ):
         try:
             sale_percent = Decimal(sale.sale.amount)
 
@@ -48,7 +57,9 @@ def calculate_bonus_and_income(price, bonus_percent):
     return bonus_amount, income_amount
 
 
-def create_finance_record(action, amount, kind, instance, student, teacher=None, is_first=False):
+def create_finance_record(
+    action, amount, kind, instance, student, teacher=None, is_first=False
+):
     return Finance.objects.create(
         action=action,
         amount=amount,
@@ -57,7 +68,7 @@ def create_finance_record(action, amount, kind, instance, student, teacher=None,
         student=student,
         stuff=teacher,
         is_first=is_first,
-        comment=f"Talaba {student.first_name} {student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}"
+        comment=f"Talaba {student.first_name} {student.last_name} dan {instance.created_at.strftime('%d-%m-%Y %H:%M')}",
     )
 
 
@@ -66,9 +77,15 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
     if instance.lid:
         attendances_count = Attendance.objects.filter(lid=instance.lid).count()
 
-        if attendances_count == 1 and instance.reason != "IS_PRESENT" and instance.lid is not None:
+        if (
+            attendances_count == 1
+            and instance.reason != "IS_PRESENT"
+            and instance.lid is not None
+        ):
             Notification.objects.create(
-                user=instance.lid.call_operator if instance.lid else instance.student.id,
+                user=(
+                    instance.lid.call_operator if instance.lid else instance.student.id
+                ),
                 comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan !",
                 come_from=instance.lid.id if instance.lid else instance.student.id,
                 choice="First_Lesson_Lid",
@@ -94,25 +111,33 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
-        dn_come_attendance_count = Attendance.objects.filter(student=instance.student,
-                                                             reason__in=["REASONED", "UNREASONED"]).count()
+        dn_come_attendance_count = Attendance.objects.filter(
+            student=instance.student, reason__in=["REASONED", "UNREASONED"]
+        ).count()
 
         if dn_come_attendance_count >= 5:
             instance.student.is_frozen = True
             instance.student.save()
 
         if attendances_count <= 3:
-            stage = "BIRINCHI_DARS" if instance.reason == "IS_PRESENT" else "BIRINCHI_DARSGA_KELMAGAN"
+            stage = (
+                "BIRINCHI_DARS"
+                if instance.reason == "IS_PRESENT"
+                else "BIRINCHI_DARSGA_KELMAGAN"
+            )
             instance.student.new_student_stages = stage
             instance.student.save()
 
         if attendances_count > 1:
-            if instance.reason == "IS_PRESENT" and instance.student.balance_status == "INACTIVE":
+            if (
+                instance.reason == "IS_PRESENT"
+                and instance.student.balance_status == "INACTIVE"
+            ):
                 Notification.objects.create(
                     user=instance.student.sales_manager,
                     comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashdi va balansi statusi inactive, To'lov haqida ogohlantiring!",
                     come_from=instance.student.id,
-                    choice="New_Student"
+                    choice="New_Student",
                 )
             elif instance.reason == "UNREASONED":
                 Notification.objects.create(
@@ -149,10 +174,14 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         kind = Kind.objects.get(name="Lesson payment")
         is_first_income = not Finance.objects.filter(action="INCOME").exists()
 
-        bonus = Bonus.objects.filter(
-            user=instance.group.teacher,
-            name="O’quvchi to’lagan summadan foiz beriladi"
-        ).values("amount").first()
+        bonus = (
+            Bonus.objects.filter(
+                user=instance.group.teacher,
+                name="O’quvchi to’lagan summadan foiz beriladi",
+            )
+            .values("amount")
+            .first()
+        )
 
         bonus_percent = Decimal(bonus["amount"]) if bonus else Decimal("0.0")
 
@@ -177,7 +206,9 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             instance.student.balance -= final_price
             instance.student.save(update_fields=["balance"])
 
-            bonus_amount, income_amount = calculate_bonus_and_income(final_price, bonus_percent)
+            bonus_amount, income_amount = calculate_bonus_and_income(
+                final_price, bonus_percent
+            )
 
             # instance.group.teacher.balance += bonus_amount
             # instance.group.teacher.save(update_fields=["balance"])
@@ -198,7 +229,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 kind,
                 instance,
                 instance.student,
-                is_first=is_first_income
+                is_first=is_first_income,
             )
 
         elif instance.group.price_type == "MONTHLY":
@@ -210,7 +241,9 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             ic(month_key, end_of_month)
 
             lesson_days_qs = instance.group.scheduled_day_type.all()
-            lesson_days = ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
+            lesson_days = (
+                ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
+            )
 
             holidays = []
             days_off = []
@@ -236,7 +269,9 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                 instance.amount = per_lesson_price
                 instance.save(update_fields=["amount"])
 
-                bonus_amount, income_amount = calculate_bonus_and_income(per_lesson_price, bonus_percent)
+                bonus_amount, income_amount = calculate_bonus_and_income(
+                    per_lesson_price, bonus_percent
+                )
 
                 # instance.group.teacher.balance += bonus_amount
                 # instance.group.teacher.save(update_fields=["balance"])
@@ -255,7 +290,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
                     kind,
                     instance,
                     instance.student,
-                    is_first=is_first_income
+                    is_first=is_first_income,
                 )
 
             else:
@@ -341,9 +376,7 @@ def group_level_update(sender, instance: Attendance, action, **kwargs):
             return
 
         group_themes = Theme.objects.filter(
-            course=course,
-            level=level,
-            subject=course.subject
+            course=course, level=level, subject=course.subject
         )
 
         last_theme = group_themes.last()
@@ -369,5 +402,5 @@ def on_unit_test(sender, instance: Attendance, created, **kwargs):
     if unit_test.themes.filter(id=attendance_theme.id).exists():
         send_unit_test_notification.apply_async(
             args=[unit_test.id, instance.group.id],
-            eta=timezone.now() + timedelta(minutes=1)
+            eta=timezone.now() + timedelta(minutes=1),
         )

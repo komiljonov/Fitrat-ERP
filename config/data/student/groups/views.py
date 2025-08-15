@@ -12,9 +12,11 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.request import HttpRequest, Request
 
 from .models import Group, Room, SecondaryGroup, Day, GroupSaleStudent
 from .serializers import (
+    CheckRoomTeacherConflictSerializer,
     GroupSerializer,
     GroupLessonSerializer,
     RoomsSerializer,
@@ -26,6 +28,17 @@ from .serializers import (
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
 from ..studentgroup.models import SecondaryStudentGroup
+
+
+UZBEK_WEEKDAYS = {
+    "Monday": "Dushanba",
+    "Tuesday": "Seshanba",
+    "Wednesday": "Chorshanba",
+    "Thursday": "Payshanba",
+    "Friday": "Juma",
+    "Saturday": "Shanba",
+    "Sunday": "Yakshanba",
+}
 
 
 class StudentGroupsView(ListCreateAPIView):
@@ -256,16 +269,8 @@ class CheckRoomLessonScheduleView(APIView):
 
         # Convert weekday to Uzbek
         weekday_name = date.strftime("%A")
-        uzbek_weekdays = {
-            "Monday": "Dushanba",
-            "Tuesday": "Seshanba",
-            "Wednesday": "Chorshanba",
-            "Thursday": "Payshanba",
-            "Friday": "Juma",
-            "Saturday": "Shanba",
-            "Sunday": "Yakshanba",
-        }
-        uzbek_day = uzbek_weekdays.get(weekday_name)
+
+        uzbek_day = UZBEK_WEEKDAYS.get(weekday_name)
         if not uzbek_day:
             return Response(
                 {"error": f'Could not determine Uzbek weekday for "{weekday_name}"'},
@@ -299,12 +304,18 @@ class CheckRoomLessonScheduleView(APIView):
 
         # Extra lessons (groups)
         conflicting_extra_group_lessons = ExtraLessonGroup.objects.filter(
-            room_id=room_id, date=date, started_at__lt=ended_at, ended_at__gt=started_at
+            room_id=room_id,
+            date=date,
+            started_at__lt=ended_at,
+            ended_at__gt=started_at,
         )
 
         # Extra lessons (students)
         conflicting_extra_lessons = ExtraLesson.objects.filter(
-            room_id=room_id, date=date, started_at__lt=ended_at, ended_at__gt=started_at
+            room_id=room_id,
+            date=date,
+            started_at__lt=ended_at,
+            ended_at__gt=started_at,
         )
 
         # Format conflicts
@@ -817,3 +828,23 @@ class StudentSaleGroupListCreateAPIView(ListCreateAPIView):
 class StudentSaleGroupDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = GroupSaleStudent.objects.all()
     serializer_class = GroupSaleStudentSerializer
+
+
+class CheckRoomLessonScheduleV2View(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: HttpRequest | Request):
+
+        serializer = CheckRoomTeacherConflictSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+
+        room = data["room"]
+        teacher = data["teacher"]
+
+        date = data["date"]
+        starts_at = data["started_at"]
+        ends_at = data["ended_at"]

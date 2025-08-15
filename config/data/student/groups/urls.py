@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    CheckRoomLessonScheduleV2View,
     StudentGroupsView,
     GroupRetrieveUpdateDestroyAPIView,
     GroupListAPIView,
@@ -46,6 +47,11 @@ urlpatterns = [
     path(
         "room-check/",
         CheckRoomLessonScheduleView.as_view(),
+        name="check-room-lesson-schedule",
+    ),
+    path(
+        "room-check-v2/",
+        CheckRoomLessonScheduleV2View.as_view(),
         name="check-room-lesson-schedule",
     ),
     path(

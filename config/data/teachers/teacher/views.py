@@ -346,7 +346,7 @@ class StudentsAvgLearning(APIView):
 
                 mock_data = None
                 if m.mock:
-                    mock_result = MockExamResult.objects.filter(student=m.student, mock=m.moc).first()
+                    mock_result = MockExamResult.objects.filter(student=m.student, mock=m.mock).first()
                     if mock_result:
                         mock_data = {
                             "id": mock_result.id,

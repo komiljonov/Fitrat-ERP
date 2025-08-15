@@ -434,3 +434,15 @@ class GroupSaleStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = GroupSaleStudent
         fields = ["id", "group", "student", "lid", "amount", "comment"]
+
+
+class CheckRoomTeacherConflictSerializer(serializers.Serializer):
+
+    room = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all())
+    date = serializers.DateField()
+    started_at = serializers.TimeField()
+    ended_at = serializers.TimeField()
+
+    teacher = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.filter(role="TEACHER")
+    )
