@@ -2,6 +2,8 @@ from django.db.models import Sum
 from icecream import ic
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
+from rest_framework.exceptions import PermissionDenied
+
 
 from .models import CustomUser
 from ..account.permission import PhoneAuthBackend
@@ -20,22 +22,38 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "phone", "role", "calculate_penalties", "calculate_bonus",
-            "password", "salary",
-            "photo", "filial", "balance", "ball", "files", "extra_number", "is_call_center",
-            "enter", "leave", "date_of_birth",
+            "id",
+            "full_name",
+            "first_name",
+            "last_name",
+            "phone",
+            "role",
+            "calculate_penalties",
+            "calculate_bonus",
+            "password",
+            "salary",
+            "photo",
+            "filial",
+            "balance",
+            "ball",
+            "files",
+            "extra_number",
+            "is_call_center",
+            "enter",
+            "leave",
+            "date_of_birth",
         )
         # We don't need to add extra_kwargs for password
 
     def create(self, validated_data):
         # Ensure password is provided in the request
-        password = validated_data.pop('password', None)
+        password = validated_data.pop("password", None)
         print(password)
         if not password:
             raise serializers.ValidationError({"password": "Password is required."})
 
-        files = validated_data.pop('files', [])
-        filial = validated_data.pop('filial', None)
+        files = validated_data.pop("files", [])
+        filial = validated_data.pop("filial", None)
 
         user = CustomUser(**validated_data)
         user.set_password(password)  # Hash the password
@@ -62,37 +80,42 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=128, required=True, write_only=True)
 
     def validate(self, attrs):
-        phone = attrs.get('phone')
-        password = attrs.get('password')
+        phone = attrs.get("phone")
+        password = attrs.get("password")
 
         user = CustomUser.objects.get(phone=phone)
 
         if phone:
             user = CustomUser.objects.get(phone=phone)
 
-            from rest_framework.exceptions import PermissionDenied
 
             if user.role == "Student":
                 balance = Student.objects.filter(user=user).first().balance
                 if balance < -100000:
-                    raise PermissionDenied(detail="Sizning qarzdorligingiz sababli faoliyatingiz cheklangan!")
+                    raise PermissionDenied(
+                        detail="Sizning qarzdorligingiz sababli faoliyatingiz cheklangan!"
+                    )
 
             if user.is_archived == True:
-                raise serializers.ValidationError({"permission denied": "Sizning faoliyatingiz cheklangan!"},
-                                                  code='permission_denied')
+                raise serializers.ValidationError(
+                    {"permission denied": "Sizning faoliyatingiz cheklangan!"},
+                    code="permission_denied",
+                )
         if phone and user.role not in ["TEACHER", "ASSISTANT"]:
 
             user = CustomUser.objects.filter(phone=phone).first()
 
             pages = Page.objects.filter(user=user, is_readable=True)
             if not pages.exists() and (user.role not in ["Student", "Parents"]):
-                raise serializers.ValidationError({"permission denied": "Siz uchun ruxsat etilgan saxivalar yo'q !"},
-                                                  code='permission_denied')
+                raise serializers.ValidationError(
+                    {"permission denied": "Siz uchun ruxsat etilgan saxivalar yo'q !"},
+                    code="permission_denied",
+                )
 
         if phone and password:
             backend = PhoneAuthBackend()
             user = backend.authenticate(
-                request=self.context.get('request'),
+                request=self.context.get("request"),
                 phone=phone,
                 password=password,
             )
@@ -100,32 +123,53 @@ class UserLoginSerializer(serializers.Serializer):
 
             if not user:
                 raise serializers.ValidationError(
-                    "Unable to log in with provided credentials.",
-                    code="authorization"
+                    "Unable to log in with provided credentials.", code="authorization"
                 )
         else:
             raise serializers.ValidationError(
-                "Must include 'phone' and 'password'.",
-                code="authorization"
+                "Must include 'phone' and 'password'.", code="authorization"
             )
 
-        attrs['user'] = user
+        attrs["user"] = user
         return attrs
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False)
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True, required=False)
+    photo = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True, required=False
+    )
     password = serializers.CharField(max_length=128, write_only=True, required=False)
-    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, required=False)
-    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), many=True, required=False)
+    files = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), many=True, required=False
+    )
+    filial = serializers.PrimaryKeyRelatedField(
+        queryset=Filial.objects.all(), many=True, required=False
+    )
 
     class Meta:
         model = CustomUser
-        fields = ["id", "phone", "full_name", "first_name", "last_name", "calculate_penalties", "calculate_bonus",
-                  "password", "is_archived",
-                  "role", "photo", "salary", "enter", "leave", "files", "filial", "extra_number", "is_call_center",
-                  "date_of_birth"]
+        fields = [
+            "id",
+            "phone",
+            "full_name",
+            "first_name",
+            "last_name",
+            "calculate_penalties",
+            "calculate_bonus",
+            "password",
+            "is_archived",
+            "role",
+            "photo",
+            "salary",
+            "enter",
+            "leave",
+            "files",
+            "filial",
+            "extra_number",
+            "is_call_center",
+            "date_of_birth",
+        ]
 
     def update(self, instance, validated_data):
         tt = TimetrackerSinc()
@@ -189,7 +233,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                         should_sync = True
                 instance.is_archived = status
 
-
         instance.save()
 
         if should_sync and instance.second_user:
@@ -197,11 +240,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         return instance
 
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         if instance.photo:
-            representation['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
+            representation["photo"] = FileUploadSerializer(
+                instance.photo, context=self.context
+            ).data
         return representation
 
 
@@ -214,10 +258,29 @@ class UserListSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone', "full_name", "first_name", "calculate_penalties", "calculate_bonus", "last_name",
-                  'role', "balance", "monitoring",
-                  "salary", "pages", "files", "is_archived", "extra_number", "is_call_center",
-                  "photo", "filial", "bonus", "compensation", "created_at"]
+        fields = [
+            "id",
+            "phone",
+            "full_name",
+            "first_name",
+            "calculate_penalties",
+            "calculate_bonus",
+            "last_name",
+            "role",
+            "balance",
+            "monitoring",
+            "salary",
+            "pages",
+            "files",
+            "is_archived",
+            "extra_number",
+            "is_call_center",
+            "photo",
+            "filial",
+            "bonus",
+            "compensation",
+            "created_at",
+        ]
 
     def __init__(self, *args, include_only=None, **kwargs):
         # pop our custom arg before calling super
@@ -233,24 +296,34 @@ class UserListSerializer(ModelSerializer):
         return list(bonus)
 
     def get_compensation(self, obj):
-        compensation = Compensation.objects.filter(user=obj).values("id", "name", "amount")
+        compensation = Compensation.objects.filter(user=obj).values(
+            "id", "name", "amount"
+        )
         return list(compensation)
 
     def get_pages(self, obj):
-        pages = Page.objects.filter(user=obj).values("id", "name", "user", "is_editable", "is_readable", "is_parent")
+        pages = Page.objects.filter(user=obj).values(
+            "id", "name", "user", "is_editable", "is_readable", "is_parent"
+        )
         return list(pages)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         if "photo" in rep:
-            rep['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
+            rep["photo"] = FileUploadSerializer(
+                instance.photo, context=self.context
+            ).data
         if "files" in rep:
-            rep['files'] = FileUploadSerializer(instance.files.all(), many=True, context=self.context).data
+            rep["files"] = FileUploadSerializer(
+                instance.files.all(), many=True, context=self.context
+            ).data
         return rep
 
 
 class UserSerializer(serializers.ModelSerializer):
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    photo = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
     pages = serializers.SerializerMethodField()
     bonus = serializers.SerializerMethodField()
     compensation = serializers.SerializerMethodField()
@@ -261,7 +334,6 @@ class UserSerializer(serializers.ModelSerializer):
     lessons_payment = serializers.SerializerMethodField()
     given_bonus = serializers.SerializerMethodField()
     given_penalty = serializers.SerializerMethodField()
-
 
     #
     # # def __init__(self, *args, **kwargs):
@@ -277,7 +349,9 @@ class UserSerializer(serializers.ModelSerializer):
         include_only: list | None = kwargs.pop("include_only", None)
 
         if fields_to_remove and include_only:
-            raise ValueError("You cannot use 'remove_fields' and 'include_only' at the same time.")
+            raise ValueError(
+                "You cannot use 'remove_fields' and 'include_only' at the same time."
+            )
 
         super(UserSerializer, self).__init__(*args, **kwargs)
 
@@ -294,49 +368,70 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            "id", "full_name", "first_name", "last_name", "is_linked", "calculate_penalties", "calculate_bonus",
-            "phone", "role", "penalty", "pages", "files","lessons_payment","given_bonus", "given_penalty",
-            "photo", "filial", "balance", "salary", "extra_number", "is_call_center", "second_user", "student_id",
-            "enter", "leave", "date_of_birth", "created_at", "bonus", "compensation", "monitoring",
-            "updated_at", "is_archived"
+            "id",
+            "full_name",
+            "first_name",
+            "last_name",
+            "is_linked",
+            "calculate_penalties",
+            "calculate_bonus",
+            "phone",
+            "role",
+            "penalty",
+            "pages",
+            "files",
+            "lessons_payment",
+            "given_bonus",
+            "given_penalty",
+            "photo",
+            "filial",
+            "balance",
+            "salary",
+            "extra_number",
+            "is_call_center",
+            "second_user",
+            "student_id",
+            "enter",
+            "leave",
+            "date_of_birth",
+            "created_at",
+            "bonus",
+            "compensation",
+            "monitoring",
+            "updated_at",
+            "is_archived",
         )
 
     def get_lessons_payment(self, obj):
         finances = (
-                Finance.objects
-                .filter(
-                    stuff=obj,
-                    kind__name__icontains="Lesson payment",
-                    action="EXPENSE"
-                )
-                .aggregate(total=Sum("amount"))
-                .get("total") or 0
+            Finance.objects.filter(
+                stuff=obj, kind__name__icontains="Lesson payment", action="EXPENSE"
+            )
+            .aggregate(total=Sum("amount"))
+            .get("total")
+            or 0
         )
         return finances
 
     def get_given_bonus(self, obj):
         finances = (
-                Finance.objects
-                .filter(
-                    stuff=obj,
-                    kind__name__icontains="Bonus",
-                    action="EXPENSE"
-                )
-                .aggregate(total=Sum("amount"))
-                .get("total") or 0
+            Finance.objects.filter(
+                stuff=obj, kind__name__icontains="Bonus", action="EXPENSE"
+            )
+            .aggregate(total=Sum("amount"))
+            .get("total")
+            or 0
         )
         return finances
 
     def get_given_penalty(self, obj):
         finances = (
-                Finance.objects
-                .filter(
-                    stuff=obj,
-                    kind__name__icontains="Money back",
-                    action="INCOME"
-                )
-                .aggregate(total=Sum("amount"))
-                .get("total") or 0
+            Finance.objects.filter(
+                stuff=obj, kind__name__icontains="Money back", action="INCOME"
+            )
+            .aggregate(total=Sum("amount"))
+            .get("total")
+            or 0
         )
         return finances
 
@@ -345,10 +440,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_penalty(self, obj):
         # Use .aggregate() to get the sum of the 'amount' field
-        compensation = Compensation.objects.filter(user=obj).aggregate(total_penalty=Sum('amount'))
+        compensation = Compensation.objects.filter(user=obj).aggregate(
+            total_penalty=Sum("amount")
+        )
 
         # Extract the sum value
-        total_penalty = compensation.get('total_penalty', 0)  # Defaults to 0 if there's no match
+        total_penalty = compensation.get(
+            "total_penalty", 0
+        )  # Defaults to 0 if there's no match
 
         return total_penalty
 
@@ -360,21 +459,28 @@ class UserSerializer(serializers.ModelSerializer):
         return list(bonus)
 
     def get_compensation(self, obj):
-        compensation = Compensation.objects.filter(user=obj).values("id", "name", "amount")
+        compensation = Compensation.objects.filter(user=obj).values(
+            "id", "name", "amount"
+        )
         return list(compensation)
 
     def get_pages(self, obj):
-        pages = Page.objects.filter(user=obj).values("id", "name", "user", "is_editable",
-                                                     "is_readable", "is_parent")
+        pages = Page.objects.filter(user=obj).values(
+            "id", "name", "user", "is_editable", "is_readable", "is_parent"
+        )
         return list(pages)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        if 'photo' in rep:
-            rep['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
-        if 'files' in rep:
-            rep['files'] = FileUploadSerializer(instance.files.all(), many=True, context=self.context).data
+        if "photo" in rep:
+            rep["photo"] = FileUploadSerializer(
+                instance.photo, context=self.context
+            ).data
+        if "files" in rep:
+            rep["files"] = FileUploadSerializer(
+                instance.files.all(), many=True, context=self.context
+            ).data
         return rep
 
     def create(self, validated_data):

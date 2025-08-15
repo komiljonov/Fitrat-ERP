@@ -9,11 +9,13 @@ from data.student.student.models import Student
 
 class Casher(BaseModel):
     name = models.CharField(max_length=100)
+
     user: "CustomUser" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.CASCADE,
         related_name="finances",
     )
+
     role = models.CharField(
         choices=[
             ("ADMINISTRATOR", "ADMINISTRATOR"),

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Finance, KpiFinance, SaleStudent
+from .models import Casher, Finance, KpiFinance, SaleStudent
 
 
 # Register your models here.
@@ -48,3 +48,13 @@ class KpiFinanceAdmin(admin.ModelAdmin):
     list_filter = ["user", "student"]
 
     search_fields = ["user__full_name", "user__phone"]
+
+
+@admin.register(Casher)
+class CasherAdmin(admin.ModelAdmin):
+
+    list_display = ["name", "user", "role", "filial", "is_archived"]
+
+    search_fields = ["name", "user__full_name", "role"]
+
+    list_filter = ["role", "is_archived"]
