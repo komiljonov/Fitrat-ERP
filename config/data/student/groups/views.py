@@ -14,6 +14,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.request import HttpRequest, Request
 
+
+from datetime import date, time
+
+
 from .models import Group, Room, SecondaryGroup, Day, GroupSaleStudent
 from .serializers import (
     CheckRoomTeacherConflictSerializer,
@@ -28,6 +32,7 @@ from .serializers import (
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
 from ..studentgroup.models import SecondaryStudentGroup
+from data.account.models import CustomUser
 
 
 UZBEK_WEEKDAYS = {
@@ -842,9 +847,20 @@ class CheckRoomLessonScheduleV2View(APIView):
 
         data = serializer.validated_data
 
-        room = data["room"]
-        teacher = data["teacher"]
+        room: Room = data["room"]
+        teacher: CustomUser = data["teacher"]
 
-        date = data["date"]
-        starts_at = data["started_at"]
-        ends_at = data["ended_at"]
+        start_date: date = data["date"]
+        starts_at: time = data["started_at"]
+        ends_at: time = data["ended_at"]
+
+        weekday_name = date.strftime("%A")
+
+        uzbek_day = UZBEK_WEEKDAYS.get(weekday_name)
+        if uzbek_day == None:
+            return Response(
+                {"error": f'Could not determine Uzbek weekday for "{weekday_name}"'},
+                status=400,
+            )
+            
+            

@@ -18,8 +18,13 @@ from ...parents.models import Relatives
 
 class AttendanceSerializer(serializers.ModelSerializer):
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(
+        queryset=Lid.objects.all(), allow_null=True
+    )
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True
+    )
+    
     teacher = serializers.SerializerMethodField()
 
     relatives = serializers.SerializerMethodField()
@@ -27,19 +32,19 @@ class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = [
-            'id',
-            'theme',
-            'repeated',
-            'group',
-            'lid',
-            'student',
-            'teacher',
-            'reason',
-            'remarks',
+            "id",
+            "theme",
+            "repeated",
+            "group",
+            "lid",
+            "student",
+            "teacher",
+            "reason",
+            "remarks",
             "amount",
             "relatives",
-            'created_at',
-            'updated_at',
+            "created_at",
+            "updated_at",
         ]
 
     def get_relatives(self, obj):
@@ -48,22 +53,26 @@ class AttendanceSerializer(serializers.ModelSerializer):
         if obj.student and obj.lid is None:
             relatives = Relatives.objects.filter(student=obj.student)
             for rel in relatives:
-                parents.append({
-                    "name": rel.name,
-                    "id": rel.id,
-                    "phone": rel.phone,
-                    "who": rel.who,
-                })
+                parents.append(
+                    {
+                        "name": rel.name,
+                        "id": rel.id,
+                        "phone": rel.phone,
+                        "who": rel.who,
+                    }
+                )
 
         else:
             relatives = Relatives.objects.filter(lid=obj.lid)
             for rel in relatives:
-                parents.append({
-                    "name": rel.name,
-                    "id": rel.id,
-                    "phone": rel.phone,
-                    "who": rel.who,
-                })
+                parents.append(
+                    {
+                        "name": rel.name,
+                        "id": rel.id,
+                        "phone": rel.phone,
+                        "who": rel.who,
+                    }
+                )
 
         return parents
 
@@ -74,13 +83,15 @@ class AttendanceSerializer(serializers.ModelSerializer):
         """
         Ensure that a student or lid can only have one attendance per group per day.
         """
-        student = data.get('student', None)
-        lid = data.get('lid', None)
-        group = data.get('group', None)
+        student = data.get("student", None)
+        lid = data.get("lid", None)
+        group = data.get("group", None)
         today = now().date()
 
         if not student and not lid:
-            raise serializers.ValidationError("Either 'student' or 'lid' must be provided.")
+            raise serializers.ValidationError(
+                "Either 'student' or 'lid' must be provided."
+            )
 
         instance_id = self.instance.id if self.instance else None
 
@@ -90,25 +101,37 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         # Check if attendance exists for student
         if student:
-            existing_attendance = Attendance.objects.filter(
-                student=student,
-                group=group,
-                created_at__range=(start_datetime, end_datetime)
-            ).exclude(id=instance_id).exists()
+            existing_attendance = (
+                Attendance.objects.filter(
+                    student=student,
+                    group=group,
+                    created_at__range=(start_datetime, end_datetime),
+                )
+                .exclude(id=instance_id)
+                .exists()
+            )
 
             if existing_attendance:
-                raise serializers.ValidationError("This student has already been marked present today in this group.")
+                raise serializers.ValidationError(
+                    "This student has already been marked present today in this group."
+                )
 
         # Check if attendance exists for lid
         if lid:
-            existing_attendance = Attendance.objects.filter(
-                lid=lid,
-                group=group,
-                created_at__range=(start_datetime, end_datetime)
-            ).exclude(id=instance_id).exists()
+            existing_attendance = (
+                Attendance.objects.filter(
+                    lid=lid,
+                    group=group,
+                    created_at__range=(start_datetime, end_datetime),
+                )
+                .exclude(id=instance_id)
+                .exists()
+            )
 
             if existing_attendance:
-                raise serializers.ValidationError("This lid has already been marked present today in this group.")
+                raise serializers.ValidationError(
+                    "This lid has already been marked present today in this group."
+                )
 
         return data
 
@@ -117,7 +140,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         print(validated_data)
         # Extract themes from validated_data before creating the instance
-        themes = validated_data.pop('theme', [])
+        themes = validated_data.pop("theme", [])
 
         with transaction.atomic():
             attendance = Attendance.objects.create(**validated_data)
@@ -126,27 +149,26 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 attendance.theme.set(themes)
                 attendance.save()
 
-            student = validated_data.get('student')
+            student = validated_data.get("student")
             if student and themes:
                 for theme in themes:
                     try:
                         homework = Homework.objects.filter(theme=theme).first()
                         if homework:
-                            print(f"Creating homework history for theme: {theme}, student: {student}")
+                            print(
+                                f"Creating homework history for theme: {theme}, student: {student}"
+                            )
                             Homework_history.objects.create(
                                 homework=homework,
                                 student=student,
                                 status="Passed",
-                                mark=0
+                                mark=0,
                             )
                             print(f"Homework history created successfully")
                             quiz = Quiz.objects.filter(homework=homework).first()
 
                             mastering = Mastering.objects.create(
-                                student=student,
-                                theme=homework.theme,
-                                test=quiz,
-                                ball=0
+                                student=student, theme=homework.theme, test=quiz, ball=0
                             )
 
                             if theme.course.subject.is_language == True:
@@ -155,7 +177,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                                     theme=theme,
                                     test=None,
                                     choice="Speaking",
-                                    ball=0
+                                    ball=0,
                                 )
                         else:
                             print(f"No homework found for theme: {theme}")
@@ -179,7 +201,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             serializer.is_valid(raise_exception=True)
             validated_data = serializer.validated_data
 
-            themes = validated_data.pop('theme', [])
+            themes = validated_data.pop("theme", [])
 
             # Create attendance instance
             attendance = Attendance.objects.create(**data)
@@ -189,7 +211,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 attendance.theme.set(themes)
 
             # Create homework history
-            student = data.get('student')
+            student = data.get("student")
             if student and themes:
                 for theme in themes:
                     try:
@@ -199,7 +221,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                                 homework=homework,
                                 student=student,
                                 status="Passed",
-                                mark=0
+                                mark=0,
                             )
 
                         else:
@@ -215,46 +237,58 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep['theme'] = ThemeSerializer(instance.theme, context=self.context, many=True).data
+        rep["theme"] = ThemeSerializer(
+            instance.theme, context=self.context, many=True
+        ).data
         if instance.lid:
-            rep['lid'] = LidSerializer(instance.lid, context=self.context).data
+            rep["lid"] = LidSerializer(instance.lid, context=self.context).data
         else:
-            rep.pop('lid', None)
+            rep.pop("lid", None)
 
         if instance.student:
-            rep['student'] = StudentSerializer(instance.student, context=self.context).data
+            rep["student"] = StudentSerializer(
+                instance.student, context=self.context
+            ).data
 
         if instance.group:
-            rep['group'] = instance.group.name
+            rep["group"] = instance.group.name
 
         else:
-            rep.pop('student', None)
+            rep.pop("student", None)
 
-        filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
+        filtered_data = {
+            key: value
+            for key, value in rep.items()
+            if value not in [{}, [], None, "", False]
+        }
         return filtered_data
 
 
 class AttendanceBulkSerializer(serializers.ModelSerializer):
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(
+        queryset=Lid.objects.all(), allow_null=True
+    )
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True
+    )
     teacher = serializers.SerializerMethodField()
 
     class Meta:
         model = Attendance
         fields = [
-            'id',
-            'theme',
-            'repeated',
-            'group',
-            'lid',
-            'student',
-            'teacher',
-            'reason',
-            'remarks',
+            "id",
+            "theme",
+            "repeated",
+            "group",
+            "lid",
+            "student",
+            "teacher",
+            "reason",
+            "remarks",
             "amount",
-            'created_at',
-            'updated_at',
+            "created_at",
+            "updated_at",
         ]
 
     def get_teacher(self, obj):
@@ -264,33 +298,47 @@ class AttendanceBulkSerializer(serializers.ModelSerializer):
         """
         Ensure that a student or lid can only have one attendance per group per day.
         """
-        student = data.get('student', None)
-        lid = data.get('lid', None)
-        group = data.get('group', None)
+        student = data.get("student", None)
+        lid = data.get("lid", None)
+        group = data.get("group", None)
         today = now().date()
 
         if not student and not lid:
-            raise serializers.ValidationError("Either 'student' or 'lid' must be provided.")
+            raise serializers.ValidationError(
+                "Either 'student' or 'lid' must be provided."
+            )
 
-        instance_id = self.instance.id if self.instance else None  # Get existing instance ID if updating
+        instance_id = (
+            self.instance.id if self.instance else None
+        )  # Get existing instance ID if updating
 
         # Check if attendance exists for student (excluding the current record in updates)
         if student:
-            existing_attendance = Attendance.objects.filter(
-                student=student, group=group, created_at__date=today
-            ).exclude(id=instance_id).exists()
+            existing_attendance = (
+                Attendance.objects.filter(
+                    student=student, group=group, created_at__date=today
+                )
+                .exclude(id=instance_id)
+                .exists()
+            )
 
             if existing_attendance:
-                raise serializers.ValidationError("This student has already been marked present today in this group.")
+                raise serializers.ValidationError(
+                    "This student has already been marked present today in this group."
+                )
 
         # Check if attendance exists for lid (excluding the current record in updates)
         if lid:
-            existing_attendance = Attendance.objects.filter(
-                lid=lid, group=group, created_at__date=today
-            ).exclude(id=instance_id).exists()
+            existing_attendance = (
+                Attendance.objects.filter(lid=lid, group=group, created_at__date=today)
+                .exclude(id=instance_id)
+                .exists()
+            )
 
             if existing_attendance:
-                raise serializers.ValidationError("This lid has already been marked present today in this group.")
+                raise serializers.ValidationError(
+                    "This lid has already been marked present today in this group."
+                )
 
         return data
 
@@ -310,18 +358,28 @@ class AttendanceBulkSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep['theme'] = ThemeSerializer(instance.theme, context=self.context, many=True).data
+        rep["theme"] = ThemeSerializer(
+            instance.theme,
+            context=self.context,
+            many=True,
+        ).data
         if instance.lid:
-            rep['lid'] = LidSerializer(instance.lid, context=self.context).data
+            rep["lid"] = LidSerializer(instance.lid, context=self.context).data
         else:
-            rep.pop('lid', None)
+            rep.pop("lid", None)
 
         if instance.student:
-            rep['student'] = StudentSerializer(instance.student, context=self.context).data
+            rep["student"] = StudentSerializer(
+                instance.student, context=self.context
+            ).data
         else:
-            rep.pop('student', None)
+            rep.pop("student", None)
 
-        filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
+        filtered_data = {
+            key: value
+            for key, value in rep.items()
+            if value not in [{}, [], None, "", False]
+        }
         return filtered_data
 
 
@@ -331,17 +389,23 @@ class AttendanceTHSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = [
-            'id',
-            'theme',
-            'repeated',
-            'group',
-            'created_at',
-            'updated_at',
+            "id",
+            "theme",
+            "repeated",
+            "group",
+            "created_at",
+            "updated_at",
         ]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep['theme'] = ThemeSerializer(instance.theme, many=True, context=self.context).data
-        filtered_data = {key: value for key, value in rep.items() if value not in [{}, [], None, "", False]}
+        rep["theme"] = ThemeSerializer(
+            instance.theme, many=True, context=self.context
+        ).data
+        filtered_data = {
+            key: value
+            for key, value in rep.items()
+            if value not in [{}, [], None, "", False]
+        }
         return filtered_data

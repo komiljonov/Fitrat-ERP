@@ -5,9 +5,11 @@ from django.db.models import Q
 from django.utils.timezone import make_aware
 from rest_framework import status
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import (ListCreateAPIView,
-                                     RetrieveUpdateDestroyAPIView,
-                                     ListAPIView)
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    ListAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -25,22 +27,28 @@ class AttendanceList(ListCreateAPIView):
 
     def get_queryset(self):
 
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
-        reason = self.request.GET.get('reason')
-        student = self.request.GET.get('student')
-        group = self.request.GET.get('group')
-        filial = self.request.GET.get('filial')
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
+        reason = self.request.GET.get("reason")
+        student = self.request.GET.get("student")
+        group = self.request.GET.get("group")
+        filial = self.request.GET.get("filial")
         queryset = Attendance.objects.all()
 
         if filial:
             queryset = queryset.filter(group__filial__id=filial)
 
         if start_date and end_date:
-            start_date = make_aware(datetime.strptime(start_date, '%Y-%m-%d'))
-            end_date = make_aware(datetime.combine(datetime.strptime(end_date, '%Y-%m-%d'), datetime.max.time()))
+            start_date = make_aware(datetime.strptime(start_date, "%Y-%m-%d"))
+            end_date = make_aware(
+                datetime.combine(
+                    datetime.strptime(end_date, "%Y-%m-%d"), datetime.max.time()
+                )
+            )
 
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = queryset.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
 
         if group:
             queryset = queryset.filter(group__id=group)
@@ -63,8 +71,10 @@ class AttendanceBulkList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_serializer(self, *args, **kwargs):
+
         if isinstance(kwargs.get("data", {}), list):
             kwargs["many"] = True
+
         return super().get_serializer(*args, **kwargs)
 
 
@@ -76,13 +86,19 @@ class AttendanceBulkUpdateAPIView(APIView):
         data = request.data
 
         if not isinstance(data, list):
-            return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(
+                {"detail": "Expected a list of items."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    
         updated = []
 
         for item in data:
             if "id" not in item:
-                return Response({"detail": "Missing 'id' for update item."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "Missing 'id' for update item."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             try:
                 instance = Attendance.objects.get(id=item["id"])
@@ -91,12 +107,12 @@ class AttendanceBulkUpdateAPIView(APIView):
                 serializer.save()
                 updated.append(serializer.data)
             except Attendance.DoesNotExist:
-                return Response({"detail": f"Attendance with id {item['id']} not found."},
-                                status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {"detail": f"Attendance with id {item['id']} not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
-        return Response({
-            "updated": updated
-        }, status=status.HTTP_200_OK)
+        return Response({"updated": updated}, status=status.HTTP_200_OK)
 
 
 class AttendanceDetail(RetrieveUpdateDestroyAPIView):
@@ -109,7 +125,7 @@ class AttendanceListView(ListAPIView):
     serializer_class = AttendanceSerializer
 
     def get_queryset(self, *args, **kwargs):
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
 
         lid = Lid.objects.filter(id=id).first()
         if lid:
@@ -130,9 +146,8 @@ class LessonAttendanceList(ListAPIView):
         from django.utils.timezone import now
         from datetime import timedelta
 
-
-        themes = self.request.query_params.getlist('theme', None)
-        group_id = self.kwargs.get('pk', None)
+        themes = self.request.query_params.getlist("theme", None)
+        group_id = self.kwargs.get("pk", None)
         day = "today"
 
         if group_id == "":
@@ -164,8 +179,8 @@ class LessonSecondaryAttendanceList(ListAPIView):
     serializer_class = SecondaryAttendanceSerializer
 
     def get_queryset(self, *args, **kwargs):
-        themes = self.request.query_params.getlist('theme', None)
-        group_id = self.kwargs.get('pk', None)
+        themes = self.request.query_params.getlist("theme", None)
+        group_id = self.kwargs.get("pk", None)
 
         # If group_id is an empty string, set it to None
         if group_id == "":
@@ -213,7 +228,10 @@ class SecondaryAttendanceBulkUpdateView(APIView):
     def patch(self, request, *args, **kwargs):
         data = request.data
         if not isinstance(data, list):
-            return Response({"error": "Expected a list of attendance objects"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Expected a list of attendance objects"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         updated_instances = []
 
@@ -227,7 +245,9 @@ class SecondaryAttendanceBulkUpdateView(APIView):
             except SecondaryAttendance.DoesNotExist:
                 continue
 
-            serializer = SecondaryAttendanceSerializer(instance, data=item, partial=True, context={"request": request})
+            serializer = SecondaryAttendanceSerializer(
+                instance, data=item, partial=True, context={"request": request}
+            )
             if serializer.is_valid():
                 serializer.save()
                 updated_instances.append(serializer.data)

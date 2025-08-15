@@ -71,6 +71,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             password = "".join(
                 random.choices(string.ascii_letters + string.digits, k=8)
             )
+
             student, student_created = Student.objects.get_or_create(
                 phone=instance.phone_number,
                 defaults={

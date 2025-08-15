@@ -446,3 +446,5 @@ class CheckRoomTeacherConflictSerializer(serializers.Serializer):
     teacher = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.filter(role="TEACHER")
     )
+    
+    
