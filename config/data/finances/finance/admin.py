@@ -53,7 +53,7 @@ class KpiFinanceAdmin(admin.ModelAdmin):
 @admin.register(Casher)
 class CasherAdmin(admin.ModelAdmin):
 
-    list_display = ["name", "user", "role", "filial", "is_archived"]
+    list_display = ["name", "filial", "user", "role", "is_archived"]
 
     search_fields = ["name", "user__full_name", "role"]
 
