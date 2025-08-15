@@ -610,6 +610,8 @@ class LidStatisticsView(ListAPIView):
             is_archived=True,
             lid__lid_stage_type="ORDERED_LID",
         ).count()
+        
+        print(filter)
 
         first_lesson = queryset.filter(
             # Q(lid__filial_id=filial) if filial else Q(),
