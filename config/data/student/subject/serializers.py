@@ -65,7 +65,11 @@ class SubjectSerializer(serializers.ModelSerializer):
         return Course.objects.filter(subject=obj, is_archived=False).count()
 
     def get_all_themes(self, obj):
-        themes = Theme.objects.filter(subject=obj, is_archived=False).count()
+
+        themes = Theme.objects.filter(
+            subject=obj, is_archived=False, level__is_archived=False
+        ).count()
+
         return themes
 
     def to_representation(self, instance):
