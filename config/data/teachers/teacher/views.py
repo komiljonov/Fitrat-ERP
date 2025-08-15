@@ -1,7 +1,11 @@
 from django.db.models import Q, Avg, Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    ListAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -25,19 +29,19 @@ from ...student.subject.models import GroupThemeStart
 
 
 class TeacherList(FilialRestrictedQuerySetMixin, ListCreateAPIView):
-    queryset = CustomUser.objects.filter(role='TEACHER')
+    queryset = CustomUser.objects.filter(role="TEACHER")
     serializer_class = TeacherSerializer
     # permission_classes = (IsAuthenticated,)
 
 
 class TeacherDetail(RetrieveUpdateDestroyAPIView):
-    queryset = CustomUser.objects.filter(role='TEACHER')
+    queryset = CustomUser.objects.filter(role="TEACHER")
     serializer_class = TeacherSerializer
     permission_classes = (IsAuthenticated,)
 
 
 class TeachersNoPGList(ListAPIView):
-    queryset = CustomUser.objects.filter(role='TEACHER')
+    queryset = CustomUser.objects.filter(role="TEACHER")
     serializer_class = TeacherSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -51,13 +55,14 @@ class TeacherScheduleView(ListAPIView):
 
     def get_queryset(self):
         # Filter lessons for the logged-in teacher
-        return Lesson.objects.filter(group__teacher=self.request.user
-                                     ).order_by("day", "start_time")
+        return Lesson.objects.filter(group__teacher=self.request.user).order_by(
+            "day", "start_time"
+        )
 
 
 class TeacherStatistics(ListAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = CustomUser.objects.filter(role='TEACHER')
+    queryset = CustomUser.objects.filter(role="TEACHER")
     serializer_class = TeacherSerializer
 
     def get(self, request, *args, **kwargs):
@@ -71,20 +76,25 @@ class TeacherStatistics(ListAPIView):
             filters["created_at__lte"] = end_date
 
         # Get all student IDs under this teacher
-        student_ids = StudentGroup.objects.filter(group__teacher=teacher).values_list("student_id", flat=True)
+        student_ids = StudentGroup.objects.filter(group__teacher=teacher).values_list(
+            "student_id", flat=True
+        )
 
         # Annotate average mastering score per student
         student_averages = (
-            Mastering.objects
-            .filter(student__in=student_ids)
-            .values('student')
-            .annotate(avg_ball=Avg('ball'))
+            Mastering.objects.filter(student__in=student_ids)
+            .values("student")
+            .annotate(avg_ball=Avg("ball"))
         )
 
         if student_averages:
-            total_avg = sum(s["avg_ball"] for s in student_averages) / len(student_averages)
+            total_avg = sum(s["avg_ball"] for s in student_averages) / len(
+                student_averages
+            )
             total_avg_scaled = min(max(round(total_avg / 20), 1), 5)
-            low_assimilation_count = sum(1 for s in student_averages if s["avg_ball"] <= 40)
+            low_assimilation_count = sum(
+                1 for s in student_averages if s["avg_ball"] <= 40
+            )
         else:
             total_avg_scaled = None
             low_assimilation_count = 0
@@ -111,9 +121,8 @@ class TeacherStatistics(ListAPIView):
                 is_archived=False,
                 group__teacher=teacher,
                 lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-                lid__is_student=False
+                lid__is_student=False,
             ).count(),
-
             # "first_lesson_archived": StudentGroup.objects.filter(
             #     Q(lid__is_archived=False) | Q(is_archived=False),
             #     student__isnull=True,
@@ -122,35 +131,55 @@ class TeacherStatistics(ListAPIView):
             #     lid__is_student=False,
             #     group__teacher=teacher
             # ).count(),
-            "first_lesson_archived":Lid.objects.filter(
+            "first_lesson_archived": Lid.objects.filter(
                 lid_stage_type="ORDERED_LID",
                 ordered_stages="BIRINCHI_DARS_BELGILANGAN",
                 is_archived=True,
                 is_student=False,
                 lids_group__group__teacher=teacher,
             ).count(),
-            "all_students": StudentGroup.objects.filter(group__teacher=teacher, **filters).count(),
-            "new_students": StudentGroup.objects.filter(group__teacher=teacher,
-                                                        student__student_stage_type="NEW_STUDENT", **filters).count(),
-            "new_student_active": StudentGroup.objects.filter(group__teacher=teacher,
-                                                              student__student_stage_type="ACTIVE_STUDENT",
-                                                              student__new_student_date__isnull=False,
-                                                              **filters).count(),
-            "new_student_archived": StudentGroup.objects.filter(group__teacher=teacher,
-                                                                student__student_stage_type="NEW_STUDENT",
-                                                                student__is_archived=True, **filters).count(),
-            "new_student_still": StudentGroup.objects.filter(group__teacher=teacher,
-                                                             student__student_stage_type="NEW_STUDENT",
-                                                             student__is_archived=False, **filters).count(),
-            "active_students": StudentGroup.objects.filter(group__teacher=teacher, student__is_archived=False,
-                                                           student__student_stage_type="ACTIVE_STUDENT",
-                                                           **filters).count(),
-
+            "all_students": StudentGroup.objects.filter(
+                group__teacher=teacher, **filters
+            ).count(),
+            "new_students": StudentGroup.objects.filter(
+                group__teacher=teacher,
+                student__student_stage_type="NEW_STUDENT",
+                **filters,
+            ).count(),
+            "new_student_active": StudentGroup.objects.filter(
+                group__teacher=teacher,
+                student__student_stage_type="ACTIVE_STUDENT",
+                student__new_student_date__isnull=False,
+                **filters,
+            ).count(),
+            "new_student_archived": StudentGroup.objects.filter(
+                group__teacher=teacher,
+                student__student_stage_type="NEW_STUDENT",
+                student__is_archived=True,
+                **filters,
+            ).count(),
+            "new_student_still": StudentGroup.objects.filter(
+                group__teacher=teacher,
+                student__student_stage_type="NEW_STUDENT",
+                student__is_archived=False,
+                **filters,
+            ).count(),
+            "active_students": StudentGroup.objects.filter(
+                group__teacher=teacher,
+                student__is_archived=False,
+                student__student_stage_type="ACTIVE_STUDENT",
+                **filters,
+            ).count(),
             "results": Results.objects.filter(teacher=teacher, **filters).count(),
-            "results_progress": Results.objects.filter(teacher=teacher, status="In_progress", **filters).count(),
-            "results_accepted": Results.objects.filter(teacher=teacher, status="Accepted", **filters).count(),
-            "results_rejected": Results.objects.filter(teacher=teacher, status="Rejected", **filters).count(),
-
+            "results_progress": Results.objects.filter(
+                teacher=teacher, status="In_progress", **filters
+            ).count(),
+            "results_accepted": Results.objects.filter(
+                teacher=teacher, status="Accepted", **filters
+            ).count(),
+            "results_rejected": Results.objects.filter(
+                teacher=teacher, status="Rejected", **filters
+            ).count(),
             "average_assimilation": total_avg_scaled,
             "low_assimilation": low_assimilation_count,
         }
@@ -163,21 +192,31 @@ class Teacher_StudentsView(ListAPIView):
     serializer_class = StudentsGroupSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    search_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name")
+    search_fields = (
+        "lid__first_name",
+        "lid__last_name",
+        "student__first_name",
+        "student__last_name",
+    )
 
     def get_queryset(self):
 
         status = self.request.GET.get("status", None)
         is_archived = self.request.GET.get("is_archived", None)
 
-        group = StudentGroup.objects.filter(group__teacher=self.request.user,)
+        group = StudentGroup.objects.filter(
+            group__teacher=self.request.user,
+        )
 
         if is_archived:
             group = group.filter(
-                Q(lid__is_archived=is_archived.capitalize())  |  Q(
-                    student__is_archived=is_archived.capitalize()))
+                Q(lid__is_archived=is_archived.capitalize())
+                | Q(student__is_archived=is_archived.capitalize())
+            )
         if status:
-            group = group.filter(Q(student__student_stage_type=status) | Q(lid__lid_stage_type=status))
+            group = group.filter(
+                Q(student__student_stage_type=status) | Q(lid__lid_stage_type=status)
+            )
         if group:
             return group.distinct()
         return StudentGroup.objects.none()
@@ -188,10 +227,28 @@ class TeachersGroupsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GroupSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    search_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
+    search_fields = (
+        "lid__first_name",
+        "lid__last_name",
+        "student__first_name",
+        "student__last_name",
+        "status",
+    )
     ordering_fields = (
-        "lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status', 'student_count')
-    filterser_fields = ("lid__first_name", "lid__last_name", "student__first_name", "student__last_name", 'status')
+        "lid__first_name",
+        "lid__last_name",
+        "student__first_name",
+        "student__last_name",
+        "status",
+        "student_count",
+    )
+    filterser_fields = (
+        "lid__first_name",
+        "lid__last_name",
+        "student__first_name",
+        "student__last_name",
+        "status",
+    )
 
     def get_queryset(self):
         status = self.request.GET.get("status")
@@ -199,9 +256,7 @@ class TeachersGroupsView(ListAPIView):
 
         queryset = Group.objects.filter(
             Q(teacher__id=teacher_id) | Q(secondary_teacher__id=teacher_id)
-        ).annotate(
-            student_count=Count("student_groups")
-        )
+        ).annotate(student_count=Count("student_groups"))
         if status:
             queryset = queryset.filter(status=status)
 
@@ -241,7 +296,9 @@ class AssistantStatisticsView(ListAPIView):
         if end_date:
             filters["created_at__lte"] = end_date
 
-        students = SecondaryStudentGroup.objects.filter(group__teacher=self.request.user, **filters).count()
+        students = SecondaryStudentGroup.objects.filter(
+            group__teacher=self.request.user, **filters
+        ).count()
         average_assimilation = None
         low_assimilation = None
         high_assimilation = None
@@ -250,7 +307,7 @@ class AssistantStatisticsView(ListAPIView):
             "students": students,
             "average_assimilation": average_assimilation,
             "high_assimilation": high_assimilation,
-            "low_assimilation": low_assimilation
+            "low_assimilation": low_assimilation,
         }
         return Response(statistics)
 
@@ -275,15 +332,21 @@ class SecondaryGroupStatic(APIView):
 
         all_count = base_qs.count()
         first_count = base_qs.filter(lid__isnull=False).count()
-        new_student_count = base_qs.filter(student__student_stage_type="NEW_STUDENT").count()
-        active_count = base_qs.filter(student__student_stage_type="ACTIVE_STUDENT").count()
+        new_student_count = base_qs.filter(
+            student__student_stage_type="NEW_STUDENT"
+        ).count()
+        active_count = base_qs.filter(
+            student__student_stage_type="ACTIVE_STUDENT"
+        ).count()
 
-        return Response({
-            "all": all_count,
-            "first": first_count,
-            "new_student": new_student_count,
-            "active": active_count
-        })
+        return Response(
+            {
+                "all": all_count,
+                "first": first_count,
+                "new_student": new_student_count,
+                "active": active_count,
+            }
+        )
 
 
 class StudentsAvgLearning(APIView):
@@ -294,7 +357,11 @@ class StudentsAvgLearning(APIView):
             return Response({"error": "group parameter is required"}, status=400)
 
         # Get the theme that marks the limit
-        current_theme = GroupThemeStart.objects.filter(group__id=group_id).order_by('-created_at').first()
+        current_theme = (
+            GroupThemeStart.objects.filter(group__id=group_id)
+            .order_by("-created_at")
+            .first()
+        )
 
         student_groups = StudentGroup.objects.filter(
             group__id=group_id,
@@ -308,9 +375,11 @@ class StudentsAvgLearning(APIView):
         if current_theme and current_theme.theme:
             mastering_filter &= Q(theme__created_at__lte=current_theme.theme.created_at)
 
-        mastering_records = Mastering.objects.filter(
-            mastering_filter
-        ).select_related("student", "lid", "test", "theme").distinct()
+        mastering_records = (
+            Mastering.objects.filter(mastering_filter)
+            .select_related("student", "lid", "test", "theme")
+            .distinct()
+        )
 
         results = []
 
@@ -321,22 +390,30 @@ class StudentsAvgLearning(APIView):
             if is_student:
                 student_record = mastering_records.filter(student__id=target_id)
                 name = {
-                    'full_name': f"{sg.student.first_name} {sg.student.last_name}",
+                    "full_name": f"{sg.student.first_name} {sg.student.last_name}",
                     "type": "student",
-                    'is_archived': sg.student.is_archived,
-                    'is_frozen': sg.student.is_frozen,
-                    'frozen_date': sg.student.frozen_days,
+                    "is_archived": sg.student.is_archived,
+                    "is_frozen": sg.student.is_frozen,
+                    "frozen_date": sg.student.frozen_days,
                 }
             else:
                 student_record = mastering_records.filter(lid__id=target_id)
                 name = {
-                    'full_name': f"{sg.lid.first_name} {sg.lid.last_name}",
-                    'type': 'lid',
-                    'is_archived': sg.lid.is_archived,
-                    'is_frozen': sg.lid.is_frozen,
+                    "full_name": f"{sg.lid.first_name} {sg.lid.last_name}",
+                    "type": "lid",
+                    "is_archived": sg.lid.is_archived,
+                    "is_frozen": sg.lid.is_frozen,
                 }
 
-            exams, homeworks, speaking, unit, mock, mid_course, level = [], [], [], [], [], [], []
+            exams, homeworks, speaking, unit, mock, mid_course, level = (
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+            )
 
             for m in student_record:
                 homework_id = Homework_history.objects.filter(
@@ -346,7 +423,9 @@ class StudentsAvgLearning(APIView):
 
                 mock_data = None
                 if m.mock:
-                    mock_result = MockExamResult.objects.filter(student=m.student, mock=m.mock).first()
+                    mock_result = MockExamResult.objects.filter(
+                        student=m.student, mock=m.mock
+                    ).first()
                     if mock_result:
                         mock_data = {
                             "id": mock_result.id,
@@ -355,28 +434,52 @@ class StudentsAvgLearning(APIView):
                             "writing": mock_result.writing,
                             "speaking": mock_result.speaking,
                             "overall_score": mock_result.overall_score,
-                            "updater": {
-                                "id": mock_result.updater.id,
-                                "full_name": f"{mock_result.updater.first_name} {mock_result.updater.last_name}",
-                            } if mock_result.updater else None,
+                            "updater": (
+                                {
+                                    "id": mock_result.updater.id,
+                                    "full_name": f"{mock_result.updater.first_name} {mock_result.updater.last_name}",
+                                }
+                                if mock_result.updater
+                                else None
+                            ),
                             "created_at": mock_result.created_at.isoformat(),
                         }
 
                 item = {
-                    "theme": {
-                        "id": m.theme.id,
-                        "name": m.theme.title,
-                    } if m.theme else None,
+                    "theme": (
+                        {
+                            "id": m.theme.id,
+                            "name": m.theme.title,
+                        }
+                        if m.theme
+                        else None
+                    ),
                     "homework_id": homework_id.id if homework_id else None,
-                    "mastering_id": m.id if m.choice in ["Speaking", "Unit_Test", "Mock", "MidCourse",
-                                                         "Level"] else None,
+                    "mastering_id": (
+                        m.id
+                        if m.choice
+                        in ["Speaking", "Unit_Test", "Mock", "MidCourse", "Level"]
+                        else None
+                    ),
                     "title": m.test.title if m.test else "N/A",
-                    "mock": mock_data if mock_data is not None else m.level_exam.id if m.level_exam else None,
+                    "mock": (
+                        mock_data
+                        if mock_data is not None
+                        else m.level_exam.id if m.level_exam else None
+                    ),
                     "ball": m.ball,
                     "type": m.test.type if m.test else "unknown",
-                    "updater": homework_id.updater.full_name if homework_id and homework_id.updater else
-                    m.updater.full_name if m.choice in ["Speaking", "Unit_Test", "MidCourse",
-                                                        "Level"] and m.updater else "N/A",
+                    "updater": (
+                        homework_id.updater.full_name
+                        if homework_id and homework_id.updater
+                        else (
+                            m.updater.full_name
+                            if m.choice
+                            in ["Speaking", "Unit_Test", "MidCourse", "Level"]
+                            and m.updater
+                            else "N/A"
+                        )
+                    ),
                     "created_at": m.created_at,
                 }
 
@@ -396,7 +499,7 @@ class StudentsAvgLearning(APIView):
                     homeworks.append(item)
 
             def avg(lst):
-                return round(sum(x['ball'] for x in lst) / len(lst), 2) if lst else 0
+                return round(sum(x["ball"] for x in lst) / len(lst), 2) if lst else 0
 
             overall_exam = avg(exams)
             overall_homework = avg(homeworks)
@@ -406,25 +509,34 @@ class StudentsAvgLearning(APIView):
             overall_mid_course = avg(mid_course)
             overall_level = avg(level)
 
-            all_parts = [overall_exam, overall_homework, overall_speaking, overall_unit, overall_mock,
-                         overall_mid_course, overall_level]
+            all_parts = [
+                overall_exam,
+                overall_homework,
+                overall_speaking,
+                overall_unit,
+                overall_mock,
+                overall_mid_course,
+                overall_level,
+            ]
             filled = [p for p in all_parts if p > 0]
             overall = round(sum(filled) / len(filled), 2) if filled else 0
 
             first_ball = sg.student.ball if is_student and sg.student.ball else 0
 
-            results.append({
-                "id": target_id,
-                "user": name,
-                "first_ball": first_ball,
-                "exams": {"items": exams, "overall": overall_exam},
-                "homeworks": {"items": homeworks, "overall": overall_homework},
-                "speaking": {"items": speaking, "overall": overall_speaking},
-                "unit_test": {"items": unit, "overall": overall_unit},
-                "mock": {"items": mock, "overall": overall_mock},
-                "mid_course": {"items": mid_course, "overall": overall_mid_course},
-                "level": {"items": level, "overall": overall_level},
-                "overall": overall
-            })
+            results.append(
+                {
+                    "id": target_id,
+                    "user": name,
+                    "first_ball": first_ball,
+                    "exams": {"items": exams, "overall": overall_exam},
+                    "homeworks": {"items": homeworks, "overall": overall_homework},
+                    "speaking": {"items": speaking, "overall": overall_speaking},
+                    "unit_test": {"items": unit, "overall": overall_unit},
+                    "mock": {"items": mock, "overall": overall_mock},
+                    "mid_course": {"items": mid_course, "overall": overall_mid_course},
+                    "level": {"items": level, "overall": overall_level},
+                    "overall": overall,
+                }
+            )
 
         return Response(results)
