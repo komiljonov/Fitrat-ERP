@@ -24,6 +24,8 @@ class Subject(BaseModel):
 
     is_archived = models.BooleanField(default=False)
 
+    themes: "models.QuerySet[Theme]"
+
     def __str__(self):
         return f"{self.name}  has level  {self.has_level}"
 
@@ -53,7 +55,11 @@ class Level(BaseModel):
 
 
 class Theme(BaseModel):
-    subject = models.ForeignKey("subject.Subject", on_delete=models.CASCADE)
+    subject: "Subject" = models.ForeignKey(
+        "subject.Subject",
+        on_delete=models.CASCADE,
+        related_name="themes",
+    )
 
     title = models.TextField(null=True, blank=True)
     description = models.TextField()
@@ -73,8 +79,10 @@ class Theme(BaseModel):
         related_name="theme_repeated_theme",
     )
 
-    course = models.ForeignKey(
-        "course.Course", on_delete=models.CASCADE, related_name="courses_themes"
+    course: "Course" = models.ForeignKey(
+        "course.Course",
+        on_delete=models.CASCADE,
+        related_name="courses_themes",
     )
 
     level: "Level" = models.ForeignKey(
@@ -87,24 +95,36 @@ class Theme(BaseModel):
 
     # Separate fields for different types of work within the same Theme
     homework_files = models.ManyToManyField(
-        "upload.File", blank=True, related_name="theme_homework_files"
+        "upload.File",
+        blank=True,
+        related_name="theme_homework_files",
     )
     course_work_files = models.ManyToManyField(
-        "upload.File", blank=True, related_name="theme_course_work_files"
+        "upload.File",
+        blank=True,
+        related_name="theme_course_work_files",
     )
     extra_work_files = models.ManyToManyField(
-        "upload.File", blank=True, related_name="theme_extra_work_files"
+        "upload.File",
+        blank=True,
+        related_name="theme_extra_work_files",
     )
 
     # General media fields
     videos = models.ManyToManyField(
-        "upload.File", blank=True, related_name="theme_videos"
+        "upload.File",
+        blank=True,
+        related_name="theme_videos",
     )
     files = models.ManyToManyField(
-        "upload.File", blank=True, related_name="theme_files"
+        "upload.File",
+        blank=True,
+        related_name="theme_files",
     )
     photos = models.ManyToManyField(
-        "upload.File", blank=True, related_name="theme_photos"
+        "upload.File",
+        blank=True,
+        related_name="theme_photos",
     )
 
     is_archived = models.BooleanField(default=False)

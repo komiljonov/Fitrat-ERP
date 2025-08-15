@@ -64,10 +64,15 @@ class SubjectSerializer(serializers.ModelSerializer):
     def get_course(self, obj):
         return Course.objects.filter(subject=obj, is_archived=False).count()
 
-    def get_all_themes(self, obj):
+    def get_all_themes(self, obj: Subject):
 
-        themes = Theme.objects.filter(
-            subject=obj, is_archived=False, level__is_archived=False
+        # themes = Theme.objects.filter(
+        #     subject=obj, is_archived=False, level__is_archived=False
+        # ).count()
+        themes = obj.themes.filter(
+            course__is_archived=False,
+            level__is_archived=False,
+            is_archived=False,
         ).count()
 
         return themes
