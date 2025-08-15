@@ -56,7 +56,7 @@ class CustomUserAdmin(admin.ModelAdmin):
 
     list_display = ["full_name", "phone", "extra_number"]
 
-    search_fields = ["phone", "extra_phone", "full_name"]
+    search_fields = ["phone", "extra_number", "full_name"]
 
 
 # Remove token registration from blacklist's admin module
