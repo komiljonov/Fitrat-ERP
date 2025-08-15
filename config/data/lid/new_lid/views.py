@@ -612,9 +612,11 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         first_lesson = queryset.filter(
-            Q(lid__filial_id=filial) if filial else Q(),
-            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
-            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+            # Q(lid__filial_id=filial) if filial else Q(),
+            # Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+            # Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+            
+            
             lid_stage_type="ORDERED_LID",
             is_archived=False,
             ordered_stages="BIRINCHI_DARS_BELGILANGAN",
