@@ -75,7 +75,7 @@ class ArchivedListAPIView(ListCreateAPIView):
             # Student or lid exists and their balance is < 100000
             queryset = queryset.filter(
                 Q(student__balance__lt=100000) | Q(lid__balance__lt=100000)
-            ).order_by("balance")
+            )
 
         if student_stage:
             queryset = queryset.filter(student__student_stage_type=student_stage)
@@ -162,7 +162,7 @@ class ArchivedListAPIView(ListCreateAPIView):
 
             queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
-        return queryset
+        return queryset.order_by("balance")
 
 
 class ArchivedDetailAPIView(RetrieveUpdateDestroyAPIView):
