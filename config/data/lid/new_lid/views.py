@@ -681,7 +681,7 @@ class LidStatisticsView(ListAPIView):
             Q(student__filial_id=filial) if filial else Q(),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-            is_archived=False,
+            is_archived=True,
             student__isnull=False,
             student__student_stage_type="ACTIVE_STUDENT",
         ).count()
