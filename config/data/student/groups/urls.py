@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (
-    CheckRoomLessonScheduleV2View,
+    # CheckRoomLessonScheduleV2View,
     StudentGroupsView,
     GroupRetrieveUpdateDestroyAPIView,
     GroupListAPIView,
@@ -49,11 +49,11 @@ urlpatterns = [
         CheckRoomLessonScheduleView.as_view(),
         name="check-room-lesson-schedule",
     ),
-    path(
-        "room-check-v2/",
-        CheckRoomLessonScheduleV2View.as_view(),
-        name="check-room-lesson-schedule",
-    ),
+    # path(
+    #     "room-check-v2/",
+    #     CheckRoomLessonScheduleV2View.as_view(),
+    #     name="check-room-lesson-schedule",
+    # ),
     path(
         "check/<uuid:pk>",
         GroupIsActiveNowAPIView.as_view(),
