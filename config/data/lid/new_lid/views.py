@@ -705,18 +705,18 @@ class LidStatisticsView(ListAPIView):
             is_archived=True,
         ).count()
 
-        lead_no_debt = Archived.objects.filter(
-            Q(lid__filial_id=filial) if filial else Q(),
-            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
-            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-            is_archived=True,
-            lid__isnull=False,
-            lid__is_student=False,
-            lid__balance__isnull=False,
-            lid__balance__gte=100000,
-        ).count()
+        # lead_no_debt = Archived.objects.filter(
+        #     Q(lid__filial_id=filial) if filial else Q(),
+        #     Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+        #     Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+        #     is_archived=True,
+        #     lid__isnull=False,
+        #     lid__is_student=False,
+        #     lid__balance__isnull=False,
+        #     lid__balance__gte=100000,
+        # ).count()
 
-        debt = Archived.objects.filter(
+        debt_count = Archived.objects.filter(
             (
                 Q(student__filial_id=filial) | Q(lid__filial_id=filial)
                 if filial
@@ -731,12 +731,12 @@ class LidStatisticsView(ListAPIView):
             is_archived=True,
         ).count()
 
-        lead_debt = Archived.objects.filter(
-            Q(lid__filial_id=filial) if filial else Q(),
-            Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
-            Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-            is_archived=True,
-        ).count()
+        # lead_debt = Archived.objects.filter(
+        #     Q(lid__filial_id=filial) if filial else Q(),
+        #     Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+        #     Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+        #     is_archived=True,
+        # ).count()
 
         no_debt_sum = (
             Archived.objects.filter(
@@ -762,19 +762,19 @@ class LidStatisticsView(ListAPIView):
             or 0
         )
 
-        lead_no_debt_sum = (
-            Archived.objects.filter(
-                Q(lid__filial_id=filial) if filial else Q(),
-                Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
-                Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-                is_archived=True,
-                lid__isnull=False,
-                lid__is_student=False,
-                lid__balance__isnull=False,
-                lid__balance__gte=100000,
-            ).aggregate(total=Sum("lid__balance"))["total"]
-            or 0
-        )
+        # lead_no_debt_sum = (
+        #     Archived.objects.filter(
+        #         Q(lid__filial_id=filial) if filial else Q(),
+        #         Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+        #         Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+        #         is_archived=True,
+        #         lid__isnull=False,
+        #         lid__is_student=False,
+        #         lid__balance__isnull=False,
+        #         lid__balance__gte=100000,
+        #     ).aggregate(total=Sum("lid__balance"))["total"]
+        #     or 0
+        # )
 
         debt_sum = (
             Archived.objects.filter(
@@ -800,18 +800,18 @@ class LidStatisticsView(ListAPIView):
             or 0
         )
 
-        lead_debt_sum = (
-            Archived.objects.filter(
-                Q(lid__filial_id=filial) if filial else Q(),
-                Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
-                Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-                is_archived=True,
-                lid__isnull=False,
-                lid__is_student=False,
-                lid__balance__lt=100000,
-            ).aggregate(total=Sum("lid__balance"))["total"]
-            or 0
-        )
+        # lead_debt_sum = (
+        #     Archived.objects.filter(
+        #         Q(lid__filial_id=filial) if filial else Q(),
+        #         Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
+        #         Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+        #         is_archived=True,
+        #         lid__isnull=False,
+        #         lid__is_student=False,
+        #         lid__balance__lt=100000,
+        #     ).aggregate(total=Sum("lid__balance"))["total"]
+        #     or 0
+        # )
 
         response_data = {
             "new_lid_statistics": {
@@ -840,10 +840,14 @@ class LidStatisticsView(ListAPIView):
                 "all": all_archived + new_student + active_student,
                 "new_students": new_student,
                 "active_students": active_student,
-                "no-debt": no_debt + lead_no_debt,
-                "debt": debt + lead_debt,
-                "no_debt_sum": no_debt_sum + lead_no_debt_sum,
-                "debt_sum": debt_sum + lead_debt_sum,
+                "no-debt": no_debt,
+                # + lead_no_debt,
+                "debt": debt_count,
+                # + lead_debt,
+                "no_debt_sum": no_debt_sum,
+                # + lead_no_debt_sum,
+                "debt_sum": debt_sum 
+                # + lead_debt_sum,
             },
         }
 
