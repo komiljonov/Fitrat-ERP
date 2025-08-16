@@ -21,7 +21,6 @@ from rest_framework.views import APIView
 
 from rest_framework.request import HttpRequest, Request
 
-from config.data.account.models import CustomUser
 
 
 from .models import Student, FistLesson_data

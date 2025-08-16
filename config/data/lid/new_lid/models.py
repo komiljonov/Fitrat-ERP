@@ -12,7 +12,7 @@ from ...department.marketing_channel.models import MarketingChannel
 from ...upload.models import File
 
 if TYPE_CHECKING:
-    from config.data.student.studentgroup.models import StudentGroup
+    from data.student.studentgroup.models import StudentGroup
 
 
 class Lid(BaseModel):
