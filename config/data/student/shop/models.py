@@ -136,7 +136,10 @@ class Category(BaseModel):
 class Products(BaseModel):
     name = models.CharField(max_length=120)
 
-    comment = models.TextField(blank=True, null=True)
+    comment = models.TextField(
+        blank=True,
+        null=True,
+    )
 
     coin = models.IntegerField(default=0)
 
@@ -148,8 +151,10 @@ class Products(BaseModel):
         related_name="product_category",
     )
 
-
-    image: "File" = models.ManyToManyField("upload.File", related_name="product_image")
+    image: "File" = models.ManyToManyField(
+        "upload.File",
+        related_name="product_image",
+    )
 
     quantity = models.IntegerField(default=0)
 
