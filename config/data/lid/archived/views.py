@@ -1,7 +1,8 @@
 import io
 from datetime import timedelta, datetime
 
-from django.db.models import Q
+from django.db.models import Q,F
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
 from django.utils.timezone import now
@@ -162,7 +163,7 @@ class ArchivedListAPIView(ListCreateAPIView):
 
             queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
-        return queryset.order_by("balance")
+        return queryset.order_by(Coalesce(F("student__balance"), F("lid__balance")))
 
 
 class ArchivedDetailAPIView(RetrieveUpdateDestroyAPIView):
