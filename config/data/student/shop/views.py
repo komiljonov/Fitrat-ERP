@@ -228,6 +228,8 @@ class CategoryList(ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = [IsAuthenticated]
+    
+    pagination_class = None
 
     def get_queryset(self):
 
