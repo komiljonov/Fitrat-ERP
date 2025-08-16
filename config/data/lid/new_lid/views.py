@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
 
 from django.core.exceptions import FieldError
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Value,F
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
 from django.db.models import Case, When, IntegerField
+
 
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -715,12 +717,18 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         debt = Archived.objects.filter(
-            Q(student__filial_id=filial) if filial else Q(),
+            (
+                Q(student__filial_id=filial) | Q(lid__filial_id=filial)
+                if filial
+                else Q()
+            ),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+            Q(
+                student__balance__lt=100000,
+            )
+            | Q(lid__balance__lt=100000),
             is_archived=True,
-            student__isnull=False,
-            student__balance__lt=100000,
         ).count()
 
         lead_debt = Archived.objects.filter(
@@ -728,9 +736,6 @@ class LidStatisticsView(ListAPIView):
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             is_archived=True,
-            lid__isnull=False,
-            lid__is_student=False,
-            lid__balance__lt=100000,
         ).count()
 
         no_debt_sum = (
@@ -762,13 +767,24 @@ class LidStatisticsView(ListAPIView):
 
         debt_sum = (
             Archived.objects.filter(
-                Q(student__filial_id=filial) if filial else Q(),
+                (
+                    Q(student__filial_id=filial) | Q(lid__filial_id=filial)
+                    if filial
+                    else Q()
+                ),
                 Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
                 Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+                Q(student__balance__lt=100000) | Q(lid__balance__lt=100000),
                 is_archived=True,
-                student__isnull=False,
-                student__balance__lt=100000,
-            ).aggregate(total=Sum("student__balance"))["total"]
+            ).aggregate(
+                total=Sum(
+                    # "student__balance"
+                    Coalesce(F("student__balance"), Value(0))
+                    + Coalesce(F("lid__balance"), Value(0))
+                )
+            )[
+                "total"
+            ]
             or 0
         )
 
