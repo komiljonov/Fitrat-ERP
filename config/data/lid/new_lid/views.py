@@ -632,7 +632,7 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         all_archived = queryset.filter(
-            is_archived=False,
+            is_archived=True,
             is_student=False,
             **filter,
         ).count()
