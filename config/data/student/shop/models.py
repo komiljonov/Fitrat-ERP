@@ -135,8 +135,11 @@ class Category(BaseModel):
 
 class Products(BaseModel):
     name = models.CharField(max_length=120)
+
     comment = models.TextField(blank=True, null=True)
+
     coin = models.IntegerField(default=0)
+
     category: "Category" = models.ForeignKey(
         "shop.Category",
         on_delete=models.SET_NULL,
@@ -144,6 +147,9 @@ class Products(BaseModel):
         blank=True,
         related_name="product_category",
     )
+
+    in_warehouse = models.IntegerField(default=0)
+
     image: "File" = models.ManyToManyField("upload.File", related_name="product_image")
 
     quantity = models.IntegerField(default=0)
