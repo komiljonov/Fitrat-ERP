@@ -11,12 +11,12 @@ from data.finances.compensation.models import Page
 
 
 @receiver(post_save, sender=Points)
-def new_created_order(sender, instance: Points, created, **kwargs):
+def on_point_create(sender, instance: Points, created, **kwargs):
     if not created:
         return
 
     try:
-        if hasattr(instance, 'student') and instance.student:
+        if hasattr(instance, "student") and instance.student:
             user = Student.objects.filter(pk=instance.student.pk).first()
             if user:
                 # Ensure instance.point is treated as Decimal
@@ -27,7 +27,7 @@ def new_created_order(sender, instance: Points, created, **kwargs):
 
 
 @receiver(post_save, sender=Coins)
-def new_created_order(sender, instance: Coins, created, **kwargs):
+def on_coin_create(sender, instance: Coins, created, **kwargs):
     if created:
         user = Student.objects.filter(pk=instance.student.pk).first()
         if user and instance.status == "Given":
@@ -39,10 +39,10 @@ def new_created_order(sender, instance: Coins, created, **kwargs):
 
 
 @receiver(post_save, sender=Purchase)
-def new_created_order(sender, instance: Purchase, created, **kwargs):
+def on_purchase_created(sender, instance: Purchase, created, **kwargs):
     student = instance.student
 
-    instance.product.quantity -=1
+    instance.product.quantity -= 1
     instance.product.save()
 
     if created:
@@ -54,7 +54,7 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
             coin=instance.product.coin,
             choice="Shopping",
             comment=f"Siz uchun {instance.product.name} buyurtma qilindi va tasdiqlanishi bilan sizga xabar beramiz .",
-            status="Taken"
+            status="Taken",
         )
 
     if not created and instance.status == "Completed":
@@ -67,9 +67,8 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
                 f"Filial : {instance.product.filial}\n"
             ),
             come_from=instance.id,
-            choice="Shopping"
+            choice="Shopping",
         )
-
 
     if not created and instance.status == "Cancelled":
 
@@ -78,7 +77,7 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
             coin=instance.product.coin,
             choice="Shopping",
             comment=f"Sizning kutish bosqichidagi {instance.product.name} buyurtmangiz bekir qilinganligi uchun coinlaringiz qaytarildi.",
-            status="Given"
+            status="Given",
         )
 
         Notification.objects.create(
@@ -89,7 +88,7 @@ def new_created_order(sender, instance: Purchase, created, **kwargs):
                 f"Filial : {instance.product.filial}\n"
             ),
             come_from=instance.id,
-            choice="Shopping"
+            choice="Shopping",
         )
 
     # if created:

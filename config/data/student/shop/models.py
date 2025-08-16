@@ -148,7 +148,6 @@ class Products(BaseModel):
         related_name="product_category",
     )
 
-    in_warehouse = models.IntegerField(default=0)
 
     image: "File" = models.ManyToManyField("upload.File", related_name="product_image")
 

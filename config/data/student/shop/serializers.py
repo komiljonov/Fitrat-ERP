@@ -114,6 +114,7 @@ class ProductsSerializer(serializers.ModelSerializer):
             "coin",
             "image",
             "selling_counts",
+            "in_warehouse",
             "quantity",
             "created_at",
         ]
@@ -133,9 +134,11 @@ class PurchaseSerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(
         queryset=Products.objects.all(), allow_null=True
     )
+
     student = serializers.PrimaryKeyRelatedField(
         queryset=Student.objects.all(), allow_null=True
     )
+
     updater = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.all(), allow_null=True
     )

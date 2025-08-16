@@ -123,12 +123,12 @@ class ProductsList(ListCreateAPIView):
     def get_queryset(self):
         category = self.request.GET.get("category")
         search = self.request.GET.get("search")
-        # filial = self.request.GET.get("filial")
+        filial = self.request.GET.get("filial")
 
         queryset = Products.objects.all()
 
-        # if filial:
-        #     queryset = queryset.filter(filial__id=filial)
+        if filial:
+            queryset = queryset.filter(filial__id=filial)
 
         if search:
             queryset = queryset.filter(name__icontains=search)
