@@ -7,8 +7,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Coins, Points, Products, Purchase, Category, CoinsSettings
-from .serializers import CoinsSerializer, PointsSerializer, ProductsSerializer, PurchaseSerializer, \
-    PointToCoinExchangeSerializer, CategoriesSerializer, CoinsSettingsSerializer
+from .serializers import (
+    CoinsSerializer,
+    PointsSerializer,
+    ProductsSerializer,
+    PurchaseSerializer,
+    PointToCoinExchangeSerializer,
+    CategoriesSerializer,
+    CoinsSettingsSerializer,
+)
 from ..student.models import Student
 
 
@@ -20,8 +27,8 @@ class CoinsSettingsCreateAPIView(ListCreateAPIView):
     def get_queryset(self):
         queryset = CoinsSettings.objects.all()
 
-        type = self.request.GET.get('type')
-        choice = self.request.GET.get('choice')
+        type = self.request.GET.get("type")
+        choice = self.request.GET.get("choice")
         if choice:
             queryset = queryset.filter(choice=choice)
         if type:
@@ -42,17 +49,19 @@ class CoinsList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Coins.objects.all()
-        student = self.request.GET.get('student')
-        status = self.request.GET.get('status')
+        student = self.request.GET.get("student")
+        status = self.request.GET.get("status")
 
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
 
         if status:
             queryset = queryset.filter(status=status)
 
         if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = queryset.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
         if student:
@@ -73,16 +82,18 @@ class PointsList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Points.objects.all()
-        student = self.request.GET.get('student')
-        is_exchanged = self.request.GET.get('is_exchanged')
-        from_test = self.request.GET.get('from_test')
-        from_homework = self.request.GET.get('from_homework')
+        student = self.request.GET.get("student")
+        is_exchanged = self.request.GET.get("is_exchanged")
+        from_test = self.request.GET.get("from_test")
+        from_homework = self.request.GET.get("from_homework")
 
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
 
         if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = queryset.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
 
@@ -110,9 +121,9 @@ class ProductsList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        category = self.request.GET.get('category')
-        search = self.request.GET.get('search')
-        filial = self.request.GET.get('filial')
+        category = self.request.GET.get("category")
+        search = self.request.GET.get("search")
+        filial = self.request.GET.get("filial")
 
         queryset = Products.objects.all()
 
@@ -140,14 +151,14 @@ class PurchaseList(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Purchase.objects.all()
-        user = self.request.GET.get('user')
-        student = self.request.GET.get('student')
+        user = self.request.GET.get("user")
+        student = self.request.GET.get("student")
 
-        status = self.request.GET.get('status')
-        filial = self.request.GET.get('filial')
+        status = self.request.GET.get("status")
+        filial = self.request.GET.get("filial")
 
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
@@ -159,7 +170,9 @@ class PurchaseList(ListCreateAPIView):
             queryset = queryset.filter(student__user__id=user)
 
         if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = queryset.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
 
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
@@ -182,15 +195,17 @@ class PointToCoinExchangeApiView(APIView):
         serializer = PointToCoinExchangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        point_amount = serializer.validated_data['point']
-        student_id = serializer.validated_data['student']
+        point_amount = serializer.validated_data["point"]
+        student_id = serializer.validated_data["student"]
 
         user = Student.objects.get(user__id=student_id)
         if not user.points < point_amount:
-            return Response({"detail": "Not enough points."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Not enough points."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Calculate coins
-        coins_to_add = int(point_amount / Decimal('10'))
+        coins_to_add = int(point_amount / Decimal("10"))
 
         # Deduct points
         user.points -= point_amount
@@ -199,11 +214,14 @@ class PointToCoinExchangeApiView(APIView):
         # Create coin
         Coins.objects.create(student=user, coin=coins_to_add)
 
-        return Response({
-            "message": "Exchange successful",
-            "coins_received": coins_to_add,
-            "remaining_points": user.points
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "message": "Exchange successful",
+                "coins_received": coins_to_add,
+                "remaining_points": user.points,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class CategoryList(ListCreateAPIView):
@@ -212,18 +230,20 @@ class CategoryList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Category.objects.all()
-        search = self.request.GET.get('search')
-        filial = self.request.GET.get('filial')
 
-        if filial:
-            queryset = queryset.filter(filial__id=filial)
+        queryset = Category.objects.all()
+        
+        search = self.request.GET.get("search")
+
+        # filial = self.request.GET.get("filial")
+
+        # if filial:
+        #     queryset = queryset.filter(filial__id=filial)
+
         if search:
             queryset = queryset.filter(name__icontains=search)
-        return queryset
 
-    def get_paginated_response(self, data):
-        return Response(data)
+        return queryset
 
 
 class CategoryDetail(RetrieveUpdateDestroyAPIView):
@@ -236,16 +256,16 @@ class OrdersStatisList(APIView):
     def get(self, request, *args, **kwargs):
         queryset = Purchase.objects.all()
 
-        product = self.request.GET.get('product')
-        student = self.request.GET.get('student')
-        status = self.request.GET.get('status')
-        updater = self.request.GET.get('updater')
-        filial = self.request.GET.get('filial')
+        product = self.request.GET.get("product")
+        student = self.request.GET.get("student")
+        status = self.request.GET.get("status")
+        updater = self.request.GET.get("updater")
+        filial = self.request.GET.get("filial")
 
         filters = {}
 
         if filial:
-            filters['filial__id'] = filial
+            filters["filial__id"] = filial
 
         # if status:
         #     queryset = queryset.filter(status=status)
@@ -256,12 +276,14 @@ class OrdersStatisList(APIView):
         # if updater:
         #     queryset = queryset.filter(updater__id=updater)
 
-        complated_orders = Purchase.objects.filter(status="Completed",**filters)
-        pending_orders = Purchase.objects.filter(status="Pending",**filters)
-        cancalled_orders = Purchase.objects.filter(status="Cancelled",**filters)
+        complated_orders = Purchase.objects.filter(status="Completed", **filters)
+        pending_orders = Purchase.objects.filter(status="Pending", **filters)
+        cancalled_orders = Purchase.objects.filter(status="Cancelled", **filters)
 
-        return Response({
-            "complated_orders": complated_orders.count(),
-            "pending_orders": pending_orders.count(),
-            "cancalled_orders": cancalled_orders.count(),
-        })
+        return Response(
+            {
+                "complated_orders": complated_orders.count(),
+                "pending_orders": pending_orders.count(),
+                "cancalled_orders": cancalled_orders.count(),
+            }
+        )

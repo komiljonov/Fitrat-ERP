@@ -430,6 +430,8 @@ class GroupSaleStudentSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(), allow_null=True
     )
+    
+    
 
     class Meta:
         model = GroupSaleStudent

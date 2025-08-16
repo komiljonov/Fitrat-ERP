@@ -79,14 +79,17 @@ class DashboardView(APIView):
         orders_archived = orders.filter(is_archived=True)
         first_lesson = FirstLLesson.objects.filter(**filters)
 
-        first_lesson_archived = Lid.objects.filter(is_archived=True, is_student=False, ** filters)
+        first_lesson_archived = Lid.objects.filter(
+            is_archived=True, is_student=False, **filters
+        )
 
         first_lesson_come = Student.objects.filter(
             student_stage_type="NEW_STUDENT", **filters
         )
         first_lesson_come_archived = first_lesson_come.filter(is_archived=True)
         new_student = StudentGroup.objects.filter(
-            student__student_stage_type="NEW_STUDENT", **filters
+            student__student_stage_type="NEW_STUDENT",
+            **filters,
         )
         new_student_archived = new_student.filter(student__is_archived=True)
         active_student = StudentGroup.objects.filter(
@@ -95,7 +98,10 @@ class DashboardView(APIView):
             **filters,
         )
         active_student_archived = active_student.filter(student__is_archived=True)
-        course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
+        course_ended = StudentGroup.objects.filter(
+            group__status="INACTIVE",
+            **filters,
+        )
 
         # **Filtering Based on Dynamic Conditions**
 
@@ -107,7 +113,7 @@ class DashboardView(APIView):
             orders = orders.filter(is_student=is_student_value, is_archived=False)
             orders_archived = orders_archived.filter(is_student=is_student_value)
             first_lesson = first_lesson.filter(
-                lid__is_student=is_student_value, is_archived=False
+                lid__is_student=is_student_value, is_archived=False,
             )
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 

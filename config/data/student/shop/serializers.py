@@ -9,7 +9,9 @@ from ...upload.serializers import FileUploadSerializer
 
 
 class PointsSerializer(serializers.ModelSerializer):
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Points
@@ -28,9 +30,13 @@ class PointsSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep["student"] = StudentSerializer(instance.student).data
         if instance.from_test:
-            rep["from_test"] = FileUploadSerializer(instance.from_test, context=self.context).data
+            rep["from_test"] = FileUploadSerializer(
+                instance.from_test, context=self.context
+            ).data
         if instance.from_homework:
-            rep["from_homework"] = FileUploadSerializer(instance.from_homework, context=self.context).data
+            rep["from_homework"] = FileUploadSerializer(
+                instance.from_homework, context=self.context
+            ).data
         return rep
 
 
@@ -49,7 +55,9 @@ class CoinsSettingsSerializer(serializers.ModelSerializer):
 
 
 class CoinsSerializer(serializers.ModelSerializer):
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Coins
@@ -91,7 +99,9 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 
 class ProductsSerializer(serializers.ModelSerializer):
-    image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    image = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), many=True, allow_null=True
+    )
     selling_counts = serializers.SerializerMethodField()
 
     class Meta:
@@ -108,20 +118,27 @@ class ProductsSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-
     def get_selling_counts(self, instance):
         return Purchase.objects.filter(product=instance).count()
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["image"] = FileUploadSerializer(instance.image, many=True, context=self.context).data
+        rep["image"] = FileUploadSerializer(
+            instance.image, many=True, context=self.context
+        ).data
         return rep
 
 
 class PurchaseSerializer(serializers.ModelSerializer):
-    product = serializers.PrimaryKeyRelatedField(queryset=Products.objects.all(), allow_null=True)
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
-    updater = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+    product = serializers.PrimaryKeyRelatedField(
+        queryset=Products.objects.all(), allow_null=True
+    )
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True
+    )
+    updater = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Purchase
@@ -148,10 +165,14 @@ class PurchaseSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep["student"] = StudentSerializer(instance.student, context=self.context).data
         rep["product"] = ProductsSerializer(instance.product, context=self.context).data
-        rep["updater"] = {
-            "id": instance.updater.id,
-            "full_name": instance.updater.full_name,
-        } if instance.updater is not None else None
+        rep["updater"] = (
+            {
+                "id": instance.updater.id,
+                "full_name": instance.updater.full_name,
+            }
+            if instance.updater is not None
+            else None
+        )
         return rep
 
     def create(self, validated_data):
