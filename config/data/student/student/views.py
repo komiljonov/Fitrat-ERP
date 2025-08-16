@@ -22,7 +22,6 @@ from rest_framework.views import APIView
 from rest_framework.request import HttpRequest, Request
 
 
-
 from .models import Student, FistLesson_data
 from .serializers import StudentSerializer, FistLesson_dataSerializer
 from ..lesson.models import Lesson
@@ -593,9 +592,13 @@ class CheckPhoneAPIView(APIView):
                 {"dfiogujsdpfogijdsfg": "sdfrgl;ijuhsdfg;isdfhjug"}, status=400
             )
 
+        print(phone_number)
+
         student = Student.objects.filter(phone=phone_number).first()
 
         if student is None:
-            return Response({"exists": False, "user": None})
+            return Response(
+                {"exists": False, "user": None, "phone_number": phone_number}
+            )
 
         return Response({"exists": True, "user": StudentSerializer(student).data})

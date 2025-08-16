@@ -13,15 +13,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-# from rest_framework.request import HttpRequest, Request
-
-# from datetime import date, time
-
-# from config.data.student.course.models import Course
-# from config.data.student.groups.utils import calculate_finish_date
-# from config.data.student.subject.models import Level
-
-
 from .models import Group, Room, SecondaryGroup, Day, GroupSaleStudent
 from .serializers import (
     # CheckRoomTeacherConflictSerializer,
