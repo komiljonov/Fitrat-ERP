@@ -687,17 +687,17 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         no_debt = Archived.objects.filter(
-            Q(student__filial_id=filial) if filial else Q(),
+            (
+                Q(student__filial_id=filial) | Q(lid__filial_id=filial)
+                if filial
+                else Q()
+            ),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             Q(
-                student__isnull=False,
-                student__balance__isnull=False,
                 student__balance__gte=100000,
             )
             | Q(
-                lid__isnull=False,
-                lid__balance__isnull=False,
                 lid__balance__gte=100000,
             ),
             is_archived=True,
