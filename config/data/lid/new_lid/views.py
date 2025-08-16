@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
 from django.core.exceptions import FieldError
-from django.db.models import Q, Sum, Value,F
+from django.db.models import Q, Sum, Value, F
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
-from django.db.models import Case, When, IntegerField
+from django.db.models import Case, When, IntegerField,FloatField
 
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -780,7 +780,8 @@ class LidStatisticsView(ListAPIView):
                 total=Sum(
                     # "student__balance"
                     Coalesce(F("student__balance"), Value(0))
-                    + Coalesce(F("lid__balance"), Value(0))
+                    + Coalesce(F("lid__balance"), Value(0)),
+                    output_field=FloatField()
                 )
             )[
                 "total"
