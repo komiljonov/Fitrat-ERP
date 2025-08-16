@@ -12,15 +12,19 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.request import HttpRequest, Request
 
+# from rest_framework.request import HttpRequest, Request
 
-from datetime import date, time
+# from datetime import date, time
+
+# from config.data.student.course.models import Course
+# from config.data.student.groups.utils import calculate_finish_date
+# from config.data.student.subject.models import Level
 
 
 from .models import Group, Room, SecondaryGroup, Day, GroupSaleStudent
 from .serializers import (
-    CheckRoomTeacherConflictSerializer,
+    # CheckRoomTeacherConflictSerializer,
     GroupSerializer,
     GroupLessonSerializer,
     RoomsSerializer,
@@ -32,7 +36,8 @@ from .serializers import (
 from ..lesson.models import ExtraLesson, ExtraLessonGroup
 from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
 from ..studentgroup.models import SecondaryStudentGroup
-from data.account.models import CustomUser
+
+# from data.account.models import CustomUser
 
 
 UZBEK_WEEKDAYS = {
@@ -311,7 +316,7 @@ class CheckRoomLessonScheduleView(APIView):
         conflicting_extra_group_lessons = ExtraLessonGroup.objects.filter(
             room_id=room_id,
             date=date,
-            started_at__lt=ended_at,
+            start_at__lt=ended_at,
             ended_at__gt=started_at,
         )
 
@@ -319,7 +324,7 @@ class CheckRoomLessonScheduleView(APIView):
         conflicting_extra_lessons = ExtraLesson.objects.filter(
             room_id=room_id,
             date=date,
-            started_at__lt=ended_at,
+            start_at__lt=ended_at,
             ended_at__gt=started_at,
         )
 
@@ -835,32 +840,77 @@ class StudentSaleGroupDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = GroupSaleStudentSerializer
 
 
-class CheckRoomLessonScheduleV2View(APIView):
+# class CheckRoomLessonScheduleV2View(APIView):
 
-    permission_classes = [IsAuthenticated]
+# permission_classes = [IsAuthenticated]
 
-    def post(self, request: HttpRequest | Request):
+# def post(self, request: HttpRequest | Request):
 
-        serializer = CheckRoomTeacherConflictSerializer(data=request.data)
+#     serializer = CheckRoomTeacherConflictSerializer(data=request.data)
 
-        serializer.is_valid(raise_exception=True)
+#     serializer.is_valid(raise_exception=True)
 
-        data = serializer.validated_data
+#     data = serializer.validated_data
 
-        room: Room = data["room"]
-        teacher: CustomUser = data["teacher"]
+#     room: Room = data["room"]
+#     teacher: CustomUser = data["teacher"]
 
-        start_date: date = data["date"]
-        starts_at: time = data["started_at"]
-        ends_at: time = data["ended_at"]
+#     course: "Course" = data["course"]
+#     level: "Level" = data["level"]
+#     week_days = data["scheduled_day_type"]
 
-        weekday_name = date.strftime("%A")
+#     start_date: date = data["date"]
+#     finish_date = calculate_finish_date(course, level, week_days, start_date)
+#     starts_at: time = data["started_at"]
+#     ends_at: time = data["ended_at"]
 
-        uzbek_day = UZBEK_WEEKDAYS.get(weekday_name)
-        if uzbek_day == None:
-            return Response(
-                {"error": f'Could not determine Uzbek weekday for "{weekday_name}"'},
-                status=400,
-            )
-            
-            
+#     conflicting_groups = Group.objects.filter(
+#         room_number=room,
+#         start_date__lte=finish_date,
+#         finish_date__gte=start_date,
+#         schedule_day_type__in=week_days,
+#         started_at__lt=ends_at,
+#         ended_at__gt=starts_at,
+#     )
+
+#     conflicting_extra_lessons = ExtraLesson.objects.filter(
+#         room=room, date=date, started_at_lt=ends_at, ended_at__gt=starts_at
+#     )
+
+#     conflicts = {
+#         "group_lessons": GroupLessonSerializer(conflicting_groups, many=True).data,
+#         "extra_group_lessons": [
+#             {
+#                 "group": lesson.group.name,
+#                 "date": lesson.date,
+#                 "started_at": lesson.started_at,
+#                 "ended_at": lesson.started_a,
+#             }
+#             for lesson in conflicting_extra_lessons
+#         ],
+#         "extra_lessons": [
+#             {
+#                 "student": lesson.student.phone if lesson.student else None,
+#                 "teacher": lesson.teacher.username if lesson.teacher else None,
+#                 "date": lesson.date,
+#                 "started_at": lesson.started_at,
+#                 "ended_at": lesson.ended_at,
+#             }
+#             for lesson in conflicting_extra_lessons
+#         ],
+#     }
+
+#     conflicting_teacher_groups = teacher.groups.filter(
+#         # start_date__lt=
+#     )
+
+#     if any(
+#         [
+#             conflicting_groups.exists(),
+#             conflicting_extra_lessons.exists(),
+#             conflicting_extra_lessons.exists(),
+#         ]
+#     ):
+#         return Response({"available": False, "conflicts": conflicts})
+
+#     return Response({"available": True})

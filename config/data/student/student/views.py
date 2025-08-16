@@ -19,6 +19,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from rest_framework.request import HttpRequest, Request
+
+from config.data.account.models import CustomUser
+
+
 from .models import Student, FistLesson_data
 from .serializers import StudentSerializer, FistLesson_dataSerializer
 from ..lesson.models import Lesson
@@ -107,7 +112,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         student_stage_type = self.request.GET.get("stt")
 
         queryset = queryset.annotate(
-            attendance_count=Count("attendance_student", filter=Q(attendance_student__reason="IS_PRESENT"))
+            attendance_count=Count(
+                "attendance_student", filter=Q(attendance_student__reason="IS_PRESENT")
+            )
         )
 
         if student_stage_type:
@@ -221,13 +228,13 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             is_archived=False, student_stage_type="NEW_STUDENT", **filter
         ).count()
         total_debt = (
-                Student.objects.filter(
-                    is_archived=False,
-                    student_stage_type="NEW_STUDENT",
-                    balance__lt=0,
-                    **filter,
-                ).aggregate(total_debt=Sum("balance"))["total_debt"]
-                or 0
+            Student.objects.filter(
+                is_archived=False,
+                student_stage_type="NEW_STUDENT",
+                balance__lt=0,
+                **filter,
+            ).aggregate(total_debt=Sum("balance"))["total_debt"]
+            or 0
         )
         archived_new_students = Student.objects.filter(
             is_archived=True, student_stage_type="NEW_STUDENT", **filter
@@ -238,22 +245,22 @@ class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
             is_archived=False, student_stage_type="ACTIVE_STUDENT", **filter
         ).count()
         total_income = (
-                Student.objects.filter(
-                    is_archived=False,
-                    student_stage_type="ACTIVE_STUDENT",
-                    balance__gt=0,
-                    **filter,
-                ).aggregate(total_income=Sum("balance"))["total_income"]
-                or 0
+            Student.objects.filter(
+                is_archived=False,
+                student_stage_type="ACTIVE_STUDENT",
+                balance__gt=0,
+                **filter,
+            ).aggregate(total_income=Sum("balance"))["total_income"]
+            or 0
         )
         student_total_debt = (
-                Student.objects.filter(
-                    is_archived=False,
-                    student_stage_type="ACTIVE_STUDENT",
-                    balance__lt=0,
-                    **filter,
-                ).aggregate(total_debt=Sum("balance"))["total_debt"]
-                or 0
+            Student.objects.filter(
+                is_archived=False,
+                student_stage_type="ACTIVE_STUDENT",
+                balance__lt=0,
+                **filter,
+            ).aggregate(total_debt=Sum("balance"))["total_debt"]
+            or 0
         )
 
         balance_active = Student.objects.filter(
@@ -428,9 +435,7 @@ class ExportLidToExcelAPIView(APIView):
             queryset = queryset.filter(call_operator__id=call_operator_id)
 
         if course_id:
-            queryset = queryset.filter(
-                students_group__group__course__id=course_id
-            )
+            queryset = queryset.filter(students_group__group__course__id=course_id)
 
         if service_manager:
             queryset = queryset.filter(service_manager__id=service_manager)
@@ -576,3 +581,22 @@ class FirstLesson_dataListRetrive(RetrieveUpdateDestroyAPIView):
     queryset = FistLesson_data.objects.all()
     serializer_class = FistLesson_dataSerializer
     permission_classes = [IsAuthenticated]
+
+
+class CheckPhoneAPIView(APIView):
+
+    def get(self, request: HttpRequest | Request):
+
+        phone_number = request.GET.get("phone_number")
+
+        if phone_number is None:
+            return Response(
+                {"dfiogujsdpfogijdsfg": "sdfrgl;ijuhsdfg;isdfhjug"}, status=400
+            )
+
+        student = Student.objects.filter(phone=phone_number).first()
+
+        if student is None:
+            return Response({"exists": False, "user": None})
+
+        return Response({"exists": True, "user": StudentSerializer(student).data})

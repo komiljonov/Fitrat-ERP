@@ -7,7 +7,7 @@ from django.db import models
 from django.utils import timezone
 
 
-from ..subject.models import Level
+from ..subject.models import Level, Subject
 from ...account.models import CustomUser
 from ...command.models import BaseModel
 from ...department.filial.models import Filial
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class Student(BaseModel):
 
-    user: "CustomUser" = models.ForeignKey(
+    user: "CustomUser | None" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,
         null=True,
@@ -66,7 +66,7 @@ class Student(BaseModel):
 
     edu_level = models.CharField(null=True, blank=True, max_length=100)
 
-    subject = models.ForeignKey(
+    subject: "Subject | None" = models.ForeignKey(
         "subject.Subject",
         on_delete=models.SET_NULL,
         null=True,
@@ -75,7 +75,10 @@ class Student(BaseModel):
     )
 
     ball = models.IntegerField(
-        default=0, null=True, blank=True, help_text="Earned ball at competition"
+        default=0,
+        null=True,
+        blank=True,
+        help_text="Earned ball at competition",
     )
 
     filial: "Filial" = models.ForeignKey(
@@ -198,17 +201,29 @@ class Student(BaseModel):
 
 class FistLesson_data(BaseModel):
     teacher: "CustomUser" = models.ForeignKey(
-        "account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True
+        "account.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     group: "Group" = models.ForeignKey(
-        "groups.Group", on_delete=models.SET_NULL, null=True, blank=True
+        "groups.Group",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     lesson_date = models.DateTimeField(null=True, blank=True)
     level: "Level" = models.ForeignKey(
-        "subject.Level", on_delete=models.SET_NULL, null=True, blank=True
+        "subject.Level",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     lid: "Lid" = models.ForeignKey(
-        "new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
     class Meta:

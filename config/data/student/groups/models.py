@@ -41,10 +41,12 @@ class Group(BaseModel):
     name = models.CharField(max_length=100)
 
     course: "Course" = models.ForeignKey(
-        "course.Course", on_delete=models.CASCADE, related_name="groups_course"
+        "course.Course",
+        on_delete=models.CASCADE,
+        related_name="groups_course",
     )
 
-    level: "Level" = models.ForeignKey(
+    level: "Level | None" = models.ForeignKey(
         "subject.Level",
         on_delete=models.SET_NULL,
         null=True,
@@ -52,14 +54,14 @@ class Group(BaseModel):
         related_name="groups_level",
     )
 
-    teacher: "CustomUser" = models.ForeignKey(
+    teacher: "CustomUser | None" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="teachers_groups",
     )
-    secondary_teacher: "CustomUser" = models.ForeignKey(
+    secondary_teacher: "CustomUser | None" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,
         null=True,

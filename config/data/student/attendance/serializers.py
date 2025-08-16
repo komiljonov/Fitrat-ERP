@@ -24,7 +24,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(
         queryset=Student.objects.all(), allow_null=True
     )
-    
+
     teacher = serializers.SerializerMethodField()
 
     relatives = serializers.SerializerMethodField()

@@ -193,9 +193,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
         average_score = mastering_qs.aggregate(avg_ball=Avg("ball"))["avg_ball"] or 0
 
-        score_scaled = min(
-            max(round(average_score / 20), 1), 5
-        )
+        score_scaled = min(max(round(average_score / 20), 1), 5)
 
         percentage_scaled = min(max(round((average_score / 100) * 100), 0), 100)
 
@@ -310,7 +308,7 @@ class StudentSerializer(serializers.ModelSerializer):
             instance.file.set(files)
 
         for attr, value in validated_data.items():
-            if (attr != "password" and attr != "file"):
+            if attr != "password" and attr != "file":
                 setattr(instance, attr, value)
 
         instance.save()

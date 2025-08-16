@@ -1,12 +1,10 @@
 import hashlib
-from datetime import datetime
 
 from django.db.models import Avg, F
 from rest_framework import serializers
 
 from .models import Store, Strike, VersionUpdate
 from ..attendance.models import Attendance
-from ..groups.lesson_date_calculator import calculate_lessons
 from ..mastering.models import Mastering
 from ..student.models import Student
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
@@ -23,8 +21,12 @@ from ...upload.serializers import FileUploadSerializer
 
 
 class StoresSerializer(serializers.ModelSerializer):
-    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True, allow_null=True)
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    video = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), many=True, allow_null=True
+    )
+    photo = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Store
@@ -42,7 +44,9 @@ class StoresSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["photo"] = FileUploadSerializer(instance.photo, context=self.context).data
-        rep["video"] = FileUploadSerializer(instance.video,many=True, context=self.context).data
+        rep["video"] = FileUploadSerializer(
+            instance.video, many=True, context=self.context
+        ).data
         return rep
 
 
@@ -65,16 +69,24 @@ class StudentFinanceSerializer(serializers.ModelSerializer):
 
 
 class StudentAPPSerializer(serializers.ModelSerializer):
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-    filial = serializers.PrimaryKeyRelatedField(queryset=Filial.objects.all(), allow_null=True)
-    marketing_channel = serializers.PrimaryKeyRelatedField(queryset=MarketingChannel.objects.all(), allow_null=True)
+    photo = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
+    filial = serializers.PrimaryKeyRelatedField(
+        queryset=Filial.objects.all(), allow_null=True
+    )
+    marketing_channel = serializers.PrimaryKeyRelatedField(
+        queryset=MarketingChannel.objects.all(), allow_null=True
+    )
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), many=True, allow_null=True
+    )
     password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
-    #is_attendance = serializers.SerializerMethodField()
+    # is_attendance = serializers.SerializerMethodField()
     secondary_group = serializers.SerializerMethodField()
     secondary_teacher = serializers.SerializerMethodField()
     learning = serializers.SerializerMethodField()
@@ -83,19 +95,18 @@ class StudentAPPSerializer(serializers.ModelSerializer):
     voucher = serializers.SerializerMethodField()
     strike = serializers.SerializerMethodField()
 
-
     class Meta:
         model = Student
         fields = [
-            'id',
-            'photo',
+            "id",
+            "photo",
             "first_name",
             "last_name",
             "middle_name",
-            #"is_attendance",
+            # "is_attendance",
             "phone",
             "learning",
-            'password',
+            "password",
             "date_of_birth",
             "education_lang",
             "student_type",
@@ -108,22 +119,22 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             "filial",
             "marketing_channel",
             "student_stage_type",
-            'balance_status',
-            'balance',
-            'service_manager',
-            'course',
-            'group',
-            'teacher',
-            'call_operator',
-            'sales_manager',
+            "balance_status",
+            "balance",
+            "service_manager",
+            "course",
+            "group",
+            "teacher",
+            "call_operator",
+            "sales_manager",
             "is_archived",
-            'is_frozen',
+            "is_frozen",
             "attendance_count",
-            'relatives',
-            'file',
+            "relatives",
+            "file",
             "strike",
-            'secondary_group',
-            'secondary_teacher',
+            "secondary_group",
+            "secondary_teacher",
             "new_student_stages",
             "new_student_date",
             "active_date",
@@ -138,30 +149,41 @@ class StudentAPPSerializer(serializers.ModelSerializer):
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(student=obj)
         if voucher:
-            return [{
-                "id": voucher.voucher.id,
-                "amount": voucher.voucher.amount,
-                "is_expired": voucher.voucher.is_expired,
-                "created_at": voucher.created_at,
-            } for voucher in voucher]
+            return [
+                {
+                    "id": voucher.voucher.id,
+                    "amount": voucher.voucher.amount,
+                    "is_expired": voucher.voucher.is_expired,
+                    "created_at": voucher.created_at,
+                }
+                for voucher in voucher
+            ]
 
     def get_sales(self, obj):
         sales = SaleStudent.objects.filter(student__id=obj.id)
-        return [{
-            "id": sale.sale.id,
-            "amount": sale.sale.amount,
-            "sale_status": sale.sale.status,
-            "date": sale.expire_date.strftime('%Y-%m-%d')
-            if sale.expire_date else "Unlimited"} for sale in sales]
+        return [
+            {
+                "id": sale.sale.id,
+                "amount": sale.sale.amount,
+                "sale_status": sale.sale.status,
+                "date": (
+                    sale.expire_date.strftime("%Y-%m-%d")
+                    if sale.expire_date
+                    else "Unlimited"
+                ),
+            }
+            for sale in sales
+        ]
 
     def get_teacher(self, obj):
-        group = StudentGroup.objects.select_related('group__teacher').filter(student=obj).first()
+        group = (
+            StudentGroup.objects.select_related("group__teacher")
+            .filter(student=obj)
+            .first()
+        )
         if group and group.group and group.group.teacher:
             teacher = group.group.teacher
-            return {
-                "id": teacher.id,
-                "full_name": teacher.full_name
-            }
+            return {"id": teacher.id, "full_name": teacher.full_name}
         return None
 
     def get_learning(self, obj):
@@ -170,93 +192,106 @@ class StudentAPPSerializer(serializers.ModelSerializer):
         if not mastering_qs.exists():  # If no records, return default values
             return {
                 "score": 1,  # Default lowest score
-                "learning": 0  # Default lowest percentage
+                "learning": 0,  # Default lowest percentage
             }
 
         # Calculate the average score from 1 to 5
-        average_score = mastering_qs.aggregate(avg_ball=Avg('ball'))['avg_ball'] or 0
+        average_score = mastering_qs.aggregate(avg_ball=Avg("ball"))["avg_ball"] or 0
 
         # Scale the score between 1 to 5 (assuming 0-100 scores exist)
-        score_scaled = min(max(round(average_score / 20), 1), 5)  # Ensure it's between 1 to 5
+        score_scaled = min(
+            max(round(average_score / 20), 1), 5
+        )  # Ensure it's between 1 to 5
 
         # Scale the percentage between 1 to 100
         percentage_scaled = min(max(round((average_score / 100) * 100), 0), 100)
 
-        return {
-            "score": score_scaled,
-            "learning": percentage_scaled
-        }
+        return {"score": score_scaled, "learning": percentage_scaled}
 
-    #def get_is_attendance(self, obj):
-       # groups = StudentGroup.objects.prefetch_related('group__scheduled_day_type').filter(student=obj)
+    # def get_is_attendance(self, obj):
+    # groups = StudentGroup.objects.prefetch_related('group__scheduled_day_type').filter(student=obj)
 
-        #for group in groups:
-           # if not group.group:  # Ensure group.group is not None
-               # continue
+    # for group in groups:
+    # if not group.group:  # Ensure group.group is not None
+    # continue
 
-           # lesson_days_queryset = getattr(group.group, 'scheduled_day_type', None)
-            #if lesson_days_queryset is None:
-               # continue
+    # lesson_days_queryset = getattr(group.group, 'scheduled_day_type', None)
+    # if lesson_days_queryset is None:
+    # continue
 
-          #  lesson_days = [day.name for day in lesson_days_queryset.all()] if hasattr(lesson_days_queryset,
-                                                                                   #   'all') else []
+    #  lesson_days = [day.name for day in lesson_days_queryset.all()] if hasattr(lesson_days_queryset,
+    #   'all') else []
 
-          #  if not lesson_days:  # Skip iteration if no lesson days
-                # Default return if no valid group found
+    #  if not lesson_days:  # Skip iteration if no lesson days
+    # Default return if no valid group found
 
     def get_secondary_group(self, obj):
-        group = SecondaryStudentGroup.objects.filter(student=obj).annotate(
-            name=F('group__name')  # Rename group__name to name
-        ).values('id', 'name')
+        group = (
+            SecondaryStudentGroup.objects.filter(student=obj)
+            .annotate(name=F("group__name"))  # Rename group__name to name
+            .values("id", "name")
+        )
 
         # Convert the queryset to a list of dictionaries with keys as 'id' and 'name'
-        group_list = [{'id': item['id'], 'name': item['name']} for item in group]
+        group_list = [{"id": item["id"], "name": item["name"]} for item in group]
         return group_list[0] if group_list else None
 
     def get_secondary_teacher(self, obj):
         # Annotate the queryset to rename teacher's id, first_name, and last_name
-        teacher = SecondaryStudentGroup.objects.filter(student=obj).annotate(
-            teacher_id=F('group__teacher__id'),  # Rename to 'teacher_id'
-            teacher_first_name=F('group__teacher__first_name'),  # Rename to 'teacher_first_name'
-            teacher_last_name=F('group__teacher__last_name')  # Rename to 'teacher_last_name'
-        ).values('teacher_id', 'teacher_first_name', 'teacher_last_name')
+        teacher = (
+            SecondaryStudentGroup.objects.filter(student=obj)
+            .annotate(
+                teacher_id=F("group__teacher__id"),  # Rename to 'teacher_id'
+                teacher_first_name=F(
+                    "group__teacher__first_name"
+                ),  # Rename to 'teacher_first_name'
+                teacher_last_name=F(
+                    "group__teacher__last_name"
+                ),  # Rename to 'teacher_last_name'
+            )
+            .values("teacher_id", "teacher_first_name", "teacher_last_name")
+        )
 
         # Convert the queryset to a list of dictionaries with custom keys
         teacher_list = [
-            {'id': item['teacher_id'], 'first_name': item['teacher_first_name'], 'last_name': item['teacher_last_name']}
-            for item in teacher]
+            {
+                "id": item["teacher_id"],
+                "first_name": item["teacher_first_name"],
+                "last_name": item["teacher_last_name"],
+            }
+            for item in teacher
+        ]
 
         return teacher_list[0] if teacher_list else None
 
     def get_course(self, obj):
         courses_qs = StudentGroup.objects.filter(student=obj).values(
-            "group__course__name",
-            "group__course__level__name"
+            "group__course__name", "group__course__level__name"
         )
 
         formatted_courses = [
             {
                 "name": course["group__course__name"],
-                "level": course["group__course__level__name"]
+                "level": course["group__course__level__name"],
             }
             for course in courses_qs
         ]
 
-        return {
-            "count": len(formatted_courses),
-            "items": formatted_courses
-        }
+        return {"count": len(formatted_courses), "items": formatted_courses}
 
     def get_group(self, obj):
-        courses = (StudentGroup.objects.filter(student=obj)
-        .values(
-            "group__name", "group__status", "group__started_at", "group__ended_at", "group__teacher__first_name",
-            "group__teacher__last_name"
-        ))
+        courses = StudentGroup.objects.filter(student=obj).values(
+            "group__name",
+            "group__status",
+            "group__started_at",
+            "group__ended_at",
+            "group__teacher__first_name",
+            "group__teacher__last_name",
+        )
         return list(courses)
 
     def get_relatives(self, obj):
-        relative = Relatives.objects.filter(student=obj).values('name', 'phone', 'who')
+        relative = Relatives.objects.filter(student=obj).values("name", "phone", "who")
         return list(relative)
 
     def get_attendance_count(self, obj):
@@ -264,9 +299,9 @@ class StudentAPPSerializer(serializers.ModelSerializer):
         return attendance.count() + 1
 
     def update(self, instance, validated_data):
-        password = validated_data.get('password')
+        password = validated_data.get("password")
         if password:  # Only set the password if it's provided
-            instance.password = hashlib.sha512(password.encode('utf-8')).hexdigest()
+            instance.password = hashlib.sha512(password.encode("utf-8")).hexdigest()
             instance.save()
 
         if instance.photo:
@@ -277,14 +312,16 @@ class StudentAPPSerializer(serializers.ModelSerializer):
                     user.photo = file
                     user.save()
 
-        files = validated_data.get('file', None)
+        files = validated_data.get("file", None)
         if files is not None:
 
             instance.file.set(files)
 
         # Update other fields
         for attr, value in validated_data.items():
-            if attr != 'password' and attr != 'file':  # Skip the password and file fields
+            if (
+                attr != "password" and attr != "file"
+            ):  # Skip the password and file fields
                 setattr(instance, attr, value)
 
         instance.save()
@@ -292,22 +329,40 @@ class StudentAPPSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['photo'] = FileUploadSerializer(instance.photo, context=self.context).data
-        representation['filial'] = FilialSerializer(instance.filial).data if instance.filial else None
-        representation['marketing_channel'] = MarketingChannelSerializer(
-            instance.marketing_channel).data if instance.marketing_channel else None
+        representation["photo"] = FileUploadSerializer(
+            instance.photo, context=self.context
+        ).data
+        representation["filial"] = (
+            FilialSerializer(instance.filial).data if instance.filial else None
+        )
+        representation["marketing_channel"] = (
+            MarketingChannelSerializer(instance.marketing_channel).data
+            if instance.marketing_channel
+            else None
+        )
 
-        representation['sales_manager'] = UserSerializer(
-            instance.sales_manager).data if instance.sales_manager else None
+        representation["sales_manager"] = (
+            UserSerializer(instance.sales_manager).data
+            if instance.sales_manager
+            else None
+        )
 
-        representation['service_manager'] = UserSerializer(
-            instance.service_manager).data if instance.service_manager else None
-        representation['file'] = FileUploadSerializer(instance.file.all(), many=True, context=self.context).data
+        representation["service_manager"] = (
+            UserSerializer(instance.service_manager).data
+            if instance.service_manager
+            else None
+        )
+        representation["file"] = FileUploadSerializer(
+            instance.file.all(), many=True, context=self.context
+        ).data
         return representation
 
 
 class StrikeSerializer(serializers.Serializer):
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True
+    )
+
     class Meta:
         model = Strike
         fields = [

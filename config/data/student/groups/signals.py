@@ -19,7 +19,7 @@ def on_create(sender, instance: Group, created, **kwargs):
             name=f"{instance.name} ning yordamchi guruhi",
             teacher=instance.secondary_teacher,
             status="ACTIVE",
-            group=instance
+            group=instance,
         )
 
         first_day = instance.scheduled_day_type.first()
@@ -45,7 +45,7 @@ def on_create(sender, instance: Group, created, **kwargs):
                 SecondaryStudentGroup.objects.create(
                     group=secondary,
                     student=i.student if i.student else None,
-                    lid=i.lid if i.lid else None
+                    lid=i.lid if i.lid else None,
                 )
 
         Notification.objects.create(
@@ -80,9 +80,7 @@ def on_payment_method(sender, instance: Group, created: bool, **kwargs):
     if created:
         group_count = Group.objects.all().count()
         if group_count == 1:
-            Group_Type.objects.create(
-                price_type=instance.price_type
-            )
+            Group_Type.objects.create(price_type=instance.price_type)
 
 
 @receiver(post_save, sender=Group)
@@ -105,17 +103,32 @@ def on_group_price_change(sender, instance: Group, created: bool, **kwargs):
             student.save()
 
 
-UZBEK_WEEKDAYS = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"]
+UZBEK_WEEKDAYS = [
+    "Dushanba",
+    "Seshanba",
+    "Chorshanba",
+    "Payshanba",
+    "Juma",
+    "Shanba",
+    "Yakshanba",
+]
+
 
 @receiver(post_save, sender=Group)
 def group_finish_date(sender, instance: Group, created: bool, **kwargs):
     if created and instance.finish_date is None:
-        themes = Theme.objects.filter(course=instance.course, level=instance.level)
+        themes = Theme.objects.filter(
+            course=instance.course, level=instance.level, is_archived=False
+        )
         total_lessons = themes.count()
 
-        scheduled_days = instance.scheduled_day_type.all()  # Assume this gives Uzbek day names
+        scheduled_days = (
+            instance.scheduled_day_type.all()
+        )  # Assume this gives Uzbek day names
         scheduled_day_numbers = [
-            UZBEK_WEEKDAYS.index(day.name) for day in scheduled_days if day.name in UZBEK_WEEKDAYS
+            UZBEK_WEEKDAYS.index(day.name)
+            for day in scheduled_days
+            if day.name in UZBEK_WEEKDAYS
         ]
 
         if not scheduled_day_numbers:
@@ -130,5 +143,8 @@ def group_finish_date(sender, instance: Group, created: bool, **kwargs):
                 lessons_scheduled += 1
             finish_date += timedelta(days=1)
 
-        instance.finish_date = finish_date - timedelta(days=1)  # subtract last extra day
+        instance.finish_date = finish_date - timedelta(
+            days=1
+        )  # subtract last extra day
+
         instance.save(update_fields=["finish_date"])

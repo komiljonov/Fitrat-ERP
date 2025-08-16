@@ -446,5 +446,11 @@ class CheckRoomTeacherConflictSerializer(serializers.Serializer):
     teacher = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.filter(role="TEACHER")
     )
-    
-    
+
+    scheduled_day_type = serializers.PrimaryKeyRelatedField(
+        queryset=Day.objects.all(), many=True
+    )
+
+    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
+
+    level = serializers.PrimaryKeyRelatedField(queryset=Level.objects.all())
