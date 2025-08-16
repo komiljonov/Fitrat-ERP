@@ -123,18 +123,19 @@ class ProductsList(ListCreateAPIView):
     def get_queryset(self):
         category = self.request.GET.get("category")
         search = self.request.GET.get("search")
-        filial = self.request.GET.get("filial")
+        # filial = self.request.GET.get("filial")
 
         queryset = Products.objects.all()
 
-        if filial:
-            queryset = queryset.filter(filial__id=filial)
+        # if filial:
+        #     queryset = queryset.filter(filial__id=filial)
 
         if search:
             queryset = queryset.filter(name__icontains=search)
 
         if category:
             queryset = queryset.filter(category__id=category)
+
         return queryset
 
 
@@ -228,13 +229,13 @@ class CategoryList(ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = [IsAuthenticated]
-    
+
     pagination_class = None
 
     def get_queryset(self):
 
         queryset = Category.objects.all()
-        
+
         search = self.request.GET.get("search")
 
         # filial = self.request.GET.get("filial")
