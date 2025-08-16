@@ -700,6 +700,8 @@ class LidStatisticsView(ListAPIView):
             Q(lid__filial_id=filial) if filial else Q(),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+            
+            
             is_archived=True,
             lid__isnull=False,
             lid__is_student=False,

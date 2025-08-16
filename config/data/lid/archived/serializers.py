@@ -46,7 +46,9 @@ class ArchivedSerializer(serializers.ModelSerializer):
 
         # Add detailed serialization for related fields
         if instance.creator:
-            representation["creator"] = UserSerializer(instance.creator).data
+            representation["creator"] = UserSerializer(
+                instance.creator, remove_fields=["pages"]
+            ).data
         if instance.lid:
             representation["lid"] = LidSerializer(instance.lid).data
         if instance.student:

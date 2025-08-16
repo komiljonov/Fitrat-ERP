@@ -88,7 +88,6 @@ class UserLoginSerializer(serializers.Serializer):
         if phone:
             user = CustomUser.objects.get(phone=phone)
 
-
             if user.role == "Student":
                 balance = Student.objects.filter(user=user).first().balance
                 if balance < -100000:
