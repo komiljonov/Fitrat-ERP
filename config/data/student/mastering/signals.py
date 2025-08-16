@@ -185,7 +185,7 @@ def new_created_order(sender, instance: Student, created, **kwargs):
         ):
             amount = Bonus.objects.filter(
                 user=instance.service_manager,
-                name="Hizmat ko’rsatgan har bir Aktiv o'quvchi uchun bonus",
+                name="Hizmat ko‘rsatgan har bir Aktiv o‘quvchi uchun bonus",
             ).first()
             KpiFinance.objects.create(
                 user=instance.service_manager,
