@@ -8,6 +8,7 @@ from ..notifications.models import Notification
 
 logger = logging.getLogger(__name__)
 
+
 @shared_task
 def check_today_tasks():
     today = timezone.now().date()
@@ -17,4 +18,3 @@ def check_today_tasks():
         for event in events:
             event.status = "Expired"
             event.save()
-

@@ -8,6 +8,7 @@ from .serializers import LibraryCategorySerializer, LibrarySerializer
 
 # Create your views here.
 
+
 class CategoryCreateAPIView(ListCreateAPIView):
     queryset = LibraryCategory.objects.all()
     serializer_class = LibraryCategorySerializer
@@ -30,11 +31,13 @@ class LibraryCreateAPIView(ListCreateAPIView):
     def get_queryset(self):
         queryset = Library.objects.all()
 
-        category = self.request.GET.get('category')
-        search = self.request.GET.get('search')
+        category = self.request.GET.get("category")
+        search = self.request.GET.get("search")
 
         if search:
-            queryset = queryset.filter(Q(name__icontains=search) | Q(title__icontains=search))
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(title__icontains=search)
+            )
 
         if category:
             queryset = queryset.filter(category__id=category)

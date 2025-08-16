@@ -5,6 +5,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from .models import Event
 from .serializers import EventSerializer
 
+
 class EventListCreate(ListCreateAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
@@ -12,8 +13,8 @@ class EventListCreate(ListCreateAPIView):
     def get_queryset(self):
         queryset = Event.objects.all()
 
-        status = self.request.GET.get('status')
-        has_countdown = self.request.GET.get('has_countdown')
+        status = self.request.GET.get("status")
+        has_countdown = self.request.GET.get("has_countdown")
 
         if has_countdown:
             queryset = queryset.filter(has_countdown=has_countdown.capitalize())

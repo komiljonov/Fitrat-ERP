@@ -1,12 +1,26 @@
 from rest_framework import serializers
 
-from .models import UnitTest, UnitTestResult, QuizResult, MockExam, MockExamResult, LevelExam
+from .models import (
+    UnitTest,
+    UnitTestResult,
+    QuizResult,
+    MockExam,
+    MockExamResult,
+    LevelExam,
+)
 from ..student.course.models import Course
 from ..student.groups.models import Group
 from ..student.mastering.models import Mastering
 from ..student.quiz.models import Quiz
-from ..student.quiz.serializers import QuestionSerializer, MatchPairsSerializer, True_FalseSerializer, \
-    VocabularySerializer, ObjectiveTestSerializer, Cloze_TestSerializer, ImageObjectiveTestSerializer
+from ..student.quiz.serializers import (
+    QuestionSerializer,
+    MatchPairsSerializer,
+    True_FalseSerializer,
+    VocabularySerializer,
+    ObjectiveTestSerializer,
+    Cloze_TestSerializer,
+    ImageObjectiveTestSerializer,
+)
 from ..student.student.models import Student
 from ..student.studentgroup.models import StudentGroup
 from ..student.subject.models import Theme, Subject
@@ -15,9 +29,7 @@ from ..student.subject.serializers import ThemeSerializer, SubjectSerializer
 
 class UnitTestSerializer(serializers.ModelSerializer):
     themes = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Theme.objects.all(),
-        required=False
+        many=True, queryset=Theme.objects.all(), required=False
     )
     theme_after = serializers.PrimaryKeyRelatedField(
         queryset=Theme.objects.all(), allow_null=True, required=False
@@ -26,14 +38,7 @@ class UnitTestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UnitTest
-        fields = [
-            "id",
-            "theme_after",
-            "themes",
-            "quiz",
-            "group",
-            "created_at"
-        ]
+        fields = ["id", "theme_after", "themes", "quiz", "group", "created_at"]
 
     def create(self, validated_data):
         themes = validated_data.pop("themes", [])
@@ -47,20 +52,14 @@ class UnitTestSerializer(serializers.ModelSerializer):
 
         for sg in students:
             Mastering.objects.create(
-                theme=None,
-                student=sg.student,
-                test=unit_test.quiz,
-                choice="Unit_Test"
+                theme=None, student=sg.student, test=unit_test.quiz, choice="Unit_Test"
             )
 
         return unit_test
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["group"] = {
-            "id": instance.group.id,
-            "name": instance.group.name
-        }
+        rep["group"] = {"id": instance.group.id, "name": instance.group.name}
         rep["themes"] = ThemeSerializer(instance.themes.all(), many=True).data
         rep["theme_after"] = (
             ThemeSerializer(instance.theme_after).data if instance.theme_after else None
@@ -71,13 +70,7 @@ class UnitTestSerializer(serializers.ModelSerializer):
 class UnitTestResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = UnitTestResult
-        fields = [
-            "id",
-            "student",
-            "unit",
-            "point",
-            "created_at"
-        ]
+        fields = ["id", "student", "unit", "point", "created_at"]
 
 
 class QuizResultSerializer(serializers.ModelSerializer):
@@ -109,12 +102,27 @@ class QuizResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuizResult
         fields = [
-            "id", "student", "point", "created_at", "quiz_id", "json_body",
-            "questions", "match_pair", "true_false", "vocabulary",
-            "objective", "cloze_test", "image_objective",
-            "standard", "match_pair_result", "true_false_result",
-            "vocabulary_result", "objective_result", "total_question_count",
-            "cloze_test_result", "image_objective_result"
+            "id",
+            "student",
+            "point",
+            "created_at",
+            "quiz_id",
+            "json_body",
+            "questions",
+            "match_pair",
+            "true_false",
+            "vocabulary",
+            "objective",
+            "cloze_test",
+            "image_objective",
+            "standard",
+            "match_pair_result",
+            "true_false_result",
+            "vocabulary_result",
+            "objective_result",
+            "total_question_count",
+            "cloze_test_result",
+            "image_objective_result",
         ]
 
     def create(self, validated_data):
@@ -132,7 +140,9 @@ class QuizResultSerializer(serializers.ModelSerializer):
         quiz = Quiz.objects.filter(id=quiz).first()
 
         if not student:
-            raise serializers.ValidationError("Valid student could not be resolved from input or request.")
+            raise serializers.ValidationError(
+                "Valid student could not be resolved from input or request."
+            )
 
         quiz_result = QuizResult.objects.create(student=student, quiz=quiz)
 
@@ -153,42 +163,62 @@ class QuizResultSerializer(serializers.ModelSerializer):
 
     def get_total_question_count(self, obj):
         return (
-                obj.questions.count() +
-                obj.match_pair.count() +
-                obj.true_false.count() +
-                obj.vocabulary.count() +
-                obj.objective.count() +
-                obj.cloze_test.count() +
-                obj.image_objective.count()
+            obj.questions.count()
+            + obj.match_pair.count()
+            + obj.true_false.count()
+            + obj.vocabulary.count()
+            + obj.objective.count()
+            + obj.cloze_test.count()
+            + obj.image_objective.count()
         )
 
     # Read methods for result representation
     def get_standard(self, obj):
-        return QuestionSerializer(obj.questions.all(), context=self.context, many=True).data
+        return QuestionSerializer(
+            obj.questions.all(), context=self.context, many=True
+        ).data
 
     def get_match_pair_result(self, obj):
-        return MatchPairsSerializer(obj.match_pair.all(), context=self.context, many=True).data
+        return MatchPairsSerializer(
+            obj.match_pair.all(), context=self.context, many=True
+        ).data
 
     def get_true_false_result(self, obj):
-        return True_FalseSerializer(obj.true_false.all(), context=self.context, many=True).data
+        return True_FalseSerializer(
+            obj.true_false.all(), context=self.context, many=True
+        ).data
 
     def get_vocabulary_result(self, obj):
-        return VocabularySerializer(obj.vocabulary.all(), context=self.context, many=True).data
+        return VocabularySerializer(
+            obj.vocabulary.all(), context=self.context, many=True
+        ).data
 
     def get_objective_result(self, obj):
-        return ObjectiveTestSerializer(obj.objective.all(), context=self.context, many=True).data
+        return ObjectiveTestSerializer(
+            obj.objective.all(), context=self.context, many=True
+        ).data
 
     def get_cloze_test_result(self, obj):
-        return Cloze_TestSerializer(obj.cloze_test.all(), context=self.context, many=True).data
+        return Cloze_TestSerializer(
+            obj.cloze_test.all(), context=self.context, many=True
+        ).data
 
     def get_image_objective_result(self, obj):
-        return ImageObjectiveTestSerializer(obj.image_objective.all(), context=self.context, many=True).data
+        return ImageObjectiveTestSerializer(
+            obj.image_objective.all(), context=self.context, many=True
+        ).data
 
 
 class MockExamSerializer(serializers.ModelSerializer):
-    options = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True, required=False)
-    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), allow_null=True, required=False)
-    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True, required=False)
+    options = serializers.PrimaryKeyRelatedField(
+        queryset=Subject.objects.all(), allow_null=True, required=False
+    )
+    group = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.all(), allow_null=True, required=False
+    )
+    course = serializers.PrimaryKeyRelatedField(
+        queryset=Course.objects.all(), allow_null=True, required=False
+    )
 
     class Meta:
         model = MockExam
@@ -201,7 +231,7 @@ class MockExamSerializer(serializers.ModelSerializer):
             "start_time",
             "end_date",
             "end_time",
-            "created_at"
+            "created_at",
         ]
 
     def create(self, validated_data):
@@ -217,7 +247,7 @@ class MockExamSerializer(serializers.ModelSerializer):
                 MockExamResult.objects.create(
                     mock=mock,
                     student=student.student if student.student else None,
-                    overall_score=0
+                    overall_score=0,
                 )
 
         return mock
@@ -226,14 +256,22 @@ class MockExamSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
 
         rep["options"] = SubjectSerializer(instance.options, context=self.context).data
-        rep["group"] = {
-            "id": instance.group.id,
-            "name": instance.group.name,
-        } if instance.group else None
-        rep["course"] = {
-            "id": instance.course.id,
-            "name": instance.course.name,
-        } if instance.course else None
+        rep["group"] = (
+            {
+                "id": instance.group.id,
+                "name": instance.group.name,
+            }
+            if instance.group
+            else None
+        )
+        rep["course"] = (
+            {
+                "id": instance.course.id,
+                "name": instance.course.name,
+            }
+            if instance.course
+            else None
+        )
 
         return rep
 
@@ -263,8 +301,11 @@ class MockExamResultSerializer(serializers.ModelSerializer):
 
         if instance.mock and instance.student:
             instance.overall_score = (
-                                             instance.reading + instance.listening + instance.writing + instance.speaking
-                                     ) / 4
+                instance.reading
+                + instance.listening
+                + instance.writing
+                + instance.speaking
+            ) / 4
             instance.save()
 
             ball = (instance.overall_score * 100) / 9
@@ -295,9 +336,15 @@ class MockExamResultSerializer(serializers.ModelSerializer):
 
 
 class LevelExamSerializer(serializers.ModelSerializer):
-    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True, required=False)
-    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), allow_null=True, required=False)
-    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), allow_null=True, required=False)
+    subject = serializers.PrimaryKeyRelatedField(
+        queryset=Subject.objects.all(), allow_null=True, required=False
+    )
+    course = serializers.PrimaryKeyRelatedField(
+        queryset=Course.objects.all(), allow_null=True, required=False
+    )
+    group = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.all(), allow_null=True, required=False
+    )
 
     class Meta:
         model = LevelExam
@@ -332,7 +379,9 @@ class LevelExamSerializer(serializers.ModelSerializer):
             groups = []
 
         if groups:
-            students = StudentGroup.objects.filter(group__in=groups).select_related("student", "lid")
+            students = StudentGroup.objects.filter(group__in=groups).select_related(
+                "student", "lid"
+            )
 
             # Prepare Mastering entries for bulk insert
             mastering_entries = [
@@ -343,7 +392,7 @@ class LevelExamSerializer(serializers.ModelSerializer):
                     choice=level_exam.choice,
                     mock=None,
                     level_exam=level_exam,
-                    ball=0
+                    ball=0,
                 )
                 for s in students
             ]
@@ -356,19 +405,31 @@ class LevelExamSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        rep["subject"] = {
-            "id": instance.subject.id,
-            "name": instance.subject.name,
-        } if instance.subject else None
+        rep["subject"] = (
+            {
+                "id": instance.subject.id,
+                "name": instance.subject.name,
+            }
+            if instance.subject
+            else None
+        )
 
-        rep["course"] = {
-            "id": instance.course.id,
-            "name": instance.course.name,
-        } if instance.course else None
+        rep["course"] = (
+            {
+                "id": instance.course.id,
+                "name": instance.course.name,
+            }
+            if instance.course
+            else None
+        )
 
-        rep["group"] = {
-            "id": instance.group.id,
-            "name": instance.group.name,
-        } if instance.group else None
+        rep["group"] = (
+            {
+                "id": instance.group.id,
+                "name": instance.group.name,
+            }
+            if instance.group
+            else None
+        )
 
         return rep

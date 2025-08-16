@@ -1,8 +1,15 @@
 import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import Monitoring, MonitoringAsos4, Monitoring5, StudentCatchingMonitoring, StudentCountMonitoring, \
-    ResultName, ResultSubjects
+from .models import (
+    Monitoring,
+    MonitoringAsos4,
+    Monitoring5,
+    StudentCatchingMonitoring,
+    StudentCountMonitoring,
+    ResultName,
+    ResultSubjects,
+)
 from ...account.models import CustomUser
 from ...notifications.models import Notification
 from ...student.mastering.models import MasteringTeachers
@@ -24,7 +31,7 @@ def on_create(sender, instance: MonitoringAsos4, created, **kwargs):
             teacher=instance.user,
             reason=f"Sizga natijangiz uchun {instance.ball} ball qo'shildi!",
             ball=instance.ball,
-            bonus=True
+            bonus=True,
         )
 
 
@@ -54,8 +61,7 @@ def on_update(sender, instance: ResultName, created, **kwargs):
     if not created:
         if instance.is_archived == "True":
             subject = ResultSubjects.objects.filter(
-                asos__name__icontains="ASOS_4",
-                result=instance
+                asos__name__icontains="ASOS_4", result=instance
             ).all()
             for item in subject:
                 item.is_archived = True

@@ -6,9 +6,9 @@ from data.student.student.models import Student
 
 
 class Transaction(models.Model):
-    PROCESSING = 'processing'
-    FINISHED = 'finished'
-    CANCELED = 'canceled'
+    PROCESSING = "processing"
+    FINISHED = "finished"
+    CANCELED = "canceled"
     STATUS = ((PROCESSING, PROCESSING), (FINISHED, FINISHED), (CANCELED, CANCELED))
     click_trans_id = models.CharField(max_length=255)
     merchant_trans_id = models.CharField(max_length=255)
@@ -22,14 +22,36 @@ class Transaction(models.Model):
         return self.click_trans_id
 
 
-
 class Order(models.Model):
-    lid : "Lid" = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True, related_name="ordered_lid")
-    student : "Student" = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="ordered_student")
-    type : str = models.CharField(choices=[
-        ("Payme","Payme"),
-        ("Click","Click"),
-    ],max_length=255,null=True,blank=True)
+    lid: "Lid" = models.ForeignKey(
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ordered_lid",
+    )
+    student: "Student" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ordered_student",
+    )
+    type: str = models.CharField(
+        choices=[
+            ("Payme", "Payme"),
+            ("Click", "Click"),
+        ],
+        max_length=255,
+        null=True,
+        blank=True,
+    )
     amount = models.CharField(max_length=255)
     paid = models.BooleanField(default=False)
-    creator = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True,related_name="order_creator")
+    creator = models.ForeignKey(
+        "account.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="order_creator",
+    )

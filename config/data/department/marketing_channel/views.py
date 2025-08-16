@@ -1,4 +1,8 @@
-from rest_framework.generics import ListCreateAPIView,ListAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    ListAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -19,6 +23,7 @@ class MarketingChannelDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = MarketingChannelSerializer
     permission_classes = [IsAuthenticated]
 
+
 class MarketingChannelNOPG(ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = MarketingChannel.objects.all()
@@ -36,6 +41,7 @@ class GroupTypeList(ListAPIView):
 
     def get_paginated_response(self, data):
         return Response(data)
+
 
 class GroupTypeDetail(RetrieveUpdateDestroyAPIView):
     queryset = Group_Type.objects.all()

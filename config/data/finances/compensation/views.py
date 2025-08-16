@@ -4,9 +4,7 @@ import uuid
 from django.db.models import Avg, OuterRef, Subquery, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
-from pygments.lexers import q
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
@@ -14,12 +12,38 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Bonus, Compensation, Page, Asos, Monitoring, Point, ResultSubjects, StudentCountMonitoring, \
-    ResultName, MonitoringAsos4, Comments, Monitoring5, MonitoringAsos1_2, Asos1_2
-from .serializers import BonusSerializer, CompensationSerializer, PagesSerializer, AsosSerializer, MonitoringSerializer, \
-    PointSerializer, ResultPointsSerializer, StudentCountMonitoringSerializer, ResultsNameSerializer, \
-    MonitoringAsos4Serializer, CommentsSerializer, Monitoring5Serializer, Monitoring1_2serializer, \
-    UserMonitoring1_2Serializer
+from .models import (
+    Bonus,
+    Compensation,
+    Page,
+    Asos,
+    Monitoring,
+    Point,
+    ResultSubjects,
+    StudentCountMonitoring,
+    ResultName,
+    MonitoringAsos4,
+    Comments,
+    Monitoring5,
+    MonitoringAsos1_2,
+    Asos1_2,
+)
+from .serializers import (
+    BonusSerializer,
+    CompensationSerializer,
+    PagesSerializer,
+    AsosSerializer,
+    MonitoringSerializer,
+    PointSerializer,
+    ResultPointsSerializer,
+    StudentCountMonitoringSerializer,
+    ResultsNameSerializer,
+    MonitoringAsos4Serializer,
+    CommentsSerializer,
+    Monitoring5Serializer,
+    Monitoring1_2serializer,
+    UserMonitoring1_2Serializer,
+)
 from ...account.models import CustomUser
 
 
@@ -34,9 +58,10 @@ class BonusList(ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
 
-
         if isinstance(request.data, list):
-            serializer = self.get_serializer(data=request.data, many=True)  # Use `many=True`
+            serializer = self.get_serializer(
+                data=request.data, many=True
+            )  # Use `many=True`
         else:
             serializer = self.get_serializer(data=request.data)
 
@@ -44,13 +69,13 @@ class BonusList(ListCreateAPIView):
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
     def get_queryset(self):
         queryset = Bonus.objects.all()
 
         print(queryset.values_list())
 
         return queryset
+
 
 class BonusDetail(RetrieveUpdateDestroyAPIView):
     queryset = Bonus.objects.all()
@@ -64,7 +89,7 @@ class BonusNoPG(ListAPIView):
     permission_classes = [IsAuthenticated]
     pagination_class = None
 
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ("name",)
     filterset_fields = ("name",)
     ordering_fields = ("name",)
@@ -92,7 +117,9 @@ class CompensationList(ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         if isinstance(request.data, list):
-            serializer = self.get_serializer(data=request.data, many=True)  # Use `many=True`
+            serializer = self.get_serializer(
+                data=request.data, many=True
+            )  # Use `many=True`
         else:
             serializer = self.get_serializer(data=request.data)
 
@@ -127,7 +154,9 @@ class PageCreateView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         # Check if request data is a list
         if isinstance(request.data, list):
-            serializer = self.get_serializer(data=request.data, many=True)  # Use `many=True`
+            serializer = self.get_serializer(
+                data=request.data, many=True
+            )  # Use `many=True`
         else:
             serializer = self.get_serializer(data=request.data)
 
@@ -139,11 +168,13 @@ class PageCreateView(ListCreateAPIView):
         return Response(data)
 
 
-
 class PageBulkUpdateView(APIView):
     def put(self, request, *args, **kwargs):
         if not isinstance(request.data, list):
-            return Response({"detail": "Expected a list of pages for update."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Expected a list of pages for update."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         updated_pages = []
         created_pages = []
@@ -181,14 +212,13 @@ class PageBulkUpdateView(APIView):
         for data in request.data:
             page_id = data.get("id")
 
-
             if "user" in data:
                 print("resolve_user", resolve_user(data["user"]))
                 user_instance = resolve_user(data["user"])
                 if not user_instance:
                     return Response(
                         {"detail": f"Invalid user reference: {data['user']}"},
-                        status=status.HTTP_400_BAD_REQUEST
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
                 data["user"] = user_instance
 
@@ -202,7 +232,9 @@ class PageBulkUpdateView(APIView):
                 if serializer.is_valid():
                     updated_pages.append(serializer.save())
                 else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 updated_pages.append(page)
             else:
@@ -210,17 +242,23 @@ class PageBulkUpdateView(APIView):
                 if serializer.is_valid():
                     created_pages.append(serializer.save())
                 else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
 
         if updated_pages:
             Page.objects.bulk_update(
                 updated_pages,
-                fields=['name', 'user', 'is_editable', 'is_readable', 'is_parent']
+                fields=["name", "user", "is_editable", "is_readable", "is_parent"],
             )
 
         return Response(
-            {"updated_pages": PagesSerializer(updated_pages + created_pages, many=True).data},
-            status=status.HTTP_200_OK
+            {
+                "updated_pages": PagesSerializer(
+                    updated_pages + created_pages, many=True
+                ).data
+            },
+            status=status.HTTP_200_OK,
         )
 
 
@@ -314,7 +352,9 @@ class PointNoPGListView(ListAPIView):
         if start_date:
             queryset = queryset.filter(craeted_at__gte=start_date)
         if start_date and end_date:
-            queryset = queryset.filter(craeted_at__gte=start_date, craeted_at__lte=end_date)
+            queryset = queryset.filter(
+                craeted_at__gte=start_date, craeted_at__lte=end_date
+            )
         if asos:
             queryset = queryset.filter(asos__id=asos)
         if filial:
@@ -325,18 +365,25 @@ class PointNoPGListView(ListAPIView):
             queryset = queryset.filter(point_monitoring__user_id=user)
 
             # Subquery to get the user's average `ball` for each point
-            monitoring_avg_subquery = Monitoring.objects.filter(
-                point=OuterRef('id'),
-                user_id=user
-            ).values("point").annotate(avg_ball=Avg("ball")).values("avg_ball")
+            monitoring_avg_subquery = (
+                Monitoring.objects.filter(point=OuterRef("id"), user_id=user)
+                .values("point")
+                .annotate(avg_ball=Avg("ball"))
+                .values("avg_ball")
+            )
 
-            queryset = queryset.annotate(user_avg_ball=Subquery(monitoring_avg_subquery))
+            queryset = queryset.annotate(
+                user_avg_ball=Subquery(monitoring_avg_subquery)
+            )
 
             # Prefetch only the monitoring records related to this user for each point
             user_monitoring_qs = Monitoring.objects.filter(user_id=user)
             queryset = queryset.prefetch_related(
-                Prefetch("point_monitoring", queryset=user_monitoring_qs,
-                         to_attr="user_monitorings")
+                Prefetch(
+                    "point_monitoring",
+                    queryset=user_monitoring_qs,
+                    to_attr="user_monitorings",
+                )
             )
 
         return queryset
@@ -361,7 +408,6 @@ class MonitoringListCreateView(ListAPIView):
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
 
-
         queryset = Monitoring.objects.all()
 
         # Debugging: Print the incoming values
@@ -370,10 +416,10 @@ class MonitoringListCreateView(ListAPIView):
         filters = Q()
 
         if start_date and end_date:
-            filters &= Q(created_at__gte=start_date , created_at__lte=end_date)
+            filters &= Q(created_at__gte=start_date, created_at__lte=end_date)
 
         if counter:
-            filters &= Q(counter = counter)
+            filters &= Q(counter=counter)
         if user:
             filters &= Q(user_id=user)  # Ensure this matches your model field
         if point:
@@ -406,9 +452,13 @@ class MonitoringBulkCreateView(APIView):
 
     def post(self, request, *args, **kwargs):
         # Get the last counter value
-        last_counter = Monitoring.objects.order_by('-counter').values_list('counter', flat=True).first() or 0
+        last_counter = (
+            Monitoring.objects.order_by("-counter")
+            .values_list("counter", flat=True)
+            .first()
+            or 0
+        )
         counter = last_counter + 1
-
 
         if isinstance(request.data, str):
             try:
@@ -420,14 +470,17 @@ class MonitoringBulkCreateView(APIView):
         else:
             data = request.data
 
-
         for item in data:
             if isinstance(item, dict):
-                item['counter'] = counter
+                item["counter"] = counter
             else:
-                return Response({"error": "Each item must be a JSON object"}, status=400)
+                return Response(
+                    {"error": "Each item must be a JSON object"}, status=400
+                )
 
-        serializer = MonitoringSerializer(data=data, many=True, context={'request': request})
+        serializer = MonitoringSerializer(
+            data=data, many=True, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         instances = serializer.save()
 
@@ -461,7 +514,6 @@ class Asos4ListCreateView(ListCreateAPIView):
 
         return queryset
 
-
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -476,11 +528,12 @@ class StudentCountMonitoringListCreateView(ListCreateAPIView):
     queryset = StudentCountMonitoring.objects.all()
     serializer_class = StudentCountMonitoringSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         asos = self.request.query_params.get("asos")
         filial = self.request.query_params.get("filial")
         if asos:
-             return StudentCountMonitoring.objects.filter(asos__id=asos)
+            return StudentCountMonitoring.objects.filter(asos__id=asos)
         return StudentCountMonitoring.objects.all()
 
     def get_paginated_response(self, data):
@@ -514,7 +567,6 @@ class ResultsNameRetrieveView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-
 class MonitoringAsosListCreateView(ListAPIView):
     queryset = MonitoringAsos4.objects.all()
     serializer_class = MonitoringAsos4Serializer
@@ -529,11 +581,12 @@ class MonitoringAsosListCreateView(ListAPIView):
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
 
-
         queryset = MonitoringAsos4.objects.all()
 
         if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = queryset.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
         if teacher:
             queryset = queryset.filter(user__id=teacher)
         if asos:
@@ -546,7 +599,6 @@ class MonitoringAsosListCreateView(ListAPIView):
             queryset = queryset.filter(subject__id=subject)
         return queryset
 
-
     def get_paginated_response(self, data):
         return Response(data)
 
@@ -555,7 +607,6 @@ class CommentsListCreateView(ListCreateAPIView):
     queryset = Comments.objects.all()
     serializer_class = CommentsSerializer
     permission_classes = [IsAuthenticated]
-
 
     def get_queryset(self):
         counter = self.request.query_params.get("counter")
@@ -582,7 +633,9 @@ class Monitoring5List(ListAPIView):
         queryset = Monitoring5.objects.all()
 
         if start_date and end_date:
-            queryset = Monitoring5.objects.filter(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = Monitoring5.objects.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
 
         if teacher:
             queryset = queryset.filter(teacher__id=teacher)
@@ -615,7 +668,6 @@ class UserMonitoringAsos1_2(ListCreateAPIView):
     queryset = MonitoringAsos1_2.objects.all()
     serializer_class = UserMonitoring1_2Serializer
     permission_classes = [IsAuthenticated]
-
 
     def get_queryset(self):
         asos = self.request.GET.get("asos")

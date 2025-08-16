@@ -11,10 +11,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from data.paycomuz.methods_subscribe_api import PayComResponse  # your custom PayComResponse
+from data.paycomuz.methods_subscribe_api import (
+    PayComResponse,
+)  # your custom PayComResponse
 from . import Paycom
 from .authentication import authentication
 from .check_order import CheckOrder
+
 # project
 from .models import Transaction
 from .serializers.payme_operation import PaycomOperationSerialzer
@@ -24,18 +27,18 @@ from .status import *
 
 class MerchantAPIView(APIView):
     permission_classes = [AllowAny]
-    CHECK_PERFORM_TRANSACTION = 'CheckPerformTransaction'
-    CREATE_TRANSACTION = 'CreateTransaction'
-    PERFORM_TRANSACTION = 'PerformTransaction'
-    CHECK_TRANSACTION = 'CheckTransaction'
-    CANCEL_TRANSACTION = 'CancelTransaction'
-    GET_STATEMENT = 'GetStatement'
+    CHECK_PERFORM_TRANSACTION = "CheckPerformTransaction"
+    CREATE_TRANSACTION = "CreateTransaction"
+    PERFORM_TRANSACTION = "PerformTransaction"
+    CHECK_TRANSACTION = "CheckTransaction"
+    CANCEL_TRANSACTION = "CancelTransaction"
+    GET_STATEMENT = "GetStatement"
 
-    http_method_names = ['post']
+    http_method_names = ["post"]
     authentication_classes = []
     VALIDATE_CLASS: Paycom = None
     reply = None
-    ORDER_KEY = KEY = settings.PAYCOM_SETTINGS['ACCOUNTS']['KEY']
+    ORDER_KEY = KEY = settings.PAYCOM_SETTINGS["ACCOUNTS"]["KEY"]
 
     def __init__(self):
         self.METHODS = {
@@ -44,13 +47,13 @@ class MerchantAPIView(APIView):
             self.PERFORM_TRANSACTION: self.perform_transaction,
             self.CHECK_TRANSACTION: self.check_transaction,
             self.CANCEL_TRANSACTION: self.cancel_transaction,
-            self.GET_STATEMENT: self.get_statement
+            self.GET_STATEMENT: self.get_statement,
         }
 
         self.REPLY_RESPONSE = {
             ORDER_FOUND: self.order_found,
             ORDER_NOT_FOUND: self.order_not_found,
-            INVALID_AMOUNT: self.invalid_amount
+            INVALID_AMOUNT: self.invalid_amount,
         }
 
         super(MerchantAPIView, self).__init__()
@@ -65,7 +68,7 @@ class MerchantAPIView(APIView):
             return Response(AUTH_ERROR)
         serializer = PaycomOperationSerialzer(data=request.data, many=False)
         serializer.is_valid(raise_exception=True)
-        method = serializer.validated_data['method']
+        method = serializer.validated_data["method"]
 
         print("method", method)
 
@@ -96,10 +99,10 @@ class MerchantAPIView(APIView):
                     "message": {
                         "uz": "Buyurtma topilmadi",
                         "ru": "Заказ не найден",
-                        "en": "Order not found"
+                        "en": "Order not found",
                     },
-                    "data": None
-                }
+                    "data": None,
+                },
             }
             return
 
@@ -112,21 +115,19 @@ class MerchantAPIView(APIView):
         self.reply = {
             "jsonrpc": "2.0",
             "id": validated_data["id"],
-            "result": {
-                "allow": True
-            }
+            "result": {"allow": True},
         }
 
     def create_transaction(self, validated_data):
 
         print(f"[CREATE] Incoming transaction ID: {validated_data['params']['id']}")
 
-        order_key = validated_data['params']['account'].get(self.ORDER_KEY)
+        order_key = validated_data["params"]["account"].get(self.ORDER_KEY)
         if not order_key:
             raise serializers.ValidationError(f"{self.ORDER_KEY} is required")
 
         validate_class: Paycom = self.VALIDATE_CLASS()
-        result = validate_class.check_order(**validated_data['params'])
+        result = validate_class.check_order(**validated_data["params"])
 
         # Step 1: Check invalid account
         if result != ORDER_FOUND:
@@ -138,16 +139,16 @@ class MerchantAPIView(APIView):
                     "message": {
                         "uz": "Buyurtma mavjud emas",
                         "ru": "Счёт не существует",
-                        "en": "Account not found"
+                        "en": "Account not found",
                     },
-                    "data": None
-                }
+                    "data": None,
+                },
             }
             return
 
         # Step 2: Create transaction
-        _id = validated_data['params']['id']
-        amount = validated_data['params']['amount'] / 100
+        _id = validated_data["params"]["id"]
+        amount = validated_data["params"]["amount"] / 100
         now = int(datetime.now().timestamp() * 1000)
 
         existing_tx = Transaction.objects.filter(_id=_id).first()
@@ -158,15 +159,15 @@ class MerchantAPIView(APIView):
                 "result": {
                     "create_time": int(existing_tx.created_datetime),
                     "transaction": str(existing_tx._id),
-                    "state": existing_tx.state
-                }
+                    "state": existing_tx.state,
+                },
             }
             return
 
         user = self.request.user
 
         tx = Transaction.objects.create(
-            request_id=validated_data['id'],
+            request_id=validated_data["id"],
             _id=_id,
             amount=amount,
             order_key=order_key,
@@ -182,11 +183,11 @@ class MerchantAPIView(APIView):
             "result": {
                 "create_time": now,
                 "transaction": str(tx._id),
-                "state": CREATE_TRANSACTION
-            }
+                "state": CREATE_TRANSACTION,
+            },
         }
 
-        _id = validated_data['params']['id']
+        _id = validated_data["params"]["id"]
         existing_tx = Transaction.objects.filter(_id=_id).first()
 
         if existing_tx and existing_tx.state != CREATE_TRANSACTION:
@@ -198,10 +199,10 @@ class MerchantAPIView(APIView):
                     "message": {
                         "uz": "Transaksiya allaqachon bajarilgan yoki bekor qilingan",
                         "ru": "Транзакция уже завершена или отменена",
-                        "en": "Transaction already completed or cancelled"
+                        "en": "Transaction already completed or cancelled",
                     },
-                    "data": None
-                }
+                    "data": None,
+                },
             }
             return
 
@@ -209,8 +210,8 @@ class MerchantAPIView(APIView):
 
         print(f"[PERFORM] Requested ID: {validated_data['params']['id']}")
 
-        _id = validated_data['params']['id']
-        request_id = validated_data['id']
+        _id = validated_data["params"]["id"]
+        request_id = validated_data["id"]
 
         try:
             obj = Transaction.objects.get(_id=_id)
@@ -222,8 +223,8 @@ class MerchantAPIView(APIView):
                     "result": {
                         "transaction": str(obj._id),
                         "perform_time": int(obj.perform_datetime),
-                        "state": CLOSE_TRANSACTION
-                    }
+                        "state": CLOSE_TRANSACTION,
+                    },
                 }
                 return
 
@@ -237,8 +238,8 @@ class MerchantAPIView(APIView):
                     "error": {
                         "code": UNABLE_TO_PERFORM_OPERATION,
                         "message": UNABLE_TO_PERFORM_OPERATION_MESSAGE,
-                        "data": None
-                    }
+                        "data": None,
+                    },
                 }
                 return
 
@@ -250,9 +251,12 @@ class MerchantAPIView(APIView):
                 obj.status = Transaction.SUCCESS
                 obj.perform_datetime = perform_time
                 obj.save()
+                
                 print(obj.state)
 
-                self.VALIDATE_CLASS().successfully_payment(validated_data['params'], obj)
+                self.VALIDATE_CLASS().successfully_payment(
+                    validated_data["params"], obj
+                )
 
                 obj.save()
                 print(obj.state)
@@ -263,8 +267,8 @@ class MerchantAPIView(APIView):
                     "result": {
                         "transaction": str(obj._id),
                         "perform_time": perform_time,
-                        "state": CLOSE_TRANSACTION
-                    }
+                        "state": CLOSE_TRANSACTION,
+                    },
                 }
                 return
 
@@ -275,8 +279,8 @@ class MerchantAPIView(APIView):
                 "error": {
                     "code": UNABLE_TO_PERFORM_OPERATION,
                     "message": UNABLE_TO_PERFORM_OPERATION_MESSAGE,
-                    "data": None
-                }
+                    "data": None,
+                },
             }
 
         except Transaction.DoesNotExist:
@@ -286,13 +290,13 @@ class MerchantAPIView(APIView):
                 "error": {
                     "code": TRANSACTION_NOT_FOUND,
                     "message": TRANSACTION_NOT_FOUND_MESSAGE,
-                    "data": None
-                }
+                    "data": None,
+                },
             }
 
     def check_transaction(self, validated_data):
-        _id = validated_data['params']['id']
-        request_id = validated_data['id']
+        _id = validated_data["params"]["id"]
+        request_id = validated_data["id"]
 
         try:
             transaction = Transaction.objects.get(_id=_id)
@@ -301,13 +305,25 @@ class MerchantAPIView(APIView):
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "result": {
-                    "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
-                    "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
-                    "cancel_time": 0 if transaction.state == 2 else int(transaction.cancel_datetime or 0),
+                    "create_time": (
+                        int(transaction.created_datetime)
+                        if transaction.created_datetime
+                        else 0
+                    ),
+                    "perform_time": (
+                        int(transaction.perform_datetime)
+                        if transaction.perform_datetime
+                        else 0
+                    ),
+                    "cancel_time": (
+                        0
+                        if transaction.state == 2
+                        else int(transaction.cancel_datetime or 0)
+                    ),
                     "transaction": str(transaction._id),
                     "state": transaction.state,
                     "reason": None if transaction.state == 2 else transaction.reason,
-                }
+                },
             }
 
         except Transaction.DoesNotExist:
@@ -317,14 +333,14 @@ class MerchantAPIView(APIView):
                 "error": {
                     "code": TRANSACTION_NOT_FOUND,
                     "message": TRANSACTION_NOT_FOUND_MESSAGE,
-                    "data": None
-                }
+                    "data": None,
+                },
             }
 
     def cancel_transaction(self, validated_data):
         self.context_id = validated_data["id"]
-        tx_id = validated_data['params']['id']
-        reason = validated_data['params']['reason']
+        tx_id = validated_data["params"]["id"]
+        reason = validated_data["params"]["reason"]
 
         try:
             transaction = Transaction.objects.get(_id=tx_id)
@@ -338,10 +354,14 @@ class MerchantAPIView(APIView):
                 transaction.state = PERFORM_CANCELED_CODE  # -2
 
                 if not transaction.perform_datetime:
-                    transaction.perform_datetime = int(datetime.now().timestamp() * 1000)
+                    transaction.perform_datetime = int(
+                        datetime.now().timestamp() * 1000
+                    )
 
                 # Call cancellation logic if needed
-                self.VALIDATE_CLASS().cancel_payment(validated_data['params'], transaction)
+                self.VALIDATE_CLASS().cancel_payment(
+                    validated_data["params"], transaction
+                )
 
             transaction.reason = reason
             transaction.status = Transaction.CANCELED
@@ -358,17 +378,16 @@ class MerchantAPIView(APIView):
                 "id": self.context_id,
                 "error": {
                     "code": TRANSACTION_NOT_FOUND,
-                    "message": TRANSACTION_NOT_FOUND_MESSAGE
-                }
+                    "message": TRANSACTION_NOT_FOUND_MESSAGE,
+                },
             }
 
     def get_statement(self, validated_data):
-        from_d = validated_data.get('params').get('from')
-        to_d = validated_data.get('params').get('to')
+        from_d = validated_data.get("params").get("from")
+        to_d = validated_data.get("params").get("to")
 
         filtered_transactions = Transaction.objects.filter(
-            created_datetime__gte=from_d,
-            created_datetime__lte=to_d
+            created_datetime__gte=from_d, created_datetime__lte=to_d
         )
 
         transactions_json = [
@@ -376,9 +395,7 @@ class MerchantAPIView(APIView):
                 id=obj._id,
                 time=int(obj.created_datetime),
                 amount=obj.amount,
-                account=dict(
-                    order_id=obj.order_key
-                ),
+                account=dict(order_id=obj.order_key),
                 create_time=int(obj.created_datetime) if obj.created_datetime else 0,
                 perform_time=int(obj.perform_datetime) if obj.perform_datetime else 0,
                 cancel_time=int(obj.cancel_datetime) if obj.cancel_datetime else 0,
@@ -386,14 +403,10 @@ class MerchantAPIView(APIView):
                 state=obj.state,
                 reason=obj.reason,
             )
+            for obj in filtered_transactions
+        ]
 
-            for obj in filtered_transactions]
-
-        response = dict(
-            result=dict(
-                transactions=transactions_json
-            )
-        )
+        response = dict(result=dict(transactions=transactions_json))
 
         self.reply = response
 
@@ -401,11 +414,13 @@ class MerchantAPIView(APIView):
         self.reply = dict(result=dict(allow=True))
 
     def order_not_found(self, validated_data):
-        self.reply = dict(error=dict(
-            id=validated_data['id'],
-            code=ORDER_NOT_FOUND,
-            message=ORDER_NOT_FOUND_MESSAGE
-        ))
+        self.reply = dict(
+            error=dict(
+                id=validated_data["id"],
+                code=ORDER_NOT_FOUND,
+                message=ORDER_NOT_FOUND_MESSAGE,
+            )
+        )
 
     def invalid_amount(self, validated_data):
         self.reply = {
@@ -414,8 +429,8 @@ class MerchantAPIView(APIView):
             "error": {
                 "code": INVALID_AMOUNT,  # usually -31001
                 "message": INVALID_AMOUNT_MESSAGE,  # should be a dict with uz/ru/en
-                "data": None
-            }
+                "data": None,
+            },
         }
 
     def response_check_transaction(self, transaction: Transaction):
@@ -423,13 +438,25 @@ class MerchantAPIView(APIView):
             "jsonrpc": "2.0",
             "id": self.context_id,
             "result": {
-                "create_time": int(transaction.created_datetime) if transaction.created_datetime else 0,
-                "perform_time": int(transaction.perform_datetime) if transaction.perform_datetime else 0,
-                "cancel_time": int(transaction.cancel_datetime) if transaction.cancel_datetime else 0,
+                "create_time": (
+                    int(transaction.created_datetime)
+                    if transaction.created_datetime
+                    else 0
+                ),
+                "perform_time": (
+                    int(transaction.perform_datetime)
+                    if transaction.perform_datetime
+                    else 0
+                ),
+                "cancel_time": (
+                    int(transaction.cancel_datetime)
+                    if transaction.cancel_datetime
+                    else 0
+                ),
                 "transaction": str(transaction._id),
                 "state": transaction.state,
-                "reason": transaction.reason
-            }
+                "reason": transaction.reason,
+            },
         }
 
 
@@ -444,6 +471,7 @@ class TransactionAPIView(ListCreateAPIView):
 
 from rest_framework.exceptions import ValidationError
 
+
 class GeneratePaymeURLView(APIView):
     def post(self, request):
         print("🔥 Incoming Data:", request.data)
@@ -452,8 +480,8 @@ class GeneratePaymeURLView(APIView):
         data = request.data.get("params", {})
         print("🧩 Extracted Params:", data)
 
-        amount = data.get('amount')
-        order_id : str = data.get('order_id')
+        amount = data.get("amount")
+        order_id: str = data.get("order_id")
         return_url = request.data.get("return_url", None)
 
         print("Parsed:", amount, order_id, return_url)
@@ -469,10 +497,7 @@ class GeneratePaymeURLView(APIView):
 
         paycom = PayComResponse()
         url = paycom.create_initialization(
-            amount=amount_decimal,
-            order_id=order_id,
-            return_url=return_url
+            amount=amount_decimal, order_id=order_id, return_url=return_url
         )
 
-        return Response({'payment_url': url}, status=status.HTTP_200_OK)
-
+        return Response({"payment_url": url}, status=status.HTTP_200_OK)

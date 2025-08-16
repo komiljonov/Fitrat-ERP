@@ -48,20 +48,26 @@ class UnitTest(BaseModel):
     quiz = models.ForeignKey(
         "quiz.Quiz", on_delete=models.SET_NULL, null=True, blank=True
     )
-    group:"Group | None" = models.ForeignKey(
+    group: "Group | None" = models.ForeignKey(
         "groups.Group",
         on_delete=models.SET_NULL,
         null=True,
         related_name="unit_test_group",
-    )   
+    )
 
 
 class UnitTestResult(BaseModel):
     student = models.ForeignKey(
-        "student.Student", on_delete=models.SET_NULL, null=True, blank=True
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     unit = models.ForeignKey(
-        "exam_results.UnitTest", on_delete=models.SET_NULL, null=True, blank=True
+        "exam_results.UnitTest",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     point = models.IntegerField(default=0)
 

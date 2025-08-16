@@ -9,8 +9,11 @@ class ClickUz:
     INVALID_AMOUNT = INVALID_AMOUNT
 
     def check_order(self, order_id: str, amount: str):
+
         from ..clickuz.models import Order
+
         student_order = Order.objects.filter(id=order_id).first()
+
         if not student_order:
             return ORDER_NOT_FOUND
 
@@ -21,6 +24,7 @@ class ClickUz:
 
     def successfully_payment(self, order_id: str, transaction: object):
         from ..clickuz.models import Order
+
         order = Order.objects.filter(id=order_id).first()
         if not order:
             return  # Optionally log this
@@ -43,18 +47,19 @@ class ClickUz:
         if not order:
             return
 
-
         import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"Cancelling Click payment for order {order_id}, transaction {transaction.id}")
 
+        logger = logging.getLogger(__name__)
+        logger.info(
+            f"Cancelling Click payment for order {order_id}, transaction {transaction.id}"
+        )
 
         order.paid = False
         order.save()
 
     @staticmethod
     def generate_url(order_id, amount, return_url=None):
-        service_id = settings.CLICK_SETTINGS['service_id']
+        service_id = settings.CLICK_SETTINGS["service_id"]
         merchant_id = settings.CLICK_MERCHANT_ID
 
         print(service_id, merchant_id)

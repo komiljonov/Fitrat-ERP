@@ -66,7 +66,6 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             instance.lid.is_frozen = True
             instance.lid.save()
 
-
     if not created and instance.is_frozen == False:
         if instance.student:
             instance.student.is_frozen = False

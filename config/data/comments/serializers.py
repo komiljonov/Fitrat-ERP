@@ -8,7 +8,9 @@ from ..upload.serializers import FileUploadSerializer
 
 class CommentSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Comment
@@ -33,7 +35,11 @@ class CommentSerializer(serializers.ModelSerializer):
             rep["full_name"] = f"{creator.first_name} {creator.last_name}"
             rep["first_name"] = creator.first_name
             rep["last_name"] = creator.last_name
-            rep["photo"] = FileUploadSerializer(creator.photo, context=self.context).data if creator.photo else None
+            rep["photo"] = (
+                FileUploadSerializer(creator.photo, context=self.context).data
+                if creator.photo
+                else None
+            )
 
         return rep
 
@@ -47,7 +53,10 @@ class CommentStuffSerializer(serializers.ModelSerializer):
         queryset=CustomUser.objects.all(),
         allow_null=True,
     )
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
+
     class Meta:
         model = StuffComments
         fields = [
@@ -68,10 +77,13 @@ class CommentStuffSerializer(serializers.ModelSerializer):
         rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
 
         if creator:
-            rep[
-                "full_name"] = creator.full_name
+            rep["full_name"] = creator.full_name
             rep["first_name"] = creator.first_name
             rep["last_name"] = creator.last_name
-            rep["photo"] = FileUploadSerializer(creator.photo, context=self.context).data if creator.photo else None
+            rep["photo"] = (
+                FileUploadSerializer(creator.photo, context=self.context).data
+                if creator.photo
+                else None
+            )
 
         return rep

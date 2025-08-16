@@ -11,7 +11,12 @@ from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    ListAPIView,
+    RetrieveUpdateDestroyAPIView,
+    CreateAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -28,31 +33,31 @@ class ArchivedListAPIView(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
-    search_fields = ('reason',)
-    filterset_fields = ('reason',)
-    ordering_fields = ('reason',)
+    search_fields = ("reason",)
+    filterset_fields = ("reason",)
+    ordering_fields = ("reason",)
 
     def get_queryset(self):
         queryset = Archived.objects.all()
 
         get = self.request.GET.get
 
-        lid = get('lid')
-        student = get('student')
-        student_stage = get('student_stage')
-        lid_stage = get('lid_stage')
-        creator = get('creator')
-        comment = get('comment')
-        is_archived = get('is_archived')
-        lang = get('lang')
-        subject = get('subject')
-        call_operator = get('call_operator')
-        sales_manager = get('sales_manager')
-        service_manager = get('service_manager')
-        balance_from = get('balance_from')
-        balance_to = get('balance_to')
-        start_date_str = get('start_date')
-        end_date_str = get('end_date')
+        lid = get("lid")
+        student = get("student")
+        student_stage = get("student_stage")
+        lid_stage = get("lid_stage")
+        creator = get("creator")
+        comment = get("comment")
+        is_archived = get("is_archived")
+        lang = get("lang")
+        subject = get("subject")
+        call_operator = get("call_operator")
+        sales_manager = get("sales_manager")
+        service_manager = get("service_manager")
+        balance_from = get("balance_from")
+        balance_to = get("balance_to")
+        start_date_str = get("start_date")
+        end_date_str = get("end_date")
         filial = get("filial")
         debts = get("debts")
         no_debts = get("no_debts")
@@ -60,15 +65,16 @@ class ArchivedListAPIView(ListCreateAPIView):
         if no_debts:
             # Student or lid exists and their balance is >= 100000
             queryset = queryset.filter(
-                Q(student__balance__gte=100000) |
-                Q(lid__balance__gte=100000, )
+                Q(student__balance__gte=100000)
+                | Q(
+                    lid__balance__gte=100000,
+                )
             )
 
         if debts:
             # Student or lid exists and their balance is < 100000
             queryset = queryset.filter(
-                Q(student__balance__lt=100000) |
-                Q(lid__balance__lt=100000)
+                Q(student__balance__lt=100000) | Q(lid__balance__lt=100000)
             )
 
         if student_stage:
@@ -76,7 +82,9 @@ class ArchivedListAPIView(ListCreateAPIView):
         if lid_stage:
             queryset = queryset.filter(lid__lid_stage_type=lid_stage)
         if filial:
-            queryset = queryset.filter(Q(student__filial__id=filial) | Q(lid__filial__id=filial))
+            queryset = queryset.filter(
+                Q(student__filial__id=filial) | Q(lid__filial__id=filial)
+            )
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
         if lid:
@@ -89,18 +97,28 @@ class ArchivedListAPIView(ListCreateAPIView):
             queryset = queryset.filter(comment__icontains=comment)
 
         if lang:
-            queryset = queryset.filter(Q(student__education_lang=lang) | Q(lid__education_lang=lang))
+            queryset = queryset.filter(
+                Q(student__education_lang=lang) | Q(lid__education_lang=lang)
+            )
         if subject:
-            queryset = queryset.filter(Q(student__subject__id=subject) | Q(lid__subject__id=subject))
+            queryset = queryset.filter(
+                Q(student__subject__id=subject) | Q(lid__subject__id=subject)
+            )
         if call_operator:
             queryset = queryset.filter(
-                Q(student__call_operator__id=call_operator) | Q(lid__call_operator__id=call_operator))
+                Q(student__call_operator__id=call_operator)
+                | Q(lid__call_operator__id=call_operator)
+            )
         if sales_manager:
             queryset = queryset.filter(
-                Q(student__sales_manager__id=sales_manager) | Q(lid__sales_manager__id=sales_manager))
+                Q(student__sales_manager__id=sales_manager)
+                | Q(lid__sales_manager__id=sales_manager)
+            )
         if service_manager:
             queryset = queryset.filter(
-                Q(student__service_manager__id=service_manager) | Q(lid__service_manager__id=service_manager))
+                Q(student__service_manager__id=service_manager)
+                | Q(lid__service_manager__id=service_manager)
+            )
 
         if balance_from or balance_to:
             student_q = Q()
@@ -158,7 +176,7 @@ class StudentArchivedListAPIView(ListAPIView):
     def get_queryset(self):
         queryset = Archived.objects.all()
 
-        id = self.request.query_params.get('id', None)
+        id = self.request.query_params.get("id", None)
         print(id)
         if id:
             queryset = queryset.filter(Q(student__id=id) | Q(lid__id=id))
@@ -170,16 +188,21 @@ class StuffArchive(CreateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def create(self, request, *args, **kwargs):
-        user_id = request.data.get('stuff')
+        user_id = request.data.get("stuff")
         user = CustomUser.objects.filter(id=user_id).first()
 
         ic(user)  # Debug
 
         if not user:
-            return Response({"error": "Xodim topilmadi!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Xodim topilmadi!"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         if user.is_archived:
-            return Response({"error": "Xodim allaqachon arxivlangan!"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Xodim allaqachon arxivlangan!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Archive in TimeTracker
         tt = TimetrackerSinc()
@@ -190,7 +213,7 @@ class StuffArchive(CreateAPIView):
             if not tt_response or "error" in tt_response:
                 return Response(
                     {"error": "TimeTracker bilan bog'lanib bo'lmadi."},
-                    status=status.HTTP_502_BAD_GATEWAY
+                    status=status.HTTP_502_BAD_GATEWAY,
                 )
 
         # Local archive
@@ -207,9 +230,9 @@ class FrozenListCreateList(ListCreateAPIView):
     def get_queryset(self):
         queryset = Frozen.objects.all()
 
-        creator = self.request.GET.get('creator')
-        lid = self.request.GET.get('lid')
-        student = self.request.GET.get('student')
+        creator = self.request.GET.get("creator")
+        lid = self.request.GET.get("lid")
+        student = self.request.GET.get("student")
 
         if creator:
             queryset = queryset.filter(creator__id=creator)
@@ -231,7 +254,9 @@ class ExportLidsExcelView(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        queryset = Archived.objects.select_related("lid", "student", "creator", "comment", "filial")
+        queryset = Archived.objects.select_related(
+            "lid", "student", "creator", "comment", "filial"
+        )
 
         # Filters
         filters = {}
@@ -261,18 +286,23 @@ class ExportLidsExcelView(APIView):
 
         if education_lang:
             queryset = queryset.filter(
-                Q(lid__education_lang=education_lang) | Q(student__education_lang=education_lang))
+                Q(lid__education_lang=education_lang)
+                | Q(student__education_lang=education_lang)
+            )
         if call_operator:
             queryset = queryset.filter(
-                Q(lid__call_operator__id=call_operator) | Q(student__call_operator__id=call_operator)
+                Q(lid__call_operator__id=call_operator)
+                | Q(student__call_operator__id=call_operator)
             )
         if sales_manager:
             queryset = queryset.filter(
-                Q(lid__sales_manager__id=sales_manager) | Q(student__sales_manager__id=sales_manager)
+                Q(lid__sales_manager__id=sales_manager)
+                | Q(student__sales_manager__id=sales_manager)
             )
         if service_manager:
             queryset = queryset.filter(
-                Q(lid__service_manager__id=service_manager) | Q(student__service_manager__id=service_manager)
+                Q(lid__service_manager__id=service_manager)
+                | Q(student__service_manager__id=service_manager)
             )
 
         if filial:
@@ -287,25 +317,25 @@ class ExportLidsExcelView(APIView):
 
         if from_balance and to_balance:
             queryset = queryset.filter(
-                Q(lid__balance__gte=from_balance, lid__balance__lte=to_balance) |
-                Q(student__balance__gte=from_balance, student__balance__lte=to_balance)
+                Q(lid__balance__gte=from_balance, lid__balance__lte=to_balance)
+                | Q(
+                    student__balance__gte=from_balance, student__balance__lte=to_balance
+                )
             )
         elif from_balance:
             queryset = queryset.filter(
-                Q(lid__balance__gte=from_balance) |
-                Q(student__balance__gte=from_balance)
+                Q(lid__balance__gte=from_balance)
+                | Q(student__balance__gte=from_balance)
             )
 
         if debt:
             queryset = queryset.filter(
-                Q(lid__balance__lte=100000) |
-                Q(student__balance__lte=100000)
+                Q(lid__balance__lte=100000) | Q(student__balance__lte=100000)
             )
 
         if no_debt:
             queryset = queryset.filter(
-                Q(lid__balance__gt=100000) |
-                Q(student__balance__gt=100000)
+                Q(lid__balance__gt=100000) | Q(student__balance__gt=100000)
             )
 
         date_format = "%Y-%m-%d"
@@ -329,14 +359,20 @@ class ExportLidsExcelView(APIView):
         archived_objects = queryset.filter(**filters)
 
         if is_archived:
-            archived_objects = archived_objects.filter(is_archived=is_archived.capitalize())
+            archived_objects = archived_objects.filter(
+                is_archived=is_archived.capitalize()
+            )
 
         if is_student:
             is_student_bool = is_student.capitalize()
 
             # Only filter on lid.is_student if lid exists and student is null
             archived_objects = archived_objects.filter(
-                Q(lid__isnull=False, student__isnull=True, lid__is_student=is_student_bool)
+                Q(
+                    lid__isnull=False,
+                    student__isnull=True,
+                    lid__is_student=is_student_bool,
+                )
             )
 
         # # Access restriction
@@ -359,12 +395,28 @@ class ExportLidsExcelView(APIView):
         ws.title = "Arxivlar"
 
         headers = [
-            "Ism", "Familiya", "Sharif", "Telefon", "Qo‘shimcha raqam",
-            "Tug‘ilgan sana", "Ta’lim tili", "O‘quv darajasi",
-            "Fan", "Ball", "Filial", "Marketing kanali", "Lid/Student bosqichi turi",
-            "Lid/Student bosqichi", "Buyurtma bosqichi", "Arxivlanganmi?",
-            "Muzlatilganmi?", "Call operator", "Servis menejeri", "Sotuv menejeri",
-            "Studentmi?", "Balans"
+            "Ism",
+            "Familiya",
+            "Sharif",
+            "Telefon",
+            "Qo‘shimcha raqam",
+            "Tug‘ilgan sana",
+            "Ta’lim tili",
+            "O‘quv darajasi",
+            "Fan",
+            "Ball",
+            "Filial",
+            "Marketing kanali",
+            "Lid/Student bosqichi turi",
+            "Lid/Student bosqichi",
+            "Buyurtma bosqichi",
+            "Arxivlanganmi?",
+            "Muzlatilganmi?",
+            "Call operator",
+            "Servis menejeri",
+            "Sotuv menejeri",
+            "Studentmi?",
+            "Balans",
         ]
         ws.append(headers)
 
@@ -387,24 +439,46 @@ class ExportLidsExcelView(APIView):
                 obj.subject.name if getattr(obj, "subject", None) else "",
                 obj.ball if hasattr(obj, "ball") else "",
                 obj.filial.name if getattr(obj, "filial", None) else "",
-                obj.marketing_channel.name if getattr(obj, "marketing_channel", None) else "",
-                getattr(obj, "lid_stage_type", "") or getattr(obj, "student_stage_type", "") or "",
-                getattr(obj, "lid_stages", "") or getattr(obj, "new_student_stages", "") or "",
+                (
+                    obj.marketing_channel.name
+                    if getattr(obj, "marketing_channel", None)
+                    else ""
+                ),
+                getattr(obj, "lid_stage_type", "")
+                or getattr(obj, "student_stage_type", "")
+                or "",
+                getattr(obj, "lid_stages", "")
+                or getattr(obj, "new_student_stages", "")
+                or "",
                 getattr(obj, "ordered_stages", "") or "",
                 "Ha" if archived.is_archived else "Yo‘q",
                 "Ha" if getattr(obj, "is_frozen", False) else "Yo‘q",
-                obj.call_operator.get_full_name() if getattr(obj, "call_operator", None) else "",
-                obj.service_manager.get_full_name() if getattr(obj, "service_manager", None) else "",
-                obj.sales_manager.get_full_name() if getattr(obj, "sales_manager", None) else "",
+                (
+                    obj.call_operator.get_full_name()
+                    if getattr(obj, "call_operator", None)
+                    else ""
+                ),
+                (
+                    obj.service_manager.get_full_name()
+                    if getattr(obj, "service_manager", None)
+                    else ""
+                ),
+                (
+                    obj.sales_manager.get_full_name()
+                    if getattr(obj, "sales_manager", None)
+                    else ""
+                ),
                 "Ha" if getattr(obj, "is_student", False) else "Yo‘q",
-                float(getattr(obj, "balance", 0)) if hasattr(obj, "balance") else 0
+                float(getattr(obj, "balance", 0)) if hasattr(obj, "balance") else 0,
             ]
             ws.append(row)
 
         # Auto-size columns
         for col in ws.columns:
             max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
-            ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 4
+            ws.column_dimensions[get_column_letter(col[0].column)].width = (
+                max_length + 4
+            )
 
         buffer = io.BytesIO()
         wb.save(buffer)
@@ -412,7 +486,7 @@ class ExportLidsExcelView(APIView):
 
         response = HttpResponse(
             buffer.read(),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         filename = f"archived_lids_{now().strftime('%Y%m%d_%H%M')}.xlsx"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
@@ -453,7 +527,9 @@ class LidStudentArchivedStatistics(APIView):
             queryset = queryset.filter(**{field: call_operator})
 
         if service_manager:
-            field = "lid__service_manager__id" if is_lid else "student__service_manager__id"
+            field = (
+                "lid__service_manager__id" if is_lid else "student__service_manager__id"
+            )
             queryset = queryset.filter(**{field: service_manager})
 
         if sales_manager:
@@ -461,12 +537,13 @@ class LidStudentArchivedStatistics(APIView):
             queryset = queryset.filter(**{field: sales_manager})
 
         if balance_from and balance_to:
-            field_from = "lid__balance_from__lte" if is_lid else "student__balance_from__lte"
+            field_from = (
+                "lid__balance_from__lte" if is_lid else "student__balance_from__lte"
+            )
             field_to = "lid__balance_to__gte" if is_lid else "student__balance_to__gte"
-            queryset = queryset.filter(**{
-                field_from: balance_from,
-                field_to: balance_to
-            })
+            queryset = queryset.filter(
+                **{field_from: balance_from, field_to: balance_to}
+            )
         elif balance_from:
             field = "lid__balance_from__lte" if is_lid else "student__balance_from__lte"
             queryset = queryset.filter(**{field: balance_from})
@@ -474,37 +551,48 @@ class LidStudentArchivedStatistics(APIView):
         if start_date and end_date:
             queryset = queryset.filter(
                 created_at__gte=start_date,
-                created_at__lte=end_date + timedelta(days=1) - timedelta(seconds=1)
+                created_at__lte=end_date + timedelta(days=1) - timedelta(seconds=1),
             )
         elif start_date:
             queryset = queryset.filter(
                 created_at__gte=start_date,
-                created_at__lte=start_date + timedelta(days=1) - timedelta(seconds=1)
+                created_at__lte=start_date + timedelta(days=1) - timedelta(seconds=1),
             )
 
         # --- Stats ---
         all_archived = queryset.count()
-        archived_lids = queryset.filter(lid__isnull=False, lid__lid_stage_type="NEW_LID").count()
-        archived_orders = queryset.filter(lid__isnull=False,
-                                          lid__lid_stage_type="ORDERED_LID").count()  # or another field for "order"
-        archived_new_students = queryset.filter(student__isnull=False,
-                                                student__student_stage_type="NEW_STUDENT").count()
-        archived_active_students = queryset.filter(student__isnull=False,
-                                                   student__student_stage_type="ACTIVE_STUDENT").count()
+        archived_lids = queryset.filter(
+            lid__isnull=False, lid__lid_stage_type="NEW_LID"
+        ).count()
+        archived_orders = queryset.filter(
+            lid__isnull=False, lid__lid_stage_type="ORDERED_LID"
+        ).count()  # or another field for "order"
+        archived_new_students = queryset.filter(
+            student__isnull=False, student__student_stage_type="NEW_STUDENT"
+        ).count()
+        archived_active_students = queryset.filter(
+            student__isnull=False, student__student_stage_type="ACTIVE_STUDENT"
+        ).count()
         debt_lid = queryset.filter(lid__isnull=False, lid__balance__gte=100000).count()
-        deb_student = queryset.filter(student__isnull=False, student__balance__gte=100000).count()
+        deb_student = queryset.filter(
+            student__isnull=False, student__balance__gte=100000
+        ).count()
 
-        no_debt_lid = queryset.filter(lid__isnull=False, lid__balance__lte=100000).count()
-        no_debt_student = queryset.filter(student__isnull=False, student__balance__lte=100000).count()
+        no_debt_lid = queryset.filter(
+            lid__isnull=False, lid__balance__lte=100000
+        ).count()
+        no_debt_student = queryset.filter(
+            student__isnull=False, student__balance__lte=100000
+        ).count()
 
-        return Response({
-            "debt": debt_lid + deb_student,
-            "no_debt": no_debt_lid + no_debt_student,
-
-            "all_archived": all_archived,
-            "archived_lids": archived_lids,
-            "archived_orders": archived_orders,
-            "archived_new_students": archived_new_students,
-            "archived_active_students": archived_active_students,
-
-        })
+        return Response(
+            {
+                "debt": debt_lid + deb_student,
+                "no_debt": no_debt_lid + no_debt_student,
+                "all_archived": all_archived,
+                "archived_lids": archived_lids,
+                "archived_orders": archived_orders,
+                "archived_new_students": archived_new_students,
+                "archived_active_students": archived_active_students,
+            }
+        )

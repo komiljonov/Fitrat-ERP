@@ -4,8 +4,23 @@ from django.db.models import Avg, FloatField
 from django.db.models.functions import Cast
 from rest_framework import serializers
 
-from .models import Bonus, Compensation, Asos, Monitoring, Page, Point, ResultSubjects, StudentCountMonitoring, \
-    StudentCatchingMonitoring, ResultName, MonitoringAsos4, Comments, Monitoring5, MonitoringAsos1_2, Asos1_2
+from .models import (
+    Bonus,
+    Compensation,
+    Asos,
+    Monitoring,
+    Page,
+    Point,
+    ResultSubjects,
+    StudentCountMonitoring,
+    StudentCatchingMonitoring,
+    ResultName,
+    MonitoringAsos4,
+    Comments,
+    Monitoring5,
+    MonitoringAsos1_2,
+    Asos1_2,
+)
 from ...account.models import CustomUser
 from ...account.serializers import UserListSerializer, UserSerializer
 
@@ -13,7 +28,7 @@ from ...account.serializers import UserListSerializer, UserSerializer
 class BonusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bonus
-        fields = ['id', 'name', 'user', 'amount']
+        fields = ["id", "name", "user", "amount"]
 
     def create(self, validated_data):
         if isinstance(validated_data, list):
@@ -24,18 +39,20 @@ class BonusSerializer(serializers.ModelSerializer):
 class CompensationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Compensation
-        fields = ['id', 'name', 'user', 'amount']
+        fields = ["id", "name", "user", "amount"]
 
     def create(self, validated_data):
         if isinstance(validated_data, list):
-            return Compensation.objects.bulk_create([Compensation(**data) for data in validated_data])
+            return Compensation.objects.bulk_create(
+                [Compensation(**data) for data in validated_data]
+            )
         return super().create(validated_data)
 
 
 class PagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ['id', 'name', 'user', 'is_editable', 'is_readable', 'is_parent']
+        fields = ["id", "name", "user", "is_editable", "is_readable", "is_parent"]
 
     def create(self, validated_data):
         if isinstance(validated_data, list):
@@ -46,14 +63,19 @@ class PagesSerializer(serializers.ModelSerializer):
 class AsosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asos
-        fields = ['id', 'name',"created_at", "updated_at"]
+        fields = ["id", "name", "created_at", "updated_at"]
 
 
 class MonitoringSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
-    point = serializers.PrimaryKeyRelatedField(queryset=Point.objects.all(),allow_null=True)
-    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
-
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
+    point = serializers.PrimaryKeyRelatedField(
+        queryset=Point.objects.all(), allow_null=True
+    )
+    creator = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Monitoring
@@ -66,7 +88,6 @@ class MonitoringSerializer(serializers.ModelSerializer):
             "counter",
             "created_at",
         ]
-
 
     def to_representation(self, instance):
 
@@ -81,10 +102,19 @@ class MonitoringSerializer(serializers.ModelSerializer):
 
 
 class CommentsSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
-    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
-    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
-    monitoring = serializers.PrimaryKeyRelatedField(queryset=Monitoring.objects.all(),allow_null=True)
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
+    asos = serializers.PrimaryKeyRelatedField(
+        queryset=Asos.objects.all(), allow_null=True
+    )
+    creator = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
+    monitoring = serializers.PrimaryKeyRelatedField(
+        queryset=Monitoring.objects.all(), allow_null=True
+    )
+
     class Meta:
         model = Comments
         fields = [
@@ -101,30 +131,44 @@ class CommentsSerializer(serializers.ModelSerializer):
 class PointSerializer(serializers.ModelSerializer):
     average_point = serializers.SerializerMethodField()
     monitoring = serializers.SerializerMethodField()
-    user_avg_ball = serializers.FloatField(read_only=True)  # Already annotated in queryset
+    user_avg_ball = serializers.FloatField(
+        read_only=True
+    )  # Already annotated in queryset
 
     class Meta:
         model = Point
         fields = [
-            'id', 'name', 'asos', "filial", 'max_ball',"amount",
-            "average_point", "monitoring", "user_avg_ball",
-            "created_at", "updated_at"
+            "id",
+            "name",
+            "asos",
+            "filial",
+            "max_ball",
+            "amount",
+            "average_point",
+            "monitoring",
+            "user_avg_ball",
+            "created_at",
+            "updated_at",
         ]
 
     def get_average_point(self, obj):
         """
         Calculates the average ball per user for the given Point within its created month.
         """
-        start_of_month = obj.created_at.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        start_of_month = obj.created_at.replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
         next_month = start_of_month + timedelta(days=32)
-        end_of_month = next_month.replace(day=1) - timedelta(seconds=1)  # Last second of the month
+        end_of_month = next_month.replace(day=1) - timedelta(
+            seconds=1
+        )  # Last second of the month
 
-        monitoring_qs = Monitoring.objects.filter(
-            point=obj,
-            created_at__gte=start_of_month,
-            created_at__lte=end_of_month
-        ).values("user").annotate(
-            avg_ball=Avg(Cast("ball", FloatField()))
+        monitoring_qs = (
+            Monitoring.objects.filter(
+                point=obj, created_at__gte=start_of_month, created_at__lte=end_of_month
+            )
+            .values("user")
+            .annotate(avg_ball=Avg(Cast("ball", FloatField())))
         )
 
         return {str(entry["user"]): entry["avg_ball"] for entry in monitoring_qs}
@@ -136,16 +180,25 @@ class PointSerializer(serializers.ModelSerializer):
         """
         user_monitorings = getattr(obj, "user_monitorings", [])
         return [
-            {"id": mon.id,"user":mon.user.full_name ,"creator" : mon.creator.full_name,
-             "ball": mon.ball, "created_at": mon.created_at}
+            {
+                "id": mon.id,
+                "user": mon.user.full_name,
+                "creator": mon.creator.full_name,
+                "ball": mon.ball,
+                "created_at": mon.created_at,
+            }
             for mon in user_monitorings
         ]
 
 
 class ResultPointsSerializer(serializers.ModelSerializer):
-    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+    asos = serializers.PrimaryKeyRelatedField(
+        queryset=Asos.objects.all(), allow_null=True
+    )
 
-    result = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
+    result = serializers.PrimaryKeyRelatedField(
+        queryset=ResultName.objects.all(), allow_null=True
+    )
     # results = serializers.SerializerMethodField()
 
     class Meta:
@@ -169,9 +222,8 @@ class ResultPointsSerializer(serializers.ModelSerializer):
             "is_archived",
             "coin",
             "created_at",
-            "updated_at"
+            "updated_at",
         ]
-
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -180,8 +232,10 @@ class ResultPointsSerializer(serializers.ModelSerializer):
 
 
 class StudentCountMonitoringSerializer(serializers.ModelSerializer):
-    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),
-                                              allow_null=True)
+    asos = serializers.PrimaryKeyRelatedField(
+        queryset=Asos.objects.all(), allow_null=True
+    )
+
     class Meta:
         model = StudentCountMonitoring
         fields = [
@@ -193,8 +247,9 @@ class StudentCountMonitoringSerializer(serializers.ModelSerializer):
             "from_point",
             "to_point",
             "created_at",
-            "updated_at"
+            "updated_at",
         ]
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["asos"] = AsosSerializer(instance.asos).data
@@ -215,11 +270,22 @@ class ResultsNameSerializer(serializers.ModelSerializer):
 
 
 class MonitoringAsos4Serializer(serializers.ModelSerializer):
-    creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
-    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
-    result = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
-    subject = serializers.PrimaryKeyRelatedField(queryset=ResultSubjects.objects.all(),allow_null=True)
+    creator = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
+    asos = serializers.PrimaryKeyRelatedField(
+        queryset=Asos.objects.all(), allow_null=True
+    )
+    result = serializers.PrimaryKeyRelatedField(
+        queryset=ResultName.objects.all(), allow_null=True
+    )
+    subject = serializers.PrimaryKeyRelatedField(
+        queryset=ResultSubjects.objects.all(), allow_null=True
+    )
+
     class Meta:
         model = MonitoringAsos4
         fields = [
@@ -245,7 +311,10 @@ class MonitoringAsos4Serializer(serializers.ModelSerializer):
 
 
 class StudentCatchupSerializer(serializers.ModelSerializer):
-    asos = serializers.PrimaryKeyRelatedField(queryset=Asos.objects.all(),allow_null=True)
+    asos = serializers.PrimaryKeyRelatedField(
+        queryset=Asos.objects.all(), allow_null=True
+    )
+
     class Meta:
         model = StudentCatchingMonitoring
         fields = [
@@ -258,6 +327,7 @@ class StudentCatchupSerializer(serializers.ModelSerializer):
             "ball",
             "created_at",
         ]
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["asos"] = AsosSerializer(instance.asos).data
@@ -265,7 +335,10 @@ class StudentCatchupSerializer(serializers.ModelSerializer):
 
 
 class Monitoring5Serializer(serializers.ModelSerializer):
-    teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    teacher = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
+
     class Meta:
         model = Monitoring5
         fields = [
@@ -275,6 +348,7 @@ class Monitoring5Serializer(serializers.ModelSerializer):
             "teacher",
             "created_at",
         ]
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["teacher"] = UserListSerializer(instance.teacher).data
@@ -295,7 +369,10 @@ class Monitoring1_2serializer(serializers.ModelSerializer):
 
 
 class UserMonitoring1_2Serializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(),allow_null=True)
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
+
     class Meta:
         model = MonitoringAsos1_2
         fields = [
@@ -307,6 +384,7 @@ class UserMonitoring1_2Serializer(serializers.ModelSerializer):
             "amount",
             "created_at",
         ]
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["user"] = UserSerializer(instance.user).data

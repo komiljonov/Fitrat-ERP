@@ -8,7 +8,7 @@ from ...student.groups.models import Group
 
 @receiver(post_save, sender=Group_Type)
 def on_create(sender, instance: Group_Type, created, **kwargs):
-    if not created :
+    if not created:
         for group in Group.objects.all():
             group.price_type = instance.price_type
             group.save()

@@ -572,7 +572,7 @@ class LidStatisticsView(ListAPIView):
             .count()
         )
         archived_new_leads = queryset.filter(
-            is_archived=True, lid_stage_type="NEW_LID", **filter
+            is_archived=False, lid_stage_type="NEW_LID", **filter
         ).count()
 
         ordered_new = queryset.filter(
@@ -607,7 +607,7 @@ class LidStatisticsView(ListAPIView):
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             lid__isnull=False,
-            is_archived=True,
+            is_archived=False,
             lid__lid_stage_type="ORDERED_LID",
         ).count()
 
@@ -632,7 +632,7 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         all_archived = queryset.filter(
-            is_archived=True,
+            is_archived=False,
             is_student=False,
             **filter,
         ).count()
@@ -645,7 +645,7 @@ class LidStatisticsView(ListAPIView):
             ),
             lid__lid_stage_type="NEW_LID",
             lid__isnull=False,
-            is_archived=True,
+            is_archived=False,
         ).count()
 
         first_lesson_all = FirstLLesson.objects.filter(
@@ -672,7 +672,7 @@ class LidStatisticsView(ListAPIView):
             Q(student__filial_id=filial) if filial else Q(),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-            is_archived=True,
+            is_archived=False,
             student__isnull=False,
             student__student_stage_type="NEW_STUDENT",
         ).count()
@@ -681,7 +681,7 @@ class LidStatisticsView(ListAPIView):
             Q(student__filial_id=filial) if filial else Q(),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-            is_archived=True,
+            is_archived=False,
             student__isnull=False,
             student__student_stage_type="ACTIVE_STUDENT",
         ).count()
@@ -690,7 +690,9 @@ class LidStatisticsView(ListAPIView):
             Q(student__filial_id=filial) if filial else Q(),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-            is_archived=True,
+            
+            
+            is_archived=False,
             student__isnull=False,
             student__balance__isnull=False,
             student__balance__gte=100000,
@@ -700,7 +702,7 @@ class LidStatisticsView(ListAPIView):
             Q(lid__filial_id=filial) if filial else Q(),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-            is_archived=True,
+            is_archived=False,
             lid__isnull=False,
             lid__is_student=False,
             lid__balance__isnull=False,
@@ -711,7 +713,7 @@ class LidStatisticsView(ListAPIView):
             Q(student__filial_id=filial) if filial else Q(),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-            is_archived=True,
+            is_archived=False,
             student__isnull=False,
             student__balance__lt=100000,
         ).count()
@@ -720,7 +722,7 @@ class LidStatisticsView(ListAPIView):
             Q(lid__filial_id=filial) if filial else Q(),
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-            is_archived=True,
+            is_archived=False,
             lid__isnull=False,
             lid__is_student=False,
             lid__balance__lt=100000,
@@ -731,7 +733,7 @@ class LidStatisticsView(ListAPIView):
                 Q(student__filial_id=filial) if filial else Q(),
                 Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
                 Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-                is_archived=True,
+                is_archived=False,
                 student__isnull=False,
                 student__balance__isnull=False,
                 student__balance__gte=100000,
@@ -744,7 +746,7 @@ class LidStatisticsView(ListAPIView):
                 Q(lid__filial_id=filial) if filial else Q(),
                 Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
                 Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-                is_archived=True,
+                is_archived=False,
                 lid__isnull=False,
                 lid__is_student=False,
                 lid__balance__isnull=False,
@@ -758,7 +760,7 @@ class LidStatisticsView(ListAPIView):
                 Q(student__filial_id=filial) if filial else Q(),
                 Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
                 Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-                is_archived=True,
+                is_archived=False,
                 student__isnull=False,
                 student__balance__lt=100000,
             ).aggregate(total=Sum("student__balance"))["total"]
@@ -770,7 +772,7 @@ class LidStatisticsView(ListAPIView):
                 Q(lid__filial_id=filial) if filial else Q(),
                 Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
                 Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
-                is_archived=True,
+                is_archived=False,
                 lid__isnull=False,
                 lid__is_student=False,
                 lid__balance__lt=100000,

@@ -13,6 +13,7 @@ SIGNATURE_PATH = os.path.abspath("data/lid/new_lid/sign.png")
 STAMP_PATH = os.path.abspath("data/lid/new_lid/pechate.png")
 TEMPLATE_PATH = os.path.abspath("data/lid/new_lid/Shartnoma.docx")
 
+
 def replace_image(doc, placeholder, image_path, width=1.3):
     """Replace a placeholder with an image inside tables with correct size."""
     if not os.path.exists(image_path):
@@ -36,20 +37,47 @@ def replace_image(doc, placeholder, image_path, width=1.3):
     if not found_placeholder:
         print(f"⚠️ Warning: Placeholder '{placeholder}' not found in document.")
 
+
 class ContractGenerateAPIView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=["student__full_name", "subjects", "from_date", "from_month", "from_year", "to_date", "to_month", "to_year"],
+            required=[
+                "student__full_name",
+                "subjects",
+                "from_date",
+                "from_month",
+                "from_year",
+                "to_date",
+                "to_month",
+                "to_year",
+            ],
             properties={
-                "student__full_name": openapi.Schema(type=openapi.TYPE_STRING, description="Full name of the student"),
-                "subjects": openapi.Schema(type=openapi.TYPE_STRING, description="Subjects the student is enrolled in"),
-                "from_date": openapi.Schema(type=openapi.TYPE_INTEGER, description="Start date (day)"),
-                "from_month": openapi.Schema(type=openapi.TYPE_STRING, description="Start month"),
-                "from_year": openapi.Schema(type=openapi.TYPE_INTEGER, description="Start year"),
-                "to_date": openapi.Schema(type=openapi.TYPE_INTEGER, description="End date (day)"),
-                "to_month": openapi.Schema(type=openapi.TYPE_STRING, description="End month"),
-                "to_year": openapi.Schema(type=openapi.TYPE_INTEGER, description="End year"),
+                "student__full_name": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Full name of the student"
+                ),
+                "subjects": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Subjects the student is enrolled in",
+                ),
+                "from_date": openapi.Schema(
+                    type=openapi.TYPE_INTEGER, description="Start date (day)"
+                ),
+                "from_month": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Start month"
+                ),
+                "from_year": openapi.Schema(
+                    type=openapi.TYPE_INTEGER, description="Start year"
+                ),
+                "to_date": openapi.Schema(
+                    type=openapi.TYPE_INTEGER, description="End date (day)"
+                ),
+                "to_month": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="End month"
+                ),
+                "to_year": openapi.Schema(
+                    type=openapi.TYPE_INTEGER, description="End year"
+                ),
             },
         ),
         responses={200: "Returns a contract file for download"},
@@ -94,6 +122,11 @@ class ContractGenerateAPIView(APIView):
         output_stream.seek(0)
 
         # ✅ Return the file as a response
-        response = HttpResponse(output_stream, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-        response["Content-Disposition"] = f"attachment; filename=contract_{student_name}.docx"
+        response = HttpResponse(
+            output_stream,
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        response["Content-Disposition"] = (
+            f"attachment; filename=contract_{student_name}.docx"
+        )
         return response
