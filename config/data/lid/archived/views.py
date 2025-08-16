@@ -75,24 +75,31 @@ class ArchivedListAPIView(ListCreateAPIView):
             # Student or lid exists and their balance is < 100000
             queryset = queryset.filter(
                 Q(student__balance__lt=100000) | Q(lid__balance__lt=100000)
-            )
+            ).order_by("balance")
 
         if student_stage:
             queryset = queryset.filter(student__student_stage_type=student_stage)
+
         if lid_stage:
             queryset = queryset.filter(lid__lid_stage_type=lid_stage)
+
         if filial:
             queryset = queryset.filter(
                 Q(student__filial__id=filial) | Q(lid__filial__id=filial)
             )
+
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
+
         if lid:
             queryset = queryset.filter(lid__id=lid)
+
         if student:
             queryset = queryset.filter(student__id=student)
+
         if creator:
             queryset = queryset.filter(creator__id=creator)
+
         if comment:
             queryset = queryset.filter(comment__icontains=comment)
 
@@ -100,20 +107,24 @@ class ArchivedListAPIView(ListCreateAPIView):
             queryset = queryset.filter(
                 Q(student__education_lang=lang) | Q(lid__education_lang=lang)
             )
+
         if subject:
             queryset = queryset.filter(
                 Q(student__subject__id=subject) | Q(lid__subject__id=subject)
             )
+
         if call_operator:
             queryset = queryset.filter(
                 Q(student__call_operator__id=call_operator)
                 | Q(lid__call_operator__id=call_operator)
             )
+
         if sales_manager:
             queryset = queryset.filter(
                 Q(student__sales_manager__id=sales_manager)
                 | Q(lid__sales_manager__id=sales_manager)
             )
+
         if service_manager:
             queryset = queryset.filter(
                 Q(student__service_manager__id=service_manager)
@@ -122,16 +133,17 @@ class ArchivedListAPIView(ListCreateAPIView):
 
         if balance_from or balance_to:
             student_q = Q()
-            lid_q = Q()
+            lead_q = Q()
 
             if balance_from:
                 student_q &= Q(student__balance__gte=balance_from)
-                lid_q &= Q(lid__balance__gte=balance_from)
+                lead_q &= Q(lid__balance__gte=balance_from)
+
             if balance_to:
                 student_q &= Q(student__balance__lte=balance_to)
-                lid_q &= Q(lid__balance__lte=balance_to)
+                lead_q &= Q(lid__balance__lte=balance_to)
 
-            queryset = queryset.filter(student_q | lid_q)
+            queryset = queryset.filter(student_q | lead_q)
 
         date_format = "%Y-%m-%d"
         if start_date_str and end_date_str:

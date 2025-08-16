@@ -748,7 +748,11 @@ class LidStatisticsView(ListAPIView):
                 Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
                 Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
                 Q(student__balance__gte=100000) | Q(lid__balance__gte=100000),
+                
+                
+                
                 is_archived=True,
+                
             ).aggregate(
                 total=Sum(
                     # "student__balance"
