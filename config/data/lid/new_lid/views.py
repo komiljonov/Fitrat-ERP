@@ -5,7 +5,7 @@ from django.db.models import Q, Sum, Value, F
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
-from django.db.models import Case, When, IntegerField,FloatField
+from django.db.models import Case, When, IntegerField, FloatField
 
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -740,13 +740,13 @@ class LidStatisticsView(ListAPIView):
 
         no_debt_sum = (
             Archived.objects.filter(
-                Q(student__filial_id=filial) if filial else Q(),
+                Q(student__filial_id=filial) |
+                 Q(lid__filial_id=filial) if filial else Q(),
                 Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
                 Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
+                Q(student__balance__gte=100000) | Q(lid__balance__gte=100000),
                 is_archived=True,
-                student__isnull=False,
-                student__balance__isnull=False,
-                student__balance__gte=100000,
+                
             ).aggregate(total=Sum("student__balance"))["total"]
             or 0
         )
@@ -781,7 +781,7 @@ class LidStatisticsView(ListAPIView):
                     # "student__balance"
                     Coalesce(F("student__balance"), Value(0))
                     + Coalesce(F("lid__balance"), Value(0)),
-                    output_field=FloatField()
+                    output_field=FloatField(),
                 )
             )[
                 "total"
