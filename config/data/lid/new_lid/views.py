@@ -749,7 +749,16 @@ class LidStatisticsView(ListAPIView):
                 Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
                 Q(student__balance__gte=100000) | Q(lid__balance__gte=100000),
                 is_archived=True,
-            ).aggregate(total=Sum("student__balance"))["total"]
+            ).aggregate(
+                total=Sum(
+                    # "student__balance"
+                    Coalesce(F("student__balance"), Value(0))
+                    + Coalesce(F("lid__balance"), Value(0)),
+                    output_field=FloatField(),
+                )
+            )[
+                "total"
+            ]
             or 0
         )
 
@@ -763,16 +772,7 @@ class LidStatisticsView(ListAPIView):
                 lid__is_student=False,
                 lid__balance__isnull=False,
                 lid__balance__gte=100000,
-            ).aggregate(
-                total=Sum(
-                    # "student__balance"
-                    Coalesce(F("student__balance"), Value(0))
-                    + Coalesce(F("lid__balance"), Value(0)),
-                    output_field=FloatField(),
-                )
-            )[
-                "total"
-            ]
+            ).aggregate(total=Sum("lid__balance"))["total"]
             or 0
         )
 
