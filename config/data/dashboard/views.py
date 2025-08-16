@@ -19,12 +19,23 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from data.department.marketing_channel.models import MarketingChannel
-from data.finances.finance.models import Finance, Casher, Kind, SaleStudent, VoucherStudent
+from data.finances.finance.models import (
+    Finance,
+    Casher,
+    Kind,
+    SaleStudent,
+    VoucherStudent,
+)
 from data.lid.new_lid.models import Lid
 from data.student.groups.models import Room, Group, Day
 from data.student.studentgroup.models import StudentGroup
 from ..account.models import CustomUser
-from ..finances.compensation.models import MonitoringAsos1_2, Monitoring, MonitoringAsos4, Asos
+from ..finances.compensation.models import (
+    MonitoringAsos1_2,
+    Monitoring,
+    MonitoringAsos4,
+    Asos,
+)
 from ..lid.archived.models import Archived
 from ..lid.new_lid.serializers import LidSerializer
 from ..results.models import Results
@@ -37,17 +48,17 @@ from ..upload.serializers import FileUploadSerializer
 class DashboardView(APIView):
     def get(self, request, *args, **kwargs):
         # Get Query Parameters
-        start_date = request.query_params.get('start_date', None)
-        end_date = request.query_params.get('end_date', None)
-        channel_id = request.query_params.get('marketing_channel')
-        service_manager = request.query_params.get('service_manager')
-        call_operator = request.query_params.get('call_operator')
-        sales_manager = request.query_params.get('sales_manager')
-        filial = request.query_params.get('filial', None)
-        subjects = request.query_params.get('subject')
-        course = request.query_params.get('course')
-        teacher = request.query_params.get('teacher')
-        is_student = request.query_params.get('is_student')
+        start_date = request.query_params.get("start_date", None)
+        end_date = request.query_params.get("end_date", None)
+        channel_id = request.query_params.get("marketing_channel")
+        service_manager = request.query_params.get("service_manager")
+        call_operator = request.query_params.get("call_operator")
+        sales_manager = request.query_params.get("sales_manager")
+        filial = request.query_params.get("filial", None)
+        subjects = request.query_params.get("subject")
+        course = request.query_params.get("course")
+        teacher = request.query_params.get("teacher")
+        is_student = request.query_params.get("is_student")
 
         # Common Filters
         filters = {}
@@ -67,13 +78,22 @@ class DashboardView(APIView):
         orders = lid.filter(lid_stage_type="ORDERED_LID")
         orders_archived = orders.filter(is_archived=True)
         first_lesson = FirstLLesson.objects.filter(**filters)
-        first_lesson_archived = Lid.objects.filter(is_archived=True, is_student=False)
-        first_lesson_come = Student.objects.filter(student_stage_type="NEW_STUDENT", **filters)
+
+        first_lesson_archived = Lid.objects.filter(is_archived=True, is_student=False, ** filters)
+
+        first_lesson_come = Student.objects.filter(
+            student_stage_type="NEW_STUDENT", **filters
+        )
         first_lesson_come_archived = first_lesson_come.filter(is_archived=True)
-        new_student = StudentGroup.objects.filter(student__student_stage_type="NEW_STUDENT", **filters)
+        new_student = StudentGroup.objects.filter(
+            student__student_stage_type="NEW_STUDENT", **filters
+        )
         new_student_archived = new_student.filter(student__is_archived=True)
-        active_student = StudentGroup.objects.filter(student__student_stage_type="ACTIVE_STUDENT",
-                                                     group__status="ACTIVE", **filters)
+        active_student = StudentGroup.objects.filter(
+            student__student_stage_type="ACTIVE_STUDENT",
+            group__status="ACTIVE",
+            **filters,
+        )
         active_student_archived = active_student.filter(student__is_archived=True)
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
 
@@ -86,11 +106,16 @@ class DashboardView(APIView):
             archived_lid = archived_lid.filter(is_student=is_student_value)
             orders = orders.filter(is_student=is_student_value, is_archived=False)
             orders_archived = orders_archived.filter(is_student=is_student_value)
-            first_lesson = first_lesson.filter(lid__is_student=is_student_value, is_archived=False)
+            first_lesson = first_lesson.filter(
+                lid__is_student=is_student_value, is_archived=False
+            )
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 
-            first_lesson_come_archived = first_lesson_come.filter(
-                is_archived=True, is_student=False) if first_lesson_come.exists() else None
+            first_lesson_come_archived = (
+                first_lesson_come.filter(is_archived=True, is_student=False)
+                if first_lesson_come.exists()
+                else None
+            )
 
         if channel_id:
             channel = MarketingChannel.objects.get(id=channel_id)
@@ -100,7 +125,9 @@ class DashboardView(APIView):
             orders_archived = orders_archived.filter(marketing_channel=channel)
             first_lesson = first_lesson.filter(lid__marketing_channel=channel)
             first_lesson_come = first_lesson_come.filter(marketing_channel=channel)
-            first_lesson_come_archived = first_lesson_come_archived.filter(marketing_channel=channel)
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                marketing_channel=channel
+            )
 
         if service_manager:
             lid = lid.filter(service_manager_id=service_manager)
@@ -108,8 +135,12 @@ class DashboardView(APIView):
             orders = orders.filter(service_manager_id=service_manager)
             orders_archived = orders_archived.filter(service_manager_id=service_manager)
             first_lesson = first_lesson.filter(lid__service_manager_id=service_manager)
-            first_lesson_come = first_lesson_come.filter(service_manager_id=service_manager)
-            first_lesson_come_archived = first_lesson_come_archived.filter(service_manager_id=service_manager)
+            first_lesson_come = first_lesson_come.filter(
+                service_manager_id=service_manager
+            )
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                service_manager_id=service_manager
+            )
 
         if sales_manager:
             lid = lid.filter(sales_manager_id=sales_manager)
@@ -118,7 +149,9 @@ class DashboardView(APIView):
             orders_archived = orders_archived.filter(sales_manager_id=sales_manager)
             first_lesson = first_lesson.filter(lid__sales_manager_id=sales_manager)
             first_lesson_come = first_lesson_come.filter(sales_manager_id=sales_manager)
-            first_lesson_come_archived = first_lesson_come_archived.filter(sales_manager_id=sales_manager)
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                sales_manager_id=sales_manager
+            )
 
         if call_operator:
             lid = lid.filter(call_operator_id=call_operator)
@@ -127,7 +160,9 @@ class DashboardView(APIView):
             orders_archived = orders_archived.filter(call_operator_id=call_operator)
             first_lesson = first_lesson.filter(lid__call_operator_id=call_operator)
             first_lesson_come = first_lesson_come.filter(call_operator_id=call_operator)
-            first_lesson_come_archived = first_lesson_come_archived.filter(call_operator_id=call_operator)
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                call_operator_id=call_operator
+            )
 
         if subjects:
             lid = lid.filter(subject_id=subjects)
@@ -136,25 +171,39 @@ class DashboardView(APIView):
             orders_archived = orders_archived.filter(subject_id=subjects)
             first_lesson = first_lesson.filter(Q(lid__subject__id=subjects))
             first_lesson_come = first_lesson_come.filter(Q(lid__subject__id=subjects))
-            first_lesson_come_archived = first_lesson_come_archived.filter(Q(lid__subject__id=subjects))
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                Q(lid__subject__id=subjects)
+            )
 
         if teacher:
             lid = lid.filter(lids_group__group__teacher_id=teacher)
             archived_lid = archived_lid.filter(lids_group__group__teacher_id=teacher)
             orders = orders.filter(lids_group__group__teacher_id=teacher)
-            orders_archived = orders_archived.filter(lids_group__group__teacher_id=teacher)
+            orders_archived = orders_archived.filter(
+                lids_group__group__teacher_id=teacher
+            )
             first_lesson = first_lesson.filter(group__teacher__id=teacher)
-            first_lesson_come = first_lesson_come.filter(students_group__group__teacher_id=teacher)
-            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__teacher_id=teacher)
+            first_lesson_come = first_lesson_come.filter(
+                students_group__group__teacher_id=teacher
+            )
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                students_group__group__teacher_id=teacher
+            )
 
         if course:
             lid = lid.filter(lids_group__group__course_id=course)
             archived_lid = archived_lid.filter(lids_group__group__course_id=course)
             orders = orders.filter(lids_group__group__course_id=course)
-            orders_archived = orders_archived.filter(lids_group__group__course_id=course)
+            orders_archived = orders_archived.filter(
+                lids_group__group__course_id=course
+            )
             first_lesson = first_lesson.filter(group__course__id=course)
-            first_lesson_come = first_lesson_come.filter(students_group__group__course_id=course)
-            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__course_id=course)
+            first_lesson_come = first_lesson_come.filter(
+                students_group__group__course_id=course
+            )
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                students_group__group__course_id=course
+            )
 
         # Final Data Output
         data = {
@@ -165,11 +214,15 @@ class DashboardView(APIView):
             "first_lesson": first_lesson.count(),
             "first_lesson_archived": first_lesson_archived.count(),
             "first_lesson_come": first_lesson_come.count(),
-            "first_lesson_come_archived": first_lesson_come_archived.count() if first_lesson_come_archived else 0,
+            "first_lesson_come_archived": (
+                first_lesson_come_archived.count() if first_lesson_come_archived else 0
+            ),
             "new_student_archived": new_student_archived.count(),
             "new_student": new_student.count(),
             "active_student": active_student.count(),
-            "active_student_archived": active_student_archived.count() if active_student_archived else 0,
+            "active_student_archived": (
+                active_student_archived.count() if active_student_archived else 0
+            ),
             "course_ended": course_ended.count(),
         }
 
@@ -179,17 +232,17 @@ class DashboardView(APIView):
 class DashboardSecondView(APIView):
     def get(self, request, *args, **kwargs):
         # Get Query Parameters
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        channel_id = request.query_params.get('marketing_channel')
-        service_manager = request.query_params.get('service_manager')
-        call_operator = request.query_params.get('call_operator')
-        sales_manager = request.query_params.get('sales_manager')
-        filial = request.query_params.get('filial')
-        subjects = request.query_params.get('subject')
-        course = request.query_params.get('course')
-        teacher = request.query_params.get('teacher')
-        is_student = request.query_params.get('is_student')
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        channel_id = request.query_params.get("marketing_channel")
+        service_manager = request.query_params.get("service_manager")
+        call_operator = request.query_params.get("call_operator")
+        sales_manager = request.query_params.get("sales_manager")
+        filial = request.query_params.get("filial")
+        subjects = request.query_params.get("subject")
+        course = request.query_params.get("course")
+        teacher = request.query_params.get("teacher")
+        is_student = request.query_params.get("is_student")
 
         # Common Filters
         filters = {}
@@ -202,21 +255,35 @@ class DashboardSecondView(APIView):
 
         # Initial QuerySets
         lid = Lid.objects.filter(lid_stage_type="NEW_LID", **filters).exclude(
-            ordered_stages="BIRINCHI_DARS_BELGILANGAN")
-        archived_lid = lid.filter(lid_stage_type="NEW_LID", is_archived=True, )
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN"
+        )
+        archived_lid = lid.filter(
+            lid_stage_type="NEW_LID",
+            is_archived=True,
+        )
         orders = Lid.objects.filter(lid_stage_type="ORDERED_LID", **filters).exclude(
-            ordered_stages="BIRINCHI_DARS_BELGILANGAN")
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN"
+        )
         orders_archived = orders.filter(is_archived=True)
         # first_lesson = FirstLLesson.objects.filter(**filters)
-        first_lesson = Lid.objects.filter(ordered_stages="BIRINCHI_DARS_BELGILANGAN", is_student=False,
-                                          is_archived=False,
-                                          **filters)
+        first_lesson = Lid.objects.filter(
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+            is_student=False,
+            is_archived=False,
+            **filters,
+        )
 
         # Students with One Attendance
-        students_with_one_attendance = Attendance.objects.values("student").annotate(
-            count=Count("id")).filter(count=1, **filters).values_list("student", flat=True)
+        students_with_one_attendance = (
+            Attendance.objects.values("student")
+            .annotate(count=Count("id"))
+            .filter(count=1, **filters)
+            .values_list("student", flat=True)
+        )
 
-        first_lesson_come = Student.objects.filter(id__in=students_with_one_attendance, **filters)
+        first_lesson_come = Student.objects.filter(
+            id__in=students_with_one_attendance, **filters
+        )
         first_lesson_come_archived = first_lesson_come.filter(is_archived=True)
 
         # First Course Payment Students
@@ -224,12 +291,18 @@ class DashboardSecondView(APIView):
             student__isnull=False, kind__name="COURSE_PAYMENT", **filters
         ).values_list("student", flat=True)
 
-        first_course_payment = Student.objects.filter(id__in=payment_students, **filters)
+        first_course_payment = Student.objects.filter(
+            id__in=payment_students, **filters
+        )
         first_course_payment_archived = first_course_payment.filter(is_archived=True)
 
         # Active and Ended Courses
-        new_student = Student.objects.filter(student_stage_type="NEW_STUDENT", is_archived=False, **filters)
-        active_student = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", is_archived=False, **filters)
+        new_student = Student.objects.filter(
+            student_stage_type="NEW_STUDENT", is_archived=False, **filters
+        )
+        active_student = Student.objects.filter(
+            student_stage_type="ACTIVE_STUDENT", is_archived=False, **filters
+        )
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
         all_students = Student.objects.filter(is_archived=False)
 
@@ -242,14 +315,24 @@ class DashboardSecondView(APIView):
             archived_lid = archived_lid.filter(is_student=is_student_value)
             orders = orders.filter(is_student=is_student_value, is_archived=False)
             orders_archived = orders_archived.filter(is_student=is_student_value)
-            first_lesson = first_lesson.filter(is_student=is_student_value, is_archived=False)
+            first_lesson = first_lesson.filter(
+                is_student=is_student_value, is_archived=False
+            )
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 
-            first_lesson_come_archived = first_lesson_come.filter(
-                is_archived=True) if first_lesson_come.exists() else None
-            first_course_payment = first_course_payment.filter(is_archived=is_student_value)
-            first_course_payment_archived = first_course_payment.filter(
-                is_archived=True) if first_course_payment.exists() else None
+            first_lesson_come_archived = (
+                first_lesson_come.filter(is_archived=True)
+                if first_lesson_come.exists()
+                else None
+            )
+            first_course_payment = first_course_payment.filter(
+                is_archived=is_student_value
+            )
+            first_course_payment_archived = (
+                first_course_payment.filter(is_archived=True)
+                if first_course_payment.exists()
+                else None
+            )
 
         if channel_id:
             channel = MarketingChannel.objects.get(id=channel_id)
@@ -259,9 +342,15 @@ class DashboardSecondView(APIView):
             orders_archived = orders_archived.filter(marketing_channel=channel)
             first_lesson = first_lesson.filter(marketing_channel=channel)
             first_lesson_come = first_lesson_come.filter(marketing_channel=channel)
-            first_lesson_come_archived = first_lesson_come_archived.filter(marketing_channel=channel)
-            first_course_payment = first_course_payment.filter(marketing_channel=channel)
-            first_course_payment_archived = first_course_payment_archived.filter(marketing_channel=channel)
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                marketing_channel=channel
+            )
+            first_course_payment = first_course_payment.filter(
+                marketing_channel=channel
+            )
+            first_course_payment_archived = first_course_payment_archived.filter(
+                marketing_channel=channel
+            )
 
         if service_manager:
             lid = lid.filter(service_manager_id=service_manager)
@@ -269,10 +358,18 @@ class DashboardSecondView(APIView):
             orders = orders.filter(service_manager_id=service_manager)
             orders_archived = orders_archived.filter(service_manager_id=service_manager)
             first_lesson = first_lesson.filter(service_manager_id=service_manager)
-            first_lesson_come = first_lesson_come.filter(service_manager_id=service_manager)
-            first_lesson_come_archived = first_lesson_come_archived.filter(service_manager_id=service_manager)
-            first_course_payment = first_course_payment.filter(service_manager_id=service_manager)
-            first_course_payment_archived = first_course_payment_archived.filter(service_manager_id=service_manager)
+            first_lesson_come = first_lesson_come.filter(
+                service_manager_id=service_manager
+            )
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                service_manager_id=service_manager
+            )
+            first_course_payment = first_course_payment.filter(
+                service_manager_id=service_manager
+            )
+            first_course_payment_archived = first_course_payment_archived.filter(
+                service_manager_id=service_manager
+            )
 
         if sales_manager:
             lid = lid.filter(sales_manager_id=sales_manager)
@@ -281,9 +378,15 @@ class DashboardSecondView(APIView):
             orders_archived = orders_archived.filter(sales_manager_id=sales_manager)
             first_lesson = first_lesson.filter(sales_manager_id=sales_manager)
             first_lesson_come = first_lesson_come.filter(sales_manager_id=sales_manager)
-            first_lesson_come_archived = first_lesson_come_archived.filter(sales_manager_id=sales_manager)
-            first_course_payment = first_course_payment.filter(sales_manager_id=sales_manager)
-            first_course_payment_archived = first_course_payment_archived.filter(sales_manager_id=sales_manager)
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                sales_manager_id=sales_manager
+            )
+            first_course_payment = first_course_payment.filter(
+                sales_manager_id=sales_manager
+            )
+            first_course_payment_archived = first_course_payment_archived.filter(
+                sales_manager_id=sales_manager
+            )
 
         if call_operator:
             lid = lid.filter(call_operator_id=call_operator)
@@ -292,9 +395,15 @@ class DashboardSecondView(APIView):
             orders_archived = orders_archived.filter(call_operator_id=call_operator)
             first_lesson = first_lesson.filter(call_operator_id=call_operator)
             first_lesson_come = first_lesson_come.filter(call_operator_id=call_operator)
-            first_lesson_come_archived = first_lesson_come_archived.filter(call_operator_id=call_operator)
-            first_course_payment = first_course_payment.filter(call_operator_id=call_operator)
-            first_course_payment_archived = first_course_payment_archived.filter(call_operator_id=call_operator)
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                call_operator_id=call_operator
+            )
+            first_course_payment = first_course_payment.filter(
+                call_operator_id=call_operator
+            )
+            first_course_payment_archived = first_course_payment_archived.filter(
+                call_operator_id=call_operator
+            )
 
         if subjects:
             lid = lid.filter(subject_id=subjects)
@@ -303,33 +412,55 @@ class DashboardSecondView(APIView):
             orders_archived = orders_archived.filter(subject_id=subjects)
             first_lesson = first_lesson.filter(subject_id=subjects)
             first_lesson_come = first_lesson_come.filter(subject_id=subjects)
-            first_lesson_come_archived = first_lesson_come_archived.filter(subject_id=subjects)
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                subject_id=subjects
+            )
             first_course_payment = first_course_payment.filter(subject_id=subjects)
-            first_course_payment_archived = first_course_payment_archived.filter(subject_id=subjects)
+            first_course_payment_archived = first_course_payment_archived.filter(
+                subject_id=subjects
+            )
 
         if teacher:
             lid = lid.filter(lids_group__group__teacher_id=teacher)
             archived_lid = archived_lid.filter(lids_group__group__teacher_id=teacher)
             orders = orders.filter(lids_group__group__teacher_id=teacher)
-            orders_archived = orders_archived.filter(lids_group__group__teacher_id=teacher)
+            orders_archived = orders_archived.filter(
+                lids_group__group__teacher_id=teacher
+            )
             first_lesson = first_lesson.filter(group__teacher_id=teacher)
-            first_lesson_come = first_lesson_come.filter(students_group__group__teacher_id=teacher)
-            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group_id=teacher)
-            first_course_payment = first_course_payment.filter(students_group__group__teacher_id=teacher)
+            first_lesson_come = first_lesson_come.filter(
+                students_group__group__teacher_id=teacher
+            )
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                students_group__group_id=teacher
+            )
+            first_course_payment = first_course_payment.filter(
+                students_group__group__teacher_id=teacher
+            )
             first_course_payment_archived = first_course_payment_archived.filter(
-                students_group__group__teacher_id=teacher)
+                students_group__group__teacher_id=teacher
+            )
 
         if course:
             lid = lid.filter(lids_group__group__course_id=course)
             archived_lid = archived_lid.filter(lids_group__group__course_id=course)
             orders = orders.filter(lids_group__group__course_id=course)
-            orders_archived = orders_archived.filter(lids_group__group__course_id=course)
+            orders_archived = orders_archived.filter(
+                lids_group__group__course_id=course
+            )
             first_lesson = first_lesson.filter(group__course_id=course)
-            first_lesson_come = first_lesson_come.filter(students_group__group__course_id=course)
-            first_lesson_come_archived = first_lesson_come_archived.filter(students_group__group__course_id=course)
-            first_course_payment = first_course_payment.filter(students_group__group__course_id=course)
+            first_lesson_come = first_lesson_come.filter(
+                students_group__group__course_id=course
+            )
+            first_lesson_come_archived = first_lesson_come_archived.filter(
+                students_group__group__course_id=course
+            )
+            first_course_payment = first_course_payment.filter(
+                students_group__group__course_id=course
+            )
             first_course_payment_archived = first_course_payment_archived.filter(
-                students_group__group__course_id=course)
+                students_group__group__course_id=course
+            )
 
         # Final Data Output
         data = {
@@ -340,11 +471,17 @@ class DashboardSecondView(APIView):
             "orders_archived": orders_archived.count(),
             "first_lesson": first_lesson.count(),
             "first_lesson_come": first_lesson_come.count(),
-            "first_lesson_come_archived": first_lesson_come_archived.count() if first_lesson_come_archived else 0,
+            "first_lesson_come_archived": (
+                first_lesson_come_archived.count() if first_lesson_come_archived else 0
+            ),
             "first_course_payment": first_course_payment.count(),
             "new_student": new_student.count(),
             "active_student": active_student.count(),
-            "first_course_payment_archived": first_course_payment_archived.count() if first_course_payment_archived else 0,
+            "first_course_payment_archived": (
+                first_course_payment_archived.count()
+                if first_course_payment_archived
+                else 0
+            ),
             "course_ended": course_ended.count(),
             "all_students": new_student.count() + active_student.count(),
         }
@@ -354,17 +491,17 @@ class DashboardSecondView(APIView):
 
 class MarketingChannels(APIView):
     def get(self, request, *args, **kwargs):
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-        filial = self.request.query_params.get('filial')
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+        filial = self.request.query_params.get("filial")
 
         filters = {}
         if start_date:
-            filters['created_at__gte'] = start_date
+            filters["created_at__gte"] = start_date
         if end_date:
-            filters['created_at__lte'] = end_date
+            filters["created_at__lte"] = end_date
         if filial:
-            filters['filial'] = filial
+            filters["filial"] = filial
 
         channels = MarketingChannel.objects.all()
         channel_counts = {}
@@ -382,26 +519,30 @@ class CheckRoomFillingView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        filial = request.query_params.get('filial', None)
-        room_id = request.query_params.get('room', None)
-        lesson_type = request.query_params.get('lesson_type', None)
-        start_time = request.query_params.get('start_time', None)
-        end_time = request.query_params.get('end_time', None)
-        lesson_duration = request.query_params.get('lesson_duration', "90")  # Default 90 min
+        filial = request.query_params.get("filial", None)
+        room_id = request.query_params.get("room", None)
+        lesson_type = request.query_params.get("lesson_type", None)
+        start_time = request.query_params.get("start_time", None)
+        end_time = request.query_params.get("end_time", None)
+        lesson_duration = request.query_params.get(
+            "lesson_duration", "90"
+        )  # Default 90 min
 
         if not filial or not start_time or not end_time or not lesson_type:
-            return Response({'error': 'Missing required parameters'}, status=400)
+            return Response({"error": "Missing required parameters"}, status=400)
 
         try:
             start_time = datetime.strptime(start_time, "%H:%M").time()
             end_time = datetime.strptime(end_time, "%H:%M").time()
             lesson_duration = int(lesson_duration)
         except ValueError:
-            return Response({'error': 'Invalid input format'}, status=400)
+            return Response({"error": "Invalid input format"}, status=400)
 
         # Get all rooms in the filial if no specific room is given
         if not room_id:
-            room_ids = list(Room.objects.filter(filial_id=filial).values_list("id", flat=True))
+            room_ids = list(
+                Room.objects.filter(filial_id=filial).values_list("id", flat=True)
+            )
         else:
             room_ids = [room_id]
 
@@ -409,35 +550,46 @@ class CheckRoomFillingView(APIView):
         lesson_days_map = {
             "1": ["Dushanba"],
             "0": ["Seshanba"],
-            ".": ["Dushanba", "Seshanba"]
+            ".": ["Dushanba", "Seshanba"],
         }
         lesson_days = lesson_days_map.get(lesson_type, [])
 
         # Get lesson days IDs
-        lesson_days_ids = Day.objects.filter(name__in=lesson_days).values_list("id", flat=True)
+        lesson_days_ids = Day.objects.filter(name__in=lesson_days).values_list(
+            "id", flat=True
+        )
 
         # Fetch all active lessons within the specified rooms and lesson days
-        active_lessons = Group.objects.filter(
-            room_number_id__in=room_ids,
-            scheduled_day_type__id__in=lesson_days_ids,
-            started_at__lt=end_time,
-            ended_at__gt=start_time,
-            status="ACTIVE"
-        ).order_by("started_at").distinct()
+        active_lessons = (
+            Group.objects.filter(
+                room_number_id__in=room_ids,
+                scheduled_day_type__id__in=lesson_days_ids,
+                started_at__lt=end_time,
+                ended_at__gt=start_time,
+                status="ACTIVE",
+            )
+            .order_by("started_at")
+            .distinct()
+        )
 
         # **Statistics Calculation**
-        total_available_time = (datetime.combine(datetime.today(), end_time) -
-                                datetime.combine(datetime.today(), start_time)).seconds // 60
+        total_available_time = (
+            datetime.combine(datetime.today(), end_time)
+            - datetime.combine(datetime.today(), start_time)
+        ).seconds // 60
         ic(total_available_time)
-        total_available_lesson_hours = (total_available_time // lesson_duration)
+        total_available_lesson_hours = total_available_time // lesson_duration
         ic(total_available_lesson_hours)
 
         # **Count occupied lesson hours**
-        occupied_lesson_hours = sum(
-            (lesson.ended_at.hour * 60 + lesson.ended_at.minute) -
-            (lesson.started_at.hour * 60 + lesson.started_at.minute)
-            for lesson in active_lessons
-        ) // lesson_duration
+        occupied_lesson_hours = (
+            sum(
+                (lesson.ended_at.hour * 60 + lesson.ended_at.minute)
+                - (lesson.started_at.hour * 60 + lesson.started_at.minute)
+                for lesson in active_lessons
+            )
+            // lesson_duration
+        )
 
         ic(occupied_lesson_hours)
 
@@ -473,38 +625,54 @@ class CheckRoomFillingView(APIView):
         ic(total_students_capacity)
 
         if lesson_type == "1":
-            groups_students = StudentGroup.objects.filter(filial_id=filial,
-                                                          group__scheduled_day_type__name__in=["Dushanba"])
+            groups_students = StudentGroup.objects.filter(
+                filial_id=filial, group__scheduled_day_type__name__in=["Dushanba"]
+            )
         elif lesson_type == "0":
-            groups_students = StudentGroup.objects.filter(filial_id=filial,
-                                                          group__scheduled_day_type__name__in=["Seshanba"])
+            groups_students = StudentGroup.objects.filter(
+                filial_id=filial, group__scheduled_day_type__name__in=["Seshanba"]
+            )
         else:
             groups_students = StudentGroup.objects.filter(filial_id=filial)
 
         if lesson_type == "1":
-            new_students = StudentGroup.objects.filter(filial_id=filial, student__student_stage_type="NEW_STUDENT",
-                                                       group__scheduled_day_type__name__in=["Dushanba"])
+            new_students = StudentGroup.objects.filter(
+                filial_id=filial,
+                student__student_stage_type="NEW_STUDENT",
+                group__scheduled_day_type__name__in=["Dushanba"],
+            )
         elif lesson_type == "0":
-            new_students = StudentGroup.objects.filter(filial_id=filial, student__student_stage_type="NEW_STUDENT",
-                                                       group__scheduled_day_type__name__in=["Seshanba"])
+            new_students = StudentGroup.objects.filter(
+                filial_id=filial,
+                student__student_stage_type="NEW_STUDENT",
+                group__scheduled_day_type__name__in=["Seshanba"],
+            )
         else:
-            new_students = StudentGroup.objects.filter(filial_id=filial, student__student_stage_type="NEW_STUDENT", )
+            new_students = StudentGroup.objects.filter(
+                filial_id=filial,
+                student__student_stage_type="NEW_STUDENT",
+            )
 
         # **Generate final statistics response**
-        return Response({
-            "groups_students": groups_students.count(),
-            "new_students": new_students.count(),
-            "total_available_lesson_hours": total_available_lesson_hours,
-            "occupied_lesson_hours": occupied_lesson_hours,
-            "free_lesson_hours": free_lesson_hours,
-            "lesson_hour_pairs": lesson_hour_pairs,
-            "total_groups": total_groups,
-            "total_students_capacity": (total_students_capacity * (
-                1 if lesson_type in ["1", "0"] else 3)) - groups_students.count(),
-            "all_places": total_students_capacity,
-            "weeks_capacity": total_students_capacity * (1 if lesson_type in ["1", "0"] else 3),
-            "AAAAAAAAAAAA": lesson_type in ["1", "0"]
-        })
+        return Response(
+            {
+                "groups_students": groups_students.count(),
+                "new_students": new_students.count(),
+                "total_available_lesson_hours": total_available_lesson_hours,
+                "occupied_lesson_hours": occupied_lesson_hours,
+                "free_lesson_hours": free_lesson_hours,
+                "lesson_hour_pairs": lesson_hour_pairs,
+                "total_groups": total_groups,
+                "total_students_capacity": (
+                    total_students_capacity * (1 if lesson_type in ["1", "0"] else 3)
+                )
+                - groups_students.count(),
+                "all_places": total_students_capacity,
+                "weeks_capacity": total_students_capacity
+                * (1 if lesson_type in ["1", "0"] else 3),
+                "AAAAAAAAAAAA": lesson_type in ["1", "0"],
+            }
+        )
 
 
 class DashboardLineGraphAPIView(APIView):
@@ -516,10 +684,10 @@ class DashboardLineGraphAPIView(APIView):
         from django.db.models.functions import ExtractWeekDay
 
         # Extract parameters
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        casher_id = request.query_params.get('cashier')
-        filial = request.query_params.get('filial')
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        casher_id = request.query_params.get("cashier")
+        filial = request.query_params.get("filial")
 
         filters = {}
 
@@ -527,61 +695,72 @@ class DashboardLineGraphAPIView(APIView):
         if casher_id:
             try:
                 casher = Casher.objects.get(id=casher_id)
-                filters['casher__id'] = casher.id
+                filters["casher__id"] = casher.id
             except Casher.DoesNotExist:
-                return Response({"error": "Casher not found"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Casher not found"}, status=status.HTTP_400_BAD_REQUEST
+                )
 
         # Filter by start_date and end_date if provided
         if start_date:
             try:
-                filters['created_at__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+                filters["created_at__gte"] = datetime.strptime(start_date, "%Y-%m-%d")
             except ValueError:
-                return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Invalid start_date format. Use YYYY-MM-DD."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         if filial:
-            filters['filial__id'] = filial
+            filters["filial__id"] = filial
 
         if end_date:
             try:
-                filters['created_at__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+                filters["created_at__lte"] = datetime.strptime(end_date, "%Y-%m-%d")
             except ValueError:
-                return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Invalid end_date format. Use YYYY-MM-DD."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         weekday_map = {
-            1: 'Sunday', 2: 'Monday', 3: 'Tuesday', 4: 'Wednesday',
-            5: 'Thursday', 6: 'Friday', 7: 'Saturday'
+            1: "Sunday",
+            2: "Monday",
+            3: "Tuesday",
+            4: "Wednesday",
+            5: "Thursday",
+            6: "Friday",
+            7: "Saturday",
         }
 
-        full_week_data = {day: {"income": 0, "expense": 0} for day in weekday_map.values()}
+        full_week_data = {
+            day: {"income": 0, "expense": 0} for day in weekday_map.values()
+        }
 
         income_queryset = (
-            Finance.objects
-            .filter(action="INCOME", **filters)
-            .annotate(weekday=ExtractWeekDay('created_at'))
-            .values('weekday')
-            .annotate(total_amount=Sum('amount'))
+            Finance.objects.filter(action="INCOME", **filters)
+            .annotate(weekday=ExtractWeekDay("created_at"))
+            .values("weekday")
+            .annotate(total_amount=Sum("amount"))
         )
 
         # Fetch expense data
         expense_queryset = (
-            Finance.objects
-            .filter(action="EXPENSE", **filters)
-            .annotate(weekday=ExtractWeekDay('created_at'))
-            .values('weekday')
-            .annotate(total_amount=Sum('amount'))
+            Finance.objects.filter(action="EXPENSE", **filters)
+            .annotate(weekday=ExtractWeekDay("created_at"))
+            .values("weekday")
+            .annotate(total_amount=Sum("amount"))
         )
 
         # Aggregate income data
         for item in income_queryset:
-            weekday_name = weekday_map[item['weekday']]
-            full_week_data[weekday_name]["income"] = item['total_amount']
+            weekday_name = weekday_map[item["weekday"]]
+            full_week_data[weekday_name]["income"] = item["total_amount"]
 
         # Aggregate expense data
         for item in expense_queryset:
-            weekday_name = weekday_map[item['weekday']]
-            full_week_data[weekday_name]["expense"] = item['total_amount']
+            weekday_name = weekday_map[item["weekday"]]
+            full_week_data[weekday_name]["expense"] = item["total_amount"]
 
         # Compute total income and expense
         total_income = sum(item["income"] for item in full_week_data.values())
@@ -589,37 +768,38 @@ class DashboardLineGraphAPIView(APIView):
 
         # Convert dictionary to list format
         result = [
-            {
-                "weekday": day,
-                "income": total["income"],
-                "expense": total["expense"]
-            }
+            {"weekday": day, "income": total["income"], "expense": total["expense"]}
             for day, total in full_week_data.items()
         ]
 
-        return Response({
-            "data": result,
-            "balance": total_income - total_expense,
-            "total_income": total_income,
-            "total_expense": total_expense
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "data": result,
+                "balance": total_income - total_expense,
+                "total_income": total_income,
+                "total_expense": total_expense,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class MonitoringView(APIView):
     def get(self, request, *args, **kwargs):
         # Get query parameters
-        full_name = request.query_params.get('search', None)
-        start_date = request.query_params.get('start_date', None)
-        end_date = request.query_params.get('end_date', None)
-        subject_id = request.query_params.get('subject', None)
-        course_id = request.query_params.get('course', None)
-        filial = request.query_params.get('filial', None)
-        teacher = request.query_params.get('teacher', None)
-        role = request.query_params.get('role', None)
+        full_name = request.query_params.get("search", None)
+        start_date = request.query_params.get("start_date", None)
+        end_date = request.query_params.get("end_date", None)
+        subject_id = request.query_params.get("subject", None)
+        course_id = request.query_params.get("course", None)
+        filial = request.query_params.get("filial", None)
+        teacher = request.query_params.get("teacher", None)
+        role = request.query_params.get("role", None)
 
-        teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
-            name=Concat(F('first_name'), Value(' '), F('last_name')),
-            overall_point=F('monitoring')
+        teachers = CustomUser.objects.filter(
+            role__in=["TEACHER", "ASSISTANT"]
+        ).annotate(
+            name=Concat(F("first_name"), Value(" "), F("last_name")),
+            overall_point=F("monitoring"),
         )
         if role:
             teachers = teachers.filter(role=role)
@@ -628,7 +808,9 @@ class MonitoringView(APIView):
             teachers = teachers.filter(id=teacher)
 
         if course_id:
-            teachers = teachers.filter(teachers_groups__course__id=course_id)  # ✅ Correct related_name usage
+            teachers = teachers.filter(
+                teachers_groups__course__id=course_id
+            )  # ✅ Correct related_name usage
 
         if subject_id:
             teachers = teachers.filter(teachers_groups__course__subject__id=subject_id)
@@ -637,7 +819,9 @@ class MonitoringView(APIView):
         if filial:
             teachers = teachers.filter(filial__id=filial)
         if start_date and end_date:
-            teachers = teachers.filter(created_at__date__gte=start_date, created_at__lte=end_date)
+            teachers = teachers.filter(
+                created_at__date__gte=start_date, created_at__lte=end_date
+            )
         elif start_date:
             teachers = teachers.filter(created_at__date__gte=start_date)
         elif end_date:
@@ -650,9 +834,11 @@ class MonitoringView(APIView):
                 Group.objects.filter(teacher=teacher)
                 .annotate(
                     subject_id=F("course__subject__id"),
-                    subject_name=F("course__subject__name")
+                    subject_name=F("course__subject__name"),
                 )
-                .values("subject_id", "subject_name")  # Ensure renamed fields are used in values()
+                .values(
+                    "subject_id", "subject_name"
+                )  # Ensure renamed fields are used in values()
             )
             if subject_id:
                 subjects_query = subjects_query.filter(id=subject_id)
@@ -660,40 +846,50 @@ class MonitoringView(APIView):
             subjects = list(subjects_query)
 
             if start_date and end_date:
-                results = Results.objects.filter(teacher=teacher, created_at__gte=start_date
-                                                 , created_at_lte=end_date).count()
+                results = Results.objects.filter(
+                    teacher=teacher, created_at__gte=start_date, created_at_lte=end_date
+                ).count()
             elif start_date:
-                results = Results.objects.filter(teacher=teacher, created_at__gte=start_date)
+                results = Results.objects.filter(
+                    teacher=teacher, created_at__gte=start_date
+                )
             else:
                 results = Results.objects.filter(teacher=teacher).count()
 
             # Use FileUploadSerializer for the photo (handling None cases)
-            image_data = FileUploadSerializer(teacher.photo,
-                                              context={"request": request}).data if teacher.photo else None
+            image_data = (
+                FileUploadSerializer(teacher.photo, context={"request": request}).data
+                if teacher.photo
+                else None
+            )
 
-            teacher_data.append({
-                "id": teacher.id,
-                "full_name": teacher.name,
-                "image": image_data,
-                "overall_point": teacher.overall_point,
-                "subjects": subjects,
-                "results": results,
-            })
+            teacher_data.append(
+                {
+                    "id": teacher.id,
+                    "full_name": teacher.name,
+                    "image": image_data,
+                    "overall_point": teacher.overall_point,
+                    "subjects": subjects,
+                    "results": results,
+                }
+            )
 
-        sorted_data = sorted(teacher_data, key=itemgetter("overall_point"), reverse=True)
+        sorted_data = sorted(
+            teacher_data, key=itemgetter("overall_point"), reverse=True
+        )
         return Response(sorted_data, status=status.HTTP_200_OK)
 
 
 class MonitoringAsosAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        full_name = request.query_params.get('search')
+        full_name = request.query_params.get("search")
         start_date_str = request.query_params.get("start_date")
         end_date_str = request.query_params.get("end_date")
-        subject_id = request.query_params.get('subject')
-        course_id = request.query_params.get('course')
-        filial = request.query_params.get('filial')
-        teacher = request.query_params.get('teacher')
-        role = request.query_params.get('role')
+        subject_id = request.query_params.get("subject")
+        course_id = request.query_params.get("course")
+        filial = request.query_params.get("filial")
+        teacher = request.query_params.get("teacher")
+        role = request.query_params.get("role")
 
         # Parse date
         start_date = end_date = None
@@ -712,9 +908,9 @@ class MonitoringAsosAPIView(APIView):
             "ASOS_12": Asos.objects.filter(name="ASOS_12").first().id,
         }
 
-        teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
-            name=Concat(F('first_name'), Value(' '), F('last_name'))
-        )
+        teachers = CustomUser.objects.filter(
+            role__in=["TEACHER", "ASSISTANT"]
+        ).annotate(name=Concat(F("first_name"), Value(" "), F("last_name")))
 
         if role:
             teachers = teachers.filter(role=role)
@@ -733,48 +929,83 @@ class MonitoringAsosAPIView(APIView):
             qs = model.objects.filter(**filter_kwargs)
             if start_date and end_date:
                 qs = qs.filter(created_at__gte=start_date, created_at__lt=end_date)
-            return qs.aggregate(total=Sum(Cast("ball", FloatField())))['total'] or 0
+            return qs.aggregate(total=Sum(Cast("ball", FloatField())))["total"] or 0
 
         teacher_data = []
 
         for teacher in teachers:
             # Get subjects
-            subjects_qs = Group.objects.filter(teacher=teacher).annotate(
-                subject_name=F("course__subject__name")
-            ).values("subject_name")
+            subjects_qs = (
+                Group.objects.filter(teacher=teacher)
+                .annotate(subject_name=F("course__subject__name"))
+                .values("subject_name")
+            )
             if subject_id:
                 subjects_qs = subjects_qs.filter(subject__id=subject_id)
 
-            subject_names = ", ".join(sorted(set(s['subject_name'] for s in subjects_qs)))
+            subject_names = ", ".join(
+                sorted(set(s["subject_name"] for s in subjects_qs))
+            )
 
-            result_qs = Results.objects.filter(teacher=teacher,status="Accepted")
+            result_qs = Results.objects.filter(teacher=teacher, status="Accepted")
             if start_date and end_date:
-                result_qs = result_qs.filter(created_at__gte=start_date, created_at__lt=end_date)
+                result_qs = result_qs.filter(
+                    created_at__gte=start_date, created_at__lt=end_date
+                )
 
-            image_data = FileUploadSerializer(teacher.photo,
-                                              context={"request": request}).data if teacher.photo else None
+            image_data = (
+                FileUploadSerializer(teacher.photo, context={"request": request}).data
+                if teacher.photo
+                else None
+            )
 
             # ASOS ballarni oldin hisobla
-            asos_1 = round(get_asos_ball(MonitoringAsos1_2, {"user": teacher.id, "asos": "asos1"}), 2)
-            asos_3 = round(get_asos_ball(Monitoring, {"user": teacher.id, "point__asos__id": asos_ids["ASOS_3"]}), 2)
-            asos_4 = round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_4"]}), 2)
-            asos_12_13_14 = round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_12"]}),
-                                  2)
+            asos_1 = round(
+                get_asos_ball(MonitoringAsos1_2, {"user": teacher.id, "asos": "asos1"}),
+                2,
+            )
+            asos_3 = round(
+                get_asos_ball(
+                    Monitoring,
+                    {"user": teacher.id, "point__asos__id": asos_ids["ASOS_3"]},
+                ),
+                2,
+            )
+            asos_4 = round(
+                get_asos_ball(
+                    MonitoringAsos4,
+                    {"user": teacher.id, "asos__id": asos_ids["ASOS_4"]},
+                ),
+                2,
+            )
+            asos_12_13_14 = round(
+                get_asos_ball(
+                    MonitoringAsos4,
+                    {"user": teacher.id, "asos__id": asos_ids["ASOS_12"]},
+                ),
+                2,
+            )
 
-            teacher_data.append({
-                "id": teacher.id,
-                "full_name": teacher.name,
-                "image": image_data,
-                "role": teacher.role,
-                "filial": ", ".join(f.name for f in teacher.filial.all()) if teacher.filial.exists() else "-",
-                "subjects": subject_names or "-",
-                "asos_1": asos_1,
-                "asos_3": asos_3,
-                "asos_4": asos_4,
-                "asos_12_13_14": asos_12_13_14,
-                "results": result_qs.count(),
-                "points": round(asos_1 + asos_3 + asos_4 + asos_12_13_14, 2),
-            })
+            teacher_data.append(
+                {
+                    "id": teacher.id,
+                    "full_name": teacher.name,
+                    "image": image_data,
+                    "role": teacher.role,
+                    "filial": (
+                        ", ".join(f.name for f in teacher.filial.all())
+                        if teacher.filial.exists()
+                        else "-"
+                    ),
+                    "subjects": subject_names or "-",
+                    "asos_1": asos_1,
+                    "asos_3": asos_3,
+                    "asos_4": asos_4,
+                    "asos_12_13_14": asos_12_13_14,
+                    "results": result_qs.count(),
+                    "points": round(asos_1 + asos_3 + asos_4 + asos_12_13_14, 2),
+                }
+            )
 
         sorted_data = sorted(teacher_data, key=itemgetter("points"), reverse=True)
         return Response(sorted_data, status=status.HTTP_200_OK)
@@ -782,12 +1013,12 @@ class MonitoringAsosAPIView(APIView):
 
 class MonitoringExcelExportView(APIView):
     def get(self, request, *args, **kwargs):
-        full_name = request.query_params.get('search')
-        subject_id = request.query_params.get('subject')
-        course_id = request.query_params.get('course')
-        filial = request.query_params.get('filial')
-        teacher = request.query_params.get('teacher')
-        role = request.query_params.get('role')
+        full_name = request.query_params.get("search")
+        subject_id = request.query_params.get("subject")
+        course_id = request.query_params.get("course")
+        filial = request.query_params.get("filial")
+        teacher = request.query_params.get("teacher")
+        role = request.query_params.get("role")
 
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
@@ -809,9 +1040,11 @@ class MonitoringExcelExportView(APIView):
             "ASOS_14": Asos.objects.filter(name="ASOS_14").first().id,
         }
 
-        teachers = CustomUser.objects.filter(role__in=["TEACHER", "ASSISTANT"]).annotate(
-            name=Concat(F('first_name'), Value(' '), F('last_name')),
-            overall_point=F('monitoring')
+        teachers = CustomUser.objects.filter(
+            role__in=["TEACHER", "ASSISTANT"]
+        ).annotate(
+            name=Concat(F("first_name"), Value(" "), F("last_name")),
+            overall_point=F("monitoring"),
         )
 
         if role:
@@ -827,44 +1060,79 @@ class MonitoringExcelExportView(APIView):
         if filial:
             teachers = teachers.filter(filial__id=filial)
         if start_date and end_date:
-            teachers = teachers.filter(created_at__date__gte=start_date.date(), created_at__date__lt=end_date.date())
+            teachers = teachers.filter(
+                created_at__date__gte=start_date.date(),
+                created_at__date__lt=end_date.date(),
+            )
 
         def get_asos_ball(model, filter_kwargs):
             qs = model.objects.filter(**filter_kwargs)
             if start_date and end_date:
                 qs = qs.filter(created_at__gte=start_date, created_at__lt=end_date)
-            return qs.aggregate(total=Sum(Cast("ball", FloatField())))['total'] or 0
+            return qs.aggregate(total=Sum(Cast("ball", FloatField())))["total"] or 0
 
         teacher_data = []
         for teacher in teachers:
-            subjects_qs = Group.objects.filter(teacher=teacher).annotate(
-                subject_name=F("course__subject__name")
-            ).values("subject_name")
+            subjects_qs = (
+                Group.objects.filter(teacher=teacher)
+                .annotate(subject_name=F("course__subject__name"))
+                .values("subject_name")
+            )
 
             if subject_id:
                 subjects_qs = subjects_qs.filter(subject__id=subject_id)
 
-            subject_names = ", ".join(sorted(set(s['subject_name'] for s in subjects_qs)))
+            subject_names = ", ".join(
+                sorted(set(s["subject_name"] for s in subjects_qs))
+            )
 
-            result_qs = Results.objects.filter(teacher=teacher,status="Accepted")
+            result_qs = Results.objects.filter(teacher=teacher, status="Accepted")
             if start_date and end_date:
-                result_qs = result_qs.filter(created_at__gte=start_date, created_at__lt=end_date)
+                result_qs = result_qs.filter(
+                    created_at__gte=start_date, created_at__lt=end_date
+                )
 
-            teacher_data.append({
-                "name": teacher.name,
-                "role": teacher.role,
-                "filial": ", ".join(f.name for f in teacher.filial.all()) if teacher.filial.exists() else "-",
-                "subjects": subject_names or "-",
-                "asos_1": round(get_asos_ball(MonitoringAsos1_2, {"user": teacher.id, "asos": "asos1"}), 2),
-                "asos_3": round(get_asos_ball(Monitoring, {"user": teacher.id, "point__asos__id": asos_ids["ASOS_3"]}),
-                                2),
-                "asos_4": round(get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_4"]}),
-                                2),
-                "asos_12_13_14": round(
-                    get_asos_ball(MonitoringAsos4, {"user": teacher.id, "asos__id": asos_ids["ASOS_12"]}), 2),
-                "results": result_qs.count(),
-                "points": teacher.overall_point or 0,
-            })
+            teacher_data.append(
+                {
+                    "name": teacher.name,
+                    "role": teacher.role,
+                    "filial": (
+                        ", ".join(f.name for f in teacher.filial.all())
+                        if teacher.filial.exists()
+                        else "-"
+                    ),
+                    "subjects": subject_names or "-",
+                    "asos_1": round(
+                        get_asos_ball(
+                            MonitoringAsos1_2, {"user": teacher.id, "asos": "asos1"}
+                        ),
+                        2,
+                    ),
+                    "asos_3": round(
+                        get_asos_ball(
+                            Monitoring,
+                            {"user": teacher.id, "point__asos__id": asos_ids["ASOS_3"]},
+                        ),
+                        2,
+                    ),
+                    "asos_4": round(
+                        get_asos_ball(
+                            MonitoringAsos4,
+                            {"user": teacher.id, "asos__id": asos_ids["ASOS_4"]},
+                        ),
+                        2,
+                    ),
+                    "asos_12_13_14": round(
+                        get_asos_ball(
+                            MonitoringAsos4,
+                            {"user": teacher.id, "asos__id": asos_ids["ASOS_12"]},
+                        ),
+                        2,
+                    ),
+                    "results": result_qs.count(),
+                    "points": teacher.overall_point or 0,
+                }
+            )
 
         sorted_teachers = sorted(teacher_data, key=itemgetter("points"), reverse=True)
 
@@ -879,32 +1147,56 @@ class MonitoringExcelExportView(APIView):
         title_cell.alignment = Alignment(horizontal="center", vertical="center")
 
         headers = [
-            "O'qituvchi", "Roli", "Filial", "Fanlar",
-            "ASOS_1_2", "ASOS_3", "ASOS_4", "ASOS_5", "ASOS_6", "ASOS_7", "ASOS_8_9", "ASOS_10_11", "ASOS_12_13_14",
-            "Natijalar soni", "Monitoring ball"
+            "O'qituvchi",
+            "Roli",
+            "Filial",
+            "Fanlar",
+            "ASOS_1_2",
+            "ASOS_3",
+            "ASOS_4",
+            "ASOS_5",
+            "ASOS_6",
+            "ASOS_7",
+            "ASOS_8_9",
+            "ASOS_10_11",
+            "ASOS_12_13_14",
+            "Natijalar soni",
+            "Monitoring ball",
         ]
         ws.append(headers)
 
         total_results = 0
         for teacher in sorted_teachers:
-            ws.append([
-                teacher["name"],
-                "O'qituvchi" if teacher["role"] == "TEACHER" else "Assistent",
-                teacher["filial"],
-                teacher["subjects"],
-                teacher["asos_1"], teacher["asos_3"], teacher["asos_4"], "", "", "", "", "",
-                teacher["asos_12_13_14"],
-                teacher["results"], teacher["points"]
-            ])
+            ws.append(
+                [
+                    teacher["name"],
+                    "O'qituvchi" if teacher["role"] == "TEACHER" else "Assistent",
+                    teacher["filial"],
+                    teacher["subjects"],
+                    teacher["asos_1"],
+                    teacher["asos_3"],
+                    teacher["asos_4"],
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    teacher["asos_12_13_14"],
+                    teacher["results"],
+                    teacher["points"],
+                ]
+            )
             total_results += teacher["results"]
 
         ws.append([])
         ws.append(["", "", "", "Umumiy natijalar soni:", total_results])
 
         response = HttpResponse(
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response['Content-Disposition'] = 'attachment; filename="monitoring_report.xlsx"'
+        response["Content-Disposition"] = (
+            'attachment; filename="monitoring_report.xlsx"'
+        )
         wb.save(response)
         return response
 
@@ -914,163 +1206,235 @@ class DashboardWeeklyFinanceAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         # Extract query parameters
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        casher_id = request.query_params.get('casher')
-        action_type = request.query_params.get('action')  # INCOME or EXPENSE
-        kind = request.query_params.get('kind')  # Dynamically fetched kinds
-        filial = request.query_params.get('filial')
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        casher_id = request.query_params.get("casher")
+        action_type = request.query_params.get("action")  # INCOME or EXPENSE
+        kind = request.query_params.get("kind")  # Dynamically fetched kinds
+        filial = request.query_params.get("filial")
 
         filters = {}
 
         # Get all dynamic kinds from DB
-        existing_kinds = list(Kind.objects.values_list('name', flat=True))  # Fetch all available kinds dynamically
+        existing_kinds = list(
+            Kind.objects.values_list("name", flat=True)
+        )  # Fetch all available kinds dynamically
 
         if filial:
             filters["filial"] = filial
         if casher_id:
-            filters['casher__id'] = casher_id
+            filters["casher__id"] = casher_id
 
         # Ensure valid action type (INCOME or EXPENSE)
         if action_type and action_type.upper() in ["INCOME", "EXPENSE"]:
-            filters['action__exact'] = action_type.upper()
+            filters["action__exact"] = action_type.upper()
         elif action_type:
-            return Response({"error": "Invalid action. Use 'INCOME' or 'EXPENSE'."}, status=400)
+            return Response(
+                {"error": "Invalid action. Use 'INCOME' or 'EXPENSE'."}, status=400
+            )
 
         # Filter by start_date and end_date
         if start_date:
             try:
-                filters['created_at__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+                filters["created_at__gte"] = datetime.strptime(start_date, "%Y-%m-%d")
             except ValueError:
-                return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=400)
+                return Response(
+                    {"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=400
+                )
 
         if end_date:
             try:
-                filters['created_at__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+                filters["created_at__lte"] = datetime.strptime(end_date, "%Y-%m-%d")
             except ValueError:
-                return Response({"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=400)
+                return Response(
+                    {"error": "Invalid end_date format. Use YYYY-MM-DD."}, status=400
+                )
 
         # Ensure kind filtering is valid
         if kind:
             if kind not in existing_kinds:
-                return Response({"error": f"Invalid kind. Allowed values: {', '.join(existing_kinds)}"}, status=400)
-            filters['kind__name'] = kind  # Ensure kind filtering is correctly applied
+                return Response(
+                    {
+                        "error": f"Invalid kind. Allowed values: {', '.join(existing_kinds)}"
+                    },
+                    status=400,
+                )
+            filters["kind__name"] = kind  # Ensure kind filtering is correctly applied
 
         # Query and group by weekday
         queryset = (
             Finance.objects.filter(**filters)
-            .annotate(weekday=ExtractWeekDay('created_at'))
-            .values('weekday', 'kind__name')
-            .annotate(total_amount=Sum('amount'))
+            .annotate(weekday=ExtractWeekDay("created_at"))
+            .values("weekday", "kind__name")
+            .annotate(total_amount=Sum("amount"))
         )
 
         # Map weekday numbers to names
         weekday_map = {
-            1: 'Sunday', 2: 'Monday', 3: 'Tuesday', 4: 'Wednesday',
-            5: 'Thursday', 6: 'Friday', 7: 'Saturday'
+            1: "Sunday",
+            2: "Monday",
+            3: "Tuesday",
+            4: "Wednesday",
+            5: "Thursday",
+            6: "Friday",
+            7: "Saturday",
         }
 
         # Initialize totals for each weekday and category
-        weekly_data = {day: {k: 0 for k in existing_kinds} for day in weekday_map.values()}
+        weekly_data = {
+            day: {k: 0 for k in existing_kinds} for day in weekday_map.values()
+        }
         total_overall = {k: 0 for k in existing_kinds}  # Overall total per category
 
         # Populate data
         for item in queryset:
-            weekday_name = weekday_map[item['weekday']]
-            category = item['kind__name']
-            amount = item['total_amount']
+            weekday_name = weekday_map[item["weekday"]]
+            category = item["kind__name"]
+            amount = item["total_amount"]
             weekly_data[weekday_name][category] += amount
-            total_overall[category] += amount  # Aggregate total for percentage calculation
+            total_overall[
+                category
+            ] += amount  # Aggregate total for percentage calculation
 
         # Compute category-wise percentages
-        total_sum = sum(total_overall.values())  # Total amount of all categories combined
+        total_sum = sum(
+            total_overall.values()
+        )  # Total amount of all categories combined
 
         if total_sum > 0:
             percentages = {
-                category: round((total / total_sum) * 100, 2) for category, total in total_overall.items()
+                category: round((total / total_sum) * 100, 2)
+                for category, total in total_overall.items()
             }
         else:
             percentages = {category: 0 for category in existing_kinds}
 
         # Convert data to response format
-        result = [{"weekday": day, "totals": totals} for day, totals in weekly_data.items()]
+        result = [
+            {"weekday": day, "totals": totals} for day, totals in weekly_data.items()
+        ]
 
-        return Response({
-            "weekly_data": result,
-            "percentages": percentages,
-            "available_kinds": existing_kinds  # Returning available kinds for front-end usage
-        }, status=200)
+        return Response(
+            {
+                "weekly_data": result,
+                "percentages": percentages,
+                "available_kinds": existing_kinds,  # Returning available kinds for front-end usage
+            },
+            status=200,
+        )
 
 
 class ArchivedView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        filial = request.query_params.get('filial', None)
+        filial = request.query_params.get("filial", None)
 
-        lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID", lid__isnull=False, is_archived=True).count()
-        order = Archived.objects.filter(lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID").count()
-        new_student = Archived.objects.filter(student__student_stage_type="NEW_STUDENT", is_archived=True).count()
-        student = Archived.objects.filter(student__student_stage_type="ACTIVE_STUDENT", is_archived=True).count()
+        lid = Archived.objects.filter(
+            lid__lid_stage_type="NEW_LID", lid__isnull=False, is_archived=True
+        ).count()
+        order = Archived.objects.filter(
+            lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID"
+        ).count()
+        new_student = Archived.objects.filter(
+            student__student_stage_type="NEW_STUDENT", is_archived=True
+        ).count()
+        student = Archived.objects.filter(
+            student__student_stage_type="ACTIVE_STUDENT", is_archived=True
+        ).count()
 
         if filial:
-            lid = Archived.objects.filter(lid__lid_stage_type="NEW_LID", lid__isnull=False, is_archived=True,
-                                          lid__filial__id=filial).count()
-            order = Archived.objects.filter(lid__isnull=False, is_archived=True, lid__lid_stage_type="ORDERED_LID",
-                                            lid__filial__id=filial).count()
-            new_student = Archived.objects.filter(student__student_stage_type="NEW_STUDENT", is_archived=True,
-                                                  student__filial__id=filial).count()
-            student = Archived.objects.filter(student__student_stage_type="ACTIVE_STUDENT", is_archived=True,
-                                              student__filial__id=filial).count()
+            lid = Archived.objects.filter(
+                lid__lid_stage_type="NEW_LID",
+                lid__isnull=False,
+                is_archived=True,
+                lid__filial__id=filial,
+            ).count()
+            order = Archived.objects.filter(
+                lid__isnull=False,
+                is_archived=True,
+                lid__lid_stage_type="ORDERED_LID",
+                lid__filial__id=filial,
+            ).count()
+            new_student = Archived.objects.filter(
+                student__student_stage_type="NEW_STUDENT",
+                is_archived=True,
+                student__filial__id=filial,
+            ).count()
+            student = Archived.objects.filter(
+                student__student_stage_type="ACTIVE_STUDENT",
+                is_archived=True,
+                student__filial__id=filial,
+            ).count()
 
-        return Response({
-            "lid": lid,
-            "order": order,
-            "new_student": new_student,
-            "student": student,
-        })
+        return Response(
+            {
+                "lid": lid,
+                "order": order,
+                "new_student": new_student,
+                "student": student,
+            }
+        )
 
 
 class SalesApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        creator = request.query_params.get('creator')
-        sale = request.query_params.get('sale')
-        student = request.query_params.get('student')
-        filial = request.query_params.get('filial')
+        creator = request.query_params.get("creator")
+        sale = request.query_params.get("sale")
+        student = request.query_params.get("student")
+        filial = request.query_params.get("filial")
 
         filters = {}
         if creator:
-            filters['creator_id'] = creator  # Use `_id` for ForeignKeys
+            filters["creator_id"] = creator  # Use `_id` for ForeignKeys
         if sale:
-            filters['sale_id'] = sale
+            filters["sale_id"] = sale
         if student:
-            filters['student_id'] = student
+            filters["student_id"] = student
         if filial:
-            filters['filial_id'] = filial
+            filters["filial_id"] = filial
 
         chart_data = []
 
         total_students = SaleStudent.objects.filter(**filters).count()
-        total_voucher_amount = \
-            VoucherStudent.objects.filter(**filters).aggregate(total=Sum('voucher__amount'))['total'] or 0
-        total_sale_discount = \
-            SaleStudent.objects.filter(**filters).aggregate(total=Sum('sale__amount'))['total'] or 0
-        total_debt = Student.objects.filter(balance__lt=0,is_archived=False, **filters).aggregate(
-            total=Sum('balance'))['total'] or 0
+        total_voucher_amount = (
+            VoucherStudent.objects.filter(**filters).aggregate(
+                total=Sum("voucher__amount")
+            )["total"]
+            or 0
+        )
+        total_sale_discount = (
+            SaleStudent.objects.filter(**filters).aggregate(total=Sum("sale__amount"))[
+                "total"
+            ]
+            or 0
+        )
+        total_debt = (
+            Student.objects.filter(
+                balance__lt=0, is_archived=False, **filters
+            ).aggregate(total=Sum("balance"))["total"]
+            or 0
+        )
 
         # FIX: Removed incorrect `balance__status` lookup
-        total_income = Student.objects.filter(balance__gte=0,is_archived=False, **filters).aggregate(total=Sum('balance'))[
-                           'total'] or 0
+        total_income = (
+            Student.objects.filter(
+                balance__gte=0, is_archived=False, **filters
+            ).aggregate(total=Sum("balance"))["total"]
+            or 0
+        )
 
-        chart_data.append({
-            "total_students": total_students,
-            "total_voucher_amount": total_voucher_amount,
-            "total_sales_amount": total_sale_discount,
-            "total_debt": total_debt,
-            "active_students_balance": total_income,  # Active Students
-        })
+        chart_data.append(
+            {
+                "total_students": total_students,
+                "total_voucher_amount": total_voucher_amount,
+                "total_sales_amount": total_sale_discount,
+                "total_debt": total_debt,
+                "active_students_balance": total_income,  # Active Students
+            }
+        )
 
         return Response({"chart_data": chart_data})
 
@@ -1079,29 +1443,29 @@ class FinanceStatisticsApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        kind_id = self.request.query_params.get('kind')  # Filter by Kind
-        creator = self.request.query_params.get('creator')
-        student = self.request.query_params.get('student')
-        stuff = self.request.query_params.get('stuff')
-        casher = self.request.query_params.get('casher')
-        payment_method = self.request.query_params.get('payment_method')
-        filial = self.request.query_params.get('filial')
+        kind_id = self.request.query_params.get("kind")  # Filter by Kind
+        creator = self.request.query_params.get("creator")
+        student = self.request.query_params.get("student")
+        stuff = self.request.query_params.get("stuff")
+        casher = self.request.query_params.get("casher")
+        payment_method = self.request.query_params.get("payment_method")
+        filial = self.request.query_params.get("filial")
 
         filters = {}
         if filial:
-            filters['filial'] = filial
+            filters["filial"] = filial
         if kind_id:
-            filters['kind__id'] = kind_id
+            filters["kind__id"] = kind_id
         if creator:
-            filters['creator__id'] = creator
+            filters["creator__id"] = creator
         if student:
-            filters['student__id'] = student
+            filters["student__id"] = student
         if stuff:
-            filters['stuff__id'] = stuff
+            filters["stuff__id"] = stuff
         if casher:
-            filters['casher__id'] = casher
+            filters["casher__id"] = casher
         if payment_method:
-            filters['payment_method'] = payment_method
+            filters["payment_method"] = payment_method
 
         # ✅ Group by `kind__action` instead of `Finance.action`
         finance_stats = (
@@ -1143,28 +1507,25 @@ class StudentLanguage(APIView):
         student_base_filter = {
             "student_stage_type": "ACTIVE_STUDENT",
             "is_archived": False,
-            "is_frozen": False
+            "is_frozen": False,
         }
         new_student_filter = {
             "student_stage_type": "NEW_STUDENT",
             "is_archived": False,
-            "is_frozen": False
+            "is_frozen": False,
         }
-        first_lesson_filter = {
-            "is_archived": False,
-            "is_frozen": False
-        }
+        first_lesson_filter = {"is_archived": False, "is_frozen": False}
         lid_filter = {
             "lid_stage_type": "NEW_LID",
             "is_archived": False,
             "is_student": False,
-            "is_frozen": False
+            "is_frozen": False,
         }
         order_filter = {
             "lid_stage_type": "ORDERED_LID",
             "is_archived": False,
             "is_student": False,
-            "is_frozen": False
+            "is_frozen": False,
         }
 
         if filial_id:
@@ -1174,147 +1535,190 @@ class StudentLanguage(APIView):
             lid_filter["filial__id"] = filial_id
             order_filter["filial__id"] = filial_id
 
-        student_uz = Student.objects.filter(education_lang="UZB", **student_base_filter).count()
-        student_eng = Student.objects.filter(education_lang="ENG", **student_base_filter).count()
-        student_ru = Student.objects.filter(education_lang="RU", **student_base_filter).count()
+        student_uz = Student.objects.filter(
+            education_lang="UZB", **student_base_filter
+        ).count()
+        student_eng = Student.objects.filter(
+            education_lang="ENG", **student_base_filter
+        ).count()
+        student_ru = Student.objects.filter(
+            education_lang="RU", **student_base_filter
+        ).count()
 
-        new_student_uz = Student.objects.filter(education_lang="UZB", **new_student_filter).count()
-        new_student_eng = Student.objects.filter(education_lang="ENG", **new_student_filter).count()
-        new_student_ru = Student.objects.filter(education_lang="RU", **new_student_filter).count()
+        new_student_uz = Student.objects.filter(
+            education_lang="UZB", **new_student_filter
+        ).count()
+        new_student_eng = Student.objects.filter(
+            education_lang="ENG", **new_student_filter
+        ).count()
+        new_student_ru = Student.objects.filter(
+            education_lang="RU", **new_student_filter
+        ).count()
 
-        first_lesson_uz = Lid.objects.filter(education_lang="UZB", **order_filter,
-                                             ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        first_lesson_eng = Lid.objects.filter(education_lang="ENG", **order_filter,
-                                              ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        first_lesson_ru = Lid.objects.filter(education_lang="RU", **order_filter,
-                                             ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        first_lesson_uz = Lid.objects.filter(
+            education_lang="UZB",
+            **order_filter,
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+        ).count()
+        first_lesson_eng = Lid.objects.filter(
+            education_lang="ENG",
+            **order_filter,
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+        ).count()
+        first_lesson_ru = Lid.objects.filter(
+            education_lang="RU",
+            **order_filter,
+            ordered_stages="BIRINCHI_DARS_BELGILANGAN",
+        ).count()
 
         lid_uz = Lid.objects.filter(education_lang="UZB", **lid_filter).count()
         lid_eng = Lid.objects.filter(education_lang="ENG", **lid_filter).count()
         lid_ru = Lid.objects.filter(education_lang="RU", **lid_filter).count()
 
-        order_uz = Lid.objects.filter(education_lang="UZB", **order_filter).exclude(
-            ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        order_eng = Lid.objects.filter(education_lang="ENG", **order_filter).exclude(
-            ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
-        order_ru = Lid.objects.filter(education_lang="RU", **order_filter).exclude(
-            ordered_stages="BIRINCHI_DARS_BELGILANGAN").count()
+        order_uz = (
+            Lid.objects.filter(education_lang="UZB", **order_filter)
+            .exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
+            .count()
+        )
+        order_eng = (
+            Lid.objects.filter(education_lang="ENG", **order_filter)
+            .exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
+            .count()
+        )
+        order_ru = (
+            Lid.objects.filter(education_lang="RU", **order_filter)
+            .exclude(ordered_stages="BIRINCHI_DARS_BELGILANGAN")
+            .count()
+        )
 
-        return Response({
-            "student_uz": student_uz,
-            "student_eng": student_eng,
-            "student_ru": student_ru,
-
-            "new_student_uz": new_student_uz,
-            "new_student_eng": new_student_eng,
-            "new_student_ru": new_student_ru,
-
-            "first_lesson_uz": first_lesson_uz,
-            "first_lesson_eng": first_lesson_eng,
-            "first_lesson_ru": first_lesson_ru,
-
-            "lid_uz": lid_uz,
-            "lid_eng": lid_eng,
-            "lid_ru": lid_ru,
-
-            "order_uz": order_uz,
-            "order_eng": order_eng,
-            "order_ru": order_ru,
-        })
+        return Response(
+            {
+                "student_uz": student_uz,
+                "student_eng": student_eng,
+                "student_ru": student_ru,
+                "new_student_uz": new_student_uz,
+                "new_student_eng": new_student_eng,
+                "new_student_ru": new_student_ru,
+                "first_lesson_uz": first_lesson_uz,
+                "first_lesson_eng": first_lesson_eng,
+                "first_lesson_ru": first_lesson_ru,
+                "lid_uz": lid_uz,
+                "lid_eng": lid_eng,
+                "lid_ru": lid_ru,
+                "order_uz": order_uz,
+                "order_eng": order_eng,
+                "order_ru": order_ru,
+            }
+        )
 
 
 class ExportDashboardToExcelAPIView(APIView):
     def get(self, request, *args, **kwargs):
         # ✅ 1. Fetch Sales Data
-        creator = request.query_params.get('creator')
-        sale = request.query_params.get('sale')
-        student = request.query_params.get('student')
-        filial = request.query_params.get('filial')
+        creator = request.query_params.get("creator")
+        sale = request.query_params.get("sale")
+        student = request.query_params.get("student")
+        filial = request.query_params.get("filial")
 
         sales_filters = {}
         if creator:
-            sales_filters['creator__id'] = creator
+            sales_filters["creator__id"] = creator
         if sale:
-            sales_filters['sale__id'] = sale
+            sales_filters["sale__id"] = sale
         if student:
-            sales_filters['student__id'] = student
+            sales_filters["student__id"] = student
         if filial:
-            sales_filters['filial__id'] = filial
+            sales_filters["filial__id"] = filial
 
-        student_count = SaleStudent.objects.filter(**sales_filters).values('creator').annotate(
-            total_students=Count('student', distinct=True)
+        student_count = (
+            SaleStudent.objects.filter(**sales_filters)
+            .values("creator")
+            .annotate(total_students=Count("student", distinct=True))
         )
 
-        voucher_sales = SaleStudent.objects.filter(sale__type="VOUCHER", **sales_filters).values('creator').annotate(
-            total_voucher_amount=Sum('sale__amount')
+        voucher_sales = (
+            SaleStudent.objects.filter(sale__type="VOUCHER", **sales_filters)
+            .values("creator")
+            .annotate(total_voucher_amount=Sum("sale__amount"))
         )
 
-        sale_data = SaleStudent.objects.filter(sale__type="SALE", **sales_filters).values('creator').annotate(
-            total_sale_discount=Sum(
-                Case(
-                    When(
-                        student__students_group__group__price_type="monthly",
-                        then=F('student__students_group__group__price') * F('sale__amount') / Value(100)
-                    ),
-                    default=Value(0),
-                    output_field=DecimalField()
+        sale_data = (
+            SaleStudent.objects.filter(sale__type="SALE", **sales_filters)
+            .values("creator")
+            .annotate(
+                total_sale_discount=Sum(
+                    Case(
+                        When(
+                            student__students_group__group__price_type="monthly",
+                            then=F("student__students_group__group__price")
+                            * F("sale__amount")
+                            / Value(100),
+                        ),
+                        default=Value(0),
+                        output_field=DecimalField(),
+                    )
                 )
             )
         )
 
-        total_sales = SaleStudent.objects.filter(**sales_filters).values('creator').annotate(
-            total_sales_amount=Sum('sale__amount')
+        total_sales = (
+            SaleStudent.objects.filter(**sales_filters)
+            .values("creator")
+            .annotate(total_sales_amount=Sum("sale__amount"))
         )
 
         # ✅ 2. Fetch Finance Statistics Data
         finance_filters = {}
-        kind_id = request.query_params.get('kind')
-        action = request.query_params.get('action')
-        creator = request.query_params.get('creator')
-        student = request.query_params.get('student')
-        stuff = request.query_params.get('stuff')
-        casher = request.query_params.get('casher')
-        payment_method = request.query_params.get('payment_method')
+        kind_id = request.query_params.get("kind")
+        action = request.query_params.get("action")
+        creator = request.query_params.get("creator")
+        student = request.query_params.get("student")
+        stuff = request.query_params.get("stuff")
+        casher = request.query_params.get("casher")
+        payment_method = request.query_params.get("payment_method")
 
         if kind_id:
-            finance_filters['kind__id'] = kind_id
+            finance_filters["kind__id"] = kind_id
         if action:
-            finance_filters['action'] = action
+            finance_filters["action"] = action
         if creator:
-            finance_filters['creator__id'] = creator
+            finance_filters["creator__id"] = creator
         if student:
-            finance_filters['student__id'] = student
+            finance_filters["student__id"] = student
         if stuff:
-            finance_filters['stuff__id'] = stuff
+            finance_filters["stuff__id"] = stuff
         if casher:
-            finance_filters['casher__id'] = casher
+            finance_filters["casher__id"] = casher
         if payment_method:
-            finance_filters['payment_method'] = payment_method
+            finance_filters["payment_method"] = payment_method
 
-        finance_stats = Finance.objects.filter(**finance_filters).values('kind__id', 'kind__name', 'action').annotate(
-            total_amount=Sum('amount')
-        ).order_by('kind__name')
+        finance_stats = (
+            Finance.objects.filter(**finance_filters)
+            .values("kind__id", "kind__name", "action")
+            .annotate(total_amount=Sum("amount"))
+            .order_by("kind__name")
+        )
 
         # ✅ 3. Fetch Weekly Finance Data
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        casher_id = request.query_params.get('casher')
-        kind = request.query_params.get('kind')
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        casher_id = request.query_params.get("casher")
+        kind = request.query_params.get("kind")
 
         weekly_filters = {}
         if casher_id:
-            weekly_filters['casher__id'] = casher_id
+            weekly_filters["casher__id"] = casher_id
         if kind:
-            weekly_filters['kind__name'] = kind
+            weekly_filters["kind__name"] = kind
         if start_date:
-            weekly_filters['created_at__gte'] = start_date
+            weekly_filters["created_at__gte"] = start_date
         if end_date:
-            weekly_filters['created_at__lte'] = end_date
+            weekly_filters["created_at__lte"] = end_date
 
         weekly_finance_data = (
             Finance.objects.filter(**weekly_filters)
-            .values('kind__name')
-            .annotate(total_amount=Sum('amount'))
+            .values("kind__name")
+            .annotate(total_amount=Sum("amount"))
         )
 
         # ✅ Create Excel Workbook
@@ -1323,21 +1727,38 @@ class ExportDashboardToExcelAPIView(APIView):
         # ✅ Create Sales Sheet
         sales_sheet = workbook.active
         sales_sheet.title = "Sales Data"
-        sales_headers = ["Yaratuvchi xodim", "Jami Studentlar", "Voucher Sales", "Sale Discount", "Total Sales"]
+        sales_headers = [
+            "Yaratuvchi xodim",
+            "Jami Studentlar",
+            "Voucher Sales",
+            "Sale Discount",
+            "Total Sales",
+        ]
         sales_sheet.append(sales_headers)
 
         for entry in student_count:
-            creator_id = entry['creator']
-            voucher_entry = next((v for v in voucher_sales if v['creator'] == creator_id), {'total_voucher_amount': 0})
-            sale_entry = next((s for s in sale_data if s['creator'] == creator_id), {'total_sale_discount': 0})
-            total_sales_entry = next((t for t in total_sales if t['creator'] == creator_id), {'total_sales_amount': 0})
+            creator_id = entry["creator"]
+            voucher_entry = next(
+                (v for v in voucher_sales if v["creator"] == creator_id),
+                {"total_voucher_amount": 0},
+            )
+            sale_entry = next(
+                (s for s in sale_data if s["creator"] == creator_id),
+                {"total_sale_discount": 0},
+            )
+            total_sales_entry = next(
+                (t for t in total_sales if t["creator"] == creator_id),
+                {"total_sales_amount": 0},
+            )
 
-            sales_sheet.append([
-                entry['total_students'],
-                voucher_entry['total_voucher_amount'],
-                sale_entry['total_sale_discount'],
-                total_sales_entry['total_sales_amount'],
-            ])
+            sales_sheet.append(
+                [
+                    entry["total_students"],
+                    voucher_entry["total_voucher_amount"],
+                    sale_entry["total_sale_discount"],
+                    total_sales_entry["total_sales_amount"],
+                ]
+            )
 
         # ✅ Create Finance Statistics Sheet
         finance_sheet = workbook.create_sheet(title="Finance Statistics")
@@ -1345,11 +1766,9 @@ class ExportDashboardToExcelAPIView(APIView):
         finance_sheet.append(finance_headers)
 
         for entry in finance_stats:
-            finance_sheet.append([
-                entry['kind__name'],
-                entry['action'],
-                entry['total_amount']
-            ])
+            finance_sheet.append(
+                [entry["kind__name"], entry["action"], entry["total_amount"]]
+            )
 
         # ✅ Create Weekly Finance Data Sheet
         weekly_sheet = workbook.create_sheet(title="Weekly Finance")
@@ -1357,10 +1776,7 @@ class ExportDashboardToExcelAPIView(APIView):
         weekly_sheet.append(weekly_headers)
 
         for entry in weekly_finance_data:
-            weekly_sheet.append([
-                entry['kind__name'],
-                entry['total_amount']
-            ])
+            weekly_sheet.append([entry["kind__name"], entry["total_amount"]])
 
         # ✅ Style headers
         for sheet in [sales_sheet, finance_sheet, weekly_sheet]:
@@ -1384,40 +1800,44 @@ class AdminLineGraph(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        call_operator = request.query_params.get('call_operator')
-        lid_type = request.query_params.get('type')
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        call_operator = request.query_params.get("call_operator")
+        lid_type = request.query_params.get("type")
 
         # Parse date strings into actual date objects
         start_date = parse_date(start_date) if start_date else None
         end_date = parse_date(end_date) if end_date else None
 
-        filial = request.query_params.get('filial')
+        filial = request.query_params.get("filial")
 
         # Base filters
         lid_filter = {}
         student_filter = {}
         if filial:
-            lid_filter['filial_id'] = filial
-            student_filter['filial_id'] = filial
+            lid_filter["filial_id"] = filial
+            student_filter["filial_id"] = filial
 
         if start_date:
-            lid_filter['created_at__gte'] = start_date
-            student_filter['created_at__gte'] = start_date
+            lid_filter["created_at__gte"] = start_date
+            student_filter["created_at__gte"] = start_date
         if end_date:
-            lid_filter['created_at__lte'] = end_date
-            student_filter['created_at__lte'] = end_date
+            lid_filter["created_at__lte"] = end_date
+            student_filter["created_at__lte"] = end_date
         if call_operator:
-            lid_filter['call_operator'] = call_operator
+            lid_filter["call_operator"] = call_operator
         if lid_type:
-            lid_filter['type'] = lid_type
+            lid_filter["type"] = lid_type
 
         # Query for each type
         lid_new = Lid.objects.filter(lid_stage_type="NEW_LID", **lid_filter)
         lid_ordered = Lid.objects.filter(lid_stage_type="ORDERED_LID", **lid_filter)
-        student_new = Student.objects.filter(student_stage_type="NEW_STUDENT", **student_filter)
-        student_active = Student.objects.filter(student_stage_type="ACTIVE_STUDENT", **student_filter)
+        student_new = Student.objects.filter(
+            student_stage_type="NEW_STUDENT", **student_filter
+        )
+        student_active = Student.objects.filter(
+            student_stage_type="ACTIVE_STUDENT", **student_filter
+        )
 
         # Function to process data and fill missing dates
         def get_counts(queryset, date_field="created_at"):
@@ -1433,7 +1853,10 @@ class AdminLineGraph(APIView):
             for entry in counts:
                 date_counts[entry[f"{date_field}__date"]] = entry["count"]
 
-            return [{"date": date.strftime("%Y-%m-%d"), "count": count} for date, count in sorted(date_counts.items())]
+            return [
+                {"date": date.strftime("%Y-%m-%d"), "count": count}
+                for date, count in sorted(date_counts.items())
+            ]
 
         # Construct the response
         response_data = {

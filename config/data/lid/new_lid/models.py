@@ -33,7 +33,12 @@ class Lid(BaseModel):
     phone_number = models.CharField(max_length=100, null=True, blank=True)
     date_of_birth = models.DateField(default=timezone.now)
     extra_number = models.CharField(max_length=100, null=True, blank=True)
-    language_choise = (("ENG", "ENG"), ("RU", "RU"), ("UZB", "UZB"))
+
+    language_choise = (
+        ("ENG", "ENG"),
+        ("RU", "RU"),
+        ("UZB", "UZB"),
+    )
 
     education_lang = models.CharField(
         choices=language_choise, default="UZB", max_length=100
@@ -85,6 +90,7 @@ class Lid(BaseModel):
         max_length=100,
         default="NEW_LID",
     )
+
     lid_stages = models.CharField(
         choices=[
             ("YANGI_LEAD", "YANGI_LEAD"),
@@ -95,7 +101,9 @@ class Lid(BaseModel):
         null=True,
         blank=True,
     )
+
     is_expired = models.BooleanField(default=False)
+
     ordered_stages = models.CharField(
         choices=[
             ("KUTULMOQDA", "KUTULMOQDA"),
@@ -107,16 +115,20 @@ class Lid(BaseModel):
         null=True,
         blank=True,
     )
+
     is_archived = models.BooleanField(
-        default=False, help_text="Is this student archived or not"
+        default=False,
+        help_text="Is this student archived or not",
     )
 
     is_dubl = models.BooleanField(
-        default=False, help_text="Is this student duble or not"
+        default=False,
+        help_text="Is this student duble or not",
     )
 
     is_frozen = models.BooleanField(
-        default=False, help_text="Is this student frozen or not"
+        default=False,
+        help_text="Is this student frozen or not",
     )
 
     call_operator: "CustomUser" = models.ForeignKey(
@@ -128,7 +140,10 @@ class Lid(BaseModel):
         related_name="call_operator",
     )
 
-    is_student = models.BooleanField(default=False, help_text="Is this student or not")
+    is_student = models.BooleanField(
+        default=False,
+        help_text="Is this student or not",
+    )
 
     service_manager: "CustomUser" = models.ForeignKey(
         "account.CustomUser",
