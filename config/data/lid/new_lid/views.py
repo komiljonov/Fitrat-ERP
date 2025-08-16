@@ -572,7 +572,7 @@ class LidStatisticsView(ListAPIView):
             .count()
         )
         archived_new_leads = queryset.filter(
-            is_archived=False, lid_stage_type="NEW_LID", **filter
+            is_archived=True, lid_stage_type="NEW_LID", **filter
         ).count()
 
         ordered_new = queryset.filter(
@@ -607,7 +607,7 @@ class LidStatisticsView(ListAPIView):
             Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
             Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
             lid__isnull=False,
-            is_archived=False,
+            is_archived=True,
             lid__lid_stage_type="ORDERED_LID",
         ).count()
 
@@ -645,7 +645,7 @@ class LidStatisticsView(ListAPIView):
             ),
             lid__lid_stage_type="NEW_LID",
             lid__isnull=False,
-            is_archived=False,
+            is_archived=True,
         ).count()
 
         first_lesson_all = FirstLLesson.objects.filter(
