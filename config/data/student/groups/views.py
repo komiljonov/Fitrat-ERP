@@ -256,6 +256,7 @@ class CheckRoomLessonScheduleView(APIView):
         date_str = request.GET.get("date")
         started_at_str = request.GET.get("started_at")
         ended_at_str = request.GET.get("ended_at")
+        teacher = request.GET.get("teacher")
         
         group = request.GET.get('group')
 
@@ -299,6 +300,9 @@ class CheckRoomLessonScheduleView(APIView):
         current_week_parity = date.isocalendar()[1] % 2
         
         qs = Group.objects.exclude(id=group) if group else Group.objects.all()
+
+        if teacher:
+            qs = qs.filter(teacher__id=teacher)
 
         # Get all group lessons in that room, that day, overlapping in time and same week parity
         conflicting_groups = (
