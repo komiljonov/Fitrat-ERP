@@ -275,8 +275,10 @@ class Sale(BaseModel):
 class SaleStudent(BaseModel):
     creator: "CustomUser" = models.ForeignKey(
         "account.CustomUser",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="finances_creator_student_sale",
+        null=True,
+        blank=True,
     )
     sale: "Sale" = models.ForeignKey(
         "finance.Sale",
