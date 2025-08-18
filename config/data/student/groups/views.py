@@ -283,9 +283,9 @@ class CheckRoomLessonScheduleView(APIView):
 
         # Resolve Day ids
         try:
-            day_ids = list(map(int, raw_days))
+            day_ids = list(map(str, raw_days))
         except ValueError:
-            return Response({"error": "`days` must be integer Day IDs"}, status=400)
+            return Response({"error": "`days` must be String UUID Day IDs"}, status=400)
 
         days_qs = Day.objects.filter(id__in=day_ids).values_list("id", flat=True)
         if days_qs.count() != len(day_ids):
