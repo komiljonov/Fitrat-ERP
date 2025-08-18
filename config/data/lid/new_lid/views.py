@@ -569,7 +569,8 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         order_created = (
-            queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID", **filter)
+            queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID",
+                            ordered_date__is_null=False, **filter)
             .exclude(call_operator__isnull=True)
             .count()
         )
@@ -588,7 +589,6 @@ class LidStatisticsView(ListAPIView):
             ordered_date__isnull=False,
             ordered_stages="YANGI_BUYURTMA",
             is_archived=False,
-            ordered_date__is_null=False,
             **filter,
         ).count()
 
