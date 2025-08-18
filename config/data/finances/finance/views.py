@@ -1075,8 +1075,8 @@ class SalesStudentList(ListCreateAPIView):
 
         if filial:
             queryset = queryset.filter(filial__id=filial)
-        if type:
-            queryset = queryset.filter(sale__type=type)
+        # if type:
+        #     queryset = queryset.filter(sale__type=type)
 
         return queryset
 
