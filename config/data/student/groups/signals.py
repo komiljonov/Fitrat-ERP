@@ -9,6 +9,7 @@ from .models import Group, SecondaryGroup, Day, GroupSaleStudent
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Theme
 from ...department.marketing_channel.models import Group_Type
+from ...finances.finance.models import SaleStudent, Sale
 from ...notifications.models import Notification
 
 
@@ -148,3 +149,24 @@ def group_finish_date(sender, instance: Group, created: bool, **kwargs):
         )  # subtract last extra day
 
         instance.save(update_fields=["finish_date"])
+
+
+@receiver(post_save, sender=GroupSaleStudent)
+def add_sales_student(sender, instance: GroupSaleStudent, created: bool, **kwargs):
+    if created:
+
+        amount = instance.group.price - instance.amount
+        sale = Sale.objects.create(
+            creator=None,
+            name="Sale",
+            status="ACTIVE",
+            amount=amount
+        )
+        sale_student = SaleStudent.objects.create(
+            student=instance.student if instance.student else None,
+            sale=sale,
+            lid=instance.lid if instance.lid else None,
+            creator=None
+        )
+
+        print(sale_student.amount)
