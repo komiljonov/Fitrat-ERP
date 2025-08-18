@@ -258,7 +258,7 @@ class CheckRoomLessonScheduleView(APIView):
         ended_at_str = request.GET.get("ended_at")
         teacher = request.GET.get("teacher")
 
-        group = request.GET.get('group', None)
+        # group = request.GET.get('group', None)
 
         # Validate required fields
         if not all([room_id, date_str, started_at_str, ended_at_str,group, teacher]):
@@ -300,7 +300,9 @@ class CheckRoomLessonScheduleView(APIView):
         current_week_parity = date.isocalendar()[1] % 2
 
 
-        qs = Group.objects.exclude(id=group) if group else Group.objects.all()
+        # qs = Group.objects.exclude(id=group) if group else Group.objects.all()
+
+        qs =  Group.objects.all()
 
         if teacher:
             qs = qs.filter(teacher__id=teacher)
