@@ -588,6 +588,7 @@ class LidStatisticsView(ListAPIView):
             ordered_date__isnull=False,
             ordered_stages="YANGI_BUYURTMA",
             is_archived=False,
+            ordered_date__is_null=False,
             **filter,
         ).count()
 
