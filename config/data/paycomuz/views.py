@@ -23,6 +23,9 @@ from .models import Transaction
 from .serializers.payme_operation import PaycomOperationSerialzer
 from .serializers.serializers import PaycomuzSerializer
 from .status import *
+from ..finances.finance.models import Finance, Kind
+from ..lid.new_lid.models import Lid
+from ..student.student.models import Student
 
 
 class MerchantAPIView(APIView):
@@ -259,6 +262,30 @@ class MerchantAPIView(APIView):
                 )
 
                 obj.save()
+
+                try:
+                    kind = Kind.objects.filter(name="Lesson payment").first()
+
+                    student = Student.objects.filter(id=obj.order_key).first()
+                    lid = Lid.objects.filter(id=obj.order_key).first()
+
+                    finance = Finance.objects.create(
+                        action="INCOME",
+                        amount=obj.amount,
+                        kind=kind,
+                        creator=obj.creator,
+                        payment_method='Payme',
+                        student=student if student else None,
+                        lid=lid if lid else None,
+                        comment=f"{student.first_name + "  " + student.last_name if student else
+                        lid.first_name + " " + lid.last_name} talabaga {obj.amount} so'm pul to'lov qilindi."
+                    )
+
+                    if finance:
+                        print("finance --- ?")
+                except Exception as e:
+                    print(e)
+
                 print(obj.state)
 
                 self.reply = {

@@ -6,6 +6,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .click_authorization import click_authorization
 from .serializer import ClickUzSerializer, CreateOrderSerializer
 from .status import *
+from ..finances.finance.models import Kind, Finance
+from ..lid.new_lid.models import Lid
+from ..student.student.models import Student
 
 
 class ClickUzMerchantAPIView(APIView):
@@ -158,7 +161,6 @@ class ClickUzMerchantAPIView(APIView):
             transaction.status = Transaction.FINISHED
             transaction.save()
 
-            # Confirm payment in domain logic (balance update, flags, etc.)
             self.VALIDATE_CLASS().successfully_payment(
                 transaction.merchant_trans_id, transaction
             )
