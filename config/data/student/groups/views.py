@@ -261,7 +261,7 @@ class CheckRoomLessonScheduleView(APIView):
         # group = request.GET.get('group', None)
 
         # Validate required fields
-        if not all([room_id, date_str, started_at_str, ended_at_str,group, teacher]):
+        if not all([room_id, date_str, started_at_str, ended_at_str, teacher]):
             return Response({"error": "Missing required parameters"}, status=400)
 
         try:
