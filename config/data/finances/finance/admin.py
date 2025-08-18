@@ -15,6 +15,7 @@ class FinansAdmin(admin.ModelAdmin):
         "action",
         "amount",
         "kind",
+        "created_at",
     )
     search_fields = (
         "action",
