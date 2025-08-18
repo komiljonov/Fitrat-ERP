@@ -260,7 +260,7 @@ class CheckRoomLessonScheduleView(APIView):
         teacher_id = request.GET.get("teacher")
 
         # NEW: accept multiple day ids: ?days=1,3,5 or ?days=1&days=3&days=5
-        raw_days = request.GET.getlist("days")
+        raw_days = request.GET.getlist("scheduled_day_type")
         if len(raw_days) == 1 and "," in raw_days[0]:
             raw_days = [d.strip() for d in raw_days[0].split(",") if d.strip()]
 
