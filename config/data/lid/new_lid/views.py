@@ -570,7 +570,7 @@ class LidStatisticsView(ListAPIView):
 
         order_created = (
             queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID",
-                            ordered_date__is_null=False, **filter)
+                            ordered_date__isnull=False, **filter)
             .exclude(call_operator__isnull=True)
             .count()
         )
