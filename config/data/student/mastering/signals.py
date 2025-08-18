@@ -103,7 +103,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
 
         amount = Bonus.objects.filter(
             user=sale_manager.sales_manager,
-            name="Sinov darsiga kelgani uchun bonus",
+            name="Sinov darsiga kelgan o‘quvchi uchun bonus",
         ).first()
 
         if attendances_count == 1 and instance.student.sales_manager:
@@ -118,7 +118,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
             )
 
 
-# Sinov darsiga kelgani uchun bonus#
+# Sinov darsiga kelgan o‘quvchi uchun bonus#
 @receiver(post_save, sender=Finance)
 def new_created_order(sender, instance: Finance, created, **kwargs):
     if created and instance.student:
@@ -128,7 +128,7 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
         ).count()
         amount = Bonus.objects.filter(
             user=instance.student.sales_manager,
-            name="Aktiv o'quvchiga aylangan yangi o’quvchi uchun bonus",
+            name="Aktiv o‘quvchiga aylangan yangi o‘quvchi uchun bonus",
         ).first()
 
         if (
@@ -159,7 +159,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
                 if instance.student
                 else instance.lid.sales_manager
             ),
-            name="Sinov darsiga yozilb kemaganlar uchun jarima (Jarima)",
+            name="Sinov darsiga yozilib kelmaganlar uchun jarima    ",
         ).first()
 
         if attendances_count == 1 and instance.student.sales_manager:
@@ -204,7 +204,7 @@ def new_created_order(sender, instance: Student, created, **kwargs):
         if att > 2 and instance.service_manager:
             amount = Bonus.objects.filter(
                 user=instance.service_manager,
-                name="Agar o’quvchi ketib qolsa jarima yoziladi (Jarima)",
+                name="Aktivdan ketgan o‘quvchi uchun jarima",
             ).first()
             KpiFinance.objects.create(
                 user=instance.service_manager,
