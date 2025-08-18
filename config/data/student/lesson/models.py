@@ -83,8 +83,8 @@ class FirstLLesson(BaseModel):
         verbose_name = "First Lesson"
         verbose_name_plural = "First Lessons"
 
-    def __str__(self):
-        return f"{self.lid.first_name}   {self.group.name if self.group else ""}     {self.date}     {self.time}"
+    # def __str__(self):
+    #     return f"{self.lid.first_name}   {self.group.name if self.group else ""}     {self.date}     {self.time}"
 
 
 class ExtraLessonGroup(BaseModel):
