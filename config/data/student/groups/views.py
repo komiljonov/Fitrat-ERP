@@ -247,22 +247,29 @@ class RoomFilterView(ListAPIView):
         return queryset
 
 
+
 class CheckRoomLessonScheduleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         filial = request.GET.get("filial")
         room_id = request.GET.get("room")
-        date_str = request.GET.get("date")
+        date_str = request.GET.get("date")  # still used to anchor start/finish window checks
         started_at_str = request.GET.get("started_at")
         ended_at_str = request.GET.get("ended_at")
-        teacher = request.GET.get("teacher")
+        teacher_id = request.GET.get("teacher")
 
-        # group = request.GET.get('group', None)
+        # NEW: accept multiple day ids: ?days=1,3,5 or ?days=1&days=3&days=5
+        raw_days = request.GET.getlist("days")
+        if len(raw_days) == 1 and "," in raw_days[0]:
+            raw_days = [d.strip() for d in raw_days[0].split(",") if d.strip()]
 
         # Validate required fields
-        if not all([room_id, date_str, started_at_str, ended_at_str, teacher]):
-            return Response({"error": "Missing required parameters"}, status=400)
+        if not all([room_id, date_str, started_at_str, ended_at_str]) or not raw_days:
+            return Response(
+                {"error": "Missing required parameters (room, date, started_at, ended_at, days)"},
+                status=400,
+            )
 
         try:
             date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -271,98 +278,89 @@ class CheckRoomLessonScheduleView(APIView):
         except ValueError:
             return Response({"error": "Invalid date or time format"}, status=400)
 
-        # Convert weekday to Uzbek
-        weekday_name = date.strftime("%A")
-        uzbek_weekdays = {
-            "Monday": "Dushanba",
-            "Tuesday": "Seshanba",
-            "Wednesday": "Chorshanba",
-            "Thursday": "Payshanba",
-            "Friday": "Juma",
-            "Saturday": "Shanba",
-            "Sunday": "Yakshanba",
-        }
-        uzbek_day = uzbek_weekdays.get(weekday_name)
-        if not uzbek_day:
-            return Response(
-                {"error": f'Could not determine Uzbek weekday for "{weekday_name}"'},
-                status=400,
-            )
+        if not (ended_at > started_at):
+            return Response({"error": "`ended_at` must be greater than `started_at`"}, status=400)
 
+        # Resolve Day ids
         try:
-            day = Day.objects.get(name=uzbek_day)
-        except Day.DoesNotExist:
-            return Response(
-                {"error": f'Day "{uzbek_day}" not found in the database'}, status=400
-            )
+            day_ids = list(map(int, raw_days))
+        except ValueError:
+            return Response({"error": "`days` must be integer Day IDs"}, status=400)
 
-        # Calculate current week parity (0 for even, 1 for odd)
-        current_week_parity = date.isocalendar()[1] % 2
+        days_qs = Day.objects.filter(id__in=day_ids).values_list("id", flat=True)
+        if days_qs.count() != len(day_ids):
+            return Response({"error": "Some provided `days` do not exist"}, status=400)
 
+        # Common filters:
+        # - date range overlaps the proposed anchor date
+        # - group has ANY of the requested scheduled days
+        # - time windows overlap
+        date_window = Q(start_date__date__lte=date, finish_date__date__gte=date)
+        on_any_requested_day = Q(scheduled_day_type__in=day_ids)
+        time_overlap = Q(started_at__lt=ended_at, ended_at__gt=started_at)
 
-        # qs = Group.objects.exclude(id=group) if group else Group.objects.all()
-
-        qs =  Group.objects.all()
-
-        if teacher:
-            qs = qs.filter(teacher__id=teacher)
-
-        # Get all group lessons in that room, that day, overlapping in time and same week parity
-        conflicting_groups = (
-            qs.filter(
-                room_number_id=room_id,
-                start_date__lte=date,
-                finish_date__gte=date,
-                scheduled_day_type=day,
-            )
-            .annotate(start_week_parity=F("start_date__week") % 2)
-            .filter(
-                Q(started_at__lt=ended_at, ended_at__gt=started_at),
-                start_week_parity=current_week_parity,
-            )
+        # Base queryset over all groups that touch this date, any requested day, and overlap in time
+        base_qs = (
+            Group.objects
+            .filter(date_window)
+            .filter(on_any_requested_day)
+            .filter(time_overlap)
+            .distinct()
         )
 
-        # Extra lessons (groups)
-        conflicting_extra_group_lessons = ExtraLessonGroup.objects.filter(
-            room_id=room_id, date=date, started_at__lt=ended_at, ended_at__gt=started_at
-        )
+        # Conflicts
+        room_conflicts_qs = base_qs.filter(room_number_id=room_id)
 
-        # Extra lessons (students)
-        conflicting_extra_lessons = ExtraLesson.objects.filter(
-            room_id=room_id, date=date, started_at__lt=ended_at, ended_at__gt=started_at
-        )
+        teacher_conflicts_qs = Group.objects.none()
+        if teacher_id:
+            teacher_conflicts_qs = base_qs.filter(teacher_id=teacher_id)
 
-        # Format conflicts
+        # Extra lessons:
+        # Note: ExtraLesson/ExtraLessonGroup are single-date records.
+        # We check them only for the provided `date`.
+        extra_group_qs = ExtraLessonGroup.objects.filter(
+            date=date, started_at__lt=ended_at, ended_at__gt=started_at
+        ).filter(Q(room_id=room_id) | Q(group__scheduled_day_type__in=day_ids)).distinct()
+
+        extra_student_qs = ExtraLesson.objects.filter(
+            date=date, started_at__lt=ended_at, ended_at__gt=started_at
+        ).filter(room_id=room_id).distinct()
+
+        # Shape response
         conflicts = {
-            "group_lessons": GroupLessonSerializer(conflicting_groups, many=True).data,
+            "room_group_lessons": GroupLessonSerializer(room_conflicts_qs, many=True).data,
+            "teacher_group_lessons": GroupLessonSerializer(teacher_conflicts_qs, many=True).data,
             "extra_group_lessons": [
                 {
-                    "group": lesson.group.name,
-                    "date": lesson.date,
-                    "started_at": lesson.started_at,
-                    "ended_at": lesson.ended_at,
+                    "group": eg.group.name if eg.group.id else None,
+                    "date": eg.date,
+                    "started_at": eg.started_at,
+                    "ended_at": eg.ended_at,
+                    "room_id": eg.room.id,
                 }
-                for lesson in conflicting_extra_group_lessons
+                for eg in extra_group_qs
             ],
             "extra_lessons": [
                 {
-                    "student": lesson.student.phone if lesson.student else None,
-                    "teacher": lesson.teacher.username if lesson.teacher else None,
-                    "date": lesson.date,
-                    "started_at": lesson.started_at,
-                    "ended_at": lesson.ended_at,
+                    "student": el.student.phone if getattr(el, "student", None) else None,
+                    "teacher": el.teacher.username if getattr(el, "teacher", None) else None,
+                    "date": el.date,
+                    "started_at": el.started_at,
+                    "ended_at": el.ended_at,
+                    "room_id": el.room.id,
                 }
-                for lesson in conflicting_extra_lessons
+                for el in extra_student_qs
             ],
         }
 
-        if any(
-            [
-                conflicting_groups.exists(),
-                conflicting_extra_group_lessons.exists(),
-                conflicting_extra_lessons.exists(),
-            ]
-        ):
+        has_conflict = any([
+            room_conflicts_qs.exists(),
+            teacher_conflicts_qs.exists(),
+            extra_group_qs.exists(),
+            extra_student_qs.exists(),
+        ])
+
+        if has_conflict:
             return Response({"available": False, "conflicts": conflicts})
 
         return Response({"available": True})
