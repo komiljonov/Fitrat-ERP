@@ -72,25 +72,20 @@ class FistLessonView(ListCreateAPIView):
 
         data = request.data.copy()
 
-
-        # The payload shows 'lid', not 'id'
         lid_id = data.get("lid") or data.get("lid_id") or data.get("id")
         if not lid_id:
             return Response({"detail": "lid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Validate lesson first (no DB writes yet)
         lesson_ser = self.get_serializer(data=data, context=self.get_serializer_context())
         lesson_ser.is_valid(raise_exception=True)
 
         with transaction.atomic():
-            # Lock the Lid row to avoid concurrent edits
             lid_obj = get_object_or_404(Lid.objects.select_for_update(), pk=lid_id)
 
-            # Update Lid safely; your serializer expects request in context
             lid_ser = LidSerializer(
                 instance=lid_obj,
                 data=data,
-                partial=True,  # don't require all fields
+                partial=True,
                 context={"request": request},
             )
             lid_ser.is_valid(raise_exception=True)
@@ -98,7 +93,6 @@ class FistLessonView(ListCreateAPIView):
 
             group = lesson_ser.validated_data.get("group")
 
-            # Duplicate checks inside the same transaction
             if group:
                 if StudentGroup.objects.filter(group=group, lid=lid_obj).exists():
                     return Response(
@@ -113,7 +107,6 @@ class FistLessonView(ListCreateAPIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-            # Force-link to the locked LID (ignore client's 'lid' value)
             lesson = lesson_ser.save(lid=lid_obj)
 
         # Use the same context for representation

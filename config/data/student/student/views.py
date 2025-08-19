@@ -24,8 +24,8 @@ from rest_framework.request import HttpRequest, Request
 
 from .models import Student, FistLesson_data
 from .serializers import StudentSerializer, FistLesson_dataSerializer
-from ..lesson.models import Lesson
-from ..lesson.serializers import LessonSerializer
+from ..lesson.models import Lesson, FirstLLesson
+from ..lesson.serializers import LessonSerializer, FirstLessonSerializer
 from ..studentgroup.models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...finances.finance.models import Finance
@@ -560,12 +560,12 @@ class ExportLidToExcelAPIView(APIView):
 
 
 class FistLesson_dataList(ListCreateAPIView):
-    queryset = FistLesson_data.objects.all()
-    serializer_class = FistLesson_dataSerializer
+    queryset = FirstLLesson.objects.all()
+    serializer_class = FirstLessonSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = FistLesson_data.objects.all()
+        queryset = FirstLLesson.objects.all()
         id = self.request.GET.get("id")
 
 
