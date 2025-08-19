@@ -12,6 +12,10 @@ from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
 from .serializers import LessonSerializer, LessonScheduleSerializer, FirstLessonSerializer, ExtraLessonSerializer, \
     ExtraLessonGroupSerializer, CombinedExtraLessonSerializer
 from ..studentgroup.models import StudentGroup
+from ...account.admin import CustomUserAdmin
+from ...account.models import CustomUser
+from ...lid.new_lid.models import Lid
+from ...lid.new_lid.serializers import LidSerializer
 
 
 class LessonList(ListCreateAPIView):
@@ -66,7 +70,17 @@ class FistLessonView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
 
         print(request.data)
-        print(kwargs.items())
+
+        lid_id = request.data.get('id')
+
+        lid = Lid.objects.filter(id=lid_id).first()
+
+
+        ser = LidSerializer(instance=lid, data=request.data)
+
+        ser.is_valid(raise_exception=True)
+        ser.save()
+
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
