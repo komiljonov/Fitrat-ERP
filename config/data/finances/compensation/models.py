@@ -59,8 +59,8 @@ class Bonus(BaseModel):
             ("Yaratilgan buyurtma uchun bonus", "Yaratilgan buyurtma uchun bonus"),
             ("Sinov darsiga kelgan o‘quvchi uchun bonus", "Sinov darsiga kelgan o‘quvchi uchun bonus"),
             (
-                "Hizmat ko‘rsatgan har bir Aktiv o‘quvchi uchun bonus",
-                "Hizmat ko‘rsatgan har bir Aktiv o‘quvchi uchun bonus",
+                "Xizmat ko‘rsatgan har bir aktiv o‘quvchi uchun bonus",
+                "Xizmat ko‘rsatgan har bir aktiv o‘quvchi uchun bonus",
             ),
             (
                 "Aktiv o‘quvchiga aylangan yangi o‘quvchi uchun bonus",
