@@ -63,7 +63,7 @@ def on_purchase_created(sender, instance: Purchase, created, **kwargs):
         data = {
             "id" : instance.product.id,
             "name" : instance.product.name,
-            "imageUrl" : instance.product.image.url if instance.product.image else None,
+            "imageUrl": (instance.product.image.url if getattr(instance.product, "image", None) else None),
             "coins" : instance.product.coin,
             "description" : instance.product.comment,
             "status" : instance.status,

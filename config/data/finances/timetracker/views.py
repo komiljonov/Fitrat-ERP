@@ -287,6 +287,7 @@ class UserTimeLineBulkUpdateDelete(APIView):
         return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
 
 
+
 class CustomUserPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = "page_size"
