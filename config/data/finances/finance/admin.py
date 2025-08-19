@@ -9,6 +9,7 @@ from .models import Casher, Finance, KpiFinance, SaleStudent
 @admin.register(Finance)
 class FinansAdmin(admin.ModelAdmin):
     list_display = (
+        "lid__first_name",
         "student__first_name",
         "stuff__first_name",
         "casher__role",
