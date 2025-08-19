@@ -567,8 +567,13 @@ class FistLesson_dataList(ListCreateAPIView):
     def get_queryset(self):
         queryset = FistLesson_data.objects.all()
         id = self.request.GET.get("id")
+
+
+        print(id)
+
         if id:
             queryset = queryset.filter(lid__id=id)
+            print(queryset)
         return queryset
 
     def get_paginated_response(self, data):
