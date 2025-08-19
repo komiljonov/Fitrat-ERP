@@ -1,10 +1,11 @@
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter,OrderingFilter
 
-from rest_framework.generics import ListAPIView,ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -66,38 +67,57 @@ class FistLessonView(ListCreateAPIView):
     serializer_class = FirstLessonSerializer
     permission_classes = [IsAuthenticated]
 
-
     def create(self, request, *args, **kwargs):
+        data = request.data.copy()
 
-        print(request.data)
+        # The payload shows 'lid', not 'id'
+        lid_id = data.get("lid") or data.get("lid_id") or data.get("id")
+        if not lid_id:
+            return Response({"detail": "lid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        lid_id = request.data.get('id')
+        # Validate lesson first (no DB writes yet)
+        lesson_ser = self.get_serializer(data=data, context=self.get_serializer_context())
+        lesson_ser.is_valid(raise_exception=True)
 
-        lid = Lid.objects.filter(id=lid_id).first()
+        with transaction.atomic():
+            # Lock the Lid row to avoid concurrent edits
+            lid_obj = get_object_or_404(Lid.objects.select_for_update(), pk=lid_id)
 
+            # Update Lid safely; your serializer expects request in context
+            lid_ser = LidSerializer(
+                instance=lid_obj,
+                data=data,
+                partial=True,  # don't require all fields
+                context={"request": request},
+            )
+            lid_ser.is_valid(raise_exception=True)
+            lid_obj = lid_ser.save()
 
-        ser = LidSerializer(instance=lid, data=request.data)
+            group = lesson_ser.validated_data.get("group")
 
-        ser.is_valid(raise_exception=True)
-        ser.save()
+            # Duplicate checks inside the same transaction
+            if group:
+                if StudentGroup.objects.filter(group=group, lid=lid_obj).exists():
+                    return Response(
+                        {"error": "This LID is already assigned to this group."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                if StudentGroup.objects.filter(
+                    group=group, student__phone=lid_obj.phone_number
+                ).exists():
+                    return Response(
+                        {"error": "This Student is already assigned to this group."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
+            # Force-link to the locked LID (ignore client's 'lid' value)
+            lesson = lesson_ser.save(lid=lid_obj)
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        group = serializer.validated_data.get("group")
-        lid = serializer.validated_data.get("lid")
-
-        if group and lid:
-            if StudentGroup.objects.filter(group=group, lid=lid).exists():
-                return Response({"error": "This LID is already assigned to this group."}, status=status.HTTP_400_BAD_REQUEST)
-
-            if StudentGroup.objects.filter(group=group, student__phone=lid.phone_number).exists():
-                return Response({"error": "This Student is already assigned to this group."}, status=status.HTTP_400_BAD_REQUEST)
-
-        self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+        # Use the same context for representation
+        return Response(
+            FirstLessonSerializer(lesson, context=self.get_serializer_context()).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 class FirstLessonView(ListAPIView):
 
