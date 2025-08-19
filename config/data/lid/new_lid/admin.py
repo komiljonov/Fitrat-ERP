@@ -16,6 +16,7 @@ class LidAdmin(admin.ModelAdmin):
     )
     search_fields = ("first_name", "phone_number", "filial", "call_operator")
     list_filter = (
+        "phone_number",
         "lid_stage_type",
         "is_dubl",
         "is_student",
