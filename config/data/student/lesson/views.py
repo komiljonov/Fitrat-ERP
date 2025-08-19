@@ -68,7 +68,10 @@ class FistLessonView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        print(request.data)
+
         data = request.data.copy()
+
 
         # The payload shows 'lid', not 'id'
         lid_id = data.get("lid") or data.get("lid_id") or data.get("id")
