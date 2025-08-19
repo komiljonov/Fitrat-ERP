@@ -76,7 +76,7 @@ class FistLessonView(ListCreateAPIView):
         lid = Lid.objects.filter(id=lid_id).first()
 
 
-        ser = LidSerializer(instance=lid, data=request.data,request=request)
+        ser = LidSerializer(instance=lid, data=request.data)
 
         ser.is_valid(raise_exception=True)
         ser.save()
