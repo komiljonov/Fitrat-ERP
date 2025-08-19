@@ -42,9 +42,6 @@ def on_coin_create(sender, instance: Coins, created, **kwargs):
 def on_purchase_created(sender, instance: Purchase, created, **kwargs):
     student = instance.student
 
-    instance.product.quantity -= 1
-    instance.product.save()
-
     if created:
         instance.filial = instance.student.filial
         instance.save()
@@ -58,6 +55,9 @@ def on_purchase_created(sender, instance: Purchase, created, **kwargs):
         )
 
     if not created and instance.status == "Completed":
+
+        instance.product.quantity -= 1
+        instance.product.save()
 
         Notification.objects.create(
             user=student.user,
