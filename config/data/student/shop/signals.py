@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 from django.db.models.signals import post_save
@@ -59,6 +60,16 @@ def on_purchase_created(sender, instance: Purchase, created, **kwargs):
         instance.product.quantity -= 1
         instance.product.save()
 
+        data = {
+            "id" : instance.product.id,
+            "name" : instance.product.name,
+            "imageUrl" : instance.product.image.url,
+            "coins" : instance.product.coin,
+            "description" : instance.product.comment,
+            "status" : instance.status,
+            "date" : instance.created_at
+        }
+
         Notification.objects.create(
             user=student.user,
             comment=(
@@ -66,7 +77,7 @@ def on_purchase_created(sender, instance: Purchase, created, **kwargs):
                 f"sizga taqdim etish uchun tayyor.\n"
                 f"Filial : {instance.product.filial}\n"
             ),
-            come_from=instance.id,
+            come_from=json.dumps(data),
             choice="Shopping",
         )
 
@@ -80,6 +91,16 @@ def on_purchase_created(sender, instance: Purchase, created, **kwargs):
             status="Given",
         )
 
+        data = {
+            "id": instance.product.id,
+            "name": instance.product.name,
+            "imageUrl": instance.product.image.url,
+            "coins": instance.product.coin,
+            "description": instance.product.comment,
+            "status": instance.status,
+            "date": instance.created_at
+        }
+
         Notification.objects.create(
             user=student.user,
             comment=(
@@ -87,7 +108,7 @@ def on_purchase_created(sender, instance: Purchase, created, **kwargs):
                 f"bekor qilindi.\n"
                 f"Filial : {instance.product.filial}\n"
             ),
-            come_from=instance.id,
+            come_from=json.dumps(data),
             choice="Shopping",
         )
 
