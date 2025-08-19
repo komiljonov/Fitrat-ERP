@@ -246,9 +246,9 @@ class TimeLineBulkCreate(CreateAPIView):
 
         ser = self.get_serializer(data=request.data, many=True)
         ser.is_valid(raise_exception=True)
-        ser.save()  # upsert happens here
+        instances = ser.save()
+        return Response(self.get_serializer(instances, many=True).data, status=status.HTTP_201_CREATED)
 
-        return Response(ser.data, status=status.HTTP_201_CREATED)
 
 
 class UserTimeLineBulkUpdateDelete(APIView):

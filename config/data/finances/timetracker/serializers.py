@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from data.account.models import CustomUser
 from .models import Employee_attendance, UserTimeLine, Stuff_Attendance
@@ -154,18 +155,19 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
         list_serializer_class = UserTimeLineBulkSerializer
 
 
+
+
 class UserTimeLine1BulkSerializer(serializers.ListSerializer):
     """
-    Upsert behavior:
-      - items with 'id' -> update that row (only fields provided in the item)
-      - items without 'id' -> create new row
-    Returns instances in the same order as input.
+    Upsert:
+      - with 'id' -> update that row (only provided fields)
+      - without 'id' -> create new row
+    Returns instances in input order.
     """
 
     def create(self, validated_data):
         Model = self.child.Meta.model
 
-        # Pair each cleaned item with its raw dict to read 'id' (DRF strips read-only fields)
         raw_items = list(self.initial_data)
         pairs = []
         for i, clean in enumerate(validated_data):
@@ -173,19 +175,19 @@ class UserTimeLine1BulkSerializer(serializers.ListSerializer):
             raw_id = raw.get("id")
             pairs.append((raw_id, clean))
 
-        # Fetch all existing instances in one query
         ids = [pk for pk, _ in pairs if pk is not None]
         existing_map = {obj.id: obj for obj in Model.objects.filter(id__in=ids)}
 
-        to_update = []
-        to_create = []
+        # If client sent an id that doesn't exist → error (avoid accidental new rows)
+        missing_ids = [pk for pk in ids if pk not in existing_map]
+        if missing_ids:
+            raise ValidationError({"id": [f"Unknown id(s): {missing_ids}"]})
 
-        # Which fields are allowed to be updated in bulk_update
+        to_update, to_create = [], []
         update_fields = self.child.get_updatable_fields()
 
-        # Apply per-item updates; only set attributes that are present in that item
         for pk, attrs in pairs:
-            if pk is not None and pk in existing_map:
+            if pk is not None:
                 inst = existing_map[pk]
                 for attr, val in attrs.items():
                     setattr(inst, attr, val)
@@ -198,19 +200,15 @@ class UserTimeLine1BulkSerializer(serializers.ListSerializer):
             if to_update:
                 Model.objects.bulk_update(to_update, fields=update_fields)
 
-        # Preserve original input order in returned list
+        # Preserve order
         created_iter = iter(created)
         result = []
         for pk, _ in pairs:
-            if pk is not None and pk in existing_map:
+            if pk is not None:
                 result.append(existing_map[pk])
             else:
-                result.append(next(created_iter) if to_create else None)
-        # Filter out potential None (when there were no creations)
+                result.append(next(created_iter, None))
         return [obj for obj in result if obj is not None]
-
-    # You usually don't need ListSerializer.update for this flow,
-    # but you could implement a similar pattern if you support PUT/PATCH on lists.
 
 
 class UserTimeLine1Serializer(serializers.ModelSerializer):
@@ -230,8 +228,7 @@ class UserTimeLine1Serializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
-        list_serializer_class = UserTimeLine1BulkSerializer
+        list_serializer_class = UserTimeLine1BulkSerializer  # <-- FIXED
 
     def get_updatable_fields(self):
-        # Fields we allow bulk_update to touch
         return ["user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
