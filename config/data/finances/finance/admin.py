@@ -9,7 +9,7 @@ from .models import Casher, Finance, KpiFinance, SaleStudent
 @admin.register(Finance)
 class FinansAdmin(admin.ModelAdmin):
     list_display = (
-        "casher__name",
+        "student__firt_name",
         "stuff__first_name",
         "casher__role",
         "action",
@@ -24,6 +24,7 @@ class FinansAdmin(admin.ModelAdmin):
     list_filter = (
         "action",
         "kind",
+        "filial"
     )
 
 
