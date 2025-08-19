@@ -14,3 +14,5 @@ class StudentAdmin(admin.ModelAdmin):
 @admin.register(FistLesson_data)
 class FistLessonDataAdmin(admin.ModelAdmin):
     list_display = ( 'teacher__full_name', 'group__name','lesson_date',"lid__first_name")
+    list_filter = ('teacher__full_name', 'group__name','lesson_date')
+    search_fields = ('teacher__full_name', 'group__name','lesson_date')
