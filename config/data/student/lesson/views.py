@@ -66,6 +66,7 @@ class FistLessonView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
 
         print(request.data)
+        print(kwargs.items())
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
