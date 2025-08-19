@@ -22,6 +22,7 @@ class FinansAdmin(admin.ModelAdmin):
         "kind",
     )
     list_filter = (
+        "student__phone"
         "action",
         "kind",
         "filial"
