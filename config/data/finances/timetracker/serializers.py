@@ -158,17 +158,28 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
 
 class UserTimeLine1BulkSerializer(serializers.ListSerializer):
     """
-    POST a list:
-      - If an item contains 'id' of an existing row -> UPDATE that row
-      - Else -> CREATE new row
-    Returns the combined list of updated + created instances.
+    Upsert in bulk:
+      - item with 'id' -> UPDATE (404 if id doesn't exist)
+      - item without 'id' -> CREATE
     """
+
+    def _updatable_fields(self):
+        # Compute concrete, editable fields (exclude PK & created_at)
+        model = self.child.Meta.model
+        names = []
+        for f in model._meta.concrete_fields:
+            if f.primary_key or not f.editable:
+                continue
+            if f.name == "created_at":
+                continue
+            names.append(f.name)
+        return names
 
     def create(self, validated_data):
         Model = self.child.Meta.model
+        raw_items = list(self.initial_data)  # to read 'id' presence
 
-        # Pair up each validated item with its raw input (to read 'id' that DRF removed)
-        raw_items = list(self.initial_data)
+        # Pair each validated dict with its raw id (DRF strips 'id' from validated_data)
         pairs = []
         for i, clean in enumerate(validated_data):
             raw_id = None
@@ -176,41 +187,33 @@ class UserTimeLine1BulkSerializer(serializers.ListSerializer):
                 raw_id = raw_items[i].get("id")
             pairs.append((raw_id, clean))
 
-        # Fetch existing instances in one go
+        # Fetch existing instances in one query
         ids = [pk for pk, _ in pairs if pk]
-        existing_map = Model.objects.in_bulk(ids)  # {id: instance}
+        existing = Model.objects.in_bulk(ids)  # {id: instance}
 
-        to_update = []
-        to_create = []
+        to_update, to_create = [], []
 
         for pk, attrs in pairs:
-            # Only set attributes provided in this item
-            if pk and pk in existing_map:
-                inst = existing_map[pk]
+            if pk:
+                obj = existing.get(pk)
+                if not obj:
+                    # Client sent id but row not found -> fail loudly
+                    raise serializers.ValidationError({"id": f"{pk} not found"})
+                # Assign only provided attrs
                 for attr, value in attrs.items():
-                    setattr(inst, attr, value)
-                to_update.append(inst)
+                    setattr(obj, attr, value)
+                to_update.append(obj)
             else:
-                # Creating new: ensure we don't pass an id
                 to_create.append(Model(**attrs))
 
-        # Fields allowed to update in bulk (must be concrete model fields; no M2M)
-        update_fields = [
-            "user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"
-        ]
+        update_fields = self._updatable_fields()
 
         with transaction.atomic():
-            # Create new rows
-            created = Model.objects.bulk_create(
-                to_create,
-                # If you’re on Django 4.1+ and Postgres, this returns PKs:
-                # return_defaults=True
-            )
-            # Update existing rows
+            created = Model.objects.bulk_create(to_create)
             if to_update:
                 Model.objects.bulk_update(to_update, update_fields)
 
-        # Return both updated and created so serializer.data renders all
+        # Return updated + created so serializer.data renders everything
         return to_update + created
 
 
@@ -232,5 +235,5 @@ class UserTimeLine1Serializer(serializers.ModelSerializer):
             "bonus",
             "created_at",
         ]
-        read_only_fields = ["created_at"]  # usually good to keep this read-only
+        read_only_fields = ["created_at"]
         list_serializer_class = UserTimeLineBulkSerializer

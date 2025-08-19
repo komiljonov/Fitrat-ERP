@@ -244,11 +244,11 @@ class TimeLineBulkCreate(CreateAPIView):
         if not isinstance(request.data, list):
             return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = self.get_serializer(data=request.data, many=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        ser = self.get_serializer(data=request.data, many=True)
+        ser.is_valid(raise_exception=True)
+        ser.save()  # upsert happens here
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(ser.data, status=status.HTTP_201_CREATED)
 
 
 class UserTimeLineBulkUpdateDelete(APIView):
