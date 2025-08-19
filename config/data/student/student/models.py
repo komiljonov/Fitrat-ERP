@@ -230,5 +230,3 @@ class FistLesson_data(BaseModel):
         verbose_name = "Fist Lesson"
         verbose_name_plural = "Fist Lesson"
 
-    def __str__(self):
-        return f"{self.teacher.full_name} {self.group} {self.lesson_date}"
