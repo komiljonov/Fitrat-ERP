@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 
 from .models import Employee_attendance
 from .models import UserTimeLine, Stuff_Attendance
-from .serializers import Stuff_AttendanceSerializer
+from .serializers import Stuff_AttendanceSerializer, UserTimeLine1Serializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
 from .utils import calculate_amount, delete_user_actions, get_updated_datas
@@ -238,7 +238,7 @@ class UserTimeLineDetail(RetrieveUpdateDestroyAPIView):
 
 
 class TimeLineBulkCreate(CreateAPIView):
-    serializer_class = UserTimeLineSerializer
+    serializer_class = UserTimeLine1Serializer
 
     def create(self, request, *args, **kwargs):
         if not isinstance(request.data, list):

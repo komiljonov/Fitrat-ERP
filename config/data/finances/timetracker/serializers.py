@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import Q
 from rest_framework import serializers
 
@@ -150,4 +151,86 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
             "bonus",
             "created_at",
         ]
+        list_serializer_class = UserTimeLineBulkSerializer
+
+
+
+
+class UserTimeLine1BulkSerializer(serializers.ListSerializer):
+    """
+    POST a list:
+      - If an item contains 'id' of an existing row -> UPDATE that row
+      - Else -> CREATE new row
+    Returns the combined list of updated + created instances.
+    """
+
+    def create(self, validated_data):
+        Model = self.child.Meta.model
+
+        # Pair up each validated item with its raw input (to read 'id' that DRF removed)
+        raw_items = list(self.initial_data)
+        pairs = []
+        for i, clean in enumerate(validated_data):
+            raw_id = None
+            if i < len(raw_items) and isinstance(raw_items[i], dict):
+                raw_id = raw_items[i].get("id")
+            pairs.append((raw_id, clean))
+
+        # Fetch existing instances in one go
+        ids = [pk for pk, _ in pairs if pk]
+        existing_map = Model.objects.in_bulk(ids)  # {id: instance}
+
+        to_update = []
+        to_create = []
+
+        for pk, attrs in pairs:
+            # Only set attributes provided in this item
+            if pk and pk in existing_map:
+                inst = existing_map[pk]
+                for attr, value in attrs.items():
+                    setattr(inst, attr, value)
+                to_update.append(inst)
+            else:
+                # Creating new: ensure we don't pass an id
+                to_create.append(Model(**attrs))
+
+        # Fields allowed to update in bulk (must be concrete model fields; no M2M)
+        update_fields = [
+            "user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"
+        ]
+
+        with transaction.atomic():
+            # Create new rows
+            created = Model.objects.bulk_create(
+                to_create,
+                # If you’re on Django 4.1+ and Postgres, this returns PKs:
+                # return_defaults=True
+            )
+            # Update existing rows
+            if to_update:
+                Model.objects.bulk_update(to_update, update_fields)
+
+        # Return both updated and created so serializer.data renders all
+        return to_update + created
+
+
+class UserTimeLine1Serializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
+
+    class Meta:
+        model = UserTimeLine
+        fields = [
+            "id",
+            "user",
+            "day",
+            "start_time",
+            "end_time",
+            "is_weekend",
+            "penalty",
+            "bonus",
+            "created_at",
+        ]
+        read_only_fields = ["created_at"]  # usually good to keep this read-only
         list_serializer_class = UserTimeLineBulkSerializer
