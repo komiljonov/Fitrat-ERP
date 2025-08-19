@@ -258,23 +258,31 @@ class UserTimeLineBulkUpdateDelete(APIView):
         if not isinstance(request.data, list):
             return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
 
-        ids = [item.get("id") for item in request.data if "id" in item]
-        instances = list(UserTimeLine.objects.filter(id__in=ids))
+        # Collect ids from payload (keep as strings for UUID safety)
+        ids = [str(item.get("id")) for item in request.data if item.get("id") is not None]
+        if not ids:
+            return Response({"detail": "Each item must include id for update."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(instances) != len(ids):
+        qs = UserTimeLine.objects.filter(id__in=ids)
+        if qs.count() != len(ids):
             return Response({"detail": "Some IDs not found."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = UserTimeLineSerializer(instances, data=request.data, many=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        # Reorder instances to match payload order
+        by_id = {str(obj.id): obj for obj in qs}
+        instances_ordered = [by_id[str(item["id"])] for item in request.data]
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # partial=True so we can send only the fields we want to change
+        serializer = UserTimeLineSerializer(instances_ordered, data=request.data, many=True, partial=True)
+        serializer.is_valid(raise_exception=True)
+        instances = serializer.save()
+
+        # Re-serialize updated instances
+        return Response(UserTimeLineSerializer(instances, many=True).data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         ids = request.data.get("ids", [])
         if not isinstance(ids, list):
             return Response({"detail": "Expected a list of ids."}, status=status.HTTP_400_BAD_REQUEST)
-
         deleted_count, _ = UserTimeLine.objects.filter(id__in=ids).delete()
         return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
 

@@ -112,48 +112,54 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
 
 class UserTimeLineBulkSerializer(serializers.ListSerializer):
     def create(self, validated_data):
-        return UserTimeLine.objects.bulk_create([
-            UserTimeLine(**item) for item in validated_data
-        ])
+        Model = self.child.Meta.model
+        objs = [Model(**item) for item in validated_data]
+        with transaction.atomic():
+            created = Model.objects.bulk_create(objs)
+        return created
 
     def update(self, instances, validated_data):
-        # map instance id -> instance
-        instance_mapping = {instance.id: instance for instance in instances}
+        Model = self.child.Meta.model
+        # Map {str(id): instance} to handle UUIDs or ints uniformly
+        instance_map = {str(inst.id): inst for inst in instances}
+
+        raw_items = list(self.initial_data)  # has 'id'
         updated_objs = []
 
-        for item in validated_data:
-            instance = instance_mapping.get(item.get("id"))
-            if instance:
-                for attr, value in item.items():
-                    setattr(instance, attr, value)
-                updated_objs.append(instance)
+        # Pair each raw (has id) with its cleaned attrs
+        for raw, attrs in zip(raw_items, validated_data):
+            pk = str(raw.get("id")) if raw.get("id") is not None else None
+            if not pk or pk not in instance_map:
+                # You can raise if you want strictness:
+                # raise ValidationError({"id": [f"Unknown id: {raw.get('id')}"]})
+                continue
+            inst = instance_map[pk]
+            for field, val in attrs.items():
+                setattr(inst, field, val)
+            updated_objs.append(inst)
 
-        return UserTimeLine.objects.bulk_update(
-            updated_objs,
-            fields=["day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
-        )
+        update_fields = getattr(self.child, "get_updatable_fields")()
+        if updated_objs:
+            with transaction.atomic():
+                Model.objects.bulk_update(updated_objs, fields=update_fields)
+
+        # IMPORTANT: return the instances (not the integer from bulk_update)
+        return updated_objs
 
 
 class UserTimeLineSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
-    )
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
 
     class Meta:
         model = UserTimeLine
         fields = [
-            "id",
-            "user",
-            "day",
-            "start_time",
-            "end_time",
-            "is_weekend",
-            "penalty",
-            "bonus",
-            "created_at",
+            "id", "user", "day", "start_time", "end_time",
+            "is_weekend", "penalty", "bonus", "created_at",
         ]
         list_serializer_class = UserTimeLineBulkSerializer
 
+    def get_updatable_fields(self):
+        return ["user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
 
 
 
