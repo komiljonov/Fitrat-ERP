@@ -261,8 +261,8 @@ class UserTimeLineBulkUpdateDelete(APIView):
         ids = [item.get("id") for item in request.data if "id" in item]
         instances = list(UserTimeLine.objects.filter(id__in=ids))
 
-        if len(instances) != len(ids):
-            return Response({"detail": "Some IDs not found."}, status=status.HTTP_400_BAD_REQUEST)
+        # if len(instances) != len(ids):
+        #     return Response({"detail": "Some IDs not found."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = UserTimeLineSerializer(instances, data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
