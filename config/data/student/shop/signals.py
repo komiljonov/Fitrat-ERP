@@ -1,12 +1,15 @@
 import json
 from decimal import Decimal
 
-from django.db.models.signals import post_save
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import F
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
 from django.utils.autoreload import logger
 
 from data.notifications.models import Notification
-from data.student.shop.models import Coins, Purchase, Points
+from data.student.shop.models import Coins, Purchase, Points, Products
 from data.student.student.models import Student
 from data.finances.compensation.models import Page
 
@@ -38,77 +41,81 @@ def on_coin_create(sender, instance: Coins, created, **kwargs):
             user.coins -= instance.coin
             user.save()
 
+@receiver(pre_save, sender=Purchase)
+def set_filial_before_save(sender, instance: Purchase, **kwargs):
+    if instance.student_id and not instance.filial_id:
+        instance.filial = instance.student.filial
+
+def _one_product(rel):
+    if rel is None:
+        return None
+    return rel.first() if hasattr(rel, "all") else rel  # M2M vs FK
+
+def _payload(instance: Purchase, product):
+    return {
+        "id": (str(product.id) if product else None),   # UUID -> str
+        "name": (product.name if product else None),
+        # "imageUrl": product.image.url if (product and product.image) else None,
+        "coins": (int(product.coin) if product and product.coin is not None else None),
+        "description": (product.comment if product else None),
+        "status": instance.status,
+        "date": timezone.localtime(instance.created_at).isoformat()
+                if instance.created_at else None,       # datetime -> ISO
+    }
 
 @receiver(post_save, sender=Purchase)
 def on_purchase_created(sender, instance: Purchase, created, **kwargs):
     student = instance.student
+    product = _one_product(getattr(instance, "product", None))
 
     if created:
-        instance.filial = instance.student.filial
-        instance.save()
+        # no instance.save() here anymore; handled in pre_save
+        if product:
+            Coins.objects.create(
+                student=student,
+                coin=product.coin,
+                choice="Shopping",
+                comment=f"Siz uchun {product.name} buyurtma qilindi va tasdiqlanishi bilan sizga xabar beramiz .",
+                status="Taken",
+            )
+        return
 
-        Coins.objects.create(
-            student=student,
-            coin=instance.product.coin,
-            choice="Shopping",
-            comment=f"Siz uchun {instance.product.name} buyurtma qilindi va tasdiqlanishi bilan sizga xabar beramiz .",
-            status="Taken",
-        )
-
-    if not created and instance.status == "Completed":
-
-        instance.product.quantity -= 1
-        instance.product.save()
-
-        data = {
-            "id" : (instance.product.id),
-            "name" : instance.product.name,
-            # "imageUrl": (instance.product.image.url if getattr(instance.product, "image", None) else None),
-            "coins" : instance.product.coin,
-            "description" : instance.product.comment,
-            "status" : instance.status,
-            "date" : instance.created_at
-        }
+    # Completed → decrement stock safely (no race)
+    if instance.status == "Completed" and product:
+        Products.objects.filter(pk=product.pk).update(quantity=F("quantity") - 1)
+        data = _payload(instance, product)
 
         Notification.objects.create(
             user=student.user,
             comment=(
-                f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz "
+                f"Sizning kutish bosqichidagi {product.name} nomli mahsulotamiz "
                 f"sizga taqdim etish uchun tayyor.\n"
-                f"Filial : {instance.product.filial}\n"
+                f"Filial : {product.filial}\n"
             ),
-            come_from=json.dumps(data),
+            come_from=json.dumps(data, cls=DjangoJSONEncoder),
             choice="Shopping",
         )
 
-    if not created and instance.status == "Cancelled":
-
+    # Cancelled → refund
+    if instance.status == "Cancelled" and product:
         Coins.objects.create(
             student=student,
-            coin=instance.product.coin,
+            coin=product.coin,
             choice="Shopping",
-            comment=f"Sizning kutish bosqichidagi {instance.product.name} buyurtmangiz bekir qilinganligi uchun coinlaringiz qaytarildi.",
+            comment=(f"Sizning kutish bosqichidagi {product.name} buyurtmangiz bekor "
+                     f"qilinganligi uchun coinlaringiz qaytarildi."),
             status="Given",
         )
-
-        data = {
-            "id": str(instance.product.id),
-            "name": instance.product.name,
-            # "imageUrl": instance.product.image.url if instance.product.image else None,
-            "coins": instance.product.coin,
-            "description": instance.product.comment,
-            "status": instance.status,
-            "date": instance.created_at
-        }
+        data = _payload(instance, product)
 
         Notification.objects.create(
             user=student.user,
             comment=(
-                f"Sizning kutish bosqichidagi {instance.product.name} nomli mahsulotamiz "
+                f"Sizning kutish bosqichidagi {product.name} nomli mahsulotamiz "
                 f"bekor qilindi.\n"
-                f"Filial : {instance.product.filial}\n"
+                f"Filial : {product.filial}\n"
             ),
-            come_from=json.dumps(data),
+            come_from=json.dumps(data, cls=DjangoJSONEncoder),
             choice="Shopping",
         )
 
