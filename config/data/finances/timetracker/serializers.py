@@ -153,6 +153,7 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
         ]
         list_serializer_class = UserTimeLineBulkSerializer
 
+
 class UserTimeLine1BulkSerializer(serializers.ListSerializer):
     """
     Upsert behavior:
@@ -229,7 +230,7 @@ class UserTimeLine1Serializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
-        list_serializer_class = UserTimeLineBulkSerializer
+        list_serializer_class = UserTimeLine1BulkSerializer
 
     def get_updatable_fields(self):
         # Fields we allow bulk_update to touch
