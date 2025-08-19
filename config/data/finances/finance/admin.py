@@ -11,7 +11,7 @@ class FinansAdmin(admin.ModelAdmin):
     list_display = (
         "lid__first_name",
         "student__first_name",
-        "stuff__first_name",
+        "lid__lid_stage_type",
         "casher__role",
         "action",
         "amount",
