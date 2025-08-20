@@ -268,8 +268,10 @@ class UserTimeLineBulkUpsert(APIView):
         create_payloads = []
         update_payloads = []  # list of (pk, payload)
         for obj in items:
-            # if not isinstance(obj, dict):
-            #     return Response({"detail": "Each item must be an object."}, status=400)
+
+            print(obj,type(obj))
+            if not isinstance(obj, dict):
+                return Response({"detail": "Each item must be an object."}, status=400)
             pk = _norm_pk(obj.get("id"))
             if pk is None:
                 create_payloads.append(obj)
@@ -336,8 +338,8 @@ class UserTimeLineBulkUpdateDelete(APIView):
 
         # Collect ids from payload (keep as strings for UUID safety)
         ids = [str(item.get("id")) for item in request.data if item.get("id") is not None]
-        # if not ids:
-        #     return Response({"detail": "Each item must include id for update."}, status=status.HTTP_400_BAD_REQUEST)
+        if not ids:
+            return Response({"detail": "Each item must include id for update."}, status=status.HTTP_400_BAD_REQUEST)
 
         qs = UserTimeLine.objects.filter(id__in=ids)
         if qs.count() != len(ids):
