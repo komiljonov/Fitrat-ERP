@@ -166,88 +166,82 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
 class UserTimeLine1BulkSerializer(serializers.ListSerializer):
     """
     Upsert list:
-      - Items WITHOUT 'id' -> created first (bulk_create)
-      - Items WITH 'id'    -> updated next (bulk_update with partial data)
-    Response preserves the original input order.
+      - no 'id' / empty 'id' -> create
+      - with 'id'            -> update only provided fields
+    Creates happen first, then updates; response preserves input order.
     """
 
     def create(self, validated_data):
         Model = self.child.Meta.model
 
-        # Pair up original raw items (to read 'id') with cleaned items (validated_data)
+        # Pair original raw items (to read 'id') with cleaned (validated) items
         raw_items = list(self.initial_data)
         pairs = []
         for i, clean in enumerate(validated_data):
             raw = raw_items[i] if i < len(raw_items) and isinstance(raw_items[i], dict) else {}
-            raw_id = raw.get("id")
+            raw_id = raw.get("id", None)
+            # Treat "", None, "null" as no id
+            if raw_id in ("", None) or (isinstance(raw_id, str) and raw_id.lower() == "null"):
+                raw_id = None
             pairs.append((raw_id, clean))
 
-        # Split into creates and updates
+        # Split for create/update
         to_create_attrs = [attrs for (pk, attrs) in pairs if pk is None]
         to_update_pairs = [(pk, attrs) for (pk, attrs) in pairs if pk is not None]
 
-        # Pre-fetch instances that will be updated
+        # Fetch instances to update
         ids = [pk for pk, _ in to_update_pairs]
         existing_map = {obj.id: obj for obj in Model.objects.filter(id__in=ids)}
 
-        # If any provided id doesn't exist -> fail clearly
+        # Fail if any provided id doesn't exist
         missing_ids = [pk for pk in ids if pk not in existing_map]
         if missing_ids:
             raise ValidationError({"id": [f"Unknown id(s): {missing_ids}"]})
 
-        # Build instances to update (apply only provided fields)
+        # Apply only provided fields for each update
         to_update_instances = []
+        updatable = set(self.child.get_updatable_fields())
         for pk, attrs in to_update_pairs:
             inst = existing_map[pk]
-            for attr, val in attrs.items():
-                setattr(inst, attr, val)
+            for field, value in attrs.items():
+                if field in updatable:
+                    setattr(inst, field, value)
             to_update_instances.append(inst)
 
-        # Determine which fields are allowed to be updated in bulk
-        update_fields = self.child.get_updatable_fields()
-
         with transaction.atomic():
-            # 1) Create FIRST
             created_instances = Model.objects.bulk_create(
                 [Model(**attrs) for attrs in to_create_attrs]
             ) if to_create_attrs else []
 
-            # 2) Then UPDATE
             if to_update_instances:
-                Model.objects.bulk_update(to_update_instances, fields=update_fields)
+                Model.objects.bulk_update(to_update_instances, fields=list(updatable))
 
-        # Rebuild the result list in the same order as input
+        # Rebuild result in original order
         created_iter = iter(created_instances)
         result = []
-        for pk, _attrs in pairs:
-            if pk is None:
-                result.append(next(created_iter, None))
-            else:
-                result.append(existing_map[pk])
-
-        # Filter out any Nones (defensive; should not happen)
-        return [obj for obj in result if obj is not None]
+        for pk, _ in pairs:
+            result.append(next(created_iter) if pk is None else existing_map[pk])
+        return result
 
 
 class UserTimeLine1Serializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+    start_time = serializers.TimeField(allow_null=True, required=False)
+    end_time   = serializers.TimeField(allow_null=True, required=False)
 
     class Meta:
         model = UserTimeLine
-        fields = [
-            "id",
-            "user",
-            "day",
-            "start_time",
-            "end_time",
-            "is_weekend",
-            "penalty",
-            "bonus",
-            "created_at",
-        ]
+        fields = ["id","user","day","start_time","end_time","is_weekend","penalty","bonus","created_at"]
         read_only_fields = ["id", "created_at"]
         list_serializer_class = UserTimeLine1BulkSerializer
 
+    def to_internal_value(self, data):
+        # Map "" -> None for optional time fields
+        data = data.copy()
+        for f in ("start_time", "end_time"):
+            if data.get(f) == "":
+                data[f] = None
+        return super().to_internal_value(data)
+
     def get_updatable_fields(self):
-        # All fields we allow to be set during updates (partial updates OK)
         return ["user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
