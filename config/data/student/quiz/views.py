@@ -1392,21 +1392,13 @@ class ExamOptionCreate(APIView):
                 date_text = d.strftime('%d-%m-%Y')
             else:
                 date_text = ""  # or fallback you prefer
-            datas = {
-                "exam_id": exam_id,
-                "student_id": student_id,
-                "status": reg.status,
-                "variation": reg.variation,
-                "is_participating": reg.is_participating,
-            }
-
             Notification.objects.create(
                 user=student.user,
                 comment=f"Sizga {date_text} sanasida tashkil"
                         f" etilyotgan imtihon uchun {reg.option.options} varianti "
                         f"{reg.option.subject.name} fanidan belgilandi!",
                 choice="Examination",
-                come_from=json.dumps(datas, ensure_ascii=False, default=str),
+                come_from="",
             )
         # print((registrations_to_create), (registrations_to_update), (errors))
         response_data = {
