@@ -268,8 +268,8 @@ class UserTimeLineBulkUpsert(APIView):
         create_payloads = []
         update_payloads = []  # list of (pk, payload)
         for obj in items:
-            if not isinstance(obj, dict):
-                return Response({"detail": "Each item must be an object."}, status=400)
+            # if not isinstance(obj, dict):
+            #     return Response({"detail": "Each item must be an object."}, status=400)
             pk = _norm_pk(obj.get("id"))
             if pk is None:
                 create_payloads.append(obj)
