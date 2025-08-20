@@ -29,6 +29,7 @@ from ..lesson.serializers import LessonSerializer, FirstLessonSerializer
 from ..studentgroup.models import StudentGroup
 from ...account.permission import FilialRestrictedQuerySetMixin
 from ...finances.finance.models import Finance
+from ...lid.new_lid.models import Lid
 from ...lid.new_lid.views import B
 
 
@@ -607,3 +608,55 @@ class CheckPhoneAPIView(APIView):
             )
 
         return Response({"exists": True, "user": StudentSerializer(student).data})
+
+
+class FirstLessonStatistics(APIView):
+
+    def get(self,request,*args,**kwargs):
+
+        filial = request.GET.get("filial")
+        lid_stage_type = request.GET.get("lid_stage_type")
+        lid_stages = request.GET.get("lid_stages")
+        ordered_stages = request.GET.get("ordered_stages")
+        is_archived = request.GET.get("is_archived")
+        is_frozen = request.GET.get("is_frozen")
+        is_student = request.GET.get("is_student")
+        service_manager = request.GET.get("service_manager")
+        sales_manager = request.GET.get("sales_manager")
+        call_operator = request.GET.get("call_operator")
+        ordered_date = request.GET.get("ordered_date")
+        subject = request.GET.get("subject")
+        edu_class = request.GET.get("edu_class")
+        education_lang = request.GET.get("education_lang")
+
+        filters = {
+            "filial__id": filial,
+            "lid_stage_type": lid_stage_type,
+            "lid_stages": lid_stages,
+            "ordered_stages": ordered_stages,
+            "is_archived": is_archived.capitalize(),
+            "is_frozen": is_frozen.capitalize(),
+            "is_student": is_student.capitalize(),
+            "service_manager__id": service_manager,
+            "sales_manager__id": sales_manager,
+            "call_operator__id": call_operator,
+            "ordered_date": ordered_date,
+            "subject__id": subject,
+            "edu_class": edu_class,
+            "education_lang":education_lang,
+        }
+
+
+        debt = Lid.objects.filter(balance__lt=0,**filters)
+        no_debt = Lid.objects.filter(balance__gte=0,**filters)
+
+        debt_amount = Lid.objects.filter(balance__lt=0,**filters).aggregate(
+            total=Sum("balance"))["total"]  or 0
+        no_debt_amount = Lid.objects.filter(balance__gte=0,**filters).aggregate(total=Sum("balance"))["total"] or 0
+
+        return Response({
+            "debt": debt.count(),
+            "no_debt": no_debt.count(),
+            "debt_amount": debt_amount,
+            "no_debt_amount": no_debt_amount,
+        })
