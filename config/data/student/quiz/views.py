@@ -1392,11 +1392,17 @@ class ExamOptionCreate(APIView):
                 date_text = d.strftime('%d-%m-%Y')
             else:
                 date_text = ""  # or fallback you prefer
+
+            opts = list(reg.option.all())
+            options_text = ", ".join(o.options for o in opts)
+
+            subject_text = next((o.subject.name for o in opts if getattr(o, "subject", None)), "")
+
             Notification.objects.create(
                 user=student.user,
                 comment=f"Sizga {date_text} sanasida tashkil"
-                        f" etilyotgan imtihon uchun {reg.option.options} varianti "
-                        f"{reg.option.subject.name} fanidan belgilandi!",
+                        f" etilyotgan imtihon uchun {options_text} varianti "
+                        f"{subject_text} fanidan belgilandi!",
                 choice="Examination",
                 come_from="",
             )
