@@ -177,7 +177,7 @@ class MerchantAPIView(APIView):
             state=CREATE_TRANSACTION,
             created_datetime=now,
             status=Transaction.PROCESSING,
-            creator=user,
+            creator=None,
         )
 
         self.reply = {
