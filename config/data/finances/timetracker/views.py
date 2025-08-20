@@ -1,11 +1,12 @@
 from datetime import datetime
 
+from django.db import transaction
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime, parse_date
 from icecream import ic
 from rest_framework import status
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
@@ -15,7 +16,7 @@ from rest_framework.views import APIView
 
 from .models import Employee_attendance
 from .models import UserTimeLine, Stuff_Attendance
-from .serializers import Stuff_AttendanceSerializer, UserTimeLine1Serializer
+from .serializers import Stuff_AttendanceSerializer, UserTimeLineUpsertSerializer
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
 from .utils import calculate_amount, delete_user_actions, get_updated_datas
@@ -237,18 +238,93 @@ class UserTimeLineDetail(RetrieveUpdateDestroyAPIView):
         return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
 
 
-class TimeLineBulkCreate(CreateAPIView):
-    serializer_class = UserTimeLine1Serializer
+def _norm_pk(v):
+    # Normalize id values from JSON ("", None, "null", "123") -> (None or int)
+    if v is None or v == "" or v == "null":
+        return None
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return v  # if it's not int-like, let Django coerce/fail later
 
-    def create(self, request, *args, **kwargs):
+
+class UserTimeLineBulkUpsert(APIView):
+    """
+    POST a list of items:
+      - item without 'id' -> create
+      - item with 'id'    -> update that row with the given fields (partial)
+    Returns saved rows in the same order as input.
+    """
+
+    UPDATABLE_FIELDS = ["user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
+
+    def post(self, request, *args, **kwargs):
         if not isinstance(request.data, list):
             return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
 
-        ser = self.get_serializer(data=request.data, many=True)
-        ser.is_valid(raise_exception=True)
-        instances = ser.save()
-        return Response(self.get_serializer(instances, many=True).data, status=status.HTTP_201_CREATED)
+        items = request.data
 
+        # Split into create vs update
+        create_payloads = []
+        update_payloads = []  # list of (pk, payload)
+        for obj in items:
+            if not isinstance(obj, dict):
+                return Response({"detail": "Each item must be an object."}, status=400)
+            pk = _norm_pk(obj.get("id"))
+            if pk is None:
+                create_payloads.append(obj)
+            else:
+                update_payloads.append((pk, obj))
+
+        # Validate creates
+        create_sers = [UserTimeLineUpsertSerializer(data=payload) for payload in create_payloads]
+        for ser in create_sers:
+            ser.is_valid(raise_exception=True)
+        create_instances = [UserTimeLine(**ser.validated_data) for ser in create_sers]
+
+        # Validate updates
+        update_ids = [pk for pk, _ in update_payloads]
+        existing = UserTimeLine.objects.filter(id__in=update_ids)
+        existing_map = {obj.id: obj for obj in existing}
+        missing = [pk for pk in update_ids if pk not in existing_map]
+        if missing:
+            return Response({"id": [f"Unknown id(s): {missing}"]}, status=status.HTTP_400_BAD_REQUEST)
+
+        update_serializers = []
+        for pk, payload in update_payloads:
+            inst = existing_map[pk]
+            payload = {k: v for k, v in payload.items() if k != "id"}  # never change id
+            ser = UserTimeLineUpsertSerializer(instance=inst, data=payload, partial=True)
+            ser.is_valid(raise_exception=True)
+            update_serializers.append((inst, ser))
+
+        # Apply + commit atomically
+        with transaction.atomic():
+            # 1) Creates
+            created = UserTimeLine.objects.bulk_create(create_instances) if create_instances else []
+
+            # 2) Updates
+            if update_serializers:
+                # Apply validated data to model instances
+                for inst, ser in update_serializers:
+                    for f, v in ser.validated_data.items():
+                        setattr(inst, f, v)
+                UserTimeLine.objects.bulk_update(
+                    [inst for inst, _ in update_serializers], fields=self.UPDATABLE_FIELDS
+                )
+
+        # Build response in the same order as input
+        created_iter = iter(created)
+        result_instances = []
+        for obj in items:
+            pk = _norm_pk(obj.get("id")) if isinstance(obj, dict) else None
+            if pk is None:
+                result_instances.append(next(created_iter))
+            else:
+                result_instances.append(existing_map[pk])
+
+        out_ser = UserTimeLineUpsertSerializer(result_instances, many=True)
+        return Response(out_ser.data, status=status.HTTP_200_OK)
 
 
 class UserTimeLineBulkUpdateDelete(APIView):
@@ -285,7 +361,6 @@ class UserTimeLineBulkUpdateDelete(APIView):
             return Response({"detail": "Expected a list of ids."}, status=status.HTTP_400_BAD_REQUEST)
         deleted_count, _ = UserTimeLine.objects.filter(id__in=ids).delete()
         return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
-
 
 
 class CustomUserPagination(PageNumberPagination):

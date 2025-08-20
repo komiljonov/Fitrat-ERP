@@ -1,7 +1,6 @@
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from data.account.models import CustomUser
 from .models import Employee_attendance, UserTimeLine, Stuff_Attendance
@@ -162,96 +161,37 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
         return ["user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
 
 
+class UserTimeLineUpsertSerializer(serializers.ModelSerializer):
+    # id is read-only; we use it only in the view to find instances
+    id = serializers.IntegerField(read_only=True)
 
-class UserTimeLine1BulkSerializer(serializers.ListSerializer):
-    """
-    Mixed bulk upsert:
-      - no 'id' / empty 'id' -> create
-      - with 'id'            -> update only provided fields
-    Creates happen first (bulk_create), updates second (bulk_update).
-    Response mirrors input order.
-    """
-
-    # --- helpers -------------------------------------------------------------
-    def _pairs_from_initial(self, validated_data):
-        raw_items = list(self.initial_data)
-        pairs = []
-        for i, attrs in enumerate(validated_data):
-            raw = raw_items[i] if i < len(raw_items) and isinstance(raw_items[i], dict) else {}
-            pk = raw.get("id", None)
-            if pk in ("", None) or (isinstance(pk, str) and pk.lower() == "null"):
-                pk = None
-            pairs.append((pk, attrs))
-        return pairs
-
-    def _upsert(self, validated_data):
-        Model = self.child.Meta.model
-        updatable = set(self.child.get_updatable_fields())
-
-        pairs = self._pairs_from_initial(validated_data)
-        to_create_attrs = [attrs for (pk, attrs) in pairs if pk is None]
-        to_update_pairs = [(pk, attrs) for (pk, attrs) in pairs if pk is not None]
-
-        ids = [pk for pk, _ in to_update_pairs]
-        existing_map = {obj.id: obj for obj in Model.objects.filter(id__in=ids)}
-
-        missing_ids = [pk for pk in ids if pk not in existing_map]
-        if missing_ids:
-            raise ValidationError({"id": [f"Unknown id(s): {missing_ids}"]})
-
-        to_update_instances = []
-        for pk, attrs in to_update_pairs:
-            inst = existing_map[pk]
-            for field, value in attrs.items():
-                if field in updatable:
-                    setattr(inst, field, value)
-            to_update_instances.append(inst)
-
-        with transaction.atomic():
-            created_instances = Model.objects.bulk_create(
-                [Model(**attrs) for attrs in to_create_attrs]
-            ) if to_create_attrs else []
-
-            if to_update_instances:
-                Model.objects.bulk_update(to_update_instances, fields=list(updatable))
-
-        # Return results in original order
-        created_iter = iter(created_instances)
-        result = []
-        for pk, _ in pairs:
-            result.append(next(created_iter) if pk is None else existing_map[pk])
-        return result
-
-    # --- DRF entry points ----------------------------------------------------
-    def create(self, validated_data):
-        return self._upsert(validated_data)
-
-    def update(self, instance, validated_data):
-        # This is called if you pass instance=... or use PUT/UpdateAPIView
-        return self._upsert(validated_data)
-
-
-class UserTimeLine1Serializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
+        required=False,
+    )
     start_time = serializers.TimeField(allow_null=True, required=False)
-    end_time   = serializers.TimeField(allow_null=True, required=False)
+    end_time = serializers.TimeField(allow_null=True, required=False)
 
     class Meta:
         model = UserTimeLine
         fields = [
-            "id", "user", "day", "start_time", "end_time",
-            "is_weekend", "penalty", "bonus", "created_at",
+            "id",
+            "user",
+            "day",
+            "start_time",
+            "end_time",
+            "is_weekend",
+            "penalty",
+            "bonus",
+            "created_at",
         ]
         read_only_fields = ["id", "created_at"]
-        list_serializer_class = UserTimeLine1BulkSerializer
 
+    # Treat "" in time fields as NULL
     def to_internal_value(self, data):
-        # Accept "" for time fields -> treat as NULL
         data = data.copy()
         for f in ("start_time", "end_time"):
             if data.get(f) == "":
                 data[f] = None
         return super().to_internal_value(data)
-
-    def get_updatable_fields(self):
-        return ["user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
