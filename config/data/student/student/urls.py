@@ -10,7 +10,7 @@ from .views import (
     StudentAllStatistics,
     FistLesson_dataList,
     FirstLesson_dataListRetrive,
-    CheckPhoneAPIView,
+    CheckPhoneAPIView, FirstLessonStatistics,
 )
 
 urlpatterns = [
@@ -28,4 +28,6 @@ urlpatterns = [
         name="first-lesson-data",
     ),
     path("check_phone", CheckPhoneAPIView.as_view()),
+
+    path("first-lesson/statistics/", FirstLessonStatistics.as_view(), name="first-lesson-statistics"),
 ]
