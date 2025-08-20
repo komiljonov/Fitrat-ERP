@@ -165,42 +165,41 @@ class UserTimeLineSerializer(serializers.ModelSerializer):
 
 class UserTimeLine1BulkSerializer(serializers.ListSerializer):
     """
-    Upsert list:
+    Mixed bulk upsert:
       - no 'id' / empty 'id' -> create
       - with 'id'            -> update only provided fields
-    Creates happen first, then updates; response preserves input order.
+    Creates happen first (bulk_create), updates second (bulk_update).
+    Response mirrors input order.
     """
 
-    def create(self, validated_data):
-        Model = self.child.Meta.model
-
-        # Pair original raw items (to read 'id') with cleaned (validated) items
+    # --- helpers -------------------------------------------------------------
+    def _pairs_from_initial(self, validated_data):
         raw_items = list(self.initial_data)
         pairs = []
-        for i, clean in enumerate(validated_data):
+        for i, attrs in enumerate(validated_data):
             raw = raw_items[i] if i < len(raw_items) and isinstance(raw_items[i], dict) else {}
-            raw_id = raw.get("id", None)
-            # Treat "", None, "null" as no id
-            if raw_id in ("", None) or (isinstance(raw_id, str) and raw_id.lower() == "null"):
-                raw_id = None
-            pairs.append((raw_id, clean))
+            pk = raw.get("id", None)
+            if pk in ("", None) or (isinstance(pk, str) and pk.lower() == "null"):
+                pk = None
+            pairs.append((pk, attrs))
+        return pairs
 
-        # Split for create/update
+    def _upsert(self, validated_data):
+        Model = self.child.Meta.model
+        updatable = set(self.child.get_updatable_fields())
+
+        pairs = self._pairs_from_initial(validated_data)
         to_create_attrs = [attrs for (pk, attrs) in pairs if pk is None]
         to_update_pairs = [(pk, attrs) for (pk, attrs) in pairs if pk is not None]
 
-        # Fetch instances to update
         ids = [pk for pk, _ in to_update_pairs]
         existing_map = {obj.id: obj for obj in Model.objects.filter(id__in=ids)}
 
-        # Fail if any provided id doesn't exist
         missing_ids = [pk for pk in ids if pk not in existing_map]
         if missing_ids:
             raise ValidationError({"id": [f"Unknown id(s): {missing_ids}"]})
 
-        # Apply only provided fields for each update
         to_update_instances = []
-        updatable = set(self.child.get_updatable_fields())
         for pk, attrs in to_update_pairs:
             inst = existing_map[pk]
             for field, value in attrs.items():
@@ -216,12 +215,20 @@ class UserTimeLine1BulkSerializer(serializers.ListSerializer):
             if to_update_instances:
                 Model.objects.bulk_update(to_update_instances, fields=list(updatable))
 
-        # Rebuild result in original order
+        # Return results in original order
         created_iter = iter(created_instances)
         result = []
         for pk, _ in pairs:
             result.append(next(created_iter) if pk is None else existing_map[pk])
         return result
+
+    # --- DRF entry points ----------------------------------------------------
+    def create(self, validated_data):
+        return self._upsert(validated_data)
+
+    def update(self, instance, validated_data):
+        # This is called if you pass instance=... or use PUT/UpdateAPIView
+        return self._upsert(validated_data)
 
 
 class UserTimeLine1Serializer(serializers.ModelSerializer):
@@ -231,12 +238,15 @@ class UserTimeLine1Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserTimeLine
-        fields = ["id","user","day","start_time","end_time","is_weekend","penalty","bonus","created_at"]
+        fields = [
+            "id", "user", "day", "start_time", "end_time",
+            "is_weekend", "penalty", "bonus", "created_at",
+        ]
         read_only_fields = ["id", "created_at"]
         list_serializer_class = UserTimeLine1BulkSerializer
 
     def to_internal_value(self, data):
-        # Map "" -> None for optional time fields
+        # Accept "" for time fields -> treat as NULL
         data = data.copy()
         for f in ("start_time", "end_time"):
             if data.get(f) == "":
