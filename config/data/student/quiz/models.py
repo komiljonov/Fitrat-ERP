@@ -344,4 +344,4 @@ class ExamCertificate(BaseModel):
     ], default="Pending", max_length=255, null=True, blank=True)
 
     # def __str__(self):
-    #     return f"{self.student.first_name}  {self.status}"
+    #     return f"{self.student.first_name}  {self.status}"98i9kii

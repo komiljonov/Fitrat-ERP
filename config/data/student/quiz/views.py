@@ -1395,7 +1395,6 @@ class ExamOptionCreate(APIView):
             datas = {
                 "exam_id": exam_id,
                 "student_id": student_id,
-                "subject": str(reg.option.subject.id),
                 "option": str(reg.option.id),
                 "status": reg.status,
                 "variation": reg.variation,
