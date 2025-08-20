@@ -336,8 +336,8 @@ class UserTimeLineBulkUpdateDelete(APIView):
 
         # Collect ids from payload (keep as strings for UUID safety)
         ids = [str(item.get("id")) for item in request.data if item.get("id") is not None]
-        if not ids:
-            return Response({"detail": "Each item must include id for update."}, status=status.HTTP_400_BAD_REQUEST)
+        # if not ids:
+        #     return Response({"detail": "Each item must include id for update."}, status=status.HTTP_400_BAD_REQUEST)
 
         qs = UserTimeLine.objects.filter(id__in=ids)
         if qs.count() != len(ids):
