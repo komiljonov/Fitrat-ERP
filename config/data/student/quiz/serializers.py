@@ -492,7 +492,8 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
                 exam.status = "Waiting"
                 exam.save()
 
-        if validated_data.get("has_certificate") and validated_data.get("certificate") and request.user.role == "Student":
+        if validated_data.get("has_certificate") and validated_data.get(
+                "certificate") and request.user.role == "Student":
             ExamCertificate.objects.create(
                 student=user,
                 certificate=validated_data["certificate"],
