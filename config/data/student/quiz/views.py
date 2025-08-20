@@ -1,6 +1,7 @@
+import json
 import logging
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import openpyxl
 import pandas as pd
@@ -39,6 +40,7 @@ from ..subject.models import Theme, Subject
 from ...account.models import CustomUser
 from ...exam_results.models import QuizResult
 from ...exam_results.serializers import QuizResultSerializer
+from ...notifications.models import Notification
 from ...upload.models import File
 from ...upload.serializers import FileUploadSerializer
 
@@ -1383,6 +1385,31 @@ class ExamOptionCreate(APIView):
                 reg.status = "Waiting"
                 reg.save()
 
+            d = reg.exam.date
+            if isinstance(d, datetime):
+                date_text = d.strftime('%d-%m-%Y')
+            elif isinstance(d, date):
+                date_text = d.strftime('%d-%m-%Y')
+            else:
+                date_text = ""  # or fallback you prefer
+            datas = {
+                "exam_id": exam_id,
+                "student_id": student_id,
+                "subject": str(reg.option.subject.id),
+                "option": str(reg.option.id),
+                "status": reg.status,
+                "variation": reg.variation,
+                "is_participating": reg.is_participating,
+            }
+
+            Notification.objects.create(
+                user=student.user,
+                comment=f"Sizga {date_text} sanasida tashkil"
+                        f" etilyotgan imtihon uchun {reg.option.options} varianti "
+                        f"{reg.option.subject.name} fanidan belgilandi!",
+                choice="Examination",
+                come_from=json.dumps(datas, ensure_ascii=False, default=str),
+            )
         # print((registrations_to_create), (registrations_to_update), (errors))
         response_data = {
             'created': len(registrations_to_create),
