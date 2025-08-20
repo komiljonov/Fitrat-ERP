@@ -557,6 +557,7 @@ class ExamSerializer(serializers.ModelSerializer):
             "quiz",
             "choice",
             "type",
+            "filial",
             "is_mandatory",
             # "students",
             "students_xml",
