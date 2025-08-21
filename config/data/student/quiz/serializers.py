@@ -483,13 +483,13 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             ).first()
 
             if exam:
-                exam.status = "Waiting"
+                exam.status = "Active"
                 exam.save()
             else:
                 exam = ExamRegistration.objects.filter(
                     option__in=option_ids,
                 ).first()
-                exam.status = "Waiting"
+                exam.status = "Active"
                 exam.save()
 
         if validated_data.get("has_certificate") and validated_data.get(

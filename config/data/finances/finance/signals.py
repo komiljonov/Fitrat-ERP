@@ -3,8 +3,8 @@ from decimal import Decimal
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-
 from .models import Finance, VoucherStudent, Casher, Kind, KpiFinance
+from ...logs.models import Log
 
 
 @receiver(post_save, sender=Finance)
@@ -26,9 +26,9 @@ def on_create(sender, instance: Finance, created, **kwargs):
 
         if instance.stuff:
             if (
-                instance.action == "EXPENSE"
-                and instance.kind is not None
-                and instance.kind.name == "Salary"
+                    instance.action == "EXPENSE"
+                    and instance.kind is not None
+                    and instance.kind.name == "Salary"
             ):
                 instance.stuff.balance -= Decimal(instance.amount)
                 instance.stuff.save()
@@ -38,10 +38,33 @@ def on_create(sender, instance: Finance, created, **kwargs):
                     instance.stuff.save()
 
 
-# @receiver(post_save, sender=Finance)
-# def on_finance_create(sender, instance: Finance,created, **kwargs):
-#     if created:
-#         if instance.
+@receiver(post_save, sender=Finance)
+def on_finance_create(sender, instance: Finance, created, **kwargs):
+    if created:
+        Log.objects.create(
+            app="Finance",
+            model="Finance",
+            action="Finance",
+            model_action="Created",
+            finance=Finance.objects.filter(id=instance.id).first(),
+            lid=instance.lid,
+            student=instance.student,
+            account=instance.stuff,
+        )
+        print("Log for finance created ...")
+
+    if not created:
+        Log.objects.create(
+            app="Finance",
+            model="Finance",
+            action="Finance",
+            model_action="Updated",
+            finance=Finance.objects.filter(id=instance.id).first(),
+            lid=instance.lid,
+            student=instance.student,
+            account=instance.stuff,
+        )
+        print("Log for finance updated ...")
 
 
 @receiver(post_save, sender=VoucherStudent)
