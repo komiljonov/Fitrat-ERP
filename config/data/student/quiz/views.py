@@ -1367,7 +1367,7 @@ class ExamOptionCreate(APIView):
                         merged_option_ids = list(set(existing_option_ids).union(set(incoming_options)))
                         registrations_to_update.append((existing_registration, merged_option_ids))
                     else:
-                        registrations_to_create.append((student, exam, group, incoming_options))
+                        registrations_to_create.append((student, exam, group,variation, incoming_options))
 
                 except (Student.DoesNotExist, Exam.DoesNotExist, Group.DoesNotExist) as e:
                     errors.append({'entry': entry, 'error': str(e)})
@@ -1375,7 +1375,7 @@ class ExamOptionCreate(APIView):
                     errors.append({'entry': entry, 'error': f"Unexpected error: {str(e)}"})
 
             # Create new registrations and set M2M options
-            for student, exam, group, option_ids in registrations_to_create:
+            for student, exam, group,variation, option_ids in registrations_to_create:
                 reg = ExamRegistration.objects.create(student=student, exam=exam, group=group, variation=variation,
                                                       status="Waiting")
                 reg.option.set(option_ids)
