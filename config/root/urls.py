@@ -36,6 +36,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path("logs/", include("data.logs.urls")),
     path("admin/", admin.site.urls),
     path("auth/", include("data.account.urls")),
     # path('dash/', include('django_plotly_dash.urls')),

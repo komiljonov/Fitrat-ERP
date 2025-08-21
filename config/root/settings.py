@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     # "debug_toolbar",
 
     # Installed apps
+    'data.logs',
     'data.account',
     'data.paycomuz',
     'data.clickuz',
