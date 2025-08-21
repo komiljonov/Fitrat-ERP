@@ -36,7 +36,7 @@ def on_update(sender, instance: Task, created, **kwargs):
             student=instance.student,
             task=instance,
             account=instance.performer,
-            comment=instance.comment,
+            comment=instance.task,
         )
 
     if not created:
@@ -49,5 +49,5 @@ def on_update(sender, instance: Task, created, **kwargs):
             student=instance.student,
             task=instance,
             account=instance.performer,
-            comment=instance.comment,
+            comment=instance.task,
         )
