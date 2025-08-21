@@ -616,6 +616,8 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
             response_data = []
             errors = []
 
+            print(request.data)
+
             for item in request.data:
 
                 print(item)
