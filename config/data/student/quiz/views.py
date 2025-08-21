@@ -1329,110 +1329,109 @@ class ExamOptionCreate(APIView):
 
         with transaction.atomic():
             for entry in data:
+                student_id = entry.get("student")
+                exam_id    = entry.get("exam")
+                group_id   = entry.get("group")
+                variation  = entry.get("variation")
+                subject    = entry.get("subject")  # this is your M2M ExamSubject ids
+
+                # Validate required fields: subject is the actual M2M payload
+                if not student_id or not exam_id or subject in (None, [], ""):
+                    errors.append({'entry': entry, 'error': 'Missing required fields: student, exam, subject'})
+                    continue
+
+                # Normalize subject ids → list[int]
+                incoming_option_ids = subject if isinstance(subject, list) else [subject]
                 try:
-                    student_id = entry.get("student")
-                    exam_id    = entry.get("exam")
-                    group_id   = entry.get("group")
-                    variation  = entry.get("variation")
-                    subject    = entry.get("subject")  # this is your M2M ExamSubject ids
+                    incoming_option_ids = [int(x) for x in incoming_option_ids if x is not None]
+                except (TypeError, ValueError):
+                    errors.append({'entry': entry, 'error': 'subject must be id or list of ids'})
+                    continue
 
-                    # Validate required fields: subject is the actual M2M payload
-                    if not student_id or not exam_id or subject in (None, [], ""):
-                        errors.append({'entry': entry, 'error': 'Missing required fields: student, exam, subject'})
-                        continue
+                # Load FK objects
+                try:
+                    student = Student.objects.get(id=student_id)
+                    exam    = Exam.objects.get(id=exam_id)
+                except Student.DoesNotExist:
+                    errors.append({'entry': entry, 'error': f"Student {student_id} does not exist"})
+                    continue
+                except Exam.DoesNotExist:
+                    errors.append({'entry': entry, 'error': f"Exam {exam_id} does not exist"})
+                    continue
 
-                    # Normalize subject ids → list[int]
-                    incoming_option_ids = subject if isinstance(subject, list) else [subject]
+                group = None
+                if group_id:
                     try:
-                        incoming_option_ids = [int(x) for x in incoming_option_ids if x is not None]
-                    except (TypeError, ValueError):
-                        errors.append({'entry': entry, 'error': 'subject must be id or list of ids'})
+                        group = Group.objects.get(id=group_id)
+                    except Group.DoesNotExist:
+                        errors.append({'entry': entry, 'error': f"Group {group_id} does not exist"})
                         continue
 
-                    # Load FK objects
-                    try:
-                        student = Student.objects.get(id=student_id)
-                        exam    = Exam.objects.get(id=exam_id)
-                    except Student.DoesNotExist:
-                        errors.append({'entry': entry, 'error': f"Student {student_id} does not exist"})
-                        continue
-                    except Exam.DoesNotExist:
-                        errors.append({'entry': entry, 'error': f"Exam {exam_id} does not exist"})
-                        continue
+                # Validate ExamSubject ids
+                existing_subjects = ExamSubject.objects.filter(id__in=incoming_option_ids)
+                existing_ids = set(existing_subjects.values_list('id', flat=True))
+                missing_ids = set(incoming_option_ids) - existing_ids
+                if missing_ids:
+                    errors.append({'entry': entry, 'error': f"Invalid ExamSubject ID(s): {sorted(missing_ids)}"})
+                    continue
 
-                    group = None
-                    if group_id:
-                        try:
-                            group = Group.objects.get(id=group_id)
-                        except Group.DoesNotExist:
-                            errors.append({'entry': entry, 'error': f"Group {group_id} does not exist"})
-                            continue
+                # Find existing registration WITHOUT variation in the lookup
+                # (we also lock it to avoid races)
+                qs = ExamRegistration.objects.select_for_update().filter(
+                    student=student, exam=exam, group=group
+                )
+                reg = qs.first()
 
-                    # Validate ExamSubject ids
-                    existing_subjects = ExamSubject.objects.filter(id__in=incoming_option_ids)
-                    existing_ids = set(existing_subjects.values_list('id', flat=True))
-                    missing_ids = set(incoming_option_ids) - existing_ids
-                    if missing_ids:
-                        errors.append({'entry': entry, 'error': f"Invalid ExamSubject ID(s): {sorted(missing_ids)}"})
-                        continue
-
-                    # Find existing registration WITHOUT variation in the lookup
-                    # (we also lock it to avoid races)
-                    qs = ExamRegistration.objects.select_for_update().filter(
-                        student=student, exam=exam, group=group
+                if reg is None:
+                    reg = ExamRegistration.objects.create(
+                        student=student,
+                        exam=exam,
+                        group=group,
+                        variation=variation,     # can be None; set it if you have it
+                        status="Waiting",
                     )
-                    reg = qs.first()
+                    created_count += 1
+                    # For a brand-new row just set the m2m to incoming ids
+                    reg.option.set(incoming_option_ids)
+                else:
+                    # Merge options = union(existing, incoming)
+                    existing_option_ids = set(reg.option.values_list("id", flat=True))
+                    merged_option_ids = sorted(existing_option_ids | set(incoming_option_ids))
+                    reg.option.set(merged_option_ids)
 
-                    if reg is None:
-                        reg = ExamRegistration.objects.create(
-                            student=student,
-                            exam=exam,
-                            group=group,
-                            variation=variation,     # can be None; set it if you have it
-                            status="Waiting",
-                        )
-                        created_count += 1
-                        # For a brand-new row just set the m2m to incoming ids
-                        reg.option.set(incoming_option_ids)
-                    else:
-                        # Merge options = union(existing, incoming)
-                        existing_option_ids = set(reg.option.values_list("id", flat=True))
-                        merged_option_ids = sorted(existing_option_ids | set(incoming_option_ids))
-                        reg.option.set(merged_option_ids)
+                    # Update variation only if provided in this entry
+                    if variation is not None:
+                        reg.variation = variation
+                    reg.status = "Waiting"
+                    reg.save(update_fields=["variation", "status"])
+                    updated_count += 1
 
-                        # Update variation only if provided in this entry
-                        if variation is not None:
-                            reg.variation = variation
-                        reg.status = "Waiting"
-                        reg.save(update_fields=["variation", "status"])
-                        updated_count += 1
+                # Per-entry notification
+                d = getattr(reg.exam, "date", None)
+                if isinstance(d, (datetime, date)):
+                    date_text = d.strftime('%d-%m-%Y')
+                else:
+                    date_text = ""
 
-                    # Per-entry notification
-                    d = getattr(reg.exam, "date", None)
-                    if isinstance(d, (datetime, date)):
-                        date_text = d.strftime('%d-%m-%Y')
-                    else:
-                        date_text = ""
+                # Safe access to option/subject names
+                opted = list(reg.option.all())
+                options_text = reg.variation or ""
+                subject_text = next((o.subject.name for o in opted if getattr(o, "subject", None)), "")
 
-                    # Safe access to option/subject names
-                    opted = list(reg.option.all())
-                    options_text = reg.variation or ""
-                    subject_text = next((o.subject.name for o in opted if getattr(o, "subject", None)), "")
+                Notification.objects.create(
+                    user=student.user,
+                    comment=(
+                        f"Sizga {date_text} sanasida tashkil"
+                        f" etilyotgan imtihon uchun {options_text} varianti "
+                        f"{subject_text} fanidan belgilandi!"
+                    ),
+                    choice="Examination",
+                    come_from="",  # fill as needed
+                )
 
-                    Notification.objects.create(
-                        user=student.user,
-                        comment=(
-                            f"Sizga {date_text} sanasida tashkil"
-                            f" etilyotgan imtihon uchun {options_text} varianti "
-                            f"{subject_text} fanidan belgilandi!"
-                        ),
-                        choice="Examination",
-                        come_from="",  # fill as needed
-                    )
-
-                except Exception as e:
-                    errors.append({'entry': entry, 'error': f"Unexpected error: {e}"})
-
+            print(errors)
+            print(created_count)
+            print(updated_count)
         return Response(
             {
                 'created': created_count,
