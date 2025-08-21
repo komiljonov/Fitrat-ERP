@@ -612,43 +612,6 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
         "order", "has_certificate", "certificate", "certificate_expire_date"
     }
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-
-        # 1) Update ExamSubject (partial)
-        body = request.data if isinstance(request.data, dict) else {}
-        filtered = {k: v for k, v in body.items() if k in self.allowed_bulk_fields}
-
-        serializer = self.get_serializer(instance, data=filtered, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        # 2) Activate ExamRegistration (optional, if provided)
-        try:
-            test_id = body.get("test_id")
-            if test_id:
-                # Resolve student: ?student=<id> OR current user if role=='Student'
-                student_obj = None
-                student_id = request.query_params.get("student")
-                if student_id:
-                    student_obj = Student.objects.filter(id=student_id).first()
-                elif getattr(request.user, "role", None) == "Student":
-                    student_obj = Student.objects.filter(user=request.user).first()
-
-                q = ExamRegistration.objects.filter(id=test_id)
-                if student_obj:
-                    q = q.filter(student=student_obj)
-
-                exam = q.first()
-                if exam:
-                    exam.status = "Active"
-                    exam.save(update_fields=["status"])
-        except Exception as e:
-            # Don’t block the subject update if exam activation fails
-            pass
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()
