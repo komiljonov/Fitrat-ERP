@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.db.models import Q
 from rest_framework.generics import ListAPIView
 
 from .models import Log
@@ -37,7 +38,7 @@ class LogListView(ListAPIView):
 
         if end_date:
             queryset = queryset.filter(
-                start_date__gte=start_date, end_date__lte=end_date + timedelta(days=1)
+                start_date__gte=start_date, end_date__lte=end_date
             )
 
         if app:
