@@ -49,7 +49,7 @@ class Log(BaseModel):
             ("Deleted", "Deleted"),
             ("Archived", "Archived"),
             ("Unarchived", "Unarchived"),
-        ]
+        ],max_length=255,null=True,blank=True
     )
 
     finance : "Finance" = models.ForeignKey(
