@@ -1314,9 +1314,6 @@ class ExamCertificateUpdate(RetrieveUpdateDestroyAPIView):
 
 
 class ExamOptionCreate(APIView):
-    """
-    Bulk create or update ExamRegistration entries.
-    """
 
     def post(self, request, *args, **kwargs):
         data = request.data
@@ -1329,109 +1326,110 @@ class ExamOptionCreate(APIView):
 
         with transaction.atomic():
             for entry in data:
-                student_id = entry.get("student")
-                exam_id    = entry.get("exam")
-                group_id   = entry.get("group")
-                variation  = entry.get("variation")
-                subject    = entry.get("subject")  # this is your M2M ExamSubject ids
-
-                # Validate required fields: subject is the actual M2M payload
-                if not student_id or not exam_id or subject in (None, [], ""):
-                    errors.append({'entry': entry, 'error': 'Missing required fields: student, exam, subject'})
-                    continue
-
-                # Normalize subject ids → list[int]
-                incoming_option_ids = subject if isinstance(subject, list) else [subject]
                 try:
-                    incoming_option_ids = [int(x) for x in incoming_option_ids if x is not None]
-                except (TypeError, ValueError):
-                    errors.append({'entry': entry, 'error': 'subject must be id or list of ids'})
-                    continue
+                    student_id = entry.get("student")
+                    exam_id = entry.get("exam")
+                    group_id = entry.get("group")
+                    subject = entry.get("subject")
 
-                # Load FK objects
-                try:
-                    student = Student.objects.get(id=student_id)
-                    exam    = Exam.objects.get(id=exam_id)
-                except Student.DoesNotExist:
-                    errors.append({'entry': entry, 'error': f"Student {student_id} does not exist"})
-                    continue
-                except Exam.DoesNotExist:
-                    errors.append({'entry': entry, 'error': f"Exam {exam_id} does not exist"})
-                    continue
+                    # Normalize variation (string choices "1".."10")
+                    variation = entry.get("variation")
+                    if variation is None and "option" in entry:
+                        variation = str(entry["option"]) if entry["option"] is not None else None
+                    elif variation is not None:
+                        variation = str(variation)
 
-                group = None
-                if group_id:
-                    try:
-                        group = Group.objects.get(id=group_id)
-                    except Group.DoesNotExist:
-                        errors.append({'entry': entry, 'error': f"Group {group_id} does not exist"})
+                    # Required fields
+                    if not student_id or not exam_id or subject in (None, "", []):
+                        errors.append({'entry': entry, 'error': 'Missing required fields: student, exam, subject'})
                         continue
 
-                # Validate ExamSubject ids
-                existing_subjects = ExamSubject.objects.filter(id__in=incoming_option_ids)
-                existing_ids = set(existing_subjects.values_list('id', flat=True))
-                missing_ids = set(incoming_option_ids) - existing_ids
-                if missing_ids:
-                    errors.append({'entry': entry, 'error': f"Invalid ExamSubject ID(s): {sorted(missing_ids)}"})
-                    continue
+                    # Normalize subject IDs to list[str] (UUIDs)
+                    incoming_option_ids = subject if isinstance(subject, list) else [subject]
+                    incoming_option_ids = [str(x).strip() for x in incoming_option_ids if x]
 
-                # Find existing registration WITHOUT variation in the lookup
-                # (we also lock it to avoid races)
-                qs = ExamRegistration.objects.select_for_update().filter(
-                    student=student, exam=exam, group=group
-                )
-                reg = qs.first()
+                    # Load FKs
+                    try:
+                        student = Student.objects.get(id=student_id)
+                    except Student.DoesNotExist:
+                        errors.append({'entry': entry, 'error': f"Student {student_id} does not exist"})
+                        continue
+                    try:
+                        exam = Exam.objects.get(id=exam_id)
+                    except Exam.DoesNotExist:
+                        errors.append({'entry': entry, 'error': f"Exam {exam_id} does not exist"})
+                        continue
 
-                if reg is None:
-                    reg = ExamRegistration.objects.create(
-                        student=student,
-                        exam=exam,
-                        group=group,
-                        variation=variation,     # can be None; set it if you have it
-                        status="Waiting",
+                    group = None
+                    if group_id:
+                        try:
+                            group = Group.objects.get(id=group_id)
+                        except Group.DoesNotExist:
+                            errors.append({'entry': entry, 'error': f"Group {group_id} does not exist"})
+                            continue
+
+                    # Validate ExamSubject UUIDs
+                    existing_ids = set(str(x) for x in
+                                       ExamSubject.objects.filter(id__in=incoming_option_ids)
+                                       .values_list('id', flat=True))
+                    missing_ids = sorted(set(incoming_option_ids) - existing_ids)
+                    if missing_ids:
+                        errors.append({'entry': entry, 'error': f"Invalid ExamSubject ID(s): {missing_ids}"})
+                        continue
+
+                    # Find existing registration for (student, exam, group) — DO NOT include variation
+                    reg = (ExamRegistration.objects
+                           .select_for_update()
+                           .filter(student=student, exam=exam, group=group)
+                           .first())
+
+                    if reg is None:
+                        reg = ExamRegistration.objects.create(
+                            student=student,
+                            exam=exam,
+                            group=group,
+                            variation=variation,
+                            status="Waiting",
+                        )
+                        reg.option.set(incoming_option_ids)
+                        created_count += 1
+                    else:
+                        # Merge M2M options (union)
+                        current_ids = set(str(x) for x in reg.option.values_list("id", flat=True))
+                        merged_ids = sorted(current_ids | set(incoming_option_ids))
+                        reg.option.set(merged_ids)
+
+                        # Update variation only if provided in this entry
+                        if variation is not None:
+                            reg.variation = variation
+                        reg.status = "Waiting"
+                        reg.save(update_fields=["variation", "status"])
+                        updated_count += 1
+
+                    # Per-entry Notification
+                    d = getattr(reg.exam, "date", None)
+                    if isinstance(d, (datetime, date)):
+                        date_text = d.strftime('%d-%m-%Y')
+                    else:
+                        date_text = ""
+
+                    # Subject/option text (safe)
+                    opted = list(reg.option.select_related("subject").all())
+                    subject_text = next((o.subject.name for o in opted if getattr(o, "subject_id", None)), "")
+                    options_text = reg.variation or ""
+
+                    Notification.objects.create(
+                        user=student.user,
+                        comment=(f"Sizga {date_text} sanasida tashkil"
+                                 f" etilyotgan imtihon uchun {options_text} varianti "
+                                 f"{subject_text} fanidan belgilandi!"),
+                        choice="Examination",
+                        come_from="",  # optionally dump a small JSON payload here
                     )
-                    created_count += 1
-                    # For a brand-new row just set the m2m to incoming ids
-                    reg.option.set(incoming_option_ids)
-                else:
-                    # Merge options = union(existing, incoming)
-                    existing_option_ids = set(reg.option.values_list("id", flat=True))
-                    merged_option_ids = sorted(existing_option_ids | set(incoming_option_ids))
-                    reg.option.set(merged_option_ids)
 
-                    # Update variation only if provided in this entry
-                    if variation is not None:
-                        reg.variation = variation
-                    reg.status = "Waiting"
-                    reg.save(update_fields=["variation", "status"])
-                    updated_count += 1
+                except Exception as e:
+                    errors.append({'entry': entry, 'error': f"Unexpected error: {e}"})
 
-                # Per-entry notification
-                d = getattr(reg.exam, "date", None)
-                if isinstance(d, (datetime, date)):
-                    date_text = d.strftime('%d-%m-%Y')
-                else:
-                    date_text = ""
-
-                # Safe access to option/subject names
-                opted = list(reg.option.all())
-                options_text = reg.variation or ""
-                subject_text = next((o.subject.name for o in opted if getattr(o, "subject", None)), "")
-
-                Notification.objects.create(
-                    user=student.user,
-                    comment=(
-                        f"Sizga {date_text} sanasida tashkil"
-                        f" etilyotgan imtihon uchun {options_text} varianti "
-                        f"{subject_text} fanidan belgilandi!"
-                    ),
-                    choice="Examination",
-                    come_from="",  # fill as needed
-                )
-
-            print(errors)
-            print(created_count)
-            print(updated_count)
         return Response(
             {
                 'created': created_count,
@@ -1441,6 +1439,7 @@ class ExamOptionCreate(APIView):
             },
             status=207 if errors else 200,
         )
+
 
 
 class MonthlyExam(APIView):
