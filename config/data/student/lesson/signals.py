@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import FirstLLesson, ExtraLessonGroup, ExtraLesson
 from ..studentgroup.models import StudentGroup
+from ...logs.models import Log
 from ...notifications.models import Notification
 
 @receiver(post_save, sender=FirstLLesson)
@@ -72,3 +73,23 @@ def on_create(sender, instance: ExtraLesson, created, **kwargs):
 
 
 
+@receiver(post_save, sender=FirstLLesson)
+def logs_on_first_lesson(sender, instance:FirstLLesson, created, **kwargs ):
+
+    if created:
+        Log.objects.create(
+            app="Student",
+            model="First Lesson",
+            action="Log",
+            model_action="Created",
+            lid=instance.lid if instance.lid else None,
+        )
+
+    if not created:
+        Log.objects.create(
+            app="Student",
+            model="First Lesson",
+            action="Log",
+            model_action="Updated",
+            lid=instance.lid if instance.lid else None,
+        )
