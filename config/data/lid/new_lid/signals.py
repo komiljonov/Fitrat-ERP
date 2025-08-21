@@ -320,7 +320,7 @@ def _format_changes_for_comment(inst: Lid, changes: dict) -> str:
     parts = []
     for fname, (old_v, new_v) in changes.items():
         field = inst._meta.get_field(fname)
-        parts.append(f'{fname}: "{_human(inst, field, old_v)}" → "{_human(inst, field, new_v)}"')
+        parts.append(f'Leadning {fname} fieldi "{_human(inst, field, old_v)}" dan "{_human(inst, field, new_v)}" ga uzgartirildi!')
     return "; ".join(parts) if parts else None
 
 
@@ -394,7 +394,7 @@ def lid_file_m2m_changed(sender, instance: Lid, action, reverse, pk_set, **kwarg
         files = File.objects.filter(pk__in=pk_set)
         listed = ", ".join(str(f) for f in files[:10])
         extra = "" if len(pk_set) <= 10 else f" (+{len(pk_set) - 10} more)"
-        comment = f"M2M file {verb}: {listed}{extra}"
+        comment = f"M2M fieldda {listed} ma'lumotlar uchun  {extra} ma'lumot {"qo'shildi" if action == "post_add" else "olib tashlandi" }"
     except Exception:
         comment = f"M2M file {verb}: {len(pk_set)} items"
 
