@@ -85,7 +85,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
             app="Archive",
             model="Archived",
             action="Log",
-            model_action="Created",
+            model_action="Archived",
             lid=instance.lid,
             student=instance.student,
             archive=instance,
@@ -95,7 +95,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
     if not created and instance.is_archived == False:
         Log.objects.create(
             app="Archive",
-            model="Archived",
+            model="Unarchived",
             action="Log",
             model_action="Updated",
             lid=instance.lid,

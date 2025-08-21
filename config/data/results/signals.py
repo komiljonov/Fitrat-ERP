@@ -593,6 +593,7 @@ def on_logs(sender, instance: Results, created, **kwargs):
             model_action="Created",
             student=instance.student,
             account=instance.teacher,
+            result=instance,
             comment=f"{instance.teacher.full_name if instance.who == "Mine" 
             else f"{instance.student.first_name} {instance.student.last_name}"} uchun natija yaratildi!"
         )
@@ -604,6 +605,7 @@ def on_logs(sender, instance: Results, created, **kwargs):
             model_action="Updated",
             student=instance.student,
             account=instance.teacher,
+            result=instance,
             comment=f"{instance.teacher.full_name if instance.who == "Mine" 
             else f"{instance.student.first_name} {instance.student.last_name}"} ning natija o'zgartirildi!"
         )
