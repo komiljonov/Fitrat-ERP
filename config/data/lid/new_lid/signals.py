@@ -211,10 +211,11 @@ def on_expired_delete(sender, instance: Lid, created, **kwargs):
             instance.save()
 
 
-#Logs Lid catching
+# Logs Lid catching
+from django.db import models as dj_models
 
 
-def _is_trackable_field(field: models.Field) -> bool:
+def _is_trackable_field(field: dj_models.Field) -> bool:
     """
     Track: concrete, editable, not auto, not M2M through fields.
     """
@@ -229,8 +230,8 @@ def _is_trackable_field(field: models.Field) -> bool:
         return False
     return True
 
-def _human(model_instance, field: models.Field, value):
 
+def _human(model_instance, field: dj_models.Field, value):
     if value is None:
         return "—"
 
@@ -273,6 +274,7 @@ def _human(model_instance, field: models.Field, value):
 
     return str(value)
 
+
 def _collect_changes(old_obj: Lid, new_obj: Lid):
     """
     Return dict: {field_name: (old_value, new_value)} for all changed fields.
@@ -299,6 +301,7 @@ def _collect_changes(old_obj: Lid, new_obj: Lid):
                 changes[field.name] = (old_val, new_val)
     return changes
 
+
 def _format_changes_for_comment(inst: Lid, changes: dict) -> str:
     """
     Build a single-line comment string with all changes.
@@ -308,6 +311,7 @@ def _format_changes_for_comment(inst: Lid, changes: dict) -> str:
         field = inst._meta.get_field(fname)
         parts.append(f'{fname}: "{_human(inst, field, old_v)}" → "{_human(inst, field, new_v)}"')
     return "; ".join(parts) if parts else None
+
 
 # --- Signals ---------------------------------------------------------------
 
@@ -327,6 +331,7 @@ def lid_cache_changes(sender, instance: Lid, **kwargs):
         return
 
     instance._changes = _collect_changes(old, instance)
+
 
 @receiver(post_save, sender=Lid)
 def lid_log_after_save(sender, instance: Lid, created, **kwargs):
@@ -361,6 +366,7 @@ def lid_log_after_save(sender, instance: Lid, created, **kwargs):
         comment=comment,
     )
 
+
 # --- Optional: track M2M changes on Lid.file -------------------------------
 
 @receiver(m2m_changed, sender=Lid.file.through)
@@ -376,7 +382,7 @@ def lid_file_m2m_changed(sender, instance: Lid, action, reverse, pk_set, **kwarg
     try:
         files = File.objects.filter(pk__in=pk_set)
         listed = ", ".join(str(f) for f in files[:10])
-        extra = "" if len(pk_set) <= 10 else f" (+{len(pk_set)-10} more)"
+        extra = "" if len(pk_set) <= 10 else f" (+{len(pk_set) - 10} more)"
         comment = f"M2M file {verb}: {listed}{extra}"
     except Exception:
         comment = f"M2M file {verb}: {len(pk_set)} items"
