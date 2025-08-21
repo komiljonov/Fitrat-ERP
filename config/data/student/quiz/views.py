@@ -605,6 +605,7 @@ class ExamSubjectListCreate(ListCreateAPIView):
 class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     queryset = ExamSubject.objects.all()
     serializer_class = ExamSubjectSerializer
+    permission_classes = [IsAuthenticated]
 
     allowed_bulk_fields = {
         "order", "has_certificate", "certificate", "certificate_expire_date"
