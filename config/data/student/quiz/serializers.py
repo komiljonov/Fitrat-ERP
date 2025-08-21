@@ -466,8 +466,10 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
+        print(request)
 
         test_id = request.data.get("test_id")
+        print(test_id)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -475,7 +477,6 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
 
         if test_id:
             exam = ExamRegistration.objects.filter(id=test_id).first()
-            print(exam)
             if exam:
                 exam.status = "Active"
                 exam.save(update_fields=["status"])
