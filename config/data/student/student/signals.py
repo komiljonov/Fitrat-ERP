@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Student
 from ...account.models import CustomUser
+from ...logs.models import Log
 from ...notifications.models import Notification
 
 # Define a flag to prevent recursion
@@ -76,3 +77,26 @@ def on_create_user(sender, instance: Student, created, **kwargs):
         if user:
             instance.user = user
             instance.save(update_fields=["user"])
+
+
+@receiver(post_save, sender=Student)
+def on_save_user(sender, instance: Student, created, **kwargs):
+    if created:
+        Log.objects.create(
+            app="Student",
+            model="Student",
+            action="Log",
+            model_action="Created",
+            student=instance,
+            account=instance.user
+        )
+
+    if not created:
+        Log.objects.create(
+            app="Student",
+            model="Student",
+            action="Log",
+            model_action="Updated",
+            student=instance,
+            account=instance.user
+        )

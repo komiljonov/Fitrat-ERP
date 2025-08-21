@@ -11,6 +11,7 @@ from .models import Results
 from .utils import validate_olimpiada_requirements, validate_university_requirements, validate_certificate_requirements
 from ..finances.compensation.models import MonitoringAsos4, Asos, ResultName, ResultSubjects
 from ..finances.finance.models import Finance, Casher, Kind
+from ..logs.models import Log
 from ..notifications.models import Notification
 from ..student.shop.models import Coins
 
@@ -580,3 +581,29 @@ def send_notf(sender, instance: Results, created, **kwargs):
                 come_from=json.dumps(instance_obj, default=str),
                 choice="Results",
             )
+
+
+@receiver(post_save, sender=Results)
+def on_logs(sender, instance: Results, created, **kwargs):
+    if created:
+        Log.objects.create(
+            app="Results",
+            model="Results",
+            action="Log",
+            model_action="Created",
+            student=instance.student,
+            account=instance.teacher,
+            comment=f"{instance.teacher.full_name if instance.who == "Mine" 
+            else f"{instance.student.first_name} {instance.student.last_name}"} uchun natija yaratildi!"
+        )
+    if not created:
+        Log.objects.create(
+            app="Results",
+            model="Results",
+            action="Log",
+            model_action="Updated",
+            student=instance.student,
+            account=instance.teacher,
+            comment=f"{instance.teacher.full_name if instance.who == "Mine" 
+            else f"{instance.student.first_name} {instance.student.last_name}"} ning natija o'zgartirildi!"
+        )
