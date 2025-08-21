@@ -89,7 +89,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
             lid=instance.lid,
             student=instance.student,
             archive=instance,
-            comment=instance.comment.comment,
+            comment=instance.comment.comment if instance.comment else None,
         )
 
     if not created and instance.is_archived == False:
@@ -101,5 +101,5 @@ def on_create(sender, instance: Archived, created, **kwargs):
             lid=instance.lid,
             student=instance.student,
             archive=instance,
-            comment=instance.comment.comment,
+            comment=instance.comment.comment if instance.comment else None,
         )
