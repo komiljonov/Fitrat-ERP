@@ -612,16 +612,11 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     }
 
     def update(self, request, *args, **kwargs):
+        # Bulk
         if isinstance(request.data, list):
-            response_data = []
-            errors = []
-
-            print(request.data)
+            response_data, errors = [], []
 
             for item in request.data:
-
-                print(item)
-
                 item_id = item.get("id")
                 if not item_id:
                     errors.append({"error": "Missing ID", "item": item})
@@ -633,40 +628,48 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
                     errors.append({"error": f"ExamSubject with id={item_id} not found."})
                     continue
 
-                filtered_data = {
-                    k: v for k, v in item.items() if k in self.allowed_bulk_fields
-                }
+                filtered_data = {k: v for k, v in item.items() if k in self.allowed_bulk_fields}
 
                 serializer = self.get_serializer(instance, data=filtered_data, partial=True)
 
-                user = request.user
+                try:
+                    user = request.user
 
-                print(user.role)
-                if user.role == "Student":
-                    exam = ExamRegistration.objects.filter(
-                        student=user,
-                        option__in=instance.id
-                    ).first()
-                    if exam:
-                        exam.status = "Active"
-                        exam.save()
+                    if getattr(user, "role", None) == "Student":
+
+                        student = getattr(user, "student", None)
+                        if student is None:
+                            from data.student.student.models import Student
+                            student = Student.objects.filter(user=user).first()
+
+                        if student:
+
+                            exam = ExamRegistration.objects.filter(
+                                student=student,
+                                option__subject=instance  # or subject=instance, if that’s your FK
+                            ).first()
+                            if exam:
+                                exam.status = "Active"
+                                exam.save()
+                except Exception as e:
+                    errors.append({"id": item_id, "exam_status_error": str(e)})
+
                 try:
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
                     response_data.append(serializer.data)
-
                 except ValidationError as ve:
                     errors.append({"id": item_id, "validation_error": ve.detail})
                 except Exception as e:
                     logging.exception(f"Unexpected error while updating ExamSubject {item_id}: {e}")
                     errors.append({"id": item_id, "error": str(e)})
 
-            return Response({
-                "updated": response_data,
-                "errors": errors
-            }, status=status.HTTP_207_MULTI_STATUS)
+            return Response(
+                {"updated": response_data, "errors": errors},
+                status=status.HTTP_207_MULTI_STATUS
+            )
 
-        # Regular update
+        # Single-object update
         return super().update(request, *args, **kwargs)
 
 
