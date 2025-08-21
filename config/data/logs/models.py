@@ -11,24 +11,24 @@ from data.student.student.models import Student
 class Log(BaseModel):
     app = models.CharField(
         choices=[
-            "Finance",
-            "Account",
-            "Lid",
-            "Clickuz",
-            "Comments",
-            "Dashboard",
-            "Department",
-            "Events",
-            "Exam_results",
-            "Library",
-            "Notifications",
-            "Parents",
-            "Paycomuz",
-            "Results",
-            "Student",
-            "Tasks",
-            "Teachers",
-            "Upload"
+            ("Finance","Finance"),
+            ("Account","Account"),
+            ("Lid","Lid"),
+            ("Clickuz","Clickuz"),
+            ("Comments","Comments"),
+            ("Dashboard","Dashboard"),
+            ("Department","Department"),
+            ("Events","Events"),
+            ("Exam_results","Exam_results"),
+            ("Library","Library"),
+            ("Notifications","Notifications"),
+            ("Parents","Parents"),
+            ("Paycomuz","Paycomuz"),
+            ("Results","Results"),
+            ("Student","Student"),
+            ("Tasks","Tasks"),
+            ("Teachers","Teachers"),
+            ("Upload","Upload")
         ], max_length=255,null=True,
         blank=True
     )
