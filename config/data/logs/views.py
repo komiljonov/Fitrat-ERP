@@ -70,7 +70,7 @@ class LogListView(ListAPIView):
 
         if student:
             queryset = queryset.filter(
-                student__id=student
+                Q(student__id=student) | Q(lid_student_fk=student)
             )
 
         if archive:
