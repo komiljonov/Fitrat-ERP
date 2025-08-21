@@ -1394,7 +1394,7 @@ class ExamOptionCreate(APIView):
                 date_text = ""  # or fallback you prefer
 
             opts = list(reg.option.all())
-            options_text = ", ".join(o.options for o in opts)
+            options_text = reg.variation if reg.variation else ""
 
             subject_text = next((o.subject.name for o in opts if getattr(o, "subject", None)), "")
 

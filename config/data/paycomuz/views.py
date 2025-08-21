@@ -17,7 +17,6 @@ from data.paycomuz.methods_subscribe_api import (
 from . import Paycom
 from .authentication import authentication
 from .check_order import CheckOrder
-
 # project
 from .models import Transaction
 from .serializers.payme_operation import PaycomOperationSerialzer
@@ -254,7 +253,7 @@ class MerchantAPIView(APIView):
                 obj.status = Transaction.SUCCESS
                 obj.perform_datetime = perform_time
                 obj.save()
-                
+
                 print(obj.state)
 
                 self.VALIDATE_CLASS().successfully_payment(
