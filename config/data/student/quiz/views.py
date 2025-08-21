@@ -635,6 +635,16 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
                 }
 
                 serializer = self.get_serializer(instance, data=filtered_data, partial=True)
+
+                user = request.user
+                if user.role == "Student":
+                    exam = ExamRegistration.objects.filter(
+                        student=user,
+                        option__in=instance.id
+                    ).first()
+                    if exam:
+                        exam.status = "Active"
+                        exam.save()
                 try:
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
