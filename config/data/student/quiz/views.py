@@ -639,7 +639,7 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
 
                 user = request.user
 
-                print(user)
+                print(user.role)
                 if user.role == "Student":
                     exam = ExamRegistration.objects.filter(
                         student=user,
