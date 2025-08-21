@@ -464,6 +464,45 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+
+        # Pop test_id from body (if present)
+        test_id = request.data.get("test_id")
+
+        # Normal field updates
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update ExamRegistration if test_id provided
+        if test_id:
+            try:
+                student_obj = None
+                # If user is Student, resolve their Student record
+                if getattr(request.user, "role", None) == "Student":
+                    student_obj = Student.objects.filter(user=request.user).first()
+                # Or allow ?student=<id> query param for admins
+                student_id = request.query_params.get("student")
+                if student_id:
+                    student_obj = Student.objects.filter(id=student_id).first()
+
+                q = ExamRegistration.objects.filter(id=test_id)
+                if student_obj:
+                    q = q.filter(student=student_obj)
+
+                exam = q.first()
+                if exam:
+                    exam.status = "Active"
+                    exam.save(update_fields=["status"])
+            except Exception as e:
+                # Don’t break update if exam update fails
+                import logging
+                logging.exception(f"Failed to update ExamRegistration for test_id={test_id}: {e}")
+
+        return instance
+
     def create(self, validated_data):
         request = self.context.get("request")
         user = request.user
