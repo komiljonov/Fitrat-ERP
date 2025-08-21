@@ -477,9 +477,12 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
 
         if test_id:
             exam = ExamRegistration.objects.filter(id=test_id).first()
+            print(exam,exam.status)
             if exam:
                 exam.status = "Active"
                 exam.save(update_fields=["status"])
+
+                print(exam.status)
 
         return instance
 
