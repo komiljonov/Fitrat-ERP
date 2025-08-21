@@ -1334,6 +1334,7 @@ class ExamOptionCreate(APIView):
                 exam_id = entry.get("exam")
                 group_id = entry.get("group")
                 option = entry.get("option")
+                variation = entry.get("variation")
                 subject = entry.get("subject")
 
                 if not student_id or not exam_id or option is None:
@@ -1358,7 +1359,7 @@ class ExamOptionCreate(APIView):
                         student=student,
                         exam=exam,
                         group=group,
-                        variation=int(option),
+                        variation=variation,
                     ).first()
 
                     if existing_registration:
@@ -1375,13 +1376,14 @@ class ExamOptionCreate(APIView):
 
             # Create new registrations and set M2M options
             for student, exam, group, option_ids in registrations_to_create:
-                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group, variation=int(option),
+                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group, variation=variation,
                                                       status="Waiting")
                 reg.option.set(option_ids)
 
             # Update existing registrations' options
             for reg, option_ids in registrations_to_update:
                 reg.option.set(option_ids)
+                reg.variation = variation
                 reg.status = "Waiting"
                 reg.save()
 
