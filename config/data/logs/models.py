@@ -14,6 +14,7 @@ class Log(BaseModel):
             ("Finance","Finance"),
             ("Account","Account"),
             ("Lid","Lid"),
+            ("Archive","Archive"),
             ("Clickuz","Clickuz"),
             ("Comments","Comments"),
             ("Dashboard","Dashboard"),

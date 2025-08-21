@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from .models import Archived, Frozen
 from ..new_lid.models import Lid
 from ...comments.models import Comment
+from ...logs.models import Log
 
 
 @receiver(post_save, sender=Archived)
@@ -74,3 +75,31 @@ def on_create(sender, instance: Frozen, created, **kwargs):
         if instance.lid:
             instance.lid.is_frozen = False
             instance.lid.save()
+
+
+@receiver(post_save, sender=Archived)
+def on_create(sender, instance: Archived, created, **kwargs):
+    if created and instance.is_archived == True:
+
+        Log.objects.create(
+            app="Archive",
+            model="Archived",
+            action="Log",
+            model_action="Created",
+            lid=instance.lid,
+            student=instance.student,
+            archive=instance,
+            comment=instance.comment.comment,
+        )
+
+    if not created and instance.is_archived == False:
+        Log.objects.create(
+            app="Archive",
+            model="Archived",
+            action="Log",
+            model_action="Updated",
+            lid=instance.lid,
+            student=instance.student,
+            archive=instance,
+            comment=instance.comment.comment,
+        )
