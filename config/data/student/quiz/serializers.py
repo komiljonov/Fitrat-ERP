@@ -468,7 +468,7 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         print(request)
 
-        test_id = request.data.get("test_id")
+        test_id = validated_data.get("test_id")
         print(test_id)
 
         for attr, value in validated_data.items():
