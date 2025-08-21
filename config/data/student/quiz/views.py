@@ -1315,108 +1315,133 @@ class ExamCertificateUpdate(RetrieveUpdateDestroyAPIView):
 
 class ExamOptionCreate(APIView):
     """
-    Bulk create or update ExamRegistration entries using ordinary field objects.
+    Bulk create or update ExamRegistration entries.
     """
 
     def post(self, request, *args, **kwargs):
         data = request.data
-
         if not isinstance(data, list):
             return Response({'error': 'Body must be a list of registration objects'}, status=400)
 
-        registrations_to_create = []
-        registrations_to_update = []
+        created_count = 0
+        updated_count = 0
         errors = []
 
         with transaction.atomic():
             for entry in data:
-                student_id = entry.get("student")
-                exam_id = entry.get("exam")
-                group_id = entry.get("group")
-                option = entry.get("option")
-                variation = entry.get("variation")
-                subject = entry.get("subject")
-
-                if not student_id or not exam_id or option is None:
-                    errors.append({'entry': entry, 'error': 'Missing required fields'})
-                    continue
-
                 try:
-                    student = Student.objects.get(id=student_id)
-                    exam = Exam.objects.get(id=exam_id)
-                    group = Group.objects.get(id=group_id) if group_id else None
+                    student_id = entry.get("student")
+                    exam_id    = entry.get("exam")
+                    group_id   = entry.get("group")
+                    variation  = entry.get("variation")
+                    subject    = entry.get("subject")  # this is your M2M ExamSubject ids
 
-                    incoming_options = subject if isinstance(subject, list) else [subject]
-
-                    # Ensure all ExamSubject instances exist
-                    existing_subjects = ExamSubject.objects.filter(id__in=incoming_options)
-                    if existing_subjects.count() != len(incoming_options):
-                        missing_ids = set(incoming_options) - set(str(s.id) for s in existing_subjects)
-                        errors.append({'entry': entry, 'error': f"Invalid ExamSubject ID(s): {list(missing_ids)}"})
+                    # Validate required fields: subject is the actual M2M payload
+                    if not student_id or not exam_id or subject in (None, [], ""):
+                        errors.append({'entry': entry, 'error': 'Missing required fields: student, exam, subject'})
                         continue
 
-                    existing_registration = ExamRegistration.objects.filter(
-                        student=student,
-                        exam=exam,
-                        group=group,
-                        variation=variation,
-                    ).first()
+                    # Normalize subject ids → list[int]
+                    incoming_option_ids = subject if isinstance(subject, list) else [subject]
+                    try:
+                        incoming_option_ids = [int(x) for x in incoming_option_ids if x is not None]
+                    except (TypeError, ValueError):
+                        errors.append({'entry': entry, 'error': 'subject must be id or list of ids'})
+                        continue
 
-                    if existing_registration:
-                        existing_option_ids = list(existing_registration.option.values_list("id", flat=True))
-                        merged_option_ids = list(set(existing_option_ids).union(set(incoming_options)))
-                        registrations_to_update.append((existing_registration, merged_option_ids))
+                    # Load FK objects
+                    try:
+                        student = Student.objects.get(id=student_id)
+                        exam    = Exam.objects.get(id=exam_id)
+                    except Student.DoesNotExist:
+                        errors.append({'entry': entry, 'error': f"Student {student_id} does not exist"})
+                        continue
+                    except Exam.DoesNotExist:
+                        errors.append({'entry': entry, 'error': f"Exam {exam_id} does not exist"})
+                        continue
+
+                    group = None
+                    if group_id:
+                        try:
+                            group = Group.objects.get(id=group_id)
+                        except Group.DoesNotExist:
+                            errors.append({'entry': entry, 'error': f"Group {group_id} does not exist"})
+                            continue
+
+                    # Validate ExamSubject ids
+                    existing_subjects = ExamSubject.objects.filter(id__in=incoming_option_ids)
+                    existing_ids = set(existing_subjects.values_list('id', flat=True))
+                    missing_ids = set(incoming_option_ids) - existing_ids
+                    if missing_ids:
+                        errors.append({'entry': entry, 'error': f"Invalid ExamSubject ID(s): {sorted(missing_ids)}"})
+                        continue
+
+                    # Find existing registration WITHOUT variation in the lookup
+                    # (we also lock it to avoid races)
+                    qs = ExamRegistration.objects.select_for_update().filter(
+                        student=student, exam=exam, group=group
+                    )
+                    reg = qs.first()
+
+                    if reg is None:
+                        reg = ExamRegistration.objects.create(
+                            student=student,
+                            exam=exam,
+                            group=group,
+                            variation=variation,     # can be None; set it if you have it
+                            status="Waiting",
+                        )
+                        created_count += 1
+                        # For a brand-new row just set the m2m to incoming ids
+                        reg.option.set(incoming_option_ids)
                     else:
-                        registrations_to_create.append((student, exam, group,variation, incoming_options))
+                        # Merge options = union(existing, incoming)
+                        existing_option_ids = set(reg.option.values_list("id", flat=True))
+                        merged_option_ids = sorted(existing_option_ids | set(incoming_option_ids))
+                        reg.option.set(merged_option_ids)
 
-                except (Student.DoesNotExist, Exam.DoesNotExist, Group.DoesNotExist) as e:
-                    errors.append({'entry': entry, 'error': str(e)})
+                        # Update variation only if provided in this entry
+                        if variation is not None:
+                            reg.variation = variation
+                        reg.status = "Waiting"
+                        reg.save(update_fields=["variation", "status"])
+                        updated_count += 1
+
+                    # Per-entry notification
+                    d = getattr(reg.exam, "date", None)
+                    if isinstance(d, (datetime, date)):
+                        date_text = d.strftime('%d-%m-%Y')
+                    else:
+                        date_text = ""
+
+                    # Safe access to option/subject names
+                    opted = list(reg.option.all())
+                    options_text = reg.variation or ""
+                    subject_text = next((o.subject.name for o in opted if getattr(o, "subject", None)), "")
+
+                    Notification.objects.create(
+                        user=student.user,
+                        comment=(
+                            f"Sizga {date_text} sanasida tashkil"
+                            f" etilyotgan imtihon uchun {options_text} varianti "
+                            f"{subject_text} fanidan belgilandi!"
+                        ),
+                        choice="Examination",
+                        come_from="",  # fill as needed
+                    )
+
                 except Exception as e:
-                    errors.append({'entry': entry, 'error': f"Unexpected error: {str(e)}"})
+                    errors.append({'entry': entry, 'error': f"Unexpected error: {e}"})
 
-            # Create new registrations and set M2M options
-            for student, exam, group,variation, option_ids in registrations_to_create:
-                reg = ExamRegistration.objects.create(student=student, exam=exam, group=group, variation=variation,
-                                                      status="Waiting")
-                reg.option.set(option_ids)
-
-            # Update existing registrations' options
-            for reg, option_ids in registrations_to_update:
-                reg.option.set(option_ids)
-                reg.variation = variation
-                reg.status = "Waiting"
-                reg.save()
-
-            d = reg.exam.date
-            if isinstance(d, datetime):
-                date_text = d.strftime('%d-%m-%Y')
-            elif isinstance(d, date):
-                date_text = d.strftime('%d-%m-%Y')
-            else:
-                date_text = ""  # or fallback you prefer
-
-            opts = list(reg.option.all())
-            options_text = reg.variation if reg.variation else ""
-
-            subject_text = next((o.subject.name for o in opts if getattr(o, "subject", None)), "")
-
-            Notification.objects.create(
-                user=student.user,
-                comment=f"Sizga {date_text} sanasida tashkil"
-                        f" etilyotgan imtihon uchun {options_text} varianti "
-                        f"{subject_text} fanidan belgilandi!",
-                choice="Examination",
-                come_from="",
-            )
-        # print((registrations_to_create), (registrations_to_update), (errors))
-        response_data = {
-            'created': len(registrations_to_create),
-            'updated': len(registrations_to_update),
-            'errors': errors,
-            'errors_count': len(errors)
-        }
-
-        return Response(response_data, status=207 if errors else 200)
+        return Response(
+            {
+                'created': created_count,
+                'updated': updated_count,
+                'errors': errors,
+                'errors_count': len(errors),
+            },
+            status=207 if errors else 200,
+        )
 
 
 class MonthlyExam(APIView):
