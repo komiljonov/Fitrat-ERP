@@ -607,71 +607,83 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = ExamSubjectSerializer
     permission_classes = [IsAuthenticated]
 
+    # Only these fields are allowed to be changed in bulk
     allowed_bulk_fields = {
         "order", "has_certificate", "certificate", "certificate_expire_date"
     }
 
     def update(self, request, *args, **kwargs):
-        # Bulk
-        if isinstance(request.data, list):
-            response_data, errors = [], []
+        data = request.data
 
-            for item in request.data:
+        # —— Bulk update path ——
+        if isinstance(data, list):
+            updated, errors = [], []
+
+            # Optional student filter (?student=<uuid|id>) for exam activation
+            student_obj = None
+            student_id = request.query_params.get("student")
+            if student_id:
+                student_obj = Student.objects.filter(id=student_id).first()
+
+            for idx, item in enumerate(data):
                 item_id = item.get("id")
                 if not item_id:
-                    errors.append({"error": "Missing ID", "item": item})
+                    errors.append({"index": idx, "error": "Missing id in item"})
                     continue
 
                 try:
                     instance = ExamSubject.objects.get(id=item_id)
                 except ExamSubject.DoesNotExist:
-                    errors.append({"error": f"ExamSubject with id={item_id} not found."})
+                    errors.append({"index": idx, "id": item_id, "error": "ExamSubject not found"})
                     continue
 
-                filtered_data = {k: v for k, v in item.items() if k in self.allowed_bulk_fields}
-
-                serializer = self.get_serializer(instance, data=filtered_data, partial=True)
-
-                try:
-                    user = request.user
-
-                    if getattr(user, "role", None) == "Student":
-
-                        student = getattr(user, "student", None)
-                        if student is None:
-                            from data.student.student.models import Student
-                            student = Student.objects.filter(user=user).first()
-
-                        if student:
-
-                            exam = ExamRegistration.objects.filter(
-                                student=student,
-                                option__subject=instance  # or subject=instance, if that’s your FK
-                            ).first()
-                            if exam:
-                                exam.status = "Active"
-                                exam.save()
-                except Exception as e:
-                    errors.append({"id": item_id, "exam_status_error": str(e)})
+                # Update only allowed fields
+                filtered = {k: v for k, v in item.items() if k in self.allowed_bulk_fields}
+                if not filtered:
+                    # Nothing to update is not an error; we still may toggle exam status below
+                    pass
 
                 try:
-                    serializer.is_valid(raise_exception=True)
-                    serializer.save()
-                    response_data.append(serializer.data)
+                    with transaction.atomic():
+                        ser = self.get_serializer(instance, data=filtered, partial=True)
+                        ser.is_valid(raise_exception=True)
+                        ser.save()
+                        updated.append(ser.data)
                 except ValidationError as ve:
-                    errors.append({"id": item_id, "validation_error": ve.detail})
+                    errors.append({"index": idx, "id": item_id, "validation_error": ve.detail})
+                    continue
                 except Exception as e:
-                    logging.exception(f"Unexpected error while updating ExamSubject {item_id}: {e}")
-                    errors.append({"id": item_id, "error": str(e)})
+                    errors.append({"index": idx, "id": item_id, "error": str(e)})
+                    continue
 
-            return Response(
-                {"updated": response_data, "errors": errors},
-                status=status.HTTP_207_MULTI_STATUS
-            )
+                # —— Non-blocking side-effect: activate an ExamRegistration if provided ——
+                test_id = item.get("test_id")  # Your payload key
+                if test_id:
+                    try:
+                        q = ExamRegistration.objects.filter(id=test_id)
+                        if student_obj:
+                            q = q.filter(student=student_obj)
+                        exam = q.first()
+                        if exam:
+                            exam.status = "Active"
+                            exam.save(update_fields=["status"])
+                        else:
+                            errors.append({
+                                "index": idx,
+                                "id": item_id,
+                                "exam_activation_note": f"No ExamRegistration matched id={test_id}"
+                            })
+                    except Exception as e:
+                        errors.append({
+                            "index": idx,
+                            "id": item_id,
+                            "exam_activation_error": str(e)
+                        })
 
-        # Single-object update
+            return Response({"updated": updated, "errors": errors}, status=status.HTTP_207_MULTI_STATUS)
+
+        # —— Single-object update path ——
         return super().update(request, *args, **kwargs)
-
 
 class ObjectiveTestView(ListCreateAPIView):
     queryset = ObjectiveTest.objects.all()

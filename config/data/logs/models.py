@@ -70,3 +70,5 @@ class Log(BaseModel):
     account : "CustomUser" = models.ForeignKey(
         "account.CustomUser", on_delete=models.SET_NULL,null=True,blank=True, related_name="log_customuser"
     )
+
+    comment = models.TextField(null=True,blank=True)
