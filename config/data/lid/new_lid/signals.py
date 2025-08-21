@@ -211,6 +211,17 @@ def on_expired_delete(sender, instance: Lid, created, **kwargs):
             instance.save()
 
 
+
+
+
+
+
+
+
+
+
+
+
 # Logs Lid catching
 from django.db import models as dj_models
 
