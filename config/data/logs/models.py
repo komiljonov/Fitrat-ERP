@@ -59,7 +59,7 @@ class Log(BaseModel):
         "new_lid.Lid", on_delete=models.SET_NULL,null=True,blank=True, related_name="log_lids"
     )
     first_lessons : "FirstLLesson" = models.ForeignKey(
-        "lesson.FirstLesson", on_delete=models.SET_NULL,null=True,blank=True, related_name="log_first_lessons"
+        "lesson.FirstLLesson", on_delete=models.SET_NULL,null=True,blank=True, related_name="log_first_lessons"
     )
     student : "Student" = models.ForeignKey(
         "student.Student", on_delete=models.SET_NULL,null=True,blank=True, related_name="log_students"
