@@ -638,6 +638,8 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
                 serializer = self.get_serializer(instance, data=filtered_data, partial=True)
 
                 user = request.user
+
+                print(user)
                 if user.role == "Student":
                     exam = ExamRegistration.objects.filter(
                         student=user,
