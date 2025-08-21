@@ -1,10 +1,11 @@
-from django.utils.archive import Archive
+
 from rest_framework import serializers
 
 from .models import Log
 from ..account.models import CustomUser
 from ..finances.finance.models import Finance
 from ..finances.finance.serializers import FinanceSerializer
+from ..lid.archived.models import Archived
 from ..lid.new_lid.models import Lid
 from ..student.student.models import Student
 
@@ -14,7 +15,7 @@ class LogSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
     account = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
     finance = serializers.PrimaryKeyRelatedField(queryset=Finance.objects.all(), allow_null=True)
-    archive = serializers.PrimaryKeyRelatedField(queryset=Archive.objects.all(), allow_null=True)
+    archive = serializers.PrimaryKeyRelatedField(queryset=Archived.objects.all(), allow_null=True)
 
     class Meta:
         model = Log
