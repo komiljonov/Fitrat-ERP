@@ -467,24 +467,18 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get("request")
 
-        # Pop test_id from body (if present)
         test_id = request.data.get("test_id")
 
-        # Normal field updates
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
         if test_id:
-            try:
-                exam = ExamRegistration.objects.filter(id=test_id).first()
-                if exam:
-                    exam.status = "Active"
-                    exam.save(update_fields=["status"])
-
-            except Exception as e:
-                import logging
-                logging.exception(f"Failed to update ExamRegistration for test_id={test_id}: {e}")
+            exam = ExamRegistration.objects.filter(id=test_id).first()
+            print(exam)
+            if exam:
+                exam.status = "Active"
+                exam.save(update_fields=["status"])
 
         return instance
 
