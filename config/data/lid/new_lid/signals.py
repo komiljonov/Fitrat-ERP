@@ -286,7 +286,7 @@ def _collect_changes(old_obj: Lid, new_obj: Lid):
             continue
 
         # For FKs, compare *_id to avoid fetching relations
-        if isinstance(field, models.ForeignKey):
+        if isinstance(field, dj_models.ForeignKey):
             old_id = getattr(old_obj, f"{field.name}_id", None)
             new_id = getattr(new_obj, f"{field.name}_id", None)
             if old_id != new_id:
