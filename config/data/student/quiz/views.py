@@ -1,5 +1,6 @@
-import json
-import logging
+import uuid
+from datetime import datetime, timedelta, date
+
 import uuid
 from datetime import datetime, timedelta, date
 
@@ -14,7 +15,6 @@ from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
@@ -1406,7 +1406,6 @@ class ExamOptionCreate(APIView):
             },
             status=207 if errors else 200,
         )
-
 
 
 class MonthlyExam(APIView):
