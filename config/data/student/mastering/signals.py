@@ -2,15 +2,32 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from icecream import ic
 
-from .models import MasteringTeachers
+from .models import MasteringTeachers, Mastering
 from ..attendance.models import Attendance
 from ..lesson.models import FirstLLesson
+from ..shop.utils import give_coin
 from ..student.models import Student
 from ...account.models import CustomUser
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import KpiFinance, Finance
 from ...lid.new_lid.models import Lid
 from ...notifications.models import Notification
+
+
+
+
+@receiver(post_save, sender=Mastering)
+def give_coins(sender, instance:Mastering, created, **kwargs):
+    if created:
+        if instance.choice in  ["Speaking","Homework","Mock","Unit","Weekly","Monthly"]:
+            coins = give_coin(
+                choice=instance.choice,
+                student=instance.student,
+                from_point=instance.ball,
+            )
+
+            if coins:
+                print(coins, "coin obj created")
 
 
 # @receiver(post_save, sender=MasteringTeachers)
