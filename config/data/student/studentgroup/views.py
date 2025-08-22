@@ -424,9 +424,12 @@ class GroupStudentDetail(ListAPIView):
 
         qs = StudentGroup.objects.filter(Q(student=id) | Q(lid=id))
 
+        is_archived = self.request.GET.get("is_archived")
         user = self.request.GET.get("user")
         course = self.request.GET.get("course")
 
+        if is_archived:
+            qs = qs.filter(is_archived=is_archived.capitalize())
         if user:
             qs = qs.filter(student__user__id=user)
         if course:
