@@ -100,8 +100,8 @@ class MockExam(BaseModel):
     end_date = models.DateField(null=False, blank=False)
     end_time = models.TimeField(null=False, blank=False)
 
-    def __str__(self):
-        return self.group.name
+    # def __str__(self):
+    #     return self.group.name
 
 
 class MockExamResult(BaseModel):
