@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from faker.providers.ssn.uk_UA import calculate_day_count
 
@@ -12,6 +12,12 @@ from ...department.marketing_channel.models import Group_Type
 from ...finances.finance.models import SaleStudent, Sale
 from ...notifications.models import Notification
 
+@receiver(pre_save, sender=Group)
+def set_price_type_on_create(sender, instance: Group, **kwargs):
+    if instance.pk is None and not instance.price_type:
+        group_type = Group_Type.objects.first()
+        if group_type and group_type.price_type:
+            instance.price_type = group_type.price_type
 
 @receiver(post_save, sender=Group)
 def on_create(sender, instance: Group, created, **kwargs):
@@ -54,10 +60,6 @@ def on_create(sender, instance: Group, created, **kwargs):
             comment=f"{instance.name} guruhining yordamchi guruhi yaratildi!",
             come_from=instance,
         )
-    group_type= Group_Type.objects.filter().first()
-    if group_type and group_type.price_type is not None:
-        instance.price_type = group_type.price_type
-        instance.save()
 
     # if not created and instance.is_secondary == True:
     #     secondary_group = SecondaryGroup.objects.create(
