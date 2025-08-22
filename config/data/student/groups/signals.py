@@ -54,6 +54,10 @@ def on_create(sender, instance: Group, created, **kwargs):
             comment=f"{instance.name} guruhining yordamchi guruhi yaratildi!",
             come_from=instance,
         )
+    group_type= Group_Type.objects.filter().first()
+    if group_type and group_type.price_type is not None:
+        instance.price_type = group_type.price_type
+        instance.save()
 
     # if not created and instance.is_secondary == True:
     #     secondary_group = SecondaryGroup.objects.create(
