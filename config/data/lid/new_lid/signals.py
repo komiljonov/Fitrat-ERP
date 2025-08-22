@@ -258,7 +258,7 @@ def _human(model_instance, field: dj_models.Field, value):
             pass
 
     # ForeignKey: show related object's string
-    if isinstance(field, models.ForeignKey):
+    if isinstance(field, dj_models.ForeignKey):
         try:
             return str(value) if value is not None else "—"
         except Exception:
