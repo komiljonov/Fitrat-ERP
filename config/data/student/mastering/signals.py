@@ -2,24 +2,20 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from icecream import ic
 
-from .models import MasteringTeachers, Mastering
+from .models import Mastering
 from ..attendance.models import Attendance
 from ..lesson.models import FirstLLesson
 from ..shop.utils import give_coin
 from ..student.models import Student
-from ...account.models import CustomUser
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import KpiFinance, Finance
 from ...lid.new_lid.models import Lid
-from ...notifications.models import Notification
-
-
 
 
 @receiver(post_save, sender=Mastering)
-def give_coins(sender, instance:Mastering, created, **kwargs):
+def give_coins(sender, instance: Mastering, created, **kwargs):
     if created:
-        if instance.choice in  ["Speaking","Homework","Mock","Unit_Test","Weekly","Monthly"]:
+        if instance.choice in ["Speaking", "Homework", "Mock", "Unit_Test", "Weekly", "Monthly"]:
             coins = give_coin(
                 choice=instance.choice,
                 student=instance.student,
@@ -85,19 +81,19 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
         ).count()
 
         if (
-            instance.lid_stage_type == "ORDERED_LID"
-            and instance.filial is not None
-            and is_bonused == 0
-            and instance.call_operator
-            and bonus != None
-            and bonus.amount > 0
+                instance.lid_stage_type == "ORDERED_LID"
+                and instance.filial is not None
+                and is_bonused == 0
+                and instance.call_operator
+                and bonus != None
+                and bonus.amount > 0
         ):
             KpiFinance.objects.create(
                 user=instance.call_operator,
                 lid=instance,
                 student=None,
                 reason=f"{instance.first_name} {instance.last_name} "
-                f"ning buyurtma sifatida yaratilganligi uchun bonus !",
+                       f"ning buyurtma sifatida yaratilganligi uchun bonus !",
                 amount=bonus.amount if bonus else 0,
                 type="INCOME",
             )
@@ -129,7 +125,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
                 user=instance.student.sales_manager,
                 student=instance.student,
                 reason=f"{instance.student.first_name} {instance.student.last_name} ning "
-                f"birinchi darsga kelganligi uchun!",
+                       f"birinchi darsga kelganligi uchun!",
                 amount=amount.amount if amount else 0,
                 type="INCOME",
             )
@@ -149,9 +145,9 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
         ).first()
 
         if (
-            count == 1
-            and instance.student.balance_status == "ACTIVE"
-            and instance.student.sales_manager
+                count == 1
+                and instance.student.balance_status == "ACTIVE"
+                and instance.student.sales_manager
         ):
             KpiFinance.objects.create(
                 user=instance.student.sales_manager,
@@ -159,7 +155,7 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
                 amount=amount.amount if amount else 0,
                 type="INCOME",
                 reason=f"{instance.student.first_name} {instance.student.last_name} "
-                f"ning active o'quvchiga o'tganligi uchun bonus",
+                       f"ning active o'quvchiga o'tganligi uchun bonus",
             )
 
 
@@ -186,7 +182,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
                 amount=amount.amount if amount else 0,
                 type="EXPENSE",
                 reason=f"{instance.student.first_name} {instance.student.last_name}"
-                f" ning birinchi darsga kelmaganligi uchun jarima ",
+                       f" ning birinchi darsga kelmaganligi uchun jarima ",
             )
 
 
@@ -196,9 +192,9 @@ def new_created_order(sender, instance: Student, created, **kwargs):
     if not created:
         finance = Finance.objects.filter(student=instance, action="INCOME").count()
         if (
-            instance.service_manager
-            and instance.balance_status == "ACTIVE"
-            and finance == 1
+                instance.service_manager
+                and instance.balance_status == "ACTIVE"
+                and finance == 1
         ):
             amount = Bonus.objects.filter(
                 user=instance.service_manager,

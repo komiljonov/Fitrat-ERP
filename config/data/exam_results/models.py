@@ -175,7 +175,6 @@ class LevelExam(BaseModel):
     def __str__(self):
         return self.name
 
-
 # class LevelExamResult(BaseModel):
 #     level: "LevelExam" = models.ForeignKey(
 #         "exam_results.LevelExam", on_delete=models.SET_NULL,null=True,blank=True,related_name="level_exam_results"
