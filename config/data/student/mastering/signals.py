@@ -19,7 +19,7 @@ from ...notifications.models import Notification
 @receiver(post_save, sender=Mastering)
 def give_coins(sender, instance:Mastering, created, **kwargs):
     if created:
-        if instance.choice in  ["Speaking","Homework","Mock","Unit","Weekly","Monthly"]:
+        if instance.choice in  ["Speaking","Homework","Mock","Unit_Test","Weekly","Monthly"]:
             coins = give_coin(
                 choice=instance.choice,
                 student=instance.student,

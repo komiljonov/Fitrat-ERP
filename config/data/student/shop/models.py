@@ -101,7 +101,7 @@ class Coins(BaseModel):
             ("Homework", "Homework"),
             ("Result", "Result"),
             ("Mock", "Mock"),
-            ("Unit", "Unit Test"),
+            ("Unit_Test", "Unit Test"),
             ("Weekly", "Weekly"),
             ("Monthly", "Monthly"),
         ],

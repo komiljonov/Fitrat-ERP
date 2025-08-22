@@ -13,7 +13,7 @@ def give_coin(choice, student, from_point, result_type=None):
         "Speaking": "Siz {choice} topshirig'ini bajarganingiz uchun {coin} coinlar berildi.",
         "Homework": "Siz Uy ishini bajarganingiz uchun {coin} coinlar berildi.",
         "Mock": "Siz Mock imtihonida qatnashganingiz uchun {coin} coinlar berildi.",
-        "Unit": "Siz Unit imtihonida qatnashganingiz uchun {coin} coinlar berildi.",
+        "Unit_Test": "Siz Unit imtihonida qatnashganingiz uchun {coin} coinlar berildi.",
         "Weekly": "Siz Haftalik imtihonida qatnashganingiz uchun {coin} coinlar berildi.",
         "Monthly": "Siz Oylik imtihonida qatnashganingiz uchun {coin} coinlar berildi.",
     }
