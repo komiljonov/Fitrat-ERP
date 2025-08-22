@@ -533,13 +533,22 @@ class QuizCheckAPIView(APIView):
         try:
             homework = Homework.objects.filter(theme=theme).first()
 
-            mastering = Mastering.objects.create(
+            mastering = Mastering.objects.filter(
                 theme=theme,
+                choice="Test",
                 student=student,
-                test=quiz,
-                ball=ball,
-                choice="Test"
-            )
+            ).first()
+            if mastering:
+                mastering.ball = ball
+                mastering.save()
+            else:
+                mastering = Mastering.objects.create(
+                    theme=theme,
+                    student=student,
+                    test=quiz,
+                    ball=ball,
+                    choice="Test"
+                )
 
             history = Homework_history.objects.filter(
                 homework=homework,
