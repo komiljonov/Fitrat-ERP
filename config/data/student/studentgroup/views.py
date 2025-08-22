@@ -157,8 +157,11 @@ class GroupStudentList(ListAPIView):
             queryset = queryset.filter(
                 Q(student__is_archived=is_archived.capitalize())
                 | Q(lid__is_archived=is_archived.capitalize())
-                | Q(is_archived=is_archived.capitalize())
             ).distinct("id")
+
+            queryset = queryset.filter(
+                is_archived=is_archived.capitalize()
+            )
 
         if status:
             queryset = queryset.filter(student__student_stage_type=status)
