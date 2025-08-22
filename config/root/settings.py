@@ -1,6 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 
+
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,7 +12,6 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = True
 
-# ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,[::1]").split(",")
 ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -187,6 +187,7 @@ DATABASES = {
         "PASSWORD": config("POSTGRES_PASSWORD"),
         "HOST": config("POSTGRES_HOST", default="localhost"),
         "PORT": config("POSTGRES_PORT", default=5434, cast=int),
+        "DISABLE_SERVER_SIDE_CURSORS": True,
         "OPTIONS": {
             "client_encoding": "UTF8",
         }
