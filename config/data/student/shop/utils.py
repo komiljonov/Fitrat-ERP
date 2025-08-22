@@ -52,6 +52,6 @@ def give_coin(choice, student, from_point, result_type=None):
         Notification.objects.create(
             user=student.user,
             choice="Shopping",
-            come_from=json.dumps(Coins.objects.filter(id=coin.id).first()),
+            come_from="",
             comment=f"Sizga {coin_setting.coin} miqdorida tangalar qo'shildi!"
         )
