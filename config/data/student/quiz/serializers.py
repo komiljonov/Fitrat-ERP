@@ -615,7 +615,7 @@ class ExamSerializer(serializers.ModelSerializer):
                             user=teacher,
                             choice="Examination",
                             come_from=exam.id,
-                            comment=f"{exam.date} sanasida {subject.name} fanidan imtihon yaratildi!"
+                            comment=f"{exam.date} sanasida {subject.name} fanidan {group.name} guruhingiz uchun imtihon yaratildi!"
                         )
 
         return exam
