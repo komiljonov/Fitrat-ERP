@@ -604,20 +604,19 @@ class ExamSerializer(serializers.ModelSerializer):
         exam.options.set(options)
 
         for option in options:
-
             if int(option.options) > 0 or option.options is None:
                 subject = option.subject
-                group = Group.objects.filter(course__subject=subject).first()
+                groups = Group.objects.filter(course__subject=subject)
 
-                teacher = group.teacher if group else None
-
-                if teacher:
-                    Notification.objects.create(
-                        user=teacher,
-                        choice="Examination",
-                        come_from=exam.id,
-                        comment=f"{exam.date} sanasida {subject.name} fanidan imtihon yaratildi!"
-                    )
+                for group in groups:
+                    teacher = getattr(group, "teacher", None)  # safe access
+                    if teacher:
+                        Notification.objects.create(
+                            user=teacher,
+                            choice="Examination",
+                            come_from=exam.id,
+                            comment=f"{exam.date} sanasida {subject.name} fanidan imtihon yaratildi!"
+                        )
 
         return exam
 
