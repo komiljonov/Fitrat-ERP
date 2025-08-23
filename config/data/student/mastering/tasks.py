@@ -111,14 +111,13 @@ def check_accountant_kpi():
             if active_percentage < 95:
                 bonus = Bonus.objects.filter(
                     user=accountant,
-                    name="Jami yangi va aktiv o’quvchi o’quvchilarning 93% dan 94.9% gacha bo’lgan qismi uchun bonus",
+                    name="Jami yangi va aktiv o‘quvchi o‘quvchilarning 93% dan 94.9% gacha bo‘lgan qismi uchun bonus",
                 ).first()
                 KpiFinance.objects.create(
                     user=accountant,
                     lid=None,
                     student=None,
-                    reason="Jami yangi va aktiv o'quvchi o'quvchilarning "
-                    "93% dan 94.9% gacha bo'lgan qismi uchun bonus",
+                    reason="Jami yangi va aktiv o‘quvchi o‘quvchilarning 93% dan 94.9% gacha bo‘lgan qismi uchun bonus",
                     amount=bonus.amount,
                     type="INCOME",
                 )
@@ -155,13 +154,13 @@ def check_accountant_kpi():
             if active_percentage >= 95 and active_percentage <= 97.9:
                 bonus = Bonus.objects.filter(
                     user=accountant,
-                    name="Jami yangi va aktiv o‘quvchi o‘quvchilarning 98% dan 99.9% gacha bo‘lgan qismi uchun bonus",
+                    name="Jami yangi va aktiv o‘quvchi o‘quvchilarning 95% dan 97.9% gacha bo‘lgan qismi uchun bonus",
                 ).first()
                 KpiFinance.objects.create(
                     user=accountant,
                     lid=None,
                     student=None,
-                    reason="Jami yangi va aktiv o‘quvchi o‘quvchilarning 98% dan 99.9% gacha bo‘lgan qismi uchun bonus",
+                    reason="Jami yangi va aktiv o‘quvchi o‘quvchilarning 95% dan 97.9% gacha bo‘lgan qismi uchun bonus",
                     amount=bonus.amount,
                     type="INCOME",
                 )
