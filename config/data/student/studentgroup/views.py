@@ -535,6 +535,9 @@ class StudentGroupStatistics(APIView):
 
         students = base_queryset.filter(student__isnull=False, student__is_frozen=False)
 
+        archived_or_frozen = base_queryset.filter(is_frozen=True
+        ).exclude(group__status="INACTIVE")
+
         if start_date and end_date:
             all_groups = all_groups.filter(
                 created_at__gte=start_date, created_at__lte=end_date
@@ -543,30 +546,44 @@ class StudentGroupStatistics(APIView):
             students = students.filter(
                 created_at__gte=start_date, created_at__lte=end_date
             )
+            archived_or_frozen = archived_or_frozen.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
         elif start_date:
             all_groups = all_groups.filter(created_at__gte=start_date)
             orders = orders.filter(created_at__gte=start_date)
             students = students.filter(created_at__gte=start_date)
+            archived_or_frozen = archived_or_frozen.filter(
+                created_at__gte=start_date
+            )
 
         if course:
             all_groups = all_groups.filter(group__course__id=course)
             orders = orders.filter(group__course__id=course)
             students = students.filter(group__course__id=course)
+            archived_or_frozen = archived_or_frozen.filter(
+                group__course__id=course
+            )
 
         if teacher:
             all_groups = all_groups.filter(group__teacher__id=teacher)
             orders = orders.filter(group__teacher__id=teacher)
             students = students.filter(group__teacher__id=teacher)
+            archived_or_frozen = archived_or_frozen.filter(
+                group__teacher__id=teacher
+            )
 
         all_count = all_groups.count()
         students_count = students.count()
         orders_count = orders.count()
+        archived_or_frozen = archived_or_frozen.count()
 
         return Response(
             {
                 "all": all_count,
                 "students": students_count,
                 "orders": orders_count,
+                "archived_or_frozen": archived_or_frozen,
             }
         )
 
