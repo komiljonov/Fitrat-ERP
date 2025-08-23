@@ -29,7 +29,7 @@ def click_authorization(click_trans_id, amount, action, sign_time, sign_string, 
         text += f"{merchant_prepare_id}"
     text += f"{amount}{action}{sign_time}"
 
-    print(text)
+    print("text",text)
 
     hash = hashlib.md5(text.encode('utf-8')).hexdigest()
     if hash != sign_string:
