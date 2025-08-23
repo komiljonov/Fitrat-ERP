@@ -526,13 +526,14 @@ class StudentGroupStatistics(APIView):
         if filial:
             base_queryset = base_queryset.filter(group__filial__id=filial)
 
+        print(base_queryset.filter(is_archived=False))
         all_groups = base_queryset.filter(is_archived=False)
 
         orders = base_queryset.filter(
             lid__isnull=False, lid__lid_stage_type="ORDERED_LID", lid__is_student=False
         )
 
-        students = base_queryset.filter(student__isnull=False)
+        students = base_queryset.filter(student__isnull=False, student__is_frozen=False)
 
         if start_date and end_date:
             all_groups = all_groups.filter(
