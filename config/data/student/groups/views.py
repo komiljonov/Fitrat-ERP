@@ -258,7 +258,7 @@ class CheckRoomLessonScheduleView(APIView):
         started_at_str = request.GET.get("started_at")
         ended_at_str = request.GET.get("ended_at")
         teacher_id = request.GET.get("teacher")
-        current_group = request.GET.get("current_group")
+        current_group = request.GET.get("group")
 
 
         raw_days = request.GET.getlist("scheduled_day_type")
