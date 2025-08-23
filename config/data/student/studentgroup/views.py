@@ -519,30 +519,21 @@ class StudentGroupStatistics(APIView):
         end_date = self.request.query_params.get("end_date")
         is_archived = self.request.GET.get("is_archived")
 
-        # Base queryset - fix the filial filter
         base_queryset = StudentGroup.objects.filter(
             Q(student__is_archived=False) | Q(lid__is_archived=False)
         )
 
-        # Apply filial filter if provided
         if filial:
-            # Check if filial is related through group
             base_queryset = base_queryset.filter(group__filial__id=filial)
-            # OR if filial is directly on StudentGroup model:
-            # base_queryset = base_queryset.filter(filial__id=filial)
 
-        # Build specific querysets
         all_groups = base_queryset.filter(is_archived=False).exclude(group__status="INACTIVE")
 
-        # Orders: groups with lids that are ordered and not students
         orders = base_queryset.filter(
             lid__isnull=False, lid__lid_stage_type="ORDERED_LID", lid__is_student=False
         )
 
-        # Students: groups that have actual students
         students = base_queryset.filter(student__isnull=False)
 
-        # Apply date filters
         if start_date and end_date:
             all_groups = all_groups.filter(
                 created_at__gte=start_date, created_at__lte=end_date
@@ -551,18 +542,16 @@ class StudentGroupStatistics(APIView):
             students = students.filter(
                 created_at__gte=start_date, created_at__lte=end_date
             )
-        elif start_date:  # Only start_date provided
+        elif start_date:
             all_groups = all_groups.filter(created_at__gte=start_date)
             orders = orders.filter(created_at__gte=start_date)
             students = students.filter(created_at__gte=start_date)
 
-        # Apply course filter
         if course:
             all_groups = all_groups.filter(group__course__id=course)
             orders = orders.filter(group__course__id=course)
             students = students.filter(group__course__id=course)
 
-        # Apply teacher filter
         if teacher:
             all_groups = all_groups.filter(group__teacher__id=teacher)
             orders = orders.filter(group__teacher__id=teacher)
@@ -571,10 +560,6 @@ class StudentGroupStatistics(APIView):
         all_count = all_groups.count()
         students_count = students.count()
         orders_count = orders.count()
-
-        print(
-            f"Counts - All: {all_count}, Students: {students_count}, Orders: {orders_count}"
-        )
 
         return Response(
             {
