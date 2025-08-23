@@ -13,7 +13,7 @@ app.conf.beat_schedule = {
     # Frequent tasks (Runs every minute)
     "send-daily-messages": {
         "task": "data.tasks.tasks.check_daily_tasks",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(hour=0,minute=0),
     },
     "check-daily-leads": {
         "task": "data.lid.new_lid.tasks.check_daily_leads",
