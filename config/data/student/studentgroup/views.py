@@ -526,7 +526,6 @@ class StudentGroupStatistics(APIView):
         if filial:
             base_queryset = base_queryset.filter(group__filial__id=filial)
 
-        print(base_queryset.filter(is_archived=False))
         all_groups = base_queryset.filter(is_archived=False)
 
         orders = base_queryset.filter(
