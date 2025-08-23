@@ -51,7 +51,7 @@ def give_coin(choice, student, from_point, result_type=None):
 
         Notification.objects.create(
             user=student.user,
-            choice="Shopping",
+            choice="Coin",
             come_from="",
             comment=f"Sizga {coin_setting.coin} miqdorida tangalar qo'shildi!"
         )
