@@ -8,6 +8,8 @@ from .lesson_date_calculator import calculate_lessons
 from .models import Group, SecondaryGroup, Day, GroupSaleStudent
 from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
 from ..subject.models import Theme
+from ...account.admin import CustomUserAdmin
+from ...account.models import CustomUser
 from ...department.marketing_channel.models import Group_Type
 from ...finances.finance.models import SaleStudent, Sale
 from ...notifications.models import Notification
@@ -162,8 +164,11 @@ def add_sales_student(sender, instance: GroupSaleStudent, created: bool, **kwarg
     if created:
 
         amount = instance.group.price - instance.amount
+        creator = CustomUser.objects.filter(
+            role="DIRECTOR"
+        ).first()
         sale = Sale.objects.create(
-            creator=None,
+            creator=creator,
             name="Sale",
             status="ACTIVE",
             amount=amount
@@ -172,7 +177,7 @@ def add_sales_student(sender, instance: GroupSaleStudent, created: bool, **kwarg
             student=instance.student if instance.student else None,
             sale=sale,
             lid=instance.lid if instance.lid else None,
-            creator=None
+            creator=creator
         )
 
         print(sale_student.amount)
