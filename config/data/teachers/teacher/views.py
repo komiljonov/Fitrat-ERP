@@ -458,7 +458,7 @@ class StudentsAvgLearning(APIView):
                     "mastering_id": (
                         m.id
                         if m.choice
-                        in ["Speaking", "Unit_Test", "Mock", "MidCourse", "Level"]
+                           in ["Speaking", "Unit_Test", "Mock", "MidCourse", "Level"]
                         else None
                     ),
                     "title": m.test.title if m.test else "N/A",
@@ -475,8 +475,8 @@ class StudentsAvgLearning(APIView):
                         else (
                             m.updater.full_name
                             if m.choice
-                            in ["Speaking", "Unit_Test", "MidCourse", "Level"]
-                            and m.updater
+                               in ["Speaking", "Unit_Test", "MidCourse", "Level"]
+                               and m.updater
                             else "N/A"
                         )
                     ),
