@@ -749,6 +749,19 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                 choice="Examination",
                 come_from=json.dumps(self.instance)
             )
+
+
+            parents = Relatives.objects.filter(
+                student=student,
+            ).all()
+            for parent in parents:
+                Notification.objects.create(
+                    user=parent.user,
+                    comment=f"Sizning farzandingiz {student.first_name} {student.last_name} {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
+                            f" {attrs.get('student_comment')} sabab bilan inkor etdi.",
+                    choice="Examination",
+                    come_from=json.dumps(self.instance)
+                )
             kind = Kind.objects.get(name="Money back")
 
             Finance.objects.create(
