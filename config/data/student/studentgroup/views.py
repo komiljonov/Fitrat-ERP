@@ -517,6 +517,7 @@ class StudentGroupStatistics(APIView):
         teacher = self.request.query_params.get("teacher")
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
+        is_archived = self.request.GET.get("is_archived")
 
         # Base queryset - fix the filial filter
         base_queryset = StudentGroup.objects.filter(
@@ -531,7 +532,7 @@ class StudentGroupStatistics(APIView):
             # base_queryset = base_queryset.filter(filial__id=filial)
 
         # Build specific querysets
-        all_groups = base_queryset
+        all_groups = base_queryset.filter(is_archived=False)
 
         # Orders: groups with lids that are ordered and not students
         orders = base_queryset.filter(
