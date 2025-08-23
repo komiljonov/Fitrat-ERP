@@ -139,15 +139,18 @@ class TeacherStatistics(ListAPIView):
                 lids_group__group__teacher=teacher,
             ).count(),
             "all_students": StudentGroup.objects.filter(
+                is_archived=False,
                 group__teacher=teacher, **filters
             ).count(),
             "new_students": StudentGroup.objects.filter(
                 group__teacher=teacher,
+                is_archived=False,
                 student__student_stage_type="NEW_STUDENT",
                 **filters,
             ).count(),
             "new_student_active": StudentGroup.objects.filter(
                 group__teacher=teacher,
+                is_archived=False,
                 student__student_stage_type="ACTIVE_STUDENT",
                 student__new_student_date__isnull=False,
                 **filters,
@@ -160,12 +163,14 @@ class TeacherStatistics(ListAPIView):
             ).count(),
             "new_student_still": StudentGroup.objects.filter(
                 group__teacher=teacher,
+                is_archived=False,
                 student__student_stage_type="NEW_STUDENT",
                 student__is_archived=False,
                 **filters,
             ).count(),
             "active_students": StudentGroup.objects.filter(
                 group__teacher=teacher,
+                is_archived=False,
                 student__is_archived=False,
                 student__student_stage_type="ACTIVE_STUDENT",
                 **filters,
