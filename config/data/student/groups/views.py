@@ -254,17 +254,17 @@ class CheckRoomLessonScheduleView(APIView):
     def get(self, request, *args, **kwargs):
         filial = request.GET.get("filial")
         room_id = request.GET.get("room")
-        date_str = request.GET.get("date")  # still used to anchor start/finish window checks
+        date_str = request.GET.get("date")  # anchor date
         started_at_str = request.GET.get("started_at")
         ended_at_str = request.GET.get("ended_at")
         teacher_id = request.GET.get("teacher")
+        current_group = request.GET.get("current_group")  # UUID/string id of the group being edited/created
 
-        # NEW: accept multiple day ids: ?days=1,3,5 or ?days=1&days=3&days=5
+        # accept multiple day ids: ?scheduled_day_type=1,3,5 or repeated params
         raw_days = request.GET.getlist("scheduled_day_type")
         if len(raw_days) == 1 and "," in raw_days[0]:
             raw_days = [d.strip() for d in raw_days[0].split(",") if d.strip()]
 
-        # Validate required fields
         if not all([room_id, date_str, started_at_str, ended_at_str]) or not raw_days:
             return Response(
                 {"error": "Missing required parameters (room, date, started_at, ended_at, days)"},
@@ -281,25 +281,21 @@ class CheckRoomLessonScheduleView(APIView):
         if not (ended_at > started_at):
             return Response({"error": "`ended_at` must be greater than `started_at`"}, status=400)
 
-        # Resolve Day ids
+        # Resolve Day ids (as strings/UUIDs)
         try:
             day_ids = list(map(str, raw_days))
         except ValueError:
-            return Response({"error": "`days` must be String UUID Day IDs"}, status=400)
+            return Response({"error": "`days` must be String/UUID Day IDs"}, status=400)
 
         days_qs = Day.objects.filter(id__in=day_ids).values_list("id", flat=True)
         if days_qs.count() != len(day_ids):
             return Response({"error": "Some provided `days` do not exist"}, status=400)
 
-        # Common filters:
-        # - date range overlaps the proposed anchor date
-        # - group has ANY of the requested scheduled days
-        # - time windows overlap
+        # Common filters
         date_window = Q(start_date__date__lte=date, finish_date__date__gte=date)
         on_any_requested_day = Q(scheduled_day_type__in=day_ids)
         time_overlap = Q(started_at__lt=ended_at, ended_at__gt=started_at)
 
-        # Base queryset over all groups that touch this date, any requested day, and overlap in time
         base_qs = (
             Group.objects
             .filter(date_window)
@@ -310,29 +306,44 @@ class CheckRoomLessonScheduleView(APIView):
 
         # Conflicts
         room_conflicts_qs = base_qs.filter(room_number_id=room_id)
-
         teacher_conflicts_qs = Group.objects.none()
         if teacher_id:
             teacher_conflicts_qs = base_qs.filter(teacher_id=teacher_id)
 
-        # Extra lessons:
-        # Note: ExtraLesson/ExtraLessonGroup are single-date records.
-        # We check them only for the provided `date`.
-        extra_group_qs = ExtraLessonGroup.objects.filter(
-            date=date, started_at__lt=ended_at, ended_at__gt=started_at
-        ).filter(Q(room_id=room_id) | Q(group__scheduled_day_type__in=day_ids)).distinct()
+        # NEW: exclude current group from conflicts (when provided)
+        if current_group:
+            room_conflicts_qs = room_conflicts_qs.exclude(id=current_group)
+            if teacher_id:
+                teacher_conflicts_qs = teacher_conflicts_qs.exclude(id=current_group)
 
-        extra_student_qs = ExtraLesson.objects.filter(
-            date=date, started_at__lt=ended_at, ended_at__gt=started_at
-        ).filter(room_id=room_id).distinct()
+        # Extra lessons (single-date records), check only for `date`
+        extra_group_qs = (
+            ExtraLessonGroup.objects.filter(
+                date=date, started_at__lt=ended_at, ended_at__gt=started_at
+            )
+            .filter(Q(room_id=room_id) | Q(group__scheduled_day_type__in=day_ids))
+            .distinct()
+        )
+        # NEW: also drop extra-lessons tied to the same current group (if any)
+        if current_group:
+            extra_group_qs = extra_group_qs.exclude(group_id=current_group)
 
-        # Shape response
+        extra_student_qs = (
+            ExtraLesson.objects.filter(
+                date=date, started_at__lt=ended_at, ended_at__gt=started_at
+            )
+            .filter(room_id=room_id)
+            .distinct()
+        )
+        # NOTE: ExtraLesson (student) typically has no group; nothing to exclude here.
+
         conflicts = {
             "room_group_lessons": GroupLessonSerializer(room_conflicts_qs, many=True).data,
             "teacher_group_lessons": GroupLessonSerializer(teacher_conflicts_qs, many=True).data,
             "extra_group_lessons": [
                 {
                     "group": eg.group.name if eg.group.id else None,
+                    "group_id": str(eg.group.id) if eg.group.id else None,
                     "date": eg.date,
                     "started_at": eg.started_at,
                     "ended_at": eg.ended_at,
