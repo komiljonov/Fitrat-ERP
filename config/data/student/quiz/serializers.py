@@ -738,7 +738,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
         exam = getattr(self.instance, "exam", None)
         student = attrs.get("student")
 
-        if not exam:
+        if not exam or not student:
             raise serializers.ValidationError({"exam": "Imtihon topilmadi."})
 
         if attrs.get("is_participating") == False:
@@ -747,7 +747,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                 comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
                         f" {attrs.get('student_comment')} sabab bilan inkor etdingiz.",
                 choice="Examination",
-                come_from=json.dumps(self.instance)
+                come_from=""
             )
 
 
@@ -760,7 +760,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                     comment=f"Sizning farzandingiz {student.first_name} {student.last_name} {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
                             f" {attrs.get('student_comment')} sabab bilan inkor etdi.",
                     choice="Examination",
-                    come_from=json.dumps(self.instance)
+                    come_from=""
                 )
             kind = Kind.objects.get(name="Money back")
 
