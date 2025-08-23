@@ -19,6 +19,29 @@ from ...notifications.models import Notification
 @receiver(post_save, sender=Mastering)
 def give_coins(sender, instance: Mastering, created, **kwargs):
     if created:
+        if instance.ball > 0:
+            is_online = Homework.objects.filter(
+                theme_id=instance.theme.id, choice="Online"
+            ).exists()
+
+            homework = Homework.objects.filter(
+                theme_id=instance.theme.id
+            ).first()
+
+            payload = {
+                "subject": str(instance.theme.subject.id),
+                "level": str(instance.theme.course.level.id) if instance.theme.course.level else "None",
+                "course": str(instance.theme.course.id),
+                "homework": str(homework.id),
+                "is_online": is_online,
+            }
+            if instance.choice == "Homework":
+                Notification.objects.create(
+                    user=instance.student.user,
+                    comment=f"Uy ishini bajarganingiz uchun {instance.ball} ball berildi!",
+                    choice="Homework",
+                    come_from=json.dumps(payload),
+                )
 
         if instance.choice in ["Speaking", "Homework", "Mock", "Unit_Test", "Weekly", "Monthly"]:
             coins = give_coin(
