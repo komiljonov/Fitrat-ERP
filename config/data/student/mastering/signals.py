@@ -1,20 +1,41 @@
+import json
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from icecream import ic
 
 from .models import Mastering
 from ..attendance.models import Attendance
+from ..homeworks.models import Homework
 from ..lesson.models import FirstLLesson
 from ..shop.utils import give_coin
 from ..student.models import Student
 from ...finances.compensation.models import Bonus
 from ...finances.finance.models import KpiFinance, Finance
 from ...lid.new_lid.models import Lid
+from ...notifications.models import Notification
 
 
 @receiver(post_save, sender=Mastering)
 def give_coins(sender, instance: Mastering, created, **kwargs):
     if created:
+        is_online = Homework.objects.filter(
+            theme_id=instance.theme.id, choice="Online"
+        ).exists()
+        payload = {
+            "subject": str(instance.theme.subject.id),  # UUIDs -> str for safety
+            "level": str(instance.theme.course.level.id),
+            "course": str(instance.theme.course.id),
+            "is_online": is_online,
+        }
+        if instance.choice == "Homework":
+            Notification.objects.create(
+                user=instance.student.user,
+                comment=f"Uy ishini bajarganingiz uchun {instance.ball} ball berildi!",
+                choice="Homework",
+                come_from=json.dumps(payload),
+            )
+
         if instance.choice in ["Speaking", "Homework", "Mock", "Unit_Test", "Weekly", "Monthly"]:
             coins = give_coin(
                 choice=instance.choice,
