@@ -175,7 +175,7 @@ class ClickUzMerchantAPIView(APIView):
 
 
 class CreateClickOrderAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = CreateOrderSerializer(
