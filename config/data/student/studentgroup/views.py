@@ -535,7 +535,7 @@ class StudentGroupStatistics(APIView):
 
         students = base_queryset.filter(student__isnull=False, student__is_frozen=False)
 
-        archived_or_frozen = base_queryset.filter(is_frozen=True
+        archived_or_frozen = base_queryset.filter(student__is_frozen=True
         ).exclude(group__status="INACTIVE")
 
         if start_date and end_date:

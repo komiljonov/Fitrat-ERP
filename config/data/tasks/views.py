@@ -31,12 +31,10 @@ class TaskListCreateView(ListCreateAPIView):
         "status",
     )
 
-    # Ordering and filtering fields
     ordering_fields = ("date_of_expired",)
     filterset_fields = ("status",)
 
     def get_queryset(self):
-        # Filter tasks by the current user as the creator
 
         filial = self.request.GET.get("filial")
         creator = self.request.GET.get("creator")
