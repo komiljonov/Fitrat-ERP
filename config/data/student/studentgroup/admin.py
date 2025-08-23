@@ -7,7 +7,7 @@ from .models import StudentGroup, SecondaryStudentGroup
 class StudentGroupAdmin(admin.ModelAdmin):
     list_display = ('group','student','lid')
     search_fields = ('group','student','lid')
-    list_filter = ('group',"group__teacher")
+    list_filter = ('group',"group__teacher","is_archived")
 
 
 @admin.register(SecondaryStudentGroup)
