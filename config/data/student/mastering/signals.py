@@ -23,8 +23,8 @@ def give_coins(sender, instance: Mastering, created, **kwargs):
             theme_id=instance.theme.id, choice="Online"
         ).exists()
         payload = {
-            "subject": str(instance.theme.subject.id),  # UUIDs -> str for safety
-            "level": str(instance.theme.course.level.id),
+            "subject": str(instance.theme.subject.id),
+            "level": str(instance.theme.course.level.id) if instance.theme.course.level else "None",
             "course": str(instance.theme.course.id),
             "is_online": is_online,
         }
