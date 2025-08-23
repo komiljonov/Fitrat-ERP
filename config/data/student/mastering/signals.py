@@ -38,7 +38,7 @@ def give_coins(sender, instance: Mastering, created, **kwargs):
             if instance.choice == "Homework":
                 Notification.objects.create(
                     user=instance.student.user,
-                    comment=f"Uy ishini bajarganingiz uchun {instance.ball} ball berildi!",
+                    comment=f"{homework.title} uy ishidan {instance.ball} ball oldingiz va uy ishi {"bajarildi" if instance.ball >75 else "qayta topshirish uchun qoldi."} ",
                     choice="Homework",
                     come_from=json.dumps(payload),
                 )
