@@ -210,8 +210,7 @@ class Teacher_StudentsView(ListAPIView):
 
         if is_archived:
             group = group.filter(
-                Q(lid__is_archived=is_archived.capitalize())
-                | Q(student__is_archived=is_archived.capitalize())
+                is_archived=is_archived.capitalize(),
             )
         if status:
             group = group.filter(
