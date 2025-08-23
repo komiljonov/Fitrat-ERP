@@ -115,12 +115,10 @@ class TeacherStatistics(ListAPIView):
 
         statistics1 = {
             "first_lesson": StudentGroup.objects.filter(
-                student__isnull=True,
                 lid__lid_stage_type="ORDERED_LID",
                 is_archived=False,
                 group__teacher=teacher,
                 lid__ordered_stages="BIRINCHI_DARS_BELGILANGAN",
-                lid__is_student=False,
             ).count(),
             # "first_lesson_archived": StudentGroup.objects.filter(
             #     Q(lid__is_archived=False) | Q(is_archived=False),
