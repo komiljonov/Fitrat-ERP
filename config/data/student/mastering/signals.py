@@ -22,10 +22,16 @@ def give_coins(sender, instance: Mastering, created, **kwargs):
         is_online = Homework.objects.filter(
             theme_id=instance.theme.id, choice="Online"
         ).exists()
+
+        homework = Homework.objects.filter(
+            theme_id=instance.theme.id
+        ).first()
+
         payload = {
             "subject": str(instance.theme.subject.id),
             "level": str(instance.theme.course.level.id) if instance.theme.course.level else "None",
             "course": str(instance.theme.course.id),
+            "homework": str(homework.id),
             "is_online": is_online,
         }
         if instance.choice == "Homework":
