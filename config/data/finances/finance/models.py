@@ -248,7 +248,7 @@ class Voucher(BaseModel):
 class Sale(BaseModel):
     creator: "CustomUser" = models.ForeignKey(
         "account.CustomUser",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,null=True,blank=True,
         related_name="finances_creator_sale",
     )
     name = models.CharField(
