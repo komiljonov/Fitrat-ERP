@@ -258,9 +258,9 @@ class CheckRoomLessonScheduleView(APIView):
         started_at_str = request.GET.get("started_at")
         ended_at_str = request.GET.get("ended_at")
         teacher_id = request.GET.get("teacher")
-        current_group = request.GET.get("current_group")  # UUID/string id of the group being edited/created
+        current_group = request.GET.get("current_group")
 
-        # accept multiple day ids: ?scheduled_day_type=1,3,5 or repeated params
+
         raw_days = request.GET.getlist("scheduled_day_type")
         if len(raw_days) == 1 and "," in raw_days[0]:
             raw_days = [d.strip() for d in raw_days[0].split(",") if d.strip()]
@@ -281,7 +281,6 @@ class CheckRoomLessonScheduleView(APIView):
         if not (ended_at > started_at):
             return Response({"error": "`ended_at` must be greater than `started_at`"}, status=400)
 
-        # Resolve Day ids (as strings/UUIDs)
         try:
             day_ids = list(map(str, raw_days))
         except ValueError:
