@@ -179,5 +179,3 @@ def add_sales_student(sender, instance: GroupSaleStudent, created: bool, **kwarg
             lid=instance.lid if instance.lid else None,
             creator=creator
         )
-
-        print(sale_student.amount)
