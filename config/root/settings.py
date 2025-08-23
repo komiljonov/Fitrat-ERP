@@ -230,7 +230,7 @@ AUTH_USER_MODEL = 'account.CustomUser'
 PAYME_ACCOUNT_MODEL = 'data.student.student.models.Student'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 10 MB
-
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 510000
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
