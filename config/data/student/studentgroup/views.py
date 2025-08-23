@@ -521,12 +521,12 @@ class StudentGroupStatistics(APIView):
 
         base_queryset = StudentGroup.objects.filter(
             Q(student__is_archived=False) | Q(lid__is_archived=False)
-        )
+        ).exclude(group__status="INACTIVE")
 
         if filial:
             base_queryset = base_queryset.filter(group__filial__id=filial)
 
-        all_groups = base_queryset.filter(is_archived=False).exclude(group__status="INACTIVE")
+        all_groups = base_queryset.filter(is_archived=False)
 
         orders = base_queryset.filter(
             lid__isnull=False, lid__lid_stage_type="ORDERED_LID", lid__is_student=False
