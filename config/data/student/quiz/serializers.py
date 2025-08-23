@@ -785,9 +785,9 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                                 f" {attrs.get('student_comment')} sabab bilan inkor etdi.",
                         choice="Examination",
                         come_from=json.dumps({
-                            "id": self.instance.id,
-                            "exam_id": self.instance.exam.id,
-                            "group_id": self.instance.group.id,
+                            "id": str(self.instance.id),
+                            "exam_id": str(self.instance.exam.id),
+                            "group_id": str(self.instance.group.id),
                         })
                     )
 
