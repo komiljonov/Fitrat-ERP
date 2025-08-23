@@ -19,6 +19,17 @@ from ...notifications.models import Notification
 @receiver(post_save, sender=Mastering)
 def give_coins(sender, instance: Mastering, created, **kwargs):
     if created:
+
+        if instance.choice in ["Speaking", "Homework", "Mock", "Unit_Test", "Weekly", "Monthly"]:
+            coins = give_coin(
+                choice=instance.choice,
+                student=instance.student,
+                from_point=instance.ball,
+            )
+
+            if coins:
+                print(coins, "coin obj created")
+    if not created and instance.ball > 0:
         is_online = Homework.objects.filter(
             theme_id=instance.theme.id, choice="Online"
         ).exists()
@@ -41,17 +52,6 @@ def give_coins(sender, instance: Mastering, created, **kwargs):
                 choice="Homework",
                 come_from=json.dumps(payload),
             )
-
-        if instance.choice in ["Speaking", "Homework", "Mock", "Unit_Test", "Weekly", "Monthly"]:
-            coins = give_coin(
-                choice=instance.choice,
-                student=instance.student,
-                from_point=instance.ball,
-            )
-
-            if coins:
-                print(coins, "coin obj created")
-
 
 # @receiver(post_save, sender=MasteringTeachers)
 # def on_create(sender, instance: MasteringTeachers, created, **kwargs):

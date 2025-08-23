@@ -24,7 +24,7 @@ class Mastering(BaseModel):
         ("Speaking", "Speaking"),
         ("Unit_Test", "Unit_Test"),
         ("Mock", "Mock"),
-        ("MidCourse", "MidCourse"),
+        ("MidCourse", "Mi1dCourse"),
         ("Level", "Level"),
     ], default="Homework", null=True, blank=True)
 
