@@ -91,9 +91,9 @@ class TaskStudentRetrieveListAPIView(ListAPIView):
         lid = Lid.objects.filter(id=pk).first()
 
         if lid:
-            return Task.objects.filter(lid=lid)  # Return queryset instead of .first()
+            return Task.objects.filter(lid=lid)
         elif student:
             return Task.objects.filter(
                 student=student
-            )  # Return queryset instead of .first()
-        return Task.objects.none()  # Re
+            )
+        return Task.objects.none()
