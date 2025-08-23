@@ -42,6 +42,8 @@ class ClickUzMerchantAPIView(APIView):
                 }
             )
 
+        print(self.VALIDATE_CLASS)
+
         assert self.VALIDATE_CLASS != None
         check_order = self.VALIDATE_CLASS().check_order(
             order_id=merchant_trans_id, amount=amount
