@@ -67,15 +67,15 @@ class Bonus(BaseModel):
                 "Aktiv o‘quvchiga aylangan yangi o‘quvchi uchun bonus",
             ),
             (
-                "Har bir qarzdor bo’lmagan va Aktiv o’quvchi uchun bonus",
-                "Har bir qarzdor bo’lmagan va Aktiv o’quvchi uchun bonus",
+                "Har bir qarzdor bo‘lmagan va aktiv o‘quvchi uchun bonus",
+                "Har bir qarzdor bo‘lmagan va aktiv o‘quvchi uchun bonus",
             ),
             (
-                "Jami yangi va aktiv o’quvchi o’quvchilarning 93% dan 94.9% gacha bo’lgan qismi uchun bonus",
-                "Jami yangi va aktiv o’quvchi o’quvchilarning 93% dan 94.9% gacha bo’lgan qismi uchun bonus",
+                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 93% dan 94.9% gacha bo‘lgan qismi uchun bonus",
+                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 93% dan 94.9% gacha bo‘lgan qismi uchun bonus",
             ),
             (
-                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 98% dan 99.9% gacha bo‘lgan qismi uchun bonus",
+                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 95% dan 97.9% gacha bo‘lgan qismi uchun bonus",
                 "Jami yangi va aktiv o‘quvchi o‘quvchilarning 95% dan 97.9% gacha bo‘lgan qismi uchun bonus",
             ),
             (
