@@ -532,7 +532,7 @@ class StudentGroupStatistics(APIView):
             # base_queryset = base_queryset.filter(filial__id=filial)
 
         # Build specific querysets
-        all_groups = base_queryset.filter(is_archived=False)
+        all_groups = base_queryset.filter(is_archived=False).exclude(group__status="INACTIVE")
 
         # Orders: groups with lids that are ordered and not students
         orders = base_queryset.filter(
