@@ -35,10 +35,10 @@ def get_sale_for_instance(instance):
 
 def apply_discount(price, sale):
     if (
-        sale
-        and sale.sale
-        and sale.sale.amount
-        and sale.expire_date >= datetime.date.today()
+            sale
+            and sale.sale
+            and sale.sale.amount
+            and sale.expire_date >= datetime.date.today()
     ):
         try:
             sale_percent = Decimal(sale.sale.amount)
@@ -58,7 +58,7 @@ def calculate_bonus_and_income(price, bonus_percent):
 
 
 def create_finance_record(
-    action, amount, kind, instance, student, teacher=None, is_first=False
+        action, amount, kind, instance, student, teacher=None, is_first=False
 ):
     return Finance.objects.create(
         action=action,
@@ -78,9 +78,9 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
         attendances_count = Attendance.objects.filter(lid=instance.lid).count()
 
         if (
-            attendances_count == 1
-            and instance.reason != "IS_PRESENT"
-            and instance.lid is not None
+                attendances_count == 1
+                and instance.reason != "IS_PRESENT"
+                and instance.lid is not None
         ):
             Notification.objects.create(
                 user=(
@@ -130,8 +130,8 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 
         if attendances_count > 1:
             if (
-                instance.reason == "IS_PRESENT"
-                and instance.student.balance_status == "INACTIVE"
+                    instance.reason == "IS_PRESENT"
+                    and instance.student.balance_status == "INACTIVE"
             ):
                 Notification.objects.create(
                     user=instance.student.sales_manager,
