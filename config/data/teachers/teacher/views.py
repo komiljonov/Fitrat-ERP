@@ -169,7 +169,7 @@ class TeacherStatistics(ListAPIView):
                 is_archived=False,
                 student__student_stage_type="ACTIVE_STUDENT",
                 **filters,
-            ).count(),
+            ).distinct().count(),
             "results": Results.objects.filter(teacher=teacher, **filters).count(),
             "results_progress": Results.objects.filter(
                 teacher=teacher, status="In_progress", **filters
