@@ -18,6 +18,7 @@ class Log(BaseModel):
             ("Account","Account"),
             ("Lid","Lid"),
             ("Archive","Archive"),
+            ("Frozen","Frozen"),
             ("Clickuz","Clickuz"),
             ("Exam_results","Exam_results"),
             ("Parents","Parents"),

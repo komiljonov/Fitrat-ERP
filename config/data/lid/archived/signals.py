@@ -81,6 +81,18 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             instance.lid.is_frozen = True
             instance.lid.save()
 
+
+        Log.objects.create(
+            app="Archive",
+            model="Frozen",
+            action="Log",
+            model_action="Created",
+            lid=instance.lid,
+            student=instance.student,
+            archive=instance,
+            comment=f"Muzlatildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
+        )
+
     if not created and instance.is_frozen == False:
         if instance.student:
             instance.student.is_frozen = False
@@ -90,6 +102,16 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             instance.lid.is_frozen = False
             instance.lid.save()
 
+        Log.objects.create(
+            app="Archive",
+            model="Frozen",
+            action="Log",
+            model_action="Created",
+            lid=instance.lid,
+            student=instance.student,
+            archive=instance,
+            comment=f"Muzlatishdan chiqarildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
+        )
 
 @receiver(post_save, sender=Archived)
 def on_create(sender, instance: Archived, created, **kwargs):
