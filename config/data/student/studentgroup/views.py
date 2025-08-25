@@ -1,7 +1,7 @@
 import datetime
 
-from django.db.models import OuterRef, Exists, Q
-from django.utils.timezone import now
+from django.db.models import OuterRef, Exists, Q, Count
+from django.utils.timezone import now, localdate
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
@@ -32,64 +32,71 @@ from ..groups.models import SecondaryGroup, Group
 from ..groups.serializers import SecondaryGroupModelSerializer
 
 
-class StudentsGroupList(ListCreateAPIView):
-    queryset = StudentGroup.objects.all()
-    serializer_class = StudentsGroupSerializer
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+def _parse_bool(val):
+    if isinstance(val, bool): return val
+    if val is None: return None
+    return str(val).strip().lower() in {"1","true","t","yes","y","on"}
 
-    search_fields = (
+
+class StudentsGroupList(ListCreateAPIView):
+    serializer_class = StudentsGroupSerializer
+    filter_backends  = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+
+    # (Searching here is okay; heavy filters should be in filterset classes)
+    search_fields    = (
         "group__name",
-        "student__first_name",
-        "lid__first_name",
-        "student__last_name",
-        "lid__last_name",
+        "student__first_name", "student__last_name",
+        "lid__first_name", "lid__last_name",
         "group__status",
         "group__teacher__id",
     )
-    filter_fields = filterset_fields = search_fields
+    filterset_fields = search_fields
+    ordering_fields  = ("group__name", "student__first_name", "lid__first_name")
 
     def get_queryset(self):
+        today = localdate()
+        user  = self.request.user
         status = self.request.query_params.get("status")
-        today = datetime.date.today()
-        user = self.request.user
-        is_archived = self.request.GET.get("is_archived", False)
+        is_archived = _parse_bool(self.request.query_params.get("is_archived"))
 
-        if user.role == "TEACHER":
-            queryset = StudentGroup.objects.filter(group__teacher__id=user.id)
+        if getattr(user, "role", None) == "TEACHER":
+            qs = StudentGroup.objects.filter(group__teacher_id=user.id)
         else:
-            queryset = StudentGroup.objects.filter(group__filial__in=user.filial.all())
+            qs = StudentGroup.objects.filter(group__filial__in=user.filial.all())
+
         if status:
-            queryset = queryset.filter(group__status=status)
+            qs = qs.filter(group__status=status)
 
-        if is_archived:
-            queryset = queryset.filter(is_archived=is_archived.capitalize())
+        if is_archived is not None:
+            qs = qs.filter(is_archived=is_archived)
 
-        # **Exclude students who have attended today**
+        # Subquery: has the (student, group) any attendance today?
         attended_today = Attendance.objects.filter(
-            student=OuterRef(
-                "student"
-            ),  # Ensure this matches your Attendance model field
             group=OuterRef("group"),
+            student=OuterRef("student"),
             created_at__date=today,
         )
 
-        # Apply filters
-        queryset = queryset.annotate(has_attended_today=Exists(attended_today)).filter(
-            has_attended_today=False,  # Exclude students who attended today
-            lid__isnull=False,  # Exclude null `lid`
-        )
-
-        search = self.request.GET.get("search")
-        if search:
-            queryset = queryset.filter(
-                Q(student__first_name__icontains=search)
-                | Q(lid__first_name__icontains=search)
-                | Q(student__last_name__icontains=search)
-                | Q(lid__last_name__icontains=search)
+        # On-DB aggregations to avoid per-row queries:
+        # - total_lessons: distinct themes in the group's course
+        # - attended_lessons: distinct themes attended in this group
+        # (Theme has FK to course; Attendance has FK to group)
+        qs = qs.select_related(
+                "group", "group__course", "group__teacher",
+                "group__level", "group__room_number",
+                "group__filial",
+                "student", "lid",
+            ).annotate(
+                has_attended_today=Exists(attended_today),
+                total_lessons=Count("group__course__theme", distinct=True),
+                attended_lessons=Count("group__attendance__theme", distinct=True),
+            ).filter(
+                lid__isnull=False
+            ).filter(
+                has_attended_today=False
             )
 
-        return queryset
-
+        return qs
 
 class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
     queryset = StudentGroup.objects.all()

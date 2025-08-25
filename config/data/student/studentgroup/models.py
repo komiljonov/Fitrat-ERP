@@ -7,41 +7,17 @@ from data.student.student.models import Student
 
 
 class StudentGroup(BaseModel):
-    group: "Group" = models.ForeignKey(
-        "groups.Group",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="student_groups",
-    )
+    group   = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True, related_name="student_groups")
+    student = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="students_group")
+    lid     = models.ForeignKey("new_lid.Lid",   on_delete=models.SET_NULL, null=True, blank=True, related_name="lids_group")
 
-    student: "Student | None" = models.ForeignKey(
-        "student.Student",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="students_group",
-    )
+    is_archived = models.BooleanField(default=False)
 
-    lid: "Lid | None" = models.ForeignKey(
-        "new_lid.Lid",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="lids_group",
-    )
-
-    is_archived: bool = models.BooleanField(default=False)
-
+    HOMEWORK_ONLINE  = "Online"
+    HOMEWORK_OFFLINE = "Offline"
     homework_type = models.CharField(
-        choices=[
-            ("Online", "Online"),
-            ("Offline", "Offline"),
-        ],
-        default="Offline",
-        null=True,
-        blank=True,
-        max_length=20,
+        choices=[(HOMEWORK_ONLINE, "Online"), (HOMEWORK_OFFLINE, "Offline")],
+        default=HOMEWORK_OFFLINE, null=True, blank=True, max_length=20,
     )
 
     class Meta:
@@ -50,6 +26,7 @@ class StudentGroup(BaseModel):
 
     def __str__(self):
         return self.group.name if self.group else ""
+
 
 
 class SecondaryStudentGroup(BaseModel):
