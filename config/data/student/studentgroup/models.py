@@ -2,18 +2,20 @@ from django.db import models
 
 from data.command.models import BaseModel
 from data.lid.new_lid.models import Lid
-from data.student.groups.models import Group, SecondaryGroup
+from data.student.groups.models import SecondaryGroup
 from data.student.student.models import Student
 
 
 class StudentGroup(BaseModel):
-    group   = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True, related_name="student_groups")
-    student = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True, related_name="students_group")
-    lid     = models.ForeignKey("new_lid.Lid",   on_delete=models.SET_NULL, null=True, blank=True, related_name="lids_group")
+    group = models.ForeignKey("groups.Group", on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name="student_groups")
+    student = models.ForeignKey("student.Student", on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name="students_group")
+    lid = models.ForeignKey("new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True, related_name="lids_group")
 
     is_archived = models.BooleanField(default=False)
 
-    HOMEWORK_ONLINE  = "Online"
+    HOMEWORK_ONLINE = "Online"
     HOMEWORK_OFFLINE = "Offline"
     homework_type = models.CharField(
         choices=[(HOMEWORK_ONLINE, "Online"), (HOMEWORK_OFFLINE, "Offline")],
@@ -26,7 +28,6 @@ class StudentGroup(BaseModel):
 
     def __str__(self):
         return self.group.name if self.group else ""
-
 
 
 class SecondaryStudentGroup(BaseModel):
