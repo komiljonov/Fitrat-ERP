@@ -265,9 +265,8 @@ class UserTimeLineBulkUpsert(APIView):
 
         items = request.data
 
-        # Split into create vs update
         create_payloads = []
-        update_payloads = []  # list of (pk, payload)
+        update_payloads = []
         for obj in items:
 
             if not isinstance(obj, dict):
@@ -296,6 +295,7 @@ class UserTimeLineBulkUpsert(APIView):
 
         update_serializers = []
         for pk, payload in update_payloads:
+            print(pk)
             inst = existing_map[pk]
             payload = {k: v for k, v in payload.items() if k != "id"}  # never change id
             ser = UserTimeLineUpsertSerializer(instance=inst, data=payload, partial=True)
