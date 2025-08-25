@@ -11,14 +11,10 @@ from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView,
     ListAPIView,
     get_object_or_404,
-    UpdateAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from data.lid.new_lid.models import Lid
-from data.student.student.models import Student
 
 from .models import StudentGroup, SecondaryStudentGroup
 from .serializers import (
@@ -35,15 +31,15 @@ from ..groups.serializers import SecondaryGroupModelSerializer
 def _parse_bool(val):
     if isinstance(val, bool): return val
     if val is None: return None
-    return str(val).strip().lower() in {"1","true","t","yes","y","on"}
+    return str(val).strip().lower() in {"1", "true", "t", "yes", "y", "on"}
 
 
 class StudentsGroupList(ListCreateAPIView):
     serializer_class = StudentsGroupSerializer
-    filter_backends  = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     # (Searching here is okay; heavy filters should be in filterset classes)
-    search_fields    = (
+    search_fields = (
         "group__name",
         "student__first_name", "student__last_name",
         "lid__first_name", "lid__last_name",
@@ -51,11 +47,11 @@ class StudentsGroupList(ListCreateAPIView):
         "group__teacher__id",
     )
     filterset_fields = search_fields
-    ordering_fields  = ("group__name", "student__first_name", "lid__first_name")
+    ordering_fields = ("group__name", "student__first_name", "lid__first_name")
 
     def get_queryset(self):
         today = localdate()
-        user  = self.request.user
+        user = self.request.user
         status = self.request.query_params.get("status")
         is_archived = _parse_bool(self.request.query_params.get("is_archived"))
 
@@ -82,21 +78,22 @@ class StudentsGroupList(ListCreateAPIView):
         # - attended_lessons: distinct themes attended in this group
         # (Theme has FK to course; Attendance has FK to group)
         qs = qs.select_related(
-                "group", "group__course", "group__teacher",
-                "group__level", "group__room_number",
-                "group__filial",
-                "student", "lid",
-            ).annotate(
-                has_attended_today=Exists(attended_today),
-                total_lessons=Count("group__course__theme", distinct=True),
-                attended_lessons=Count("group__attendance__theme", distinct=True),
-            ).filter(
-                lid__isnull=False
-            ).filter(
-                has_attended_today=False
-            )
+            "group", "group__course", "group__teacher",
+            "group__level", "group__room_number",
+            "group__filial",
+            "student", "lid",
+        ).annotate(
+            has_attended_today=Exists(attended_today),
+            total_lessons=Count("group__course__theme", distinct=True),
+            attended_lessons=Count("group__attendance__theme", distinct=True),
+        ).filter(
+            lid__isnull=False
+        ).filter(
+            has_attended_today=False
+        )
 
         return qs
+
 
 class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
     queryset = StudentGroup.objects.all()
@@ -542,7 +539,7 @@ class StudentGroupStatistics(APIView):
         students = base_queryset.filter(student__isnull=False, student__is_frozen=False)
 
         archived_or_frozen = base_queryset.filter(student__is_frozen=True
-        ).exclude(group__status="INACTIVE")
+                                                  ).exclude(group__status="INACTIVE")
 
         if start_date and end_date:
             all_groups = all_groups.filter(
@@ -620,11 +617,9 @@ class SecondaryStudentCreate(ListCreateAPIView):
 
 
 class StudentGroupUpdate(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request, **kwargs):
-
         serializer = StudentGroupUpdateSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -646,7 +641,6 @@ class StudentGroupUpdate(APIView):
             {"message": "Student group updated successfully"},
             status=status.HTTP_200_OK,
         )
-
 
 # class StudentGroupUpdate(APIView):
 #     permission_classes = [IsAuthenticated]
