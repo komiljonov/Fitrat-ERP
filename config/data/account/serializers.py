@@ -75,7 +75,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
         if not CustomUser.objects.filter(phone=phone, role=role).exists():
             raise serializers.ValidationError(
-                {"non_field_errors": ["User with this phone and role does not exist."]}
+                {"non_field_errors": ["Ushbu raqam yoki role bilan foydalanovchi mavjuda emas!"]}
             )
         return attrs
 
