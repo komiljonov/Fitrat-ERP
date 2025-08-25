@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from django.db import transaction
 from django.db.models import Q
@@ -269,7 +270,6 @@ class UserTimeLineBulkUpsert(APIView):
         update_payloads = []  # list of (pk, payload)
         for obj in items:
 
-            print(obj,type(obj))
             if not isinstance(obj, dict):
                 return Response({"detail": "Each item must be an object."}, status=400)
             pk = _norm_pk(obj.get("id"))
@@ -285,7 +285,8 @@ class UserTimeLineBulkUpsert(APIView):
         create_instances = [UserTimeLine(**ser.validated_data) for ser in create_sers]
 
         # Validate updates
-        update_ids = [pk for pk, _ in update_payloads]
+        update_ids = [UUID(str(pk["id"])) if isinstance(pk, dict) else UUID(str(pk))
+                      for pk, _ in update_payloads]
         print(update_ids)
         existing = UserTimeLine.objects.filter(id__in=update_ids)
         existing_map = {obj.id: obj for obj in existing}
