@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any, List, Dict, Tuple
 from uuid import UUID
 
 from django.db import transaction
@@ -249,83 +250,106 @@ def _norm_pk(v):
         return v  # if it's not int-like, let Django coerce/fail later
 
 
+
 class UserTimeLineBulkUpsert(APIView):
     """
-    POST a list of items:
-      - item without 'id' -> create
-      - item with 'id'    -> update that row with the given fields (partial)
-    Returns saved rows in the same order as input.
+    POST a list of timeline items:
+      - Item WITHOUT 'id' -> create
+      - Item WITH 'id'    -> partial update of that row
+
+    Returns rows in the SAME ORDER as input.
     """
 
-    UPDATABLE_FIELDS = ["user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
+    # IMPORTANT: must match model field names you intend to update
+    UPDATABLE_FIELDS = [
+        "user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"
+    ]
+
+    @staticmethod
+    def _to_uuid(raw: Any) -> UUID:
+        """Normalize any incoming id to a UUID instance (raises on bad value)."""
+        return UUID(str(raw))
 
     def post(self, request, *args, **kwargs):
         if not isinstance(request.data, list):
             return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
 
-        items = request.data
+        items: List[Dict[str, Any]] = request.data
 
-        create_payloads = []
-        update_payloads = []
+        # Split items into CREATE vs UPDATE (normalize update ids to UUID now)
+        create_payloads: List[Dict[str, Any]] = []
+        update_pairs: List[Tuple[UUID, Dict[str, Any]]] = []
+
         for obj in items:
-
             if not isinstance(obj, dict):
-                return Response({"detail": "Each item must be an object."}, status=400)
-            pk = _norm_pk(obj.get("id"))
-            if pk is None:
+                return Response({"detail": "Each item must be an object."}, status=status.HTTP_400_BAD_REQUEST)
+
+            raw_id = obj.get("id")
+            if raw_id in (None, "", 0):  # treat falsy as "no id"
                 create_payloads.append(obj)
             else:
-                update_payloads.append((pk, obj))
+                try:
+                    pk = self._to_uuid(raw_id)
+                except (TypeError, ValueError):
+                    return Response({"id": [f"Invalid id: {raw_id}"]}, status=status.HTTP_400_BAD_REQUEST)
+                update_pairs.append((pk, obj))
 
-        # Validate creates
-        create_sers = [UserTimeLineUpsertSerializer(data=payload) for payload in create_payloads]
-        for ser in create_sers:
-            ser.is_valid(raise_exception=True)
-        create_instances = [UserTimeLine(**ser.validated_data) for ser in create_sers]
+        # ---- Validate CREATEs (fast: single pass, build instances) ----
+        create_sers = [UserTimeLineUpsertSerializer(data=p) for p in create_payloads]
+        for s in create_sers:
+            s.is_valid(raise_exception=True)
+        create_instances = [UserTimeLine(**s.validated_data) for s in create_sers]
 
-        # Validate updates
-        update_ids = [UUID(str(pk["id"])) if isinstance(pk, dict) else UUID(str(pk))
-                      for pk, _ in update_payloads]
-        print(update_ids)
-        existing = UserTimeLine.objects.filter(id__in=update_ids)
-        existing_map = {obj.id: obj for obj in existing}
-        missing = [pk for pk in update_ids if pk not in existing_map]
-        if missing:
-            return Response({"id": [f"Unknown id(s): {missing}"]}, status=status.HTTP_400_BAD_REQUEST)
+        # ---- Validate UPDATEs (fetch existing in one query, validate partial) ----
+        existing_map = {}  # {UUID: UserTimeLine}
+        update_serializers: List[Tuple[UserTimeLine, Dict[str, Any]]] = []
 
-        update_serializers = []
-        for pk, payload in update_payloads:
-            print(pk)
-            inst = existing_map[pk]
-            payload = {k: v for k, v in payload.items() if k != "id"}  # never change id
-            ser = UserTimeLineUpsertSerializer(instance=inst, data=payload, partial=True)
-            ser.is_valid(raise_exception=True)
-            update_serializers.append((inst, ser))
+        if update_pairs:
+            unique_ids = list({pk for pk, _ in update_pairs})
+            # in_bulk is efficient and returns a dict keyed by the PK type (UUID here)
+            existing_map = UserTimeLine.objects.in_bulk(unique_ids)
 
-        # Apply + commit atomically
+            missing = [str(pk) for pk in unique_ids if pk not in existing_map]
+            if missing:
+                return Response({"id": [f"Unknown id(s): {missing}"]}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Build per-row serializers (partial=True); capture validated_data only
+            for pk, payload in update_pairs:
+                inst = existing_map[pk]
+                payload = {k: v for k, v in payload.items() if k != "id"}  # never update PK
+                ser = UserTimeLineUpsertSerializer(instance=inst, data=payload, partial=True)
+                ser.is_valid(raise_exception=True)
+                update_serializers.append((inst, ser.validated_data))
+
+        # ---- Apply CREATE + UPDATE atomically (bulk ops for speed) ----
         with transaction.atomic():
-            # 1) Creates
-            created = UserTimeLine.objects.bulk_create(create_instances) if create_instances else []
+            created: List[UserTimeLine] = []
+            if create_instances:
+                # bulk_create returns created instances (with PKs on supported backends)
+                created = UserTimeLine.objects.bulk_create(create_instances)
 
-            # 2) Updates
             if update_serializers:
-                # Apply validated data to model instances
-                for inst, ser in update_serializers:
-                    for f, v in ser.validated_data.items():
+                # Apply validated_data to instances in-memory
+                for inst, vdata in update_serializers:
+                    for f, v in vdata.items():
                         setattr(inst, f, v)
+
+                # Only touch the allowed updatable fields
                 UserTimeLine.objects.bulk_update(
-                    [inst for inst, _ in update_serializers], fields=self.UPDATABLE_FIELDS
+                    [inst for inst, _ in update_serializers],
+                    fields=self.UPDATABLE_FIELDS,
                 )
 
-        # Build response in the same order as input
+        # ---- Build response in the SAME ORDER as input ----
         created_iter = iter(created)
-        result_instances = []
+        result_instances: List[UserTimeLine] = []
         for obj in items:
-            pk = _norm_pk(obj.get("id")) if isinstance(obj, dict) else None
-            if pk is None:
+            raw_id = obj.get("id") if isinstance(obj, dict) else None
+            if raw_id in (None, "", 0):
                 result_instances.append(next(created_iter))
             else:
-                result_instances.append(existing_map[pk])
+                # Normalize again to index existing_map reliably
+                result_instances.append(existing_map[self._to_uuid(raw_id)])
 
         out_ser = UserTimeLineUpsertSerializer(result_instances, many=True)
         return Response(out_ser.data, status=status.HTTP_200_OK)
