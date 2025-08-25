@@ -286,6 +286,7 @@ class UserTimeLineBulkUpsert(APIView):
 
         # Validate updates
         update_ids = [pk for pk, _ in update_payloads]
+        print(update_ids)
         existing = UserTimeLine.objects.filter(id__in=update_ids)
         existing_map = {obj.id: obj for obj in existing}
         missing = [pk for pk in update_ids if pk not in existing_map]
