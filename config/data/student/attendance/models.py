@@ -41,6 +41,8 @@ class Attendance(BaseModel):
         help_text="Attendance counted amount ..."
     )
 
+    attended_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return f" {self.group} is marked as {self.reason}"
 
