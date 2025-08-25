@@ -1388,8 +1388,8 @@ class ExamOptionCreate(APIView):
                     Notification.objects.create(
                         user=student.user,
                         comment=(f"Sizga {date_text} sanasida tashkil"
-                                 f" etilyotgan imtihon uchun {options_text} varianti "
-                                 f"{subject_text} fanidan belgilandi!"),
+                                 f" etilyotgan imtihon uchun {subject_text} fanidan "
+                                 f"{options_text} varianti belgilandi!"),
                         choice="Examination",
                         come_from="",  # optionally dump a small JSON payload here
                     )
