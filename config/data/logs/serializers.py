@@ -42,19 +42,19 @@ class LogSerializer(serializers.ModelSerializer):
             "full_name": f"{instance.student.first_name} {instance.student.last_name}",
             "balance": f"{instance.student.balance}",
             "phone": f"{instance.student.phone}",
-        }
+        } if instance.student else {}
         rep["lid"] = {
             "id": instance.lid.id,
             "full_name": f"{instance.lid.first_name} {instance.lid.last_name}",
             "balance": f"{instance.lid.balance}",
             "phone": f"{instance.lid.phone_number}",
-        }
+        } if instance.lid else {}
         rep["account"] = {
             "id": instance.account.id,
             "full_name": instance.account.full_name,
             "balance": f"{instance.account.balance}",
             "phone": f"{instance.account.phone}",
-        }
+        } if instance.account else {}
         rep["finance"] = FinanceSerializer(instance.finance).data
 
         return rep
