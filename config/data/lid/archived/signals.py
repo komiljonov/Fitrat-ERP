@@ -63,6 +63,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
         if instance.lid:
             instance.lid.is_archived = False
             instance.lid.save()
+
             comment = Comment.objects.create(
                 creator=instance.creator,
                 lid=instance.lid,
