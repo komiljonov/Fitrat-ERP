@@ -5,6 +5,8 @@ from .models import Archived, Frozen
 from ..new_lid.models import Lid
 from ...comments.models import Comment
 from ...logs.models import Log
+from ...notifications.models import Notification
+from ...student.studentgroup.models import StudentGroup
 
 
 @receiver(post_save, sender=Archived)
@@ -23,6 +25,18 @@ def on_create(sender, instance: Archived, created, **kwargs):
                 comment=f"Arxivlandi {date} sanasida, sabab: {instance.reason}",
             )
 
+            sg = StudentGroup.objects.filter(student=instance.student).all()
+            for ssg in sg:
+                ssg.is_archived = True
+                ssg.save()
+
+                Notification.objects.create(
+                    user=instance.student.user,
+                    choice="Archive",
+                    comment=f"Siz {ssg.group.name} guruhidan {instance.created_at.date()} sanasida {instance.reason} sababi bilan arxivlandingiz!",
+                )
+
+
         if instance.lid:
             instance.lid.is_archived = True
             instance.lid.save()
@@ -32,6 +46,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
                 student=None,
                 comment=f"Arxivlandi {instance.created_at.date()} sanasida, sabab: {instance.reason}",
             )
+
     if not created and instance.is_archived == False:
         if instance.student:
             instance.student.is_archived = False

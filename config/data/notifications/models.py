@@ -21,6 +21,7 @@ class Notification(BaseModel):
         ("Shopping", "Shopping"),
         ("Homework", "Homework"),
         ("Coin", "Coin"),
+        ("Archive", "Archive"),
     ])
     come_from = models.TextField(null=True, blank=True)
     is_read = models.BooleanField(default=False)
