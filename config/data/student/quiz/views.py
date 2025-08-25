@@ -1391,7 +1391,7 @@ class ExamOptionCreate(APIView):
                                  f" etilyotgan imtihon uchun {subject_text} fanidan "
                                  f"{options_text} varianti belgilandi!"),
                         choice="Examination",
-                        come_from="",  # optionally dump a small JSON payload here
+                        come_from="",
                     )
 
                 except Exception as e:

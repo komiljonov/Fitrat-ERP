@@ -67,6 +67,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     phone = serializers.CharField()
+    role = serializers.CharField()
+
+    def validate(self, attrs):
+        phone = attrs["phone"]
+        role = attrs["role"]
+        # normalize phone here if needed
+        if not CustomUser.objects.filter(phone=phone, role=role).exists():
+            raise serializers.ValidationError(
+                {"non_field_errors": ["User with this phone and role does not exist."]}
+            )
+        return attrs
 
 
 class PasswordResetVerifySerializer(serializers.Serializer):
