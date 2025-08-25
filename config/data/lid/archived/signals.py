@@ -2,7 +2,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Archived, Frozen
-from ..new_lid.models import Lid
 from ...comments.models import Comment
 from ...logs.models import Log
 from ...notifications.models import Notification
@@ -35,7 +34,6 @@ def on_create(sender, instance: Archived, created, **kwargs):
                     choice="Archive",
                     comment=f"Siz {ssg.group.name} guruhidan {instance.created_at.date()} sanasida {instance.reason} sababi bilan arxivlandingiz!",
                 )
-
 
         if instance.lid:
             instance.lid.is_archived = True
@@ -96,7 +94,6 @@ def on_create(sender, instance: Frozen, created, **kwargs):
 @receiver(post_save, sender=Archived)
 def on_create(sender, instance: Archived, created, **kwargs):
     if created and instance.is_archived == True:
-
         Log.objects.create(
             app="Archive",
             model="Archived",
