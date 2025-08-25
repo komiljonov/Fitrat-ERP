@@ -320,7 +320,7 @@ def _format_changes_for_comment(inst: Lid, changes: dict) -> str:
     parts = []
     for fname, (old_v, new_v) in changes.items():
         field = inst._meta.get_field(fname)
-        parts.append(f'Leadning {fname} fieldi "{_human(inst, field, old_v)}" dan "{_human(inst, field, new_v)}" ga uzgartirildi!')
+        parts.append(f'Leadning {fname} fieldi "{_human(inst, field, old_v)}" dan "{_human(inst, field, new_v)}" ga o\'zgartirildi!')
     return "; ".join(parts) if parts else None
 
 
