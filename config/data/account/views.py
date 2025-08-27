@@ -480,39 +480,32 @@ class StuffList(ListAPIView):
 
 
 class PasswordResetRequestAPIView(APIView):
+    permission_classes = []
 
     def post(self, request):
-
-        print(request.data)
-
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         phone = serializer.validated_data["phone"]
-        code = random.randint(10000, 99999)
 
-        ConfirmationCode.objects.update_or_create(
-            phone=phone,
-            defaults={"code": code, "created_at": timezone.now()},
-        )
+        code = random.randint(10000, 99999)
+        ConfirmationCode.objects.update_or_create(phone=phone, defaults={"code": code, "created_at": timezone.now()})
 
         sms = SayqalSms()
-        text = (
-            "Fitrat Student ilovasi — Parolni tiklash\n"
-            f"Sizning raqamingiz: {phone}\n"
-            f"Parolni tiklash kodingiz: {code}\n\n"
-            "Ushbu kodni hech kimga bermang. U faqat sizga mo‘ljallangan!"
-        )
+
+        text = f""" Fitrat Student ilovasi — Parolni tiklash
+                    Sizning raqamingiz: {phone}
+                    Parolni tiklash kodingiz: {code}
+
+                    Ushbu kodni hech kimga bermang. U faqat sizga mo‘ljallangan!
+
+                    """
 
         try:
             sms.send_sms(phone, text)
-        except Exception:
-            return Response(
-                {"detail": "SMS sending failed."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        except Exception as e:
+            return Response({"detail": "SMS sending failed."}, status=500)
 
-        return Response({"detail": "Confirmation code sent."}, status=status.HTTP_200_OK)
+        return Response({"detail": "Confirmation code sent."})
 
 
 class PasswordResetVerifyAPIView(APIView):
