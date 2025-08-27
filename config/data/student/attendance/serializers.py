@@ -43,7 +43,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             "remarks",
             "amount",
             "relatives",
-            "attended_at"
+            "attended_at",
             "created_at",
             "updated_at",
         ]
