@@ -69,16 +69,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
     phone = serializers.CharField()
     role = serializers.CharField()
 
-    def validate(self, attrs):
-        phone = attrs["phone"]
-        role = attrs["role"]
-
-        if not CustomUser.objects.filter(phone=phone, role=role).first():
-            raise serializers.ValidationError(
-                {"non_field_errors": ["Ushbu raqam yoki role bilan foydalanovchi mavjuda emas!"]}
-            )
-        return attrs
-
 
 class PasswordResetVerifySerializer(serializers.Serializer):
     phone = serializers.CharField()

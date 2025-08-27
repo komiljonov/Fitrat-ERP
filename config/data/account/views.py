@@ -486,6 +486,11 @@ class PasswordResetRequestAPIView(APIView):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone = serializer.validated_data["phone"]
+        role = serializer.validated_data["role"]
+
+        user = CustomUser.objects.filter(phone=phone, role=role).first()
+        if not user:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         code = random.randint(10000, 99999)
         ConfirmationCode.objects.update_or_create(phone=phone, defaults={"code": code, "created_at": timezone.now()})
