@@ -19,21 +19,33 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import CustomUser
-from .serializers import UserCreateSerializer, UserUpdateSerializer, CheckNumberSerializer, \
-    PasswordResetRequestSerializer, PasswordResetVerifySerializer
+from .serializers import (
+    UserCreateSerializer,
+    UserUpdateSerializer,
+    CheckNumberSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetVerifySerializer,
+)
 from .utils import build_weekly_schedule
-from ..account.serializers import UserLoginSerializer, UserListSerializer, UserSerializer
+from ..account.serializers import (
+    UserLoginSerializer,
+    UserListSerializer,
+    UserSerializer,
+)
 from ..department.marketing_channel.models import ConfirmationCode
 from ..finances.timetracker.sinx import TimetrackerSinc
 from ..student.student.models import Student
 from ..student.student.sms import SayqalSms
 
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class RegisterAPIView(CreateAPIView):
@@ -43,10 +55,12 @@ class RegisterAPIView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        phone = serializer.validated_data['phone']
+        phone = serializer.validated_data["phone"]
         if CustomUser.objects.filter(phone=phone).exists():
-            return Response({'success': False, 'message': 'already_used_number'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "already_used_number"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         user = serializer.save()
         user_serializer = UserCreateSerializer(user)
@@ -62,7 +76,11 @@ class RegisterAPIView(CreateAPIView):
             if filial.tt_filial is None:
                 response = tt.get_filial({filial.name})
 
-                tt_id = response[0].get("id") if isinstance(response, list) and response else None
+                tt_id = (
+                    response[0].get("id")
+                    if isinstance(response, list) and response
+                    else None
+                )
 
                 if tt_id:
                     filial.tt_filial = tt_id
@@ -83,7 +101,7 @@ class RegisterAPIView(CreateAPIView):
             "filials": filial_ids,
             "salary": user.salary,
             **build_weekly_schedule(user),
-            "lunch_time": None
+            "lunch_time": None,
         }
 
         external_response = tt.create_data(external_data)
@@ -93,11 +111,14 @@ class RegisterAPIView(CreateAPIView):
             user.second_user = external_response["id"]
             user.save()
 
-        return Response({
-            "success": True,
-            "user": user_serializer.data,
-            "external_response": external_response
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "success": True,
+                "user": user_serializer.data,
+                "external_response": external_response,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class UserList(ListAPIView):
@@ -109,27 +130,43 @@ class UserList(ListAPIView):
         # super().get_serializer()
 
         serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
-        return serializer_class(*args, **kwargs,
-                                include_only=["id", "first_name", "last_name", "full_name", "phone", "balance", "photo",
-                                              "monitoring", "role", "calculate_penalties", "created_at"])
+        kwargs.setdefault("context", self.get_serializer_context())
+        return serializer_class(
+            *args,
+            **kwargs,
+            include_only=[
+                "id",
+                "first_name",
+                "last_name",
+                "full_name",
+                "phone",
+                "balance",
+                "photo",
+                "monitoring",
+                "role",
+                "calculate_penalties",
+                "created_at",
+            ],
+        )
 
     def get_queryset(self):
         user = self.request.user
-        filial = self.request.GET.get('filial', None)
+        filial = self.request.GET.get("filial", None)
 
-        role = self.request.GET.get('role', None)
+        role = self.request.GET.get("role", None)
 
-        is_archived = self.request.GET.get('is_archived', None)
+        is_archived = self.request.GET.get("is_archived", None)
 
-        subject = self.request.GET.get('subject', None)
+        subject = self.request.GET.get("subject", None)
 
-        search = self.request.GET.get('search', None)
+        search = self.request.GET.get("search", None)
 
         queryset = CustomUser.objects.filter().exclude(role__in=["Student", "Parents"])
 
         if search:
-            queryset = queryset.filter(Q(full_name__icontains=search) | Q(phone__icontains=search))
+            queryset = queryset.filter(
+                Q(full_name__icontains=search) | Q(phone__icontains=search)
+            )
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
@@ -138,10 +175,12 @@ class UserList(ListAPIView):
             queryset = queryset.filter(filial__id=filial)
 
         if subject:
-            queryset = queryset.filter(teachers__subject__id=subject).order_by('-created_at')
+            queryset = queryset.filter(teachers__subject__id=subject).order_by(
+                "-created_at"
+            )
 
         if role:
-            queryset = queryset.filter(role=role).order_by('-created_at')
+            queryset = queryset.filter(role=role).order_by("-created_at")
 
         return queryset
 
@@ -153,14 +192,20 @@ class TT_Data(APIView):
         count = 0
 
         if not tt_data:
-            return Response({"count": 0, "message": "No data from TT"}, status=status.HTTP_200_OK)
+            return Response(
+                {"count": 0, "message": "No data from TT"}, status=status.HTTP_200_OK
+            )
 
         # Collect all TT user phones to detect missing ones later
         tt_phones = set()
         tt_ids_by_phone = {}
 
         for user in tt_data:
-            phone = "+" + user["phone_number"] if not user["phone_number"].startswith('+') else user["phone_number"]
+            phone = (
+                "+" + user["phone_number"]
+                if not user["phone_number"].startswith("+")
+                else user["phone_number"]
+            )
             tt_phones.add(phone)
             tt_ids_by_phone[phone] = user["id"]
 
@@ -203,7 +248,10 @@ class TT_Data(APIView):
                 update_payload = {}
                 tt_user_filials = set(user.get("filials", []))
                 local_tt_filials = set(
-                    custom_user.filial.filter(tt_filial__isnull=False).values_list("tt_filial", flat=True))
+                    custom_user.filial.filter(tt_filial__isnull=False).values_list(
+                        "tt_filial", flat=True
+                    )
+                )
 
                 if not tt_user_filials or tt_user_filials != local_tt_filials:
                     update_payload["filials"] = list(local_tt_filials)
@@ -226,18 +274,26 @@ class TT_Data(APIView):
                 continue
 
         # ✅ Now create missing TT users from our local DB
-        custom_users = CustomUser.objects.exclude(phone__in=tt_phones, role__in=["Parents", "Student"])
+        custom_users = CustomUser.objects.exclude(
+            phone__in=tt_phones, role__in=["Parents", "Student"]
+        )
 
         for user in custom_users:
             try:
-                photo_id_data = tt.upload_tt_foto(user.photo.file) if user.photo else None
+                photo_id_data = (
+                    tt.upload_tt_foto(user.photo.file) if user.photo else None
+                )
                 photo_id = photo_id_data.get("id") if photo_id_data else None
 
                 filial_ids = []
                 for filial in user.filial.all():
                     if filial.tt_filial is None:
                         response = tt.get_filial(filial.name)
-                        tt_id = response[0].get("id") if isinstance(response, list) and response else None
+                        tt_id = (
+                            response[0].get("id")
+                            if isinstance(response, list) and response
+                            else None
+                        )
                         if not tt_id:
                             filial_tt = tt.create_filial({"name": filial.name})
                             tt_id = filial_tt.get("id") if filial_tt else None
@@ -254,7 +310,7 @@ class TT_Data(APIView):
                     "filials": filial_ids,
                     "salary": user.salary,
                     **build_weekly_schedule(user),
-                    "lunch_time": None
+                    "lunch_time": None,
                 }
 
                 external_response = tt.create_data(external_data)
@@ -277,9 +333,11 @@ class CustomAuthToken(TokenObtainPairView):
 
     @csrf_exempt
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data.get('user')
+        user = serializer.validated_data.get("user")
 
         if not user:
             raise AuthenticationFailed("Invalid credentials or user does not exist.")
@@ -289,7 +347,9 @@ class CustomAuthToken(TokenObtainPairView):
                 try:
                     BlacklistedToken.objects.get_or_create(token=token)
                 except Exception as e:
-                    print(f"[Token Blacklist Error] token_id={token.id}, error={str(e)}")
+                    print(
+                        f"[Token Blacklist Error] token_id={token.id}, error={str(e)}"
+                    )
                     continue
 
         # ✅ Issue new tokens
@@ -297,51 +357,69 @@ class CustomAuthToken(TokenObtainPairView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        filial = list(user.filial.values_list('pk', flat=True))
-        student_id = Student.objects.filter(user=user.id).values_list('id', flat=True).first()
+        filial = list(user.filial.values_list("pk", flat=True))
+        student_id = (
+            Student.objects.filter(user=user.id).values_list("id", flat=True).first()
+        )
 
-        return Response({
-            'access_token': access_token,
-            'refresh_token': refresh_token,
-            'user_id': user.pk,
-            "student_id": student_id,
-            'phone': user.phone,
-            'role': user.role,
-            'filial': filial,
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user_id": user.pk,
+                "student_id": student_id,
+                "phone": user.phone,
+                "role": user.role,
+                "filial": filial,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class CustomRefreshTokenView(APIView):
     @method_decorator(csrf_exempt)
     def post(self, request, *args, **kwargs):
-        refresh_token = request.data.get('refresh_token')
+        refresh_token = request.data.get("refresh_token")
         if not refresh_token:
-            return Response({'detail': 'Refresh token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Refresh token is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             refresh = RefreshToken(refresh_token)
             access_token = str(refresh.access_token)
 
-            user_id = refresh['user_id']
+            user_id = refresh["user_id"]
             user = CustomUser.objects.filter(id=user_id).first()
             if not user:
                 raise AuthenticationFailed("User not found.")
 
-            filial = list(user.filial.values_list('pk', flat=True))  # adjust if needed
-            student_id = Student.objects.filter(user=user.id).values_list('id', flat=True).first()
+            filial = list(user.filial.values_list("pk", flat=True))  # adjust if needed
+            student_id = (
+                Student.objects.filter(user=user.id)
+                .values_list("id", flat=True)
+                .first()
+            )
 
-            return Response({
-                'access_token': access_token,
-                'refresh_token': str(refresh),  # optional: reuse or rotate
-                'user_id': user.pk,
-                'phone': user.phone,
-                'role': user.role,
-                'filial': filial,
-                'student_id': student_id,
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "access_token": access_token,
+                    "refresh_token": str(refresh),  # optional: reuse or rotate
+                    "user_id": user.pk,
+                    "phone": user.phone,
+                    "role": user.role,
+                    "filial": filial,
+                    "student_id": student_id,
+                },
+                status=status.HTTP_200_OK,
+            )
 
         except TokenError as e:
-            return Response({'detail': 'Invalid or expired refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "Invalid or expired refresh token."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
 
 class UserUpdateAPIView(UpdateAPIView):
@@ -358,7 +436,9 @@ class CheckNumberApi(APIView):
 
     @swagger_auto_schema(
         request_body=CheckNumberSerializer,  # ✅ Adds request body documentation in Swagger
-        responses={200: openapi.Response("Returns if phone exists", CheckNumberSerializer)}
+        responses={
+            200: openapi.Response("Returns if phone exists", CheckNumberSerializer)
+        },
     )
     def post(self, request):
         serializer = CheckNumberSerializer(data=request.data)
@@ -378,7 +458,9 @@ class LogoutAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         request.user.auth_token.delete()
-        return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Successfully logged out."}, status=status.HTTP_200_OK
+        )
 
 
 class UserInfo(APIView):
@@ -392,9 +474,7 @@ class UserInfo(APIView):
             raise NotFound(detail="User not found.")
 
         # Serialize the user data
-        user_serializer = UserSerializer(user, context={
-            "request": request
-        })
+        user_serializer = UserSerializer(user, context={"request": request})
         return Response(user_serializer.data)
 
 
@@ -408,24 +488,34 @@ class StuffRolesView(ListAPIView):
 
     def get_serializer(self, *args, **kwargs):
         serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
+        kwargs.setdefault("context", self.get_serializer_context())
         return serializer_class(
-            *args, **kwargs,
+            *args,
+            **kwargs,
             include_only=[
-                "id", "first_name", "last_name", "full_name", "phone", "calculate_penalties",
-                "balance", "subject", "filial", "role", "is_call_operator"
-            ]
+                "id",
+                "first_name",
+                "last_name",
+                "full_name",
+                "phone",
+                "calculate_penalties",
+                "balance",
+                "subject",
+                "filial",
+                "role",
+                "is_call_operator",
+            ],
         )
 
     def get_queryset(self):
-        subject = self.request.GET.get('subject')
-        filial = self.request.GET.get('filial')
-        role = self.request.GET.get('role')
-        is_call_operator = self.request.GET.get('is_call_operator')
-        search = self.request.GET.get('search')
-        is_archived = self.request.GET.get('is_archived')
+        subject = self.request.GET.get("subject")
+        filial = self.request.GET.get("filial")
+        role = self.request.GET.get("role")
+        is_call_operator = self.request.GET.get("is_call_operator")
+        search = self.request.GET.get("search")
+        is_archived = self.request.GET.get("is_archived")
 
-        queryset = CustomUser.objects.all().order_by('-created_at')
+        queryset = CustomUser.objects.all().order_by("-created_at")
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
@@ -455,7 +545,9 @@ class StuffRolesView(ListAPIView):
         elif is_call_operator:
             # If role is not provided but is_call_operator is
             is_call_operator_bool = is_call_operator.lower() == "true"
-            queryset = queryset.filter(Q(is_call_center=is_call_operator_bool) | Q(role="CALL_OPERATOR"))
+            queryset = queryset.filter(
+                Q(is_call_center=is_call_operator_bool) | Q(role="CALL_OPERATOR")
+            )
 
         return queryset.distinct()
 
@@ -469,7 +561,7 @@ class StuffList(ListAPIView):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
     def get_queryset(self):
-        id = self.kwargs['pk']
+        id = self.kwargs["pk"]
         if id:
             return CustomUser.objects.filter(id=id)
         else:
@@ -488,14 +580,20 @@ class PasswordResetRequestAPIView(APIView):
         phone = serializer.validated_data["phone"]
         role = serializer.validated_data["role"]
 
-        print(phone,role)
+        print(phone, role)
 
         user = CustomUser.objects.filter(phone=phone, role=role).first()
-        if not user:
-            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if user is None:
+            return Response(
+                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         code = random.randint(10000, 99999)
-        ConfirmationCode.objects.update_or_create(phone=phone, defaults={"code": code, "created_at": timezone.now()})
+
+        ConfirmationCode.objects.update_or_create(
+            phone=phone, defaults={"code": code, "created_at": timezone.now()}
+        )
 
         sms = SayqalSms()
 
@@ -506,11 +604,14 @@ class PasswordResetRequestAPIView(APIView):
                     Ushbu kodni hech kimga bermang. U faqat sizga mo‘ljallangan!
 
                     """
-
+        print("Sending sms")
         try:
+
             sms.send_sms(phone, text)
         except Exception as e:
             return Response({"detail": "SMS sending failed."}, status=500)
+
+        print("Sending sms")
 
         return Response({"detail": "Confirmation code sent."})
 
@@ -526,9 +627,14 @@ class PasswordResetVerifyAPIView(APIView):
         try:
             code_obj = ConfirmationCode.objects.get(phone=phone, code=code)
             if not code_obj.is_valid():
-                return Response({"detail": "Code expired."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "Code expired."}, status=status.HTTP_400_BAD_REQUEST
+                )
         except ConfirmationCode.DoesNotExist:
-            return Response({"detail": "Invalid confirmation code."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invalid confirmation code."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         return Response({"detail": "Code is valid."}, status=status.HTTP_200_OK)
 
@@ -545,18 +651,27 @@ class PasswordUpdateAPIView(APIView):
         try:
             code_obj = ConfirmationCode.objects.get(phone=phone, code=code)
             if not code_obj.is_valid():
-                return Response({"detail": "Code expired."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "Code expired."}, status=status.HTTP_400_BAD_REQUEST
+                )
         except ConfirmationCode.DoesNotExist:
-            return Response({"detail": "Invalid confirmation code."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invalid confirmation code."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             user = CustomUser.objects.get(phone=phone)
         except CustomUser.DoesNotExist:
-            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         user.set_password(new_password)
         user.save()
 
         code_obj.delete()
 
-        return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Password updated successfully."}, status=status.HTTP_200_OK
+        )
