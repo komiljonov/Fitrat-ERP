@@ -10,6 +10,7 @@ from requests import post
 
 load_dotenv()
 
+
 class SayqalSms:
     def __init__(self):
         self.username = os.getenv("SAYQAL_USERNAME")
@@ -40,9 +41,10 @@ class SayqalSms:
 
         token = self.generateToken("TransmitSMS", utime)
 
-        number = self.fixNumber(
-            number,
-        )
+        print(token)
+
+        number = self.fixNumber(number)
+
         print(number, file=stderr)
 
         url = self.url + "TransmitSMS"
@@ -56,6 +58,8 @@ class SayqalSms:
                 "text": message,
             },
         }
+
+        print(token, data)
 
         response = post(url, json=data, headers={"X-Access-Token": token})
 
