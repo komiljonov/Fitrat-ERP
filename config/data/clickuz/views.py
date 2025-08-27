@@ -190,3 +190,4 @@ class CreateClickOrderAPIView(APIView):
         payment_url = ClickUz.generate_url(order_id=order.id, amount=order.amount)
 
         return Response({"payment_url": payment_url})
+
