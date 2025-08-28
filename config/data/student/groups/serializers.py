@@ -155,7 +155,7 @@ class GroupSerializer(serializers.ModelSerializer):
         from django.db.models import Q
 
         student_count = StudentGroup.objects.filter(
-            Q(group=obj, archived=False)
+            Q(group=obj, is_archived=False)
             & (Q(student__is_archived=False) | Q(lid__is_archived=False))
         ).count()
 
