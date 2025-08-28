@@ -346,7 +346,7 @@ class SecondaryStudentGroupDelete(APIView):
         )
 
 
-class GroupStudentStatistics(APIView):
+class GroupStudentStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, **kwargs):

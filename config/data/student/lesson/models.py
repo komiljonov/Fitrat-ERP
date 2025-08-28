@@ -6,12 +6,13 @@ from data.account.models import CustomUser
 
 if TYPE_CHECKING:
     from data.student.subject.models import Theme
-from ..groups.models import Group
-from ..subject.models import Subject
-from ...command.models import BaseModel
-from ...lid.new_lid.models import Lid
-from ...student.student.models import Student
-from ..groups.models import Room
+
+from data.student.groups.models import Group
+from data.student.subject.models import Subject
+from data.command.models import BaseModel
+from data.lid.new_lid.models import Lid
+from data.student.student.models import Student
+from data.student.groups.models import Room
 
 
 class Lesson(BaseModel):

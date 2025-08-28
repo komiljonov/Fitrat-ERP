@@ -10,9 +10,9 @@ from .models import (
     ResultName,
     ResultSubjects,
 )
-from ...account.models import CustomUser
-from ...notifications.models import Notification
-from ...student.mastering.models import MasteringTeachers
+from data.account.models import CustomUser
+from data.notifications.models import Notification
+from data.student.mastering.models import MasteringTeachers
 
 
 @receiver(post_save, sender=Monitoring)

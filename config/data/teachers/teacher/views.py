@@ -11,21 +11,21 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import TeacherSerializer
-from ...account.models import CustomUser
-from ...account.permission import FilialRestrictedQuerySetMixin
-from ...exam_results.models import MockExamResult
-from ...lid.new_lid.models import Lid
-from ...results.models import Results
-from ...student.groups.models import Group, SecondaryGroup
-from ...student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
-from ...student.homeworks.models import Homework_history
-from ...student.lesson.models import Lesson
-from ...student.lesson.serializers import LessonSerializer
-from ...student.mastering.models import Mastering, MasteringTeachers
-from ...student.mastering.serializers import StuffMasteringSerializer
-from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ...student.studentgroup.serializers import StudentsGroupSerializer
-from ...student.subject.models import GroupThemeStart
+from data.account.models import CustomUser
+from data.account.permission import FilialRestrictedQuerySetMixin
+from data.exam_results.models import MockExamResult
+from data.lid.new_lid.models import Lid
+from data.results.models import Results
+from data.student.groups.models import Group, SecondaryGroup
+from data.student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
+from data.student.homeworks.models import Homework_history
+from data.student.lesson.models import Lesson
+from data.student.lesson.serializers import LessonSerializer
+from data.student.mastering.models import Mastering, MasteringTeachers
+from data.student.mastering.serializers import StuffMasteringSerializer
+from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
+from data.student.studentgroup.serializers import StudentsGroupSerializer
+from data.student.subject.models import GroupThemeStart
 
 
 class TeacherList(FilialRestrictedQuerySetMixin, ListCreateAPIView):

@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Finance, VoucherStudent, Casher, Kind, KpiFinance
-from ...logs.models import Log
+from data.logs.models import Log
 
 
 @receiver(post_save, sender=Finance)
@@ -26,9 +26,9 @@ def on_create(sender, instance: Finance, created, **kwargs):
 
         if instance.stuff:
             if (
-                    instance.action == "EXPENSE"
-                    and instance.kind is not None
-                    and instance.kind.name == "Salary"
+                instance.action == "EXPENSE"
+                and instance.kind is not None
+                and instance.kind.name == "Salary"
             ):
                 instance.stuff.balance -= Decimal(instance.amount)
                 instance.stuff.save()

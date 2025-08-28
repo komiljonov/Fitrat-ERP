@@ -1,10 +1,9 @@
 import logging
-from datetime import datetime
-from ...student.studentgroup.models import StudentGroup
+from data.student.studentgroup.models import StudentGroup
 from celery import shared_task
 
 from .models import StudentCountMonitoring, Monitoring5
-from ...account.models import CustomUser
+from data.account.models import CustomUser
 
 logging.basicConfig(level=logging.INFO)
 

@@ -33,20 +33,21 @@ class SecondaryAttendanceBulkSerializer(serializers.ListSerializer):
 
 
 class SecondaryAttendanceSerializer(serializers.ModelSerializer):
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
-    group = serializers.PrimaryKeyRelatedField(queryset=SecondaryGroup.objects.all(), allow_null=True)
-    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True
+    )
+    group = serializers.PrimaryKeyRelatedField(
+        queryset=SecondaryGroup.objects.all(), allow_null=True
+    )
+    theme = serializers.PrimaryKeyRelatedField(
+        queryset=Theme.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = SecondaryAttendance
-        fields = [
-            "id", "student", "group", "theme", "reason",
-            "remarks", "updated_at"
-        ]
+        fields = ["id", "student", "group", "theme", "reason", "remarks", "updated_at"]
         list_serializer_class = SecondaryAttendanceBulkSerializer
-        extra_kwargs = {
-            "id": {"read_only": True}
-        }
+        extra_kwargs = {"id": {"read_only": True}}
 
     def get_teacher(self, obj):
         # Optional helper if you use it externally
@@ -59,9 +60,7 @@ class SecondaryAttendanceSerializer(serializers.ModelSerializer):
 
         if student and group:
             already_exists = SecondaryAttendance.objects.filter(
-                student=student,
-                group=group,
-                created_at__date=today
+                student=student, group=group, created_at__date=today
             ).exists()
             if already_exists:
                 raise serializers.ValidationError(
@@ -77,13 +76,15 @@ class SecondaryAttendanceSerializer(serializers.ModelSerializer):
 
         # Always safe, even during bulk POST
         try:
-            rep['theme'] = ThemeSerializer(instance.theme, context=self.context).data
+            rep["theme"] = ThemeSerializer(instance.theme, context=self.context).data
         except Exception:
-            rep['theme'] = None
+            rep["theme"] = None
 
         try:
-            rep['student'] = StudentSerializer(instance.student, context=self.context).data
+            rep["student"] = StudentSerializer(
+                instance.student, context=self.context
+            ).data
         except Exception:
-            rep['student'] = None
+            rep["student"] = None
 
         return rep

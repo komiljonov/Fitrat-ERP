@@ -1,11 +1,10 @@
-from cmath import isnan
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import FirstLLesson, ExtraLessonGroup, ExtraLesson
-from ..studentgroup.models import StudentGroup
-from ...logs.models import Log
-from ...notifications.models import Notification
+from data.student.studentgroup.models import StudentGroup
+from data.logs.models import Log
+from data.notifications.models import Notification
+
 
 @receiver(post_save, sender=FirstLLesson)
 def on_create(sender, instance: FirstLLesson, created, **kwargs):
@@ -32,7 +31,7 @@ def on_create(sender, instance: FirstLLesson, created, **kwargs):
         Notification.objects.create(
             user=instance.group.teacher,
             comment=f"Sizning {instance.group.name} guruhingizga {instance.lid.first_name} {instance.lid.last_name} sinov darsi uchun qo'shildi!",
-            come_from=instance.lid
+            come_from=instance.lid,
         )
 
 
@@ -52,9 +51,10 @@ def on_create(sender, instance: ExtraLessonGroup, created, **kwargs):
             #     )
             Notification.objects.create(
                 user=instance.group.teacher,
-                comment = f"Siz uchun {instance.date} da {instance.group.name} guruhi uchun qo'shimcha dars belgilandi ! ",
+                comment=f"Siz uchun {instance.date} da {instance.group.name} guruhi uchun qo'shimcha dars belgilandi ! ",
                 come_from=instance,
             )
+
 
 @receiver(post_save, sender=ExtraLesson)
 def on_create(sender, instance: ExtraLesson, created, **kwargs):
@@ -71,10 +71,8 @@ def on_create(sender, instance: ExtraLesson, created, **kwargs):
         )
 
 
-
-
 @receiver(post_save, sender=FirstLLesson)
-def logs_on_first_lesson(sender, instance:FirstLLesson, created, **kwargs ):
+def logs_on_first_lesson(sender, instance: FirstLLesson, created, **kwargs):
 
     if created:
         Log.objects.create(

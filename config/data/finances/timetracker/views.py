@@ -22,7 +22,7 @@ from .serializers import Stuff_AttendanceSerializer, UserTimeLineUpsertSerialize
 from .serializers import TimeTrackerSerializer
 from .serializers import UserTimeLineSerializer
 from .utils import calculate_amount, delete_user_actions, get_updated_datas
-from ...account.models import CustomUser
+from data.account.models import CustomUser
 
 
 class TimeTrackerList(ListCreateAPIView):
@@ -30,16 +30,18 @@ class TimeTrackerList(ListCreateAPIView):
     serializer_class = TimeTrackerSerializer
 
     def get_queryset(self):
-        queryset = Employee_attendance.objects.filter(attendance__action="In_side", employee__is_archived=False)
+        queryset = Employee_attendance.objects.filter(
+            attendance__action="In_side", employee__is_archived=False
+        )
 
-        employee = self.request.GET.get('employee')
-        status = self.request.GET.get('status')
-        date = self.request.GET.get('date')
-        is_weekend = self.request.GET.get('is_weekend')
-        from_date = self.request.GET.get('start_date')
-        to_date = self.request.GET.get('end_date')
-        action = self.request.GET.get('action')
-        is_archived = self.request.GET.get('is_archived')
+        employee = self.request.GET.get("employee")
+        status = self.request.GET.get("status")
+        date = self.request.GET.get("date")
+        is_weekend = self.request.GET.get("is_weekend")
+        from_date = self.request.GET.get("start_date")
+        to_date = self.request.GET.get("end_date")
+        action = self.request.GET.get("action")
+        is_archived = self.request.GET.get("is_archived")
 
         if is_archived:
             queryset = queryset.filter(employee__is_archived=is_archived.capitalize())
@@ -58,7 +60,7 @@ class TimeTrackerList(ListCreateAPIView):
             queryset = queryset.filter(status=status)
         if date:
             queryset = queryset.filter(date=parse_datetime(date))
-        return queryset.order_by('-date')
+        return queryset.order_by("-date")
 
 
 class AttendanceList(ListCreateAPIView):
@@ -68,44 +70,37 @@ class AttendanceList(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         ic(request.data)
 
-        check_in = request.data.get('check_in')
-        check_out = request.data.get('check_out')
-        date = request.data.get('date')
-        employee = request.data.get('employee')
-        actions = request.data.get('actions')
+        check_in = request.data.get("check_in")
+        check_out = request.data.get("check_out")
+        date = request.data.get("date")
+        employee = request.data.get("employee")
+        actions = request.data.get("actions")
 
         # Validate user exists
         user = CustomUser.objects.filter(second_user=employee).first()
         if not user:
-            return Response(
-                "User not found",
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
 
         # Check if attendance already exists for this date
         existing_attendance = Stuff_Attendance.objects.filter(
-            employee__id=employee,
-            date=date
+            employee__id=employee, date=date
         ).exists()
 
         if existing_attendance:
             return Response(
                 "Attendance for this date already exists",
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         return self.create_attendance(request.data)
 
     def create_attendance(self, data):
-        actions = data.get('actions')
-        employee = data.get('employee')
-        date = data.get('date')
+        actions = data.get("actions")
+        employee = data.get("employee")
+        date = data.get("date")
 
         if not actions:
-            return Response(
-                "No actions provided",
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response("No actions provided", status=status.HTTP_400_BAD_REQUEST)
 
         user = CustomUser.objects.filter(second_user=employee).first()
 
@@ -113,7 +108,7 @@ class AttendanceList(ListCreateAPIView):
         delete_actions = delete_user_actions(user, actions, date)
 
         # Sort actions by start time
-        sorted_actions = sorted(actions, key=lambda x: x['start'])
+        sorted_actions = sorted(actions, key=lambda x: x["start"])
 
         # Calculate amount for ALL actions at once
         att_amount = calculate_amount(
@@ -125,15 +120,13 @@ class AttendanceList(ListCreateAPIView):
 
         # Get or create employee attendance record
         emp_att, created = Employee_attendance.objects.get_or_create(
-            employee=user,
-            date=date,
-            defaults={'amount': 0}
+            employee=user, date=date, defaults={"amount": 0}
         )
 
         # Create individual attendance records for each action
         for action in sorted_actions:
-            check_in = action.get('start')
-            check_out = action.get('end')
+            check_in = action.get("start")
+            check_out = action.get("end")
 
             if isinstance(check_in, str):
                 check_in = datetime.fromisoformat(check_in)
@@ -202,8 +195,8 @@ class UserTimeLineList(ListCreateAPIView):
     def get_queryset(self):
         queryset = UserTimeLine.objects.all()
 
-        user = self.request.GET.get('user')
-        day = self.request.GET.get('day')
+        user = self.request.GET.get("user")
+        day = self.request.GET.get("day")
         if user:
             queryset = queryset.filter(user__id=user)
 
@@ -220,7 +213,10 @@ class UserTimeLineDetail(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         if not isinstance(request.data, list):
-            return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Expected a list of items."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         ids = [item["id"] for item in request.data if "id" in item]
         instances = list(UserTimeLine.objects.filter(id__in=ids))
@@ -234,7 +230,10 @@ class UserTimeLineDetail(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         ids = request.data.get("ids", [])
         if not isinstance(ids, list):
-            return Response({"detail": "Expected a list of ids."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Expected a list of ids."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         deleted_count, _ = UserTimeLine.objects.filter(id__in=ids).delete()
         return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
@@ -250,7 +249,6 @@ def _norm_pk(v):
         return v  # if it's not int-like, let Django coerce/fail later
 
 
-
 class UserTimeLineBulkUpsert(APIView):
     """
     POST a list of timeline items:
@@ -262,7 +260,13 @@ class UserTimeLineBulkUpsert(APIView):
 
     # IMPORTANT: must match model field names you intend to update
     UPDATABLE_FIELDS = [
-        "user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"
+        "user",
+        "day",
+        "start_time",
+        "end_time",
+        "is_weekend",
+        "penalty",
+        "bonus",
     ]
 
     @staticmethod
@@ -272,7 +276,10 @@ class UserTimeLineBulkUpsert(APIView):
 
     def post(self, request, *args, **kwargs):
         if not isinstance(request.data, list):
-            return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Expected a list of items."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         items: List[Dict[str, Any]] = request.data
 
@@ -282,7 +289,10 @@ class UserTimeLineBulkUpsert(APIView):
 
         for obj in items:
             if not isinstance(obj, dict):
-                return Response({"detail": "Each item must be an object."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "Each item must be an object."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             raw_id = obj.get("id")
             if raw_id in (None, "", 0):  # treat falsy as "no id"
@@ -291,7 +301,10 @@ class UserTimeLineBulkUpsert(APIView):
                 try:
                     pk = self._to_uuid(raw_id)
                 except (TypeError, ValueError):
-                    return Response({"id": [f"Invalid id: {raw_id}"]}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {"id": [f"Invalid id: {raw_id}"]},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 update_pairs.append((pk, obj))
 
         # ---- Validate CREATEs (fast: single pass, build instances) ----
@@ -311,13 +324,20 @@ class UserTimeLineBulkUpsert(APIView):
 
             missing = [str(pk) for pk in unique_ids if pk not in existing_map]
             if missing:
-                return Response({"id": [f"Unknown id(s): {missing}"]}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"id": [f"Unknown id(s): {missing}"]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             # Build per-row serializers (partial=True); capture validated_data only
             for pk, payload in update_pairs:
                 inst = existing_map[pk]
-                payload = {k: v for k, v in payload.items() if k != "id"}  # never update PK
-                ser = UserTimeLineUpsertSerializer(instance=inst, data=payload, partial=True)
+                payload = {
+                    k: v for k, v in payload.items() if k != "id"
+                }  # never update PK
+                ser = UserTimeLineUpsertSerializer(
+                    instance=inst, data=payload, partial=True
+                )
                 ser.is_valid(raise_exception=True)
                 update_serializers.append((inst, ser.validated_data))
 
@@ -360,33 +380,50 @@ class UserTimeLineBulkUpdateDelete(APIView):
 
     def put(self, request, *args, **kwargs):
         if not isinstance(request.data, list):
-            return Response({"detail": "Expected a list of items."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Expected a list of items."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Collect ids from payload (keep as strings for UUID safety)
-        ids = [str(item.get("id")) for item in request.data if item.get("id") is not None]
+        ids = [
+            str(item.get("id")) for item in request.data if item.get("id") is not None
+        ]
         if not ids:
-            return Response({"detail": "Each item must include id for update."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Each item must include id for update."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         qs = UserTimeLine.objects.filter(id__in=ids)
         if qs.count() != len(ids):
-            return Response({"detail": "Some IDs not found."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Some IDs not found."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Reorder instances to match payload order
         by_id = {str(obj.id): obj for obj in qs}
         instances_ordered = [by_id[str(item["id"])] for item in request.data]
 
         # partial=True so we can send only the fields we want to change
-        serializer = UserTimeLineSerializer(instances_ordered, data=request.data, many=True, partial=True)
+        serializer = UserTimeLineSerializer(
+            instances_ordered, data=request.data, many=True, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         instances = serializer.save()
 
         # Re-serialize updated instances
-        return Response(UserTimeLineSerializer(instances, many=True).data, status=status.HTTP_200_OK)
+        return Response(
+            UserTimeLineSerializer(instances, many=True).data, status=status.HTTP_200_OK
+        )
 
     def delete(self, request, *args, **kwargs):
         ids = request.data.get("ids", [])
         if not isinstance(ids, list):
-            return Response({"detail": "Expected a list of ids."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Expected a list of ids."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         deleted_count, _ = UserTimeLine.objects.filter(id__in=ids).delete()
         return Response({"deleted": deleted_count}, status=status.HTTP_200_OK)
 
@@ -402,8 +439,10 @@ class UserAttendanceListView(ListAPIView):
     pagination_class = CustomUserPagination
 
     def get_queryset(self):
-        qs = CustomUser.objects.filter(is_archived=False).exclude(role__in=["Parents", "Student"])
-        employee = self.request.GET.get('employee')
+        qs = CustomUser.objects.filter(is_archived=False).exclude(
+            role__in=["Parents", "Student"]
+        )
+        employee = self.request.GET.get("employee")
         filial = self.request.GET.get("filial")
 
         if employee:
@@ -416,12 +455,12 @@ class UserAttendanceListView(ListAPIView):
     def list(self, request, *args, **kwargs):
         paginated_users = self.paginate_queryset(self.get_queryset())
 
-        status = request.GET.get('status')
-        is_weekend = request.GET.get('is_weekend')
-        date = request.GET.get('date')
-        from_date = request.GET.get('start_date')
-        to_date = request.GET.get('end_date')
-        is_archived = request.GET.get('is_archived')
+        status = request.GET.get("status")
+        is_weekend = request.GET.get("is_weekend")
+        date = request.GET.get("date")
+        from_date = request.GET.get("start_date")
+        to_date = request.GET.get("end_date")
+        is_archived = request.GET.get("is_archived")
 
         results = []
 
@@ -452,18 +491,22 @@ class UserAttendanceListView(ListAPIView):
                 for att in emp_att.attendance.filter(action="In_side"):
                     stuff_attendance_set.append(att)
 
-            serialized_tt_data = Stuff_AttendanceSerializer(stuff_attendance_set, many=True).data
+            serialized_tt_data = Stuff_AttendanceSerializer(
+                stuff_attendance_set, many=True
+            ).data
             timeline = TimeTrackerSerializer(emp_attendance_qs, many=True).data
             groups_only = [item.get("groups") for item in timeline]
 
-            results.append({
-                "user": {
-                    "id": user.id,
-                    "full_name": user.full_name,
-                },
-                "tt_data": serialized_tt_data,
-                "groups": groups_only,
-            })
+            results.append(
+                {
+                    "user": {
+                        "id": user.id,
+                        "full_name": user.full_name,
+                    },
+                    "tt_data": serialized_tt_data,
+                    "groups": groups_only,
+                }
+            )
 
         return self.get_paginated_response(results)
 
@@ -480,12 +523,21 @@ class TimeTrackerStatisticsListView(ListAPIView):
         else:
             filters = {}
 
-        in_office_count = Employee_attendance.objects.filter(status="In_office", **filters).count()
-        gone_count = Employee_attendance.objects.filter(status="Gone", **filters).count()
-        absent_count = Employee_attendance.objects.filter(status="Absent", **filters).count()
+        in_office_count = Employee_attendance.objects.filter(
+            status="In_office", **filters
+        ).count()
+        gone_count = Employee_attendance.objects.filter(
+            status="Gone", **filters
+        ).count()
+        absent_count = Employee_attendance.objects.filter(
+            status="Absent", **filters
+        ).count()
 
-        return Response({
-            "in_office": in_office_count,
-            "gone": gone_count,
-            "absent": absent_count,
-        }, status=200)
+        return Response(
+            {
+                "in_office": in_office_count,
+                "gone": gone_count,
+                "absent": absent_count,
+            },
+            status=200,
+        )

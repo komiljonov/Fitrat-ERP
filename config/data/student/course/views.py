@@ -1,6 +1,5 @@
 import icecream
 from django.db.models import Q
-from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
@@ -16,11 +15,14 @@ from rest_framework.response import Response
 
 from .models import Course
 from .serializers import CourseSerializer
-from ..attendance.models import Attendance
-from ..attendance.serializers import AttendanceSerializer, AttendanceTHSerializer
-from ..groups.models import Group
-from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ...account.models import CustomUser
+from data.student.attendance.models import Attendance
+from data.student.attendance.serializers import (
+    AttendanceSerializer,
+    AttendanceTHSerializer,
+)
+from data.student.groups.models import Group
+from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
+from data.account.models import CustomUser
 
 
 class CourseList(ListCreateAPIView):

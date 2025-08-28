@@ -21,8 +21,8 @@ from .models import (
     MonitoringAsos1_2,
     Asos1_2,
 )
-from ...account.models import CustomUser
-from ...account.serializers import UserListSerializer, UserSerializer
+from data.account.models import CustomUser
+from data.account.serializers import UserListSerializer, UserSerializer
 
 
 class BonusSerializer(serializers.ModelSerializer):
@@ -91,7 +91,7 @@ class MonitoringSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
 
-        from ...account.serializers import UserListSerializer
+        from data.account.serializers import UserListSerializer
 
         rep = super().to_representation(instance)
         rep["creator"] = UserListSerializer(instance.creator).data

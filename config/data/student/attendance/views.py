@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from .models import Attendance, Student, SecondaryAttendance
 from .secondary_serializers import SecondaryAttendanceSerializer
 from .serializers import AttendanceSerializer
-from ...lid.new_lid.models import Lid
+from data.lid.new_lid.models import Lid
 
 
 class AttendanceList(ListCreateAPIView):
@@ -90,7 +90,7 @@ class AttendanceBulkUpdateAPIView(APIView):
                 {"detail": "Expected a list of items."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-    
+
         updated = []
 
         for item in data:

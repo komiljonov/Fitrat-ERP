@@ -1,16 +1,13 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 from celery import shared_task
 from django.utils.timezone import now
-from icecream import ic
-
-from ..lesson.models import ExtraLesson
-from ..student.models import Student
-from ..studentgroup.models import StudentGroup
-from ...account.models import CustomUser
-from ...finances.compensation.models import Bonus, Compensation
-from ...finances.finance.models import KpiFinance
-from ...teachers import teacher
+from data.student.lesson.models import ExtraLesson
+from data.student.student.models import Student
+from data.student.studentgroup.models import StudentGroup
+from data.account.models import CustomUser
+from data.finances.compensation.models import Bonus, Compensation
+from data.finances.finance.models import KpiFinance
 
 logging.basicConfig(level=logging.INFO)
 

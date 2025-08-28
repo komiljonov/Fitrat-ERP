@@ -4,9 +4,10 @@ from celery import shared_task
 from django.utils.timezone import now
 
 from .models import Employee_attendance
-from ...account.models import CustomUser
+from data.account.models import CustomUser
 
 logging.basicConfig(level=logging.INFO)
+
 
 @shared_task
 def check_daily_user_attendance():
@@ -16,14 +17,11 @@ def check_daily_user_attendance():
     """
     today = now().date()
 
-
     all_employees = CustomUser.objects.filter(is_archived=False)
-
 
     attended_users = Employee_attendance.objects.filter(
         date=today, action="In_office"
     ).values_list("user", flat=True)
-
 
     unattended_users = all_employees.exclude(id__in=attended_users).exclude(
         employee_attendance__date=today, employee_attendance__action="Gone"

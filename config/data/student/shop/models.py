@@ -4,8 +4,8 @@ from decimal import Decimal
 from django.db import models
 
 from data.command.models import BaseModel
-from ..student.models import Student
-from ...upload.models import File
+from data.student.student.models import Student
+from data.upload.models import File
 
 if TYPE_CHECKING:
     from data.student.mastering.models import Mastering

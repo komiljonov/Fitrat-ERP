@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from data.account.models import CustomUser
 from .models import Employee_attendance, UserTimeLine, Stuff_Attendance
-from ...student.groups.models import Group
+from data.student.groups.models import Group
 
 
 class Stuff_AttendanceSerializer(serializers.ModelSerializer):
@@ -53,38 +53,46 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
 
     def get_groups(self, obj):
         DAY_TRANSLATIONS = {
-            'MONDAY': 'Dushanba',
-            'TUESDAY': 'Seshanba',
-            'WEDNESDAY': 'Chorshanba',
-            'THURSDAY': 'Payshanba',
-            'FRIDAY': 'Juma',
-            'SATURDAY': 'Shanba',
-            'SUNDAY': 'Yakshanba',
+            "MONDAY": "Dushanba",
+            "TUESDAY": "Seshanba",
+            "WEDNESDAY": "Chorshanba",
+            "THURSDAY": "Payshanba",
+            "FRIDAY": "Juma",
+            "SATURDAY": "Shanba",
+            "SUNDAY": "Yakshanba",
         }
 
         user = CustomUser.objects.filter(id=obj.employee.id).first()
         result = []
 
         if user and user.role in ["TEACHER", "ASSISTANT"]:
-            groups = Group.objects.filter(Q(teacher=user) | Q(secondary_teacher=user)).distinct()
+            groups = Group.objects.filter(
+                Q(teacher=user) | Q(secondary_teacher=user)
+            ).distinct()
             for group in groups:
                 days_qs = group.scheduled_day_type.all()
-                days_uz = [DAY_TRANSLATIONS.get(day.name.upper(), day.name) for day in days_qs]
+                days_uz = [
+                    DAY_TRANSLATIONS.get(day.name.upper(), day.name) for day in days_qs
+                ]
 
-                result.append({
-                    "group_name": group.name,
-                    "started_at": group.started_at.strftime('%H:%M'),
-                    "ended_at": group.ended_at.strftime('%H:%M'),
-                    "days": days_uz
-                })
+                result.append(
+                    {
+                        "group_name": group.name,
+                        "started_at": group.started_at.strftime("%H:%M"),
+                        "ended_at": group.ended_at.strftime("%H:%M"),
+                        "days": days_uz,
+                    }
+                )
         else:
             timeline = UserTimeLine.objects.filter(user=obj.employee).all()
             for i in timeline:
-                result.append({
-                    "started_at": i.start_time.strftime('%H:%M'),
-                    "ended_at": i.end_time.strftime('%H:%M'),
-                    "days": i.day
-                })
+                result.append(
+                    {
+                        "started_at": i.start_time.strftime("%H:%M"),
+                        "ended_at": i.end_time.strftime("%H:%M"),
+                        "days": i.day,
+                    }
+                )
 
         return result
 
@@ -105,7 +113,9 @@ class TimeTrackerSerializer(serializers.ModelSerializer):
             "id": instance.employee.id,
             "full_name": instance.employee.full_name,
         }
-        rep["attendance"] = Stuff_AttendanceSerializer(instance.attendance, many=True).data
+        rep["attendance"] = Stuff_AttendanceSerializer(
+            instance.attendance, many=True
+        ).data
         return rep
 
 
@@ -147,18 +157,35 @@ class UserTimeLineBulkSerializer(serializers.ListSerializer):
 
 
 class UserTimeLineSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), allow_null=True)
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = UserTimeLine
         fields = [
-            "id", "user", "day", "start_time", "end_time",
-            "is_weekend", "penalty", "bonus", "created_at",
+            "id",
+            "user",
+            "day",
+            "start_time",
+            "end_time",
+            "is_weekend",
+            "penalty",
+            "bonus",
+            "created_at",
         ]
         list_serializer_class = UserTimeLineBulkSerializer
 
     def get_updatable_fields(self):
-        return ["user", "day", "start_time", "end_time", "is_weekend", "penalty", "bonus"]
+        return [
+            "user",
+            "day",
+            "start_time",
+            "end_time",
+            "is_weekend",
+            "penalty",
+            "bonus",
+        ]
 
 
 class UserTimeLineUpsertSerializer(serializers.ModelSerializer):

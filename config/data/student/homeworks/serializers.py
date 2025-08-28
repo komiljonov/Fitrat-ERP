@@ -1,22 +1,36 @@
 from statistics import mean
 
-from django.db.models import Avg
 from rest_framework import serializers
 from .models import Homework, Homework_history
-from ..attendance.models import Attendance
-from ..mastering.models import Mastering
-from ..student.models import Student
-from ..subject.models import Theme
-from ..subject.serializers import ThemeSerializer
-from ...upload.models import File
-from ...upload.serializers import FileUploadSerializer
+from data.student.attendance.models import Attendance
+from data.student.mastering.models import Mastering
+from data.student.student.models import Student
+from data.student.subject.models import Theme
+from data.student.subject.serializers import ThemeSerializer
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class HomeworkSerializer(serializers.ModelSerializer):
-    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
-    video = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
-    documents = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    theme = serializers.PrimaryKeyRelatedField(
+        queryset=Theme.objects.all(),
+        allow_null=True,
+    )
+    video = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
+    )
+    documents = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
+    )
+    photo = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
+    )
     is_active = serializers.SerializerMethodField()
     ball = serializers.SerializerMethodField()
 
@@ -34,9 +48,8 @@ class HomeworkSerializer(serializers.ModelSerializer):
             "choice",
             "test_checked",
             "is_active",
-            "created_at"
+            "created_at",
         ]
-
 
     def get_ball(self, obj):
         request = self.context.get("request")
@@ -61,22 +74,23 @@ class HomeworkSerializer(serializers.ModelSerializer):
         )
 
         mastering = Mastering.objects.filter(
-            student=student,
-            choice="Test",
-            theme=obj.theme
+            student=student, choice="Test", theme=obj.theme
         ).first()
 
-        mastering_ball = mastering.ball if mastering and mastering.ball is not None else None
+        mastering_ball = (
+            mastering.ball if mastering and mastering.ball is not None else None
+        )
 
-
-        online_marks = list(histories.filter(homework__choice="Online").values_list("mark", flat=True))
-        offline_marks = list(histories.filter(homework__choice="Offline").values_list("mark", flat=True))
+        online_marks = list(
+            histories.filter(homework__choice="Online").values_list("mark", flat=True)
+        )
+        offline_marks = list(
+            histories.filter(homework__choice="Offline").values_list("mark", flat=True)
+        )
         all_marks = list(histories.values_list("mark", flat=True))
-
 
         if mastering_ball is not None:
             all_marks.append(mastering_ball)
-
 
         online_avg = mean(online_marks) if online_marks else 0
         offline_avg = mean(offline_marks) if offline_marks else 0
@@ -103,9 +117,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
         }
 
     def get_is_active(self, obj):
-        att = Attendance.objects.filter(
-            theme=obj.theme
-        ).first()
+        att = Attendance.objects.filter(theme=obj.theme).first()
 
         if att:
             return True
@@ -113,10 +125,20 @@ class HomeworkSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
-        res["theme"] = ThemeSerializer(instance.theme, context=self.context).data if instance.theme else None
-        res["video"] = FileUploadSerializer(instance.video.all(), many=True,context=self.context).data
-        res["documents"] = FileUploadSerializer(instance.documents.all(), many=True,context=self.context).data
-        res["photo"] = FileUploadSerializer(instance.photo.all(), many=True,context=self.context).data
+        res["theme"] = (
+            ThemeSerializer(instance.theme, context=self.context).data
+            if instance.theme
+            else None
+        )
+        res["video"] = FileUploadSerializer(
+            instance.video.all(), many=True, context=self.context
+        ).data
+        res["documents"] = FileUploadSerializer(
+            instance.documents.all(), many=True, context=self.context
+        ).data
+        res["photo"] = FileUploadSerializer(
+            instance.photo.all(), many=True, context=self.context
+        ).data
         return res
 
 
@@ -132,7 +154,7 @@ class HomeworksHistorySerializer(serializers.ModelSerializer):
             "description",
             "mark",
             "test_checked",
-            "created_at"
+            "created_at",
         ]
 
     def update(self, instance, validated_data):

@@ -51,9 +51,9 @@ from .serializers import (
     VoucherSerializer,
     VoucherStudentSerializer,
 )
-from ...lid.new_lid.models import Lid
-from ...student.attendance.models import Attendance
-from ...student.groups.models import Group
+from data.lid.new_lid.models import Lid
+from data.student.attendance.models import Attendance
+from data.student.groups.models import Group
 
 
 class CasherListCreateAPIView(ListCreateAPIView):

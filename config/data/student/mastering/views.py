@@ -19,13 +19,13 @@ from .models import Mastering, MasteringTeachers
 
 # Create your views here.
 from .serializers import MasteringSerializer, StuffMasteringSerializer
-from ..attendance.models import Attendance
-from ..groups.models import Group
-from ..subject.models import Theme, GroupThemeStart
-from ...account.models import CustomUser
-from ...finances.finance.models import KpiFinance
-from ...finances.finance.serializers import KpiFinanceSerializer
-from ...notifications.models import Notification
+from data.student.attendance.models import Attendance
+from data.student.groups.models import Group
+from data.student.subject.models import Theme, GroupThemeStart
+from data.account.models import CustomUser
+from data.finances.finance.models import KpiFinance
+from data.finances.finance.serializers import KpiFinanceSerializer
+from data.notifications.models import Notification
 
 
 class MasteringList(ListCreateAPIView):

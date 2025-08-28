@@ -44,7 +44,7 @@ from .serializers import (
     Monitoring1_2serializer,
     UserMonitoring1_2Serializer,
 )
-from ...account.models import CustomUser
+from data.account.models import CustomUser
 
 
 class BonusList(ListCreateAPIView):

@@ -15,34 +15,68 @@ from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404, ListAPIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    get_object_or_404,
+    ListAPIView,
+)
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .check_serializers import QuizCheckSerializer
-from .models import Fill_gaps, Vocabulary, Pairs, MatchPairs, Exam, QuizGaps, Answer, ExamRegistration, ObjectiveTest, \
-    Cloze_Test, ImageObjectiveTest, True_False, ExamCertificate, ExamSubject
+from .models import (
+    Fill_gaps,
+    Vocabulary,
+    Pairs,
+    MatchPairs,
+    Exam,
+    QuizGaps,
+    Answer,
+    ExamRegistration,
+    ObjectiveTest,
+    Cloze_Test,
+    ImageObjectiveTest,
+    True_False,
+    ExamCertificate,
+    ExamSubject,
+)
 from .models import Quiz, Question
-from .serializers import QuizSerializer, QuestionSerializer, FillGapsSerializer, \
-    VocabularySerializer, PairsSerializer, MatchPairsSerializer, ExamSerializer, \
-    QuizGapsSerializer, AnswerSerializer, ExamRegistrationSerializer, ObjectiveTestSerializer, Cloze_TestSerializer, \
-    ImageObjectiveTestSerializer, True_FalseSerializer, ExamCertificateSerializer, QuizCheckingSerializer, \
-    ExamSubjectSerializer, ExamMonthlySerializer
-from ..groups.models import Group
-from ..homeworks.models import Homework, Homework_history
-from ..mastering.models import Mastering
-from ..shop.models import Points
-from ..shop.utils import give_coin
-from ..student.models import Student
-from ..subject.models import Theme, Subject
-from ...account.models import CustomUser
-from ...exam_results.models import QuizResult
-from ...exam_results.serializers import QuizResultSerializer
-from ...notifications.models import Notification
-from ...upload.models import File
-from ...upload.serializers import FileUploadSerializer
+from .serializers import (
+    QuizSerializer,
+    QuestionSerializer,
+    FillGapsSerializer,
+    VocabularySerializer,
+    PairsSerializer,
+    MatchPairsSerializer,
+    ExamSerializer,
+    QuizGapsSerializer,
+    AnswerSerializer,
+    ExamRegistrationSerializer,
+    ObjectiveTestSerializer,
+    Cloze_TestSerializer,
+    ImageObjectiveTestSerializer,
+    True_FalseSerializer,
+    ExamCertificateSerializer,
+    QuizCheckingSerializer,
+    ExamSubjectSerializer,
+    ExamMonthlySerializer,
+)
+from data.student.groups.models import Group
+from data.student.homeworks.models import Homework, Homework_history
+from data.student.mastering.models import Mastering
+from data.student.shop.models import Points
+from data.student.shop.utils import give_coin
+from data.student.student.models import Student
+from data.student.subject.models import Theme, Subject
+from data.account.models import CustomUser
+from data.exam_results.models import QuizResult
+from data.exam_results.serializers import QuizResultSerializer
+from data.notifications.models import Notification
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class QuizCheckAPIView(APIView):
@@ -52,7 +86,11 @@ class QuizCheckAPIView(APIView):
         operation_summary="Check Quiz Answers",
         operation_description="Submit answers to a quiz and get results.",
         request_body=QuizCheckSerializer,
-        responses={200: openapi.Response(description="Quiz result summary with section breakdown.")}
+        responses={
+            200: openapi.Response(
+                description="Quiz result summary with section breakdown."
+            )
+        },
     )
     def post(self, request):
         serializer = QuizCheckSerializer(data=request.data)
@@ -70,7 +108,7 @@ class QuizCheckAPIView(APIView):
                 "correct_count": 0,
                 "wrong_count": 0,
                 "ball": 0.0,
-            }
+            },
         }
 
         quiz_questions = QuizCheckingSerializer(quiz).data["questions"]
@@ -97,13 +135,17 @@ class QuizCheckAPIView(APIView):
             results["details"][qtype].append(result_data)
 
         context = {
-            'request': request,
-            'user': request.user,
-            'custom_data': 'some_value'
+            "request": request,
+            "user": request.user,
+            "custom_data": "some_value",
         }
 
         existing_results = QuizResult.objects.filter(quiz=quiz, student=student).first()
-        existing_data = QuizResultSerializer(existing_results, context=context).data if existing_results else None
+        existing_data = (
+            QuizResultSerializer(existing_results, context=context).data
+            if existing_results
+            else None
+        )
 
         data_length = existing_data.get("total_question_count")
 
@@ -145,7 +187,11 @@ class QuizCheckAPIView(APIView):
 
         results["summary"]["total_questions"] = total
         results["summary"]["wrong_count"] = total - results["summary"]["correct_count"]
-        results["summary"]["ball"] = round((results["summary"]["correct_count"] / total * 100), 2) if total > 0 else 0.0
+        results["summary"]["ball"] = (
+            round((results["summary"]["correct_count"] / total * 100), 2)
+            if total > 0
+            else 0.0
+        )
 
         self._create_mastering_record(theme, student, quiz, results["summary"]["ball"])
 
@@ -175,9 +221,16 @@ class QuizCheckAPIView(APIView):
         return {
             "id": question["id"],
             "type": "standard",
-            "text": question.get("text", {}).get("name") or question.get("question", {}).get("name"),
-            "answers": [{"id": a["id"], "text": a.get("text")} for a in question.get("answers", [])],
-            "correct_answer": next((a["id"] for a in question.get("answers", []) if a.get("is_correct")), None)
+            "text": question.get("text", {}).get("name")
+            or question.get("question", {}).get("name"),
+            "answers": [
+                {"id": a["id"], "text": a.get("text")}
+                for a in question.get("answers", [])
+            ],
+            "correct_answer": next(
+                (a["id"] for a in question.get("answers", []) if a.get("is_correct")),
+                None,
+            ),
         }
 
     def _prepare_true_false(self, question):
@@ -185,49 +238,51 @@ class QuizCheckAPIView(APIView):
             "id": question["id"],
             "type": "true_false",
             "question_text": question.get("question", {}).get("name"),
-            "correct_answer": question.get("answer", "")
+            "correct_answer": question.get("answer", ""),
         }
 
     def _prepare_match_pair(self, question):
         left_items = [p for p in question.get("pairs", []) if p.get("choice") == "Left"]
-        right_items = [p for p in question.get("pairs", []) if p.get("choice") == "Right"]
+        right_items = [
+            p for p in question.get("pairs", []) if p.get("choice") == "Right"
+        ]
 
         pairs = []
         for left in left_items:
             right = next((r for r in right_items if r["key"] == left["key"]), None)
             if right:
-                pairs.append({
-                    "left_id": left["id"],
-                    "left_text": left.get("pair"),
-                    "right_id": right["id"],
-                    "right_text": right.get("pair")
-                })
+                pairs.append(
+                    {
+                        "left_id": left["id"],
+                        "left_text": left.get("pair"),
+                        "right_id": right["id"],
+                        "right_text": right.get("pair"),
+                    }
+                )
 
-        return {
-            "id": question["id"],
-            "type": "match_pair",
-            "pairs": pairs
-        }
+        return {"id": question["id"], "type": "match_pair", "pairs": pairs}
 
     def _prepare_cloze_test(self, question):
         return {
             "id": question["id"],
             "type": "cloze_test",
-            "correct_sequence": [q["name"] for q in question.get("questions", [])]
+            "correct_sequence": [q["name"] for q in question.get("questions", [])],
         }
 
     def _find_user_answer(self, data, qtype, qid):
         id_fields = {
-            'standard': 'question_id',
-            'match_pair': 'match_id',
-            'objective_test': 'objective_id',
-            'cloze_test': 'cloze_id',
-            'image_objective': 'image_objective_id',
-            'true_false': 'true_false_id'
+            "standard": "question_id",
+            "match_pair": "match_id",
+            "objective_test": "objective_id",
+            "cloze_test": "cloze_id",
+            "image_objective": "image_objective_id",
+            "true_false": "true_false_id",
         }
 
-        id_field = id_fields.get(qtype, 'question_id')
-        return next((a for a in data.get(qtype, []) if str(a.get(id_field)) == str(qid)), None)
+        id_field = id_fields.get(qtype, "question_id")
+        return next(
+            (a for a in data.get(qtype, []) if str(a.get(id_field)) == str(qid)), None
+        )
 
     def _check_answer(self, question, user_answer):
         qtype = question["type"]
@@ -242,7 +297,10 @@ class QuizCheckAPIView(APIView):
         checker = getattr(self, f"check_{qtype}", None)
 
         if not checker:
-            return False, {"error": f"Unsupported question type: {qtype}", "id": question["id"]}
+            return False, {
+                "error": f"Unsupported question type: {qtype}",
+                "id": question["id"],
+            }
 
         try:
             return checker(question, user_answer)
@@ -255,17 +313,27 @@ class QuizCheckAPIView(APIView):
             correct_answer = question.get("answer", "")
             if not correct_answer and "answers" in question:
                 correct_answer = next(
-                    (a["text"] for a in question["answers"] if a.get("is_correct")),
-                    ""
+                    (a["text"] for a in question["answers"] if a.get("is_correct")), ""
                 )
 
             user_answer_text = user_answer.get("answer_ids", "")
-            is_correct = str(user_answer_text).strip().lower() == str(correct_answer).strip().lower()
+            is_correct = (
+                str(user_answer_text).strip().lower()
+                == str(correct_answer).strip().lower()
+            )
 
-            id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+            id = (
+                question.get("file", {}).get("id", "")
+                if question.get("file", {}).get("id")
+                else None
+            )
             if id:
                 file = File.objects.filter(id=id).first()
-                file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+                file = (
+                    FileUploadSerializer(file, context={"request": self.request}).data
+                    if file
+                    else None
+                )
             else:
                 file = None
             return is_correct, {
@@ -274,14 +342,22 @@ class QuizCheckAPIView(APIView):
                 "question_text": question.get("question", {}).get("name"),
                 "correct": is_correct,
                 "user_answer": user_answer_text,
-                "correct_answer": correct_answer
+                "correct_answer": correct_answer,
             }
         except Exception as e:
             logger.error(f"Error processing objective test: {str(e)}")
-            id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+            id = (
+                question.get("file", {}).get("id", "")
+                if question.get("file", {}).get("id")
+                else None
+            )
             if id:
                 file = File.objects.filter(id=id).first()
-                file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+                file = (
+                    FileUploadSerializer(file, context={"request": self.request}).data
+                    if file
+                    else None
+                )
             else:
                 file = None
             return False, {
@@ -291,15 +367,19 @@ class QuizCheckAPIView(APIView):
                 "error": str(e),
                 "question_text": question.get("question", {}).get("name"),
                 "user_answer": user_answer.get("answer_ids", ""),
-                "correct_answer": "Error processing correct answer"
+                "correct_answer": "Error processing correct answer",
             }
 
     def check_cloze_test(self, question, user_answer):
         try:
             if not isinstance(question, dict) or not isinstance(user_answer, dict):
-                raise ValueError("Invalid input: 'question' or 'user_answer' is not a dictionary")
+                raise ValueError(
+                    "Invalid input: 'question' or 'user_answer' is not a dictionary"
+                )
 
-            correct_sequence = [q.get("name", "") for q in question.get("questions", [])][::-1]
+            correct_sequence = [
+                q.get("name", "") for q in question.get("questions", [])
+            ][::-1]
             user_sequence = user_answer.get("word_sequence", [])
 
             print(user_sequence)
@@ -311,7 +391,9 @@ class QuizCheckAPIView(APIView):
 
             # Safe file handling
             file_data_raw = question.get("file")
-            file_id = file_data_raw.get("id") if isinstance(file_data_raw, dict) else None
+            file_id = (
+                file_data_raw.get("id") if isinstance(file_data_raw, dict) else None
+            )
             file = File.objects.filter(id=file_id).first() if file_id else None
 
             # Get question name
@@ -323,7 +405,11 @@ class QuizCheckAPIView(APIView):
 
             print(question_name)
 
-            file_data = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            file_data = (
+                FileUploadSerializer(file, context={"request": self.request}).data
+                if file
+                else None
+            )
 
             return is_correct, {
                 "id": question.get("id"),
@@ -331,24 +417,34 @@ class QuizCheckAPIView(APIView):
                 "question_text": question_name,
                 "correct": is_correct,
                 "user_answer": user_sequence,
-                "correct_answer": correct_sequence
+                "correct_answer": correct_sequence,
             }
 
         except Exception as e:
             logger.error(f"Error processing cloze test: {str(e)}")
 
             file_data_raw = question.get("file") if isinstance(question, dict) else None
-            file_id = file_data_raw.get("id") if isinstance(file_data_raw, dict) else None
+            file_id = (
+                file_data_raw.get("id") if isinstance(file_data_raw, dict) else None
+            )
             file = File.objects.filter(id=file_id).first() if file_id else None
-            file_data = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            file_data = (
+                FileUploadSerializer(file, context={"request": self.request}).data
+                if file
+                else None
+            )
 
             return False, {
                 "id": question.get("id") if isinstance(question, dict) else None,
                 "correct": False,
                 "file": file_data,
                 "error": str(e),
-                "user_answer": user_answer.get("word_sequence", []) if isinstance(user_answer, dict) else [],
-                "correct_answer": "Error processing correct sequence"
+                "user_answer": (
+                    user_answer.get("word_sequence", [])
+                    if isinstance(user_answer, dict)
+                    else []
+                ),
+                "correct_answer": "Error processing correct sequence",
             }
 
     def check_image_objective(self, question, user_answer):
@@ -360,15 +456,23 @@ class QuizCheckAPIView(APIView):
             is_correct = str(user_answer_id) == str(correct_answer.id)
 
             context = {
-                'request': self.request,
-                'user': self.request.user,
-                'custom_data': 'some_value'
+                "request": self.request,
+                "user": self.request.user,
+                "custom_data": "some_value",
             }
 
-            id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+            id = (
+                question.get("file", {}).get("id", "")
+                if question.get("file", {}).get("id")
+                else None
+            )
             if id:
                 file = File.objects.filter(id=id).first()
-                url = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+                url = (
+                    FileUploadSerializer(file, context={"request": self.request}).data
+                    if file
+                    else None
+                )
             else:
                 url = None
             correct_answer = Answer.objects.filter(text=correct_answer_id).first().text
@@ -379,21 +483,29 @@ class QuizCheckAPIView(APIView):
                 "user_answer": user_answer_id,
                 "correct_answer": correct_answer,
                 "comment": question.get("comment", ""),
-                "image_url": url or None
+                "image_url": url or None,
             }
         except Exception as e:
             logger.error(f"Error processing image objective: {str(e)}")
 
             context = {
-                'request': self.request,
-                'user': self.request.user,
-                'custom_data': 'some_value'
+                "request": self.request,
+                "user": self.request.user,
+                "custom_data": "some_value",
             }
 
-            id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+            id = (
+                question.get("file", {}).get("id", "")
+                if question.get("file", {}).get("id")
+                else None
+            )
             if id:
                 file = File.objects.filter(id=id).first()
-                url = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+                url = (
+                    FileUploadSerializer(file, context={"request": self.request}).data
+                    if file
+                    else None
+                )
             else:
                 url = None
             correct_answer_id = question.get("answer", "")
@@ -405,26 +517,36 @@ class QuizCheckAPIView(APIView):
                 "error": str(e),
                 "image_url": url or None,
                 "user_answer": user_answer.get("answer", ""),
-                "correct_answer": correct_answer
+                "correct_answer": correct_answer,
             }
 
     def check_standard(self, question, user_answer):
 
-        correct_answer_id = next((a["id"] for a in question.get("answers", []) if a.get("is_correct")), None)
+        correct_answer_id = next(
+            (a["id"] for a in question.get("answers", []) if a.get("is_correct")), None
+        )
 
         user_answer_id = user_answer.get("answer_id")
         is_correct = str(user_answer_id) == str(correct_answer_id)
 
         correct_answer = next(
             (a["text"] for a in question.get("answers", []) if a.get("is_correct")),
-            None
+            None,
         )
         user_answer = Answer.objects.filter(id=user_answer_id).first().text
 
-        id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+        id = (
+            question.get("file", {}).get("id", "")
+            if question.get("file", {}).get("id")
+            else None
+        )
         if id:
             file = File.objects.filter(id=id).first()
-            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            file = (
+                FileUploadSerializer(file, context={"request": self.request}).data
+                if file
+                else None
+            )
         else:
             file = None
 
@@ -441,12 +563,20 @@ class QuizCheckAPIView(APIView):
     def check_true_false(self, question, user_answer):
         correct_answer = question.get("answer", "").lower()
         user_choice = user_answer.get("choice", "").lower()
-        is_correct = (user_choice == correct_answer)
+        is_correct = user_choice == correct_answer
 
-        id = question.get("file", {}).get("id", "") if question.get("file", {}).get("id") else None
+        id = (
+            question.get("file", {}).get("id", "")
+            if question.get("file", {}).get("id")
+            else None
+        )
         if id:
             file = File.objects.filter(id=id).first()
-            file = FileUploadSerializer(file, context={'request': self.request}).data if file else None
+            file = (
+                FileUploadSerializer(file, context={"request": self.request}).data
+                if file
+                else None
+            )
         else:
             file = None
 
@@ -477,7 +607,8 @@ class QuizCheckAPIView(APIView):
         # Build correct mapping by matching keys
         correct_mapping = {
             key: (left_items[key], right_items[key])
-            for key in left_items if key in right_items
+            for key in left_items
+            if key in right_items
         }
 
         user_pairs = user_answer.get("pairs", [])
@@ -523,7 +654,7 @@ class QuizCheckAPIView(APIView):
             "id": question["id"],
             "correct": all_correct,
             "comment": pairs_serialized[0]["comment"],
-            "pairs": pairs_serialized[0]["pairs"]
+            "pairs": pairs_serialized[0]["pairs"],
         }
 
     def _create_mastering_record(self, theme, student, quiz, ball):
@@ -543,11 +674,7 @@ class QuizCheckAPIView(APIView):
                 mastering.save()
             else:
                 mastering = Mastering.objects.create(
-                    theme=theme,
-                    student=student,
-                    test=quiz,
-                    ball=ball,
-                    choice="Test"
+                    theme=theme, student=student, test=quiz, ball=ball, choice="Test"
                 )
 
             history = Homework_history.objects.filter(
@@ -569,7 +696,10 @@ class QuizCheckAPIView(APIView):
             history.test_checked = True
             history.save()
 
-            print("history", Homework_history.objects.filter(pk=history.pk).first().test_checked)
+            print(
+                "history",
+                Homework_history.objects.filter(pk=history.pk).first().test_checked,
+            )
 
             if history:
                 Points.objects.create(
@@ -577,7 +707,7 @@ class QuizCheckAPIView(APIView):
                     from_test=mastering,
                     from_homework=homework,
                     student=student,
-                    comment=f"{homework.theme.title} test results"
+                    comment=f"{homework.theme.title} test results",
                 )
             coin = give_coin(
                 student=student,
@@ -618,7 +748,10 @@ class ExamSubjectDetail(RetrieveUpdateDestroyAPIView):
 
     # Only these fields are allowed to be changed in bulk
     allowed_bulk_fields = {
-        "order", "has_certificate", "certificate", "certificate_expire_date"
+        "order",
+        "has_certificate",
+        "certificate",
+        "certificate_expire_date",
     }
 
 
@@ -812,7 +945,9 @@ class ExamListView(ListCreateAPIView):
         if user.role == "TEACHER":
             queryset = queryset.filter(date__gt=datetime.today() + timedelta(days=3))
 
-            groups = Group.objects.select_related('course__subject').filter(teacher=user)
+            groups = Group.objects.select_related("course__subject").filter(
+                teacher=user
+            )
 
             print(groups.first().course.subject.name)
 
@@ -852,7 +987,9 @@ class ExamListView(ListCreateAPIView):
         if start_time:
             queryset = queryset.filter(start_time__gte=start_time)
         if start_time and end_time:
-            queryset = queryset.filter(start_time__gte=start_time, end_time__lte=end_time)
+            queryset = queryset.filter(
+                start_time__gte=start_time, end_time__lte=end_time
+            )
         if homework:
             queryset = queryset.filter(homework__id=homework)
 
@@ -867,7 +1004,7 @@ class ExamListView(ListCreateAPIView):
             try:
                 df = pd.read_excel(quiz.students_xml.file)
                 quiz.students_count = len(df)
-                quiz.save(update_fields=['students_count'])
+                quiz.save(update_fields=["students_count"])
             except Exception as e:
                 # optionally: log the error
                 print(f"Failed to parse Excel for quiz {quiz.id}: {e}")
@@ -881,9 +1018,10 @@ class ExamDetailsView(RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         quiz = serializer.save()
 
-        file_id = self.request.data.get("students_excel")  # ✅ this is UUID from frontend
+        file_id = self.request.data.get(
+            "students_excel"
+        )  # ✅ this is UUID from frontend
         if file_id:
-            from ...upload.models import File  # or your correct File model path
 
             try:
                 file_instance = File.objects.get(id=file_id)
@@ -898,7 +1036,7 @@ class ExamDetailsView(RetrieveUpdateDestroyAPIView):
         try:
             df = pd.read_excel(file_obj)
             quiz.students_count = len(df)
-            quiz.save(update_fields=['students_count'])
+            quiz.save(update_fields=["students_count"])
             print(f"✅ ROWS COUNTED: {len(df)}")
         except Exception as e:
             print(f"❌ Failed to parse Excel for quiz {quiz.id}: {e}")
@@ -925,19 +1063,21 @@ class ExcelQuizUploadAPIView(APIView):
         operation_description="Upload an Excel file containing questions and answers to import them into the system.",
         manual_parameters=[
             openapi.Parameter(
-                name='file',
+                name="file",
                 in_=openapi.IN_FORM,
                 type=openapi.TYPE_FILE,
                 required=True,
-                description="Excel file (.xlsx) with a 'Questions' sheet"
+                description="Excel file (.xlsx) with a 'Questions' sheet",
             )
         ],
-        responses={200: openapi.Response(description="Import result summary")}
+        responses={200: openapi.Response(description="Import result summary")},
     )
     def post(self, request):
         file_obj = request.FILES.get("file")
         if not file_obj:
-            return Response({"error": "No file uploaded."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "No file uploaded."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             wb = load_workbook(filename=file_obj)
@@ -970,7 +1110,11 @@ class ExcelQuizUploadAPIView(APIView):
                     # Get or create Answer
                     answer, created = Answer.objects.get_or_create(text=answer_text)
                     if created:
-                        answer.is_correct = str(is_correct).strip().lower() in ["true", "1", "yes"]
+                        answer.is_correct = str(is_correct).strip().lower() in [
+                            "true",
+                            "1",
+                            "yes",
+                        ]
                         answer.save()
 
                     # Add answer to question
@@ -978,16 +1122,16 @@ class ExcelQuizUploadAPIView(APIView):
 
                     created_questions += 1
 
-            return Response({
-                "message": "Quiz imported successfully",
-                "quizzes_created": len(quiz_map),
-                "questions_processed": created_questions
-            })
+            return Response(
+                {
+                    "message": "Quiz imported successfully",
+                    "quizzes_created": len(quiz_map),
+                    "questions_processed": created_questions,
+                }
+            )
 
         except Exception as e:
-            return Response({
-                "error": str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ExamRegistrationListCreateAPIView(ListCreateAPIView):
@@ -1035,7 +1179,7 @@ class ExamRegistrationUpdate(RetrieveUpdateDestroyAPIView):
 
         data["status"] = "Active"
 
-        partial = kwargs.pop('partial', False)
+        partial = kwargs.pop("partial", False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -1090,14 +1234,16 @@ class ExamRegisteredStudentAPIView(APIView):
         operation_description="Download an Excel file containing registered students for a specific exam.",
         manual_parameters=[
             openapi.Parameter(
-                name='exam_id',
+                name="exam_id",
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
                 required=True,
-                description="ID of the exam"
+                description="ID of the exam",
             )
         ],
-        responses={200: openapi.Response(description="Excel file with registered students")}
+        responses={
+            200: openapi.Response(description="Excel file with registered students")
+        },
     )
     def get(self, request):
         exam_id = request.GET.get("exam_id")
@@ -1109,7 +1255,9 @@ class ExamRegisteredStudentAPIView(APIView):
         except Exam.DoesNotExist:
             return Response({"detail": "Exam not found."}, status=404)
 
-        registrations = ExamRegistration.objects.filter(exam=exam).select_related('student')
+        registrations = ExamRegistration.objects.filter(exam=exam).select_related(
+            "student"
+        )
 
         # Sort by is_participating (True first)
         registrations = sorted(registrations, key=lambda r: not r.is_participating)
@@ -1120,45 +1268,97 @@ class ExamRegisteredStudentAPIView(APIView):
         ws.title = "Registered Students"
 
         headers = [
-            "F.I.O", "Telefon raqami", "Ro'yxatdan o'tish", "Imtihonda qatnashadimi?",
-            "Ball", "Talaba izohi", "Variant", "Sertifikati egasimi", "Ta'lim tili", "Test turi", "Test sanasi"
+            "F.I.O",
+            "Telefon raqami",
+            "Ro'yxatdan o'tish",
+            "Imtihonda qatnashadimi?",
+            "Ball",
+            "Talaba izohi",
+            "Variant",
+            "Sertifikati egasimi",
+            "Ta'lim tili",
+            "Test turi",
+            "Test sanasi",
         ]
         ws.append(headers)
 
         # Define fill styles
-        green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # light green
-        red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")  # light red
+        green_fill = PatternFill(
+            start_color="C6EFCE", end_color="C6EFCE", fill_type="solid"
+        )  # light green
+        red_fill = PatternFill(
+            start_color="FFC7CE", end_color="FFC7CE", fill_type="solid"
+        )  # light red
 
         for reg in registrations:
 
-            certificate = ExamCertificate.objects.filter(exam=exam, student=reg.student).first()
+            certificate = ExamCertificate.objects.filter(
+                exam=exam, student=reg.student
+            ).first()
             has_certificate = False
-            if certificate and certificate.certificate and certificate.status == "Accepted":
+            if (
+                certificate
+                and certificate.certificate
+                and certificate.status == "Accepted"
+            ):
                 has_certificate = True
 
             student = reg.student
             row_data = [
                 f"{student.first_name} {student.last_name}",
-                getattr(student, 'phone', ''),
+                getattr(student, "phone", ""),
                 "Faol" if reg.status == "Active" else "Yakunlangan",
                 "Ha" if reg.is_participating else "Yo'q",
                 reg.mark,
                 reg.student_comment,
-                "\n".join([f"{o.subject.name} - {o.options} variant" for o in reg.option.all() if o.subject]),
+                "\n".join(
+                    [
+                        f"{o.subject.name} - {o.options} variant"
+                        for o in reg.option.all()
+                        if o.subject
+                    ]
+                ),
                 "Ha" if has_certificate else "Yo'q",
-                "\n".join([
-                    "Uzbek" if o.lang_national else "Euro" if o.lang_foreign else "Tanlanmagan"
-                    for o in reg.option.all()
-                ]),
-                "Haftalik" if reg.exam.choice == "Weekly" else
-                "Oylik" if reg.exam.choice == "Weekly" else
-                "Unit test" if reg.exam.choice == "Unit" else
-                "Mid of course" if reg.exam.choice == "Mid_of_course" else
-                "Level" if reg.exam.choice == "Level" else
-                "Mock" if reg.exam.choice == "Mock" else
-                "Uy ishi" if reg.exam.choice == "Uy ishi" else "",
-                reg.exam.date.strftime("%m-%d-%Y")
-
+                "\n".join(
+                    [
+                        (
+                            "Uzbek"
+                            if o.lang_national
+                            else "Euro" if o.lang_foreign else "Tanlanmagan"
+                        )
+                        for o in reg.option.all()
+                    ]
+                ),
+                (
+                    "Haftalik"
+                    if reg.exam.choice == "Weekly"
+                    else (
+                        "Oylik"
+                        if reg.exam.choice == "Weekly"
+                        else (
+                            "Unit test"
+                            if reg.exam.choice == "Unit"
+                            else (
+                                "Mid of course"
+                                if reg.exam.choice == "Mid_of_course"
+                                else (
+                                    "Level"
+                                    if reg.exam.choice == "Level"
+                                    else (
+                                        "Mock"
+                                        if reg.exam.choice == "Mock"
+                                        else (
+                                            "Uy ishi"
+                                            if reg.exam.choice == "Uy ishi"
+                                            else ""
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                reg.exam.date.strftime("%m-%d-%Y"),
             ]
 
             row = ws.append(row_data)
@@ -1195,14 +1395,14 @@ class ExamRegisteredStudentListAPIView(APIView):
         operation_description="Return registered students for a specific exam as JSON.",
         manual_parameters=[
             openapi.Parameter(
-                name='exam_id',
+                name="exam_id",
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
                 required=True,
-                description="ID of the exam"
+                description="ID of the exam",
             )
         ],
-        responses={200: openapi.Response(description="List of registered students")}
+        responses={200: openapi.Response(description="List of registered students")},
     )
     def get(self, request):
         exam_id = request.GET.get("exam_id")
@@ -1214,7 +1414,11 @@ class ExamRegisteredStudentListAPIView(APIView):
         except Exam.DoesNotExist:
             return Response({"detail": "Exam not found."}, status=404)
 
-        registrations = ExamRegistration.objects.filter(exam=exam).select_related('student').prefetch_related('option')
+        registrations = (
+            ExamRegistration.objects.filter(exam=exam)
+            .select_related("student")
+            .prefetch_related("option")
+        )
 
         # Sort by is_participating (True first)
         registrations = sorted(registrations, key=lambda r: not r.is_participating)
@@ -1222,28 +1426,36 @@ class ExamRegisteredStudentListAPIView(APIView):
         data = []
         for reg in registrations:
             student = reg.student
-            certificate = ExamCertificate.objects.filter(exam=exam, student=student).first()
+            certificate = ExamCertificate.objects.filter(
+                exam=exam, student=student
+            ).first()
             has_certificate = bool(certificate and certificate.certificate)
 
             options = [
                 {
                     "subject": o.subject.name if o.subject else None,
                     "variant": o.options,
-                    "lang": "Uzbek" if o.lang_national else "Euro" if o.lang_foreign else "Tanlanmagan"
+                    "lang": (
+                        "Uzbek"
+                        if o.lang_national
+                        else "Euro" if o.lang_foreign else "Tanlanmagan"
+                    ),
                 }
                 for o in reg.option.all()
             ]
 
-            data.append({
-                "full_name": f"{student.first_name} {student.last_name}",
-                "phone": getattr(student, 'phone', ''),
-                "status": "Faol" if reg.status == "Active" else "Yakunlangan",
-                "is_participating": reg.is_participating,
-                "mark": reg.mark,
-                "student_comment": reg.student_comment,
-                "options": options,
-                "has_certificate": has_certificate,
-            })
+            data.append(
+                {
+                    "full_name": f"{student.first_name} {student.last_name}",
+                    "phone": getattr(student, "phone", ""),
+                    "status": "Faol" if reg.status == "Active" else "Yakunlangan",
+                    "is_participating": reg.is_participating,
+                    "mark": reg.mark,
+                    "student_comment": reg.student_comment,
+                    "options": options,
+                    "has_certificate": has_certificate,
+                }
+            )
 
         return Response(data, status=200)
 
@@ -1285,7 +1497,9 @@ class ExamOptionCreate(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         if not isinstance(data, list):
-            return Response({'error': 'Body must be a list of registration objects'}, status=400)
+            return Response(
+                {"error": "Body must be a list of registration objects"}, status=400
+            )
 
         created_count = 0
         updated_count = 0
@@ -1302,29 +1516,49 @@ class ExamOptionCreate(APIView):
                     # Normalize variation (string choices "1".."10")
                     variation = entry.get("variation")
                     if variation is None and "option" in entry:
-                        variation = str(entry["option"]) if entry["option"] is not None else None
+                        variation = (
+                            str(entry["option"])
+                            if entry["option"] is not None
+                            else None
+                        )
                     elif variation is not None:
                         variation = str(variation)
 
                     # Required fields
                     if not student_id or not exam_id or subject in (None, "", []):
-                        errors.append({'entry': entry, 'error': 'Missing required fields: student, exam, subject'})
+                        errors.append(
+                            {
+                                "entry": entry,
+                                "error": "Missing required fields: student, exam, subject",
+                            }
+                        )
                         continue
 
                     # Normalize subject IDs to list[str] (UUIDs)
-                    incoming_option_ids = subject if isinstance(subject, list) else [subject]
-                    incoming_option_ids = [str(x).strip() for x in incoming_option_ids if x]
+                    incoming_option_ids = (
+                        subject if isinstance(subject, list) else [subject]
+                    )
+                    incoming_option_ids = [
+                        str(x).strip() for x in incoming_option_ids if x
+                    ]
 
                     # Load FKs
                     try:
                         student = Student.objects.get(id=student_id)
                     except Student.DoesNotExist:
-                        errors.append({'entry': entry, 'error': f"Student {student_id} does not exist"})
+                        errors.append(
+                            {
+                                "entry": entry,
+                                "error": f"Student {student_id} does not exist",
+                            }
+                        )
                         continue
                     try:
                         exam = Exam.objects.get(id=exam_id)
                     except Exam.DoesNotExist:
-                        errors.append({'entry': entry, 'error': f"Exam {exam_id} does not exist"})
+                        errors.append(
+                            {"entry": entry, "error": f"Exam {exam_id} does not exist"}
+                        )
                         continue
 
                     group = None
@@ -1332,23 +1566,37 @@ class ExamOptionCreate(APIView):
                         try:
                             group = Group.objects.get(id=group_id)
                         except Group.DoesNotExist:
-                            errors.append({'entry': entry, 'error': f"Group {group_id} does not exist"})
+                            errors.append(
+                                {
+                                    "entry": entry,
+                                    "error": f"Group {group_id} does not exist",
+                                }
+                            )
                             continue
 
                     # Validate ExamSubject UUIDs
-                    existing_ids = set(str(x) for x in
-                                       ExamSubject.objects.filter(id__in=incoming_option_ids)
-                                       .values_list('id', flat=True))
+                    existing_ids = set(
+                        str(x)
+                        for x in ExamSubject.objects.filter(
+                            id__in=incoming_option_ids
+                        ).values_list("id", flat=True)
+                    )
                     missing_ids = sorted(set(incoming_option_ids) - existing_ids)
                     if missing_ids:
-                        errors.append({'entry': entry, 'error': f"Invalid ExamSubject ID(s): {missing_ids}"})
+                        errors.append(
+                            {
+                                "entry": entry,
+                                "error": f"Invalid ExamSubject ID(s): {missing_ids}",
+                            }
+                        )
                         continue
 
                     # Find existing registration for (student, exam, group) — DO NOT include variation
-                    reg = (ExamRegistration.objects
-                           .select_for_update()
-                           .filter(student=student, exam=exam, group=group)
-                           .first())
+                    reg = (
+                        ExamRegistration.objects.select_for_update()
+                        .filter(student=student, exam=exam, group=group)
+                        .first()
+                    )
 
                     if reg is None:
                         reg = ExamRegistration.objects.create(
@@ -1362,7 +1610,9 @@ class ExamOptionCreate(APIView):
                         created_count += 1
                     else:
                         # Merge M2M options (union)
-                        current_ids = set(str(x) for x in reg.option.values_list("id", flat=True))
+                        current_ids = set(
+                            str(x) for x in reg.option.values_list("id", flat=True)
+                        )
                         merged_ids = sorted(current_ids | set(incoming_option_ids))
                         reg.option.set(merged_ids)
 
@@ -1376,33 +1626,42 @@ class ExamOptionCreate(APIView):
                     # Per-entry Notification
                     d = getattr(reg.exam, "date", None)
                     if isinstance(d, (datetime, date)):
-                        date_text = d.strftime('%d-%m-%Y')
+                        date_text = d.strftime("%d-%m-%Y")
                     else:
                         date_text = ""
 
                     # Subject/option text (safe)
                     opted = list(reg.option.select_related("subject").all())
-                    subject_text = next((o.subject.name for o in opted if getattr(o, "subject_id", None)), "")
+                    subject_text = next(
+                        (
+                            o.subject.name
+                            for o in opted
+                            if getattr(o, "subject_id", None)
+                        ),
+                        "",
+                    )
                     options_text = reg.variation or ""
 
                     Notification.objects.create(
                         user=student.user,
-                        comment=(f"Sizga {date_text} sanasida tashkil"
-                                 f" etilyotgan imtihon uchun {subject_text} fanidan "
-                                 f"{options_text} varianti belgilandi!"),
+                        comment=(
+                            f"Sizga {date_text} sanasida tashkil"
+                            f" etilyotgan imtihon uchun {subject_text} fanidan "
+                            f"{options_text} varianti belgilandi!"
+                        ),
                         choice="Examination",
                         come_from="",
                     )
 
                 except Exception as e:
-                    errors.append({'entry': entry, 'error': f"Unexpected error: {e}"})
+                    errors.append({"entry": entry, "error": f"Unexpected error: {e}"})
 
         return Response(
             {
-                'created': created_count,
-                'updated': updated_count,
-                'errors': errors,
-                'errors_count': len(errors),
+                "created": created_count,
+                "updated": updated_count,
+                "errors": errors,
+                "errors_count": len(errors),
             },
             status=207 if errors else 200,
         )
@@ -1421,24 +1680,30 @@ class MonthlyExam(APIView):
         student_id = validated_data.get("student")
 
         if not exam_id or not student_id:
-            return Response({"detail": "Exam and student are required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Exam and student are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # 🔍 Retrieve existing exam registration
         exam_registration = ExamRegistration.objects.filter(
-            exam=exam_id,
-            student=student_id,
-            exam__choice="Monthly"
+            exam=exam_id, student=student_id, exam__choice="Monthly"
         ).first()
 
         exam_registration.status = "Active"
         exam_registration.save()
 
         if not exam_registration:
-            return Response({"detail": "Exam registration not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Exam registration not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         # Optional certificates
         first_certificate = None
-        if validated_data.get("first_has_certificate") and validated_data.get("first_certificate"):
+        if validated_data.get("first_has_certificate") and validated_data.get(
+            "first_certificate"
+        ):
             file_1 = File.objects.filter(id=validated_data["first_certificate"]).first()
             if file_1:
                 first_certificate = ExamCertificate.objects.create(
@@ -1449,8 +1714,12 @@ class MonthlyExam(APIView):
                 )
 
         second_certificate = None
-        if validated_data.get("second_has_certificate") and validated_data.get("second_certificate"):
-            file_2 = File.objects.filter(id=validated_data["second_certificate"]).first()
+        if validated_data.get("second_has_certificate") and validated_data.get(
+            "second_certificate"
+        ):
+            file_2 = File.objects.filter(
+                id=validated_data["second_certificate"]
+            ).first()
             if file_2:
                 second_certificate = ExamCertificate.objects.create(
                     student=student_id,
@@ -1462,24 +1731,34 @@ class MonthlyExam(APIView):
         # Optional exam subjects
         exam_subjects = []
         if validated_data.get("first_subject"):
-            subject_1 = Subject.objects.filter(id=validated_data["first_subject"]).first()
+            subject_1 = Subject.objects.filter(
+                id=validated_data["first_subject"]
+            ).first()
             if subject_1:
                 exam_subjects.append(
                     ExamSubject.objects.create(
                         subject=subject_1,
                         has_certificate=bool(first_certificate),
-                        certificate=first_certificate.certificate if first_certificate else None,
+                        certificate=(
+                            first_certificate.certificate if first_certificate else None
+                        ),
                     )
                 )
 
         if validated_data.get("second_subject"):
-            subject_2 = Subject.objects.filter(id=validated_data["second_subject"]).first()
+            subject_2 = Subject.objects.filter(
+                id=validated_data["second_subject"]
+            ).first()
             if subject_2:
                 exam_subjects.append(
                     ExamSubject.objects.create(
                         subject=subject_2,
                         has_certificate=bool(second_certificate),
-                        certificate=second_certificate.certificate if second_certificate else None,
+                        certificate=(
+                            second_certificate.certificate
+                            if second_certificate
+                            else None
+                        ),
                     )
                 )
 
@@ -1491,10 +1770,18 @@ class MonthlyExam(APIView):
         response_data = {
             "exam": str(exam_id),
             "student": str(student_id),
-            "first_subject": exam_subjects[0].subject.name if len(exam_subjects) > 0 else None,
-            "second_subject": exam_subjects[1].subject.name if len(exam_subjects) > 1 else None,
-            "first_certificate": str(first_certificate.id) if first_certificate else None,
-            "second_certificate": str(second_certificate.id) if second_certificate else None,
+            "first_subject": (
+                exam_subjects[0].subject.name if len(exam_subjects) > 0 else None
+            ),
+            "second_subject": (
+                exam_subjects[1].subject.name if len(exam_subjects) > 1 else None
+            ),
+            "first_certificate": (
+                str(first_certificate.id) if first_certificate else None
+            ),
+            "second_certificate": (
+                str(second_certificate.id) if second_certificate else None
+            ),
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
