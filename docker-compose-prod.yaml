@@ -38,7 +38,6 @@ services:
       - ./utils:/usr/src/app/utils
       - ./locales:/usr/src/app/locales
       - ./tg_bot:/usr/src/app/tg_bot
-      - ./data:/usr/src/app/data
     ports:
       - "8001:8000"
     env_file:
