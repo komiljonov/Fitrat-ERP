@@ -100,7 +100,8 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def get_real_student(self, obj):
         student_count = StudentGroup.objects.filter(
-            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False)),
+            is_archived=False,
         ).count()
 
         first = StudentGroup.objects.filter(
@@ -154,7 +155,8 @@ class GroupSerializer(serializers.ModelSerializer):
         from django.db.models import Q
 
         student_count = StudentGroup.objects.filter(
-            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+            Q(group=obj, archived=False)
+            & (Q(student__is_archived=False) | Q(lid__is_archived=False))
         ).count()
 
         return student_count

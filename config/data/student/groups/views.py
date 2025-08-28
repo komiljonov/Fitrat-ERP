@@ -88,6 +88,7 @@ class StudentGroupsView(ListCreateAPIView):
         is_archived = self.request.GET.get("is_archived", None)
 
         if is_archived:
+            # TODO: Use is_archived == "1" instead of capitalize
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if student:
@@ -247,7 +248,6 @@ class RoomFilterView(ListAPIView):
         return queryset
 
 
-
 class CheckRoomLessonScheduleView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -260,14 +260,15 @@ class CheckRoomLessonScheduleView(APIView):
         teacher_id = request.GET.get("teacher")
         current_group = request.GET.get("group")
 
-
         raw_days = request.GET.getlist("scheduled_day_type")
         if len(raw_days) == 1 and "," in raw_days[0]:
             raw_days = [d.strip() for d in raw_days[0].split(",") if d.strip()]
 
         if not all([room_id, date_str, started_at_str, ended_at_str]) or not raw_days:
             return Response(
-                {"error": "Missing required parameters (room, date, started_at, ended_at, days)"},
+                {
+                    "error": "Missing required parameters (room, date, started_at, ended_at, days)"
+                },
                 status=400,
             )
 
@@ -279,7 +280,9 @@ class CheckRoomLessonScheduleView(APIView):
             return Response({"error": "Invalid date or time format"}, status=400)
 
         if not (ended_at > started_at):
-            return Response({"error": "`ended_at` must be greater than `started_at`"}, status=400)
+            return Response(
+                {"error": "`ended_at` must be greater than `started_at`"}, status=400
+            )
 
         try:
             day_ids = list(map(str, raw_days))
@@ -296,8 +299,7 @@ class CheckRoomLessonScheduleView(APIView):
         time_overlap = Q(started_at__lt=ended_at, ended_at__gt=started_at)
 
         base_qs = (
-            Group.objects
-            .filter(date_window)
+            Group.objects.filter(date_window)
             .filter(on_any_requested_day)
             .filter(time_overlap)
             .distinct()
@@ -337,8 +339,12 @@ class CheckRoomLessonScheduleView(APIView):
         # NOTE: ExtraLesson (student) typically has no group; nothing to exclude here.
 
         conflicts = {
-            "room_group_lessons": GroupLessonSerializer(room_conflicts_qs, many=True).data,
-            "teacher_group_lessons": GroupLessonSerializer(teacher_conflicts_qs, many=True).data,
+            "room_group_lessons": GroupLessonSerializer(
+                room_conflicts_qs, many=True
+            ).data,
+            "teacher_group_lessons": GroupLessonSerializer(
+                teacher_conflicts_qs, many=True
+            ).data,
             "extra_group_lessons": [
                 {
                     "group": eg.group.name if eg.group.id else None,
@@ -352,8 +358,12 @@ class CheckRoomLessonScheduleView(APIView):
             ],
             "extra_lessons": [
                 {
-                    "student": el.student.phone if getattr(el, "student", None) else None,
-                    "teacher": el.teacher.username if getattr(el, "teacher", None) else None,
+                    "student": (
+                        el.student.phone if getattr(el, "student", None) else None
+                    ),
+                    "teacher": (
+                        el.teacher.username if getattr(el, "teacher", None) else None
+                    ),
                     "date": el.date,
                     "started_at": el.started_at,
                     "ended_at": el.ended_at,
@@ -363,12 +373,14 @@ class CheckRoomLessonScheduleView(APIView):
             ],
         }
 
-        has_conflict = any([
-            room_conflicts_qs.exists(),
-            teacher_conflicts_qs.exists(),
-            extra_group_qs.exists(),
-            extra_student_qs.exists(),
-        ])
+        has_conflict = any(
+            [
+                room_conflicts_qs.exists(),
+                teacher_conflicts_qs.exists(),
+                extra_group_qs.exists(),
+                extra_student_qs.exists(),
+            ]
+        )
 
         if has_conflict:
             return Response({"available": False, "conflicts": conflicts})
