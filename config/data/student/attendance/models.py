@@ -88,17 +88,17 @@ class Attendance(BaseModel):
                 ),
             ),
             # Unique per (date, group, student) when student is set
-            models.UniqueConstraint(
-                fields=["date", "group", "student"],
-                name="attendance_unique_date_group_student",
-                condition=Q(student__isnull=False),
-            ),
-            # Unique per (date, group, lid) when lid is set
-            models.UniqueConstraint(
-                fields=["date", "group", "lid"],
-                name="attendance_unique_date_group_lid",
-                condition=Q(lid__isnull=False),
-            ),
+            # models.UniqueConstraint(
+            #     fields=["date", "group", "student"],
+            #     name="attendance_unique_date_group_student",
+            #     condition=Q(student__isnull=False),
+            # ),
+            # # Unique per (date, group, lid) when lid is set
+            # models.UniqueConstraint(
+            #     fields=["date", "group", "lid"],
+            #     name="attendance_unique_date_group_lid",
+            #     condition=Q(lid__isnull=False),
+            # ),
         ]
 
 
