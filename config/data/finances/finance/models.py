@@ -60,6 +60,16 @@ class Kind(BaseModel):
     def __str__(self):
         return f"{self.action} {self.name}"
 
+    @classmethod
+    def get(cls, kind: str, raise_if_not_exists: bool = False):
+
+        action = FinanceKindTypeChoices.ACTIONS[kind]
+
+        if raise_if_not_exists:
+            return cls.objects.get(kind=kind)
+
+        return cls.objects.get_or_create(kind=kind, action=action)[0]
+
 
 class PaymentMethod(BaseModel):
     name = models.CharField(max_length=100)

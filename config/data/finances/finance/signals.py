@@ -3,6 +3,8 @@ from decimal import Decimal
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
+
 from .models import Finance, VoucherStudent, Casher, Kind, KpiFinance
 from data.logs.models import Log
 
@@ -89,7 +91,8 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
                 casher=casher,
                 action="EXPENSE",
                 amount=instance.voucher.amount,
-                kind=Kind.objects.filter(name="Voucher").first(),
+                # kind=Kind.objects.filter(name="Voucher").first(),
+                kind=Kind.get(FinanceKindTypeChoices.VOUCHER),
                 payment_method="Cash",
                 lid=instance.lid,
                 comment=f"Ushbu buyurtma uchun {instance.voucher.amount} so'm miqdorida voucher qo'shildi!",
@@ -102,7 +105,8 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
                 casher=casher,
                 action="EXPENSE",
                 amount=instance.voucher.amount,
-                kind=Kind.objects.filter(name="Voucher").first(),
+                # kind=Kind.objects.filter(name="Voucher").first(),
+                kind=Kind.get(FinanceKindTypeChoices.VOUCHER),
                 payment_method="Cash",
                 student=instance.student,
                 comment=f"Ushbu o'quvchi uchun {instance.voucher.amount} so'm miqdorida voucher qo'shildi!",
@@ -125,7 +129,8 @@ def on_create(sender, instance: KpiFinance, created, **kwargs):
                 ).first(),
                 action="EXPENSE",
                 amount=instance.amount,
-                kind=Kind.objects.filter(name="Bonus").first(),
+                # kind=Kind.objects.filter(name="Bonus").first(),
+                kind=Kind.get(FinanceKindTypeChoices.BONUS),
                 stuff=instance.user,
                 # comment = "Xodim uchun bonus sifatida qo'shildi!"
                 comment=instance.reason,
@@ -142,7 +147,8 @@ def on_create(sender, instance: KpiFinance, created, **kwargs):
                 ).first(),
                 action="INCOME",
                 amount=instance.amount,
-                kind=Kind.objects.filter(name="Money back").first(),
+                # kind=Kind.objects.filter(name="Money back").first(),
+                kind=Kind.get(FinanceKindTypeChoices.MONEY_BACK),
                 stuff=instance.user,
                 comment="Xodim uchun jarima sifatida qo'shildi!",
             )

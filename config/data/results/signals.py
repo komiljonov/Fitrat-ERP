@@ -7,6 +7,8 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from icecream import ic
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
+
 from .models import Results
 from .utils import (
     validate_olimpiada_requirements,
@@ -171,8 +173,11 @@ def on_update(sender, instance: Results, created, **kwargs):
                         casher = None
 
                     # Check if bonus kind exists
+                    # bonus_kind = Kind.objects.filter(
+                    #     action="EXPENSE", name__icontains="Bonus"
+                    # ).first()
                     bonus_kind = Kind.objects.filter(
-                        action="EXPENSE", name__icontains="Bonus"
+                        action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
                     ).first()
                     if not bonus_kind:
                         raise ValueError("Results turi topilmadi!")
@@ -247,8 +252,11 @@ def on_update(sender, instance: Results, created, **kwargs):
                         casher = None
 
                     # Check if bonus kind exists
+                    # bonus_kind = Kind.objects.filter(
+                    #     action="EXPENSE", name__icontains="Bonus"
+                    # ).first()
                     bonus_kind = Kind.objects.filter(
-                        action="EXPENSE", name__icontains="Bonus"
+                        action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
                     ).first()
                     if not bonus_kind:
                         raise ValueError("Results turi topilmadi!")
@@ -363,9 +371,14 @@ def on_update(sender, instance: Results, created, **kwargs):
                     if not casher:
                         casher = None
 
+                    # bonus_kind = Kind.objects.filter(
+                    #     action="EXPENSE", name__icontains="Bonus"
+                    # ).first()
+
                     bonus_kind = Kind.objects.filter(
-                        action="EXPENSE", name__icontains="Bonus"
+                        action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
                     ).first()
+
                     if not bonus_kind:
                         raise ValueError("Results turi topilmadi!")
 

@@ -1,6 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
 from data.finances.finance.models import Finance, Kind
 from data.lid.new_lid.models import Lid
 from data.paycomuz.models import Transaction
@@ -12,7 +13,10 @@ def on_pre_save(sender, instance: Transaction, created, **kwargs):
 
     if created and instance.state == "success":
 
-        kind = Kind.objects.filter(name="Lesson payment").first()
+        # kind = Kind.objects.filter(name="Lesson payment").first()
+        kind, created = Kind.objects.get_or_create(
+            kind=FinanceKindTypeChoices.LESSON_PAYMENT
+        )
 
         student = Student.objects.filter(id=instance.order_key).first()
         lid = Lid.objects.filter(id=instance.order_key).first()

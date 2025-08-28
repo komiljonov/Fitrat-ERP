@@ -75,7 +75,11 @@ class DashboardView(APIView):
         # Initial QuerySets
         lid = Lid.objects.filter(**filters)
         archived_lid = lid.filter(lid_stage_type="NEW_LID", is_archived=True)
-        order_fix_created = lid.filter(lid_stage_type="ORDERED_LID",lid_stages__isnull=True,ordered_stages__isnull=False)
+        order_fix_created = lid.filter(
+            lid_stage_type="ORDERED_LID",
+            lid_stages__isnull=True,
+            ordered_stages__isnull=False,
+        )
         orders = lid.filter(lid_stage_type="ORDERED_LID")
         orders_archived = orders.filter(is_archived=True)
         first_lesson = FirstLLesson.objects.filter(**filters)
@@ -115,7 +119,8 @@ class DashboardView(APIView):
             orders = orders.filter(is_student=is_student_value, is_archived=False)
             orders_archived = orders_archived.filter(is_student=is_student_value)
             first_lesson = first_lesson.filter(
-                lid__is_student=is_student_value, is_archived=False,
+                lid__is_student=is_student_value,
+                is_archived=False,
             )
             first_lesson_come = first_lesson_come.filter(is_archived=False)
 
@@ -141,7 +146,9 @@ class DashboardView(APIView):
         if service_manager:
             lid = lid.filter(service_manager_id=service_manager)
             archived_lid = archived_lid.filter(service_manager_id=service_manager)
-            order_fix_created = order_fix_created.filter(service_manager_id=service_manager)
+            order_fix_created = order_fix_created.filter(
+                service_manager_id=service_manager
+            )
             orders = orders.filter(service_manager_id=service_manager)
             orders_archived = orders_archived.filter(service_manager_id=service_manager)
             first_lesson = first_lesson.filter(lid__service_manager_id=service_manager)
@@ -192,7 +199,9 @@ class DashboardView(APIView):
             lid = lid.filter(lids_group__group__teacher_id=teacher)
             archived_lid = archived_lid.filter(lids_group__group__teacher_id=teacher)
             orders = orders.filter(lids_group__group__teacher_id=teacher)
-            order_fix_created = order_fix_created.filter(lids_group__group__teacher_id=teacher)
+            order_fix_created = order_fix_created.filter(
+                lids_group__group__teacher_id=teacher
+            )
             orders_archived = orders_archived.filter(
                 lids_group__group__teacher_id=teacher
             )
@@ -208,7 +217,9 @@ class DashboardView(APIView):
             lid = lid.filter(lids_group__group__course_id=course)
             archived_lid = archived_lid.filter(lids_group__group__course_id=course)
             orders = orders.filter(lids_group__group__course_id=course)
-            order_fix_created = order_fix_created.filter(lids_group__group__course_id=course)
+            order_fix_created = order_fix_created.filter(
+                lids_group__group__course_id=course
+            )
             orders_archived = orders_archived.filter(
                 lids_group__group__course_id=course
             )
@@ -224,7 +235,7 @@ class DashboardView(APIView):
         data = {
             "lids": lid.count(),
             "archived_lid": archived_lid.count(),
-            "order_fix_created" : order_fix_created.count(),
+            "order_fix_created": order_fix_created.count(),
             "orders": orders.count(),
             "orders_archived": orders_archived.count(),
             "first_lesson": first_lesson.count(),
@@ -1239,7 +1250,7 @@ class DashboardWeeklyFinanceAPIView(APIView):
         if filial:
             filters["filial"] = filial
         if casher_id:
-            filters["casher__id"] = casher_id
+            filters["casher_id"] = casher_id
 
         # Ensure valid action type (INCOME or EXPENSE)
         if action_type and action_type.upper() in ["INCOME", "EXPENSE"]:

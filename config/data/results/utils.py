@@ -43,9 +43,10 @@ def validate_olimpiada_requirements(instance):
     #     raise ValueError("WEALTH rolidagi kasher topilmadi!")
 
     # bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
-    bonus_kind = Kind.objects.filter(
-        action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
-    ).first()
+    # bonus_kind = Kind.objects.filter(
+    #     action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
+    # ).first()
+    bonus_kind = Kind.get(FinanceKindTypeChoices.BONUS)
 
     if not bonus_kind:
         raise ValueError("Bonus turi topilmadi!")
@@ -75,9 +76,11 @@ def validate_university_requirements(instance):
     # Check if bonus kind exists
     # bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
 
-    bonus_kind = Kind.objects.filter(
-        action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
-    ).first()
+    # bonus_kind = Kind.objects.filter(
+    #     action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
+    # ).first()
+
+    bonus_kind = Kind.get(FinanceKindTypeChoices.BONUS)
 
     if not bonus_kind:
         raise ValueError("Bonus turi topilmadi!")
@@ -134,9 +137,7 @@ def validate_certificate_requirements(instance):
     # Check if bonus kind exists
     # bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
 
-    bonus_kind = Kind.objects.filter(
-        action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
-    ).first()
+    bonus_kind = Kind.get(FinanceKindTypeChoices.BONUS)
 
     if not bonus_kind:
         raise ValueError("Bonus turi topilmadi!")

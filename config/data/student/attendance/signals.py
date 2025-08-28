@@ -173,7 +173,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             return
 
         # kind = Kind.objects.get(name="Lesson payment")
-        kind = Kind.objects.get(kind=FinanceKindTypeChoices.LESSON_PAYMENT)
+        kind = Kind.get(kind=FinanceKindTypeChoices.LESSON_PAYMENT)
 
         is_first_income = not Finance.objects.filter(action="INCOME").exists()
 

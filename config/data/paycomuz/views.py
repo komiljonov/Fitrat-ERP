@@ -11,6 +11,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
 from data.paycomuz.methods_subscribe_api import (
     PayComResponse,
 )  # your custom PayComResponse
@@ -264,7 +265,11 @@ class MerchantAPIView(APIView):
                 obj.save()
 
                 try:
-                    kind = Kind.objects.filter(name="Lesson payment").first()
+                    # kind = Kind.objects.filter(name="Lesson payment").first()
+
+                    kind, created = Kind.objects.get_or_create(
+                        kind=FinanceKindTypeChoices.LESSON_PAYMENT
+                    )
 
                     student = Student.objects.filter(id=obj.order_key).first()
                     lid = Lid.objects.filter(id=obj.order_key).first()

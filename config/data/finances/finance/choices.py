@@ -1,4 +1,8 @@
 class FinanceKindTypeChoices:
+
+    EXPENSE = "EXPENSE"
+    INCOME = "INCOME"
+
     CASHIER_ACCEPTANCE = "CASHIER_ACCEPTANCE"
     CASHIER_HANDOVER = "CASHIER_HANDOVER"
 
@@ -19,3 +23,14 @@ class FinanceKindTypeChoices:
         (COURSE_PAYMENT, COURSE_PAYMENT),
         (VOUCHER, VOUCHER),
     ]
+
+    ACTIONS = {
+        CASHIER_ACCEPTANCE: INCOME,
+        CASHIER_HANDOVER: EXPENSE,
+        BONUS: EXPENSE,
+        SALARY: EXPENSE,
+        MONEY_BACK: INCOME,
+        LESSON_PAYMENT: INCOME,
+        COURSE_PAYMENT: INCOME,
+        VOUCHER: EXPENSE,
+    }
