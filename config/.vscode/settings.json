@@ -1,0 +1,21 @@
+{
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.extraPaths": [
+    "./config"
+  ],
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "Resto Go",
+      "database": "onur",
+      "username": "onur",
+      "password": "bzvUqRGYQ5KC"
+    }
+  ],
+  "liveServer.settings.port": 5501,
+  "postman.settings.dotenv-detection-notification-visibility": false,
+  "wolf.disableHotModeWarning": true
+}
