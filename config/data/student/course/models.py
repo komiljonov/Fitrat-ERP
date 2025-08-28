@@ -1,4 +1,11 @@
-from ..subject.models import *
+from typing import TYPE_CHECKING
+
+from django.db import models
+
+from data.command.models import BaseModel
+
+if TYPE_CHECKING:
+    from data.student.subject.models import Subject, Level, Theme
 
 
 # Create your models here.
@@ -6,7 +13,7 @@ class Course(BaseModel):
     name = models.CharField(max_length=100)
 
     subject: "Subject" = models.ForeignKey("subject.Subject", on_delete=models.CASCADE)
-    
+
     level: "Level" = models.ForeignKey(
         "subject.Level",
         on_delete=models.SET_NULL,
@@ -14,7 +21,7 @@ class Course(BaseModel):
         blank=True,
         related_name="courses_level",
     )
-    
+
     lessons_number = models.CharField(
         max_length=100, null=True, blank=True, help_text="Number of lessons"
     )

@@ -14,6 +14,7 @@ class AttendanceAdmin(admin.ModelAdmin):
         "reason",
         "created_at",
     )
+
     list_filter = (
         "reason",
         ("created_at", DateRangeFilter),

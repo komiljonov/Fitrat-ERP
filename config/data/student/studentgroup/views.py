@@ -22,10 +22,10 @@ from .serializers import (
     StudentsGroupSerializer,
     SecondaryStudentsGroupSerializer,
 )
-from ..attendance.models import Attendance
-from ..attendance.serializers import AttendanceSerializer
-from ..groups.models import SecondaryGroup, Group
-from ..groups.serializers import SecondaryGroupModelSerializer
+from data.student.attendance.models import Attendance
+from data.student.attendance.serializers import AttendanceSerializer
+from data.student.groups.models import SecondaryGroup, Group
+from data.student.groups.serializers import SecondaryGroupModelSerializer
 
 
 def _parse_bool(val):
