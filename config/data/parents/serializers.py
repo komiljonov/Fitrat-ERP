@@ -3,7 +3,7 @@ import string
 
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
-from config.data.parents.tasks import send_creds_to_relatives
+from data.parents.tasks import send_creds_to_relatives
 from data.account.models import CustomUser
 from data.lid.new_lid.models import Lid
 from data.parents.models import Relatives
