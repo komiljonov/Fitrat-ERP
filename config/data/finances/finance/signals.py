@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from config.data.finances.finance.choices import FinanceKindTypeChoices
+from data.finances.finance.choices import FinanceKindTypeChoices
 
 from .models import Finance, VoucherStudent, Casher, Kind, KpiFinance
 from data.logs.models import Log

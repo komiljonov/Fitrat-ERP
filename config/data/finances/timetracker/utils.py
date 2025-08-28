@@ -1,16 +1,14 @@
 import calendar
 import decimal
-from datetime import date, time
-from datetime import datetime, timedelta
-from typing import List
+from datetime import date
+from datetime import datetime
 
 import pytz
 from django.db.models import Q
-from django.utils import timezone
 from django.utils.timezone import make_aware, is_aware
 from icecream import ic
 
-from config.data.finances.finance.choices import FinanceKindTypeChoices
+from data.finances.finance.choices import FinanceKindTypeChoices
 from data.account.models import CustomUser
 from data.finances.finance.models import Finance, Kind
 from data.finances.timetracker.delta import include_only_ranges, Range

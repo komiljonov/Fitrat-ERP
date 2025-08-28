@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from config.data.account.models import CustomUser
+from data.account.models import CustomUser
 
 
 def get_tokens_for_user(user):

@@ -1,7 +1,7 @@
 from django.db.models import FloatField
 from django.db.models.functions import Cast
 
-from config.data.finances.finance.choices import FinanceKindTypeChoices
+from data.finances.finance.choices import FinanceKindTypeChoices
 from data.finances.compensation.models import Asos, ResultSubjects, ResultName
 from data.finances.finance.models import Kind
 

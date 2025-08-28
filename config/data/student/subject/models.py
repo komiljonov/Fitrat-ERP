@@ -7,7 +7,7 @@ from django.db import models
 if TYPE_CHECKING:
     from data.student.course.models import Course
     from data.student.groups.models import Group
-    from config.data.upload.models import File
+    from data.upload.models import File
 
 
 class Subject(BaseModel):

@@ -5,7 +5,7 @@ import random
 from icecream import ic
 from rest_framework import serializers
 
-from config.data.finances.finance.choices import FinanceKindTypeChoices
+from data.finances.finance.choices import FinanceKindTypeChoices
 
 from .models import (
     Quiz,
