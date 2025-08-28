@@ -1,6 +1,10 @@
 from django.db.models import Q
 from rest_framework import status
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,18 +19,20 @@ from ..student.student.models import Student
 
 # Create your views here.
 
-class ParentListView(ListCreateAPIView):
-    queryset = Relatives.objects.all()
-    serializer_class = RelativesSerializer
+
+class ParentListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
+    serializer_class = RelativesSerializer
+
     def get_queryset(self):
-        user = self.request.GET.get('user')
+        user = self.request.GET.get("user")
 
         queryset = Relatives.objects.all()
 
         if user:
-            queryset = self.queryset.filter(user__id=user)
+            queryset = queryset.filter(user__id=user)
+        
         return queryset
 
 
@@ -51,7 +57,7 @@ class StudentsRelativesListView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
         queryset = Relatives.objects.filter(Q(student__id=id) | Q(lid__id=id))
         return queryset
 
@@ -61,9 +67,9 @@ class ParentsStudentsAPIView(APIView):
 
     def get(self, request):
 
-        phone = request.GET.get('phone')
-        id = self.kwargs.get('pk')
-        user = self.request.GET.get('user')
+        phone = request.GET.get("phone")
+        id = self.kwargs.get("pk")
+        user = self.request.GET.get("user")
 
         students = Relatives.objects.all()
 
@@ -77,12 +83,14 @@ class ParentsStudentsAPIView(APIView):
         if students:
 
             for student in students:
-                students_data.append({
-                    'id': student.student.id,
-                    'full_name': f"{student.student.first_name} {student.student.last_name}",
-                    "phone": student.student.phone,
-                    "balance": student.student.balance,
-                })
+                students_data.append(
+                    {
+                        "id": student.student.id,
+                        "full_name": f"{student.student.first_name} {student.student.last_name}",
+                        "phone": student.student.phone,
+                        "balance": student.student.balance,
+                    }
+                )
         return Response(students_data, status=status.HTTP_200_OK)
 
 
@@ -90,14 +98,14 @@ class ParentsNotificationsRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'user__id'
+    lookup_field = "user__id"
 
 
 class ParentRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Relatives.objects.all()
     serializer_class = RelativesSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'user__id'
+    lookup_field = "user__id"
 
 
 class ParentStudentAvgAPIView(APIView):
@@ -109,7 +117,9 @@ class ParentStudentAvgAPIView(APIView):
         if user.role == "Student":
             students = list(Student.objects.filter(user=user))
         elif user.role == "Parents":
-            student_ids = Relatives.objects.filter(user=user).values_list("student", flat=True)
+            student_ids = Relatives.objects.filter(user=user).values_list(
+                "student", flat=True
+            )
             students = list(Student.objects.filter(id__in=student_ids))
         else:
             return Response({"error": "Unauthorized user role."}, status=403)
@@ -123,10 +133,9 @@ class ParentStudentAvgAPIView(APIView):
         student_results = []
 
         for student in students:
-            mastering_records = (
-                Mastering.objects.filter(student=student)
-                .select_related("test", "theme", "theme__course", "theme__course__subject")
-            )
+            mastering_records = Mastering.objects.filter(
+                student=student
+            ).select_related("test", "theme", "theme__course", "theme__course__subject")
 
             overall_scores = {
                 "exams": [],
@@ -157,11 +166,13 @@ class ParentStudentAvgAPIView(APIView):
                         "homeworks": [],
                     }
                     if is_lang:
-                        course_scores[course_id].update({
-                            "speaking": [],
-                            "unit": [],
-                            "mock": [],
-                        })
+                        course_scores[course_id].update(
+                            {
+                                "speaking": [],
+                                "unit": [],
+                                "mock": [],
+                            }
+                        )
 
                 if m.test and m.test.type == "Offline" and m.choice == "Test":
                     overall_scores["exams"].append(m.ball)
@@ -182,12 +193,13 @@ class ParentStudentAvgAPIView(APIView):
             # Compute global overall average (based on 5 categories always)
             global_overall = round(
                 (
-                        avg(overall_scores["exams"]) +
-                        avg(overall_scores["homeworks"]) +
-                        avg(overall_scores["speaking"]) +
-                        avg(overall_scores["unit"]) +
-                        avg(overall_scores["mock"])
-                ) / 5,
+                    avg(overall_scores["exams"])
+                    + avg(overall_scores["homeworks"])
+                    + avg(overall_scores["speaking"])
+                    + avg(overall_scores["unit"])
+                    + avg(overall_scores["mock"])
+                )
+                / 5,
                 2,
             )
 
@@ -210,19 +222,25 @@ class ParentStudentAvgAPIView(APIView):
                     course_result["speaking"] = avg(c["speaking"])
                     course_result["unit"] = avg(c["unit"])
                     course_result["mock"] = avg(c["mock"])
-                    total_score += course_result["speaking"] + course_result["unit"] + course_result["mock"]
+                    total_score += (
+                        course_result["speaking"]
+                        + course_result["unit"]
+                        + course_result["mock"]
+                    )
                     total_parts += 3
 
                 course_result["overall"] = round(total_score / total_parts, 2)
                 course_results.append(course_result)
 
             # Append result for this student
-            student_results.append({
-                "student_id": student.id,
-                "full_name": f"{student.first_name} {student.last_name}",
-                "overall_learning": global_overall,
-                "balance": student.balance,
-                "course_scores": course_results,
-            })
+            student_results.append(
+                {
+                    "student_id": student.id,
+                    "full_name": f"{student.first_name} {student.last_name}",
+                    "overall_learning": global_overall,
+                    "balance": student.balance,
+                    "course_scores": course_results,
+                }
+            )
 
         return Response(student_results)

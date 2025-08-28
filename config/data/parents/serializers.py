@@ -4,6 +4,7 @@ import string
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
+from config.data.lid.new_lid.models import Lid
 from data.account.models import CustomUser
 from data.parents.models import Relatives
 from data.student.student.models import Student
@@ -13,19 +14,43 @@ sms = SayqalSms()
 
 
 class RelativesSerializer(serializers.ModelSerializer):
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
+
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(),
+        allow_null=True,
+        required=False,
+    )
+
+    lid = serializers.PrimaryKeyRelatedField(
+        queryset=Lid.objects.all(),
+        allow_null=True,
+        required=False,
+    )
+
+    def validate(self, attrs):
+        student = attrs.get("student")
+        lid = attrs.get("lid")
+
+        if not student and not lid:
+            raise serializers.ValidationError("Either 'student' or 'lid' is required.")
+        if student and lid:
+            raise serializers.ValidationError(
+                "You cannot provide both 'student' and 'lid'."
+            )
+
+        return attrs
+
     class Meta:
         model = Relatives
         fields = [
-          'id',
-          'lid',
-          'student',
-          'name',
-          'phone',
-          'who',
-          'user',
+            "id",
+            "lid",
+            "student",
+            "name",
+            "phone",
+            "who",
+            "user",
         ]
-
 
     def create(self, validated_data):
         phone = validated_data.get("phone")
@@ -36,7 +61,9 @@ class RelativesSerializer(serializers.ModelSerializer):
         if phone:
             parent = CustomUser.objects.filter(phone=phone).first()
             if not parent:
-                password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+                password = "".join(
+                    random.choices(string.ascii_letters + string.digits, k=8)
+                )
 
                 parent = CustomUser.objects.create(
                     full_name=name,
@@ -46,7 +73,9 @@ class RelativesSerializer(serializers.ModelSerializer):
                 )
 
                 # ✅ Optionally send or log password
-                print(f"Parent account created with phone {phone} and password: {password}")
+                print(
+                    f"Parent account created with phone {phone} and password: {password}"
+                )
                 sms.send_sms(
                     number=phone,
                     message=f"""
@@ -56,7 +85,7 @@ class RelativesSerializer(serializers.ModelSerializer):
                     Parol: {password}
     
                     Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
-                    """
+                    """,
                 )
 
             # ✅ Create Relative linking user to student
@@ -66,7 +95,7 @@ class RelativesSerializer(serializers.ModelSerializer):
                 phone=phone,
                 who=validated_data.get("who"),
                 user=parent,
-                lid=lid
+                lid=lid,
             )
             return relative
 
@@ -80,11 +109,16 @@ class RelativesSerializer(serializers.ModelSerializer):
         lid = validated_data.get("lid", instance.lid)
 
         # Check for existing parent user with this phone
-        parent_user = CustomUser.objects.filter(phone=phone, role="Parents").first()
+        parent_user = CustomUser.objects.filter(
+            phone=phone,
+            role="Parents",
+        ).first()
 
         if not parent_user:
             # If not found, create one
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            password = "".join(
+                random.choices(string.ascii_letters + string.digits, k=8)
+            )
             parent_user = CustomUser.objects.create(
                 full_name=name,
                 phone=phone,
@@ -101,21 +135,25 @@ class RelativesSerializer(serializers.ModelSerializer):
                 Parol: {password}
 
                 Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
-                """
+                """,
             )
-            print(f"New parent user created for phone {phone} with password: {password}")
+            print(
+                f"New parent user created for phone {phone} with password: {password}"
+            )
 
         # Update Relative instance
         instance.name = name
         instance.phone = phone
         instance.who = who
         instance.parent = parent_user
+
         if student and lid is None:
             instance.student = student
             instance.lid = None
         else:
             instance.student = None
             instance.lid = lid
+
         instance.save()
 
         # Optionally update user name and phone again
