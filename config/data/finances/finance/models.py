@@ -1,5 +1,6 @@
 from django.db import models
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
 from data.account.models import CustomUser
 from data.command.models import BaseModel
 from data.lid.new_lid.models import Lid
@@ -34,6 +35,11 @@ class Casher(BaseModel):
 
 
 class Kind(BaseModel):
+
+    name = models.CharField(max_length=100)
+
+    kind = models.CharField(max_length=255, choices=FinanceKindTypeChoices.CHOICES)
+
     action = models.CharField(
         choices=[
             ("INCOME", "INCOME"),
@@ -42,7 +48,6 @@ class Kind(BaseModel):
         default="INCOME",
         max_length=20,
     )
-    name = models.CharField(max_length=100)
 
     color = models.CharField(
         max_length=100,
