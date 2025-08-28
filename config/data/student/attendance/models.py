@@ -1,17 +1,22 @@
 from typing import TYPE_CHECKING
 
 from django.db import models
+from django.db.models import Q
+
+
+from data.command.models import BaseModel
 
 if TYPE_CHECKING:
     from data.student.subject.models import Theme
-
-from data.command.models import BaseModel
-from data.lid.new_lid.models import Lid
-from data.student.student.models import Student
-from data.student.groups.models import Group, SecondaryGroup
+    from data.lid.new_lid.models import Lid
+    from data.student.student.models import Student
+    from data.student.groups.models import Group, SecondaryGroup
 
 
 class Attendance(BaseModel):
+
+    date = models.DateField()
+
     theme: "models.ManyToManyField[Theme]" = models.ManyToManyField(
         "subject.Theme",
         blank=True,
@@ -71,6 +76,30 @@ class Attendance(BaseModel):
 
     def __str__(self):
         return f" {self.group} is marked as {self.reason}"
+
+    class Meta:
+        constraints = [
+            # Exactly one of student or lid must be set (XOR)
+            models.CheckConstraint(
+                name="attendance_xor_student_or_lid",
+                check=(
+                    (Q(student__isnull=True) & Q(lid__isnull=False))
+                    | (Q(student__isnull=False) & Q(lid__isnull=True))
+                ),
+            ),
+            # Unique per (date, group, student) when student is set
+            models.UniqueConstraint(
+                fields=["date", "group", "student"],
+                name="attendance_unique_date_group_student",
+                condition=Q(student__isnull=False),
+            ),
+            # Unique per (date, group, lid) when lid is set
+            models.UniqueConstraint(
+                fields=["date", "group", "lid"],
+                name="attendance_unique_date_group_lid",
+                condition=Q(lid__isnull=False),
+            ),
+        ]
 
 
 class SecondaryAttendance(BaseModel):
