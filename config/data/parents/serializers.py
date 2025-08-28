@@ -3,6 +3,7 @@ import string
 
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
+from config.data.parents.tasks import send_creds_to_relatives
 from data.account.models import CustomUser
 from data.lid.new_lid.models import Lid
 from data.parents.models import Relatives
@@ -75,17 +76,19 @@ class RelativesSerializer(serializers.ModelSerializer):
                 print(
                     f"Parent account created with phone {phone} and password: {password}"
                 )
-                sms.send_sms(
-                    number=phone,
-                    message=f"""
-                    Fitrat Ota - Onalar uchun ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
-    
-                    Login: {phone}
-                    Parol: {password}
-    
-                    Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
-                    """,
-                )
+                # sms.send_sms(
+                #     number=phone,
+                #     message=f"""
+                #     Fitrat Ota - Onalar uchun ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
+
+                #     Login: {phone}
+                #     Parol: {password}
+
+                #     Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
+                #     """,
+                # )
+
+                send_creds_to_relatives.delay(parent.id, password)
 
             # ✅ Create Relative linking user to student
             relative = Relatives.objects.create(

@@ -32,7 +32,7 @@ class ParentListCreateAPIView(ListCreateAPIView):
 
         if user:
             queryset = queryset.filter(user__id=user)
-        
+
         return queryset
 
 
