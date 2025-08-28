@@ -1,6 +1,6 @@
 from django.db import models
 
-from config.data.finances.finance.choices import FinanceKindTypeChoices
+from data.finances.finance.choices import FinanceKindTypeChoices
 from data.account.models import CustomUser
 from data.command.models import BaseModel
 from data.lid.new_lid.models import Lid
