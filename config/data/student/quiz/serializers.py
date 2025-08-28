@@ -5,6 +5,8 @@ import random
 from icecream import ic
 from rest_framework import serializers
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
+
 from .models import (
     Quiz,
     Question,
@@ -848,7 +850,8 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                     choice="Examination",
                     come_from="",
                 )
-            kind = Kind.objects.get(name="Money back")
+
+            kind = Kind.objects.get(kind=FinanceKindTypeChoices.MONEY_BACK)
 
             Finance.objects.create(
                 action="EXPENSE",

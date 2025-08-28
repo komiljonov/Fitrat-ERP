@@ -9,6 +9,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from icecream import ic
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
 from data.exam_results.tasks import send_unit_test_notification
 from .models import Attendance
 from data.student.groups.lesson_date_calculator import calculate_lessons
@@ -171,7 +172,9 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         if instance.reason not in ["IS_PRESENT", "UNREASONED", "REASONED"]:
             return
 
-        kind = Kind.objects.get(name="Lesson payment")
+        # kind = Kind.objects.get(name="Lesson payment")
+        kind = Kind.objects.get(kind=FinanceKindTypeChoices.LESSON_PAYMENT)
+
         is_first_income = not Finance.objects.filter(action="INCOME").exists()
 
         bonus = (

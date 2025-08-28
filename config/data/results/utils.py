@@ -1,6 +1,7 @@
 from django.db.models import FloatField
 from django.db.models.functions import Cast
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
 from data.finances.compensation.models import Asos, ResultSubjects, ResultName
 from data.finances.finance.models import Kind
 
@@ -41,7 +42,11 @@ def validate_olimpiada_requirements(instance):
     # if not casher:
     #     raise ValueError("WEALTH rolidagi kasher topilmadi!")
 
-    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+    # bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+    bonus_kind = Kind.objects.filter(
+        action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
+    ).first()
+
     if not bonus_kind:
         raise ValueError("Bonus turi topilmadi!")
 
@@ -68,7 +73,12 @@ def validate_university_requirements(instance):
     #     raise ValueError("WEALTH rolidagi kasher topilmadi!")
 
     # Check if bonus kind exists
-    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+    # bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+
+    bonus_kind = Kind.objects.filter(
+        action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
+    ).first()
+
     if not bonus_kind:
         raise ValueError("Bonus turi topilmadi!")
 
@@ -122,7 +132,12 @@ def validate_certificate_requirements(instance):
     #     raise ValueError("WEALTH rolidagi kasher topilmadi!")
 
     # Check if bonus kind exists
-    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+    # bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+
+    bonus_kind = Kind.objects.filter(
+        action="EXPENSE", kind=FinanceKindTypeChoices.BONUS
+    ).first()
+
     if not bonus_kind:
         raise ValueError("Bonus turi topilmadi!")
 
