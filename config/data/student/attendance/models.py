@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 class Attendance(BaseModel):
 
-    date = models.DateField()
+    # date = models.DateField()
 
     theme: "models.ManyToManyField[Theme]" = models.ManyToManyField(
         "subject.Theme",
