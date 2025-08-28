@@ -1,9 +1,9 @@
 
 from rest_framework import serializers
 
-from ...account.models import CustomUser
-from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ...student.studentgroup.serializers import StudentGroupMixSerializer, SecondaryStudentsGroupSerializer
+from data.account.models import CustomUser
+from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
+from data.student.studentgroup.serializers import StudentGroupMixSerializer, SecondaryStudentsGroupSerializer
 
 
 class TeacherSerializer(serializers.ModelSerializer):

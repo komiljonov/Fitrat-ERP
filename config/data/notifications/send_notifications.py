@@ -21,13 +21,13 @@ def initialize_firebase():
 
 
 def send_push_notification(
-        title: str,
-        body: str,
-        token: str = None,
-        topic: str = None,
-        image: str = None,
-        data: dict | None = None,
-        badge_count: int = 0,
+    title: str,
+    body: str,
+    token: str = None,
+    topic: str = None,
+    image: str = None,
+    data: dict | None = None,
+    badge_count: int = 0,
 ):
     initialize_firebase()
 
@@ -41,9 +41,7 @@ def send_push_notification(
         topic=topic,
         data=data or {},
         apns=messaging.APNSConfig(
-            payload=messaging.APNSPayload(
-                aps=messaging.Aps(badge=badge_count)
-            )
+            payload=messaging.APNSPayload(aps=messaging.Aps(badge=badge_count))
         ),
     )
 
@@ -62,10 +60,7 @@ def send_reset_message(topic: str, count: int = 0):
     message = messaging.Message(
         apns=messaging.APNSConfig(
             payload=messaging.APNSPayload(
-                aps=messaging.Aps(
-                    content_available=True,
-                    badge=count
-                )
+                aps=messaging.Aps(content_available=True, badge=count)
             )
         ),
         topic=topic,

@@ -4,25 +4,27 @@ from django.utils.timezone import now, make_aware
 from rest_framework import serializers
 
 from .models import Attendance
-from ..homeworks.models import Homework_history, Homework
-from ..mastering.models import Mastering
-from ..quiz.models import Quiz
-from ..student.models import Student
-from ..student.serializers import StudentSerializer
-from ..subject.models import Theme
-from ..subject.serializers import ThemeSerializer
-from ...lid.new_lid.models import Lid
-from ...lid.new_lid.serializers import LidSerializer
-from ...parents.models import Relatives
+from data.student.homeworks.models import Homework_history, Homework
+from data.student.mastering.models import Mastering
+from data.student.quiz.models import Quiz
+from data.student.student.models import Student
+from data.student.student.serializers import StudentSerializer
+from data.student.subject.models import Theme
+from data.student.subject.serializers import ThemeSerializer
+from data.lid.new_lid.models import Lid
+from data.lid.new_lid.serializers import LidSerializer
+from data.parents.models import Relatives
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
     lid = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), allow_null=True
+        queryset=Lid.objects.all(),
+        allow_null=True,
     )
     student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), allow_null=True
+        queryset=Student.objects.all(),
+        allow_null=True,
     )
 
     teacher = serializers.SerializerMethodField()
@@ -43,6 +45,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             "remarks",
             "amount",
             "relatives",
+            "attended_at",
             "created_at",
             "updated_at",
         ]

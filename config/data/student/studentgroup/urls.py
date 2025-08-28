@@ -8,7 +8,7 @@ from .views import (
     GroupStudentDetail,
     SecondaryStudentList,
     SecondaryGroupList,
-    GroupStudentStatistics,
+    GroupStudentStatisticsAPIView,
     GroupAttendedStudents,
     StudentGroupDelete,
     SecondaryGroupStudentList,
@@ -19,7 +19,8 @@ from .views import (
     StudentGroupUpdate,
     GroupStudentNoPgDetail,
 )
-from ...teachers.teacher.views import Teacher_StudentsView
+
+from data.teachers.teacher.views import Teacher_StudentsView
 
 urlpatterns = [
     path("", StudentsGroupList.as_view()),
@@ -35,7 +36,7 @@ urlpatterns = [
     path("students/", Teacher_StudentsView.as_view()),
     path("secondary/", SecondaryStudentList.as_view()),
     path("secondary/<uuid:pk>/", SecondaryGroupList.as_view()),
-    path("statistics/<uuid:pk>", GroupStudentStatistics.as_view()),
+    path("statistics/<uuid:pk>", GroupStudentStatisticsAPIView.as_view()),
     path("delete/<uuid:pk>", StudentGroupDelete.as_view()),
     path("stats/", StudentGroupStatistics.as_view()),
     path("secondary/web", SecondaryStudentCreate.as_view()),

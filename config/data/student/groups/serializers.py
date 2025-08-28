@@ -6,17 +6,17 @@ from rest_framework import serializers
 from .lesson_date_calculator import calculate_lessons
 from .models import Group, Day, Room, SecondaryGroup, GroupSaleStudent
 from .room_filings_calculate import calculate_room_filling_statistics
-from ..attendance.models import Attendance, SecondaryAttendance
-from ..course.models import Course
-from ..course.serializers import CourseSerializer
-from ..student.models import Student
-from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ..subject.models import Theme, Level
-from ..subject.serializers import LevelSerializer
-from ...account.models import CustomUser
-from ...account.serializers import UserSerializer
-from ...department.marketing_channel.models import Group_Type
-from ...lid.new_lid.models import Lid
+from data.student.attendance.models import Attendance, SecondaryAttendance
+from data.student.course.models import Course
+from data.student.course.serializers import CourseSerializer
+from data.student.student.models import Student
+from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
+from data.student.subject.models import Theme, Level
+from data.student.subject.serializers import LevelSerializer
+from data.account.models import CustomUser
+from data.account.serializers import UserSerializer
+from data.department.marketing_channel.models import Group_Type
+from data.lid.new_lid.models import Lid
 
 
 class DaySerializer(serializers.ModelSerializer):
@@ -100,7 +100,8 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def get_real_student(self, obj):
         student_count = StudentGroup.objects.filter(
-            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False)),
+            is_archived=False,
         ).count()
 
         first = StudentGroup.objects.filter(
@@ -136,10 +137,16 @@ class GroupSerializer(serializers.ModelSerializer):
         return list(attendance)
 
     def get_lessons_count(self, obj: Group):
-        total_lessons = Theme.objects.filter(course=obj.course, level=obj.level).count()
+        total_lessons = Theme.objects.filter(
+            course=obj.course,
+            level=obj.level,
+            is_archived=False,
+        ).count()
 
         attended_lessons = (
-            Attendance.objects.filter(group=obj)
+            Attendance.objects.filter(
+                group=obj,
+            )
             .values("theme")  # Group by lesson
             .annotate(attended_count=Count("id"))  # Count attendance per lesson
             .count()  # Count unique lessons with attendance records
@@ -151,10 +158,10 @@ class GroupSerializer(serializers.ModelSerializer):
         }
 
     def get_student_count(self, obj):
-        from django.db.models import Q
 
         student_count = StudentGroup.objects.filter(
-            Q(group=obj) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+            Q(group=obj, is_archived=False)
+            & (Q(student__is_archived=False) | Q(lid__is_archived=False))
         ).count()
 
         return student_count

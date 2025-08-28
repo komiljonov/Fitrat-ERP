@@ -6,6 +6,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
+from data.student.student.models import Student
+
 from .models import Coins, Points, Products, Purchase, Category, CoinsSettings
 from .serializers import (
     CoinsSerializer,
@@ -16,7 +19,6 @@ from .serializers import (
     CategoriesSerializer,
     CoinsSettingsSerializer,
 )
-from ..student.models import Student
 
 
 class CoinsSettingsCreateAPIView(ListCreateAPIView):

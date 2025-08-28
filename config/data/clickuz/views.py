@@ -6,9 +6,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .click_authorization import click_authorization
 from .serializer import ClickUzSerializer, CreateOrderSerializer
 from .status import *
-from ..finances.finance.models import Kind, Finance
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
 
 
 class ClickUzMerchantAPIView(APIView):

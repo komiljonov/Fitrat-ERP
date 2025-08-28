@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .dump_data import ThemeDumpDownloadAPIView, ThemeBulkCreateAPIView
+
 from .views import (
     SubjectList,
     SubjectNoPG,
@@ -14,7 +15,7 @@ from .views import (
     ImportStudentsAPIView,
     ThemePgList,
 )
-from ..mastering.views import ChangeGroupTheme
+from data.student.mastering.views import ChangeGroupTheme
 
 urlpatterns = [
     path("", SubjectList.as_view(), name="subject-list"),

@@ -8,7 +8,7 @@ from icecream import ic
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
-    ListAPIView
+    ListAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -16,15 +16,20 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.views import APIView
 
 from .models import Store, Strike, VersionUpdate
-from .serializers import StoresSerializer, StudentAPPSerializer, StudentFinanceSerializer, StrikeSerializer, \
-    VersionUpdateSerializer
-from ..mastering.models import Mastering
-from ..student.sms import SayqalSms
-from ...finances.finance.models import Finance
-from ...notifications.models import Notification
-from ...notifications.serializers import NotificationSerializer
-from ...parents.models import Relatives
-from ...student.student.models import Student
+from .serializers import (
+    StoresSerializer,
+    StudentAPPSerializer,
+    StudentFinanceSerializer,
+    StrikeSerializer,
+    VersionUpdateSerializer,
+)
+from data.student.mastering.models import Mastering
+from data.student.student.sms import SayqalSms
+from data.finances.finance.models import Finance
+from data.notifications.models import Notification
+from data.notifications.serializers import NotificationSerializer
+from data.parents.models import Relatives
+from data.student.student.models import Student
 
 
 class StoresListView(ListCreateAPIView):
@@ -36,10 +41,10 @@ class StoresListView(ListCreateAPIView):
     def get_queryset(self):
         queryset = Store.objects.filter(has_expired=False)
 
-        filial = self.request.GET.get('filial', None)
+        filial = self.request.GET.get("filial", None)
 
-        seen = self.request.GET.get('seen', None)
-        has_expired = self.request.GET.get('has_expired', None)
+        seen = self.request.GET.get("seen", None)
+        has_expired = self.request.GET.get("has_expired", None)
 
         if has_expired:
             queryset = queryset.filter(has_expired=has_expired.capitalize())
@@ -63,7 +68,7 @@ class StudentDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentAPPSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'user__id'
+    lookup_field = "user__id"
 
 
 class FinanceListView(ListAPIView):
@@ -72,12 +77,12 @@ class FinanceListView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
 
-        action = self.request.GET.get('action', None)
-        kind = self.request.GET.get('kind', None)
-        payment_method = self.request.GET.get('payment_method', None)
-        search = self.request.GET.get('search', None)
+        action = self.request.GET.get("action", None)
+        kind = self.request.GET.get("kind", None)
+        payment_method = self.request.GET.get("payment_method", None)
+        search = self.request.GET.get("search", None)
 
         queryset = Finance.objects.all()
         ic(id)
@@ -105,7 +110,7 @@ class StrikeListView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        id = self.request.GET.get('id', None)
+        id = self.request.GET.get("id", None)
         if id:
             return Strike.objects.filter(student__user__id=id)
         return Strike.objects.none()
@@ -117,7 +122,7 @@ class VersionUpdateView(ListCreateAPIView):
     serializer_class = VersionUpdateSerializer
 
     def get_queryset(self):
-        app_name = self.request.GET.get('app_name', None)
+        app_name = self.request.GET.get("app_name", None)
         if app_name:
             queryset = VersionUpdate.objects.filter(app_name=app_name).first()
             return queryset
@@ -131,7 +136,7 @@ class StudentNotificationsView(ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        id = self.request.GET.get('id', None)
+        id = self.request.GET.get("id", None)
         if id:
             return Notification.objects.filter(user__id=id)
         return Notification.objects.none()
@@ -150,9 +155,8 @@ class StudentAvgAPIView(APIView):
         if not student:
             return Response({"error": "Student not found."}, status=404)
 
-        mastering_records = (
-            Mastering.objects.filter(student=student)
-            .select_related("test", "theme", "theme__course")
+        mastering_records = Mastering.objects.filter(student=student).select_related(
+            "test", "theme", "theme__course"
         )
 
         overall_scores = {
@@ -181,11 +185,13 @@ class StudentAvgAPIView(APIView):
                     "homeworks": [],
                 }
                 if course.subject.is_language:
-                    course_scores[course_id].update({
-                        "speaking": [],
-                        "unit": [],
-                        "mock": [],
-                    })
+                    course_scores[course_id].update(
+                        {
+                            "speaking": [],
+                            "unit": [],
+                            "mock": [],
+                        }
+                    )
 
             if m.test and m.test.type == "Offline" and m.choice == "Test":
                 overall_scores["exams"].append(m.ball)
@@ -209,12 +215,13 @@ class StudentAvgAPIView(APIView):
         # Calculate global overall (you can adjust logic to exclude non-language categories if needed)
         overall = round(
             (
-                    avg(overall_scores["exams"]) +
-                    avg(overall_scores["homeworks"]) +
-                    avg(overall_scores["speaking"]) +
-                    avg(overall_scores["unit"]) +
-                    avg(overall_scores["mock"])
-            ) / 5,
+                avg(overall_scores["exams"])
+                + avg(overall_scores["homeworks"])
+                + avg(overall_scores["speaking"])
+                + avg(overall_scores["unit"])
+                + avg(overall_scores["mock"])
+            )
+            / 5,
             2,
         )
 
@@ -237,18 +244,24 @@ class StudentAvgAPIView(APIView):
                 course_result["speaking"] = avg(c["speaking"])
                 course_result["unit"] = avg(c["unit"])
                 course_result["mock"] = avg(c["mock"])
-                total_score += course_result["speaking"] + course_result["unit"] + course_result["mock"]
+                total_score += (
+                    course_result["speaking"]
+                    + course_result["unit"]
+                    + course_result["mock"]
+                )
                 total_parts += 3
 
             course_result["overall"] = round(total_score / total_parts, 2)
             course_results.append(course_result)
 
-        return Response({
-            "student_id": student.id,
-            "full_name": f"{student.first_name} {student.last_name}",
-            "overall_learning": overall,
-            "course_scores": course_results,
-        })
+        return Response(
+            {
+                "student_id": student.id,
+                "full_name": f"{student.first_name} {student.last_name}",
+                "overall_learning": overall,
+                "course_scores": course_results,
+            }
+        )
 
 
 translator = Translator()
@@ -256,34 +269,42 @@ translator = Translator()
 
 @csrf_exempt
 async def flask_translate_proxy(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Only POST allowed'}, status=405)
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
 
     try:
         data = json.loads(request.body)
-        text = data.get('text')
-        src = data.get('source_lang')
-        dest = data.get('target_lang')
+        text = data.get("text")
+        src = data.get("source_lang")
+        dest = data.get("target_lang")
 
         print(data, text, src, dest)
 
         if not text or not src or not dest:
-            return JsonResponse({'error': 'Missing text/source_lang/target_lang'}, status=400)
+            return JsonResponse(
+                {"error": "Missing text/source_lang/target_lang"}, status=400
+            )
 
         result = await translator.translate(text, src=src, dest=dest)
 
-        return JsonResponse({
-            'translated_text': result.text,
-            'source_language': result.src,
-            'target_language': result.dest
-        })
+        return JsonResponse(
+            {
+                "translated_text": result.text,
+                "source_language": result.src,
+                "target_language": result.dest,
+            }
+        )
 
     except Exception as e:
         import traceback
+
         print(traceback.format_exc())  # Logs the full traceback for debugging
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({"error": str(e)}, status=500)
+
 
 sms = SayqalSms()
+
+
 class SendSmsToStudent(APIView):
     def post(self, request, *args, **kwargs):
         students = request.data.get("students", [])
@@ -292,7 +313,7 @@ class SendSmsToStudent(APIView):
         if not students or not message:
             return JsonResponse(
                 {"error": "Missing 'students' list or 'message' text."},
-                status=HTTP_400_BAD_REQUEST
+                status=HTTP_400_BAD_REQUEST,
             )
 
         sent_count = 0
@@ -303,8 +324,7 @@ class SendSmsToStudent(APIView):
             )
             if not relatives.exists():
                 return JsonResponse(
-                    {"error": "Parent not found"},
-                    status=HTTP_400_BAD_REQUEST
+                    {"error": "Parent not found"}, status=HTTP_400_BAD_REQUEST
                 )
 
             for relative in relatives:
@@ -314,9 +334,8 @@ class SendSmsToStudent(APIView):
 
         return JsonResponse(
             {"count": sent_count, "message": "SMS sent successfully."},
-            status=HTTP_200_OK
+            status=HTTP_200_OK,
         )
-
 
 
 class SendNotifToStudent(APIView):
@@ -327,7 +346,7 @@ class SendNotifToStudent(APIView):
         if not students or not message:
             return JsonResponse(
                 {"error": "Missing 'students' list or 'message' text."},
-                status=HTTP_400_BAD_REQUEST
+                status=HTTP_400_BAD_REQUEST,
             )
 
         sent_count = 0
@@ -338,8 +357,7 @@ class SendNotifToStudent(APIView):
             )
             if not relatives.exists():
                 return JsonResponse(
-                    {"error": "Parent not found"},
-                    status=HTTP_400_BAD_REQUEST
+                    {"error": "Parent not found"}, status=HTTP_400_BAD_REQUEST
                 )
 
             for relative in relatives:
@@ -348,9 +366,9 @@ class SendNotifToStudent(APIView):
                         user=relative.user,
                         comment=message,
                         choice="Admin_Message",
-                        come_from="Admin_Message"
+                        come_from="Admin_Message",
                     )
         return JsonResponse(
             {"count": sent_count, "message": "Notifications sent successfully."},
-            status=HTTP_200_OK
+            status=HTTP_200_OK,
         )

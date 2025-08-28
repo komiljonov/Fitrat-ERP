@@ -1,4 +1,4 @@
-from ..tasks.views import (
+from data.tasks.views import (
     TaskListCreateView,
     TaskRetrieveUpdateDestroyView,
     TaskListNoPGView,

@@ -1,24 +1,23 @@
 from rest_framework import serializers
-from ..account.models import CustomUser
-from ..lid.new_lid.models import Lid
-from ..lid.new_lid.serializers import LidSerializer
-from ..student.student.models import Student
-from ..student.student.serializers import StudentSerializer
+from data.account.models import CustomUser
+from data.lid.new_lid.models import Lid
+from data.lid.new_lid.serializers import LidSerializer
+from data.student.student.models import Student
+from data.student.student.serializers import StudentSerializer
 
 
 class ModeratorSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'id',
-            'full_name',
-            'phone',
-            'photo',
-            'role',
-            'created_at',
-            'updated_at',
+            "id",
+            "full_name",
+            "phone",
+            "photo",
+            "role",
+            "created_at",
+            "updated_at",
             # 'balance',
-
         ]
 
 
@@ -26,21 +25,22 @@ class ModeratorStudentSerializer(serializers.ModelSerializer):
     """
     Serializer for Moderator that includes their related students and lids.
     """
+
     students = serializers.SerializerMethodField()
     lids = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
         fields = [
-            'id',          # Moderator's ID
-            'full_name',   # Full name of the moderator
-            'phone',       # Phone number
-            'photo',       # Photo of the moderator
-            'role',        # Role (should be MODERATOR)
-            'created_at',  # Date of creation
-            'updated_at',  # Last update date
-            'students',    # Related students
-            'lids',        # Related lids
+            "id",  # Moderator's ID
+            "full_name",  # Full name of the moderator
+            "phone",  # Phone number
+            "photo",  # Photo of the moderator
+            "role",  # Role (should be MODERATOR)
+            "created_at",  # Date of creation
+            "updated_at",  # Last update date
+            "students",  # Related students
+            "lids",  # Related lids
         ]
 
     def get_students(self, obj):
@@ -62,7 +62,5 @@ class ModeratorStudentSerializer(serializers.ModelSerializer):
         Optionally combine students and lids into a single list.
         """
         representation = super().to_representation(instance)
-        representation['combined'] = representation['students'] + representation['lids']
+        representation["combined"] = representation["students"] + representation["lids"]
         return representation
-
-

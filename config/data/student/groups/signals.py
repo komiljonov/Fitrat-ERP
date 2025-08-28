@@ -1,18 +1,16 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from faker.providers.ssn.uk_UA import calculate_day_count
 
-from .lesson_date_calculator import calculate_lessons
 from .models import Group, SecondaryGroup, Day, GroupSaleStudent
-from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ..subject.models import Theme
-from ...account.admin import CustomUserAdmin
-from ...account.models import CustomUser
-from ...department.marketing_channel.models import Group_Type
-from ...finances.finance.models import SaleStudent, Sale
-from ...notifications.models import Notification
+from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
+from data.student.subject.models import Theme
+from data.account.models import CustomUser
+from data.department.marketing_channel.models import Group_Type
+from data.finances.finance.models import SaleStudent, Sale
+from data.notifications.models import Notification
+
 
 @receiver(pre_save, sender=Group)
 def set_price_type_on_create(sender, instance: Group, **kwargs):
@@ -20,6 +18,7 @@ def set_price_type_on_create(sender, instance: Group, **kwargs):
         group_type = Group_Type.objects.first()
         if group_type and group_type.price_type:
             instance.price_type = group_type.price_type
+
 
 @receiver(post_save, sender=Group)
 def on_create(sender, instance: Group, created, **kwargs):
@@ -164,18 +163,13 @@ def add_sales_student(sender, instance: GroupSaleStudent, created: bool, **kwarg
     if created:
 
         amount = instance.group.price - instance.amount
-        creator = CustomUser.objects.filter(
-            role="DIRECTOR"
-        ).first()
+        creator = CustomUser.objects.filter(role="DIRECTOR").first()
         sale = Sale.objects.create(
-            creator=creator,
-            name="Sale",
-            status="ACTIVE",
-            amount=amount
+            creator=creator, name="Sale", status="ACTIVE", amount=amount
         )
         sale_student = SaleStudent.objects.create(
             student=instance.student if instance.student else None,
             sale=sale,
             lid=instance.lid if instance.lid else None,
-            creator=creator
+            creator=creator,
         )

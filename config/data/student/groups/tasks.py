@@ -5,9 +5,9 @@ from celery import shared_task
 from django.utils.timezone import now
 
 from .models import Group
-from ..attendance.models import Attendance
-from ...account.models import CustomUser
-from ...notifications.models import Notification
+from data.student.attendance.models import Attendance
+from data.account.models import CustomUser
+from data.notifications.models import Notification
 
 logging.basicConfig(level=logging.INFO)
 

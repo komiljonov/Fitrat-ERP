@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.utils.timezone import now
 
 from data.account.models import CustomUser
-from ...command.models import BaseModel
+from data.command.models import BaseModel
 
 
 class Employee_attendance(BaseModel):
@@ -14,22 +14,25 @@ class Employee_attendance(BaseModel):
         to_field="second_user",
         on_delete=models.SET_NULL,
         related_name="employee_attendance",
-        null=True, blank=True
+        null=True,
+        blank=True,
     )
 
     attendance: "Stuff_Attendance" = models.ManyToManyField(
-        "Stuff_Attendance",
-        related_name="employee_full_attendance"
+        "Stuff_Attendance", related_name="employee_full_attendance"
     )
-    
+
     status = models.CharField(
         choices=[
             ("In_office", "In_office"),
             ("Gone", "Gone"),
             ("Absent", "Absent"),
-        ], max_length=10, null=True, blank=True
+        ],
+        max_length=10,
+        null=True,
+        blank=True,
     )
-    
+
     date = models.DateField(default=now)
 
     amount = models.FloatField(default=0)
@@ -41,7 +44,8 @@ class Stuff_Attendance(BaseModel):
         to_field="second_user",
         on_delete=models.SET_NULL,
         related_name="employee_part_attendance",
-        null=True, blank=True
+        null=True,
+        blank=True,
     )
 
     check_in = models.DateTimeField(null=True, blank=True)
@@ -60,15 +64,22 @@ class Stuff_Attendance(BaseModel):
         choices=[
             ("In_side", "In_side"),
             ("Outside", "Outside"),
-        ], max_length=10, null=True, blank=True
+        ],
+        max_length=10,
+        null=True,
+        blank=True,
     )
     status = models.CharField(
         choices=[
             ("Late", "Late"),
             ("On_time", "On_time"),
             ("Absent", "Absent"),
-        ],max_length=10, null=True, blank=True
+        ],
+        max_length=10,
+        null=True,
+        blank=True,
     )
+
     def __str__(self):
         return f"{self.check_in} - {self.check_out} - {self.action}"
 
@@ -85,11 +96,9 @@ class Stuff_Attendance(BaseModel):
     def work_time(self) -> Optional["UserTimeLine"]:
         return UserTimeLine.get_todays_wt(self.employee)
 
-
     @property
     def work_time_opt(self) -> bool:
         return self.work_time is not None
-
 
     @property
     def bonus(self) -> float:
@@ -97,16 +106,23 @@ class Stuff_Attendance(BaseModel):
 
 
 class UserTimeLine(BaseModel):
-    user: "CustomUser" = models.ForeignKey("account.CustomUser", on_delete=models.CASCADE, related_name="user_timeline")
-    day = models.CharField(choices=[
-        ("Monday", "Monday"),
-        ("Tuesday", "Tuesday"),
-        ("Wednesday", "Wednesday"),
-        ("Thursday", "Thursday"),
-        ("Friday", "Friday"),
-        ("Saturday", "Saturday"),
-        ("Sunday", "Sunday"),
-    ], max_length=120, null=True, blank=True)
+    user: "CustomUser" = models.ForeignKey(
+        "account.CustomUser", on_delete=models.CASCADE, related_name="user_timeline"
+    )
+    day = models.CharField(
+        choices=[
+            ("Monday", "Monday"),
+            ("Tuesday", "Tuesday"),
+            ("Wednesday", "Wednesday"),
+            ("Thursday", "Thursday"),
+            ("Friday", "Friday"),
+            ("Saturday", "Saturday"),
+            ("Sunday", "Sunday"),
+        ],
+        max_length=120,
+        null=True,
+        blank=True,
+    )
 
     is_weekend = models.BooleanField(default=False)
 
@@ -117,14 +133,15 @@ class UserTimeLine(BaseModel):
     end_time = models.TimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.user.full_name}   {self.day}   {self.start_time}   {self.end_time}"
+        return (
+            f"{self.user.full_name}   {self.day}   {self.start_time}   {self.end_time}"
+        )
 
     @staticmethod
     def get_user_wt(employee):
         return UserTimeLine.objects.filter(user=employee).first()
-    
+
     @staticmethod
     def get_todays_wt(employee):
         today_day = datetime.today().strftime("%A")  # 'Monday', 'Tuesday', ...
         return UserTimeLine.objects.filter(user=employee, day=today_day).first()
-    

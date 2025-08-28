@@ -1,9 +1,13 @@
-from datetime import datetime, timedelta
-from django.db.models import Avg
+from datetime import datetime
 from .models import Room
 
-def calculate_room_filling_statistics(room_id=None, start_time=str,end_time=str,
-                                      lesson_duration=str):
+
+def calculate_room_filling_statistics(
+    room_id=None,
+    start_time=str,
+    end_time=str,
+    lesson_duration=str,
+):
     """
     Calculates student filling stats for a specific room (if given) or averages across all rooms.
     """
@@ -11,7 +15,9 @@ def calculate_room_filling_statistics(room_id=None, start_time=str,end_time=str,
         start_time = datetime.strptime("08:00", "%H:%M")
         end_time = datetime.strptime("20:00", "%H:%M")
         lesson_duration = 2
-    lessons_per_day = (end_time - start_time).seconds // (lesson_duration * 3600)  # 12 hours / 2 = 6 lessons
+    lessons_per_day = (end_time - start_time).seconds // (
+        lesson_duration * 3600
+    )  # 12 hours / 2 = 6 lessons
 
     if room_id:
         rooms = Room.objects.filter(id=room_id)
@@ -28,18 +34,22 @@ def calculate_room_filling_statistics(room_id=None, start_time=str,end_time=str,
 
         weekly_students = students_per_day * 6
 
-        room_statistics.append({
-            "room_id": room.id,
-            "room_number": room.room_number,
-            "room_filling": room_filling,
-            "lessons_per_day": lessons_per_day,
-            "students_per_day": students_per_day,
-            "weekly_students": weekly_students,
-        })
+        room_statistics.append(
+            {
+                "room_id": room.id,
+                "room_number": room.room_number,
+                "room_filling": room_filling,
+                "lessons_per_day": lessons_per_day,
+                "students_per_day": students_per_day,
+                "weekly_students": weekly_students,
+            }
+        )
 
         total_weekly_students += weekly_students
 
-    average_weekly_students = total_weekly_students / room_count if room_count > 0 else 0
+    average_weekly_students = (
+        total_weekly_students / room_count if room_count > 0 else 0
+    )
 
     return {
         "individual_room_statistics": room_statistics,

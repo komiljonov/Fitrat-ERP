@@ -5,7 +5,7 @@ from django.db import models
 from data.command.models import BaseModel
 
 if TYPE_CHECKING:
-    from ...account.models import CustomUser
+    from data.account.models import CustomUser
 
 
 class Compensation(BaseModel):
@@ -57,7 +57,10 @@ class Bonus(BaseModel):
                 "Markazga kelgan o‘quvchi uchun bonus",
             ),
             ("Yaratilgan buyurtma uchun bonus", "Yaratilgan buyurtma uchun bonus"),
-            ("Sinov darsiga kelgan o‘quvchi uchun bonus", "Sinov darsiga kelgan o‘quvchi uchun bonus"),
+            (
+                "Sinov darsiga kelgan o‘quvchi uchun bonus",
+                "Sinov darsiga kelgan o‘quvchi uchun bonus",
+            ),
             (
                 "Xizmat ko‘rsatgan har bir aktiv o‘quvchi uchun bonus",
                 "Xizmat ko‘rsatgan har bir aktiv o‘quvchi uchun bonus",

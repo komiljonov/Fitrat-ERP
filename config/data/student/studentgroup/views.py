@@ -1,7 +1,7 @@
 import datetime
 
-from django.db.models import OuterRef, Exists, Q
-from django.utils.timezone import now
+from django.db.models import OuterRef, Exists, Q, Count
+from django.utils.timezone import now, localdate
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
@@ -11,14 +11,10 @@ from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView,
     ListAPIView,
     get_object_or_404,
-    UpdateAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from data.lid.new_lid.models import Lid
-from data.student.student.models import Student
 
 from .models import StudentGroup, SecondaryStudentGroup
 from .serializers import (
@@ -26,69 +22,86 @@ from .serializers import (
     StudentsGroupSerializer,
     SecondaryStudentsGroupSerializer,
 )
-from ..attendance.models import Attendance
-from ..attendance.serializers import AttendanceSerializer
-from ..groups.models import SecondaryGroup, Group
-from ..groups.serializers import SecondaryGroupModelSerializer
+from data.student.attendance.models import Attendance
+from data.student.attendance.serializers import AttendanceSerializer
+from data.student.groups.models import SecondaryGroup, Group
+from data.student.groups.serializers import SecondaryGroupModelSerializer
+
+
+def _parse_bool(val):
+    if isinstance(val, bool):
+        return val
+    if val is None:
+        return None
+    return str(val).strip().lower() in {"1", "true", "t", "yes", "y", "on"}
 
 
 class StudentsGroupList(ListCreateAPIView):
-    queryset = StudentGroup.objects.all()
     serializer_class = StudentsGroupSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
+    # (Searching here is okay; heavy filters should be in filterset classes)
     search_fields = (
         "group__name",
         "student__first_name",
-        "lid__first_name",
         "student__last_name",
+        "lid__first_name",
         "lid__last_name",
         "group__status",
         "group__teacher__id",
     )
-    filter_fields = filterset_fields = search_fields
+    filterset_fields = search_fields
+    ordering_fields = ("group__name", "student__first_name", "lid__first_name")
 
     def get_queryset(self):
-        status = self.request.query_params.get("status")
-        today = datetime.date.today()
+        today = localdate()
         user = self.request.user
-        is_archived = self.request.GET.get("is_archived", False)
+        status = self.request.query_params.get("status")
+        is_archived = _parse_bool(self.request.query_params.get("is_archived"))
 
-        if user.role == "TEACHER":
-            queryset = StudentGroup.objects.filter(group__teacher__id=user.id)
+        if getattr(user, "role", None) == "TEACHER":
+            qs = StudentGroup.objects.filter(group__teacher_id=user.id)
         else:
-            queryset = StudentGroup.objects.filter(group__filial__in=user.filial.all())
+            qs = StudentGroup.objects.filter(group__filial__in=user.filial.all())
+
         if status:
-            queryset = queryset.filter(group__status=status)
+            qs = qs.filter(group__status=status)
 
-        if is_archived:
-            queryset = queryset.filter(is_archived=is_archived.capitalize())
+        if is_archived is not None:
+            qs = qs.filter(is_archived=is_archived)
 
-        # **Exclude students who have attended today**
+        # Subquery: has the (student, group) any attendance today?
         attended_today = Attendance.objects.filter(
-            student=OuterRef(
-                "student"
-            ),  # Ensure this matches your Attendance model field
             group=OuterRef("group"),
+            student=OuterRef("student"),
             created_at__date=today,
         )
 
-        # Apply filters
-        queryset = queryset.annotate(has_attended_today=Exists(attended_today)).filter(
-            has_attended_today=False,  # Exclude students who attended today
-            lid__isnull=False,  # Exclude null `lid`
+        # On-DB aggregations to avoid per-row queries:
+        # - total_lessons: distinct themes in the group's course
+        # - attended_lessons: distinct themes attended in this group
+        # (Theme has FK to course; Attendance has FK to group)
+        qs = (
+            qs.select_related(
+                "group",
+                "group__course",
+                "group__teacher",
+                "group__level",
+                "group__room_number",
+                "group__filial",
+                "student",
+                "lid",
+            )
+            .annotate(
+                has_attended_today=Exists(attended_today),
+                total_lessons=Count("group__course__theme", distinct=True),
+                attended_lessons=Count("group__attendance__theme", distinct=True),
+            )
+            .filter(lid__isnull=False)
+            .filter(has_attended_today=False)
         )
 
-        search = self.request.GET.get("search")
-        if search:
-            queryset = queryset.filter(
-                Q(student__first_name__icontains=search)
-                | Q(lid__first_name__icontains=search)
-                | Q(student__last_name__icontains=search)
-                | Q(lid__last_name__icontains=search)
-            )
-
-        return queryset
+        return qs
 
 
 class StudentGroupDetail(RetrieveUpdateDestroyAPIView):
@@ -159,9 +172,7 @@ class GroupStudentList(ListAPIView):
                 | Q(lid__is_archived=is_archived.capitalize())
             ).distinct("id")
 
-            queryset = queryset.filter(
-                is_archived=is_archived.capitalize()
-            )
+            queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if status:
             queryset = queryset.filter(student__student_stage_type=status)
@@ -335,17 +346,17 @@ class SecondaryStudentGroupDelete(APIView):
         )
 
 
-class GroupStudentStatistics(APIView):
+class GroupStudentStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, **kwargs):
         group = get_object_or_404(Group, pk=pk)
 
         # Get total students in the group
-        from django.db.models import Q
-
         students = StudentGroup.objects.filter(
-            Q(group=group) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+            Q(group=group)
+            & (Q(student__is_archived=False) | Q(lid__is_archived=False)),
+            is_archived=False,
         ).count()
 
         # Get today's start and end time
@@ -517,60 +528,66 @@ class StudentGroupStatistics(APIView):
         teacher = self.request.query_params.get("teacher")
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
-        is_archived = self.request.GET.get("is_archived")
 
         base_queryset = StudentGroup.objects.filter(
-            Q(student__is_archived=False) | Q(lid__is_archived=False)
+            Q(student__is_archived=False) | Q(lid__is_archived=False),
         ).exclude(group__status="INACTIVE")
 
         if filial:
-            base_queryset = base_queryset.filter(group__filial__id=filial)
+            base_queryset = base_queryset.filter(group__filial_id=filial)
 
         all_groups = base_queryset.filter(is_archived=False)
 
         orders = base_queryset.filter(
-            lid__isnull=False, lid__lid_stage_type="ORDERED_LID", lid__is_student=False
+            lid__isnull=False,
+            lid__lid_stage_type="ORDERED_LID",
+            lid__is_student=False,
+            is_archived=False,
         )
 
-        students = base_queryset.filter(student__isnull=False, student__is_frozen=False)
+        students = base_queryset.filter(
+            student__isnull=False, student__is_frozen=False, is_archived=False
+        )
 
-        archived_or_frozen = base_queryset.filter(student__is_frozen=True
+        archived_or_frozen = base_queryset.filter(
+            student__is_frozen=True, is_archived=False
         ).exclude(group__status="INACTIVE")
 
         if start_date and end_date:
             all_groups = all_groups.filter(
-                created_at__gte=start_date, created_at__lte=end_date
+                created_at__gte=start_date,
+                created_at__lte=end_date,
             )
-            orders = orders.filter(created_at__gte=start_date, created_at__lte=end_date)
+            orders = orders.filter(
+                created_at__gte=start_date,
+                created_at__lte=end_date,
+            )
             students = students.filter(
-                created_at__gte=start_date, created_at__lte=end_date
+                created_at__gte=start_date,
+                created_at__lte=end_date,
             )
             archived_or_frozen = archived_or_frozen.filter(
-                created_at__gte=start_date, created_at__lte=end_date
+                created_at__gte=start_date,
+                created_at__lte=end_date,
             )
+
         elif start_date:
             all_groups = all_groups.filter(created_at__gte=start_date)
             orders = orders.filter(created_at__gte=start_date)
             students = students.filter(created_at__gte=start_date)
-            archived_or_frozen = archived_or_frozen.filter(
-                created_at__gte=start_date
-            )
+            archived_or_frozen = archived_or_frozen.filter(created_at__gte=start_date)
 
         if course:
-            all_groups = all_groups.filter(group__course__id=course)
-            orders = orders.filter(group__course__id=course)
-            students = students.filter(group__course__id=course)
-            archived_or_frozen = archived_or_frozen.filter(
-                group__course__id=course
-            )
+            all_groups = all_groups.filter(group__course_id=course)
+            orders = orders.filter(group__course_id=course)
+            students = students.filter(group__course_id=course)
+            archived_or_frozen = archived_or_frozen.filter(group__course_id=course)
 
         if teacher:
-            all_groups = all_groups.filter(group__teacher__id=teacher)
-            orders = orders.filter(group__teacher__id=teacher)
-            students = students.filter(group__teacher__id=teacher)
-            archived_or_frozen = archived_or_frozen.filter(
-                group__teacher__id=teacher
-            )
+            all_groups = all_groups.filter(group__teacher_id=teacher)
+            orders = orders.filter(group__teacher_id=teacher)
+            students = students.filter(group__teacher_id=teacher)
+            archived_or_frozen = archived_or_frozen.filter(group__teacher_id=teacher)
 
         all_count = all_groups.count()
         students_count = students.count()
@@ -613,11 +630,9 @@ class SecondaryStudentCreate(ListCreateAPIView):
 
 
 class StudentGroupUpdate(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request, **kwargs):
-
         serializer = StudentGroupUpdateSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)

@@ -184,7 +184,6 @@ celerybeat-schedule-wal
 /data/appendonlydir
 locales
 utils
-/data/
 tg_bot
 
 

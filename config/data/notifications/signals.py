@@ -33,7 +33,7 @@ def send_notification_on_create(sender, instance: Notification, created, **kwarg
             title="Fitrat",
             body=instance.comment,
             token=fcm_token.token,
-            data=stringified_data
+            data=stringified_data,
         )
     except Exception as e:
         print("❌ Error sending push notification:", e)

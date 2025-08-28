@@ -1,12 +1,8 @@
 import logging
-from datetime import timedelta
 from celery import shared_task
 from django.utils.timezone import now
-from pymupdf import Story
 
-from .models import Lid
-from ...notifications.models import Notification
-from ...student.appsettings.models import Store
+from data.student.appsettings.models import Store
 
 logging.basicConfig(level=logging.INFO)
 

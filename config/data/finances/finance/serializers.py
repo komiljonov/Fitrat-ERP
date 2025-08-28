@@ -6,6 +6,13 @@ from rest_framework import serializers
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
+
+from data.lid.new_lid.models import Lid
+from data.lid.new_lid.serializers import LidSerializer
+from data.student.attendance.models import Attendance
+from data.student.groups.serializers import GroupSerializer
+from data.student.student.serializers import StudentSerializer
+
 from .models import (
     Finance,
     Casher,
@@ -18,11 +25,6 @@ from .models import (
     Voucher,
     VoucherStudent,
 )
-from ...lid.new_lid.models import Lid
-from ...lid.new_lid.serializers import LidSerializer
-from ...student.attendance.models import Attendance
-from ...student.groups.serializers import GroupSerializer
-from ...student.student.serializers import StudentSerializer
 
 
 class KindSerializer(serializers.ModelSerializer):
@@ -31,6 +33,7 @@ class KindSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "kind",
             "action",
             "color",
             "created_at",

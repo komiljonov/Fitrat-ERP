@@ -25,7 +25,8 @@ from .views import (
     StudentSaleGroupListCreateAPIView,
     StudentSaleGroupDetailAPIView,
 )
-from ..lesson.views import ExtraLessonScheduleView
+
+from data.student.lesson.views import ExtraLessonScheduleView
 
 urlpatterns = [
     path("", StudentGroupsView.as_view(), name="group-list"),

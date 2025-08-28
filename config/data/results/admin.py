@@ -1,7 +1,5 @@
 from django.contrib import admin
 
-from data.results.models import Results
-
 
 # # Register your models here.
 # @admin.register(Result)

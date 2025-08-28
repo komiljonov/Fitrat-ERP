@@ -1,9 +1,9 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Group_Type
-from ...account.models import CustomUser
-from ...notifications.models import Notification
-from ...student.groups.models import Group
+from data.account.models import CustomUser
+from data.notifications.models import Notification
+from data.student.groups.models import Group
 
 
 @receiver(post_save, sender=Group_Type)

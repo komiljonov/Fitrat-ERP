@@ -9,16 +9,17 @@ from django.dispatch import receiver
 from django.utils import timezone
 from icecream import ic
 
+from data.finances.finance.choices import FinanceKindTypeChoices
 from data.exam_results.tasks import send_unit_test_notification
 from .models import Attendance
-from ..groups.lesson_date_calculator import calculate_lessons
-from ..groups.models import GroupSaleStudent
-from ..subject.models import Theme, Level
-from ...exam_results.models import UnitTest
-from ...finances.compensation.models import Bonus
-from ...finances.finance.models import Finance, Kind, SaleStudent
-from ...notifications.models import Notification
-from ...parents.models import Relatives
+from data.student.groups.lesson_date_calculator import calculate_lessons
+from data.student.groups.models import GroupSaleStudent
+from data.student.subject.models import Theme, Level
+from data.exam_results.models import UnitTest
+from data.finances.compensation.models import Bonus
+from data.finances.finance.models import Finance, Kind, SaleStudent
+from data.notifications.models import Notification
+from data.parents.models import Relatives
 
 _signal_state = local()
 
@@ -35,10 +36,10 @@ def get_sale_for_instance(instance):
 
 def apply_discount(price, sale):
     if (
-            sale
-            and sale.sale
-            and sale.sale.amount
-            and sale.expire_date >= datetime.date.today()
+        sale
+        and sale.sale
+        and sale.sale.amount
+        and sale.expire_date >= datetime.date.today()
     ):
         try:
             sale_percent = Decimal(sale.sale.amount)
@@ -58,7 +59,7 @@ def calculate_bonus_and_income(price, bonus_percent):
 
 
 def create_finance_record(
-        action, amount, kind, instance, student, teacher=None, is_first=False
+    action, amount, kind, instance, student, teacher=None, is_first=False
 ):
     return Finance.objects.create(
         action=action,
@@ -78,9 +79,9 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
         attendances_count = Attendance.objects.filter(lid=instance.lid).count()
 
         if (
-                attendances_count == 1
-                and instance.reason != "IS_PRESENT"
-                and instance.lid is not None
+            attendances_count == 1
+            and instance.reason != "IS_PRESENT"
+            and instance.lid is not None
         ):
             Notification.objects.create(
                 user=(
@@ -130,8 +131,8 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 
         if attendances_count > 1:
             if (
-                    instance.reason == "IS_PRESENT"
-                    and instance.student.balance_status == "INACTIVE"
+                instance.reason == "IS_PRESENT"
+                and instance.student.balance_status == "INACTIVE"
             ):
                 Notification.objects.create(
                     user=instance.student.sales_manager,
@@ -171,7 +172,9 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         if instance.reason not in ["IS_PRESENT", "UNREASONED", "REASONED"]:
             return
 
-        kind = Kind.objects.get(name="Lesson payment")
+        # kind = Kind.objects.get(name="Lesson payment")
+        kind = Kind.get(kind=FinanceKindTypeChoices.LESSON_PAYMENT)
+
         is_first_income = not Finance.objects.filter(action="INCOME").exists()
 
         bonus = (

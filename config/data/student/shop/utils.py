@@ -1,7 +1,5 @@
-import json
-
 from .models import Coins, CoinsSettings
-from ...notifications.models import Notification
+from data.notifications.models import Notification
 
 
 def give_coin(choice, student, from_point, result_type=None):
@@ -18,24 +16,21 @@ def give_coin(choice, student, from_point, result_type=None):
         "Monthly": "Siz Oylik imtihonida qatnashganingiz uchun {coin} coinlar berildi.",
     }
 
-    print(choice,student,from_point)
+    print(choice, student, from_point)
 
     from_point = float(from_point)
 
     coin_setting = CoinsSettings.objects.filter(
-        choice=choice,
-        type="Single",
-        from_point=from_point
+        choice=choice, type="Single", from_point=from_point
     ).first()
     print(coin_setting)
-
 
     if not coin_setting:
         coin_setting = CoinsSettings.objects.filter(
             choice=choice,
             type="Double",
             from_point__lte=from_point,
-            to_point__gte=from_point
+            to_point__gte=from_point,
         ).first()
 
     if coin_setting:
@@ -46,12 +41,12 @@ def give_coin(choice, student, from_point, result_type=None):
             choice=choice,
             status="Given",
             coin=coin_setting.coin,
-            comment=valid_choices[choice].format(choice=choice, coin=coin_setting.coin)
+            comment=valid_choices[choice].format(choice=choice, coin=coin_setting.coin),
         )
 
         Notification.objects.create(
             user=student.user,
             choice="Coin",
             come_from="",
-            comment=f"Sizga {coin_setting.coin} miqdorida tangalar qo'shildi!"
+            comment=f"Sizga {coin_setting.coin} miqdorida tangalar qo'shildi!",
         )

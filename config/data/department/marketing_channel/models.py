@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.db import models
 from django.utils import timezone
 
-from ...command.models import BaseModel
+from data.command.models import BaseModel
 
 
 class MarketingChannel(BaseModel):

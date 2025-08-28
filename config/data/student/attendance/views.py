@@ -10,14 +10,17 @@ from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView,
     ListAPIView,
 )
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Attendance, Student, SecondaryAttendance
+from .models import Attendance, SecondaryAttendance
+from data.student.student.models import Student
+
 from .secondary_serializers import SecondaryAttendanceSerializer
 from .serializers import AttendanceSerializer
-from ...lid.new_lid.models import Lid
+from data.lid.new_lid.models import Lid
 
 
 class AttendanceList(ListCreateAPIView):
@@ -90,7 +93,7 @@ class AttendanceBulkUpdateAPIView(APIView):
                 {"detail": "Expected a list of items."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-    
+
         updated = []
 
         for item in data:

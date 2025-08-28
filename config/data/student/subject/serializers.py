@@ -1,10 +1,9 @@
-from django.utils.module_loading import import_string
 from rest_framework import serializers
 
 from .models import Subject, Level, Theme
-from ..course.models import Course
-from ...upload.models import File
-from ...upload.serializers import FileUploadSerializer
+from data.student.course.models import Course
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class ThemeDumpSerializer(serializers.ModelSerializer):

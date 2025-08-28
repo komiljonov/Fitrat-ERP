@@ -1,20 +1,22 @@
+from typing import TYPE_CHECKING
 from django.db import models
 
 from data.command.models import BaseModel
-from data.lid.new_lid.models import Lid
-from data.student.groups.models import Group, SecondaryGroup
-from data.student.student.models import Student
+
+if TYPE_CHECKING:
+    from data.student.student.models import Student
+    from data.lid.new_lid.models import Lid
+    from data.student.groups.models import Group, SecondaryGroup
 
 
 class StudentGroup(BaseModel):
-    group: "Group" = models.ForeignKey(
+    group: "Group | None" = models.ForeignKey(
         "groups.Group",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="student_groups",
     )
-
     student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
@@ -22,8 +24,7 @@ class StudentGroup(BaseModel):
         blank=True,
         related_name="students_group",
     )
-
-    lid: "Lid | None" = models.ForeignKey(
+    lid: "Lid" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
         null=True,
@@ -31,14 +32,13 @@ class StudentGroup(BaseModel):
         related_name="lids_group",
     )
 
-    is_archived: bool = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
 
+    HOMEWORK_ONLINE = "Online"
+    HOMEWORK_OFFLINE = "Offline"
     homework_type = models.CharField(
-        choices=[
-            ("Online", "Online"),
-            ("Offline", "Offline"),
-        ],
-        default="Offline",
+        choices=[(HOMEWORK_ONLINE, "Online"), (HOMEWORK_OFFLINE, "Offline")],
+        default=HOMEWORK_OFFLINE,
         null=True,
         blank=True,
         max_length=20,
@@ -53,17 +53,20 @@ class StudentGroup(BaseModel):
 
 
 class SecondaryStudentGroup(BaseModel):
-    group: "SecondaryGroup" = models.ForeignKey(
-        "groups.SecondaryGroup", on_delete=models.SET_NULL, null=True, blank=True
+    group: "SecondaryGroup | None" = models.ForeignKey(
+        "groups.SecondaryGroup",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
-    student: "Student" = models.ForeignKey(
+    student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
         related_name="students_secondary_group",
         null=True,
         blank=True,
     )
-    lid: "Lid" = models.ForeignKey(
+    lid: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
         related_name="lids_secondary_group",

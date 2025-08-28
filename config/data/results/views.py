@@ -3,14 +3,26 @@ from datetime import datetime
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    RetrieveUpdateAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Results
+
 # Create your views here.
-from .serializers import UniversityResultsSerializer, CertificationResultsSerializer, StudentResultsSerializer, \
-    OtherResultsSerializer, ResultsSerializer, NationalSerializer
+from .serializers import (
+    UniversityResultsSerializer,
+    CertificationResultsSerializer,
+    StudentResultsSerializer,
+    OtherResultsSerializer,
+    ResultsSerializer,
+    NationalSerializer,
+)
 
 
 class UniversityResultsViewSet(ListCreateAPIView):
@@ -20,7 +32,7 @@ class UniversityResultsViewSet(ListCreateAPIView):
 
     def get_queryset(self):
         teacher = self.request.user
-        status = self.request.GET.get('status')
+        status = self.request.GET.get("status")
 
         queryset = Results.objects.all()
 
@@ -39,10 +51,10 @@ class CertificationResultsViewSet(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
-        status = self.request.GET.get('status')
+        status = self.request.GET.get("status")
         if status:
             queryset = queryset.filter(status=status)
-        certification_type = self.request.GET.get('certificate_type')
+        certification_type = self.request.GET.get("certificate_type")
         if certification_type:
             queryset = queryset.filter(certificate_type=certification_type)
         return queryset
@@ -68,10 +80,10 @@ class UniversityResultsNoPg(ListAPIView):
 
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
-        status = self.request.GET.get('status')
+        status = self.request.GET.get("status")
         if status:
             queryset = queryset.filter(status=status)
-        certification_type = self.request.GET.get('certificate_type')
+        certification_type = self.request.GET.get("certificate_type")
         if certification_type:
             queryset = queryset.filter(certificate_type=certification_type)
         return queryset
@@ -102,18 +114,18 @@ class ResultsViewSet(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
-        status = self.request.GET.get('status')
-        type = self.request.GET.get('type')
-        filial = self.request.GET.get('filial')
-        teacher = self.request.GET.get('teacher')
-        results = self.request.GET.get('results')
-        nations = self.request.GET.get('nations')
-        res_name = self.request.GET.get('res_name')
-        who = self.request.GET.get('who')
-        university_type = self.request.GET.get('university_type')
-        university_entering_type = self.request.GET.get('university_entering_type')
-        degree = self.request.GET.get('degree')
-        level = self.request.GET.get('level')
+        status = self.request.GET.get("status")
+        type = self.request.GET.get("type")
+        filial = self.request.GET.get("filial")
+        teacher = self.request.GET.get("teacher")
+        results = self.request.GET.get("results")
+        nations = self.request.GET.get("nations")
+        res_name = self.request.GET.get("res_name")
+        who = self.request.GET.get("who")
+        university_type = self.request.GET.get("university_type")
+        university_entering_type = self.request.GET.get("university_entering_type")
+        degree = self.request.GET.get("degree")
+        level = self.request.GET.get("level")
 
         if level:
             queryset = queryset.filter(level=level)
@@ -122,7 +134,9 @@ class ResultsViewSet(ListCreateAPIView):
         if university_type:
             queryset = queryset.filter(university_type=university_type)
         if university_entering_type:
-            queryset = queryset.filter(university_entering_type=university_entering_type)
+            queryset = queryset.filter(
+                university_entering_type=university_entering_type
+            )
         if who:
             queryset = queryset.filter(who=who)
         if res_name:
@@ -149,9 +163,9 @@ class OtherResultsViewSet(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Results.objects.filter(teacher=self.request.user)
-        status = self.request.GET.get('status')
-        results = self.request.GET.get('results')
-        degree = self.request.GET.get('degree')
+        status = self.request.GET.get("status")
+        results = self.request.GET.get("results")
+        degree = self.request.GET.get("degree")
 
         if results:
             queryset = queryset.filter(results=results)
@@ -160,7 +174,7 @@ class OtherResultsViewSet(ListCreateAPIView):
 
         if status:
             queryset = queryset.filter(status=status)
-        certification_type = self.request.GET.get('certificate_type')
+        certification_type = self.request.GET.get("certificate_type")
         if certification_type:
             queryset = queryset.filter(certificate_type=certification_type)
         return queryset
@@ -182,18 +196,18 @@ class ResultsView(ListAPIView):
 
     def get_queryset(self):
         queryset = Results.objects.filter(filial__in=self.request.user.filial.all())
-        status = self.request.GET.get('status')
-        type = self.request.GET.get('type')
-        filial = self.request.GET.get('filial')
-        teacher = self.request.GET.get('teacher')
-        results = self.request.GET.get('results')
-        nations = self.request.GET.get('nations')
-        res_name = self.request.GET.get('res_name')
-        who = self.request.GET.get('who')
-        search = self.request.GET.get('search')
+        status = self.request.GET.get("status")
+        type = self.request.GET.get("type")
+        filial = self.request.GET.get("filial")
+        teacher = self.request.GET.get("teacher")
+        results = self.request.GET.get("results")
+        nations = self.request.GET.get("nations")
+        res_name = self.request.GET.get("res_name")
+        who = self.request.GET.get("who")
+        search = self.request.GET.get("search")
 
-        start_date_str = self.request.GET.get('start_date')
-        end_date_str = self.request.GET.get('end_date')
+        start_date_str = self.request.GET.get("start_date")
+        end_date_str = self.request.GET.get("end_date")
 
         date_format = "%Y-%m-%d"
         if start_date_str and end_date_str:
@@ -213,7 +227,10 @@ class ResultsView(ListAPIView):
             queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
         if search:
-            queryset = queryset.filter(Q(student__first_name__icontains=search) | Q(student__last_name__icontains=search))
+            queryset = queryset.filter(
+                Q(student__first_name__icontains=search)
+                | Q(student__last_name__icontains=search)
+            )
         if who:
             queryset = queryset.filter(who=who)
         if res_name:
@@ -246,8 +263,8 @@ class NationalSertificateApi(ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Results.objects.filter(filial__in=self.request.user.filial.all())
-        status = self.request.GET.get('status')
-        type = self.request.GET.get('type')
+        status = self.request.GET.get("status")
+        type = self.request.GET.get("type")
 
         if status:
             queryset = queryset.filter(status=status)
@@ -263,19 +280,21 @@ class ResultStudentListAPIView(ListAPIView):
 
     def get_queryset(self):
 
-        student = self.request.GET.get('id')
-        status = self.request.GET.get('status')
-        type = self.request.GET.get('type')
-        filial = self.request.GET.get('filial')
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
+        student = self.request.GET.get("id")
+        status = self.request.GET.get("status")
+        type = self.request.GET.get("type")
+        filial = self.request.GET.get("filial")
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
 
         queryset = Results.objects.all()
 
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
         if start_date and end_date:
-            queryset = queryset.filter(created_at__gte=start_date, created_at__lte=end_date)
+            queryset = queryset.filter(
+                created_at__gte=start_date, created_at__lte=end_date
+            )
         if filial:
             queryset = Results.objects.filter(filial__id=filial)
         if student:

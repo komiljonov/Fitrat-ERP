@@ -1,12 +1,12 @@
 from django.db import models
 
-from ..new_lid.models import Lid
-from ...command.models import BaseModel
-from ...student.student.models import Student
-from ...comments.views import Comment
+from data.lid.new_lid.models import Lid
+from data.command.models import BaseModel
+from data.student.student.models import Student
+from data.comments.views import Comment
 
 
-from ...account.models import CustomUser
+from data.account.models import CustomUser
 
 
 class Archived(BaseModel):

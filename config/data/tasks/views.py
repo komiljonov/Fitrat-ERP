@@ -8,10 +8,10 @@ from rest_framework.generics import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
-from ..tasks.models import Task
-from ..tasks.serializers import TaskSerializer
+from data.lid.new_lid.models import Lid
+from data.student.student.models import Student
+from data.tasks.models import Task
+from data.tasks.serializers import TaskSerializer
 
 
 class TaskListCreateView(ListCreateAPIView):
@@ -91,7 +91,5 @@ class TaskStudentRetrieveListAPIView(ListAPIView):
         if lid:
             return Task.objects.filter(lid=lid)
         elif student:
-            return Task.objects.filter(
-                student=student
-            )
+            return Task.objects.filter(student=student)
         return Task.objects.none()

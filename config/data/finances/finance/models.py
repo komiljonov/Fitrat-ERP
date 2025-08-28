@@ -1,5 +1,6 @@
 from django.db import models
 
+from data.finances.finance.choices import FinanceKindTypeChoices
 from data.account.models import CustomUser
 from data.command.models import BaseModel
 from data.lid.new_lid.models import Lid
@@ -34,6 +35,13 @@ class Casher(BaseModel):
 
 
 class Kind(BaseModel):
+
+    name = models.CharField(max_length=100)
+
+    kind = models.CharField(
+        max_length=255, choices=FinanceKindTypeChoices.CHOICES, null=True, blank=True
+    )
+
     action = models.CharField(
         choices=[
             ("INCOME", "INCOME"),
@@ -42,7 +50,6 @@ class Kind(BaseModel):
         default="INCOME",
         max_length=20,
     )
-    name = models.CharField(max_length=100)
 
     color = models.CharField(
         max_length=100,
@@ -53,6 +60,16 @@ class Kind(BaseModel):
     def __str__(self):
         return f"{self.action} {self.name}"
 
+    @classmethod
+    def get(cls, kind: str, raise_if_not_exists: bool = False):
+
+        action = FinanceKindTypeChoices.ACTIONS[kind]
+
+        if raise_if_not_exists:
+            return cls.objects.get(kind=kind)
+
+        return cls.objects.get_or_create(kind=kind, action=action)[0]
+
 
 class PaymentMethod(BaseModel):
     name = models.CharField(max_length=100)
@@ -62,7 +79,7 @@ class PaymentMethod(BaseModel):
 
 
 class Finance(BaseModel):
-    casher: "Casher" = models.ForeignKey(
+    casher: "Casher | None" = models.ForeignKey(
         "finance.Casher",
         on_delete=models.SET_NULL,
         related_name="finances_casher",
@@ -81,7 +98,7 @@ class Finance(BaseModel):
 
     amount = models.FloatField(default=0)
 
-    kind: "Kind" = models.ForeignKey(
+    kind: "Kind | None" = models.ForeignKey(
         "finance.Kind",
         on_delete=models.SET_NULL,
         related_name="finances_kind",
@@ -104,7 +121,7 @@ class Finance(BaseModel):
         blank=True,
     )
 
-    attendance: "Attendance" = models.ForeignKey(
+    attendance: "Attendance | None" = models.ForeignKey(
         "attendance.Attendance",
         on_delete=models.SET_NULL,
         null=True,
@@ -112,15 +129,21 @@ class Finance(BaseModel):
         related_name="attendance_finances",
     )
 
-    student: "Student" = models.ForeignKey(
-        "student.Student", on_delete=models.SET_NULL, null=True, blank=True
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
-    lid: "Lid" = models.ForeignKey(
-        "new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True
+    lid: "Lid | None" = models.ForeignKey(
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
-    stuff: "CustomUser" = models.ForeignKey(
+    stuff: "CustomUser | None" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,
         null=True,
@@ -128,7 +151,7 @@ class Finance(BaseModel):
         related_name="finance_stuff",
     )
 
-    creator: "CustomUser" = models.ForeignKey(
+    creator: "CustomUser | None" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,
         null=True,
@@ -137,9 +160,6 @@ class Finance(BaseModel):
     )
 
     comment = models.TextField(null=True, blank=True)
-
-    # stuff_attendance: "Employee_attendance" = models.ForeignKey("timetracker.Employee_attendance",
-    #                                                            on_delete=models.SET_NULL, null=True, blank=True)
 
     is_first = models.BooleanField(default=False, null=True, blank=True)
 
@@ -248,7 +268,9 @@ class Voucher(BaseModel):
 class Sale(BaseModel):
     creator: "CustomUser" = models.ForeignKey(
         "account.CustomUser",
-        on_delete=models.SET_NULL,null=True,blank=True,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="finances_creator_sale",
     )
     name = models.CharField(

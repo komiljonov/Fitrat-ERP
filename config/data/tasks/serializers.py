@@ -1,28 +1,33 @@
 from rest_framework import serializers
 
-from ..account.models import CustomUser
-from ..lid.new_lid.models import Lid
-from ..lid.new_lid.serializers import LidSerializer
-from ..student.student.models import Student
-from ..student.student.serializers import StudentSerializer
-from ..tasks.models import Task
-from ..upload.models import File
-from ..upload.serializers import FileUploadSerializer
+from data.account.models import CustomUser
+from data.lid.new_lid.models import Lid
+from data.lid.new_lid.serializers import LidSerializer
+from data.student.student.models import Student
+from data.student.student.serializers import StudentSerializer
+from data.tasks.models import Task
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class TaskSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+
     lid = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), allow_null=True
+        queryset=Lid.objects.all(),
+        allow_null=True,
     )
     student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), allow_null=True
+        queryset=Student.objects.all(),
+        allow_null=True,
     )
     performer = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
     file = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), allow_null=True
+        queryset=File.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -137,5 +142,5 @@ class TaskSerializer(serializers.ModelSerializer):
             for key, value in representation.items()
             if value not in [{}, [], None, "", False]
         }
-        
+
         return filtered_data

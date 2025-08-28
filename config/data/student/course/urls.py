@@ -1,8 +1,6 @@
-from django.urls import path, include
+from django.urls import path
 
 from .views import *
-from ..subject.views import ThemeList
-from ...teachers.teacher.views import TeacherList
 
 urlpatterns = [
     path("", CourseList.as_view()),

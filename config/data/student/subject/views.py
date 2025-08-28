@@ -18,10 +18,10 @@ from .models import Subject, Level, Theme
 
 # Create your views here.
 from .serializers import SubjectSerializer, LevelSerializer, ThemeSerializer
-from ..attendance.models import Attendance
-from ..course.models import Course
-from ..groups.models import Group
-from ..homeworks.models import Homework
+from data.student.attendance.models import Attendance
+from data.student.course.models import Course
+from data.student.groups.models import Group
+from data.student.homeworks.models import Homework
 
 
 class SubjectList(ListCreateAPIView):

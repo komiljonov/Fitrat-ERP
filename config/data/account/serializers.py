@@ -6,14 +6,14 @@ from rest_framework.exceptions import PermissionDenied
 
 
 from .models import CustomUser
-from ..account.permission import PhoneAuthBackend
-from ..department.filial.models import Filial
-from ..finances.compensation.models import Compensation, Bonus, Page
-from ..finances.finance.models import Casher, Finance
-from ..finances.timetracker.sinx import TimetrackerSinc
-from ..student.student.models import Student
-from ..upload.models import File
-from ..upload.serializers import FileUploadSerializer
+from data.account.permission import PhoneAuthBackend
+from data.department.filial.models import Filial
+from data.finances.compensation.models import Compensation, Bonus, Page
+from data.finances.finance.models import Casher, Finance
+from data.finances.timetracker.sinx import TimetrackerSinc
+from data.student.student.models import Student
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -67,6 +67,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     phone = serializers.CharField()
+    role = serializers.CharField()
 
 
 class PasswordResetVerifySerializer(serializers.Serializer):

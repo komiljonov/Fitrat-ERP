@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from rest_framework_simplejwt.token_blacklist import admin as blacklist_admin
 
-from ..account.forms import CustomUserChangeForm, CustomUserCreationForm
-from ..account.models import CustomUser
+from data.account.forms import CustomUserChangeForm, CustomUserCreationForm
+from data.account.models import CustomUser
 
 
 class CustomUserAdmin(UserAdmin):

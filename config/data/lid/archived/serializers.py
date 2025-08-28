@@ -2,14 +2,14 @@ import icecream
 from rest_framework import serializers
 
 from .models import Archived, Frozen
-from ..new_lid.models import Lid
-from ..new_lid.serializers import LidSerializer
-from ...account.models import CustomUser
-from ...account.serializers import UserSerializer
-from ...comments.models import Comment
-from ...comments.serializers import CommentSerializer
-from ...student.student.models import Student
-from ...student.student.serializers import StudentSerializer
+from data.lid.new_lid.models import Lid
+from data.lid.new_lid.serializers import LidSerializer
+from data.account.models import CustomUser
+from data.account.serializers import UserSerializer
+from data.comments.models import Comment
+from data.comments.serializers import CommentSerializer
+from data.student.student.models import Student
+from data.student.student.serializers import StudentSerializer
 
 
 class ArchivedSerializer(serializers.ModelSerializer):

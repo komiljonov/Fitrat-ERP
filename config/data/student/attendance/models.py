@@ -1,69 +1,144 @@
 from typing import TYPE_CHECKING
 
 from django.db import models
+from django.db.models import Q
+
+
+from data.command.models import BaseModel
 
 if TYPE_CHECKING:
-    from ..subject.models import Theme
-from ...command.models import BaseModel
-from ...lid.new_lid.models import Lid
-from ...student.student.models import Student
-from ...student.groups.models import Group, SecondaryGroup
+    from data.student.subject.models import Theme
+    from data.lid.new_lid.models import Lid
+    from data.student.student.models import Student
+    from data.student.groups.models import Group, SecondaryGroup
 
 
 class Attendance(BaseModel):
-    theme: 'Theme' = models.ManyToManyField('subject.Theme', blank=True, related_name='attendance_theme')
-    group: "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE,
-                                       null=True, blank=True, related_name='attendance_group')
+
+    date = models.DateField()
+
+    theme: "models.ManyToManyField[Theme]" = models.ManyToManyField(
+        "subject.Theme",
+        blank=True,
+        related_name="attendance_theme",
+    )
+
+    group: "Group | None" = models.ForeignKey(
+        "groups.Group",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="attendance_group",
+    )
+
     repeated = models.BooleanField(default=False)
-    lid: 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True,
-                                   related_name='attendance_lid')
-    student: 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL, null=True, blank=True,
-                                           related_name='attendance_student')
+
+    lid: "Lid | None" = models.ForeignKey(
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attendance_lid",
+    )
+
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attendance_student",
+    )
 
     REASON_CHOICES = [
-        ('IS_PRESENT', 'Is Present'),
-        ('REASONED', 'Sababli'),
-            ('UNREASONED', 'Sababsiz'),
-        ('HOLIDAY', 'Dam olish kuni'),
+        ("IS_PRESENT", "Is Present"),
+        ("REASONED", "Sababli"),
+        ("UNREASONED", "Sababsiz"),
+        ("HOLIDAY", "Dam olish kuni"),
     ]
+
     reason = models.CharField(
         max_length=20,
         choices=REASON_CHOICES,
-        default='UNREASONED',
-        help_text="Attendance reason (Sababli/Sababsiz)"
+        default="UNREASONED",
+        help_text="Attendance reason (Sababli/Sababsiz)",
     )
+
     remarks: str = models.TextField(blank=True, null=True)
 
     amount = models.CharField(
         max_length=50,
         blank=True,
         null=True,
-        help_text="Attendance counted amount ..."
+        help_text="Attendance counted amount ...",
     )
+
+    attended_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f" {self.group} is marked as {self.reason}"
 
+    class Meta:
+        constraints = [
+            # Exactly one of student or lid must be set (XOR)
+            models.CheckConstraint(
+                name="attendance_xor_student_or_lid",
+                check=(
+                    (Q(student__isnull=True) & Q(lid__isnull=False))
+                    | (Q(student__isnull=False) & Q(lid__isnull=True))
+                ),
+            ),
+            # Unique per (date, group, student) when student is set
+            # models.UniqueConstraint(
+            #     fields=["date", "group", "student"],
+            #     name="attendance_unique_date_group_student",
+            #     condition=Q(student__isnull=False),
+            # ),
+            # # Unique per (date, group, lid) when lid is set
+            # models.UniqueConstraint(
+            #     fields=["date", "group", "lid"],
+            #     name="attendance_unique_date_group_lid",
+            #     condition=Q(lid__isnull=False),
+            # ),
+        ]
+
 
 class SecondaryAttendance(BaseModel):
-    theme: 'Theme' = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL,
-                                       null=True, blank=True, related_name='secondary_group_attendance_theme')
-    group: "SecondaryGroup" = models.ForeignKey('groups.SecondaryGroup', on_delete=models.SET_NULL,null=True,blank=True,
-                                                related_name='secondary_group_attendance_secondary_group')
-    student: 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL, null=True, blank=True,
-                                           related_name='secondary_attendance_student')
+    theme: "Theme | None" = models.ForeignKey(
+        "subject.Theme",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="secondary_group_attendance_theme",
+    )
+    group: "SecondaryGroup | None" = models.ForeignKey(
+        "groups.SecondaryGroup",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="secondary_group_attendance_secondary_group",
+    )
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="secondary_attendance_student",
+    )
+
     REASON_CHOICES = [
-        ('IS_PRESENT', 'Is Present'),
-        ('REASONED', 'Sababli'),
-        ('UNREASONED', 'Sababsiz'),
-        ('HOLIDAY', 'Dam olish kuni'),
+        ("IS_PRESENT", "Is Present"),
+        ("REASONED", "Sababli"),
+        ("UNREASONED", "Sababsiz"),
+        ("HOLIDAY", "Dam olish kuni"),
     ]
+
     reason = models.CharField(
         max_length=20,
         choices=REASON_CHOICES,
-        default='UNREASONED',
-        help_text="Attendance reason (Sababli/Sababsiz)"
+        default="UNREASONED",
+        help_text="Attendance reason (Sababli/Sababsiz)",
     )
+
     remarks: str = models.TextField(blank=True, null=True)
 
     def __str__(self):

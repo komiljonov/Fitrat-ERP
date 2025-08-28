@@ -3,9 +3,9 @@ from datetime import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Student
-from ...account.models import CustomUser
-from ...logs.models import Log
-from ...notifications.models import Notification
+from data.account.models import CustomUser
+from data.logs.models import Log
+from data.notifications.models import Notification
 
 # Define a flag to prevent recursion
 _signal_active = False
@@ -88,7 +88,7 @@ def on_save_user(sender, instance: Student, created, **kwargs):
             action="Log",
             model_action="Created",
             student=instance,
-            account=instance.user
+            account=instance.user,
         )
 
     if not created:
@@ -98,5 +98,5 @@ def on_save_user(sender, instance: Student, created, **kwargs):
             action="Log",
             model_action="Updated",
             student=instance,
-            account=instance.user
+            account=instance.user,
         )

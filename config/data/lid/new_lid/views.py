@@ -29,8 +29,8 @@ from rest_framework.views import APIView
 
 from .models import Lid
 from .serializers import LidSerializer
-from ..archived.models import Archived
-from ...student.lesson.models import FirstLLesson
+from data.lid.archived.models import Archived
+from data.student.lesson.models import FirstLLesson
 from datetime import datetime, timedelta
 
 
@@ -595,8 +595,12 @@ class LidStatisticsView(ListAPIView):
         ).count()
 
         order_created = (
-            queryset.filter(is_archived=False, lid_stage_type="ORDERED_LID",
-                            ordered_date__isnull=False, **filter)
+            queryset.filter(
+                is_archived=False,
+                lid_stage_type="ORDERED_LID",
+                ordered_date__isnull=False,
+                **filter,
+            )
             .exclude(call_operator__isnull=True)
             .count()
         )
@@ -775,11 +779,7 @@ class LidStatisticsView(ListAPIView):
                 Q(created_at__gte=f_start_date) if f_start_date != None else Q(),
                 Q(created_at__lt=f_end_date) if f_end_date != None else Q(),
                 Q(student__balance__gte=100000) | Q(lid__balance__gte=100000),
-                
-                
-                
                 is_archived=True,
-                
             ).aggregate(
                 total=Sum(
                     # "student__balance"
@@ -877,7 +877,7 @@ class LidStatisticsView(ListAPIView):
                 # + lead_debt,
                 "no_debt_sum": no_debt_sum,
                 # + lead_no_debt_sum,
-                "debt_sum": debt_sum 
+                "debt_sum": debt_sum,
                 # + lead_debt_sum,
             },
         }

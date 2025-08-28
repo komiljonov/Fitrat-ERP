@@ -6,22 +6,22 @@ from django.utils.module_loading import import_string
 from rest_framework import serializers
 
 from .models import Student, FistLesson_data
-from ..attendance.models import Attendance
-from ..groups.lesson_date_calculator import calculate_lessons
-from ..groups.models import Group
-from ..homeworks.models import Homework_history
-from ..mastering.models import Mastering
-from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ..subject.models import Level
-from ...account.models import CustomUser
-from ...account.serializers import UserSerializer
-from ...department.filial.models import Filial
-from ...department.filial.serializers import FilialSerializer
-from ...department.marketing_channel.models import MarketingChannel
-from ...department.marketing_channel.serializers import MarketingChannelSerializer
-from ...finances.finance.models import SaleStudent, VoucherStudent
-from ...upload.models import File
-from ...upload.serializers import FileUploadSerializer
+from data.student.attendance.models import Attendance
+from data.student.groups.lesson_date_calculator import calculate_lessons
+from data.student.groups.models import Group
+from data.student.homeworks.models import Homework_history
+from data.student.mastering.models import Mastering
+from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
+from data.student.subject.models import Level
+from data.account.models import CustomUser
+from data.account.serializers import UserSerializer
+from data.department.filial.models import Filial
+from data.department.filial.serializers import FilialSerializer
+from data.department.marketing_channel.models import MarketingChannel
+from data.department.marketing_channel.serializers import MarketingChannelSerializer
+from data.finances.finance.models import SaleStudent, VoucherStudent
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class StudentSerializer(serializers.ModelSerializer):

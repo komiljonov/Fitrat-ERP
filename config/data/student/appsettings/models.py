@@ -12,6 +12,7 @@ class Store(BaseModel):
         blank=True,
         related_name="store_photo",
     )
+
     video = models.ManyToManyField("upload.File", related_name="uploaded_store")
     text = models.TextField(blank=True, null=True)
     seen = models.BooleanField(default=False)
@@ -22,7 +23,9 @@ class Store(BaseModel):
 
 class Strike(BaseModel):
     student: "Student" = models.ForeignKey(
-        "student.Student", on_delete=models.CASCADE, related_name="student_strike"
+        "student.Student",
+        on_delete=models.CASCADE,
+        related_name="student_strike",
     )
 
     def __str__(self):

@@ -1,9 +1,15 @@
 from django.contrib import admin
 
-from .models import Casher, Finance, KpiFinance, SaleStudent
+from .models import Casher, Finance, KpiFinance, SaleStudent, Kind
 
 
 # Register your models here.
+
+
+@admin.register(Kind)
+class KindAdmin(admin.ModelAdmin):
+
+    list_display = ["name", "kind", "action"]
 
 
 @admin.register(Finance)
@@ -18,16 +24,12 @@ class FinansAdmin(admin.ModelAdmin):
         "kind",
         "created_at",
     )
+
     search_fields = (
         "action",
         "kind",
     )
-    list_filter = (
-        "action",
-        "kind",
-        "filial",
-        "student"
-    )
+    list_filter = ("action", "kind", "filial", "student")
 
 
 @admin.register(SaleStudent)

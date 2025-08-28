@@ -5,8 +5,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from data.department.filial.models import Filial
-from ..account.managers import UserManager
-from ..upload.models import File
+from data.account.managers import UserManager
+from data.upload.models import File
 
 
 class CustomUser(AbstractUser):

@@ -1,36 +1,43 @@
 from datetime import date
 
-from django.db.models import Count
+from django.db import transaction
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from data.upload.serializers import FileUploadSerializer
 
-from .models import StudentGroup, SecondaryStudentGroup
-from ..attendance.models import Attendance
-from ..groups.models import Group, SecondaryGroup, GroupSaleStudent
-from ..groups.serializers import SecondaryGroupSerializer, GroupSaleStudentSerializer
-from ..student.models import Student
-from ..student.serializers import StudentSerializer
-from ..subject.models import Theme
-from ...account.serializers import UserSerializer
-from ...lid.new_lid.models import Lid
-from ...lid.new_lid.serializers import LidSerializer
+from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
+from data.student.attendance.models import Attendance
+from data.student.groups.models import Group, SecondaryGroup, GroupSaleStudent
+from data.student.groups.serializers import (
+    SecondaryGroupSerializer,
+    GroupSaleStudentSerializer,
+)
+from data.student.student.models import Student
+from data.student.student.serializers import StudentSerializer
+from data.account.serializers import UserSerializer
+from data.lid.new_lid.models import Lid
+from data.lid.new_lid.serializers import LidSerializer
 
 
 class StudentsGroupSerializer(serializers.ModelSerializer):
-    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
-
-    student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), allow_null=True
+    group = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.all(),
+        required=True,
     )
-
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(),
+        allow_null=True,
+        required=False,
+    )
     lid = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), allow_null=True
+        queryset=Lid.objects.all(),
+        allow_null=True,
+        required=False,
     )
 
     lesson_count = serializers.SerializerMethodField()
     current_theme = serializers.SerializerMethodField()
-
     group_price = serializers.SerializerMethodField()
 
     class Meta:
@@ -46,156 +53,161 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             "group_price",
             "is_archived",
         ]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=StudentGroup.objects.all(),
+                fields=["group", "student"],
+                message="O'quvchi ushbu guruhda allaqachon mavjud!",
+            ),
+            UniqueTogetherValidator(
+                queryset=StudentGroup.objects.all(),
+                fields=["group", "lid"],
+                message="Lid ushbu guruhda allaqachon mavjud!",
+            ),
+        ]
 
+    # ---- Derived fields (use annotations / batched queries) ----
     def get_group_price(self, obj):
-        if obj.student:
-            sale = GroupSaleStudent.objects.filter(
-                group=obj.group, student=obj.student
-            ).first()
-        elif obj.lid:
-            sale = GroupSaleStudent.objects.filter(group=obj.group, lid=obj.lid).first()
-        else:
-            sale = None
-        return GroupSaleStudentSerializer(sale).data if sale else None
+        """
+        Returns sale for (group, student) or (group, lid).
+        We batch fetch in the list view using in-memory cache on the serializer context
+        to avoid N+1 queries. Fallback to a single query if not present.
+        """
+        cache = self.context.get("_sale_cache")
+        key = (obj.group_id, obj.student_id or f"LID:{obj.lid_id}")
+        sale = cache.get(key) if cache else None
+        if sale is None:
+            qs = GroupSaleStudent.objects.filter(group=obj.group)
+            if obj.student_id:
+                qs = qs.filter(student_id=obj.student_id)
+            elif obj.lid_id:
+                qs = qs.filter(lid_id=obj.lid_id)
+            sale = qs.first()
+        return (
+            GroupSaleStudentSerializer(sale, context=self.context).data
+            if sale
+            else None
+        )
 
     def get_current_theme(self, obj):
-        today = date.today()
-
-        # Ensures we compare only the date and remove duplicate themes
-        attendance = (
-            Attendance.objects.filter(group=obj.group, created_at__date=today)
-            .values("theme", "repeated")
-            .distinct()  # Remove duplicates
-        )
-
-        return list(attendance)
+        """
+        Themes taken today for this group (deduped).
+        Use a single per-request cache keyed by group_id to avoid N+1.
+        """
+        cache = self.context.get("_today_theme_cache")
+        items = cache.get(obj.group_id) if cache else None
+        if items is None:
+            items = list(
+                Attendance.objects.filter(
+                    group_id=obj.group_id, created_at__date=date.today()
+                )
+                .values("theme", "repeated")
+                .distinct()
+            )
+        return items
 
     def get_lesson_count(self, obj):
-        if not obj.group or not obj.group.course:
-            return {
-                "lessons": 0,
-                "attended": 0,
-            }
+        """
+        Use DB annotations if available; fall back to safe defaults.
+        """
+        total = getattr(obj, "total_lessons", None)
+        attended = getattr(obj, "attended_lessons", None)
+        return {"lessons": total or 0, "attended": attended or 0}
 
-        total_lessons = Theme.objects.filter(course=obj.group.course).count()
-
-        attended_lessons = (
-            Attendance.objects.filter(group=obj.group)
-            .values("theme")  # Group by lesson
-            .annotate(attended_count=Count("id"))  # Count attendance per lesson
-            .count()  # Count unique lessons with attendance records
+    # ---- Validation ----
+    def validate(self, attrs):
+        # support PATCH: merge attrs with instance
+        student = (
+            attrs.get("student")
+            if "student" in attrs
+            else getattr(self.instance, "student", None)
+        )
+        lid = (
+            attrs.get("lid") if "lid" in attrs else getattr(self.instance, "lid", None)
         )
 
-        return {
-            "lessons": total_lessons,
-            "attended": attended_lessons,
-        }
-
-    def validate(self, attrs):
-        student = attrs.get("student")
-        lid = attrs.get("lid")
-        group = attrs.get("group")
-
-        if student and group:
-            # Ensure that a student is not added to the same group twice
-            existing_student = (
-                StudentGroup.objects.filter(group=group, student=student)
-                .exclude(id=self.instance.id if self.instance else None)
-                .exists()
+        if bool(student) == bool(lid):  # both set or both empty
+            raise serializers.ValidationError(
+                {"detail": "Faqat bittasi to‘ldirilishi kerak: student yoki lid."}
             )
-            if existing_student:
-                raise serializers.ValidationError(
-                    {"student": "O'quvchi ushbu guruhda allaqachon mavjud!"}
-                )
-
-        if lid and group:
-            # Ensure that a lid is not added to the same group twice
-            existing_lid = (
-                StudentGroup.objects.filter(group=group, lid=lid)
-                .exclude(id=self.instance.id if self.instance else None)
-                .exists()
-            )
-            if existing_lid:
-                raise serializers.ValidationError(
-                    {"lid": "Lid ushbu guruhda allaqachon mavjud!"}
-                )
-
         return attrs
 
+    # ---- Create ----
+    @transaction.atomic
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
         if not filial:
-            request = self.context.get("request")  #
+            request = self.context.get("request")
             if request and hasattr(request.user, "filial"):
                 filial = request.user.filial.first()
-
         if not filial:
             raise serializers.ValidationError(
                 {"filial": "Filial could not be determined."}
             )
 
-        room = StudentGroup.objects.create(filial=filial, **validated_data)
-        return room
+        return StudentGroup.objects.create(filial=filial, **validated_data)
 
+    # ---- Output shaping ----
     def to_representation(self, instance: StudentGroup):
         rep = super().to_representation(instance)
+
         if instance.group:
+            subject = instance.group.course.subject if instance.group.course else None
+            subject_data = (
+                {
+                    "name": subject.name,
+                    "image": (
+                        FileUploadSerializer(subject.image, context=self.context).data
+                        if getattr(subject, "image", None)
+                        else None
+                    ),
+                }
+                if subject
+                else None
+            )
 
-            subject = instance.group.course.subject
-            subject_data = {
-                "name": subject.name,
-                "image": (
-                    FileUploadSerializer(subject.image, context=self.context).data
-                    if subject.image
-                    else None
-                ),
-            }
-
-            group_data = {
-                "group_is": instance.group.id,
+            rep["group"] = {
+                "group_id": instance.group.id,
                 "group_name": instance.group.name,
-                "start_date": instance.group.start_date.strftime("%d/%m/%Y, %H:%M:%S"),
-                "level": (
-                    instance.group.level.id
-                    if instance.group and instance.group.level
+                "start_date": (
+                    instance.group.start_date.strftime("%d/%m/%Y, %H:%M:%S")
+                    if instance.group.start_date
                     else None
                 ),
-                "subject": subject_data if subject_data else None,
-                "course": instance.group.course.name,
+                "level": getattr(getattr(instance.group, "level", None), "id", None),
+                "subject": subject_data,
+                "course": getattr(
+                    getattr(instance.group, "course", None), "name", None
+                ),
                 "price": instance.group.price,
-                "teacher": (
-                    instance.group.teacher.full_name if instance.group.teacher else None
+                "teacher": getattr(
+                    getattr(instance.group, "teacher", None), "full_name", None
                 ),
-                "room_number": instance.group.room_number.room_number,
-                "course_id": instance.group.course.id,
-                "finish_date": (
-                    instance.group.finish_date if instance.group.finish_date else None
+                "room_number": getattr(
+                    getattr(instance.group, "room_number", None), "room_number", None
                 ),
+                "course_id": getattr(
+                    getattr(instance.group, "course", None), "id", None
+                ),
+                "finish_date": instance.group.finish_date,
             }
-            rep["group"] = group_data
-
         else:
             rep.pop("group", None)
 
         if instance.lid:
-            rep["lid"] = LidSerializer(instance.lid).data
-
+            rep["lid"] = LidSerializer(instance.lid, context=self.context).data
         else:
             rep.pop("lid", None)
 
         if instance.student:
-            rep["student"] = StudentSerializer(instance.student).data
-
+            rep["student"] = StudentSerializer(
+                instance.student, context=self.context
+            ).data
         else:
             rep.pop("student", None)
 
-        # Filter out unwanted values
-        filtered_data = {
-            key: value
-            for key, value in rep.items()
-            if value not in [{}, None, "", False]
-        }
-        return filtered_data
+        # prune empties
+        return {k: v for k, v in rep.items() if v not in ({}, None, "", False)}
 
 
 class StudentGroupMixSerializer(serializers.ModelSerializer):
@@ -222,13 +234,16 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
 
 class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(
-        queryset=SecondaryGroup.objects.all(), required=True
+        queryset=SecondaryGroup.objects.all(),
+        required=True,
     )
     student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), allow_null=True
+        queryset=Student.objects.all(),
+        allow_null=True,
     )
     lid = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), allow_null=True
+        queryset=Lid.objects.all(),
+        allow_null=True,
     )
     main_teacher = serializers.SerializerMethodField()
 
@@ -300,11 +315,15 @@ class StudentGroupUpdateSerializer(serializers.Serializer):
     add_group = serializers.PrimaryKeyRelatedField(queryset=StudentGroup.objects.all())
 
     student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), required=False, allow_null=True
+        queryset=Student.objects.all(),
+        required=False,
+        allow_null=True,
     )
 
     order = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), required=False, allow_null=True
+        queryset=Lid.objects.all(),
+        required=False,
+        allow_null=True,
     )
 
     def validate(self, attrs):

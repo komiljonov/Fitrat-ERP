@@ -2,9 +2,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Archived, Frozen
-from ..new_lid.models import Lid
-from ...comments.models import Comment
-from ...logs.models import Log
+from data.comments.models import Comment
+from data.logs.models import Log
+from data.notifications.models import Notification
+from data.student.studentgroup.models import StudentGroup
 
 
 @receiver(post_save, sender=Archived)
@@ -23,6 +24,17 @@ def on_create(sender, instance: Archived, created, **kwargs):
                 comment=f"Arxivlandi {date} sanasida, sabab: {instance.reason}",
             )
 
+            sg = StudentGroup.objects.filter(student=instance.student).all()
+            for ssg in sg:
+                ssg.is_archived = True
+                ssg.save()
+
+                Notification.objects.create(
+                    user=instance.student.user,
+                    choice="Archive",
+                    comment=f"Siz {ssg.group.name} guruhidan {instance.created_at.date()} sanasida {instance.reason} sababi bilan arxivlandingiz!",
+                )
+
         if instance.lid:
             instance.lid.is_archived = True
             instance.lid.save()
@@ -32,6 +44,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
                 student=None,
                 comment=f"Arxivlandi {instance.created_at.date()} sanasida, sabab: {instance.reason}",
             )
+
     if not created and instance.is_archived == False:
         if instance.student:
             instance.student.is_archived = False
@@ -48,6 +61,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
         if instance.lid:
             instance.lid.is_archived = False
             instance.lid.save()
+
             comment = Comment.objects.create(
                 creator=instance.creator,
                 lid=instance.lid,
@@ -67,6 +81,17 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             instance.lid.is_frozen = True
             instance.lid.save()
 
+        Log.objects.create(
+            app="Archive",
+            model="Frozen",
+            action="Log",
+            model_action="Created",
+            lid=instance.lid,
+            student=instance.student,
+            archive=instance,
+            comment=f"Muzlatildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
+        )
+
     if not created and instance.is_frozen == False:
         if instance.student:
             instance.student.is_frozen = False
@@ -76,11 +101,21 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             instance.lid.is_frozen = False
             instance.lid.save()
 
+        Log.objects.create(
+            app="Archive",
+            model="Frozen",
+            action="Log",
+            model_action="Created",
+            lid=instance.lid,
+            student=instance.student,
+            archive=instance,
+            comment=f"Muzlatishdan chiqarildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
+        )
+
 
 @receiver(post_save, sender=Archived)
 def on_create(sender, instance: Archived, created, **kwargs):
     if created and instance.is_archived == True:
-
         Log.objects.create(
             app="Archive",
             model="Archived",
@@ -89,7 +124,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
             lid=instance.lid,
             student=instance.student,
             archive=instance,
-            comment=instance.comment.comment if instance.comment else None,
+            comment=f"Arxivlandi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
         )
 
     if not created and instance.is_archived == False:
@@ -101,5 +136,5 @@ def on_create(sender, instance: Archived, created, **kwargs):
             lid=instance.lid,
             student=instance.student,
             archive=instance,
-            comment=instance.comment.comment if instance.comment else None,
+            comment=f"Arxivdan chiqarildi {instance.updated_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
         )

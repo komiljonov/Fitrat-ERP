@@ -1,23 +1,22 @@
 from datetime import datetime
 from decimal import Decimal
-import hashlib
 from typing import TYPE_CHECKING
 
 from django.db import models
 from django.utils import timezone
 
 
-from ..subject.models import Level, Subject
-from ...account.models import CustomUser
-from ...command.models import BaseModel
-from ...department.filial.models import Filial
-from ...department.marketing_channel.models import MarketingChannel
-from ...upload.models import File
+from data.student.subject.models import Level, Subject
+from data.account.models import CustomUser
+from data.command.models import BaseModel
+from data.department.filial.models import Filial
+from data.department.marketing_channel.models import MarketingChannel
+from data.upload.models import File
 
 if TYPE_CHECKING:
-    from ...lid.new_lid.models import Lid
-    from ..studentgroup.models import StudentGroup
-    from ..groups.models import Group
+    from data.lid.new_lid.models import Lid
+    from data.student.studentgroup.models import StudentGroup
+    from data.student.groups.models import Group
 
 
 class Student(BaseModel):
@@ -229,4 +228,3 @@ class FistLesson_data(BaseModel):
     class Meta:
         verbose_name = "Fist Lesson"
         verbose_name_plural = "Fist Lesson"
-

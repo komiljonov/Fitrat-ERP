@@ -9,16 +9,15 @@ from django.db.models.signals import post_save, m2m_changed
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from ..new_lid.models import Lid
-from ...account.models import CustomUser
-from ...command.admin import models
-from ...finances.finance.models import SaleStudent
-from ...logs.models import Log
-from ...parents.models import Relatives
-from ...student.attendance.models import Attendance
-from ...student.student.models import Student
-from ...student.student.sms import SayqalSms
-from ...student.studentgroup.models import StudentGroup, SecondaryStudentGroup
+from data.lid.new_lid.models import Lid
+from data.account.models import CustomUser
+from data.finances.finance.models import SaleStudent
+from data.logs.models import Log
+from data.parents.models import Relatives
+from data.student.attendance.models import Attendance
+from data.student.student.models import Student
+from data.student.student.sms import SayqalSms
+from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 
 sms = SayqalSms()
 
@@ -56,9 +55,9 @@ def on_pre_save(sender, instance, **kwargs):
         previous_instance = sender.objects.get(pk=instance.pk)
 
         if (
-                previous_instance.lid_stage_type == "NEW_LID"
-                and instance.lid_stage_type == "ORDERED_LID"
-                and instance.call_operator is None
+            previous_instance.lid_stage_type == "NEW_LID"
+            and instance.lid_stage_type == "ORDERED_LID"
+            and instance.call_operator is None
         ):
             call_operator = CustomUser.objects.filter(role="CALL_OPERATOR").first()
             if call_operator:
@@ -211,17 +210,6 @@ def on_expired_delete(sender, instance: Lid, created, **kwargs):
             instance.save()
 
 
-
-
-
-
-
-
-
-
-
-
-
 # Logs Lid catching
 from django.db import models as dj_models
 
@@ -266,6 +254,7 @@ def _human(model_instance, field: dj_models.Field, value):
 
     # FileField/ImageField
     from django.db.models.fields.files import FieldFile
+
     if isinstance(value, FieldFile):
         return value.name or "—"
 
@@ -320,11 +309,14 @@ def _format_changes_for_comment(inst: Lid, changes: dict) -> str:
     parts = []
     for fname, (old_v, new_v) in changes.items():
         field = inst._meta.get_field(fname)
-        parts.append(f'Leadning {fname} fieldi "{_human(inst, field, old_v)}" dan "{_human(inst, field, new_v)}" ga uzgartirildi!')
+        parts.append(
+            f'Leadning {fname} fieldi "{_human(inst, field, old_v)}" dan "{_human(inst, field, new_v)}" ga o\'zgartirildi!'
+        )
     return "; ".join(parts) if parts else None
 
 
 # --- Signals ---------------------------------------------------------------
+
 
 @receiver(pre_save, sender=Lid)
 def lid_cache_changes(sender, instance: Lid, **kwargs):
@@ -380,6 +372,7 @@ def lid_log_after_save(sender, instance: Lid, created, **kwargs):
 
 # --- Optional: track M2M changes on Lid.file -------------------------------
 
+
 @receiver(m2m_changed, sender=Lid.file.through)
 def lid_file_m2m_changed(sender, instance: Lid, action, reverse, pk_set, **kwargs):
     """
@@ -390,6 +383,7 @@ def lid_file_m2m_changed(sender, instance: Lid, action, reverse, pk_set, **kwarg
 
     verb = "added" if action == "post_add" else "removed"
     from data.upload.models import File
+
     try:
         files = File.objects.filter(pk__in=pk_set)
         listed = ", ".join(str(f) for f in files[:10])

@@ -5,15 +5,15 @@ from django.dispatch import receiver
 from icecream import ic
 
 from .models import Mastering
-from ..attendance.models import Attendance
-from ..homeworks.models import Homework
-from ..lesson.models import FirstLLesson
-from ..shop.utils import give_coin
-from ..student.models import Student
-from ...finances.compensation.models import Bonus
-from ...finances.finance.models import KpiFinance, Finance
-from ...lid.new_lid.models import Lid
-from ...notifications.models import Notification
+from data.student.attendance.models import Attendance
+from data.student.homeworks.models import Homework
+from data.student.lesson.models import FirstLLesson
+from data.student.shop.utils import give_coin
+from data.student.student.models import Student
+from data.finances.compensation.models import Bonus
+from data.finances.finance.models import KpiFinance, Finance
+from data.lid.new_lid.models import Lid
+from data.notifications.models import Notification
 
 
 @receiver(post_save, sender=Mastering)

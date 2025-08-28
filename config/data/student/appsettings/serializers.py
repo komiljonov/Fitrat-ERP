@@ -4,20 +4,20 @@ from django.db.models import Avg, F
 from rest_framework import serializers
 
 from .models import Store, Strike, VersionUpdate
-from ..attendance.models import Attendance
-from ..mastering.models import Mastering
-from ..student.models import Student
-from ..studentgroup.models import StudentGroup, SecondaryStudentGroup
-from ...account.models import CustomUser
-from ...account.serializers import UserSerializer
-from ...department.filial.models import Filial
-from ...department.filial.serializers import FilialSerializer
-from ...department.marketing_channel.models import MarketingChannel
-from ...department.marketing_channel.serializers import MarketingChannelSerializer
-from ...finances.finance.models import Finance, VoucherStudent, SaleStudent
-from ...parents.models import Relatives
-from ...upload.models import File
-from ...upload.serializers import FileUploadSerializer
+from data.student.attendance.models import Attendance
+from data.student.mastering.models import Mastering
+from data.student.student.models import Student
+from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
+from data.account.models import CustomUser
+from data.account.serializers import UserSerializer
+from data.department.filial.models import Filial
+from data.department.filial.serializers import FilialSerializer
+from data.department.marketing_channel.models import MarketingChannel
+from data.department.marketing_channel.serializers import MarketingChannelSerializer
+from data.finances.finance.models import Finance, VoucherStudent, SaleStudent
+from data.parents.models import Relatives
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class StoresSerializer(serializers.ModelSerializer):
@@ -70,13 +70,16 @@ class StudentFinanceSerializer(serializers.ModelSerializer):
 
 class StudentAPPSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), allow_null=True
+        queryset=File.objects.all(),
+        allow_null=True,
     )
     filial = serializers.PrimaryKeyRelatedField(
-        queryset=Filial.objects.all(), allow_null=True
+        queryset=Filial.objects.all(),
+        allow_null=True,
     )
     marketing_channel = serializers.PrimaryKeyRelatedField(
-        queryset=MarketingChannel.objects.all(), allow_null=True
+        queryset=MarketingChannel.objects.all(),
+        allow_null=True,
     )
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()

@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
 from .models import Points, Coins, Products, Purchase, Category, CoinsSettings
-from ..student.models import Student
-from ..student.serializers import StudentSerializer
-from ...account.models import CustomUser
-from ...upload.models import File
-from ...upload.serializers import FileUploadSerializer
+from data.student.student.models import Student
+from data.student.student.serializers import StudentSerializer
+from data.account.models import CustomUser
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class PointsSerializer(serializers.ModelSerializer):

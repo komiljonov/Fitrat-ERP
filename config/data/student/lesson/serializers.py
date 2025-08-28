@@ -1,19 +1,18 @@
 import datetime
 
 from django.utils.module_loading import import_string
-from drf_yasg.openapi import Response
 from icecream import ic
-from rest_framework import serializers, request, status
+from rest_framework import serializers
 
 from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
-from ..attendance.models import Attendance
-from ..groups.lesson_date_calculator import calculate_lessons
-from ..groups.models import Group, Room
-from ..groups.serializers import GroupSerializer, RoomsSerializer
-from ..student.serializers import StudentSerializer
-from ..studentgroup.models import StudentGroup
-from ...account.serializers import UserSerializer
-from ...lid.new_lid.models import Lid
+from data.student.attendance.models import Attendance
+from data.student.groups.lesson_date_calculator import calculate_lessons
+from data.student.groups.models import Group, Room
+from data.student.groups.serializers import GroupSerializer, RoomsSerializer
+from data.student.student.serializers import StudentSerializer
+from data.student.studentgroup.models import StudentGroup
+from data.account.serializers import UserSerializer
+from data.lid.new_lid.models import Lid
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -29,20 +28,20 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = [
             "id",
-            'name',
+            "name",
             "subject",
-            'type',
-            'group',
-            'comment',
-            'teacher',
-            'room',
-            'theme',
+            "type",
+            "group",
+            "comment",
+            "teacher",
+            "room",
+            "theme",
             # 'current_theme',
-            'lesson_status',
-            'lessons_count',
-            'attendance',
-            'created_at',
-            'updated_at',
+            "lesson_status",
+            "lessons_count",
+            "attendance",
+            "created_at",
+            "updated_at",
         ]
 
     # def get_current_theme(self, obj):
@@ -64,12 +63,14 @@ class LessonSerializer(serializers.ModelSerializer):
 
     def get_attendance(self, obj):
         attendance = Attendance.objects.filter(lesson=obj)
-        AttendanceSerializer = import_string('data.student.attendance.serializers.AttendanceSerializer')
+        AttendanceSerializer = import_string(
+            "data.student.attendance.serializers.AttendanceSerializer"
+        )
         return AttendanceSerializer(attendance, many=True).data
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['group'] = GroupSerializer(instance.group).data
+        rep["group"] = GroupSerializer(instance.group).data
         return rep
 
 
@@ -89,28 +90,32 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = [
-            'subject',
-            'subject_label',
-            'teacher_name',
-            'room',
-            'room_fillings',
-            'student_count',
-            'name',
-            'scheduled_day_type',
+            "subject",
+            "subject_label",
+            "teacher_name",
+            "room",
+            "room_fillings",
+            "student_count",
+            "name",
+            "scheduled_day_type",
             "lesson_date",
-            'started_at',
-            'ended_at'
+            "started_at",
+            "ended_at",
         ]
 
     def get_lesson_date(self, obj):
-        schedule_days = obj.scheduled_day_type.all()  # Assuming scheduled_day_type contains day objects
+        schedule_days = (
+            obj.scheduled_day_type.all()
+        )  # Assuming scheduled_day_type contains day objects
         lesson_schedule = {}
 
         today = datetime.date.today()
-        start_date = today - datetime.timedelta(days=today.weekday())  # Monday of the current week
+        start_date = today - datetime.timedelta(
+            days=today.weekday()
+        )  # Monday of the current week
         end_date = start_date + datetime.timedelta(days=5)  # Saturday of the same week
 
-        lesson_type = ','.join([day.name for day in schedule_days])
+        lesson_type = ",".join([day.name for day in schedule_days])
         holidays = []
         days_off = ["Yakshanba"]
         ic(start_date)
@@ -118,11 +123,11 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
 
         # Get the scheduled lesson dates using the calculate_lessons function
         grouped_schedule = calculate_lessons(
-            start_date=start_date.strftime('%Y-%m-%d'),
-            end_date=end_date.strftime('%Y-%m-%d'),
+            start_date=start_date.strftime("%Y-%m-%d"),
+            end_date=end_date.strftime("%Y-%m-%d"),
             lesson_type=lesson_type,
             holidays=holidays,
-            days_off=days_off
+            days_off=days_off,
         )
 
         # Collect lessons by date
@@ -130,36 +135,55 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
 
         for month, lesson_dates in grouped_schedule.items():
             for lesson_date in lesson_dates:
-                lesson_date_obj = datetime.datetime.strptime(lesson_date, "%Y-%m-%d").date()
+                lesson_date_obj = datetime.datetime.strptime(
+                    lesson_date, "%Y-%m-%d"
+                ).date()
                 if lesson_date_obj >= today:
                     if lesson_date_obj not in lesson_by_date:
                         lesson_by_date[lesson_date_obj] = []
 
-                    lesson_by_date[lesson_date_obj].append({
-                        "subject": obj.course.subject.name if obj.course and obj.course.subject else None,
-                        "subject_label": obj.course.subject.label if obj.course and obj.course.subject else None,
-                        "teacher_name": f"{obj.teacher.first_name if obj.teacher.first_name else ''} {obj.teacher.last_name if obj.teacher else ''}",
-                        "room": self.get_room(obj),
-                        "name": obj.name,
-                        "started_at": obj.started_at.strftime('%H:%M') if obj.started_at else None,
-                        "ended_at": obj.ended_at.strftime('%H:%M') if obj.ended_at else None,
-                    })
+                    lesson_by_date[lesson_date_obj].append(
+                        {
+                            "subject": (
+                                obj.course.subject.name
+                                if obj.course and obj.course.subject
+                                else None
+                            ),
+                            "subject_label": (
+                                obj.course.subject.label
+                                if obj.course and obj.course.subject
+                                else None
+                            ),
+                            "teacher_name": f"{obj.teacher.first_name if obj.teacher.first_name else ''} {obj.teacher.last_name if obj.teacher else ''}",
+                            "room": self.get_room(obj),
+                            "name": obj.name,
+                            "started_at": (
+                                obj.started_at.strftime("%H:%M")
+                                if obj.started_at
+                                else None
+                            ),
+                            "ended_at": (
+                                obj.ended_at.strftime("%H:%M") if obj.ended_at else None
+                            ),
+                        }
+                    )
 
         # Format the response to include lessons by date
         result = []
         for lesson_date, lessons in lesson_by_date.items():
-            result.append({
-                lesson_date.strftime('%d-%m-%Y')
-            })
+            result.append({lesson_date.strftime("%d-%m-%Y")})
 
         return result
-
 
     def get_student_count(self, obj):
         return StudentGroup.objects.filter(group=obj).count()
 
     def get_room_fillings(self, obj):
-        room = Group.objects.filter(id=obj.id).values_list('room_number', flat=True).first()
+        room = (
+            Group.objects.filter(id=obj.id)
+            .values_list("room_number", flat=True)
+            .first()
+        )
         if room:
             room_fillings = Room.objects.filter(id=room).first()
             return room_fillings.room_filling if room_fillings else None
@@ -168,11 +192,18 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
         return obj.course.subject.name if obj.course and obj.course.subject else None
 
     def get_room(self, obj):
-        room = Group.objects.filter(id=obj.id).values_list('room_number',
-                                                           flat=True).first()  # Use first() for efficiency
+        room = (
+            Group.objects.filter(id=obj.id)
+            .values_list("room_number", flat=True)
+            .first()
+        )  # Use first() for efficiency
         if room:
-            room_obj = Room.objects.filter(id=room).first()  # Fetch the actual Room object
-            return room_obj.room_number if room_obj else None  # Return a serializable field, like room_number
+            room_obj = Room.objects.filter(
+                id=room
+            ).first()  # Fetch the actual Room object
+            return (
+                room_obj.room_number if room_obj else None
+            )  # Return a serializable field, like room_number
 
     def get_subject_label(self, obj):
         return obj.course.subject.label if obj.course and obj.course.subject else None
@@ -182,13 +213,17 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
         return fullname if obj.teacher else None
 
     def get_scheduled_day_type(self, obj):
-        return [day.name for day in obj.scheduled_day_type.all()] if obj.scheduled_day_type else []
+        return (
+            [day.name for day in obj.scheduled_day_type.all()]
+            if obj.scheduled_day_type
+            else []
+        )
 
     def get_started_at(self, obj):
-        return obj.started_at.strftime('%H:%M') if obj.started_at else None
+        return obj.started_at.strftime("%H:%M") if obj.started_at else None
 
     def get_ended_at(self, obj):
-        return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
+        return obj.ended_at.strftime("%H:%M") if obj.ended_at else None
 
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
@@ -198,7 +233,9 @@ class LessonScheduleWebSerializer(serializers.ModelSerializer):
                 filial = request.user.filial.first()
 
         if not filial:
-            raise serializers.ValidationError({"filial": "Filial could not be determined."})
+            raise serializers.ValidationError(
+                {"filial": "Filial could not be determined."}
+            )
 
         group = Group.objects.create(filial=filial, **validated_data)
         return group
@@ -217,22 +254,26 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = [
-            'subject',
-            'subject_label',
-            'teacher_name',
-            'room',
-            'name',
-            'scheduled_day_type',
-            'started_at',
-            'ended_at',
-            'days',
+            "subject",
+            "subject_label",
+            "teacher_name",
+            "room",
+            "name",
+            "scheduled_day_type",
+            "started_at",
+            "ended_at",
+            "days",
         ]
 
     def get_subject(self, obj):
         return obj.course.subject.name if obj.course and obj.course.subject else None
 
     def get_room(self, obj):
-        room = Group.objects.filter(id=obj.id).values_list('room_number', flat=True).first()
+        room = (
+            Group.objects.filter(id=obj.id)
+            .values_list("room_number", flat=True)
+            .first()
+        )
         if room:
             room_obj = Room.objects.filter(id=room).first()
             return room_obj.room_number if room_obj else None
@@ -245,37 +286,45 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
         return fullname if obj.teacher else None
 
     def get_scheduled_day_type(self, obj):
-        return [day.name for day in obj.scheduled_day_type.all()] if obj.scheduled_day_type else []
+        return (
+            [day.name for day in obj.scheduled_day_type.all()]
+            if obj.scheduled_day_type
+            else []
+        )
 
     def get_started_at(self, obj):
-        return obj.started_at.strftime('%H:%M') if obj.started_at else None
+        return obj.started_at.strftime("%H:%M") if obj.started_at else None
 
     def get_ended_at(self, obj):
-        return obj.ended_at.strftime('%H:%M') if obj.ended_at else None
+        return obj.ended_at.strftime("%H:%M") if obj.ended_at else None
 
     def get_days(self, obj):
         today = datetime.datetime.today().date()
-        schedule_days = obj.scheduled_day_type.all()  # Assuming scheduled_day_type contains day objects
+        schedule_days = (
+            obj.scheduled_day_type.all()
+        )  # Assuming scheduled_day_type contains day objects
         lesson_schedule = {}
 
-        start_date = datetime.datetime.today().strftime('%Y-%m-%d')
+        start_date = datetime.datetime.today().strftime("%Y-%m-%d")
         finish_date = obj.finish_date.replace(tzinfo=None)  # Make finish_date naive
 
-        end_date = datetime.datetime.today() + datetime.timedelta(days=30) \
-            if finish_date > datetime.datetime.today() + datetime.timedelta(days=30) \
+        end_date = (
+            datetime.datetime.today() + datetime.timedelta(days=30)
+            if finish_date > datetime.datetime.today() + datetime.timedelta(days=30)
             else finish_date
+        )
 
-        lesson_type = ','.join([day.name for day in schedule_days])
+        lesson_type = ",".join([day.name for day in schedule_days])
         holidays = []
         days_off = ["Yakshanba"]
 
         # Get the scheduled lesson dates using the calculate_lessons function
         grouped_schedule = calculate_lessons(
             start_date=start_date,
-            end_date=end_date.strftime('%Y-%m-%d'),
+            end_date=end_date.strftime("%Y-%m-%d"),
             lesson_type=lesson_type,
             holidays=holidays,
-            days_off=days_off
+            days_off=days_off,
         )
 
         # Collect lessons by date
@@ -283,59 +332,78 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
 
         for month, lesson_dates in grouped_schedule.items():
             for lesson_date in lesson_dates:
-                lesson_date_obj = datetime.datetime.strptime(lesson_date, "%Y-%m-%d").date()
+                lesson_date_obj = datetime.datetime.strptime(
+                    lesson_date, "%Y-%m-%d"
+                ).date()
                 if lesson_date_obj >= today:
                     if lesson_date_obj not in lesson_by_date:
                         lesson_by_date[lesson_date_obj] = []
 
-                    lesson_by_date[lesson_date_obj].append({
-                        "subject": obj.course.subject.name if obj.course and obj.course.subject else None,
-                        "subject_label": obj.course.subject.label if obj.course and obj.course.subject else None,
-                        "teacher_name": f"{obj.teacher.first_name if obj.teacher.first_name else ''} {obj.teacher.last_name if obj.teacher else ''}",
-                        "room": self.get_room(obj),
-                        "name": obj.name,
-                        "started_at": obj.started_at.strftime('%H:%M') if obj.started_at else None,
-                        "ended_at": obj.ended_at.strftime('%H:%M') if obj.ended_at else None,
-                    })
+                    lesson_by_date[lesson_date_obj].append(
+                        {
+                            "subject": (
+                                obj.course.subject.name
+                                if obj.course and obj.course.subject
+                                else None
+                            ),
+                            "subject_label": (
+                                obj.course.subject.label
+                                if obj.course and obj.course.subject
+                                else None
+                            ),
+                            "teacher_name": f"{obj.teacher.first_name if obj.teacher.first_name else ''} {obj.teacher.last_name if obj.teacher else ''}",
+                            "room": self.get_room(obj),
+                            "name": obj.name,
+                            "started_at": (
+                                obj.started_at.strftime("%H:%M")
+                                if obj.started_at
+                                else None
+                            ),
+                            "ended_at": (
+                                obj.ended_at.strftime("%H:%M") if obj.ended_at else None
+                            ),
+                        }
+                    )
 
         # Format the response to include lessons by date
         result = []
         for lesson_date, lessons in lesson_by_date.items():
-            result.append({
-                "date": lesson_date.strftime('%d-%m-%Y'),
-                "lessons": lessons
-            })
+            result.append(
+                {"date": lesson_date.strftime("%d-%m-%Y"), "lessons": lessons}
+            )
 
         return result
 
 
 class FirstLessonSerializer(serializers.ModelSerializer):
-    lid = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all(), allow_null=True)
+    lid = serializers.PrimaryKeyRelatedField(
+        queryset=Lid.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = FirstLLesson
         fields = [
-            'id',
-            'lid',
-            'group',
-            'date',
-            'time',
-            'comment',
-            'creator',
+            "id",
+            "lid",
+            "group",
+            "date",
+            "time",
+            "comment",
+            "creator",
         ]
 
     def update(self, instance, validated_data):
         # Check if 'creator' is present and set it to the current user
-        creator = validated_data.pop('creator', None)
+        creator = validated_data.pop("creator", None)
         if creator is not None:
-            instance.creator = self.context['request'].user
+            instance.creator = self.context["request"].user
 
         # Proceed with the standard update logic
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['group'] = GroupSerializer(instance.group).data
+        rep["group"] = GroupSerializer(instance.group).data
         return rep
 
 
@@ -343,20 +411,21 @@ class ExtraLessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExtraLesson
         fields = [
-            'id',
-            'student',
-            'date',
-            'teacher',
-            'filial',
-            'started_at',
-            'ended_at',
-            'room',
-            'comment',
-            'creator',
-            'is_payable',
-            'is_attendance',
-            'created_at'
+            "id",
+            "student",
+            "date",
+            "teacher",
+            "filial",
+            "started_at",
+            "ended_at",
+            "room",
+            "comment",
+            "creator",
+            "is_payable",
+            "is_attendance",
+            "created_at",
         ]
+
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
         if not filial:
@@ -375,18 +444,19 @@ class ExtraLessonGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExtraLessonGroup
         fields = [
-            'id',
-            'group',
-            'date',
-            'filial',
-            'started_at',
-            'ended_at',
-            'comment',
-            'creator',
-            'is_payable',
-            'is_attendance',
-            'created_at',
+            "id",
+            "group",
+            "date",
+            "filial",
+            "started_at",
+            "ended_at",
+            "comment",
+            "creator",
+            "is_payable",
+            "is_attendance",
+            "created_at",
         ]
+
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
         if not filial:
@@ -437,8 +507,14 @@ class CombinedExtraLessonSerializer(serializers.Serializer):
                 "creator": instance.creator.id if instance.creator else None,
                 "is_payable": instance.is_payable,
                 "is_attendance": instance.is_attendance,
-                "student":  StudentSerializer(instance.student).data if instance.student else None,
-                "teacher": UserSerializer(instance.teacher).data if instance.teacher else None,
+                "student": (
+                    StudentSerializer(instance.student).data
+                    if instance.student
+                    else None
+                ),
+                "teacher": (
+                    UserSerializer(instance.teacher).data if instance.teacher else None
+                ),
                 "room": RoomsSerializer(instance.room).data if instance.room else None,
                 "group": None,  # Not applicable for individual lessons
             }
@@ -456,6 +532,8 @@ class CombinedExtraLessonSerializer(serializers.Serializer):
                 "student": None,  # Not applicable for group lessons
                 "teacher": None,
                 "room": None,
-                "group": GroupSerializer(instance.group).data if instance.group else None,
+                "group": (
+                    GroupSerializer(instance.group).data if instance.group else None
+                ),
             }
         return super().to_representation(instance)

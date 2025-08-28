@@ -51,9 +51,12 @@ from .serializers import (
     VoucherSerializer,
     VoucherStudentSerializer,
 )
-from ...lid.new_lid.models import Lid
-from ...student.attendance.models import Attendance
-from ...student.groups.models import Group
+from data.lid.new_lid.models import Lid
+from data.student.attendance.models import Attendance
+from data.student.groups.models import Group
+
+
+from data.finances.finance.choices import FinanceKindTypeChoices
 
 
 class CasherListCreateAPIView(ListCreateAPIView):
@@ -128,7 +131,7 @@ class FinanceListAPIView(ListCreateAPIView):
 
         if kind:
             try:
-                kind_obj = Kind.objects.get(id=kind)
+                kind_obj = Kind.get(kind, True)
                 queryset = queryset.filter(kind=kind_obj)
             except Kind.DoesNotExist:
                 return Finance.objects.none()
@@ -305,9 +308,10 @@ class CasherHandoverAPIView(CreateAPIView):
 
         if int(amount) > 0:
             # Get the Kind instance (unpacking the tuple)
-            handover, _ = Kind.objects.get_or_create(
-                name="CASHIER_HANDOVER", action="EXPENSE"
-            )
+            # handover, _ = Kind.objects.get_or_create(
+            #     name="CASHIER_HANDOVER", action="EXPENSE"
+            # )
+            handover = Kind.get(FinanceKindTypeChoices.CASHIER_HANDOVER)
 
             # Deduct from sender (casher)
             Finance.objects.create(
@@ -322,9 +326,11 @@ class CasherHandoverAPIView(CreateAPIView):
             )
 
             # Get the Kind instance (unpacking the tuple)
-            acception, _ = Kind.objects.get_or_create(
-                name="CASHIER_ACCEPTANCE", action="INCOME"
-            )
+            # acception, _ = Kind.objects.get_or_create(
+            #     name="CASHIER_ACCEPTANCE", action="INCOME"
+            # )
+
+            acception = Kind.get(FinanceKindTypeChoices.CASHIER_ACCEPTANCE)
 
             # Add to receiver
             Finance.objects.create(
@@ -466,8 +472,14 @@ class CasherStatisticsAPIView(APIView):
         # Check casher and return results
 
         if casher_id:
-            queryset = Finance.objects.filter(casher__id=casher_id, **filters).exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            queryset = Finance.objects.filter(casher_id=casher_id, **filters).exclude(
+                # Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+                Q(
+                    kind__kind__in=[
+                        FinanceKindTypeChoices.BONUS,
+                        FinanceKindTypeChoices.MONEY_BACK,
+                    ]
+                )
             )
 
             balance_data = queryset.aggregate(
@@ -491,8 +503,14 @@ class CasherStatisticsAPIView(APIView):
                 ),
             )
 
-            all_qs = Finance.objects.filter(casher__id=casher_id).exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            all_qs = Finance.objects.filter(casher_id=casher_id).exclude(
+                # Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+                Q(
+                    kind__kind__in=[
+                        FinanceKindTypeChoices.BONUS,
+                        FinanceKindTypeChoices.MONEY_BACK,
+                    ]
+                )
             )
 
             balance = all_qs.aggregate(
@@ -590,9 +608,11 @@ class TeacherGroupFinanceAPIView(APIView):
             elif start_date:
                 finance_filters["created_at__gte"] = start_date
 
-            kind = Kind.objects.filter(
-                action="INCOME", name__icontains="Lesson payment"
-            ).first()
+            # kind = Kind.objects.filter(
+            #     action="INCOME", name__icontains="Lesson payment"
+            # ).first()
+            kind = Kind.get(FinanceKindTypeChoices.LESSON_PAYMENT)
+
             finance_records = Finance.objects.filter(
                 **finance_filters, stuff__id=teacher_id, kind=kind
             ).order_by("created_at")
@@ -870,10 +890,9 @@ class KindList(ListCreateAPIView):
     def get_queryset(self):
         kind = self.request.GET.get("action")
         if kind:
-            queryset = Kind.objects.filter(
-                action=kind,
-            )
+            queryset = Kind.objects.filter(action=kind)
             return queryset
+
         return Kind.objects.none()
 
     def get_paginated_response(self, data):

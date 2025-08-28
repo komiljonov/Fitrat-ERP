@@ -5,22 +5,40 @@ import random
 from icecream import ic
 from rest_framework import serializers
 
-from .models import Quiz, Question, Answer, Fill_gaps, Vocabulary, MatchPairs, Exam, Gaps, \
-    QuizGaps, Pairs, ExamRegistration, ObjectiveTest, Cloze_Test, True_False, ImageObjectiveTest, ExamCertificate, \
-    ExamSubject
-from ..groups.models import Group
-from ..homeworks.models import Homework
-from ..student.models import Student
-from ..student.serializers import StudentSerializer
-from ..subject.models import Subject, Theme
-from ..subject.serializers import SubjectSerializer, ThemeSerializer
-from ...account.models import CustomUser
-from ...exam_results.models import QuizResult
-from ...finances.finance.models import Finance, Kind
-from ...notifications.models import Notification
-from ...parents.models import Relatives
-from ...upload.models import File
-from ...upload.serializers import FileUploadSerializer
+from data.finances.finance.choices import FinanceKindTypeChoices
+
+from .models import (
+    Quiz,
+    Question,
+    Answer,
+    Fill_gaps,
+    Vocabulary,
+    MatchPairs,
+    Exam,
+    Gaps,
+    QuizGaps,
+    Pairs,
+    ExamRegistration,
+    ObjectiveTest,
+    Cloze_Test,
+    True_False,
+    ImageObjectiveTest,
+    ExamCertificate,
+    ExamSubject,
+)
+from data.student.groups.models import Group
+from data.student.homeworks.models import Homework
+from data.student.student.models import Student
+from data.student.student.serializers import StudentSerializer
+from data.student.subject.models import Subject, Theme
+from data.student.subject.serializers import SubjectSerializer, ThemeSerializer
+from data.account.models import CustomUser
+from data.exam_results.models import QuizResult
+from data.finances.finance.models import Finance, Kind
+from data.notifications.models import Notification
+from data.parents.models import Relatives
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -30,9 +48,13 @@ class AnswerSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    answers = serializers.PrimaryKeyRelatedField(many=True, queryset=Answer.objects.all())
+    answers = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Answer.objects.all()
+    )
     text = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all())
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Question
@@ -54,30 +76,26 @@ class QuestionSerializer(serializers.ModelSerializer):
 class QuizGapsSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuizGaps
-        fields = [
-            "id",
-            "name",
-            "created_at"
-        ]
+        fields = ["id", "name", "created_at"]
 
 
 class ObjectiveTestSerializer(serializers.ModelSerializer):
-    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
-    question = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all(), allow_null=True)
-    answers = serializers.PrimaryKeyRelatedField(many=True, queryset=Answer.objects.all(), allow_null=True)
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    quiz = serializers.PrimaryKeyRelatedField(
+        queryset=Quiz.objects.all(), allow_null=True
+    )
+    question = serializers.PrimaryKeyRelatedField(
+        queryset=QuizGaps.objects.all(), allow_null=True
+    )
+    answers = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Answer.objects.all(), allow_null=True
+    )
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = ObjectiveTest
-        fields = [
-            "id",
-            "quiz",
-            "question",
-            "answers",
-            "comment",
-            "file",
-            "created_at"
-        ]
+        fields = ["id", "quiz", "question", "answers", "comment", "file", "created_at"]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -95,9 +113,15 @@ class ObjectiveTestSerializer(serializers.ModelSerializer):
 
 
 class Cloze_TestSerializer(serializers.ModelSerializer):
-    questions = serializers.PrimaryKeyRelatedField(many=True, queryset=QuizGaps.objects.all(), allow_null=True)
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-    sentence = serializers.PrimaryKeyRelatedField(queryset=Answer.objects.all(), allow_null=True)
+    questions = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=QuizGaps.objects.all(), allow_null=True
+    )
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
+    sentence = serializers.PrimaryKeyRelatedField(
+        queryset=Answer.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Cloze_Test
@@ -108,7 +132,7 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
             "sentence",
             "comment",
             "file",
-            "created_at"
+            "created_at",
         ]
 
     def to_representation(self, instance):
@@ -118,38 +142,35 @@ class Cloze_TestSerializer(serializers.ModelSerializer):
             rep["file"] = FileUploadSerializer(instance.file, context=self.context).data
 
         if instance.sentence:
-            sentence_text = instance.sentence.text if hasattr(instance.sentence, 'text') else ''
+            sentence_text = (
+                instance.sentence.text if hasattr(instance.sentence, "text") else ""
+            )
             words = sentence_text.split()
             random.shuffle(words)
-            rep["sentence"] = {
-                "id": str(instance.sentence.id),
-                "shuffled_words": words
-            }
+            rep["sentence"] = {"id": str(instance.sentence.id), "shuffled_words": words}
 
         return rep
 
 
 class ImageObjectiveTestSerializer(serializers.ModelSerializer):
-    image = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    image = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = ImageObjectiveTest
-        fields = [
-            "id",
-            "quiz",
-            "image",
-            "answer",
-            "comment",
-            "created_at",
-            "file"
-        ]
+        fields = ["id", "quiz", "image", "answer", "comment", "created_at", "file"]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
         if instance.image:
-            rep["image"] = FileUploadSerializer(instance.image, context=self.context).data
+            rep["image"] = FileUploadSerializer(
+                instance.image, context=self.context
+            ).data
         else:
             rep["image"] = None
 
@@ -162,19 +183,16 @@ class ImageObjectiveTestSerializer(serializers.ModelSerializer):
 
 
 class True_FalseSerializer(serializers.ModelSerializer):
-    question = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all(), allow_null=True)
-    file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    question = serializers.PrimaryKeyRelatedField(
+        queryset=QuizGaps.objects.all(), allow_null=True
+    )
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = True_False
-        fields = [
-            "id",
-            "quiz",
-            "question",
-            "answer",
-            "comment",
-            "file"
-        ]
+        fields = ["id", "quiz", "question", "answer", "comment", "file"]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -187,20 +205,36 @@ class True_FalseSerializer(serializers.ModelSerializer):
 
 class QuizSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
-    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
-    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
+    subject = serializers.PrimaryKeyRelatedField(
+        queryset=Subject.objects.all(), allow_null=True
+    )
+    theme = serializers.PrimaryKeyRelatedField(
+        queryset=Theme.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Quiz
         fields = [
-            "id", "title", "description", "theme", "homework", "subject",
-            "questions", "count", "time", "created_at",
+            "id",
+            "title",
+            "description",
+            "theme",
+            "homework",
+            "subject",
+            "questions",
+            "count",
+            "time",
+            "created_at",
         ]
 
     def get_questions(self, obj):
         request = self.context.get("request")
         query_count = request.query_params.get("count") if request else None
-        student = request.user.student if request and hasattr(request.user, 'student') else None
+        student = (
+            request.user.student
+            if request and hasattr(request.user, "student")
+            else None
+        )
 
         if query_count is not None and query_count.lower() == "false":
             count = None
@@ -214,9 +248,7 @@ class QuizSerializer(serializers.ModelSerializer):
         # Create or get QuizResult instance if student exists
         if student:
             quiz_result, created = QuizResult.objects.get_or_create(
-                quiz=obj,
-                student=student,
-                defaults={'point': 0}
+                quiz=obj, student=student, defaults={"point": 0}
             )
 
         # Define question types and associated serializers & M2M fields
@@ -224,9 +256,19 @@ class QuizSerializer(serializers.ModelSerializer):
             (Question, QuestionSerializer, "standard", "questions"),
             (Vocabulary, VocabularySerializer, "vocabulary", "vocabulary"),
             (MatchPairs, MatchPairsSerializer, "match_pair", "match_pair"),
-            (ObjectiveTest, ObjectiveTestSerializer, "objective_test", "objective_test"),
+            (
+                ObjectiveTest,
+                ObjectiveTestSerializer,
+                "objective_test",
+                "objective_test",
+            ),
             (Cloze_Test, Cloze_TestSerializer, "cloze_test", None),  # No M2M for cloze
-            (ImageObjectiveTest, ImageObjectiveTestSerializer, "image_objective", "image_objective"),
+            (
+                ImageObjectiveTest,
+                ImageObjectiveTestSerializer,
+                "image_objective",
+                "image_objective",
+            ),
             (True_False, True_FalseSerializer, "true_false", "true_false"),
         ]
 
@@ -249,7 +291,7 @@ class QuizSerializer(serializers.ModelSerializer):
         random.shuffle(questions)
 
         if count is not None:
-            questions = questions[:min(count, len(questions))]
+            questions = questions[: min(count, len(questions))]
 
         # Update question count in QuizResult if it exists
         if student and quiz_result:
@@ -261,15 +303,21 @@ class QuizSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
-        rep["theme"] = ThemeSerializer(instance.theme, include_only=["id", "title"]).data
+        rep["theme"] = ThemeSerializer(
+            instance.theme, include_only=["id", "title"]
+        ).data
         return rep
 
 
 class QuizCheckingSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
 
-    subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), allow_null=True)
-    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), allow_null=True)
+    subject = serializers.PrimaryKeyRelatedField(
+        queryset=Subject.objects.all(), allow_null=True
+    )
+    theme = serializers.PrimaryKeyRelatedField(
+        queryset=Theme.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Quiz
@@ -329,23 +377,28 @@ class QuizCheckingSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject).data
-        rep["theme"] = ThemeSerializer(instance.theme, include_only=["id", "title"]).data
+        rep["theme"] = ThemeSerializer(
+            instance.theme, include_only=["id", "title"]
+        ).data
         return rep
 
 
 class GapsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Gaps
-        fields = [
-            "id",
-            "name"
-        ]
+        fields = ["id", "name"]
 
 
 class FillGapsSerializer(serializers.ModelSerializer):
-    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
-    question = serializers.PrimaryKeyRelatedField(queryset=QuizGaps.objects.all(), allow_null=True)
-    gaps = serializers.PrimaryKeyRelatedField(queryset=Gaps.objects.all(), many=True, allow_null=True)
+    quiz = serializers.PrimaryKeyRelatedField(
+        queryset=Quiz.objects.all(), allow_null=True
+    )
+    question = serializers.PrimaryKeyRelatedField(
+        queryset=QuizGaps.objects.all(), allow_null=True
+    )
+    gaps = serializers.PrimaryKeyRelatedField(
+        queryset=Gaps.objects.all(), many=True, allow_null=True
+    )
 
     class Meta:
         model = Fill_gaps
@@ -389,8 +442,12 @@ class FillGapsSerializer(serializers.ModelSerializer):
 
 
 class VocabularySerializer(serializers.ModelSerializer):
-    photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-    voice = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    photo = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
+    voice = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Vocabulary
@@ -425,7 +482,9 @@ class PairsSerializer(serializers.ModelSerializer):
 
 
 class MatchPairsSerializer(serializers.ModelSerializer):
-    pairs = serializers.PrimaryKeyRelatedField(queryset=Pairs.objects.all(), many=True, allow_null=True)
+    pairs = serializers.PrimaryKeyRelatedField(
+        queryset=Pairs.objects.all(), many=True, allow_null=True
+    )
 
     class Meta:
         model = MatchPairs
@@ -477,7 +536,7 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
 
         if test_id:
             exam = ExamRegistration.objects.filter(id=test_id).first()
-            print(exam,exam.status)
+            print(exam, exam.status)
             if exam:
                 exam.status = "Active"
                 exam.save(update_fields=["status"])
@@ -500,8 +559,7 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
         exam = None
         if request.user.role == "Student":
             exam = ExamRegistration.objects.filter(
-                student=user,
-                option__in=option_ids
+                student=user, option__in=option_ids
             ).first()
 
             if exam:
@@ -514,12 +572,13 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
                 exam.status = "Active"
                 exam.save()
 
-        if validated_data.get("has_certificate") and validated_data.get(
-                "certificate") and request.user.role == "Student":
+        if (
+            validated_data.get("has_certificate")
+            and validated_data.get("certificate")
+            and request.user.role == "Student"
+        ):
             ExamCertificate.objects.create(
-                student=user,
-                certificate=validated_data["certificate"],
-                exam=exam
+                student=user, certificate=validated_data["certificate"], exam=exam
             )
             logging.info("Exam Certificate created")
 
@@ -527,28 +586,47 @@ class ExamSubjectSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["subject"] = {
-            "id": instance.subject.id,
-            "name": instance.subject.name,
-            "is_language": instance.subject.is_language,
-        } if instance.subject else None
-        rep["certificate"] = FileUploadSerializer(instance.certificate,
-                                                  context=self.context).data if instance.certificate else None
+        rep["subject"] = (
+            {
+                "id": instance.subject.id,
+                "name": instance.subject.name,
+                "is_language": instance.subject.is_language,
+            }
+            if instance.subject
+            else None
+        )
+        rep["certificate"] = (
+            FileUploadSerializer(instance.certificate, context=self.context).data
+            if instance.certificate
+            else None
+        )
 
         return rep
 
 
 class ExamSerializer(serializers.ModelSerializer):
-    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), allow_null=True)
+    quiz = serializers.PrimaryKeyRelatedField(
+        queryset=Quiz.objects.all(), allow_null=True
+    )
     # students = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=True, allow_null=True)
-    materials = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
-    homework = serializers.PrimaryKeyRelatedField(queryset=Homework.objects.all(), allow_null=True)
-    students_xml = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
-    results = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), allow_null=True)
+    materials = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), many=True, allow_null=True
+    )
+    homework = serializers.PrimaryKeyRelatedField(
+        queryset=Homework.objects.all(), allow_null=True
+    )
+    students_xml = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
+    results = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), allow_null=True
+    )
 
     student_count = serializers.SerializerMethodField()
 
-    options = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(), many=True, allow_null=True)
+    options = serializers.PrimaryKeyRelatedField(
+        queryset=ExamSubject.objects.all(), many=True, allow_null=True
+    )
 
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
@@ -615,7 +693,7 @@ class ExamSerializer(serializers.ModelSerializer):
                             user=teacher,
                             choice="Examination",
                             come_from=exam.id,
-                            comment=f"{exam.date} sanasida {subject.name} fanidan {group.name} guruhingiz uchun imtihon yaratildi!"
+                            comment=f"{exam.date} sanasida {subject.name} fanidan {group.name} guruhingiz uchun imtihon yaratildi!",
                         )
 
         return exam
@@ -632,12 +710,18 @@ class ExamSerializer(serializers.ModelSerializer):
         user = request.user
 
         rep = super().to_representation(instance)
-        rep["results"] = FileUploadSerializer(instance.results).data if instance.results else None
+        rep["results"] = (
+            FileUploadSerializer(instance.results).data if instance.results else None
+        )
 
         if user.role == "TEACHER":
-            teacher_subjects = Subject.objects.filter(course__groups_course__teacher=user).distinct()
+            teacher_subjects = Subject.objects.filter(
+                course__groups_course__teacher=user
+            ).distinct()
 
-            teacher_exam_subjects = instance.options.filter(subject__in=teacher_subjects)
+            teacher_exam_subjects = instance.options.filter(
+                subject__in=teacher_subjects
+            )
 
             options_list = []
             for exam_subject in teacher_exam_subjects:
@@ -648,13 +732,15 @@ class ExamSerializer(serializers.ModelSerializer):
                 else:
                     lang_value = None
 
-                options_list.append({
-                    "instance_id": exam_subject.id,
-                    "id": exam_subject.subject.id,
-                    "subject": exam_subject.subject.name,
-                    "lang_type": lang_value,
-                    "option": exam_subject.options,
-                })
+                options_list.append(
+                    {
+                        "instance_id": exam_subject.id,
+                        "id": exam_subject.subject.id,
+                        "subject": exam_subject.subject.name,
+                        "lang_type": lang_value,
+                        "option": exam_subject.options,
+                    }
+                )
             rep["options"] = options_list
 
         else:
@@ -671,7 +757,9 @@ class ExamMonthlySerializer(serializers.ModelSerializer):
     first_certificate = serializers.UUIDField(required=False, allow_null=True)
     second_certificate = serializers.UUIDField(required=False, allow_null=True)
     expire_date = serializers.DateTimeField(required=False, allow_null=True)
-    option = serializers.PrimaryKeyRelatedField(queryset=ExamSubject.objects.all(), many=True, allow_null=True)
+    option = serializers.PrimaryKeyRelatedField(
+        queryset=ExamSubject.objects.all(), many=True, allow_null=True
+    )
 
     class Meta:
         model = ExamRegistration
@@ -699,8 +787,7 @@ class ExamMonthlySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["student"] = StudentSerializer(
-            instance.student,
-            include_only=["id", "first_name", "last_name"]
+            instance.student, include_only=["id", "first_name", "last_name"]
         ).data
         return rep
 
@@ -711,7 +798,9 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
     )
 
     date = serializers.SerializerMethodField()
-    exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), allow_null=True, required=False)
+    exam = serializers.PrimaryKeyRelatedField(
+        queryset=Exam.objects.all(), allow_null=True, required=False
+    )
 
     class Meta:
         model = ExamRegistration
@@ -745,11 +834,10 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             Notification.objects.create(
                 user=student.user,
                 comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
-                        f" {attrs.get('student_comment')} sabab bilan inkor etdingiz.",
+                f" {attrs.get('student_comment')} sabab bilan inkor etdingiz.",
                 choice="Examination",
-                come_from=""
+                come_from="",
             )
-
 
             parents = Relatives.objects.filter(
                 student=student,
@@ -758,11 +846,12 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                 Notification.objects.create(
                     user=parent.user,
                     comment=f"Sizning farzandingiz {student.first_name} {student.last_name} {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
-                            f" {attrs.get('student_comment')} sabab bilan inkor etdi.",
+                    f" {attrs.get('student_comment')} sabab bilan inkor etdi.",
                     choice="Examination",
-                    come_from=""
+                    come_from="",
                 )
-            kind = Kind.objects.get(name="Money back")
+
+            kind = Kind.objects.get(kind=FinanceKindTypeChoices.MONEY_BACK)
 
             Finance.objects.create(
                 action="EXPENSE",
@@ -772,9 +861,11 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                 student=student,
                 stuff=None,
                 comment=f"Siz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
-                        f" {attrs.get('student_comment')} sabab bilan inkor etdingiz va 50000 so'm Jarima berildi.",
+                f" {attrs.get('student_comment')} sabab bilan inkor etdingiz va 50000 so'm Jarima berildi.",
             )
-            relatives_phones = Relatives.objects.filter(student=student).values_list("phone", flat=True)
+            relatives_phones = Relatives.objects.filter(student=student).values_list(
+                "phone", flat=True
+            )
             parents = CustomUser.objects.filter(phone__in=relatives_phones)
 
             if parents:
@@ -782,21 +873,27 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
                     Notification.objects.create(
                         user=parent,
                         comment=f"Farzandingiz {exam.date} sanasida tashkil qilingan offline imtihonda ishtirok etishni"
-                                f" {attrs.get('student_comment')} sabab bilan inkor etdi.",
+                        f" {attrs.get('student_comment')} sabab bilan inkor etdi.",
                         choice="Examination",
-                        come_from=json.dumps({
-                            "id": str(self.instance.id),
-                            "exam_id": str(self.instance.exam.id),
-                            "group_id": str(self.instance.group.id),
-                        })
+                        come_from=json.dumps(
+                            {
+                                "id": str(self.instance.id),
+                                "exam_id": str(self.instance.exam.id),
+                                "group_id": str(self.instance.group.id),
+                            }
+                        ),
                     )
 
         # If less than 12 hours remain before the exam starts
         if attrs.get("status") == "Inactive":
-            raise serializers.ValidationError({"exam": "Imtihondan ro'yxatdan o'tish vaqti yakunlangan."})
+            raise serializers.ValidationError(
+                {"exam": "Imtihondan ro'yxatdan o'tish vaqti yakunlangan."}
+            )
 
         if ExamRegistration.objects.filter(exam=exam, student=student).exists():
-            raise serializers.ValidationError({"student": "Talaba allaqachon imtihon uchun ro'yxatdan o'tgan."})
+            raise serializers.ValidationError(
+                {"student": "Talaba allaqachon imtihon uchun ro'yxatdan o'tgan."}
+            )
 
         return attrs
 
@@ -809,17 +906,23 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "type": instance.exam.type,
             "is_mandatory": instance.exam.is_mandatory,
         }
-        rep["option"] = ExamSubjectSerializer(instance.option, context=self.context, many=True).data
-        rep["student"] = StudentSerializer(instance.student, include_only=["id", "first_name", "last_name"]).data
+        rep["option"] = ExamSubjectSerializer(
+            instance.option, context=self.context, many=True
+        ).data
+        rep["student"] = StudentSerializer(
+            instance.student, include_only=["id", "first_name", "last_name"]
+        ).data
         return rep
 
 
 class ExamCertificateSerializer(serializers.ModelSerializer):
     certificate = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), allow_null=True,
+        queryset=File.objects.all(),
+        allow_null=True,
     )
     student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), allow_null=True,
+        queryset=Student.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -836,6 +939,10 @@ class ExamCertificateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["certificate"] = FileUploadSerializer(instance.certificate, context=self.context).data
-        rep["student"] = StudentSerializer(instance.student, include_only=["id", "first_name", "last_name"]).data
+        rep["certificate"] = FileUploadSerializer(
+            instance.certificate, context=self.context
+        ).data
+        rep["student"] = StudentSerializer(
+            instance.student, include_only=["id", "first_name", "last_name"]
+        ).data
         return rep

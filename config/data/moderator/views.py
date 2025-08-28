@@ -1,42 +1,47 @@
-from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    RetrieveAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 
 from .serializers import ModeratorSerializer, ModeratorStudentSerializer
 
-from ..account.models import CustomUser
-from ..account.permission import FilialRestrictedQuerySetMixin
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
+from data.account.models import CustomUser
+from data.account.permission import FilialRestrictedQuerySetMixin
 
 
-class ModeratorListAPIView(FilialRestrictedQuerySetMixin,ListCreateAPIView):
-    queryset = CustomUser.objects.filter(role='MODERATOR')
+class ModeratorListAPIView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
+    queryset = CustomUser.objects.filter(role="MODERATOR")
     serializer_class = ModeratorSerializer
     permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend,SearchFilter,OrderingFilter)
-    search_fields = ('full_name','phone','role')
-    ordering_fields = ('full_name','phone','role')
-    filterset_fields = ('full_name','phone','role')
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    search_fields = ("full_name", "phone", "role")
+    ordering_fields = ("full_name", "phone", "role")
+    filterset_fields = ("full_name", "phone", "role")
 
 
 class ModeratorDetailAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = CustomUser.objects.filter(role='MODERATOR')
+    queryset = CustomUser.objects.filter(role="MODERATOR")
     serializer_class = ModeratorSerializer
     permission_classes = [IsAuthenticated]
 
-class ModeratorListNoPGView(FilialRestrictedQuerySetMixin,ListAPIView):
-    queryset = CustomUser.objects.filter(role='MODERATOR')
+
+class ModeratorListNoPGView(FilialRestrictedQuerySetMixin, ListAPIView):
+    queryset = CustomUser.objects.filter(role="MODERATOR")
     serializer_class = ModeratorSerializer
     permission_classes = [IsAuthenticated]
 
-class ModeratorStudentsListAPIView(FilialRestrictedQuerySetMixin,RetrieveAPIView):
+
+class ModeratorStudentsListAPIView(FilialRestrictedQuerySetMixin, RetrieveAPIView):
     """
     Retrieves a moderator along with their associated students and lids.
     """
+
     serializer_class = ModeratorStudentSerializer
     permission_classes = [IsAuthenticated]
 
@@ -44,9 +49,10 @@ class ModeratorStudentsListAPIView(FilialRestrictedQuerySetMixin,RetrieveAPIView
         """
         Fetch the moderator by ID from the URL path parameter.
         """
-        id = self.kwargs.get('pk')
+        id = self.kwargs.get("pk")
         try:
-            return CustomUser.objects.get(id=id, role='MODERATOR')
+            return CustomUser.objects.get(id=id, role="MODERATOR")
         except CustomUser.DoesNotExist:
             from rest_framework.exceptions import NotFound
+
             raise NotFound({"detail": "Moderator not found."})
