@@ -353,10 +353,10 @@ class GroupStudentStatistics(APIView):
         group = get_object_or_404(Group, pk=pk)
 
         # Get total students in the group
-        from django.db.models import Q
-
         students = StudentGroup.objects.filter(
-            Q(group=group) & (Q(student__is_archived=False) | Q(lid__is_archived=False))
+            Q(group=group)
+            & (Q(student__is_archived=False) | Q(lid__is_archived=False)),
+            is_archived=False,
         ).count()
 
         # Get today's start and end time
