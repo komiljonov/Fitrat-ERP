@@ -14,7 +14,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Attendance, Student, SecondaryAttendance
+from .models import Attendance, SecondaryAttendance
+from data.student.student.models import Student
+
 from .secondary_serializers import SecondaryAttendanceSerializer
 from .serializers import AttendanceSerializer
 from data.lid.new_lid.models import Lid
