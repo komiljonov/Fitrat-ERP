@@ -5,15 +5,15 @@ from django.db import models
 from django.utils import timezone
 from django.utils.timezone import now
 
-from ...command.models import BaseModel
+from data.command.models import BaseModel
 
 if TYPE_CHECKING:
-    from ..course.models import Course
-    from ..student.models import Student
-    from ...lid.new_lid.models import Lid
-    from ..subject.models import Level
+    from data.student.course.models import Course
+    from data.student.student.models import Student
+    from data.lid.new_lid.models import Lid
+    from data.student.subject.models import Level
 
-from ...account.models import CustomUser
+from data.account.models import CustomUser
 
 
 class Room(BaseModel):

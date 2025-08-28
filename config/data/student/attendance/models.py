@@ -3,42 +3,68 @@ from typing import TYPE_CHECKING
 from django.db import models
 
 if TYPE_CHECKING:
-    from ..subject.models import Theme
-from ...command.models import BaseModel
-from ...lid.new_lid.models import Lid
-from ...student.student.models import Student
-from ...student.groups.models import Group, SecondaryGroup
+    from data.student.subject.models import Theme
+
+from data.command.models import BaseModel
+from data.lid.new_lid.models import Lid
+from data.student.student.models import Student
+from data.student.groups.models import Group, SecondaryGroup
 
 
 class Attendance(BaseModel):
-    theme: 'Theme' = models.ManyToManyField('subject.Theme', blank=True, related_name='attendance_theme')
-    group: "Group" = models.ForeignKey('groups.Group', on_delete=models.CASCADE,
-                                       null=True, blank=True, related_name='attendance_group')
+    theme: "models.ManyToManyField[Theme]" = models.ManyToManyField(
+        "subject.Theme",
+        blank=True,
+        related_name="attendance_theme",
+    )
+
+    group: "Group | None" = models.ForeignKey(
+        "groups.Group",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="attendance_group",
+    )
+
     repeated = models.BooleanField(default=False)
-    lid: 'Lid' = models.ForeignKey('new_lid.Lid', on_delete=models.SET_NULL, null=True, blank=True,
-                                   related_name='attendance_lid')
-    student: 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL, null=True, blank=True,
-                                           related_name='attendance_student')
+
+    lid: "Lid | None" = models.ForeignKey(
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attendance_lid",
+    )
+
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attendance_student",
+    )
 
     REASON_CHOICES = [
-        ('IS_PRESENT', 'Is Present'),
-        ('REASONED', 'Sababli'),
-            ('UNREASONED', 'Sababsiz'),
-        ('HOLIDAY', 'Dam olish kuni'),
+        ("IS_PRESENT", "Is Present"),
+        ("REASONED", "Sababli"),
+        ("UNREASONED", "Sababsiz"),
+        ("HOLIDAY", "Dam olish kuni"),
     ]
+
     reason = models.CharField(
         max_length=20,
         choices=REASON_CHOICES,
-        default='UNREASONED',
-        help_text="Attendance reason (Sababli/Sababsiz)"
+        default="UNREASONED",
+        help_text="Attendance reason (Sababli/Sababsiz)",
     )
+
     remarks: str = models.TextField(blank=True, null=True)
 
     amount = models.CharField(
         max_length=50,
         blank=True,
         null=True,
-        help_text="Attendance counted amount ..."
+        help_text="Attendance counted amount ...",
     )
 
     attended_at = models.DateTimeField(null=True, blank=True)
@@ -48,24 +74,42 @@ class Attendance(BaseModel):
 
 
 class SecondaryAttendance(BaseModel):
-    theme: 'Theme' = models.ForeignKey('subject.Theme', on_delete=models.SET_NULL,
-                                       null=True, blank=True, related_name='secondary_group_attendance_theme')
-    group: "SecondaryGroup" = models.ForeignKey('groups.SecondaryGroup', on_delete=models.SET_NULL,null=True,blank=True,
-                                                related_name='secondary_group_attendance_secondary_group')
-    student: 'Student' = models.ForeignKey('student.Student', on_delete=models.SET_NULL, null=True, blank=True,
-                                           related_name='secondary_attendance_student')
+    theme: "Theme | None" = models.ForeignKey(
+        "subject.Theme",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="secondary_group_attendance_theme",
+    )
+    group: "SecondaryGroup | None" = models.ForeignKey(
+        "groups.SecondaryGroup",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="secondary_group_attendance_secondary_group",
+    )
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="secondary_attendance_student",
+    )
+
     REASON_CHOICES = [
-        ('IS_PRESENT', 'Is Present'),
-        ('REASONED', 'Sababli'),
-        ('UNREASONED', 'Sababsiz'),
-        ('HOLIDAY', 'Dam olish kuni'),
+        ("IS_PRESENT", "Is Present"),
+        ("REASONED", "Sababli"),
+        ("UNREASONED", "Sababsiz"),
+        ("HOLIDAY", "Dam olish kuni"),
     ]
+
     reason = models.CharField(
         max_length=20,
         choices=REASON_CHOICES,
-        default='UNREASONED',
-        help_text="Attendance reason (Sababli/Sababsiz)"
+        default="UNREASONED",
+        help_text="Attendance reason (Sababli/Sababsiz)",
     )
+
     remarks: str = models.TextField(blank=True, null=True)
 
     def __str__(self):

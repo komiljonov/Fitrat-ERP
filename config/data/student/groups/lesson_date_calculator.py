@@ -1,10 +1,8 @@
 from collections import defaultdict
 from datetime import timedelta, datetime
 
-from dateutil.utils import today
 
-
-def calculate_lessons(start_date, end_date:None, lesson_type, holidays, days_off):
+def calculate_lessons(start_date, end_date: None, lesson_type, holidays, days_off):
     """
     Calculate lesson schedule based on start and end dates, lesson type (specific weekdays), holidays, and days off.
 
@@ -23,7 +21,6 @@ def calculate_lessons(start_date, end_date:None, lesson_type, holidays, days_off
 
     # Set default end date to today + 365 days if not provided
 
-
     end_date = datetime.strptime(str(end_date), "%Y-%m-%d")
 
     # if end_date is None:
@@ -31,22 +28,46 @@ def calculate_lessons(start_date, end_date:None, lesson_type, holidays, days_off
 
     holidays = set(datetime.strptime(date, "%Y-%m-%d") for date in holidays if date)
 
-    days_off_numbers = {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].index(day) for
-                        day in days_off}
+    days_off_numbers = {
+        [
+            "Dushanba",
+            "Seshanba",
+            "Chorshanba",
+            "Payshanba",
+            "Juma",
+            "Shanba",
+            "Yakshanba",
+        ].index(day)
+        for day in days_off
+    }
 
-    lesson_days = [day.strip() for day in lesson_type.split(',')]
+    lesson_days = [day.strip() for day in lesson_type.split(",")]
 
-    lesson_day_numbers = {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].index(day) for
-                          day in lesson_days}
+    lesson_day_numbers = {
+        [
+            "Dushanba",
+            "Seshanba",
+            "Chorshanba",
+            "Payshanba",
+            "Juma",
+            "Shanba",
+            "Yakshanba",
+        ].index(day)
+        for day in lesson_days
+    }
 
-    all_dates = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+    all_dates = [
+        start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)
+    ]
 
-
-    lesson_days_in_range = [date for date in all_dates if date.weekday() in lesson_day_numbers]
+    lesson_days_in_range = [
+        date for date in all_dates if date.weekday() in lesson_day_numbers
+    ]
 
     # Filter out holidays and days off
     valid_dates = [
-        date for date in lesson_days_in_range
+        date
+        for date in lesson_days_in_range
         if date not in holidays and date.weekday() not in days_off_numbers
     ]
 

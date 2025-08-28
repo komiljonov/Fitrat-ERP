@@ -2,7 +2,7 @@ import datetime
 import locale
 from collections import defaultdict
 
-from django.db.models import Q, F, Count
+from django.db.models import Q, Count
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
 from rest_framework import status
@@ -24,9 +24,12 @@ from .serializers import (
     RoomFilterSerializer,
     GroupSaleStudentSerializer,
 )
-from ..lesson.models import ExtraLesson, ExtraLessonGroup
-from ..lesson.serializers import LessonScheduleSerializer, LessonScheduleWebSerializer
-from ..studentgroup.models import SecondaryStudentGroup
+from data.student.lesson.models import ExtraLesson, ExtraLessonGroup
+from data.student.lesson.serializers import (
+    LessonScheduleSerializer,
+    LessonScheduleWebSerializer,
+)
+from data.student.studentgroup.models import SecondaryStudentGroup
 
 # from data.account.models import CustomUser
 
