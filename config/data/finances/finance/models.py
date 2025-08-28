@@ -38,7 +38,9 @@ class Kind(BaseModel):
 
     name = models.CharField(max_length=100)
 
-    kind = models.CharField(max_length=255, choices=FinanceKindTypeChoices.CHOICES)
+    kind = models.CharField(
+        max_length=255, choices=FinanceKindTypeChoices.CHOICES, null=True, blank=True
+    )
 
     action = models.CharField(
         choices=[
