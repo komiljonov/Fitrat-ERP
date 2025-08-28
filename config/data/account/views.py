@@ -35,15 +35,15 @@ from .serializers import (
     PasswordResetVerifySerializer,
 )
 from .utils import build_weekly_schedule
-from ..account.serializers import (
+from data.account.serializers import (
     UserLoginSerializer,
     UserListSerializer,
     UserSerializer,
 )
-from ..department.marketing_channel.models import ConfirmationCode
-from ..finances.timetracker.sinx import TimetrackerSinc
-from ..student.student.models import Student
-from ..student.student.sms import SayqalSms
+from data.department.marketing_channel.models import ConfirmationCode
+from data.finances.timetracker.sinx import TimetrackerSinc
+from data.student.student.models import Student
+from data.student.student.sms import SayqalSms
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

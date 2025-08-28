@@ -10,7 +10,7 @@ from .views import (
     PasswordResetRequestAPIView,
     CustomRefreshTokenView,
 )
-from ..account.views import (
+from data.account.views import (
     CustomAuthToken,
     UserUpdateAPIView,
     LogoutAPIView,

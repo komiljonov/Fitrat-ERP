@@ -19,7 +19,8 @@ from .views import (
     StudentGroupUpdate,
     GroupStudentNoPgDetail,
 )
-from ...teachers.teacher.views import Teacher_StudentsView
+
+from data.teachers.teacher.views import Teacher_StudentsView
 
 urlpatterns = [
     path("", StudentsGroupList.as_view()),

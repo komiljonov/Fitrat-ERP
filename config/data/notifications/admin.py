@@ -8,6 +8,6 @@ from data.notifications.models import UserRFToken
 
 @admin.register(UserRFToken)
 class UserRFTokenAdmin(admin.ModelAdmin):
-    list_display = ('user__phone','token')
-    list_filter = ('user__phone','token')
-    search_fields = ('user__phone','token')
+    list_display = ("user__phone", "token")
+    list_filter = ("user__phone", "token")
+    search_fields = ("user__phone", "token")

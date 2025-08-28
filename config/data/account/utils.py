@@ -2,7 +2,15 @@ from data.finances.timetracker.models import UserTimeLine
 
 
 def build_weekly_schedule(user):
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    days = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    ]
     schedule = {}
 
     for day in days:

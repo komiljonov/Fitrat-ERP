@@ -136,8 +136,7 @@ class TeacherStatistics(ListAPIView):
                 lids_group__group__teacher=teacher,
             ).count(),
             "all_students": StudentGroup.objects.filter(
-                is_archived=False,
-                group__teacher=teacher, **filters
+                is_archived=False, group__teacher=teacher, **filters
             ).count(),
             "new_students": StudentGroup.objects.filter(
                 group__teacher=teacher,
@@ -169,7 +168,9 @@ class TeacherStatistics(ListAPIView):
                 is_archived=False,
                 student__student_stage_type="ACTIVE_STUDENT",
                 **filters,
-            ).distinct().count(),
+            )
+            .distinct()
+            .count(),
             "results": Results.objects.filter(teacher=teacher, **filters).count(),
             "results_progress": Results.objects.filter(
                 teacher=teacher, status="In_progress", **filters
@@ -457,7 +458,7 @@ class StudentsAvgLearning(APIView):
                     "mastering_id": (
                         m.id
                         if m.choice
-                           in ["Speaking", "Unit_Test", "Mock", "MidCourse", "Level"]
+                        in ["Speaking", "Unit_Test", "Mock", "MidCourse", "Level"]
                         else None
                     ),
                     "title": m.test.title if m.test else "N/A",
@@ -474,8 +475,8 @@ class StudentsAvgLearning(APIView):
                         else (
                             m.updater.full_name
                             if m.choice
-                               in ["Speaking", "Unit_Test", "MidCourse", "Level"]
-                               and m.updater
+                            in ["Speaking", "Unit_Test", "MidCourse", "Level"]
+                            and m.updater
                             else "N/A"
                         )
                     ),

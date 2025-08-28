@@ -5,24 +5,31 @@ from ..command.models import BaseModel
 
 
 class Notification(BaseModel):
-    user: 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True, blank=True)
+    user: "CustomUser" = models.ForeignKey(
+        "account.CustomUser",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     comment = models.TextField(null=True, blank=True)
-    choice = models.CharField(choices=[
-        ("TeacherFinance", "TeacherFinance"),
-        ("Bonus", "Bonus"),
-        ("New_Student", "New_Student"),
-        ("First_Lesson_Lid", "First_Lesson_Lid"),
-        ("Tasks", "Tasks"),
-        ("Students", "Students"),
-        ("Comments", "Comments"),
-        ("Monitoring", "Monitoring"),
-        ("Results", "Results"),
-        ("Examination", "Examination"),
-        ("Shopping", "Shopping"),
-        ("Homework", "Homework"),
-        ("Coin", "Coin"),
-        ("Archive", "Archive"),
-    ])
+    choice = models.CharField(
+        choices=[
+            ("TeacherFinance", "TeacherFinance"),
+            ("Bonus", "Bonus"),
+            ("New_Student", "New_Student"),
+            ("First_Lesson_Lid", "First_Lesson_Lid"),
+            ("Tasks", "Tasks"),
+            ("Students", "Students"),
+            ("Comments", "Comments"),
+            ("Monitoring", "Monitoring"),
+            ("Results", "Results"),
+            ("Examination", "Examination"),
+            ("Shopping", "Shopping"),
+            ("Homework", "Homework"),
+            ("Coin", "Coin"),
+            ("Archive", "Archive"),
+        ]
+    )
     come_from = models.TextField(null=True, blank=True)
     is_read = models.BooleanField(default=False)
     has_read = models.BooleanField(default=False)
@@ -32,7 +39,9 @@ class Notification(BaseModel):
 
 
 class Complaint(BaseModel):
-    user: 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.SET_NULL, null=True, blank=True)
+    user: "CustomUser" = models.ForeignKey(
+        "account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     text = models.TextField(null=True, blank=True)
 
@@ -41,8 +50,13 @@ class Complaint(BaseModel):
 
 
 class UserRFToken(BaseModel):
-    user: 'CustomUser' = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, null=True, blank=True,
-                                           related_name='user_rf_token')
+    user: "CustomUser" = models.ForeignKey(
+        "account.CustomUser",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="user_rf_token",
+    )
     token = models.TextField(null=True, blank=True)
 
     # def __str__(self):

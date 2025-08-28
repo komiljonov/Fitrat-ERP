@@ -5,11 +5,11 @@ from django.db import models
 from django.utils import timezone
 
 from data.student.student.models import Student
-from ...account.models import CustomUser
-from ...command.models import BaseModel
-from ...department.filial.models import Filial
-from ...department.marketing_channel.models import MarketingChannel
-from ...upload.models import File
+from data.account.models import CustomUser
+from data.command.models import BaseModel
+from data.department.filial.models import Filial
+from data.department.marketing_channel.models import MarketingChannel
+from data.upload.models import File
 
 if TYPE_CHECKING:
     from data.student.studentgroup.models import StudentGroup

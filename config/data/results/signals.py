@@ -8,12 +8,21 @@ from django.dispatch import receiver
 from icecream import ic
 
 from .models import Results
-from .utils import validate_olimpiada_requirements, validate_university_requirements, validate_certificate_requirements
-from ..finances.compensation.models import MonitoringAsos4, Asos, ResultName, ResultSubjects
-from ..finances.finance.models import Finance, Casher, Kind
-from ..logs.models import Log
-from ..notifications.models import Notification
-from ..student.shop.models import Coins
+from .utils import (
+    validate_olimpiada_requirements,
+    validate_university_requirements,
+    validate_certificate_requirements,
+)
+from data.finances.compensation.models import (
+    MonitoringAsos4,
+    Asos,
+    ResultName,
+    ResultSubjects,
+)
+from data.finances.finance.models import Finance, Casher, Kind
+from data.logs.models import Log
+from data.notifications.models import Notification
+from data.student.shop.models import Coins
 
 
 @receiver(post_save, sender=Results)
@@ -66,7 +75,9 @@ def validate_before_acceptance(sender, instance: Results, **kwargs):
             logging.error(f"Pre-save validation error: {str(e)}", exc_info=True)
 
             # Prevent the save by raising an exception
-            raise ValueError(f"Ushbu natijani tasdiqlash uchun monitoring yaratilmagan! Xatolik: {str(e)}")
+            raise ValueError(
+                f"Ushbu natijani tasdiqlash uchun monitoring yaratilmagan! Xatolik: {str(e)}"
+            )
 
 
 @receiver(post_save, sender=Results)
@@ -78,35 +89,43 @@ def on_update(sender, instance: Results, created, **kwargs):
             id = instance.id
             instance_obj = {
                 "id": str(id),
-                "universityEnteringBall": getattr(in_obj, "university_entering_ball", None),
+                "universityEnteringBall": getattr(
+                    in_obj, "university_entering_ball", None
+                ),
                 "results": getattr(in_obj, "results", None),
                 "band_score": getattr(in_obj, "band_score", None),
                 "result_score": getattr(in_obj, "result_score", None),
                 "university_name": getattr(instance, "university_name", None),
                 "status": getattr(instance, "status", None),
                 "level": getattr(instance, "level", None),
-
-                "result_fk_name": {
-                    # "id": getattr(in_obj.result_fk_name, "id", None),
-                    "name": getattr(in_obj.result_fk_name, "name", None),
-                    # "description": getattr(in_obj.result_fk_name, "who", None),
-                } if getattr(in_obj, "result_fk_name", None) else None,
-
-                "student": {
-                    # "id": getattr(in_obj.student, "id", None),
-                    "first_name": getattr(in_obj.student, "first_name", None),
-                    "last_name": getattr(in_obj.student, "last_name", None),
-                    # "phone": getattr(in_obj.student, "phone", None),
-                } if getattr(in_obj, "student", None) else None,
-
-                "university_entering_type": getattr(in_obj, "university_entering_type", None),
+                "result_fk_name": (
+                    {
+                        # "id": getattr(in_obj.result_fk_name, "id", None),
+                        "name": getattr(in_obj.result_fk_name, "name", None),
+                        # "description": getattr(in_obj.result_fk_name, "who", None),
+                    }
+                    if getattr(in_obj, "result_fk_name", None)
+                    else None
+                ),
+                "student": (
+                    {
+                        # "id": getattr(in_obj.student, "id", None),
+                        "first_name": getattr(in_obj.student, "first_name", None),
+                        "last_name": getattr(in_obj.student, "last_name", None),
+                        # "phone": getattr(in_obj.student, "phone", None),
+                    }
+                    if getattr(in_obj, "student", None)
+                    else None
+                ),
+                "university_entering_type": getattr(
+                    in_obj, "university_entering_type", None
+                ),
                 "degree": getattr(in_obj, "degree", None),
                 "file": {
                     "id": getattr(in_obj, "id", None),
                     "choice": getattr(in_obj, "choice", None),
                     "file": getattr(in_obj, "file", None),
                 },
-
                 "created_at": getattr(in_obj, "created_at", None),
             }
 
@@ -128,18 +147,23 @@ def on_update(sender, instance: Results, created, **kwargs):
                     ).first()
                     if not level:
                         raise ValueError(
-                            f"Olimpiada uchun mos ResultSubjects topilmadi. Level: {instance.level}, Degree: {instance.degree}")
+                            f"Olimpiada uchun mos ResultSubjects topilmadi. Level: {instance.level}, Degree: {instance.degree}"
+                        )
 
                     # Check if teacher exists
                     if not instance.teacher:
                         raise ValueError("O'qituvchi ma'lumoti topilmadi!")
 
                     # Check if max_ball and amount exist
-                    if not hasattr(level, 'max_ball') or level.max_ball is None:
-                        raise ValueError(f"ResultSubjects uchun max_ball qiymati topilmadi. Level ID: {level.id}")
+                    if not hasattr(level, "max_ball") or level.max_ball is None:
+                        raise ValueError(
+                            f"ResultSubjects uchun max_ball qiymati topilmadi. Level ID: {level.id}"
+                        )
 
-                    if not hasattr(level, 'amount') or level.amount is None:
-                        raise ValueError(f"ResultSubjects uchun amount qiymati topilmadi. Level ID: {level.id}")
+                    if not hasattr(level, "amount") or level.amount is None:
+                        raise ValueError(
+                            f"ResultSubjects uchun amount qiymati topilmadi. Level ID: {level.id}"
+                        )
 
                     # Check if casher exists
                     casher = Casher.objects.filter(role="WEALTH").first()
@@ -147,7 +171,9 @@ def on_update(sender, instance: Results, created, **kwargs):
                         casher = None
 
                     # Check if bonus kind exists
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                    bonus_kind = Kind.objects.filter(
+                        action="EXPENSE", name__icontains="Bonus"
+                    ).first()
                     if not bonus_kind:
                         raise ValueError("Results turi topilmadi!")
 
@@ -159,7 +185,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         subject=level,
                         result=None,
                         type="Olimpiada",
-                        ball=instance.result_score
+                        ball=instance.result_score,
                     )
                     coin = Coins.objects.create(
                         coin=level.coin,
@@ -167,7 +193,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         choice="Result",
                         comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
                                                                                      f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.max_ball} coin qo'shildi!",
-                        status="Given"
+                        status="Given",
                     )
 
                     # Create finance record
@@ -178,7 +204,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         amount=level.amount,
                         stuff=instance.teacher,
                         comment=f"Sizga {'natijangiz' if instance.who == 'Mine' else f'talabangiz {instance.student.first_name} {instance.student.last_name} ning'
-                                                                                     f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!"
+                                                                                     f'  olimpiadada {instance.result_score} ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!",
                     )
 
                     if finance.amount:
@@ -221,32 +247,47 @@ def on_update(sender, instance: Results, created, **kwargs):
                         casher = None
 
                     # Check if bonus kind exists
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                    bonus_kind = Kind.objects.filter(
+                        action="EXPENSE", name__icontains="Bonus"
+                    ).first()
                     if not bonus_kind:
                         raise ValueError("Results turi topilmadi!")
 
                     if instance.who == "Mine" or instance.who == "Student":
-                        entry = "Grant" if instance.university_entering_type == "Grant" else "Contract"
+                        entry = (
+                            "Grant"
+                            if instance.university_entering_type == "Grant"
+                            else "Contract"
+                        )
                         ic(entry)
 
                         level = ResultSubjects.objects.filter(
                             asos__name__icontains="ASOS_4",
                             entry_type=entry,
-                            university_type="Personal" if instance.university_type == "Unofficial" else "National",
+                            university_type=(
+                                "Personal"
+                                if instance.university_type == "Unofficial"
+                                else "National"
+                            ),
                         ).first()
 
                         if not level:
                             raise ValueError(
-                                f"University uchun mos ResultSubjects topilmadi. Entry: {entry}, University type: {instance.university_type}")
+                                f"University uchun mos ResultSubjects topilmadi. Entry: {entry}, University type: {instance.university_type}"
+                            )
 
                         ic(level)
 
                         # Check if max_ball and amount exist
-                        if not hasattr(level, 'max_ball') or level.max_ball is None:
-                            raise ValueError(f"ResultSubjects uchun max_ball qiymati topilmadi. Level ID: {level.id}")
+                        if not hasattr(level, "max_ball") or level.max_ball is None:
+                            raise ValueError(
+                                f"ResultSubjects uchun max_ball qiymati topilmadi. Level ID: {level.id}"
+                            )
 
-                        if not hasattr(level, 'amount') or level.amount is None:
-                            raise ValueError(f"ResultSubjects uchun amount qiymati topilmadi. Level ID: {level.id}")
+                        if not hasattr(level, "amount") or level.amount is None:
+                            raise ValueError(
+                                f"ResultSubjects uchun amount qiymati topilmadi. Level ID: {level.id}"
+                            )
 
                         ball = MonitoringAsos4.objects.create(
                             creator=instance.teacher,
@@ -254,7 +295,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             subject=level,
                             result=None,
                             type="University",
-                            ball=level.max_ball
+                            ball=level.max_ball,
                         )
                         coin = Coins.objects.create(
                             coin=level.coin,
@@ -264,7 +305,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                                                                                          f'  {"DTM" if instance.university_type == "Official" else f"Xususiy {instance.university_name} universitet" if
                                                                                          instance.university_type == "Unofficial" else f"Xorijiy {instance.university_name} universitet"} imtihonida {instance.result_score} '
                                                                                          f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.coin} coin qo'shildi!",
-                            status="Given"
+                            status="Given",
                         )
 
                         finance = Finance.objects.create(
@@ -286,7 +327,6 @@ def on_update(sender, instance: Results, created, **kwargs):
                                                                                              f'  {"DTM" if instance.university_type == "Official" else f"Xususiy {instance.university_name} universitet" if
                                                                                              instance.university_type == "Unofficial" else f"Xorijiy {instance.university_name} universitet"} imtihonida {instance.result_score} '
                                                                                              f'ball bilan {instance.level} bosqichidagi natijasi'} uchun {level.amount} so'm qo'shildi!",
-
                                 come_from=json.dumps(instance_obj, default=str),
                                 choice="Results",
                             )
@@ -323,7 +363,9 @@ def on_update(sender, instance: Results, created, **kwargs):
                     if not casher:
                         casher = None
 
-                    bonus_kind = Kind.objects.filter(action="EXPENSE", name__icontains="Bonus").first()
+                    bonus_kind = Kind.objects.filter(
+                        action="EXPENSE", name__icontains="Bonus"
+                    ).first()
                     if not bonus_kind:
                         raise ValueError("Results turi topilmadi!")
 
@@ -341,19 +383,25 @@ def on_update(sender, instance: Results, created, **kwargs):
                     if not point:
                         name_exists = ResultName.objects.filter(
                             name__icontains=instance.result_fk_name.name
-                        ).values_list('name', 'who', 'type', 'point_type')
+                        ).values_list("name", "who", "type", "point_type")
 
                         point = ResultName.objects.filter(
                             name__icontains=instance.result_fk_name.name,
                         ).first()
 
                     if not point:
-                        raise ValueError(f"'{instance.result_fk_name.name}' nomli ResultName topilmadi!")
+                        raise ValueError(
+                            f"'{instance.result_fk_name.name}' nomli ResultName topilmadi!"
+                        )
 
                     subject = None
 
                     # Normalize band_score for comparison
-                    band_score = str(instance.band_score).upper() if instance.band_score else None
+                    band_score = (
+                        str(instance.band_score).upper()
+                        if instance.band_score
+                        else None
+                    )
                     ic(band_score)
 
                     if point.type == "Two":
@@ -362,50 +410,68 @@ def on_update(sender, instance: Results, created, **kwargs):
                             try:
                                 band_score_float = float(band_score)
 
-                                subject = ResultSubjects.objects.annotate(
-                                    from_point_float=Cast("from_point", FloatField()),
-                                    to_point_float=Cast("to_point", FloatField()),
-                                ).filter(
-                                    asos__name__icontains="ASOS_4",
-                                    result=point,
-                                    result_type=who,
-                                    from_point_float__lte=band_score_float,
-                                    to_point_float__gte=band_score_float,
-                                ).first()
+                                subject = (
+                                    ResultSubjects.objects.annotate(
+                                        from_point_float=Cast(
+                                            "from_point", FloatField()
+                                        ),
+                                        to_point_float=Cast("to_point", FloatField()),
+                                    )
+                                    .filter(
+                                        asos__name__icontains="ASOS_4",
+                                        result=point,
+                                        result_type=who,
+                                        from_point_float__lte=band_score_float,
+                                        to_point_float__gte=band_score_float,
+                                    )
+                                    .first()
+                                )
                             except (ValueError, TypeError):
-                                raise ValueError(f"Band score '{band_score}' percentage formatida emas!")
+                                raise ValueError(
+                                    f"Band score '{band_score}' percentage formatida emas!"
+                                )
 
                         elif point.point_type == "Ball":
                             try:
                                 if type(band_score) == float:
                                     band_score_float = float(band_score)
 
-                                    subject = ResultSubjects.objects.annotate(
-                                        from_point_float=Cast("from_point", FloatField()),
-                                        to_point_float=Cast("to_point", FloatField()),
-                                    ).filter(
-                                        asos__name__icontains="ASOS_4",
-                                        result=point,
-                                        result_type=who,
-                                        from_point_float__lte=band_score_float,
-                                        to_point_float__gte=band_score_float,
-                                    ).first()
+                                    subject = (
+                                        ResultSubjects.objects.annotate(
+                                            from_point_float=Cast(
+                                                "from_point", FloatField()
+                                            ),
+                                            to_point_float=Cast(
+                                                "to_point", FloatField()
+                                            ),
+                                        )
+                                        .filter(
+                                            asos__name__icontains="ASOS_4",
+                                            result=point,
+                                            result_type=who,
+                                            from_point_float__lte=band_score_float,
+                                            to_point_float__gte=band_score_float,
+                                        )
+                                        .first()
+                                    )
                                 else:
                                     subject = ResultSubjects.objects.filter(
                                         asos__name__icontains="ASOS_4",
                                         result=point,
                                         result_type=who,
-                                        from_point__icontains=band_score
+                                        from_point__icontains=band_score,
                                     )
 
-
                             except (ValueError, TypeError):
-                                raise ValueError(f"Band score '{band_score}' ball formatida emas!")
+                                raise ValueError(
+                                    f"Band score '{band_score}' ball formatida emas!"
+                                )
 
                         elif point.point_type == "Degree":
                             if band_score not in DEGREE_ORDER:
                                 raise ValueError(
-                                    f"Band score '{band_score}' noto'g'ri degree formatida! Mumkin bo'lgan qiymatlar: {DEGREE_ORDER}")
+                                    f"Band score '{band_score}' noto'g'ri degree formatida! Mumkin bo'lgan qiymatlar: {DEGREE_ORDER}"
+                                )
 
                             # Get all possible subjects first
                             possible_subjects = ResultSubjects.objects.filter(
@@ -417,7 +483,9 @@ def on_update(sender, instance: Results, created, **kwargs):
                             # Filter in Python to check degree hierarchy
                             for subj in possible_subjects:
                                 try:
-                                    from_idx = DEGREE_ORDER.index(subj.from_point.upper())
+                                    from_idx = DEGREE_ORDER.index(
+                                        subj.from_point.upper()
+                                    )
                                     to_idx = DEGREE_ORDER.index(subj.to_point.upper())
                                     band_idx = DEGREE_ORDER.index(band_score)
 
@@ -432,49 +500,72 @@ def on_update(sender, instance: Results, created, **kwargs):
                             try:
                                 band_score_float = float(band_score)
 
-                                subject = ResultSubjects.objects.annotate(
-                                    from_point_float=Cast("from_point", FloatField()),
-                                ).filter(
-                                    asos__name__icontains="ASOS_4",
-                                    result=point,
-                                    result_type=who,
-                                    from_point_float=band_score_float,
-                                ).first()
+                                subject = (
+                                    ResultSubjects.objects.annotate(
+                                        from_point_float=Cast(
+                                            "from_point", FloatField()
+                                        ),
+                                    )
+                                    .filter(
+                                        asos__name__icontains="ASOS_4",
+                                        result=point,
+                                        result_type=who,
+                                        from_point_float=band_score_float,
+                                    )
+                                    .first()
+                                )
                             except (ValueError, TypeError):
-                                raise ValueError(f"Band score '{band_score}' percentage formatida emas!")
+                                raise ValueError(
+                                    f"Band score '{band_score}' percentage formatida emas!"
+                                )
 
                         elif point.point_type == "Ball":
                             try:
                                 band_score_float = float(band_score)
 
-                                subject = ResultSubjects.objects.annotate(
-                                    from_point_float=Cast("from_point", FloatField()),
-                                ).filter(
-                                    asos__name__icontains="ASOS_4",
-                                    result=point,
-                                    result_type=who,
-                                    from_point_float=band_score_float,
-                                ).first()
+                                subject = (
+                                    ResultSubjects.objects.annotate(
+                                        from_point_float=Cast(
+                                            "from_point", FloatField()
+                                        ),
+                                    )
+                                    .filter(
+                                        asos__name__icontains="ASOS_4",
+                                        result=point,
+                                        result_type=who,
+                                        from_point_float=band_score_float,
+                                    )
+                                    .first()
+                                )
                             except (ValueError, TypeError):
-                                raise ValueError(f"Band score '{band_score}' ball formatida emas!")
+                                raise ValueError(
+                                    f"Band score '{band_score}' ball formatida emas!"
+                                )
 
                         elif point.point_type == "Degree" and band_score:
                             if band_score not in DEGREE_ORDER:
                                 raise ValueError(
-                                    f"Band score '{band_score}' noto'g'ri degree formatida! Mumkin bo'lgan qiymatlar: {DEGREE_ORDER}")
+                                    f"Band score '{band_score}' noto'g'ri degree formatida! Mumkin bo'lgan qiymatlar: {DEGREE_ORDER}"
+                                )
 
                             if type(band_score) == float:
 
                                 band_score_float = float(band_score)
 
-                                subject = ResultSubjects.objects.annotate(
-                                    from_point_float=Cast("from_point", FloatField()),
-                                ).filter(
-                                    asos__name__icontains="ASOS_4",
-                                    result=point,
-                                    result_type=who,
-                                    from_point_float=band_score_float,
-                                ).first()
+                                subject = (
+                                    ResultSubjects.objects.annotate(
+                                        from_point_float=Cast(
+                                            "from_point", FloatField()
+                                        ),
+                                    )
+                                    .filter(
+                                        asos__name__icontains="ASOS_4",
+                                        result=point,
+                                        result_type=who,
+                                        from_point_float=band_score_float,
+                                    )
+                                    .first()
+                                )
                             else:
                                 subject = ResultSubjects.objects.filter(
                                     asos__name__icontains="ASOS_4",
@@ -486,14 +577,19 @@ def on_update(sender, instance: Results, created, **kwargs):
 
                     if not subject:
                         raise ValueError(
-                            f"Band score '{band_score}' uchun mos ResultSubjects topilmadi! Point: {point.name}, Type: {point.type}, Point type: {point.point_type}")
+                            f"Band score '{band_score}' uchun mos ResultSubjects topilmadi! Point: {point.name}, Type: {point.type}, Point type: {point.point_type}"
+                        )
 
                     # Check if max_ball and amount exist
-                    if not hasattr(subject, 'max_ball') or subject.max_ball is None:
-                        raise ValueError(f"ResultSubjects uchun max_ball qiymati topilmadi. Subject ID: {subject.id}")
+                    if not hasattr(subject, "max_ball") or subject.max_ball is None:
+                        raise ValueError(
+                            f"ResultSubjects uchun max_ball qiymati topilmadi. Subject ID: {subject.id}"
+                        )
 
-                    if not hasattr(subject, 'amount') or subject.amount is None:
-                        raise ValueError(f"ResultSubjects uchun amount qiymati topilmadi. Subject ID: {subject.id}")
+                    if not hasattr(subject, "amount") or subject.amount is None:
+                        raise ValueError(
+                            f"ResultSubjects uchun amount qiymati topilmadi. Subject ID: {subject.id}"
+                        )
 
                     ic("Max_Ball : ", subject.max_ball)
 
@@ -504,7 +600,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                         subject=subject,
                         result=point,
                         type="Certificate",
-                        ball=subject.max_ball
+                        ball=subject.max_ball,
                     )
                     coin = Coins.objects.create(
                         coin=subject.coin,
@@ -516,7 +612,7 @@ def on_update(sender, instance: Results, created, **kwargs):
                             f"{instance.result_fk_name.name} sertifikati imtihonida "
                             f"{instance.band_score} ball uchun {subject.coin} coin qo'shildi!"
                         ),
-                        status="Given"
+                        status="Given",
                     )
                     finance = Finance.objects.create(
                         casher=casher,
@@ -595,7 +691,7 @@ def on_logs(sender, instance: Results, created, **kwargs):
             account=instance.teacher,
             result=instance,
             comment=f"{instance.teacher.full_name if instance.who == "Mine" 
-            else f"{instance.student.first_name} {instance.student.last_name}"} uchun natija yaratildi!"
+            else f"{instance.student.first_name} {instance.student.last_name}"} uchun natija yaratildi!",
         )
     if not created:
         Log.objects.create(
@@ -607,5 +703,5 @@ def on_logs(sender, instance: Results, created, **kwargs):
             account=instance.teacher,
             result=instance,
             comment=f"{instance.teacher.full_name if instance.who == "Mine" 
-            else f"{instance.student.first_name} {instance.student.last_name}"} ning natija o'zgartirildi!"
+            else f"{instance.student.first_name} {instance.student.last_name}"} ning natija o'zgartirildi!",
         )

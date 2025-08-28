@@ -1,7 +1,7 @@
 import io
 from datetime import timedelta, datetime
 
-from django.db.models import Q,F
+from django.db.models import Q, F
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
@@ -24,8 +24,8 @@ from rest_framework.views import APIView
 
 from .models import Archived, Frozen
 from .serializers import ArchivedSerializer, StuffArchivedSerializer, FrozenSerializer
-from ...account.models import CustomUser
-from ...finances.timetracker.sinx import TimetrackerSinc
+from data.account.models import CustomUser
+from data.finances.timetracker.sinx import TimetrackerSinc
 
 
 class ArchivedListAPIView(ListCreateAPIView):

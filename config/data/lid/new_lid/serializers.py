@@ -3,20 +3,19 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from .models import Lid
-from ...account.models import CustomUser
-from ...account.serializers import UserSerializer
-from ...department.filial.models import Filial
-from ...department.filial.serializers import FilialSerializer
-from ...department.marketing_channel.models import MarketingChannel
-from ...department.marketing_channel.serializers import MarketingChannelSerializer
-from ...finances.finance.models import SaleStudent, Voucher, VoucherStudent
-from ...parents.models import Relatives
-from ...student.attendance.models import Attendance
-from ...student.lesson.models import FirstLLesson
-from ...student.student.models import Student
-from ...student.studentgroup.models import StudentGroup
-from ...upload.models import File
-from ...upload.serializers import FileUploadSerializer
+from data.account.models import CustomUser
+from data.department.filial.models import Filial
+from data.department.filial.serializers import FilialSerializer
+from data.department.marketing_channel.models import MarketingChannel
+from data.department.marketing_channel.serializers import MarketingChannelSerializer
+from data.finances.finance.models import SaleStudent, VoucherStudent
+from data.parents.models import Relatives
+from data.student.attendance.models import Attendance
+from data.student.lesson.models import FirstLLesson
+from data.student.student.models import Student
+from data.student.studentgroup.models import StudentGroup
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class LidSerializer(serializers.ModelSerializer):

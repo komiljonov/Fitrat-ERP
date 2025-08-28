@@ -13,22 +13,22 @@ PERFORM_CANCELED_CODE = -2
 ORDER_NOT_FOUND_MESSAGE = {
     "uz": "Buyurtma topilmadi",
     "ru": "Заказ не найден",
-    "en": "Order not fond"
+    "en": "Order not fond",
 }
 TRANSACTION_NOT_FOUND_MESSAGE = {
     "uz": "Tranzaksiya topilmadi",
     "ru": "Транзакция не найдена",
-    "en": "Transaction not found"
+    "en": "Transaction not found",
 }
 UNABLE_TO_PERFORM_OPERATION_MESSAGE = {
     "uz": "Ushbu amalni bajarib bo'lmaydi",
     "ru": "Невозможно выполнить данную операцию",
-    "en": "Unable to perform operation"
+    "en": "Unable to perform operation",
 }
 INVALID_AMOUNT_MESSAGE = {
     "uz": "To‘lov miqdori noto‘g‘ri",
     "ru": "Неверная сумма платежа",
-    "en": "Invalid payment amount"
+    "en": "Invalid payment amount",
 }
 
 AUTH_ERROR = {
@@ -37,8 +37,8 @@ AUTH_ERROR = {
         "message": {
             "ru": "пользователь не существует",
             "uz": "foydalanuvchi mavjud emas",
-            "en": "user does not exist"
+            "en": "user does not exist",
         },
-        "data": "user does not exist"
+        "data": "user does not exist",
     }
 }

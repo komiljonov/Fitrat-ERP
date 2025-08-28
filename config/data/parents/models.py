@@ -1,9 +1,9 @@
 from django.db import models
 
 from data.account.models import CustomUser
-from ..command.models import BaseModel
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
+from data.command.models import BaseModel
+from data.lid.new_lid.models import Lid
+from data.student.student.models import Student
 
 
 # Create your models here.

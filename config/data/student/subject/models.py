@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from data.command.models import BaseModel
 
 from django.db import models
 
@@ -7,7 +8,6 @@ if TYPE_CHECKING:
     from data.student.course.models import Course
     from data.student.groups.models import Group
     from config.data.upload.models import File
-from ...command.models import BaseModel
 
 
 class Subject(BaseModel):
@@ -32,7 +32,10 @@ class Subject(BaseModel):
 
 class Level(BaseModel):
     subject: "Subject" = models.ForeignKey(
-        "subject.Subject", on_delete=models.SET_NULL, null=True, blank=True
+        "subject.Subject",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     name = models.CharField(max_length=100)
     courses: "Course" = models.ForeignKey(

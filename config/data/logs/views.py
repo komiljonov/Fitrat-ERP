@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from django.db.models import Q
 from rest_framework.generics import ListAPIView
 
@@ -17,24 +15,22 @@ class LogListView(ListAPIView):
     def get_queryset(self):
         queryset = Log.objects.all()
 
-        app = self.request.GET.get('app')
-        model = self.request.GET.get('model')
-        action = self.request.GET.get('action')
-        model_action = self.request.GET.get('model_action')
-        finance = self.request.GET.get('finance')
-        lid = self.request.GET.get('lid')
-        first_lessons = self.request.GET.get('first_lessons')
-        student = self.request.GET.get('student')
-        archive = self.request.GET.get('archive')
-        account = self.request.GET.get('account')
+        app = self.request.GET.get("app")
+        model = self.request.GET.get("model")
+        action = self.request.GET.get("action")
+        model_action = self.request.GET.get("model_action")
+        finance = self.request.GET.get("finance")
+        lid = self.request.GET.get("lid")
+        first_lessons = self.request.GET.get("first_lessons")
+        student = self.request.GET.get("student")
+        archive = self.request.GET.get("archive")
+        account = self.request.GET.get("account")
 
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
 
         if start_date:
-            queryset = queryset.filter(
-                start_date__gte=start_date
-            )
+            queryset = queryset.filter(start_date__gte=start_date)
 
         if end_date:
             queryset = queryset.filter(
@@ -54,19 +50,13 @@ class LogListView(ListAPIView):
             queryset = queryset.filter(model_action=model_action)
 
         if finance:
-            queryset = queryset.filter(
-                finance__id=finance
-            )
+            queryset = queryset.filter(finance__id=finance)
 
         if lid:
-            queryset = queryset.filter(
-                lid__id=lid
-            )
+            queryset = queryset.filter(lid__id=lid)
 
         if first_lessons:
-            queryset = queryset.filter(
-                first_lessons__id=first_lessons
-            )
+            queryset = queryset.filter(first_lessons__id=first_lessons)
 
         if student:
             queryset = queryset.filter(
@@ -74,13 +64,9 @@ class LogListView(ListAPIView):
             )
 
         if archive:
-            queryset = queryset.filter(
-                Q(lid__id=archive) | Q(student__id=archive)
-            )
+            queryset = queryset.filter(Q(lid__id=archive) | Q(student__id=archive))
 
         if account:
-            queryset = queryset.filter(
-                account__id=account
-            )
+            queryset = queryset.filter(account__id=account)
 
         return queryset

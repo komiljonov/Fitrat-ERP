@@ -2,10 +2,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Archived, Frozen
-from ...comments.models import Comment
-from ...logs.models import Log
-from ...notifications.models import Notification
-from ...student.studentgroup.models import StudentGroup
+from data.comments.models import Comment
+from data.logs.models import Log
+from data.notifications.models import Notification
+from data.student.studentgroup.models import StudentGroup
 
 
 @receiver(post_save, sender=Archived)
@@ -81,7 +81,6 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             instance.lid.is_frozen = True
             instance.lid.save()
 
-
         Log.objects.create(
             app="Archive",
             model="Frozen",
@@ -112,6 +111,7 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             archive=instance,
             comment=f"Muzlatishdan chiqarildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
         )
+
 
 @receiver(post_save, sender=Archived)
 def on_create(sender, instance: Archived, created, **kwargs):

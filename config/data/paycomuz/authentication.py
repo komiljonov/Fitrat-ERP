@@ -7,14 +7,14 @@ import binascii
 
 def authentication(request):
     """
-           Returns a `User` if a correct username and password have been supplied
-           using HTTP Basic authentication.  Otherwise returns `None`.
-           """
+    Returns a `User` if a correct username and password have been supplied
+    using HTTP Basic authentication.  Otherwise returns `None`.
+    """
     auth = get_authorization_header(request).split()
 
     print(auth)
 
-    if not auth or auth[0].lower() != b'basic':
+    if not auth or auth[0].lower() != b"basic":
         return False
 
     if len(auth) == 1:
@@ -23,7 +23,9 @@ def authentication(request):
         return False
 
     try:
-        auth_parts = base64.b64decode(auth[1]).decode(HTTP_HEADER_ENCODING).partition(':')
+        auth_parts = (
+            base64.b64decode(auth[1]).decode(HTTP_HEADER_ENCODING).partition(":")
+        )
     except (TypeError, UnicodeDecodeError, binascii.Error):
         return False
 
@@ -39,10 +41,7 @@ def authenticate_credentials(userid, password, request=None):
     Authenticate the userid and password against username and password
     with optional request for context.
     """
-    credentials = {
-        get_user_model().USERNAME_FIELD: userid,
-        'password': password
-    }
+    credentials = {get_user_model().USERNAME_FIELD: userid, "password": password}
     user = authenticate(request=request, **credentials)
 
     if user is None:

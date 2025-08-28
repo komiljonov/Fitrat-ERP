@@ -11,10 +11,10 @@ from rest_framework.views import APIView
 
 from .models import Relatives
 from .serializers import RelativesSerializer
-from ..notifications.models import Notification
-from ..notifications.serializers import NotificationSerializer
-from ..student.mastering.models import Mastering
-from ..student.student.models import Student
+from data.notifications.models import Notification
+from data.notifications.serializers import NotificationSerializer
+from data.student.mastering.models import Mastering
+from data.student.student.models import Student
 
 
 # Create your views here.

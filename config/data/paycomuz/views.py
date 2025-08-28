@@ -17,14 +17,15 @@ from data.paycomuz.methods_subscribe_api import (
 from . import Paycom
 from .authentication import authentication
 from .check_order import CheckOrder
+
 # project
 from .models import Transaction
 from .serializers.payme_operation import PaycomOperationSerialzer
 from .serializers.serializers import PaycomuzSerializer
 from .status import *
-from ..finances.finance.models import Finance, Kind
-from ..lid.new_lid.models import Lid
-from ..student.student.models import Student
+from data.finances.finance.models import Finance, Kind
+from data.lid.new_lid.models import Lid
+from data.student.student.models import Student
 
 
 class MerchantAPIView(APIView):
@@ -273,11 +274,11 @@ class MerchantAPIView(APIView):
                         amount=obj.amount,
                         kind=kind,
                         creator=obj.creator,
-                        payment_method='Payme',
+                        payment_method="Payme",
                         student=student if student else None,
                         lid=lid if lid else None,
                         comment=f"{student.first_name + "  " + student.last_name if student else
-                        lid.first_name + " " + lid.last_name} talabaga {obj.amount} so'm pul to'lov qilindi."
+                        lid.first_name + " " + lid.last_name} talabaga {obj.amount} so'm pul to'lov qilindi.",
                     )
 
                     if finance:
