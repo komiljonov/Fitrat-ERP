@@ -54,7 +54,9 @@ class Lid(BaseModel):
         max_length=100,
         help_text="Education level at school if student studies at school",
     )
+
     edu_level = models.CharField(null=True, blank=True, max_length=100)
+
     subject = models.ForeignKey(
         "subject.Subject",
         on_delete=models.SET_NULL,

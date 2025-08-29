@@ -803,7 +803,7 @@ class FinanceExcel(APIView):
                 [
                     finance.casher.name if finance.casher else "-",
                     (
-                        "Asosiy kassa "
+                        "Asosiy kassa"
                         if finance.casher.role == "WEALTH"
                         else (
                             "Buxgalteriya kassa"
@@ -816,33 +816,36 @@ class FinanceExcel(APIView):
                         )
                     ),
                     (
-                        "Kassa qabul qilish"
-                        if finance.kind.name == "CASHIER_ACCEPTANCE"
-                        else (
-                            "Kassa topshirish"
-                            if finance.kind.name == "CASHIER_HANDOVER"
-                            else (
-                                "Oylik maosh"
-                                if finance.kind.name == "Salary"
-                                else (
-                                    "Kurs to'lovi"
-                                    if finance.kind.name == "Course payment"
-                                    else (
-                                        "1 dars uchun to'lov"
-                                        if finance.kind.name == "Lesson payment"
-                                        else (
-                                            "Pul qaytarish"
-                                            if finance.kind.name == "Money back"
-                                            else (
-                                                finance.kind.name
-                                                if hasattr(finance.kind, "name")
-                                                else str(finance.kind)
-                                            )
-                                        )
-                                    )
-                                )
-                            )
-                        )
+                        finance.kind.name
+                        if finance
+                        else ""
+                        # "Kassa qabul qilish"
+                        # if finance.kind.name == "CASHIER_ACCEPTANCE"
+                        # else (
+                        #     "Kassa topshirish"
+                        #     if finance.kind.name == "CASHIER_HANDOVER"
+                        #     else (
+                        #         "Oylik maosh"
+                        #         if finance.kind.name == "Salary"
+                        #         else (
+                        #             "Kurs to'lovi"
+                        #             if finance.kind.name == "Course payment"
+                        #             else (
+                        #                 "1 dars uchun to'lov"
+                        #                 if finance.kind.name == "Lesson payment"
+                        #                 else (
+                        #                     "Pul qaytarish"
+                        #                     if finance.kind.name == "Money back"
+                        #                     else (
+                        #                         finance.kind.name
+                        #                         if hasattr(finance.kind, "name")
+                        #                         else str(finance.kind)
+                        #                     )
+                        #                 )
+                        #             )
+                        #         )
+                        #     )
+                        # )
                     ),
                     "Kirim" if finance.action == "INCOME" else "Xarajat",
                     amount,

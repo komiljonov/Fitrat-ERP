@@ -604,6 +604,7 @@ class LidStatisticsView(ListAPIView):
             .exclude(call_operator__isnull=True)
             .count()
         )
+
         archived_new_leads = queryset.filter(
             is_archived=True, lid_stage_type="NEW_LID", **filter
         ).count()

@@ -17,6 +17,7 @@ from data.parents.models import Relatives
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
+
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
     lid = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(),
