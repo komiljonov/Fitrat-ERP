@@ -21,10 +21,15 @@ CSRF_TRUSTED_ORIGINS = [
     "https://api.ilm.fitrat.sector-soft.ru",
     "https://ilm.fitrat.sector-soft.ru",
     "https://api.ft.sector-soft.ru",
+    "https://api.dev.sectorsoft.uz",
+    "https://dev.sectorsoft.uz",
+    "https://api.dev.sectorsoft.uz",
     "https://api.fitrat.sectorsoft.uz",
     "https://fitrat.sectorsoft.uz",
     "https://www.fitrat.sectorsoft.uz"
-    "https://api.dev.sector-soft.ru"
+    "https://api.dev.fitrat.sectorsoft.uz",
+    "https://dev.fitrat.sectorsoft.uz",
+    "https://api.dev.fitrat.sectorsoft.uz"
 ]
 
 INSTALLED_APPS = [
@@ -240,9 +245,13 @@ CORS_ALLOWED_ORIGINS = [
     "https://f.sector-soft.ru",
     "https://www.f.sector-soft.ru",
     "https://api.f.sector-soft.ru",
+    "https://api.dev.sectorsoft.uz",
+    "https://dev.sectorsoft.uz",
     "https://api.fitrat.sectorsoft.uz",
     "https://fitrat.sectorsoft.uz",
-    "https://www.fitrat.sectorsoft.uz"
+    "https://www.fitrat.sectorsoft.uz",
+    "https://api.dev.fitrat.sectorsoft.uz",
+    "https://dev.fitrat.sectorsoft.uz"
 ]
 
 CORS_ALLOW_METHODS = (

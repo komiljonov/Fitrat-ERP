@@ -26,7 +26,7 @@ services:
     volumes:
       - ./postgresql.conf:/etc/postgres-custom/postgresql.conf
       - ./pg_hba.conf:/etc/postgres-custom/pg_hba.conf
-      - postgres_data_fitrat1:/var/lib/postgresql/data
+      - ../db_data:/var/lib/postgresql/data
     command: postgres -c config_file=/etc/postgres-custom/postgresql.conf
 
   django:
@@ -41,6 +41,8 @@ services:
       - ./utils:/usr/src/app/utils
       - ./locales:/usr/src/app/locales
       - ./tg_bot:/usr/src/app/tg_bot
+      - ../media:/usr/src/app/media
+      - ../static:/usr/src/app/static
 
     ports:
       - "8001:8000"
