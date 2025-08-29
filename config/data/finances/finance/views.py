@@ -59,7 +59,7 @@ from data.student.groups.models import Group
 from data.finances.finance.choices import FinanceKindTypeChoices
 
 
-from openpyxl.styles import Alignment
+from openpyxl.styles import Alignment,Font
 from openpyxl.utils import get_column_letter
 
 
