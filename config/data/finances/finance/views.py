@@ -817,7 +817,7 @@ class FinanceExcel(APIView):
                     ),
                     (
                         finance.kind.name
-                        if finance
+                        if finance.kind
                         else ""
                         # "Kassa qabul qilish"
                         # if finance.kind.name == "CASHIER_ACCEPTANCE"
