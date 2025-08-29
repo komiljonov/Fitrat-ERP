@@ -59,6 +59,10 @@ from data.student.groups.models import Group
 from data.finances.finance.choices import FinanceKindTypeChoices
 
 
+from openpyxl.styles import Alignment
+from openpyxl.utils import get_column_letter
+
+
 class CasherListCreateAPIView(ListCreateAPIView):
     queryset = Casher.objects.all()
     serializer_class = CasherSerializer
@@ -724,6 +728,167 @@ class FinanceTeacher(ListAPIView):
         return Finance.objects.none()
 
 
+# class FinanceExcel(APIView):
+
+#     def get(self, request, *args, **kwargs):
+#         filial = request.GET.get("filial")
+#         casher_id = request.GET.get("cashier")
+#         casher_role = request.GET.get("casher_role")
+#         kind_id = request.GET.get("kind")
+#         action = request.GET.get("action")
+
+#         filters = Q()
+#         if filial:
+#             filters &= Q(casher__user__filial__id=filial)
+#         if casher_id:
+#             filters &= Q(casher__id=casher_id)
+#         if casher_role:
+#             filters &= Q(casher__role=casher_role)
+#         if kind_id:
+#             filters &= Q(kind__id=kind_id)
+#         if action:
+#             filters &= Q(action=action)
+
+#         finances = Finance.objects.filter(filters).exclude(
+#             Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+#         )
+
+#         start_date_str = request.GET.get("start_date")
+#         end_date_str = request.GET.get("end_date")
+
+#         if start_date_str and end_date_str:
+#             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+#             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+#             finances = finances.filter(
+#                 created_at__gte=start_date, created_at__lt=end_date + timedelta(days=1)
+#             )
+
+#         elif start_date_str:
+#             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+#             finances = finances.filter(
+#                 created_at__gte=start_date,
+#                 created_at__lt=start_date + timedelta(days=1) - timedelta(seconds=1),
+#             )
+
+#         # Create an Excel workbook
+#         workbook = openpyxl.Workbook()
+#         sheet = workbook.active
+#         sheet.title = "Finance Report"
+
+#         # Add headers
+#         headers = [
+#             "Cassa egasi",
+#             "Role",
+#             "To'lov turi",
+#             "Action",
+#             "Miqdor",
+#             "To'lov metodi",
+#             "Comment",
+#             "Yaratilgan vaqti",
+#         ]
+#         sheet.append(headers)
+
+#         # Add data
+#         total_amount = 0
+#         total_income = 0
+#         total_expense = 0
+#         for finance in finances:
+#             amount = finance.amount or 0
+
+#             # Subtract for expense, add for income
+#             if finance.action == "INCOME":
+#                 total_income += amount
+#                 total_amount += amount
+#             else:
+#                 total_expense -= amount
+#                 total_amount -= amount
+
+#             sheet.append(
+#                 [
+#                     finance.casher.name if finance.casher else "-",
+#                     (
+#                         "Asosiy kassa"
+#                         if finance.casher.role == "WEALTH"
+#                         else (
+#                             "Buxgalteriya kassa"
+#                             if finance.casher.role == "ACCOUNTANT"
+#                             else (
+#                                 "Filial kassa"
+#                                 if finance.casher.role == "ADMINISTRATOR"
+#                                 else ""
+#                             )
+#                         )
+#                     ),
+#                     (
+#                         finance.kind.name
+#                         if finance.kind
+#                         else ""
+#                         # "Kassa qabul qilish"
+#                         # if finance.kind.name == "CASHIER_ACCEPTANCE"
+#                         # else (
+#                         #     "Kassa topshirish"
+#                         #     if finance.kind.name == "CASHIER_HANDOVER"
+#                         #     else (
+#                         #         "Oylik maosh"
+#                         #         if finance.kind.name == "Salary"
+#                         #         else (
+#                         #             "Kurs to'lovi"
+#                         #             if finance.kind.name == "Course payment"
+#                         #             else (
+#                         #                 "1 dars uchun to'lov"
+#                         #                 if finance.kind.name == "Lesson payment"
+#                         #                 else (
+#                         #                     "Pul qaytarish"
+#                         #                     if finance.kind.name == "Money back"
+#                         #                     else (
+#                         #                         finance.kind.name
+#                         #                         if hasattr(finance.kind, "name")
+#                         #                         else str(finance.kind)
+#                         #                     )
+#                         #                 )
+#                         #             )
+#                         #         )
+#                         #     )
+#                         # )
+#                     ),
+#                     "Kirim" if finance.action == "INCOME" else "Xarajat",
+#                     amount,
+#                     (
+#                         "Naqt pul"
+#                         if finance.payment_method == "Cash"
+#                         else (
+#                             "Pul kuchirish"
+#                             if finance.payment_method == "Money_send"
+#                             else (
+#                                 "Karta orqali"
+#                                 if finance.payment_method == "Card"
+#                                 else (
+#                                     "Payme"
+#                                     if finance.payment_method == "Payme"
+#                                     else "Click"
+#                                 )
+#                             )
+#                         )
+#                     ),
+#                     finance.comment or "-",
+#                     finance.created_at.strftime("%d-%m-%Y %H:%M:%S"),
+#                 ]
+#             )
+
+#         # ✅ Add total row
+#         sheet.append([])
+#         sheet.append(["", "", "", "Jami Kirim:", total_income])
+#         sheet.append(["", "", "", "Jami Chiqim:", total_expense])
+#         sheet.append(["", "", "", "JAMI:", total_amount])
+
+#         response = HttpResponse(
+#             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+#         )
+#         response["Content-Disposition"] = 'attachment; filename="finance_report.xlsx"'
+#         workbook.save(response)
+#         return response
+
+
 class FinanceExcel(APIView):
 
     def get(self, request, *args, **kwargs):
@@ -733,6 +898,7 @@ class FinanceExcel(APIView):
         kind_id = request.GET.get("kind")
         action = request.GET.get("action")
 
+        # ---- filters ----
         filters = Q()
         if filial:
             filters &= Q(casher__user__filial__id=filial)
@@ -745,10 +911,15 @@ class FinanceExcel(APIView):
         if action:
             filters &= Q(action=action)
 
-        finances = Finance.objects.filter(filters).exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+        finances = (
+            Finance.objects.filter(filters)
+            .exclude(
+                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            )
+            .select_related("casher", "kind", "casher__user__filial")
         )
 
+        # ---- date range ----
         start_date_str = request.GET.get("start_date")
         end_date_str = request.GET.get("end_date")
 
@@ -756,9 +927,9 @@ class FinanceExcel(APIView):
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
             finances = finances.filter(
-                created_at__gte=start_date, created_at__lt=end_date + timedelta(days=1)
+                created_at__gte=start_date,
+                created_at__lt=end_date + timedelta(days=1),
             )
-
         elif start_date_str:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             finances = finances.filter(
@@ -766,12 +937,29 @@ class FinanceExcel(APIView):
                 created_at__lt=start_date + timedelta(days=1) - timedelta(seconds=1),
             )
 
-        # Create an Excel workbook
+        # ---- mappings to avoid nested if/else ----
+        role_map = {
+            "WEALTH": "Asosiy kassa",
+            "ACCOUNTANT": "Buxgalteriya kassa",
+            "ADMINISTRATOR": "Filial kassa",
+        }
+        payment_map = {
+            "Cash": "Naqt pul",
+            "Money_send": "Pul kuchirish",
+            "Card": "Karta orqali",
+            "Payme": "Payme",
+            "Click": "Click",
+        }
+        action_map = {
+            "INCOME": "Kirim",
+            "EXPENSE": "Xarajat",
+        }
+
+        # ---- workbook ----
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "Finance Report"
 
-        # Add headers
         headers = [
             "Cassa egasi",
             "Role",
@@ -784,99 +972,86 @@ class FinanceExcel(APIView):
         ]
         sheet.append(headers)
 
-        # Add data
+        # style header
+        for col in range(1, len(headers) + 1):
+            c = sheet.cell(row=1, column=col)
+            c.font = Font(bold=True)
+
+        # ---- data + totals ----
         total_amount = 0
         total_income = 0
         total_expense = 0
-        for finance in finances:
-            amount = finance.amount or 0
 
-            # Subtract for expense, add for income
+        for finance in finances:
+            amount = float(finance.amount or 0)
+
+            # running totals
             if finance.action == "INCOME":
                 total_income += amount
                 total_amount += amount
             else:
-                total_expense -= amount
+                total_expense -= amount  # keeping your original sign convention
                 total_amount -= amount
 
             sheet.append(
                 [
                     finance.casher.name if finance.casher else "-",
-                    (
-                        "Asosiy kassa"
-                        if finance.casher.role == "WEALTH"
-                        else (
-                            "Buxgalteriya kassa"
-                            if finance.casher.role == "ACCOUNTANT"
-                            else (
-                                "Filial kassa"
-                                if finance.casher.role == "ADMINISTRATOR"
-                                else ""
-                            )
-                        )
+                    role_map.get(getattr(finance.casher, "role", None), ""),
+                    (finance.kind.name if finance.kind else ""),
+                    action_map.get(finance.action, finance.action or ""),
+                    amount,  # keep numeric
+                    payment_map.get(
+                        finance.payment_method, finance.payment_method or ""
                     ),
-                    (
-                        finance.kind.name
-                        if finance.kind
-                        else ""
-                        # "Kassa qabul qilish"
-                        # if finance.kind.name == "CASHIER_ACCEPTANCE"
-                        # else (
-                        #     "Kassa topshirish"
-                        #     if finance.kind.name == "CASHIER_HANDOVER"
-                        #     else (
-                        #         "Oylik maosh"
-                        #         if finance.kind.name == "Salary"
-                        #         else (
-                        #             "Kurs to'lovi"
-                        #             if finance.kind.name == "Course payment"
-                        #             else (
-                        #                 "1 dars uchun to'lov"
-                        #                 if finance.kind.name == "Lesson payment"
-                        #                 else (
-                        #                     "Pul qaytarish"
-                        #                     if finance.kind.name == "Money back"
-                        #                     else (
-                        #                         finance.kind.name
-                        #                         if hasattr(finance.kind, "name")
-                        #                         else str(finance.kind)
-                        #                     )
-                        #                 )
-                        #             )
-                        #         )
-                        #     )
-                        # )
-                    ),
-                    "Kirim" if finance.action == "INCOME" else "Xarajat",
-                    amount,
-                    (
-                        "Naqt pul"
-                        if finance.payment_method == "Cash"
-                        else (
-                            "Pul kuchirish"
-                            if finance.payment_method == "Money_send"
-                            else (
-                                "Karta orqali"
-                                if finance.payment_method == "Card"
-                                else (
-                                    "Payme"
-                                    if finance.payment_method == "Payme"
-                                    else "Click"
-                                )
-                            )
-                        )
-                    ),
-                    finance.comment or "-",
+                    (finance.comment or "-"),
                     finance.created_at.strftime("%d-%m-%Y %H:%M:%S"),
                 ]
             )
 
-        # ✅ Add total row
+        # blank row + totals
         sheet.append([])
         sheet.append(["", "", "", "Jami Kirim:", total_income])
         sheet.append(["", "", "", "Jami Chiqim:", total_expense])
         sheet.append(["", "", "", "JAMI:", total_amount])
 
+        # ---- number format for the Miqdor column (keeps numeric + formulas safe) ----
+        amount_col_idx = headers.index("Miqdor") + 1  # 1-based column index
+        amount_col_letter = get_column_letter(amount_col_idx)
+        currency_fmt = (
+            '#,##0 "so\'m"'  # change to '#,##0.00 "so\'m"' if you need decimals
+        )
+
+        # Apply format from first data row (2) through last row (including totals)
+        for r in range(2, sheet.max_row + 1):
+            cell = sheet[f"{amount_col_letter}{r}"]
+            cell.number_format = currency_fmt
+            cell.alignment = Alignment(horizontal="right")
+
+        # Also right-align & bold the total labels
+        last_row = sheet.max_row
+        for r in range(last_row - 2, last_row + 1):
+            label_cell = sheet.cell(row=r, column=4)  # "Jami ..." labels
+            value_cell = sheet.cell(row=r, column=5)  # totals amount
+            label_cell.font = Font(bold=True)
+            value_cell.font = Font(bold=True)
+            value_cell.number_format = currency_fmt
+            value_cell.alignment = Alignment(horizontal="right")
+
+        # (Optional) a bit of readable width
+        width_map = {
+            1: 22,  # Cassa egasi
+            2: 18,  # Role
+            3: 22,  # To'lov turi
+            4: 12,  # Action
+            5: 16,  # Miqdor
+            6: 18,  # To'lov metodi
+            7: 40,  # Comment
+            8: 22,  # Yaratilgan vaqti
+        }
+        for idx, w in width_map.items():
+            sheet.column_dimensions[get_column_letter(idx)].width = w
+
+        # ---- response ----
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
