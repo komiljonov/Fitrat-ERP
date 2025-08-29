@@ -59,7 +59,7 @@ from data.student.groups.models import Group
 from data.finances.finance.choices import FinanceKindTypeChoices
 
 
-from openpyxl.styles import Alignment,Font
+from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 
 
@@ -916,7 +916,7 @@ class FinanceExcel(APIView):
             .exclude(
                 Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
             )
-            .select_related("casher", "kind", "casher__user__filial")
+            .select_related("casher", "kind")
         )
 
         # ---- date range ----
