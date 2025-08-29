@@ -21,6 +21,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://api.ilm.fitrat.sector-soft.ru",
     "https://ilm.fitrat.sector-soft.ru",
     "https://api.ft.sector-soft.ru",
+    "https://api.dev.sector-soft.ru"
 ]
 
 INSTALLED_APPS = [
