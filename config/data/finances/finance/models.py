@@ -100,7 +100,7 @@ class Finance(BaseModel):
 
     kind: "Kind | None" = models.ForeignKey(
         "finance.Kind",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="finances_kind",
         null=True,
         blank=True,
