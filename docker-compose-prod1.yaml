@@ -42,7 +42,11 @@ services:
     mem_limit: 900m
     mem_reservation: 512m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h 127.0.0.1"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h 127.0.0.1",
+        ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -140,7 +144,11 @@ services:
     mem_limit: 1g
     mem_reservation: 600m
     healthcheck:
-      test: ["CMD-SHELL", "celery -A root.celery inspect ping -d celery@$$HOSTNAME || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "celery -A root.celery inspect ping -d celery@$$HOSTNAME || exit 1",
+        ]
       interval: 30s
       timeout: 5s
       retries: 5
