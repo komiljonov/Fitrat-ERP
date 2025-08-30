@@ -42,7 +42,7 @@ class CreateAttendanceV2Serializer(serializers.Serializer):
 
     date = serializers.DateField(required=False, default=date.today)
 
-    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
+    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all())
 
     items = CreateAttendanceV2ItemSerializer(many=True)
 

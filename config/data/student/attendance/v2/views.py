@@ -49,7 +49,7 @@ class AttendanceCreateAPIView(APIView):
                     defaults=dict(reason=status, remarks=comment, repeated=repeated),
                 )
 
-                attendance.theme.set(theme)
+                attendance.theme.add(theme)
 
                 if created:
                     Homework_history.objects.create(
