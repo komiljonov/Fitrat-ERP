@@ -105,6 +105,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         att_date = data.get("date", timezone.now().date())
 
+        print(att_date)
+
         # today = now().date()
 
         if not student and not lid:
