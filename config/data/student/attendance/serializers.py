@@ -22,7 +22,7 @@ from django.utils import timezone
 
 class AttendanceSerializer(serializers.ModelSerializer):
 
-    date = serializers.DateField(required=False)
+    date = serializers.DateField(required=False,default=timezone.now)
 
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
 
