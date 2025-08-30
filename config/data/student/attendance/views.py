@@ -28,6 +28,10 @@ class AttendanceList(ListCreateAPIView):
     serializer_class = AttendanceSerializer
     permission_classes = [IsAuthenticated]
 
+    def post(self, request, *args, **kwargs):
+        print(request.data)
+        return super().post(request, *args, **kwargs)
+
     def get_queryset(self):
 
         start_date = self.request.GET.get("start_date")
