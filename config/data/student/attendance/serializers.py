@@ -93,6 +93,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     def validate_date(self, value):
         # If no value passed, set today
+        
+        print("sdoifjgdosifjosdijf")
+
         return value or timezone.now().date()
 
     def validate(self, data):
@@ -262,6 +265,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         rep["theme"] = ThemeSerializer(
             instance.theme, context=self.context, many=True
         ).data
+
         if instance.lid:
             rep["lid"] = LidSerializer(instance.lid, context=self.context).data
         else:
