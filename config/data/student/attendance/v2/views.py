@@ -67,7 +67,7 @@ class AttendanceCreateAPIView(APIView):
                         ball=0,
                     )
 
-                    if theme.course.subject.is_langauge:
+                    if theme.course.subject.is_language:
 
                         Mastering.objects.create(
                             student=student,
