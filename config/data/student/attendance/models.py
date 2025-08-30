@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Q
 
 
-from config.data.student.attendance.choices import AttendanceReasonChoices
+from data.student.attendance.choices import AttendanceReasonChoices
 from data.command.models import BaseModel
 
 if TYPE_CHECKING:
