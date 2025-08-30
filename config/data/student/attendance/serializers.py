@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import datetime, time
 
 from django.utils.timezone import now, make_aware
 from rest_framework import serializers
@@ -14,6 +14,8 @@ from data.student.subject.serializers import ThemeSerializer
 from data.lid.new_lid.models import Lid
 from data.lid.new_lid.serializers import LidSerializer
 from data.parents.models import Relatives
+from django.db import transaction
+
 
 from django.utils import timezone
 
@@ -23,6 +25,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
     date = serializers.DateField(required=False)
 
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
+
     lid = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(),
         allow_null=True,
@@ -99,7 +102,10 @@ class AttendanceSerializer(serializers.ModelSerializer):
         student = data.get("student", None)
         lid = data.get("lid", None)
         group = data.get("group", None)
-        today = now().date()
+
+        att_date = data.get("date", timezone.now().date())
+
+        # today = now().date()
 
         if not student and not lid:
             raise serializers.ValidationError(
@@ -108,17 +114,18 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         instance_id = self.instance.id if self.instance else None
 
-        # Define start and end of day
-        start_datetime = make_aware(datetime.combine(today, time.min))
-        end_datetime = make_aware(datetime.combine(today, time.max))
+        # # Define start and end of day
+        # start_datetime = make_aware(datetime.combine(today, time.min))
+        # end_datetime = make_aware(datetime.combine(today, time.max))
 
         # Check if attendance exists for student
         if student:
             existing_attendance = (
                 Attendance.objects.filter(
+                    date=att_date,
                     student=student,
                     group=group,
-                    created_at__range=(start_datetime, end_datetime),
+                    # created_at__range=(start_datetime, end_datetime),
                 )
                 .exclude(id=instance_id)
                 .exists()
@@ -133,9 +140,10 @@ class AttendanceSerializer(serializers.ModelSerializer):
         if lid:
             existing_attendance = (
                 Attendance.objects.filter(
+                    date=att_date,
                     lid=lid,
                     group=group,
-                    created_at__range=(start_datetime, end_datetime),
+                    # created_at__range=(start_datetime, end_datetime),
                 )
                 .exclude(id=instance_id)
                 .exists()
@@ -149,7 +157,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        from django.db import transaction
 
         print(validated_data)
         # Extract themes from validated_data before creating the instance
