@@ -62,6 +62,7 @@ class AttendanceCreateAPIView(APIView):
 
                     mastering = Mastering.objects.create(
                         student=student,
+                        lid=lead,
                         theme=theme,
                         test=quiz,
                         ball=0,
@@ -71,6 +72,7 @@ class AttendanceCreateAPIView(APIView):
 
                         Mastering.objects.create(
                             student=student,
+                            lid=lead,
                             theme=theme,
                             test=None,
                             choice="Speaking",
