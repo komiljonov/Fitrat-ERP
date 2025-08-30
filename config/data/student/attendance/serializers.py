@@ -1,7 +1,12 @@
+from datetime import date
+
+from django.db import transaction
+from django.utils import timezone
 from django.utils.timezone import now
+
+
 from rest_framework import serializers
 
-from .models import Attendance
 from data.student.homeworks.models import Homework_history, Homework
 from data.student.mastering.models import Mastering
 from data.student.quiz.models import Quiz
@@ -12,11 +17,8 @@ from data.student.subject.serializers import ThemeSerializer
 from data.lid.new_lid.models import Lid
 from data.lid.new_lid.serializers import LidSerializer
 from data.parents.models import Relatives
-from django.db import transaction
-from datetime import date
 
-
-from django.utils import timezone
+from .models import Attendance
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -29,6 +31,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         queryset=Lid.objects.all(),
         allow_null=True,
     )
+
     student = serializers.PrimaryKeyRelatedField(
         queryset=Student.objects.all(),
         allow_null=True,

@@ -46,19 +46,24 @@ class Homework_history(BaseModel):
     homework: "Homework" = models.ForeignKey(
         "homeworks.Homework", on_delete=models.CASCADE, related_name="homeworks_history"
     )
+
     student: "Student" = models.ForeignKey(
         "student.Student",
         on_delete=models.CASCADE,
         related_name="student_homeworks_history",
     )
+
     status = models.CharField(
         choices=[("Passed", "Passed"), ("Failed", "Failed"), ("Retake", "Retake")],
         max_length=20,
         null=True,
         blank=True,
     )
+
     is_active = models.BooleanField(default=False)
+
     mark = models.IntegerField(default=0)
+
     updater: "CustomUser" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,

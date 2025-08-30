@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Q
 
 
+from config.data.student.attendance.choices import AttendanceReasonChoices
 from data.command.models import BaseModel
 
 if TYPE_CHECKING:
@@ -49,21 +50,21 @@ class Attendance(BaseModel):
         related_name="attendance_student",
     )
 
-    REASON_CHOICES = [
-        ("IS_PRESENT", "Is Present"),
-        ("REASONED", "Sababli"),
-        ("UNREASONED", "Sababsiz"),
-        ("HOLIDAY", "Dam olish kuni"),
-    ]
+    # REASON_CHOICES = [
+    #     ("IS_PRESENT", "Is Present"),
+    #     ("REASONED", "Sababli"),
+    #     ("UNREASONED", "Sababsiz"),
+    #     ("HOLIDAY", "Dam olish kuni"),
+    # ]
 
     reason = models.CharField(
         max_length=20,
-        choices=REASON_CHOICES,
-        default="UNREASONED",
+        choices=AttendanceReasonChoices.CHOICES,
+        default=AttendanceReasonChoices.UNREASONED,
         help_text="Attendance reason (Sababli/Sababsiz)",
     )
 
-    remarks: str = models.TextField(blank=True, null=True)
+    remarks: str = models.TextField(blank=True, null=True, help_text="Comment")
 
     amount = models.CharField(
         max_length=50,
