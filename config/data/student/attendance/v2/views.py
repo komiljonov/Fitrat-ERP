@@ -52,12 +52,19 @@ class AttendanceCreateAPIView(APIView):
                 attendance.theme.add(theme)
 
                 if created:
-                    Homework_history.objects.create(
-                        homework=homework, student=student, status="Passed", mark=0
-                    )
+                    if homework:
+                        Homework_history.objects.create(
+                            homework=homework,
+                            student=student,
+                            status="Passed",
+                            mark=0,
+                        )
 
                     mastering = Mastering.objects.create(
-                        student=student, theme=theme, test=quiz, ball=0
+                        student=student,
+                        theme=theme,
+                        test=quiz,
+                        ball=0,
                     )
 
                     if theme.course.subject.is_langauge:
