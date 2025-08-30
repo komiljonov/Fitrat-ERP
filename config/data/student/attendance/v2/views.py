@@ -39,7 +39,7 @@ class AttendanceCreateAPIView(APIView):
                 lead = item["lead"]
 
                 status = item["status"]
-                comment = item["comment"]
+                comment = item.get("comment")
 
                 attendance, created = Attendance.objects.update_or_create(
                     student=student,
