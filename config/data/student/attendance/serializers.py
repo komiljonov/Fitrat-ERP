@@ -1,6 +1,4 @@
-from datetime import datetime, time
-
-from django.utils.timezone import now, make_aware
+from django.utils.timezone import now
 from rest_framework import serializers
 
 from .models import Attendance
@@ -194,7 +192,10 @@ class AttendanceSerializer(serializers.ModelSerializer):
                             quiz = Quiz.objects.filter(homework=homework).first()
 
                             mastering = Mastering.objects.create(
-                                student=student, theme=homework.theme, test=quiz, ball=0
+                                student=student,
+                                theme=homework.theme,
+                                test=quiz,
+                                ball=0,
                             )
 
                             if theme.course.subject.is_language == True:

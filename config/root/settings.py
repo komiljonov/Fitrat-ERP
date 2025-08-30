@@ -26,10 +26,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://api.dev.sectorsoft.uz",
     "https://api.fitrat.sectorsoft.uz",
     "https://fitrat.sectorsoft.uz",
-    "https://www.fitrat.sectorsoft.uz"
-    "https://api.dev.fitrat.sectorsoft.uz",
+    "https://www.fitrat.sectorsoft.uz" "https://api.dev.fitrat.sectorsoft.uz",
     "https://dev.fitrat.sectorsoft.uz",
-    "https://api.dev.fitrat.sectorsoft.uz"
+    "https://api.dev.fitrat.sectorsoft.uz",
 ]
 
 INSTALLED_APPS = [
@@ -41,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # "debug_toolbar",
+    "api",
     # Installed apps
     "data.logs",
     "data.account",
@@ -251,7 +251,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://fitrat.sectorsoft.uz",
     "https://www.fitrat.sectorsoft.uz",
     "https://api.dev.fitrat.sectorsoft.uz",
-    "https://dev.fitrat.sectorsoft.uz"
+    "https://dev.fitrat.sectorsoft.uz",
 ]
 
 CORS_ALLOW_METHODS = (
