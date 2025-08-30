@@ -944,7 +944,7 @@ class FinanceExcel(APIView):
             "ADMINISTRATOR": "Filial kassa",
         }
         payment_map = {
-            "Cash": "Naqt pul",
+            "Cash": "Naqd pul",
             "Money_send": "Pul kuchirish",
             "Card": "Karta orqali",
             "Payme": "Payme",
@@ -961,12 +961,12 @@ class FinanceExcel(APIView):
         sheet.title = "Finance Report"
 
         headers = [
-            "Cassa egasi",
+            "Kassa egasi",
             "Role",
             "To'lov turi",
             "Action",
             "Miqdor",
-            "To'lov metodi",
+            "To'lov usuli",
             "Comment",
             "Yaratilgan vaqti",
         ]

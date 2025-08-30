@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import date, datetime, time
 
 from django.utils.timezone import now, make_aware
 from rest_framework import serializers
@@ -15,8 +15,12 @@ from data.lid.new_lid.models import Lid
 from data.lid.new_lid.serializers import LidSerializer
 from data.parents.models import Relatives
 
+from django.utils import timezone
+
 
 class AttendanceSerializer(serializers.ModelSerializer):
+
+    date = serializers.DateField(required=False)
 
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
     lid = serializers.PrimaryKeyRelatedField(
@@ -82,6 +86,10 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     def get_teacher(self, obj):
         return obj.group.teacher.full_name
+
+    def validate_date(self, value):
+        # If no value passed, set today
+        return value or timezone.now().date()
 
     def validate(self, data):
         """

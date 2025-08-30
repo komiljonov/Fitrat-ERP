@@ -110,7 +110,7 @@ class Finance(BaseModel):
         choices=[
             ("Click", "Click"),
             ("Payme", "Payme"),
-            ("Cash", "Naqt pul"),
+            ("Cash", "Naqd pul"),
             ("Card", "Card"),
             ("Money_send", "Pul o'tkazish"),
             ("PLASTIC", "Plastik"),
