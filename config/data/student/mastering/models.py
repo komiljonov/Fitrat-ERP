@@ -19,18 +19,21 @@ class Mastering(BaseModel):
         blank=True,
         related_name="mastering_theme",
     )
+
     lid: "Lid" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
+
     student: "Student" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
+
     test: "Quiz" = models.ForeignKey(
         "quiz.Quiz",
         on_delete=models.SET_NULL,
@@ -53,7 +56,7 @@ class Mastering(BaseModel):
         blank=True,
     )
 
-    mock: "MockExam" = models.ForeignKey(
+    mock: "MockExam | None" = models.ForeignKey(
         "exam_results.MockExam",
         on_delete=models.SET_NULL,
         null=True,

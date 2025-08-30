@@ -48,6 +48,7 @@ class Lid(BaseModel):
         choices=[
             ("SCHOOL", "School"),
             ("UNIVERSITY", "University"),
+            ("MATURE", "Mature"),
             ("NONE", "None"),
         ],
         default="NONE",
