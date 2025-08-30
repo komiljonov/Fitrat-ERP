@@ -15,6 +15,7 @@ from data.lid.new_lid.models import Lid
 from data.lid.new_lid.serializers import LidSerializer
 from data.parents.models import Relatives
 from django.db import transaction
+from datetime import date
 
 
 from django.utils import timezone
@@ -22,7 +23,7 @@ from django.utils import timezone
 
 class AttendanceSerializer(serializers.ModelSerializer):
 
-    date = serializers.DateField(required=False,default=timezone.now)
+    date = serializers.DateField(required=False, default=date.today)
 
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
 
@@ -93,7 +94,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     def validate_date(self, value):
         # If no value passed, set today
-        
+
         print("sdoifjgdosifjosdijf")
 
         return value or timezone.now().date()
