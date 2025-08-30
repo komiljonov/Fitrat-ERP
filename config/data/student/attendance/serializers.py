@@ -40,6 +40,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         model = Attendance
         fields = [
             "id",
+            "date",
             "theme",
             "repeated",
             "group",
