@@ -24,7 +24,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - "../fitrat_data:/var/lib/postgresql/data"
+      - "../db_data:/var/lib/postgresql/data"
 
   django:
     container_name: "django_fitrat"
