@@ -512,7 +512,13 @@ class ExportLidToExcelAPIView(APIView):
                     (
                         "Maktab"
                         if student.edu_class == "SCHOOL"
-                        else "Universitet" if student.edu_class == "UNIVERSITY" else ""
+                        else (
+                            "Universitet"
+                            if student.edu_class == "UNIVERSITY"
+                            else (
+                                "Voyaga yetgan" if student.edu_class == "MATURE" else ""
+                            )
+                        )
                     ),
                     student.subject.name if student.subject else "",
                     student.ball,

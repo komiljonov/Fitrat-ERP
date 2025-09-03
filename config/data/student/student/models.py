@@ -64,6 +64,13 @@ class Student(BaseModel):
         help_text="Education level at school if student studies at school",
     )
 
+    edu_organization = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Education organization, school or university or work.",
+    )
+
     edu_level = models.CharField(null=True, blank=True, max_length=100)
 
     subject: "Subject | None" = models.ForeignKey(

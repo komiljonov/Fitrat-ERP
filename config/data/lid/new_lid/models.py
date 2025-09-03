@@ -44,6 +44,7 @@ class Lid(BaseModel):
         choices=language_choise, default="UZB", max_length=100
     )
     student_type = models.CharField(max_length=100, default="student")
+    
     edu_class = models.CharField(
         choices=[
             ("SCHOOL", "School"),
