@@ -80,6 +80,7 @@ class LidSerializer(serializers.ModelSerializer):
             "ordered_date",
             "edu_class",
             "edu_level",
+            "edu_organization",
             "subject",
             "ball",
             "filial",
