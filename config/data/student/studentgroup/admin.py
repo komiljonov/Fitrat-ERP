@@ -5,13 +5,13 @@ from .models import StudentGroup, SecondaryStudentGroup
 # Register your models here.
 @admin.register(StudentGroup)
 class StudentGroupAdmin(admin.ModelAdmin):
-    list_display = ('group','student','lid')
-    search_fields = ('group','student','lid')
-    list_filter = ('group',"group__teacher","is_archived","student")
+    list_display = ("group", "student", "lid", "is_archived")
+    search_fields = ("group", "student", "lid")
+    list_filter = ("group", "group__teacher", "is_archived", "student")
 
 
 @admin.register(SecondaryStudentGroup)
 class StudentGroupAdmin(admin.ModelAdmin):
-    list_display = ('group__name','student__first_name','lid__first_name')
-    search_fields = ('group__name','student__first_name','lid__first_name')
-    list_filter = ('group__name',)
+    list_display = ("group__name", "student__first_name", "lid__first_name")
+    search_fields = ("group__name", "student__first_name", "lid__first_name")
+    list_filter = ("group__name",)
