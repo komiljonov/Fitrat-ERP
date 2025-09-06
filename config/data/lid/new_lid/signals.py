@@ -75,13 +75,15 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
     provided `is_student=True` and `phone_number` is available.
     """
     if not created:
-        if instance.lid_stage_type == "NEW_LID":
-            if instance.lid_stages == "YANGI_LEAD":
-                instance.lid_stages = "KUTULMOQDA"
+        # if instance.lid_stage_type == "NEW_LID":
+
+        #     if instance.lid_stages == "YANGI_LEAD":
+        #         instance.lid_stages = "KUTULMOQDA"
 
         if instance.lid_stage_type == "ORDERED_LID":
             if instance.ordered_date == None:
                 instance.ordered_date = datetime.now()
+
             if instance.ordered_stages == "YANGI_BUYURTMA":
                 instance.ordered_stages = "KUTULMOQDA"
 

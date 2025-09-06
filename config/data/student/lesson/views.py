@@ -133,17 +133,18 @@ class FistLessonView(ListCreateAPIView):
 
             if lead.first_lesson_created_at is None:
                 lead.first_lesson_created_at = timezone.now()
-
-            lead.save()
+                lead.save()
 
             group = lesson_serializer.validated_data.get("group")
 
             if group:
+
                 if StudentGroup.objects.filter(group=group, lid=lead).exists():
                     return Response(
                         {"error": "This lead is already assigned to this group."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
+
                 if StudentGroup.objects.filter(
                     group=group,
                     student__phone=lead.phone_number,
