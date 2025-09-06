@@ -280,7 +280,18 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         if instance.student:
             rep["student"] = StudentSerializer(
-                instance.student, context=self.context
+                instance.student,
+                context=self.context,
+                include_only=[
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "middle_name",
+                    "service_manager",
+                    "group",
+                    "balance",
+                    "sales_manager",
+                ],
             ).data
 
         if instance.group:
