@@ -98,19 +98,19 @@ class SecondaryStudentGroup(BaseModel):
         verbose_name = "Secondary Add group"
         verbose_name_plural = "Secondary Add group"
 
-        constraints = [
-            # No duplicate active student in the same group
-            models.UniqueConstraint(
-                fields=["group", "student"],
-                name="uniq_active_student_in_secondary_group",
-                condition=Q(student__isnull=False, is_archive=False),
-                # deferrable=models.Deferrable.DEFERRED,  # optional but nice for bulk ops
-            ),
-            # No duplicate active lid in the same group
-            models.UniqueConstraint(
-                fields=["group", "lid"],
-                name="uniq_active_lid_in_secondary_group",
-                condition=Q(lid__isnull=False, is_archive=False),
-                # deferrable=models.Deferrable.DEFERRED,
-            ),
-        ]
+        # constraints = [
+        #     # No duplicate active student in the same group
+        #     models.UniqueConstraint(
+        #         fields=["group", "student"],
+        #         name="uniq_active_student_in_secondary_group",
+        #         condition=Q(student__isnull=False, is_archive=False),
+        #         # deferrable=models.Deferrable.DEFERRED,  # optional but nice for bulk ops
+        #     ),
+        #     # No duplicate active lid in the same group
+        #     models.UniqueConstraint(
+        #         fields=["group", "lid"],
+        #         name="uniq_active_lid_in_secondary_group",
+        #         condition=Q(lid__isnull=False, is_archive=False),
+        #         # deferrable=models.Deferrable.DEFERRED,
+        #     ),
+        # ]
