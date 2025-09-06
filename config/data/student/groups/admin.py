@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from data.student.groups.models import Group, Room, SecondaryGroup
+from data.student.groups.models import Day, Group, Room, SecondaryGroup
 
 
 # Register your models here.
@@ -33,7 +33,9 @@ class SecondaryGroupAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(admin.ModelAdmin)
+@admin.register(Day)
 class DayAdmin(admin.ModelAdmin):
 
     list_display = ["name", "display_name"]
+
+    model = Day
