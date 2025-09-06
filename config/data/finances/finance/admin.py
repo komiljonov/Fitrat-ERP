@@ -30,7 +30,7 @@ class FinansAdmin(admin.ModelAdmin):
         "action",
         "kind",
     )
-    list_filter = ("action", "kind", "filial", "student")
+    list_filter = ("stuff", "action", "kind", "filial", "student")
 
 
 @admin.register(SaleStudent)
