@@ -9,6 +9,12 @@ from data.command.models import BaseModel
 
 
 class Employee_attendance(BaseModel):
+    """
+    Hodimlarning umumiy kunlik davomat ma'lumoti.
+
+    Ofisda, Ketgan, kelmadi ma'lumotlar uchun
+    """
+
     employee: "CustomUser" = models.ForeignKey(
         "account.CustomUser",
         to_field="second_user",
@@ -19,7 +25,8 @@ class Employee_attendance(BaseModel):
     )
 
     attendance: "Stuff_Attendance" = models.ManyToManyField(
-        "Stuff_Attendance", related_name="employee_full_attendance"
+        "Stuff_Attendance",
+        related_name="employee_full_attendance",
     )
 
     status = models.CharField(
@@ -39,6 +46,12 @@ class Employee_attendance(BaseModel):
 
 
 class Stuff_Attendance(BaseModel):
+    """
+    Hodimlarning har bitta kirgani va chiqgani haqidagi ma'lumot.
+
+    Qachon kirdi, qachon chiqdi digan ma'lumotlari.
+    """
+
     employee: "CustomUser" = models.ForeignKey(
         "account.CustomUser",
         to_field="second_user",
@@ -106,9 +119,13 @@ class Stuff_Attendance(BaseModel):
 
 
 class UserTimeLine(BaseModel):
+
     user: "CustomUser" = models.ForeignKey(
-        "account.CustomUser", on_delete=models.CASCADE, related_name="user_timeline"
+        "account.CustomUser",
+        on_delete=models.CASCADE,
+        related_name="user_timeline",
     )
+
     day = models.CharField(
         choices=[
             ("Monday", "Monday"),

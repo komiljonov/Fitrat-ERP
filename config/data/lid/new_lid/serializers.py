@@ -131,7 +131,7 @@ class LidSerializer(serializers.ModelSerializer):
         ]
 
     def get_sales(self, obj):
-        sales = SaleStudent.objects.filter(lid__id=obj.id)
+        sales = SaleStudent.objects.filter(lid_id=obj.id)
         return [
             {
                 "id": sale.sale.id,

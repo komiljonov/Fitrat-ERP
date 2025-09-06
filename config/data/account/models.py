@@ -11,9 +11,13 @@ from data.upload.models import File
 
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     username = None
+
     files: "File" = models.ManyToManyField(
-        "upload.File", blank=True, related_name="account_files"
+        "upload.File",
+        blank=True,
+        related_name="account_files",
     )
 
     second_user = models.CharField(max_length=100, unique=True, null=True, blank=True)
@@ -35,7 +39,10 @@ class CustomUser(AbstractUser):
     calculate_bonus = models.BooleanField(default=False)
 
     photo: "File" = models.ForeignKey(
-        "upload.File", on_delete=models.SET_NULL, blank=True, null=True
+        "upload.File",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
     )
 
     date_of_birth = models.DateField(blank=True, null=True)
@@ -65,7 +72,9 @@ class CustomUser(AbstractUser):
     role = models.CharField(choices=ROLE_CHOICES, max_length=30, default="DIRECTOR")
 
     balance = models.DecimalField(
-        max_digits=12, decimal_places=2, default=Decimal("0.00")
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
     )
 
     salary = models.FloatField(default=0)

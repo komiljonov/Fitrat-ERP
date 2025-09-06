@@ -29,6 +29,8 @@ class Room(BaseModel):
 class Day(BaseModel):
     name = models.CharField(max_length=100, unique=True)
 
+    display_name = models.CharField(max_length=255)
+
     def __str__(self):
         return self.name
 
@@ -91,7 +93,7 @@ class Group(BaseModel):
     )
     price = models.FloatField(default=0, null=True, blank=True)
 
-    scheduled_day_type: "Day" = models.ManyToManyField(
+    scheduled_day_type: "models.ManyToManyField[Day]" = models.ManyToManyField(
         "groups.Day"
     )  # Correct Many-to-ManyField definition
 
