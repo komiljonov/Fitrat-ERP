@@ -37,7 +37,7 @@ from ..finances.compensation.models import (
     Asos,
 )
 from ..lid.archived.models import Archived
-from ..lid.new_lid.serializers import LidSerializer
+from ..lid.new_lid.serializers import LeadSerializer
 from ..results.models import Results
 from ..student.attendance.models import Attendance
 from ..student.lesson.models import FirstLLesson
@@ -493,7 +493,7 @@ class DashboardSecondView(APIView):
         data = {
             "lids": lid.count(),
             "archived_lid": archived_lid.count(),
-            "archive_lid_res": LidSerializer(lid, many=True).data,
+            "archive_lid_res": LeadSerializer(lid, many=True).data,
             "orders": orders.count(),
             "orders_archived": orders_archived.count(),
             "first_lesson": first_lesson.count(),

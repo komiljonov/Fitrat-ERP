@@ -17,7 +17,7 @@ from data.student.student.models import Student
 from data.student.student.serializers import StudentSerializer
 from data.account.serializers import UserSerializer
 from data.lid.new_lid.models import Lid
-from data.lid.new_lid.serializers import LidSerializer
+from data.lid.new_lid.serializers import LeadSerializer
 
 
 class StudentsGroupSerializer(serializers.ModelSerializer):
@@ -195,7 +195,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             rep.pop("group", None)
 
         if instance.lid:
-            rep["lid"] = LidSerializer(instance.lid, context=self.context).data
+            rep["lid"] = LeadSerializer(instance.lid, context=self.context).data
         else:
             rep.pop("lid", None)
 
@@ -228,7 +228,7 @@ class StudentGroupMixSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         # rep['group'] = GroupSerializer(instance.group).data
         rep["student"] = StudentSerializer(instance.student).data
-        rep["lid"] = LidSerializer(instance.lid).data
+        rep["lid"] = LeadSerializer(instance.lid).data
         return rep
 
 
@@ -292,7 +292,7 @@ class SecondaryStudentsGroupSerializer(serializers.ModelSerializer):
             instance.group, context=self.context
         ).data
         rep["lid"] = (
-            LidSerializer(instance.lid, context=self.context).data
+            LeadSerializer(instance.lid, context=self.context).data
             if instance.lid
             else None
         )

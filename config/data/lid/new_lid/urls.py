@@ -2,7 +2,7 @@ from django.urls import path
 
 from .pdf_generater import ContractGenerateAPIView
 from .views import (
-    LidListCreateView,
+    LeadListCreateView,
     LidRetrieveUpdateDestroyView,
     LidListNoPG,
     ExportLidToExcelAPIView,
@@ -13,7 +13,7 @@ from .views import (
 from .webhook import LidWebhook
 
 urlpatterns = [
-    path("", LidListCreateView.as_view(), name="lid_list_create"),
+    path("", LeadListCreateView.as_view(), name="lid_list_create"),
     path("<uuid:pk>", LidRetrieveUpdateDestroyView.as_view(), name="lid_retrieve"),
     path("no-pg/", LidListNoPG.as_view(), name="lid_list_pg"),
     path("excel/", ExportLidToExcelAPIView.as_view(), name="lid_list_excel"),

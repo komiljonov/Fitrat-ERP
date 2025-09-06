@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from data.account.models import CustomUser
 from data.lid.new_lid.models import Lid
-from data.lid.new_lid.serializers import LidSerializer
+from data.lid.new_lid.serializers import LeadSerializer
 from data.student.student.models import Student
 from data.student.student.serializers import StudentSerializer
 from data.tasks.models import Task
@@ -129,7 +129,7 @@ class TaskSerializer(serializers.ModelSerializer):
         )
 
         representation["lid"] = (
-            LidSerializer(instance.lid).data if instance.lid else None
+            LeadSerializer(instance.lid).data if instance.lid else None
         )
 
         representation["student"] = (

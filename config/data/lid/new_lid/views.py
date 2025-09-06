@@ -28,7 +28,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Lid
-from .serializers import LidSerializer
+from .serializers import LeadSerializer
 from data.lid.archived.models import Archived
 from data.student.lesson.models import FirstLLesson
 from datetime import datetime, timedelta
@@ -40,8 +40,8 @@ class B(PageNumberPagination):
     max_page_size = 100
 
 
-class LidListCreateView(ListCreateAPIView):
-    serializer_class = LidSerializer
+class LeadListCreateView(ListCreateAPIView):
+    serializer_class = LeadSerializer
     pagination_class = B
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -120,15 +120,15 @@ class LidListCreateView(ListCreateAPIView):
         lid_stage_type = self.request.GET.get("lid_stage_type")
         no_first_lesson = self.request.GET.get("no_first_lesson")
         ordered_stages = self.request.GET.get("ordered_stages")
-        lid_stages = self.request.GET.get("lid_stages")
+        lead_stages = self.request.GET.get("lid_stages")
         marketing_channel = self.request.GET.get("marketing_channel")
 
         order_by = self.request.GET.get("order_by")
 
         if marketing_channel:
-            queryset = queryset.filter(marketing_channel__id=marketing_channel)
-        if lid_stages:
-            queryset = queryset.filter(lid_stages=lid_stages)
+            queryset = queryset.filter(marketing_channel_id=marketing_channel)
+        if lead_stages:
+            queryset = queryset.filter(lid_stages=lead_stages)
         if ordered_stages:
             queryset = queryset.filter(ordered_stages=ordered_stages)
         if no_first_lesson:
@@ -141,7 +141,7 @@ class LidListCreateView(ListCreateAPIView):
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if channel:
-            queryset = queryset.filter(marketing_channel__id=channel)
+            queryset = queryset.filter(marketing_channel_id=channel)
 
         if service_manager:
             queryset = queryset.filter(service_manager_id=service_manager)
@@ -202,30 +202,31 @@ class LidListCreateView(ListCreateAPIView):
                 created_at__gte=start_datetime, created_at__lt=end_datetime
             )
 
-        if order_by:
-            if order_by in ["order_index", "-order_index"]:
-                queryset = queryset.annotate(
-                    order_index=Case(
-                        When(lid_stages="YANGI_LEAD", then=1),
-                        default=0,
-                        output_field=IntegerField(),
-                    )
-                ).order_by(
-                    order_by
-                )  # '-' if you want YANGI_LEAD first
+        # if order_by:
+        # if order_by in ["order_index", "-order_index"]:
+        queryset = queryset.annotate(
+            order_index=Case(
+                When(lid_stages="YANGI_LEAD", then=1),
+                default=0,
+                output_field=IntegerField(),
+            )
+        ).order_by(
+            # order_by
+            "-order_index"
+        )  # '-' if you want YANGI_LEAD first
 
         return queryset
 
 
 class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
-    serializer_class = LidSerializer
+    serializer_class = LeadSerializer
     queryset = Lid.objects.all()
     permission_classes = [IsAuthenticated]
 
 
 class LidListNoPG(ListAPIView):
     queryset = Lid.objects.all()
-    serializer_class = LidSerializer
+    serializer_class = LeadSerializer
     pagination_class = None
 
     def get_queryset(self):
@@ -274,7 +275,7 @@ class LidListNoPG(ListAPIView):
 
 
 class FirstLessonCreate(CreateAPIView):
-    serializer_class = LidSerializer
+    serializer_class = LeadSerializer
     queryset = Lid.objects.all()
     permission_classes = [IsAuthenticated]
 
@@ -895,7 +896,7 @@ class BulkUpdate(APIView):
         if not data:
             raise ValidationError("No lids data provided.")
 
-        serializer = LidSerializer()
+        serializer = LeadSerializer()
 
         try:
             updated_lids = serializer.update_bulk_lids(data)
@@ -908,7 +909,7 @@ class BulkUpdate(APIView):
 
 
 class LidStatistics(ListAPIView):
-    serializer_class = LidSerializer
+    serializer_class = LeadSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 

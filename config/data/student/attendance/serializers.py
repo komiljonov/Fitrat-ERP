@@ -15,7 +15,7 @@ from data.student.student.serializers import StudentSerializer
 from data.student.subject.models import Theme
 from data.student.subject.serializers import ThemeSerializer
 from data.lid.new_lid.models import Lid
-from data.lid.new_lid.serializers import LidSerializer
+from data.lid.new_lid.serializers import LeadSerializer
 from data.parents.models import Relatives
 
 from .models import Attendance
@@ -272,7 +272,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         ).data
 
         if instance.lid:
-            rep["lid"] = LidSerializer(instance.lid, context=self.context).data
+            rep["lid"] = LeadSerializer(instance.lid, context=self.context).data
         else:
             rep.pop("lid", None)
 
@@ -395,7 +395,7 @@ class AttendanceBulkSerializer(serializers.ModelSerializer):
             many=True,
         ).data
         if instance.lid:
-            rep["lid"] = LidSerializer(instance.lid, context=self.context).data
+            rep["lid"] = LeadSerializer(instance.lid, context=self.context).data
         else:
             rep.pop("lid", None)
 

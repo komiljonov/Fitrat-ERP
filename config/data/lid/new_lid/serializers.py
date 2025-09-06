@@ -20,7 +20,7 @@ from data.upload.serializers import FileUploadSerializer
 from .models import Lid
 
 
-class LidSerializer(serializers.ModelSerializer):
+class LeadSerializer(serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(
         queryset=File.objects.all(),
         allow_null=True,
@@ -119,7 +119,7 @@ class LidSerializer(serializers.ModelSerializer):
                 "You cannot use 'remove_fields' and 'include_only' at the same time."
             )
 
-        super(LidSerializer, self).__init__(*args, **kwargs)
+        super(LeadSerializer, self).__init__(*args, **kwargs)
 
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(lid__id=obj.id)

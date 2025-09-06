@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from data.account.models import CustomUser
 from data.lid.new_lid.models import Lid
-from data.lid.new_lid.serializers import LidSerializer
+from data.lid.new_lid.serializers import LeadSerializer
 from data.student.student.models import Student
 from data.student.student.serializers import StudentSerializer
 
@@ -55,7 +55,7 @@ class ModeratorStudentSerializer(serializers.ModelSerializer):
         Fetch lids related to this moderator.
         """
         lids = Lid.objects.filter(moderator=obj)  # No need to order by
-        return LidSerializer(lids, many=True).data
+        return LeadSerializer(lids, many=True).data
 
     def to_representation(self, instance):
         """

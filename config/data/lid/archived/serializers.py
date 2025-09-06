@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from .models import Archived, Frozen
 from data.lid.new_lid.models import Lid
-from data.lid.new_lid.serializers import LidSerializer
+from data.lid.new_lid.serializers import LeadSerializer
 from data.account.models import CustomUser
 from data.account.serializers import UserSerializer
 from data.comments.models import Comment
@@ -50,7 +50,7 @@ class ArchivedSerializer(serializers.ModelSerializer):
                 instance.creator, remove_fields=["pages"]
             ).data
         if instance.lid:
-            representation["lid"] = LidSerializer(instance.lid).data
+            representation["lid"] = LeadSerializer(instance.lid).data
         if instance.student:
             representation["student"] = StudentSerializer(instance.student).data
         if instance.comment:
@@ -132,7 +132,7 @@ class FrozenSerializer(serializers.ModelSerializer):
         if instance.creator:
             representation["creator"] = UserSerializer(instance.creator).data
         if instance.lid:
-            representation["lid"] = LidSerializer(instance.lid).data
+            representation["lid"] = LeadSerializer(instance.lid).data
         if instance.student:
             representation["student"] = StudentSerializer(instance.student).data
         if instance.comment:

@@ -27,7 +27,7 @@ from .serializers import (
 )
 from data.student.studentgroup.models import StudentGroup
 from data.lid.new_lid.models import Lid
-from data.lid.new_lid.serializers import LidSerializer
+from data.lid.new_lid.serializers import LeadSerializer
 
 
 class LessonList(ListCreateAPIView):
@@ -120,7 +120,7 @@ class FistLessonView(ListCreateAPIView):
         with transaction.atomic():
             lead = get_object_or_404(Lid.objects.select_for_update(), pk=lead_id)
 
-            lead_serializer = LidSerializer(
+            lead_serializer = LeadSerializer(
                 instance=lead,
                 data=data,
                 partial=True,

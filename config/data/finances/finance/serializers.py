@@ -8,7 +8,7 @@ from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
 
 from data.lid.new_lid.models import Lid
-from data.lid.new_lid.serializers import LidSerializer
+from data.lid.new_lid.serializers import LeadSerializer
 from data.student.attendance.models import Attendance
 from data.student.groups.serializers import GroupSerializer
 from data.student.student.serializers import StudentSerializer
@@ -611,6 +611,6 @@ class SaleStudentSerializer(serializers.ModelSerializer):
         if instance.student:
             data["student"] = StudentSerializer(instance.student).data
         if instance.lid:
-            data["lid"] = LidSerializer(instance.lid).data
+            data["lid"] = LeadSerializer(instance.lid).data
 
         return data
