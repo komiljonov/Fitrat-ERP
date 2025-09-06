@@ -4,15 +4,15 @@ from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 
-from data.student.student.models import Student
 from data.account.models import CustomUser
 from data.command.models import BaseModel
-from data.department.filial.models import Filial
 from data.department.marketing_channel.models import MarketingChannel
 from data.upload.models import File
 
 if TYPE_CHECKING:
     from data.student.studentgroup.models import StudentGroup
+    from data.department.filial.models import Filial
+    from data.student.student.models import Student
 
 
 class Lid(BaseModel):
@@ -81,7 +81,7 @@ class Lid(BaseModel):
         help_text="Earned ball at competition",
     )
 
-    filial: Filial = models.ForeignKey(
+    filial: "Filial | None" = models.ForeignKey(
         Filial,
         on_delete=models.SET_NULL,
         null=True,
@@ -178,18 +178,18 @@ class Lid(BaseModel):
 
     file: "File" = models.ManyToManyField(
         "upload.File",
-        related_name="lid_file",
         blank=True,
+        related_name="lid_files",
     )
 
     ordered_date = models.DateTimeField(null=True, blank=True)
 
-    student: "Student" = models.ForeignKey(
+    student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="lid_student_fk",
+        related_name="lid_student",
     )
 
     balance = models.DecimalField(

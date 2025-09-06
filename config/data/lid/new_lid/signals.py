@@ -374,15 +374,16 @@ def lid_log_after_save(sender, instance: Lid, created, **kwargs):
 
 
 @receiver(m2m_changed, sender=Lid.file.through)
-def lid_file_m2m_changed(sender, instance: Lid, action, reverse, pk_set, **kwargs):
+def lid_files_m2m_changed(sender, instance: Lid, action, reverse, pk_set, **kwargs):
     """
     Logs additions/removals to the `file` M2M.
     """
+    from data.upload.models import File
+
     if action not in {"post_add", "post_remove"} or not pk_set:
         return
 
     verb = "added" if action == "post_add" else "removed"
-    from data.upload.models import File
 
     try:
         files = File.objects.filter(pk__in=pk_set)
