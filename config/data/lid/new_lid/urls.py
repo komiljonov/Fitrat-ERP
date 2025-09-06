@@ -14,7 +14,7 @@ from .webhook import LidWebhook
 
 urlpatterns = [
     path("", LeadListCreateView.as_view(), name="lid_list_create"),
-    path("orders", OrderListCreateView.as_view(), name="lid_list_create"),
+    # path("orders", OrderListCreateView.as_view(), name="lid_list_create"),
     path("<uuid:pk>", LidRetrieveUpdateDestroyView.as_view(), name="lid_retrieve"),
     path("<uuid:pk>/", LidRetrieveUpdateDestroyView.as_view(), name="lid_retrieve"),
     path("no-pg/", LidListNoPG.as_view(), name="lid_list_pg"),
