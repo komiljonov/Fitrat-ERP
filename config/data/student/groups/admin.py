@@ -31,3 +31,9 @@ class SecondaryGroupAdmin(admin.ModelAdmin):
         "group__name",
         "status",
     )
+
+
+@admin.register(admin.ModelAdmin)
+class DayAdmin(admin.ModelAdmin):
+
+    list_display = ["name", "display_name"]
