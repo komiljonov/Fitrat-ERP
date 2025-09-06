@@ -115,26 +115,43 @@ class ThemeSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all())
 
     homework_files = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), many=True, allow_null=True
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
     )
     repeated_theme = serializers.PrimaryKeyRelatedField(
-        queryset=Theme.objects.all(), many=True, allow_null=True
+        queryset=Theme.objects.all(),
+        many=True,
+        allow_null=True,
     )
     course_work_files = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), many=True, allow_null=True
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
     )
     extra_work_files = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), many=True, allow_null=True
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
     )
 
     videos = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), many=True, allow_null=True, required=False
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
+        required=False,
     )
     files = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), many=True, allow_null=True, required=False
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
+        required=False,
     )
     photos = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), many=True, allow_null=True, required=False
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
+        required=False,
     )
 
     def __init__(self, *args, **kwargs):
@@ -186,15 +203,19 @@ class ThemeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["subject"] = SubjectSerializer(instance.subject, context=self.context).data
+
         rep["repeated_theme"] = ThemeSerializer(
             instance.repeated_theme.all(), many=True, context=self.context
         ).data
+
         rep["videos"] = FileUploadSerializer(
             instance.videos.all(), many=True, context=self.context
         ).data
+
         rep["files"] = FileUploadSerializer(
             instance.files.all(), many=True, context=self.context
         ).data
+
         rep["photos"] = FileUploadSerializer(
             instance.photos.all(), many=True, context=self.context
         ).data
@@ -202,9 +223,11 @@ class ThemeSerializer(serializers.ModelSerializer):
         rep["course_work_files"] = FileUploadSerializer(
             instance.course_work_files, many=True, context=self.context
         ).data
+
         rep["homework_files"] = FileUploadSerializer(
             instance.homework_files, many=True, context=self.context
         ).data
+
         rep["extra_work_files"] = FileUploadSerializer(
             instance.extra_work_files, many=True, context=self.context
         ).data

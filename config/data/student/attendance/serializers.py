@@ -267,11 +267,11 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def to_representation(self, instance: Attendance):
         rep = super().to_representation(instance)
 
-        rep["theme"] = (
-            ThemeSerializer(instance.theme, context=self.context, many=True).data
-            if instance.theme
-            else None
-        )
+        # rep["theme"] = (
+        #     ThemeSerializer(instance.theme, context=self.context, many=True).data
+        #     if instance.theme
+        #     else None
+        # )
 
         if instance.lid:
             rep["lid"] = LeadSerializer(instance.lid, context=self.context).data
