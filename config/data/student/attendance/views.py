@@ -67,7 +67,7 @@ class AttendanceList(ListCreateAPIView):
 
         return (
             queryset.select_related("student")
-            .prefetch_related("student__group")
+            .prefetch_related("student__students_group")
             .order_by("-date")
         )
 
