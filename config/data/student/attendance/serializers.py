@@ -25,7 +25,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     date = serializers.DateField(required=False, default=date.today)
 
-    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all(), many=True)
+    theme = serializers.PrimaryKeyRelatedField(
+        queryset=Theme.objects.all(), many=True, write_only=True
+    )
 
     lid = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(),
