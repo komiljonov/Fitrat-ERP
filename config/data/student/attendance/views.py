@@ -28,9 +28,9 @@ class AttendanceList(ListCreateAPIView):
     serializer_class = AttendanceSerializer
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
-        print(request.data)
-        return super().post(request, *args, **kwargs)
+    # def post(self, request, *args, **kwargs):
+    #     print(request.data)
+    #     return super().post(request, *args, **kwargs)
 
     def get_queryset(self):
 
@@ -43,7 +43,7 @@ class AttendanceList(ListCreateAPIView):
         queryset = Attendance.objects.all()
 
         if filial:
-            queryset = queryset.filter(group__filial__id=filial)
+            queryset = queryset.filter(group__filial_id=filial)
 
         if start_date and end_date:
             start_date = make_aware(datetime.strptime(start_date, "%Y-%m-%d"))
@@ -58,18 +58,18 @@ class AttendanceList(ListCreateAPIView):
             )
 
         if group:
-            queryset = queryset.filter(group__id=group)
+            queryset = queryset.filter(group_id=group)
 
         if start_date:
             queryset = queryset.filter(created_at__gte=start_date)
 
         if student:
-            queryset = queryset.filter(student__id=student)
+            queryset = queryset.filter(student_id=student)
 
         if reason:
             queryset = queryset.filter(reason=reason)
 
-        return queryset
+        return queryset.order_by("-date")
 
 
 class AttendanceBulkList(ListCreateAPIView):

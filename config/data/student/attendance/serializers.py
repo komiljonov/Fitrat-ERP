@@ -264,12 +264,14 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         return created_instances
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: Attendance):
         rep = super().to_representation(instance)
 
-        rep["theme"] = ThemeSerializer(
-            instance.theme, context=self.context, many=True
-        ).data
+        rep["theme"] = (
+            ThemeSerializer(instance.theme, context=self.context, many=True).data
+            if instance.theme
+            else None
+        )
 
         if instance.lid:
             rep["lid"] = LeadSerializer(instance.lid, context=self.context).data
@@ -285,13 +287,14 @@ class AttendanceSerializer(serializers.ModelSerializer):
             rep["group"] = instance.group.name
 
         else:
-            rep.pop("student", None)
+            rep.pop("group", None)
 
         filtered_data = {
             key: value
             for key, value in rep.items()
             if value not in [{}, [], None, "", False]
         }
+
         return filtered_data
 
 
