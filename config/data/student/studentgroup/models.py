@@ -14,11 +14,10 @@ class StudentGroup(BaseModel):
 
     group: "Group | None" = models.ForeignKey(
         "groups.Group",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.PROTECT,
         related_name="student_groups",
     )
+
     student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
@@ -48,23 +47,21 @@ class StudentGroup(BaseModel):
 
     class Meta:
         verbose_name = "Student Group"
-        verbose_name_plural = "Student Group"
+        verbose_name_plural = "Student Groups"
 
         constraints = [
             # No duplicate active student in the same group
             models.UniqueConstraint(
                 fields=["group", "student"],
                 name="uniq_active_student_in_group",
-                condition=Q(
-                    group__isnull=False, student__isnull=False, is_archived=False
-                ),
+                condition=Q(student__isnull=False, is_archived=False),
                 # deferrable=models.Deferrable.DEFERRED,  # optional but nice for bulk ops
             ),
             # No duplicate active lid in the same group
             models.UniqueConstraint(
                 fields=["group", "lid"],
                 name="uniq_active_lid_in_group",
-                condition=Q(group__isnull=False, lid__isnull=False, is_archived=False),
+                condition=Q(lid__isnull=False, is_archived=False),
                 # deferrable=models.Deferrable.DEFERRED,
             ),
         ]
