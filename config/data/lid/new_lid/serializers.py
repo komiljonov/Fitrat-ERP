@@ -1,8 +1,8 @@
 from django.db.models import Q
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from .models import Lid
 from data.account.models import CustomUser
 from data.department.filial.models import Filial
 from data.department.filial.serializers import FilialSerializer
@@ -16,6 +16,8 @@ from data.student.student.models import Student
 from data.student.studentgroup.models import StudentGroup
 from data.upload.models import File
 from data.upload.serializers import FileUploadSerializer
+
+from .models import Lid
 
 
 class LidSerializer(serializers.ModelSerializer):
@@ -105,6 +107,7 @@ class LidSerializer(serializers.ModelSerializer):
             "sales_manager",
             "is_expired",
             "file",
+            "first_lesson_created_at",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -201,17 +204,21 @@ class LidSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+
         representation["photo"] = FileUploadSerializer(
             instance.photo, context=self.context
         ).data
+
         representation["filial"] = (
             FilialSerializer(instance.filial).data if instance.filial else None
         )
+
         representation["marketing_channel"] = (
             MarketingChannelSerializer(instance.marketing_channel).data
             if instance.marketing_channel
             else None
         )
+
         representation["call_operator"] = (
             {
                 "id": instance.call_operator.id,
@@ -220,6 +227,7 @@ class LidSerializer(serializers.ModelSerializer):
             if instance.call_operator
             else None
         )
+
         representation["file"] = FileUploadSerializer(
             instance.file.all(), many=True, context=self.context
         ).data

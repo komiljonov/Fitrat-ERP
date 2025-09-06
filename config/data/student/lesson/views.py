@@ -1,7 +1,9 @@
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import render
+from django.utils import timezone
+
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 
@@ -33,6 +35,7 @@ class LessonList(ListCreateAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+
     search_fields = (
         "name",
         "type",
@@ -126,7 +129,12 @@ class FistLessonView(ListCreateAPIView):
 
             lead_serializer.is_valid(raise_exception=True)
 
-            lead = lead_serializer.save()
+            lead: "Lid" = lead_serializer.save()
+
+            if lead.first_lesson_created_at is None:
+                lead.first_lesson_created_at = timezone.now()
+
+            lead.save()
 
             group = lesson_serializer.validated_data.get("group")
 
