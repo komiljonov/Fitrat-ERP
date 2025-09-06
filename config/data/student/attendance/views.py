@@ -65,7 +65,9 @@ class AttendanceList(ListCreateAPIView):
         if reason:
             queryset = queryset.filter(reason=reason)
 
-        return queryset.order_by("-date")
+        return queryset.select_related(
+            "student", "student__group", "student__group__teacher"
+        ).order_by("-date")
 
 
 class AttendanceBulkList(ListCreateAPIView):
