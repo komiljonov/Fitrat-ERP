@@ -231,22 +231,22 @@ class LidListNoPG(ListAPIView):
     def get_queryset(self):
         filial = self.request.GET.get("filial")
         is_archived = self.request.GET.get("is_archived")
-        search_term = self.request.GET.get("search", "")
-        course_id = self.request.GET.get("course")
-        call_operator_id = self.request.GET.get("call_operator")
-        service_manager = self.request.GET.get("service_manager")
-        sales_manager = self.request.GET.get("sales_manager")
-        teacher = self.request.GET.get("teacher")
-        channel = self.request.GET.get("channel")
-        subject = self.request.GET.get("subject")
+        # search_term = self.request.GET.get("search", "")
+        # course_id = self.request.GET.get("course")
+        # call_operator_id = self.request.GET.get("call_operator")
+        # service_manager = self.request.GET.get("service_manager")
+        # sales_manager = self.request.GET.get("sales_manager")
+        # teacher = self.request.GET.get("teacher")
+        # channel = self.request.GET.get("channel")
+        # subject = self.request.GET.get("subject")
         is_student = self.request.GET.get("is_student")
         lid_stage_type = self.request.GET.get("lid_stage_type")
-        no_first_lesson = self.request.GET.get("no_first_lesson")
+        # no_first_lesson = self.request.GET.get("no_first_lesson")
         ordered_stages = self.request.GET.get("ordered_stages")
         lid_stages = self.request.GET.get("lid_stages")
-        marketing_channel = self.request.GET.get("marketing_channel")
+        # marketing_channel = self.request.GET.get("marketing_channel")
 
-        order_by = self.request.GET.get("order_by")
+        # order_by = self.request.GET.get("order_by")
 
         queryset = Lid.objects.all()
 
@@ -488,7 +488,7 @@ class LidStatisticsView(ListAPIView):
         queryset = Lid.objects.all()
 
         filial = self.request.GET.get("filial")
-        is_archived = True
+        # is_archived = True
         # course_id = self.request.GET.get("course")
         call_operator_id = self.request.GET.get("call_operator")
         service_manager = self.request.GET.get("service_manager")
@@ -925,7 +925,7 @@ class LidStatistics(ListAPIView):
         "lid_stage_type",
         "lid_stages",
         "ordered_stages",
-        "is_dubl",
+        "is_double",
         "is_archived",
     ]
 

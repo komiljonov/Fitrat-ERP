@@ -44,7 +44,7 @@ class Lid(BaseModel):
         choices=language_choise, default="UZB", max_length=100
     )
     student_type = models.CharField(max_length=100, default="student")
-    
+
     edu_class = models.CharField(
         choices=[
             ("SCHOOL", "School"),
@@ -73,8 +73,12 @@ class Lid(BaseModel):
         blank=True,
         help_text="Subject that student won at competition",
     )
+
     ball = models.IntegerField(
-        default=0, null=True, blank=True, help_text="Earned ball at competition"
+        default=0,
+        null=True,
+        blank=True,
+        help_text="Earned ball at competition",
     )
 
     filial: Filial = models.ForeignKey(
@@ -132,7 +136,7 @@ class Lid(BaseModel):
         help_text="Is this student archived or not",
     )
 
-    is_dubl = models.BooleanField(
+    is_double = models.BooleanField(
         default=False,
         help_text="Is this student duble or not",
     )
@@ -173,7 +177,9 @@ class Lid(BaseModel):
     )
 
     file: "File" = models.ManyToManyField(
-        "upload.File", related_name="lid_file", blank=True
+        "upload.File",
+        related_name="lid_file",
+        blank=True,
     )
 
     ordered_date = models.DateTimeField(null=True, blank=True)
@@ -187,10 +193,12 @@ class Lid(BaseModel):
     )
 
     balance = models.DecimalField(
-        max_digits=12, decimal_places=2, default=Decimal("0.00")
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
     )
 
-    lids_group: "models.QuerySet[StudentGroup]"
+    lid_groups: "models.QuerySet[StudentGroup]"
 
     def __str__(self):
         return (

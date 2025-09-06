@@ -21,7 +21,7 @@ class LidAdmin(admin.ModelAdmin):
         "first_name",
         "phone_number",
         "lid_stage_type",
-        "is_dubl",
+        "is_double",
         "is_student",
         "is_archived",
         "created_at",

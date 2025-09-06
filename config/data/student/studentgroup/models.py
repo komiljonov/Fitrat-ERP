@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 
 class StudentGroup(BaseModel):
+    
     group: "Group | None" = models.ForeignKey(
         "groups.Group",
         on_delete=models.SET_NULL,
@@ -29,7 +30,7 @@ class StudentGroup(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="lids_group",
+        related_name="lid_groups",
     )
 
     is_archived = models.BooleanField(default=False)

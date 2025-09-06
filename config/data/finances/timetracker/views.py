@@ -26,17 +26,17 @@ from data.account.models import CustomUser
 
 
 class TimeTrackerList(ListCreateAPIView):
-    queryset = Employee_attendance.objects.all()
     serializer_class = TimeTrackerSerializer
 
     def get_queryset(self):
         queryset = Employee_attendance.objects.filter(
-            attendance__action="In_side", employee__is_archived=False
+            attendance__action="In_side",
+            employee__is_archived=False,
         )
 
         employee = self.request.GET.get("employee")
-        status = self.request.GET.get("status")
         date = self.request.GET.get("date")
+        status = self.request.GET.get("status")
         is_weekend = self.request.GET.get("is_weekend")
         from_date = self.request.GET.get("start_date")
         to_date = self.request.GET.get("end_date")
@@ -45,21 +45,28 @@ class TimeTrackerList(ListCreateAPIView):
 
         if is_archived:
             queryset = queryset.filter(employee__is_archived=is_archived.capitalize())
+
         if action:
             queryset = queryset.filter(attendance__action=action)
+
         if from_date:
             queryset = queryset.filter(date__gte=from_date)
+
         if from_date and to_date:
             queryset = queryset.filter(date__gte=from_date, date__lte=to_date)
 
         if is_weekend:
             queryset = queryset.filter(is_weekend=is_weekend.capitalize())
+
         if employee:
-            queryset = queryset.filter(employee__id=employee)
+            queryset = queryset.filter(employee_id=employee)
+
         if status:
             queryset = queryset.filter(status=status)
+
         if date:
             queryset = queryset.filter(date=parse_datetime(date))
+
         return queryset.order_by("-date")
 
 

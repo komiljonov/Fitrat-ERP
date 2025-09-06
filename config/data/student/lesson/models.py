@@ -59,8 +59,11 @@ class Lesson(BaseModel):
 
 
 class FirstLLesson(BaseModel):
-    lid: "Lid" = models.ForeignKey(
-        "new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True
+    lid: "Lid | None" = models.ForeignKey(
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
     group: "Group" = models.ForeignKey(
@@ -77,7 +80,10 @@ class FirstLLesson(BaseModel):
     comment = models.TextField(null=True, blank=True)
 
     creator: "CustomUser" = models.ForeignKey(
-        "account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True
+        "account.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
     class Meta:

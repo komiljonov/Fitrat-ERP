@@ -98,7 +98,6 @@ class FistLessonView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        print(request.data)
 
         data = request.data.copy()
 
@@ -111,6 +110,7 @@ class FistLessonView(ListCreateAPIView):
         lesson_ser = self.get_serializer(
             data=data, context=self.get_serializer_context()
         )
+
         lesson_ser.is_valid(raise_exception=True)
 
         with transaction.atomic():
@@ -122,7 +122,9 @@ class FistLessonView(ListCreateAPIView):
                 partial=True,
                 context={"request": request},
             )
+
             lid_ser.is_valid(raise_exception=True)
+
             lid_obj = lid_ser.save()
 
             group = lesson_ser.validated_data.get("group")
@@ -134,7 +136,8 @@ class FistLessonView(ListCreateAPIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 if StudentGroup.objects.filter(
-                    group=group, student__phone=lid_obj.phone_number
+                    group=group,
+                    student__phone=lid_obj.phone_number,
                 ).exists():
                     return Response(
                         {"error": "This Student is already assigned to this group."},
@@ -145,7 +148,10 @@ class FistLessonView(ListCreateAPIView):
 
         # Use the same context for representation
         return Response(
-            FirstLessonSerializer(lesson, context=self.get_serializer_context()).data,
+            FirstLessonSerializer(
+                lesson,
+                context=self.get_serializer_context(),
+            ).data,
             status=status.HTTP_201_CREATED,
         )
 

@@ -390,6 +390,7 @@ class FirstLessonSerializer(serializers.ModelSerializer):
             "time",
             "comment",
             "creator",
+            "created_at",
         ]
 
     def update(self, instance, validated_data):
