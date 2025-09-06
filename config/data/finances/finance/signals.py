@@ -17,12 +17,17 @@ def on_create(sender, instance: Finance, created, **kwargs):
                 instance.lid.balance += Decimal(instance.amount)
                 instance.lid.save()
 
-        if instance.student and not instance.kind.name == "Lesson payment":
+        # if instance.student and not instance.kind.name == "Lesson payment":
+        if (
+            instance.student
+            and not instance.kind.kind == FinanceKindTypeChoices.LESSON_PAYMENT
+        ):
             if instance.action == "INCOME":
                 instance.student.balance += Decimal(instance.amount)
                 instance.student.save()
             else:
-                if not instance.kind.name == "Voucher":
+                # if not instance.kind.name == "Voucher":
+                if not instance.kind.kind == FinanceKindTypeChoices.VOUCHER:
                     instance.student.balance -= Decimal(instance.amount)
                     instance.student.save()
 
@@ -30,12 +35,14 @@ def on_create(sender, instance: Finance, created, **kwargs):
             if (
                 instance.action == "EXPENSE"
                 and instance.kind is not None
-                and instance.kind.name == "Salary"
+                # and instance.kind.name == "Salary"
+                and instance.kind.kind == FinanceKindTypeChoices.SALARY
             ):
                 instance.stuff.balance -= Decimal(instance.amount)
                 instance.stuff.save()
             else:
-                if instance.kind.name != "Lesson payment":
+                # if instance.kind.name != "Lesson payment":
+                if instance.kind.kind != FinanceKindTypeChoices.LESSON_PAYMENT:
                     instance.stuff.balance += Decimal(instance.amount)
                     instance.stuff.save()
 
@@ -82,13 +89,15 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
             if voucher_student_count >= instance.voucher.count:
                 instance.voucher.is_expired = True
                 instance.voucher.save()
-        casher = Casher.objects.filter(
+
+        cashier = Casher.objects.filter(
             filial__in=instance.creator.filial.all(),
             role__in=["ADMINISTRATOR", "ACCOUNTANT"],
         ).first()
+
         if instance.lid:
             finance = Finance.objects.create(
-                casher=casher,
+                casher=cashier,
                 action="EXPENSE",
                 amount=instance.voucher.amount,
                 # kind=Kind.objects.filter(name="Voucher").first(),
@@ -102,7 +111,7 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
 
         else:
             finance = Finance.objects.create(
-                casher=casher,
+                casher=cashier,
                 action="EXPENSE",
                 amount=instance.voucher.amount,
                 # kind=Kind.objects.filter(name="Voucher").first(),
@@ -119,8 +128,8 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
 def on_create(sender, instance: KpiFinance, created, **kwargs):
     if created:
         if instance.type == "INCOME":
-            instance.user.balance += Decimal(instance.amount)
-            instance.user.save()
+            # instance.user.balance += Decimal(instance.amount)
+            # instance.user.save()
 
             Finance.objects.create(
                 casher=Casher.objects.filter(
@@ -137,8 +146,8 @@ def on_create(sender, instance: KpiFinance, created, **kwargs):
             )
         else:
 
-            instance.user.balance -= Decimal(instance.amount)
-            instance.user.save()
+            # instance.user.balance -= Decimal(instance.amount)
+            # instance.user.save()
 
             Finance.objects.create(
                 casher=Casher.objects.filter(

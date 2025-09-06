@@ -79,6 +79,15 @@ class PaymentMethod(BaseModel):
 
 
 class Finance(BaseModel):
+
+    stuff: "CustomUser | None" = models.ForeignKey(
+        "account.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="finance_stuff",
+    )
+
     casher: "Casher | None" = models.ForeignKey(
         "finance.Casher",
         on_delete=models.SET_NULL,
@@ -141,14 +150,6 @@ class Finance(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-    )
-
-    stuff: "CustomUser | None" = models.ForeignKey(
-        "account.CustomUser",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="finance_stuff",
     )
 
     creator: "CustomUser | None" = models.ForeignKey(
