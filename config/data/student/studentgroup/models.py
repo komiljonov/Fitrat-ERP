@@ -92,7 +92,7 @@ class SecondaryStudentGroup(BaseModel):
         blank=True,
     )
 
-    is_archive = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Secondary Add group"
