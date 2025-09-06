@@ -58,14 +58,14 @@ class StudentGroup(BaseModel):
                 condition=Q(
                     group__isnull=False, student__isnull=False, is_archived=False
                 ),
-                deferrable=models.Deferrable.DEFERRED,  # optional but nice for bulk ops
+                # deferrable=models.Deferrable.DEFERRED,  # optional but nice for bulk ops
             ),
             # No duplicate active lid in the same group
             models.UniqueConstraint(
                 fields=["group", "lid"],
                 name="uniq_active_lid_in_group",
                 condition=Q(group__isnull=False, lid__isnull=False, is_archived=False),
-                deferrable=models.Deferrable.DEFERRED,
+                # deferrable=models.Deferrable.DEFERRED,
             ),
         ]
 
