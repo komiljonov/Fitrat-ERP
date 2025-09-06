@@ -92,7 +92,7 @@ class SecondaryStudentGroup(BaseModel):
         blank=True,
     )
 
-    is_archived = models.BooleanField(default=False)
+    is_archive = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Secondary Add group"
@@ -103,14 +103,14 @@ class SecondaryStudentGroup(BaseModel):
             models.UniqueConstraint(
                 fields=["group", "student"],
                 name="uniq_active_student_in_secondary_group",
-                condition=Q(student__isnull=False, is_archived=False),
+                condition=Q(student__isnull=False, is_archive=False),
                 # deferrable=models.Deferrable.DEFERRED,  # optional but nice for bulk ops
             ),
             # No duplicate active lid in the same group
             models.UniqueConstraint(
                 fields=["group", "lid"],
                 name="uniq_active_lid_in_secondary_group",
-                condition=Q(lid__isnull=False, is_archived=False),
+                condition=Q(lid__isnull=False, is_archive=False),
                 # deferrable=models.Deferrable.DEFERRED,
             ),
         ]
