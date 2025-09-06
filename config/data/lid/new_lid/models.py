@@ -82,7 +82,7 @@ class Lid(BaseModel):
     )
 
     filial: "Filial | None" = models.ForeignKey(
-        Filial,
+        "filial.Filial",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
