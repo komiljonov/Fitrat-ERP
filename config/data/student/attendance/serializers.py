@@ -287,7 +287,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                     "first_name",
                     "last_name",
                     "middle_name",
-                    "phone_number",
+                    "phone",
                     "service_manager",
                     "group",
                     "balance",
