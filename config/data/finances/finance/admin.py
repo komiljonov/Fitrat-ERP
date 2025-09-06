@@ -15,6 +15,7 @@ class KindAdmin(admin.ModelAdmin):
 @admin.register(Finance)
 class FinansAdmin(admin.ModelAdmin):
     list_display = (
+        "stuff",
         "lid__first_name",
         "student__first_name",
         "lid__lid_stage_type",

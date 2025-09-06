@@ -252,6 +252,7 @@ class StuffFinanceListAPIView(ListAPIView):
 
         if stuff:
             return Finance.objects.filter(stuff=stuff)
+
         return Finance.objects.none()
 
 
