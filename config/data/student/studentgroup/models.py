@@ -47,8 +47,8 @@ class StudentGroup(BaseModel):
     )
 
     class Meta:
-        verbose_name = "Add Group"
-        verbose_name_plural = "Add Groups"
+        verbose_name = "Student Group"
+        verbose_name_plural = "Student Group"
 
         constraints = [
             # No duplicate active student in the same group
