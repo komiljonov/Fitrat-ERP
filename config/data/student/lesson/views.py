@@ -101,59 +101,60 @@ class FistLessonView(ListCreateAPIView):
 
         data = request.data.copy()
 
-        lid_id = data.get("lid") or data.get("lid_id") or data.get("id")
-        if not lid_id:
+        lead_id = data.get("lid") or data.get("lid_id") or data.get("id")
+        if not lead_id:
             return Response(
                 {"detail": "lid is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        lesson_ser = self.get_serializer(
-            data=data, context=self.get_serializer_context()
+        lesson_serializer = FirstLessonSerializer(
+            data=data,
+            context=self.get_serializer_context(),
         )
 
-        lesson_ser.is_valid(raise_exception=True)
+        lesson_serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
-            lid_obj = get_object_or_404(Lid.objects.select_for_update(), pk=lid_id)
+            lead = get_object_or_404(Lid.objects.select_for_update(), pk=lead_id)
 
-            lid_ser = LidSerializer(
-                instance=lid_obj,
+            lead_serializer = LidSerializer(
+                instance=lead,
                 data=data,
                 partial=True,
                 context={"request": request},
             )
 
-            lid_ser.is_valid(raise_exception=True)
+            lead_serializer.is_valid(raise_exception=True)
 
-            lid_obj = lid_ser.save()
+            lead = lead_serializer.save()
 
-            group = lesson_ser.validated_data.get("group")
+            group = lesson_serializer.validated_data.get("group")
 
             if group:
-                if StudentGroup.objects.filter(group=group, lid=lid_obj).exists():
+                if StudentGroup.objects.filter(group=group, lid=lead).exists():
                     return Response(
-                        {"error": "This LID is already assigned to this group."},
+                        {"error": "This lead is already assigned to this group."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 if StudentGroup.objects.filter(
                     group=group,
-                    student__phone=lid_obj.phone_number,
+                    student__phone=lead.phone_number,
                 ).exists():
                     return Response(
                         {"error": "This Student is already assigned to this group."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-            lesson = lesson_ser.save(lid=lid_obj)
+            lesson = lesson_serializer.save(lid=lead)
 
-        # Use the same context for representation
-        return Response(
-            FirstLessonSerializer(
-                lesson,
-                context=self.get_serializer_context(),
-            ).data,
-            status=status.HTTP_201_CREATED,
-        )
+            # Use the same context for representation
+            return Response(
+                FirstLessonSerializer(
+                    lesson,
+                    context=self.get_serializer_context(),
+                ).data,
+                status=status.HTTP_201_CREATED,
+            )
 
 
 class FirstLessonView(ListAPIView):

@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 from django.db import models
+from django.db.models import Q
 
 from data.command.models import BaseModel
 
@@ -10,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class StudentGroup(BaseModel):
-    
+
     group: "Group | None" = models.ForeignKey(
         "groups.Group",
         on_delete=models.SET_NULL,
@@ -48,6 +49,25 @@ class StudentGroup(BaseModel):
     class Meta:
         verbose_name = "Add Group"
         verbose_name_plural = "Add Groups"
+
+        constraints = [
+            # No duplicate active student in the same group
+            models.UniqueConstraint(
+                fields=["group", "student"],
+                name="uniq_active_student_in_group",
+                condition=Q(
+                    group__isnull=False, student__isnull=False, is_archived=False
+                ),
+                deferrable=models.Deferrable.DEFERRED,  # optional but nice for bulk ops
+            ),
+            # No duplicate active lid in the same group
+            models.UniqueConstraint(
+                fields=["group", "lid"],
+                name="uniq_active_lid_in_group",
+                condition=Q(group__isnull=False, lid__isnull=False, is_archived=False),
+                deferrable=models.Deferrable.DEFERRED,
+            ),
+        ]
 
     def __str__(self):
         return self.group.name if self.group else ""

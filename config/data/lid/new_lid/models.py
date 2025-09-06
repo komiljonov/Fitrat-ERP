@@ -4,18 +4,19 @@ from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 
-from data.account.models import CustomUser
 from data.command.models import BaseModel
-from data.department.marketing_channel.models import MarketingChannel
-from data.upload.models import File
 
 if TYPE_CHECKING:
+    from data.department.marketing_channel.models import MarketingChannel
     from data.student.studentgroup.models import StudentGroup
     from data.department.filial.models import Filial
     from data.student.student.models import Student
+    from data.account.models import CustomUser
+    from data.upload.models import File
 
 
 class Lid(BaseModel):
+
     sender_id = models.CharField(max_length=120, null=True, blank=True)
     message_text = models.CharField(max_length=120, null=True, blank=True)
 
@@ -34,15 +35,18 @@ class Lid(BaseModel):
     date_of_birth = models.DateField(default=timezone.now)
     extra_number = models.CharField(max_length=100, null=True, blank=True)
 
-    language_choise = (
+    LANGUAGE_CHOICES = (
         ("ENG", "ENG"),
         ("RU", "RU"),
         ("UZB", "UZB"),
     )
 
     education_lang = models.CharField(
-        choices=language_choise, default="UZB", max_length=100
+        choices=LANGUAGE_CHOICES,
+        default="UZB",
+        max_length=100,
     )
+
     student_type = models.CharField(max_length=100, default="student")
 
     edu_class = models.CharField(
@@ -64,7 +68,12 @@ class Lid(BaseModel):
         help_text="Education organization, school or university or work.",
     )
 
-    edu_level = models.CharField(null=True, blank=True, max_length=100)
+    edu_level = models.CharField(
+        null=True,
+        blank=True,
+        max_length=100,
+        help_text="O'quvchining bilib darajasi.",
+    )
 
     subject = models.ForeignKey(
         "subject.Subject",
@@ -78,7 +87,7 @@ class Lid(BaseModel):
         default=0,
         null=True,
         blank=True,
-        help_text="Earned ball at competition",
+        help_text="Earned balls at competition.",
     )
 
     filial: "Filial | None" = models.ForeignKey(
@@ -86,15 +95,14 @@ class Lid(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="Filial for this student",
+        help_text="Filial for this student.",
     )
 
-    marketing_channel: "MarketingChannel" = models.ForeignKey(
+    marketing_channel: "MarketingChannel | None" = models.ForeignKey(
         "marketing_channel.MarketingChannel",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="Marketing channel for this student",
     )
 
     lid_stage_type = models.CharField(
@@ -133,17 +141,17 @@ class Lid(BaseModel):
 
     is_archived = models.BooleanField(
         default=False,
-        help_text="Is this student archived or not",
+        help_text="Is this Lead archived or not",
     )
 
     is_double = models.BooleanField(
         default=False,
-        help_text="Is this student duble or not",
+        help_text="Is this Lead duble or not",
     )
 
     is_frozen = models.BooleanField(
         default=False,
-        help_text="Is this student frozen or not",
+        help_text="Is this Lead frozen or not",
     )
 
     call_operator: "CustomUser" = models.ForeignKey(
@@ -197,6 +205,8 @@ class Lid(BaseModel):
         decimal_places=2,
         default=Decimal("0.00"),
     )
+
+    first_lesson_created_at = models.DateTimeField(null=True, blank=True)
 
     lid_groups: "models.QuerySet[StudentGroup]"
 

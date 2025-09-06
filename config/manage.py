@@ -11,11 +11,10 @@ from freezegun import freeze_time
 #     pass
 
 
-
 # @freeze_time("2025-05-26 16:00:00")
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'root.settings')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "root.settings")
     os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
     try:
         from django.core.management import execute_from_command_line
@@ -28,5 +27,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
