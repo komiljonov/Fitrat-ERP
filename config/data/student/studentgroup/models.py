@@ -25,7 +25,8 @@ class StudentGroup(BaseModel):
         blank=True,
         related_name="students_group",
     )
-    lid: "Lid" = models.ForeignKey(
+
+    lid: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
         null=True,
@@ -37,6 +38,7 @@ class StudentGroup(BaseModel):
 
     HOMEWORK_ONLINE = "Online"
     HOMEWORK_OFFLINE = "Offline"
+
     homework_type = models.CharField(
         choices=[(HOMEWORK_ONLINE, "Online"), (HOMEWORK_OFFLINE, "Offline")],
         default=HOMEWORK_OFFLINE,
@@ -73,9 +75,7 @@ class StudentGroup(BaseModel):
 class SecondaryStudentGroup(BaseModel):
     group: "SecondaryGroup | None" = models.ForeignKey(
         "groups.SecondaryGroup",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.PROTECT,
     )
     student: "Student | None" = models.ForeignKey(
         "student.Student",
@@ -92,6 +92,25 @@ class SecondaryStudentGroup(BaseModel):
         blank=True,
     )
 
+    is_archive = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "Secondary Add group"
         verbose_name_plural = "Secondary Add group"
+
+        constraints = [
+            # No duplicate active student in the same group
+            models.UniqueConstraint(
+                fields=["group", "student"],
+                name="uniq_active_student_in_secondary_group",
+                condition=Q(student__isnull=False, is_archived=False),
+                # deferrable=models.Deferrable.DEFERRED,  # optional but nice for bulk ops
+            ),
+            # No duplicate active lid in the same group
+            models.UniqueConstraint(
+                fields=["group", "lid"],
+                name="uniq_active_lid_in_secondary_group",
+                condition=Q(lid__isnull=False, is_archived=False),
+                # deferrable=models.Deferrable.DEFERRED,
+            ),
+        ]
