@@ -123,7 +123,7 @@ class LeadListCreateView(ListCreateAPIView):
         lead_stages = self.request.GET.get("lid_stages")
         marketing_channel = self.request.GET.get("marketing_channel")
 
-        order_by = self.request.GET.get("order_by")
+        # order_by = self.request.GET.get("order_by")
 
         if marketing_channel:
             queryset = queryset.filter(marketing_channel_id=marketing_channel)
@@ -213,10 +213,33 @@ class LeadListCreateView(ListCreateAPIView):
         ).order_by(
             # order_by
             "-order_index",
-            "-created_at"
+            "-created_at",
         )  # '-' if you want YANGI_LEAD first
 
         return queryset
+
+
+class OrderListCreateView(LeadListCreateView):
+
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        queryset = queryset.annotate(
+            order_index=Case(
+                When(ordered_stages="YANGI_BUYURTMA", then=1),
+                When(ordered_stages="BIRINCHI_DARS_BELGILANGAN", then=2),
+                When(ordered_stages="YANGI_BUYURTMA", then=3),
+                default=0,
+                output_field=IntegerField(),
+            )
+        ).order_by(
+            # order_by
+            "-order_index",
+            "-created_at",
+        )  # '-' if you want YANGI_LEAD first
+
+        queryset.order_by("")
 
 
 class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
