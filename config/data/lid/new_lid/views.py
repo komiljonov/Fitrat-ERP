@@ -212,7 +212,8 @@ class LeadListCreateView(ListCreateAPIView):
             )
         ).order_by(
             # order_by
-            "-order_index"
+            "-order_index",
+            "-created_at"
         )  # '-' if you want YANGI_LEAD first
 
         return queryset
