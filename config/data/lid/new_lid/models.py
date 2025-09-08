@@ -17,8 +17,8 @@ if TYPE_CHECKING:
 
 class Lid(BaseModel):
 
-    sender_id = models.CharField(max_length=120, null=True, blank=True)
-    message_text = models.CharField(max_length=120, null=True, blank=True)
+    sender_id = models.CharField(max_length=500, null=True, blank=True)
+    message_text = models.CharField(max_length=500, null=True, blank=True)
 
     photo: "File" = models.ForeignKey(
         "upload.File",
