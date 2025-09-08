@@ -73,10 +73,12 @@ class StudentGroup(BaseModel):
 
 
 class SecondaryStudentGroup(BaseModel):
+
     group: "SecondaryGroup | None" = models.ForeignKey(
         "groups.SecondaryGroup",
         on_delete=models.PROTECT,
     )
+    
     student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
@@ -84,6 +86,7 @@ class SecondaryStudentGroup(BaseModel):
         null=True,
         blank=True,
     )
+
     lid: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,

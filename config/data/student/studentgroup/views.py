@@ -546,7 +546,9 @@ class StudentGroupStatistics(APIView):
         )
 
         students = base_queryset.filter(
-            student__isnull=False, student__is_frozen=False, is_archived=False
+            student__isnull=False,
+            student__is_frozen=False,
+            is_archived=False,
         )
 
         archived_or_frozen = base_queryset.filter(

@@ -95,32 +95,36 @@ class StudentGroupsView(ListCreateAPIView):
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if student:
-            queryset = queryset.filter(student_groups__student__id=student)
+            queryset = queryset.filter(student_groups__student_id=student)
 
         if day == "1":
             days = []
             days.append(Day.objects.filter(name="Dushanba"))
-            queryset = queryset.filter(scheduled_day_type__name__in=days)
+            queryset = queryset.filter(scheduled_day_type__name_in=days)
 
         if day == "0":
             days = []
             days.append(Day.objects.filter(name="Seshanba"))
-            queryset = queryset.filter(scheduled_day_type__name__in=days)
+            queryset = queryset.filter(scheduled_day_type__name_in=days)
 
         if level:
-            queryset = queryset.filter(level__id=level)
+            queryset = queryset.filter(level_id=level)
 
         if teacher:
-            queryset = queryset.filter(teacher__id=teacher)
+            queryset = queryset.filter(teacher_id=teacher)
+
         if course:
-            queryset = queryset.filter(course__id=course)
+            queryset = queryset.filter(course_id=course)
+
         if subject:
-            queryset = queryset.filter(course__subject__id=subject)
+            queryset = queryset.filter(course__subject_id=subject)
+
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            queryset = queryset.filter(filial_id=filial)
 
         if price_type:
             queryset = queryset.filter(price_type=price_type)
+
         if not_added and not_added.lower() == "true":
             queryset = queryset.exclude(status="INACTIVE")
 

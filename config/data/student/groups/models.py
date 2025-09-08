@@ -63,6 +63,7 @@ class Group(BaseModel):
         blank=True,
         related_name="teachers_groups",
     )
+
     secondary_teacher: "CustomUser | None" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,
@@ -91,6 +92,7 @@ class Group(BaseModel):
         default="DAILY",
         max_length=100,
     )
+
     price = models.FloatField(default=0, null=True, blank=True)
 
     scheduled_day_type: "models.ManyToManyField[Day]" = models.ManyToManyField(
@@ -153,7 +155,8 @@ class SecondaryGroup(BaseModel):
     )
 
     scheduled_day_type: "Day" = models.ManyToManyField(
-        "groups.Day", related_name="secondary_scheduled_day_type"
+        "groups.Day",
+        related_name="secondary_scheduled_day_type",
     )
 
     status = models.CharField(

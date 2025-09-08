@@ -1,0 +1,37 @@
+Qilinishi kerak
+
+
+
+
+
+
+
+Qilindi
+
+
+http://185.191.141.112:8501/devices/30/set_isup_data?token=abcd1234&host=185.191.141.112&port=7660&device_id=K10500592&key=abcd1234&host_format=ipaddress
+
+
+
+
+41: Feed up - Huvaydo
+
+
+40:Arzon bozor
+39:Champion sandwinch
+
+38: SAT Makon Guliston
+37: Feed up - Malika bozor
+
+
+35:Ilmiy ishlash markazi
+
+34:Benefit
+
+33:Feed up -  SAT Makon - Novza
+
+32:Feed up - Singapurskiy
+
+
+31:Feed up - Yunusobod Sayram
+29:Feed up - Zenit
