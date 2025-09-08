@@ -355,7 +355,7 @@ class FinanceSerializer(serializers.ModelSerializer):
         )
 
         representation["kind"] = (
-            KindSerializer(instance.kind).data if instance.kid else None
+            KindSerializer(instance.kind).data if instance.kind else None
         )
 
         representation["student"] = (
