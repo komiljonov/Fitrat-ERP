@@ -300,7 +300,7 @@ class UserListSerializer(ModelSerializer):
                 "You cannot use 'remove_fields' and 'include_only' at the same time."
             )
 
-        super(UserSerializer, self).__init__(*args, **kwargs)
+        super(UserListSerializer, self).__init__(*args, **kwargs)
 
         if include_only is not None:
             allowed = set(include_only)
