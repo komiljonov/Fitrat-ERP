@@ -282,14 +282,35 @@ class UserListSerializer(ModelSerializer):
             "created_at",
         ]
 
-    def __init__(self, *args, include_only=None, **kwargs):
-        # pop our custom arg before calling super
-        super().__init__(*args, **kwargs)
+    # def __init__(self, *args, include_only=None, **kwargs):
+    #     # pop our custom arg before calling super
+    #     super().__init__(*args, **kwargs)
+    #     if include_only is not None:
+    #         allowed = set(include_only)
+    #         for field_name in list(self.fields):
+    #             if field_name not in allowed:
+    #                 self.fields.pop(field_name)
+
+    def __init__(self, *args, **kwargs):
+        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        include_only: list | None = kwargs.pop("include_only", None)
+
+        if fields_to_remove and include_only:
+            raise ValueError(
+                "You cannot use 'remove_fields' and 'include_only' at the same time."
+            )
+
+        super(UserSerializer, self).__init__(*args, **kwargs)
+
         if include_only is not None:
             allowed = set(include_only)
-            for field_name in list(self.fields):
-                if field_name not in allowed:
-                    self.fields.pop(field_name)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+        elif fields_to_remove:
+            for field_name in fields_to_remove:
+                self.fields.pop(field_name, None)
 
     def get_bonus(self, obj):
         bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")

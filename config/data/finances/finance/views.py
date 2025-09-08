@@ -128,10 +128,10 @@ class FinanceListAPIView(ListCreateAPIView):
             queryset = queryset.filter(action=action)
 
         if creator:
-            queryset = queryset.filter(creator__id=creator)
+            queryset = queryset.filter(creator_id=creator)
 
         if casher_id:
-            queryset = queryset.filter(casher__id=casher_id)
+            queryset = queryset.filter(casher_id=casher_id)
 
         if kind:
             try:

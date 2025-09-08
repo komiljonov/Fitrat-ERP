@@ -238,7 +238,8 @@ class FinanceSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
     attendance = serializers.PrimaryKeyRelatedField(
-        queryset=Attendance.objects.all(), allow_null=True
+        queryset=Attendance.objects.all(),
+        allow_null=True,
     )
     total = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
@@ -346,11 +347,25 @@ class FinanceSerializer(serializers.ModelSerializer):
                 "id": instance.lid.id,
                 "full_name": f"{instance.lid.first_name} {instance.lid.last_name}",
             }
-        representation["creator"] = UserListSerializer(instance.creator).data
-        representation["kind"] = KindSerializer(instance.kind).data
-        representation["student"] = StudentSerializer(
-            instance.student, include_only=["id", "first_name", "last_name"]
-        ).data
+
+        representation["creator"] = (
+            UserListSerializer(instance.creator, include_only=["id", "name"]).data
+            if instance.creator
+            else None
+        )
+
+        representation["kind"] = (
+            KindSerializer(instance.kind).data if instance.kid else None
+        )
+
+        representation["student"] = (
+            StudentSerializer(
+                instance.student, include_only=["id", "first_name", "last_name"]
+            ).data
+            if instance.student
+            else None
+        )
+
         return representation
 
 
