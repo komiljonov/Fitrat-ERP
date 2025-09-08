@@ -161,7 +161,7 @@ class FinanceListAPIView(ListCreateAPIView):
                 created_at__lt=end_dt,
             )
 
-        return queryset
+        return queryset.select_related("kind", "creator")
 
 
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
