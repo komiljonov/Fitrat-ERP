@@ -4,6 +4,8 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.exceptions import PermissionDenied
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
+
 
 from .models import CustomUser
 from data.account.permission import PhoneAuthBackend
@@ -424,9 +426,13 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def get_lessons_payment(self, obj):
+
         finances = (
             Finance.objects.filter(
-                stuff=obj, kind__name__icontains="Lesson payment", action="EXPENSE"
+                # stuff=obj, kind__name__icontains="Lesson payment", action="EXPENSE"
+                stuff=obj,
+                kind__kind=FinanceKindTypeChoices.LESSON_PAYMENT,
+                action="EXPENSE",
             )
             .aggregate(total=Sum("amount"))
             .get("total")
@@ -437,7 +443,9 @@ class UserSerializer(serializers.ModelSerializer):
     def get_given_bonus(self, obj):
         finances = (
             Finance.objects.filter(
-                stuff=obj, kind__name__icontains="Bonus", action="EXPENSE"
+                stuff=obj,
+                kind__kind=FinanceKindTypeChoices.BONUS,
+                action="EXPENSE",
             )
             .aggregate(total=Sum("amount"))
             .get("total")
@@ -448,7 +456,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_given_penalty(self, obj):
         finances = (
             Finance.objects.filter(
-                stuff=obj, kind__name__icontains="Money back", action="INCOME"
+                stuff=obj, kind__kind=FinanceKindTypeChoices.MONEY_BACK, action="INCOME"
             )
             .aggregate(total=Sum("amount"))
             .get("total")

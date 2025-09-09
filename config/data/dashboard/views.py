@@ -18,6 +18,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
 from data.department.marketing_channel.models import MarketingChannel
 from data.finances.finance.models import (
     Finance,
@@ -273,6 +274,7 @@ class DashboardSecondView(APIView):
 
         # Common Filters
         filters = {}
+
         if start_date:
             filters["created_at__gte"] = start_date
         if end_date:
@@ -309,29 +311,38 @@ class DashboardSecondView(APIView):
         )
 
         first_lesson_come = Student.objects.filter(
-            id__in=students_with_one_attendance, **filters
+            id__in=students_with_one_attendance,
+            **filters,
         )
         first_lesson_come_archived = first_lesson_come.filter(is_archived=True)
 
         # First Course Payment Students
         payment_students = Finance.objects.filter(
-            student__isnull=False, kind__name="COURSE_PAYMENT", **filters
+            student__isnull=False,
+            # kind__name="COURSE_PAYMENT",
+            kind__kind=FinanceKindTypeChoices.COURSE_PAYMENT,
+            **filters,
         ).values_list("student", flat=True)
 
         first_course_payment = Student.objects.filter(
-            id__in=payment_students, **filters
+            id__in=payment_students,
+            **filters,
         )
         first_course_payment_archived = first_course_payment.filter(is_archived=True)
 
         # Active and Ended Courses
         new_student = Student.objects.filter(
-            student_stage_type="NEW_STUDENT", is_archived=False, **filters
+            student_stage_type="NEW_STUDENT",
+            is_archived=False,
+            **filters,
         )
         active_student = Student.objects.filter(
-            student_stage_type="ACTIVE_STUDENT", is_archived=False, **filters
+            student_stage_type="ACTIVE_STUDENT",
+            is_archived=False,
+            **filters,
         )
         course_ended = StudentGroup.objects.filter(group__status="INACTIVE", **filters)
-        all_students = Student.objects.filter(is_archived=False)
+        # all_students = Student.objects.filter(is_archived=False)
 
         # **Filtering Based on Dynamic Conditions**
 
@@ -1244,7 +1255,7 @@ class DashboardWeeklyFinanceAPIView(APIView):
 
         # Get all dynamic kinds from DB
         existing_kinds = list(
-            Kind.objects.values_list("name", flat=True)
+            Kind.objects.values_list("kind", flat=True)
         )  # Fetch all available kinds dynamically
 
         if filial:
@@ -1286,7 +1297,8 @@ class DashboardWeeklyFinanceAPIView(APIView):
                     },
                     status=400,
                 )
-            filters["kind__name"] = kind  # Ensure kind filtering is correctly applied
+            # filters["kind__name"] = kind  # Ensure kind filtering is correctly applied
+            filters["kind__kind"] = kind  # Ensure kind filtering is correctly applied
 
         # Query and group by weekday
         queryset = (

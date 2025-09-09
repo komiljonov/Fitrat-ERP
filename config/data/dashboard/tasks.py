@@ -10,6 +10,7 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 from requests import post
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
 from data.account.models import CustomUser
 from data.department.filial.models import Filial
 from data.finances.finance.models import Finance
@@ -21,16 +22,18 @@ from data.student.studentgroup.models import StudentGroup
 
 logging.basicConfig(level=logging.INFO)
 
+
 class TelegramBot:
     HOST = "https://api.telegram.org/bot"
 
     def __init__(self):
         # Get token from environment variables
 
-
         token = os.getenv("BOT_TOKEN")
         if not token:
-            raise ValueError("Telegram bot TOKEN is missing! Set the TOKEN environment variable.")
+            raise ValueError(
+                "Telegram bot TOKEN is missing! Set the TOKEN environment variable."
+            )
         self.base_url = self.HOST + token
 
     def send_message(
@@ -84,7 +87,9 @@ class TelegramBot:
             logging.error(f"Failed to send document to chat_id {chat_id}: {e}")
             return None
 
+
 bot = TelegramBot()
+
 
 def generate_excel_report():
     """
@@ -123,23 +128,59 @@ def generate_excel_report():
 
     for filial in Filial.objects.all():
         # 🔹 Fetch student data
-        orders = Lid.objects.filter(filial=filial, ordered_date__gte=datetime.now() - timedelta(days=1), is_archived=False).count()
-        first_lesson = FirstLLesson.objects.filter(filial=filial, created_at__gte=datetime.now() - timedelta(days=1), lid__is_archived=False).count()
-        new_student = Student.objects.filter(filial=filial, student_stage_type="NEW_STUDENT",
-                                             new_student_date__gte=datetime.now() - timedelta(days=1), is_archived=False).count()
-        student = Student.objects.filter(filial=filial, student_stage_type="ACTIVE_STUDENT",
-                                         active_date__gte=datetime.now() - timedelta(days=1), is_archived=False).count()
-        debt = Student.objects.filter(filial=filial, balance_status="INACTIVE", is_archived=False).count()
+        orders = Lid.objects.filter(
+            filial=filial,
+            ordered_date__gte=datetime.now() - timedelta(days=1),
+            is_archived=False,
+        ).count()
+        first_lesson = FirstLLesson.objects.filter(
+            filial=filial,
+            created_at__gte=datetime.now() - timedelta(days=1),
+            lid__is_archived=False,
+        ).count()
+        new_student = Student.objects.filter(
+            filial=filial,
+            student_stage_type="NEW_STUDENT",
+            new_student_date__gte=datetime.now() - timedelta(days=1),
+            is_archived=False,
+        ).count()
+        student = Student.objects.filter(
+            filial=filial,
+            student_stage_type="ACTIVE_STUDENT",
+            active_date__gte=datetime.now() - timedelta(days=1),
+            is_archived=False,
+        ).count()
+        debt = Student.objects.filter(
+            filial=filial, balance_status="INACTIVE", is_archived=False
+        ).count()
         groups = Group.objects.filter(filial=filial, status="ACTIVE").count()
-        finance_student = Finance.objects.filter(student__isnull=False, filial=filial, kind__name="Course payment",
-                                                 created_at__lte=datetime.today().replace(day=1), created_at__gte=datetime.today()).count()
-        archived_lid = Lid.objects.filter(filial=filial, is_student=False, is_archived=True).count()
-        archived_student = Student.objects.filter(filial=filial, is_archived=True).count()
+        finance_student = Finance.objects.filter(
+            student__isnull=False,
+            filial=filial,
+            # kind__name="Course payment",
+            kind__kind=FinanceKindTypeChoices.COURSE_PAYMENT,
+            created_at__lte=datetime.today().replace(day=1),
+            created_at__gte=datetime.today(),
+        ).count()
+        archived_lid = Lid.objects.filter(
+            filial=filial, is_student=False, is_archived=True
+        ).count()
+        archived_student = Student.objects.filter(
+            filial=filial, is_archived=True
+        ).count()
         all_archived = archived_lid + archived_student
-        all_real_students = Student.objects.filter(filial=filial, is_archived=False, is_frozen=False).count()
-        all_students = StudentGroup.objects.filter(filial=filial, group__status="ACTIVE", student__is_archived=False).count()
-        all_active = Student.objects.filter(filial=filial, balance_status="ACTIVE").count()
-        groups_active_students = StudentGroup.objects.filter(filial=filial, group__status="ACTIVE", student__is_archived=False).count()
+        all_real_students = Student.objects.filter(
+            filial=filial, is_archived=False, is_frozen=False
+        ).count()
+        all_students = StudentGroup.objects.filter(
+            filial=filial, group__status="ACTIVE", student__is_archived=False
+        ).count()
+        all_active = Student.objects.filter(
+            filial=filial, balance_status="ACTIVE"
+        ).count()
+        groups_active_students = StudentGroup.objects.filter(
+            filial=filial, group__status="ACTIVE", student__is_archived=False
+        ).count()
 
         # 🔹 Store in Data Dictionary
         data_dict["Buyurtma"].append(orders)
@@ -208,14 +249,24 @@ def generate_excel_report():
     finance_entries = Finance.objects.all()
 
     for entry in finance_entries:
-        ws2.append([
-            "Student to'ladi" if entry.student else "Hodim avans" if entry.stuff else "Boshqa",
-            entry.student.first_name + " " + entry.student.last_name if entry.student else entry.stuff.full_name if entry.stuff else "Unknown",
-            entry.comment or "-",
-            entry.amount,
-            entry.payment_method,
-            entry.casher.user.full_name if entry.casher else "-"
-        ])
+        ws2.append(
+            [
+                (
+                    "Student to'ladi"
+                    if entry.student
+                    else "Hodim avans" if entry.stuff else "Boshqa"
+                ),
+                (
+                    entry.student.first_name + " " + entry.student.last_name
+                    if entry.student
+                    else entry.stuff.full_name if entry.stuff else "Unknown"
+                ),
+                entry.comment or "-",
+                entry.amount,
+                entry.payment_method,
+                entry.casher.user.full_name if entry.casher else "-",
+            ]
+        )
 
     # 🔹 Auto adjust column width for both sheets
     for sheet in [ws1, ws2]:
@@ -234,6 +285,7 @@ def generate_excel_report():
     wb.save(file_path)
     return file_path
 
+
 @shared_task
 def send_daily_excel_report():
     """
@@ -248,13 +300,17 @@ def send_daily_excel_report():
         logging.error("Excel report was not generated correctly.")
         return "Failed to generate the report."
 
-    users = CustomUser.objects.filter(chat_id__isnull=False, role__in=["DIRECTOR", "MULTIPLE_FILIAL_MANAGER"])
+    users = CustomUser.objects.filter(
+        chat_id__isnull=False, role__in=["DIRECTOR", "MULTIPLE_FILIAL_MANAGER"]
+    )
 
     success_count = 0
 
     for user in users:
         try:
-            bot.send_document(chat_id=user.chat_id, file_path=file_path, caption="📊 Kunlik hisobot")
+            bot.send_document(
+                chat_id=user.chat_id, file_path=file_path, caption="📊 Kunlik hisobot"
+            )
             logging.info(f"✅ Report sent to {user.first_name} ({user.chat_id})")
             success_count += 1
         except Exception as e:
@@ -267,5 +323,7 @@ def send_daily_excel_report():
     except Exception as e:
         logging.warning(f"Failed to delete report file: {str(e)}")
 
-    logging.info(f"✅ Celery task completed: Sent Excel report to {success_count} users.")
+    logging.info(
+        f"✅ Celery task completed: Sent Excel report to {success_count} users."
+    )
     return f"Excel report sent to {success_count} users."

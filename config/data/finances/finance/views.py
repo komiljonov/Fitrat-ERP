@@ -121,8 +121,11 @@ class FinanceListAPIView(ListCreateAPIView):
         casher_id = self.request.GET.get("casher_id")
         creator = self.request.GET.get("creator")
 
+        Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
+
         queryset = Finance.objects.all().exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            Q(kind__kind=FinanceKindTypeChoices.BONUS)
+            | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
         )
 
         if action:
@@ -173,7 +176,8 @@ class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
 
 class FinanceNoPGList(ListAPIView):
     queryset = Finance.objects.all().exclude(
-        Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+        Q(kind__kind=FinanceKindTypeChoices.BONUS)
+        | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
     )
     serializer_class = FinanceSerializer
     permission_classes = (IsAuthenticated,)
@@ -195,7 +199,8 @@ class StudentFinanceListAPIView(ListAPIView):
     def get_queryset(self, **kwargs):
 
         queryset = Finance.objects.all().exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            Q(kind__kind=FinanceKindTypeChoices.BONUS)
+            | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
         )
 
         pk = self.kwargs.get("pk")
@@ -214,7 +219,10 @@ class StudentFinanceListAPIView(ListAPIView):
         is_paid = self.request.GET.get("is_paid", False)
 
         if is_paid:
-            queryset = queryset.filter().exclude(kind__name="Lesson payment")
+            # queryset = queryset.filter().exclude(kind__name="Lesson payment")
+            queryset = queryset.filter().exclude(
+                kind__kind=FinanceKindTypeChoices.LESSON_PAYMENT
+            )
 
         if start_date and end_date:
             try:
@@ -270,7 +278,8 @@ class FinancePaymentMethodsAmountsListAPIView(APIView):
                 casher=casher_obj, action="INCOME", payment_method=payment_method
             )
             .exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+                Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
             )
             .aggregate(Sum("amount"))["amount__sum"]
             or 0
@@ -281,7 +290,8 @@ class FinancePaymentMethodsAmountsListAPIView(APIView):
                 casher=casher_obj, action="EXPENSE", payment_method=payment_method
             )
             .exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+                Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
             )
             .aggregate(Sum("amount"))["amount__sum"]
             or 0
@@ -385,8 +395,8 @@ class FinanceStatisticsAPIView(APIView):
             total_income = (
                 Finance.objects.filter(casher__role=role, action="INCOME", **filters)
                 .exclude(
-                    Q(kind__name__icontains="Bonus")
-                    | Q(kind__name__icontains="Money back")
+                    Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                    | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 )
                 .aggregate(total_income=Sum("amount"))["total_income"]
                 or 0
@@ -395,8 +405,8 @@ class FinanceStatisticsAPIView(APIView):
             total_outcome = (
                 Finance.objects.filter(casher__role=role, action="EXPENSE", **filters)
                 .exclude(
-                    Q(kind__name__icontains="Bonus")
-                    | Q(kind__name__icontains="Money back")
+                    Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                    | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 )
                 .aggregate(total_outcome=Sum("amount"))["total_outcome"]
                 or 0
@@ -479,7 +489,7 @@ class CasherStatisticsAPIView(APIView):
 
         if casher_id:
             queryset = Finance.objects.filter(casher_id=casher_id, **filters).exclude(
-                # Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+                # Q(kind__kind=FinanceKindTypeChoices.BONUS) | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 Q(
                     kind__kind__in=[
                         FinanceKindTypeChoices.BONUS,
@@ -510,7 +520,7 @@ class CasherStatisticsAPIView(APIView):
             )
 
             all_qs = Finance.objects.filter(casher_id=casher_id).exclude(
-                # Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+                # Q(kind__kind=FinanceKindTypeChoices.BONUS) | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 Q(
                     kind__kind__in=[
                         FinanceKindTypeChoices.BONUS,
@@ -752,7 +762,7 @@ class FinanceTeacher(ListAPIView):
 #             filters &= Q(action=action)
 
 #         finances = Finance.objects.filter(filters).exclude(
-#             Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+#             Q(kind__kind=FinanceKindTypeChoices.BONUS) | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
 #         )
 
 #         start_date_str = request.GET.get("start_date")
@@ -916,7 +926,8 @@ class FinanceExcel(APIView):
         finances = (
             Finance.objects.filter(filters)
             .exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+                Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
             )
             .select_related("casher", "kind")
         )
@@ -1132,8 +1143,8 @@ class PaymentStatistics(APIView):
                     payment_method=payment_name, action=action_type, **filter
                 )
                 .exclude(
-                    Q(kind__name__icontains="Bonus")
-                    | Q(kind__name__icontains="Money back")
+                    Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                    | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 )
                 .aggregate(total=Sum("amount"))["total"]
                 or 0
@@ -1194,7 +1205,8 @@ class PaymentCasherStatistics(ListAPIView):
             qs = Finance.objects.filter(
                 payment_method=payment_method, action=action_type
             ).exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+                Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
             )
             if cashier_id:
                 qs = qs.filter(casher__id=cashier_id)
@@ -1329,8 +1341,8 @@ class PaymentStatisticsByKind(APIView):
             return (
                 Finance.objects.filter(kind=kind, action=action_type, **filters)
                 .exclude(
-                    Q(kind__name__icontains="Bonus")
-                    | Q(kind__name__icontains="Money back")
+                    Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                    | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 )
                 .aggregate(total=Sum("amount"))["total"]
                 or 0
@@ -1479,8 +1491,8 @@ class GeneratePaymentExcelAPIView(APIView):
                     payment_method=method, action="INCOME", **filters
                 )
                 .exclude(
-                    Q(kind__name__icontains="Bonus")
-                    | Q(kind__name__icontains="Money back")
+                    Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                    | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 )
                 .aggregate(total=Sum("amount"))["total"]
                 or 0
@@ -1490,8 +1502,8 @@ class GeneratePaymentExcelAPIView(APIView):
                     payment_method=method, action="EXPENSE", **filters
                 )
                 .exclude(
-                    Q(kind__name__icontains="Bonus")
-                    | Q(kind__name__icontains="Money back")
+                    Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                    | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 )
                 .aggregate(total=Sum("amount"))["total"]
                 or 0

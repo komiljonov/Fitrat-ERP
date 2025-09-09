@@ -77,7 +77,7 @@ class CasherSerializer(serializers.ModelSerializer):
         # end_date = request.GET.get("end_date")
 
         all_qs = Finance.objects.filter(casher=obj).exclude(
-            # Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            # Q(kind__kind=FinanceKindTypeChoices.BONUS) | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
             Q(kind__kind=FinanceKindTypeChoices.BONUS)
             | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
         )
@@ -147,7 +147,8 @@ class CasherSerializer(serializers.ModelSerializer):
         expense = (
             Finance.objects.filter(casher=obj, action="EXPENSE")
             .exclude(
-                Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+                Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
             )
             .aggregate(Sum("amount"))["amount__sum"]
             or 0
@@ -168,8 +169,8 @@ class CasherSerializer(serializers.ModelSerializer):
                     created_at__lte=end,
                 )
                 .exclude(
-                    Q(kind__name__icontains="Bonus")
-                    | Q(kind__name__icontains="Money back")
+                    Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                    | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 )
                 .aggregate(Sum("amount"))["amount__sum"]
                 or 0
@@ -184,8 +185,8 @@ class CasherSerializer(serializers.ModelSerializer):
                     created_at__lte=end_date,
                 )
                 .exclude(
-                    # Q(kind__name__icontains="Bonus")
-                    # | Q(kind__name__icontains="Money back")
+                    # Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                    # | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                     Q(kind__kind=FinanceKindTypeChoices.BONUS)
                     | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 )
