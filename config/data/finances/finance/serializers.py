@@ -1,7 +1,9 @@
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 from django.db.models import Sum, Count, Q, Case, When, FloatField, F, Value
 from django.db.models.functions import Coalesce
 from django.utils.dateparse import parse_date
+from django.utils import timezone
+
 from rest_framework import serializers
 
 from data.finances.finance.choices import FinanceKindTypeChoices
@@ -158,7 +160,7 @@ class CasherSerializer(serializers.ModelSerializer):
 
         # If no dates are provided → aggregate everything (already excluding unwanted kinds)
         if not start_str:
-            return qs.aggregate(total=Coalesce(Sum("amount"), 0))["total"]
+            return qs.aggregate(total=Coalesce(Sum("amount"), 0.0))["total"]
 
         # Parse dates (YYYY-MM-DD); fall back to start if end missing/invalid
         start_date = parse_date(start_str)
