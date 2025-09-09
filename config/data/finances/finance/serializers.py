@@ -162,7 +162,7 @@ class CasherSerializer(serializers.ModelSerializer):
         # If no dates are provided → aggregate everything (already excluding unwanted kinds)
         if not start_str:
             return qs.aggregate(
-                total=Coalesce(Sum("amount"), 0.0, output_field=models.FloatField)
+                total=Coalesce(Sum("amount"), 0.0, output_field=models.FloatField())
             )["total"]
 
         # Parse dates (YYYY-MM-DD); fall back to start if end missing/invalid
