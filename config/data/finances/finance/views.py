@@ -99,6 +99,7 @@ class CasherNoPg(ListAPIView):
         role = self.request.GET.get("role", None)
 
         filter = {}
+        
         if role:
             filter["role"] = role
 

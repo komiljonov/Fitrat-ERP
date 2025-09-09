@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.db.models import Sum, Count, Q, Case, When, FloatField, F, Value
 from django.db.models.functions import Coalesce
 from django.utils.dateparse import parse_date
@@ -97,47 +98,85 @@ class CasherSerializer(serializers.ModelSerializer):
 
         return round(balance, 2)
 
-    def get_income(self, obj):
-        request = self.context.get("request")
-        start_date = request.GET.get("start_date")
-        end_date = request.GET.get("end_date")
+    # def get_income(self, obj):
+    #     request = self.context.get("request")
+    #     start_date = request.GET.get("start_date")
+    #     end_date = request.GET.get("end_date")
 
-        income = (
-            Finance.objects.filter(casher=obj, action="INCOME").aggregate(
-                Sum("amount")
-            )["amount__sum"]
-            or 0
+    #     income = (
+    #         Finance.objects.filter(casher=obj, action="INCOME").aggregate(
+    #             Sum("amount")
+    #         )["amount__sum"]
+    #         or 0
+    #     )
+
+    #     if start_date:
+    #         start = parse_date(start_date)
+    #         end = parse_date(end_date) if end_date else start
+
+    #         end = end + timedelta(days=1) - timedelta(seconds=1)
+
+    #         income = (
+    #             Finance.objects.filter(
+    #                 casher=obj,
+    #                 action="INCOME",
+    #                 created_at__gte=start,
+    #                 created_at__lte=end,
+    #             ).aggregate(Sum("amount"))["amount__sum"]
+    #             or 0
+    #         )
+
+    #     if start_date and end_date:
+    #         income = (
+    #             Finance.objects.filter(
+    #                 casher=obj,
+    #                 action="INCOME",
+    #                 created_at__gte=start_date,
+    #                 created_at__lte=end_date,
+    #             ).aggregate(Sum("amount"))["amount__sum"]
+    #             or 0
+    #         )
+
+    #     return income
+
+    def get_income(self, obj):
+        # DRF Request (query_params) or plain Django (GET)
+        request = self.context.get("request")
+        params = (
+            getattr(request, "query_params", None) or getattr(request, "GET", {}) or {}
         )
 
-        if start_date:
-            start = parse_date(start_date)
-            end = parse_date(end_date) if end_date else start
+        start_str = params.get("start_date")
+        end_str = params.get("end_date")
 
-            from datetime import timedelta
+        qs = Finance.objects.filter(casher=obj, action="INCOME").exclude(
+            kind__kind__in=[
+                FinanceKindTypeChoices.BONUS,
+                FinanceKindTypeChoices.MONEY_BACK,
+            ]
+        )
 
-            end = end + timedelta(days=1) - timedelta(seconds=1)
+        # If no dates are provided → aggregate everything (already excluding unwanted kinds)
+        if not start_str:
+            return qs.aggregate(total=Coalesce(Sum("amount"), 0))["total"]
 
-            income = (
-                Finance.objects.filter(
-                    casher=obj,
-                    action="INCOME",
-                    created_at__gte=start,
-                    created_at__lte=end,
-                ).aggregate(Sum("amount"))["amount__sum"]
-                or 0
-            )
+        # Parse dates (YYYY-MM-DD); fall back to start if end missing/invalid
+        start_date = parse_date(start_str)
+        end_date = parse_date(end_str) if end_str else start_date
+        if not start_date:
+            # If start_date is invalid, treat as 0 (or raise, depending on your API design)
+            return 0
 
-        if start_date and end_date:
-            income = (
-                Finance.objects.filter(
-                    casher=obj,
-                    action="INCOME",
-                    created_at__gte=start_date,
-                    created_at__lte=end_date,
-                ).aggregate(Sum("amount"))["amount__sum"]
-                or 0
-            )
-        return income
+        # Inclusive end of day using half-open interval [start_dt, end_next_dt)
+        # This avoids edge cases with seconds/microseconds and uses indexes on DateTimeField.
+        tz = timezone.get_current_timezone()
+        start_dt = timezone.make_aware(datetime.combine(start_date, time.min), tz)
+        end_next_dt = timezone.make_aware(
+            datetime.combine(end_date + timedelta(days=1), time.min), tz
+        )
+
+        qs = qs.filter(created_at__gte=start_dt, created_at__lt=end_next_dt)
+        return qs.aggregate(total=Coalesce(Sum("amount"), 0))["total"]
 
     def get_expense(self, obj):
         request = self.context.get("request")

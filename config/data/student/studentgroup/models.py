@@ -78,7 +78,7 @@ class SecondaryStudentGroup(BaseModel):
         "groups.SecondaryGroup",
         on_delete=models.PROTECT,
     )
-    
+
     student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
