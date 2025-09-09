@@ -234,6 +234,7 @@ class FistLesson_data(BaseModel):
         null=True,
         blank=True,
     )
+
     lid: "Lid" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,

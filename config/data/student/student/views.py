@@ -587,8 +587,8 @@ class FistLesson_dataList(ListCreateAPIView):
 
 
 class FirstLesson_dataListRetrive(RetrieveUpdateDestroyAPIView):
-    queryset = FistLesson_data.objects.all()
-    serializer_class = FistLesson_dataSerializer
+    queryset = FirstLLesson.objects.all()
+    serializer_class = FirstLessonSerializer
     permission_classes = [IsAuthenticated]
 
 

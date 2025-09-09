@@ -5,7 +5,6 @@ from django.db.models import Avg
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 
-from .models import Student, FistLesson_data
 from data.student.attendance.models import Attendance
 from data.student.groups.lesson_date_calculator import calculate_lessons
 from data.student.groups.models import Group
@@ -23,23 +22,30 @@ from data.finances.finance.models import SaleStudent, VoucherStudent
 from data.upload.models import File
 from data.upload.serializers import FileUploadSerializer
 
+from .models import Student, FistLesson_data
+
 
 class StudentSerializer(serializers.ModelSerializer):
 
     photo = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), allow_null=True
+        queryset=File.objects.all(),
+        allow_null=True,
     )
     filial = serializers.PrimaryKeyRelatedField(
-        queryset=Filial.objects.all(), allow_null=True
+        queryset=Filial.objects.all(),
+        allow_null=True,
     )
     marketing_channel = serializers.PrimaryKeyRelatedField(
-        queryset=MarketingChannel.objects.all(), allow_null=True
+        queryset=MarketingChannel.objects.all(),
+        allow_null=True,
     )
     course = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
     file = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), many=True, allow_null=True
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
     )
     password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
@@ -380,13 +386,16 @@ class StudentAppSerializer(serializers.ModelSerializer):
 
 class FistLesson_dataSerializer(serializers.ModelSerializer):
     group = serializers.PrimaryKeyRelatedField(
-        queryset=Group.objects.all(), allow_null=True
+        queryset=Group.objects.all(),
+        allow_null=True,
     )
     teacher = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
     level = serializers.PrimaryKeyRelatedField(
-        queryset=Level.objects.all(), allow_null=True
+        queryset=Level.objects.all(),
+        allow_null=True,
     )
 
     class Meta:

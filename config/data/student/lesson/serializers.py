@@ -377,7 +377,8 @@ class LessonScheduleSerializer(serializers.ModelSerializer):
 
 class FirstLessonSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), allow_null=True
+        queryset=Lid.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
