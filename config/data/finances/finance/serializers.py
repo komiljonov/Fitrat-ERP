@@ -3,6 +3,7 @@ from django.db.models.functions import Coalesce
 from django.utils.dateparse import parse_date
 from rest_framework import serializers
 
+from config.data.finances.finance.choices import FinanceKindTypeChoices
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
@@ -72,11 +73,13 @@ class CasherSerializer(serializers.ModelSerializer):
     def get_balance(self, obj):
 
         request = self.context.get("request")
-        start_date = request.GET.get("start_date")
-        end_date = request.GET.get("end_date")
+        # start_date = request.GET.get("start_date")
+        # end_date = request.GET.get("end_date")
 
         all_qs = Finance.objects.filter(casher=obj).exclude(
-            Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            # Q(kind__name__icontains="Bonus") | Q(kind__name__icontains="Money back")
+            Q(kind__kind=FinanceKindTypeChoices.BONUS)
+            | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
         )
 
         balance = all_qs.aggregate(
@@ -91,6 +94,7 @@ class CasherSerializer(serializers.ModelSerializer):
                 Value(0.0),
             )
         )["total"]
+
         return round(balance, 2)
 
     def get_income(self, obj):
@@ -180,8 +184,10 @@ class CasherSerializer(serializers.ModelSerializer):
                     created_at__lte=end_date,
                 )
                 .exclude(
-                    Q(kind__name__icontains="Bonus")
-                    | Q(kind__name__icontains="Money back")
+                    # Q(kind__name__icontains="Bonus")
+                    # | Q(kind__name__icontains="Money back")
+                    Q(kind__kind=FinanceKindTypeChoices.BONUS)
+                    | Q(kind__kind=FinanceKindTypeChoices.MONEY_BACK)
                 )
                 .aggregate(Sum("amount"))["amount__sum"]
                 or 0
@@ -205,7 +211,10 @@ class CasherSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["user"] = UserListSerializer(instance.user).data
+        rep["user"] = UserListSerializer(
+            instance.user, include_only=["id", "full_name", "first_name", "last_name"]
+        ).data
+
         return rep
 
 
@@ -235,8 +244,11 @@ class CasherHandoverSerializer(serializers.ModelSerializer):
 
 
 class FinanceSerializer(serializers.ModelSerializer):
+
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+
     casher = serializers.PrimaryKeyRelatedField(queryset=Casher.objects.all())
+
     attendance = serializers.PrimaryKeyRelatedField(
         queryset=Attendance.objects.all(),
         allow_null=True,

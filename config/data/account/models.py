@@ -91,8 +91,10 @@ class CustomUser(AbstractUser):
 
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
-    filial: "Filial" = models.ManyToManyField(
-        "filial.Filial", blank=True, related_name="users_filials"
+    filial: "models.ManyToManyField[Filial]" = models.ManyToManyField(
+        "filial.Filial",
+        blank=True,
+        related_name="users_filials",
     )
 
     is_archived = models.BooleanField(default=False)
