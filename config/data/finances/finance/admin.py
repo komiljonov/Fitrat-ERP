@@ -16,14 +16,12 @@ class KindAdmin(admin.ModelAdmin):
 class FinansAdmin(admin.ModelAdmin):
     list_display = (
         "stuff",
-        "lid__first_name",
-        "student__first_name",
-        "lid__lid_stage_type",
-        "casher__role",
+        "casher",
         "action",
         "amount",
         "kind",
         "created_at",
+        "comment",
     )
 
     search_fields = (
