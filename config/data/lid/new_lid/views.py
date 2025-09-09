@@ -34,7 +34,7 @@ from data.student.lesson.models import FirstLLesson
 from datetime import datetime, timedelta
 
 
-class B(PageNumberPagination):
+class CustomPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = "page_size"
     max_page_size = 100
@@ -42,7 +42,7 @@ class B(PageNumberPagination):
 
 class LeadListCreateView(ListCreateAPIView):
     serializer_class = LeadSerializer
-    pagination_class = B
+    pagination_class = CustomPagination
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 

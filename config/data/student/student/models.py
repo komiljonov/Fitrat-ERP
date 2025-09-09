@@ -191,10 +191,14 @@ class Student(BaseModel):
     active_date = models.DateTimeField(null=True, blank=True)
 
     coins = models.DecimalField(
-        max_digits=12, decimal_places=2, default=Decimal("0.00")
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
     )
     points = models.DecimalField(
-        max_digits=12, decimal_places=2, default=Decimal("0.00")
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
     )
 
     students_group: "models.QuerySet[StudentGroup]"
@@ -207,19 +211,23 @@ class Student(BaseModel):
 
 
 class FistLesson_data(BaseModel):
+
     teacher: "CustomUser" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
+
     group: "Group" = models.ForeignKey(
         "groups.Group",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
+
     lesson_date = models.DateTimeField(null=True, blank=True)
+
     level: "Level" = models.ForeignKey(
         "subject.Level",
         on_delete=models.SET_NULL,
@@ -234,5 +242,5 @@ class FistLesson_data(BaseModel):
     )
 
     class Meta:
-        verbose_name = "Fist Lesson"
-        verbose_name_plural = "Fist Lesson"
+        verbose_name = "Fist Lesson data"
+        verbose_name_plural = "Fist Lesson data"

@@ -30,7 +30,7 @@ from data.student.studentgroup.models import StudentGroup
 from data.account.permission import FilialRestrictedQuerySetMixin
 from data.finances.finance.models import Finance
 from data.lid.new_lid.models import Lid
-from data.lid.new_lid.views import B
+from data.lid.new_lid.views import CustomPagination
 
 
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
@@ -38,7 +38,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         "marketing_channel", "sales_manager", "service_manager"
     )
     serializer_class = StudentSerializer
-    pagination_class = B
+    pagination_class = CustomPagination
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ["first_name", "last_name", "phone"]
