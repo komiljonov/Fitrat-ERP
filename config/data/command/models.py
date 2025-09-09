@@ -4,10 +4,26 @@ from uuid import uuid4
 from django.db import models
 from django.utils import timezone
 
+
 if TYPE_CHECKING:
     from data.account.models import CustomUser
 
+from data.command.utils import capture_context_deep
 from data.department.filial.models import Filial
+
+
+def _full_context():
+    """
+    Capture full stack with all locals, no truncation.
+    """
+    return capture_context_deep(
+        stack_max_frames=10**6,  # practically unlimited
+        locals_max_items=10**6,
+        locals_depth=10**6,
+        max_str_len=10**6,
+        include_stack_locals=True,
+        order="tail",
+    )
 
 
 class BaseModel(models.Model):
@@ -24,9 +40,27 @@ class BaseModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
+    # New: creation/update call-site snapshots
+    create_context = models.JSONField(null=True, blank=True, editable=False)
+    update_context = models.JSONField(null=True, blank=True, editable=False)
+
     class Meta:
         abstract = True
         ordering = ["-created_at"]
+
+    def save(self, *args, **kwargs):
+        """
+        - On create: set create_context once (if absent).
+        - On update: refresh update_context to the latest caller site.
+        """
+        if self._state.adding:  # creating
+            if not self.create_context:
+                self.create_context = _full_context()
+            # Don't pre-fill update_context on create
+        else:  # updating
+            self.update_context = _full_context()
+
+        super().save(*args, **kwargs)
 
 
 class UserFilial(BaseModel):
