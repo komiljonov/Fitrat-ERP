@@ -24,11 +24,8 @@ class FinansAdmin(admin.ModelAdmin):
         "comment",
     )
 
-    search_fields = (
-        "action",
-        "kind",
-    )
-    list_filter = ("stuff", "action", "kind", "filial", "student")
+    search_fields = ("action",)
+    list_filter = ("kind", "stuff", "action", "filial", "student")
 
 
 @admin.register(SaleStudent)
