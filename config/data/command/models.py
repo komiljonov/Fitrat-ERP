@@ -41,8 +41,8 @@ class BaseModel(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     # New: creation/update call-site snapshots
-    create_context = models.JSONField(null=True, blank=True, editable=False)
-    update_context = models.JSONField(null=True, blank=True, editable=False)
+    create_context = models.JSONField(null=True, blank=True)
+    update_context = models.JSONField(null=True, blank=True)
 
     class Meta:
         abstract = True
