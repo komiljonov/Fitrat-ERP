@@ -3,7 +3,7 @@ from django.db.models.functions import Coalesce
 from django.utils.dateparse import parse_date
 from rest_framework import serializers
 
-from config.data.finances.finance.choices import FinanceKindTypeChoices
+from data.finances.finance.choices import FinanceKindTypeChoices
 from data.account.models import CustomUser
 from data.account.serializers import UserListSerializer
 from data.student.student.models import Student
