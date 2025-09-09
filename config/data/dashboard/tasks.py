@@ -10,7 +10,7 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 from requests import post
 
-from config.data.finances.finance.choices import FinanceKindTypeChoices
+from data.finances.finance.choices import FinanceKindTypeChoices
 from data.account.models import CustomUser
 from data.department.filial.models import Filial
 from data.finances.finance.models import Finance
