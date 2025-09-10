@@ -84,20 +84,16 @@ def on_create_user(sender, instance: Student, created, **kwargs):
 def on_save_user(sender, instance: Student, created, **kwargs):
     if created:
         Log.objects.create(
-            app="Student",
-            model="Student",
-            action="Log",
-            model_action="Created",
+            object="STUDENT",
+            action="STUDENT_CREATED",
             student=instance,
             account=instance.user,
         )
 
     if not created:
         Log.objects.create(
-            app="Student",
-            model="Student",
-            action="Log",
-            model_action="Updated",
+            object="STUDENT",
+            action="STUDENT_UPDATED",
             student=instance,
             account=instance.user,
         )

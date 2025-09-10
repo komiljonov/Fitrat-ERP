@@ -51,28 +51,27 @@ def on_create(sender, instance: Finance, created, **kwargs):
 def on_finance_create(sender, instance: Finance, created, **kwargs):
     if created:
         Log.objects.create(
-            app="Finance",
-            model="Finance",
-            action="Finance",
-            model_action="Created",
-            finance=Finance.objects.filter(id=instance.id).first(),
+            object="FINANCE",
+            action="FINANCE_CREATED",
+            finance=instance,
             lid=instance.lid,
             student=instance.student,
             account=instance.stuff,
+            comment="Finance created",
         )
         print("Log for finance created ...")
 
     if not created:
         Log.objects.create(
-            app="Finance",
-            model="Finance",
-            action="Finance",
-            model_action="Updated",
-            finance=Finance.objects.filter(id=instance.id).first(),
+            object="FINANCE",
+            action="FINANCE_CREATED",
+            finance=instance,
             lid=instance.lid,
             student=instance.student,
             account=instance.stuff,
+            comment="Finance created",
         )
+
         print("Log for finance updated ...")
 
 

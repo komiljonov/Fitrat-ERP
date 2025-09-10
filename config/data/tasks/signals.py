@@ -32,11 +32,9 @@ def on_create(sender, instance: Task, created, **kwargs):
 def on_update(sender, instance: Task, created, **kwargs):
     if created:
         Log.objects.create(
-            app="Tasks",
-            model="Task",
-            action="Log",
-            model_action="Created",
-            lid=instance.lid,
+            object="TASK",
+            action="TASK_CREATED",
+            lead=instance.lid,
             student=instance.student,
             task=instance,
             account=instance.performer,
@@ -45,11 +43,9 @@ def on_update(sender, instance: Task, created, **kwargs):
 
     if not created:
         Log.objects.create(
-            app="Tasks",
-            model="Task",
-            action="Log",
-            model_action="Updated",
-            lid=instance.lid,
+            object="TASK",
+            action="TASK_UPDATED",
+            lead=instance.lid,
             student=instance.student,
             task=instance,
             account=instance.performer,

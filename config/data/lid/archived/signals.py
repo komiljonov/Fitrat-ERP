@@ -25,6 +25,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
             )
 
             sg = StudentGroup.objects.filter(student=instance.student).all()
+
             for ssg in sg:
                 ssg.is_archived = True
                 ssg.save()
@@ -82,11 +83,9 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             instance.lid.save()
 
         Log.objects.create(
-            app="Archive",
-            model="Frozen",
-            action="Log",
-            model_action="Created",
-            lid=instance.lid,
+            object="STUDENT" if instance.student else "LEAD",
+            action="STUDENT_FROZEN" if instance.student else "LEAD_FROZEN",
+            lead=instance.lid,
             student=instance.student,
             frozen=instance,
             comment=f"Muzlatildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
@@ -102,11 +101,9 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             instance.lid.save()
 
         Log.objects.create(
-            app="Archive",
-            model="Frozen",
-            action="Log",
-            model_action="Created",
-            lid=instance.lid,
+            object="STUDENT" if instance.student else "LEAD",
+            action="STUDENT_UNFROZEN" if instance.student else "LEAD_UNFROZEN",
+            lead=instance.lid,
             student=instance.student,
             frozen=instance,
             comment=f"Muzlatishdan chiqarildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
@@ -117,11 +114,9 @@ def on_create(sender, instance: Frozen, created, **kwargs):
 def on_create(sender, instance: Archived, created, **kwargs):
     if created and instance.is_archived == True:
         Log.objects.create(
-            app="Archive",
-            model="Archived",
-            action="Log",
-            model_action="Archived",
-            lid=instance.lid,
+            object="STUDENT" if instance.student else "LEAD",
+            action="STUDENT_ARCHIVED" if instance.student else "LEAD_ARCHIVED",
+            lead=instance.lid,
             student=instance.student,
             archive=instance,
             comment=f"Arxivlandi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
@@ -129,11 +124,9 @@ def on_create(sender, instance: Archived, created, **kwargs):
 
     if not created and instance.is_archived == False:
         Log.objects.create(
-            app="Archive",
-            model="Unarchived",
-            action="Log",
-            model_action="Updated",
-            lid=instance.lid,
+            object="STUDENT" if instance.student else "LEAD",
+            action="STUDENT_UNARCHIVED" if instance.student else "LEAD_UNARCHIVED",
+            lead=instance.lid,
             student=instance.student,
             archive=instance,
             comment=f"Arxivdan chiqarildi {instance.updated_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",

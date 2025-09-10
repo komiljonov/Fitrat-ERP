@@ -76,18 +76,14 @@ def logs_on_first_lesson(sender, instance: FirstLLesson, created, **kwargs):
 
     if created:
         Log.objects.create(
-            app="Student",
-            model="First Lesson",
-            action="Log",
-            model_action="Created",
-            lid=instance.lid if instance.lid else None,
+            object="LEAD",
+            action="FIRST_LESSON_CREATED",
+            lead=instance.lid if instance.lid else None,
         )
 
     if not created:
         Log.objects.create(
-            app="Student",
-            model="First Lesson",
-            action="Log",
-            model_action="Updated",
-            lid=instance.lid if instance.lid else None,
+            object="LEAD",
+            action="FIRST_LESSON_UPDATED",
+            lead=instance.lid if instance.lid else None,
         )

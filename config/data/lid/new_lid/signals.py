@@ -347,15 +347,15 @@ def lid_log_after_save(sender, instance: Lid, created, **kwargs):
     """
     if created:
         Log.objects.create(
-            app="Lid",
-            model="Lid",
-            action="Log",
-            model_action="Created",
-            lid=instance,
+            object="LEAD",
+            action="LEAD_CREATED",
+            lead=instance,
+            comment="New lead created",
         )
         return
 
     changes = getattr(instance, "_changes", {}) or {}
+
     if not changes:
         # Nothing changed (or was updated via .update())
         return
@@ -363,11 +363,9 @@ def lid_log_after_save(sender, instance: Lid, created, **kwargs):
     comment = _format_changes_for_comment(instance, changes)
 
     Log.objects.create(
-        app="Lid",
-        model="Lid",
-        action="Log",
-        model_action="Updated",
-        lid=instance,
+        object="LEAD",
+        action="LEAD_UPDATED",
+        lead=instance,
         comment=comment,
     )
 
@@ -396,10 +394,8 @@ def lid_files_m2m_changed(sender, instance: Lid, action, reverse, pk_set, **kwar
         comment = f"M2M file {verb}: {len(pk_set)} items"
 
     Log.objects.create(
-        app="Lid",
-        model="Lid",
-        action="Log",
-        model_action="Updated",
-        lid=instance,
+        object="LEAD",
+        action="LOG_M2M_UPDATED",
+        lead=instance,
         comment=comment,
     )

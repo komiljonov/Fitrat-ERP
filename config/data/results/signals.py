@@ -696,9 +696,8 @@ def send_notf(sender, instance: Results, created, **kwargs):
 def on_logs(sender, instance: Results, created, **kwargs):
     if created:
         Log.objects.create(
-            app="Results",
-            model="Results",
-            action="Log",
+            object="STUDENT",
+            action="RESULT_CREATED",
             model_action="Created",
             student=instance.student,
             account=instance.teacher,
@@ -708,10 +707,8 @@ def on_logs(sender, instance: Results, created, **kwargs):
         )
     if not created:
         Log.objects.create(
-            app="Results",
-            model="Results",
-            action="Log",
-            model_action="Updated",
+            object="STUDENT",
+            action="RESULT_UPDATED",
             student=instance.student,
             account=instance.teacher,
             result=instance,
