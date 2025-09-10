@@ -150,7 +150,7 @@ class LeadListCreateView(ListCreateAPIView):
             queryset = queryset.filter(sales_manager_id=sales_manager)
 
         if teacher:
-            queryset = queryset.filter(lids_group__group__teacher_id=teacher)
+            queryset = queryset.filter(lead_groups__group__teacher_id=teacher)
 
         if subject:
             queryset = queryset.filter(subject_id=subject)
@@ -162,7 +162,7 @@ class LeadListCreateView(ListCreateAPIView):
             queryset = queryset.filter(call_operator_id=call_operator_id)
 
         if course_id:
-            queryset = queryset.filter(lids_group__group__course_id=course_id)
+            queryset = queryset.filter(lead_groups__group__course_id=course_id)
 
         if search_term:
             try:
@@ -363,7 +363,7 @@ class ExportLidToExcelAPIView(APIView):
         if is_archived:
             filter["is_archived"] = is_archived.capitalize()
         if course_id:
-            filter["lids_group__course__id"] = course_id
+            filter["lead_groups__course__id"] = course_id
         if call_operator_id:
             filter["call_operator__id"] = call_operator_id
         if service_manager:
@@ -371,7 +371,7 @@ class ExportLidToExcelAPIView(APIView):
         if sales_manager:
             filter["sales_manager__id"] = sales_manager
         if teacher:
-            filter["lids_group__teacher__id"] = teacher
+            filter["lead_groups__teacher__id"] = teacher
         if channel:
             filter["marketing_channel__id"] = channel
         if subject:
@@ -538,7 +538,7 @@ class LidStatisticsView(ListAPIView):
         #     filter["is_archived"] = True
 
         # if course_id:
-        #     filter["lids_group__course__id"] = course_id
+        #     filter["lead_groups__course__id"] = course_id
 
         if call_operator_id:
             filter["call_operator_id"] = call_operator_id
@@ -553,7 +553,7 @@ class LidStatisticsView(ListAPIView):
             filter["marketing_channel_id"] = marketing_channel
 
         # if teacher:
-        #     filter["lids_group__teacher__id"] = teacher
+        #     filter["lead_groups__teacher__id"] = teacher
 
         # if channel:
         #     filter["subject__id"] = subject
@@ -995,7 +995,7 @@ class LidStatistics(ListAPIView):
             queryset = queryset.filter(sales_manager_id=sales_manager)
 
         if teacher:
-            queryset = queryset.filter(lids_group__group__teacher_id=teacher)
+            queryset = queryset.filter(lead_groups__group__teacher_id=teacher)
 
         if subject:
             queryset = queryset.filter(subject_id=subject)
@@ -1007,7 +1007,7 @@ class LidStatistics(ListAPIView):
             queryset = queryset.filter(call_operator_id=call_operator_id)
 
         if course_id:
-            queryset = queryset.filter(lids_group__group__course_id=course_id)
+            queryset = queryset.filter(lead_groups__group__course_id=course_id)
 
         if search_term:
             try:

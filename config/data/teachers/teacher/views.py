@@ -133,7 +133,7 @@ class TeacherStatistics(ListAPIView):
                 ordered_stages="BIRINCHI_DARS_BELGILANGAN",
                 is_archived=True,
                 is_student=False,
-                lids_group__group__teacher=teacher,
+                lead_groups__group__teacher=teacher,
             ).count(),
             "all_students": StudentGroup.objects.filter(
                 is_archived=False, group__teacher=teacher, **filters

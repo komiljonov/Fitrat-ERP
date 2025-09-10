@@ -208,7 +208,7 @@ class Lid(BaseModel):
 
     first_lesson_created_at = models.DateTimeField(null=True, blank=True)
 
-    lid_groups: "models.QuerySet[StudentGroup]"
+    lead_groups: "models.QuerySet[StudentGroup]"
 
     def __str__(self):
         return (
