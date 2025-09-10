@@ -212,57 +212,150 @@ class LeadSerializer(serializers.ModelSerializer):
             )
         )
 
+    # def to_representation(self, instance: Lid):
+    #     representation = super().to_representation(instance)
+
+    #     representation["photo"] = (
+    #         FileUploadSerializer(instance.photo, context=self.context).data
+    #         if instance.photo
+    #         else None
+    #     )
+
+    #     representation["filial"] = (
+    #         FilialSerializer(instance.filial).data if instance.filial else None
+    #     )
+
+    #     representation["marketing_channel"] = (
+    #         MarketingChannelSerializer(instance.marketing_channel).data
+    #         if instance.marketing_channel
+    #         else None
+    #     )
+
+    #     representation["call_operator"] = (
+    #         {
+    #             "id": instance.call_operator.id,
+    #             "full_name": instance.call_operator.full_name,
+    #         }
+    #         if instance.call_operator
+    #         else None
+    #     )
+
+    #     representation["file"] = FileUploadSerializer(
+    #         instance.file.all(),
+    #         many=True,
+    #         context=self.context,
+    #     ).data
+
+    #     representation["sales_manager"] = (
+    #         {
+    #             "id": instance.sales_manager.id,
+    #             "full_name": instance.sales_manager.full_name,
+    #         }
+    #         if instance.sales_manager
+    #         else None
+    #     )
+    #     representation["service_manager"] = (
+    #         {
+    #             "id": instance.service_manager.id,
+    #             "full_name": instance.service_manager.full_name,
+    #         }
+    #         if instance.service_manager
+    #         else None
+    #     )
+    #     return representation
+
     def to_representation(self, instance: Lid):
-        representation = super().to_representation(instance)
+        rep = super().to_representation(instance)
 
-        representation["photo"] = (
-            FileUploadSerializer(instance.photo, context=self.context).data
-            if instance.photo
-            else None
+        def want(name: str) -> bool:
+            # Field must be present after any include_only/exclude filtering
+            return name in self.fields
+
+        def set_if(name: str, compute):
+            if want(name):
+                rep[name] = compute()
+
+        # photo
+        set_if(
+            "photo",
+            lambda: (
+                FileUploadSerializer(instance.photo, context=self.context).data
+                if getattr(instance, "photo_id", None)  # <-- no fetch
+                else None
+            ),
         )
 
-        representation["filial"] = (
-            FilialSerializer(instance.filial).data if instance.filial else None
+        # filial
+        set_if(
+            "filial",
+            lambda: (
+                FilialSerializer(instance.filial).data
+                if getattr(instance, "filial_id", None)  # <-- no fetch
+                else None
+            ),
         )
 
-        representation["marketing_channel"] = (
-            MarketingChannelSerializer(instance.marketing_channel).data
-            if instance.marketing_channel
-            else None
+        # marketing_channel
+        set_if(
+            "marketing_channel",
+            lambda: (
+                MarketingChannelSerializer(instance.marketing_channel).data
+                if getattr(instance, "marketing_channel_id", None)  # <-- no fetch
+                else None
+            ),
         )
 
-        representation["call_operator"] = (
-            {
-                "id": instance.call_operator.id,
-                "full_name": instance.call_operator.full_name,
-            }
-            if instance.call_operator
-            else None
+        # call_operator (id + full_name)
+        set_if(
+            "call_operator",
+            lambda: (
+                {
+                    "id": instance.call_operator_id,  # <-- no fetch for id
+                    "full_name": instance.call_operator.full_name,  # fetches only if field requested
+                }
+                if getattr(instance, "call_operator_id", None)
+                else None
+            ),
         )
 
-        representation["file"] = FileUploadSerializer(
-            instance.file.all(),
-            many=True,
-            context=self.context,
-        ).data
+        # file (reverse relation)
+        set_if(
+            "file",
+            lambda: FileUploadSerializer(
+                # This triggers a query only if requested.
+                instance.file.all(),
+                many=True,
+                context=self.context,
+            ).data,
+        )
 
-        representation["sales_manager"] = (
-            {
-                "id": instance.sales_manager.id,
-                "full_name": instance.sales_manager.full_name,
-            }
-            if instance.sales_manager
-            else None
+        # sales_manager
+        set_if(
+            "sales_manager",
+            lambda: (
+                {
+                    "id": instance.sales_manager_id,
+                    "full_name": instance.sales_manager.full_name,
+                }
+                if getattr(instance, "sales_manager_id", None)
+                else None
+            ),
         )
-        representation["service_manager"] = (
-            {
-                "id": instance.service_manager.id,
-                "full_name": instance.service_manager.full_name,
-            }
-            if instance.service_manager
-            else None
+
+        # service_manager
+        set_if(
+            "service_manager",
+            lambda: (
+                {
+                    "id": instance.service_manager_id,
+                    "full_name": instance.service_manager.full_name,
+                }
+                if getattr(instance, "service_manager_id", None)
+                else None
+            ),
         )
-        return representation
+
+        return rep
 
     def update(self, instance, validated_data):
         request = self.context["request"]
