@@ -32,6 +32,7 @@ class FirstLessonSerializer(serializers.ModelSerializer):
                     "phone_number",
                     "balance",
                     "sales_manager",
+                    "service_manager",
                     "filial",
                 ],
             ).data

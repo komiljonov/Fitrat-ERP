@@ -11,5 +11,6 @@ class FirstLessonListCreateAPIView(ListCreateAPIView):
         "group",
         "lid",
         "lid__sales_manager",
+        "lid__service_manager",
         "lid__filial",
     )
