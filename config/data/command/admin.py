@@ -3,26 +3,27 @@ from django.contrib import admin
 from django.contrib import admin
 from django.apps import apps
 
-try:
-    models = apps.get_models()
+print("Registering models")
+models = apps.get_models()
 
-    for model in models:
-        try:
-            if hasattr(model, "Admin"):
-                modelAdmin = getattr(model, "Admin")
+for model in models:
+    try:
+        if hasattr(model, "Admin"):
+            modelAdmin = getattr(model, "Admin")
 
-            else:
-                if not hasattr(model, "CustomFilter"):
-                    admin.site.register(model)
-                else:
+            @admin.register(model)
+            class ModelAdmin(modelAdmin):  # type: ignore
+                model = model
+                list_filter = modelAdmin.list_filter
 
-                    @admin.register(model)
-                    class ModelAdmin(admin.ModelAdmin):
-                        model = model
+        else:
 
-        except admin.sites.AlreadyRegistered as e:
+            @admin.register(model)
+            class ModelAdmin(admin.ModelAdmin):
+                model = model
 
-            print(e)
-except Exception as e:
+    except admin.sites.AlreadyRegistered as e:
+        pass
+        # print(e)
 
-    print(e)
+print("Registering models ------------------------ END")
