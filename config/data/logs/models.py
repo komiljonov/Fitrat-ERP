@@ -4,6 +4,9 @@ from django.db import models
 
 from data.command.models import BaseModel
 
+
+from django.contrib import admin
+
 if TYPE_CHECKING:
     from data.tasks.models import Task
     from data.student.student.models import Student
@@ -166,3 +169,7 @@ class Log(BaseModel):
     )
 
     comment = models.TextField(null=True, blank=True)
+
+    class Admin(admin.ModelAdmin):
+
+        list_display = ["id", "object", "action", "created_at"]
