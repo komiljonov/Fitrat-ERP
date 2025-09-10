@@ -61,7 +61,7 @@ class SubjectNoPG(ListAPIView):
         queryset = Subject.objects.all()
         filial = self.request.GET.get("filial", None)
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            queryset = queryset.filter(filial_id=filial)
         return queryset
 
     def get_paginated_response(self, data):
@@ -85,13 +85,13 @@ class LevelList(ListCreateAPIView):
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if course:
-            queryset = queryset.filter(courses__id=course)
+            queryset = queryset.filter(courses_id=course)
 
         if subject:
-            queryset = queryset.filter(subject__id=subject)
+            queryset = queryset.filter(subject_id=subject)
 
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            queryset = queryset.filter(filial_id=filial)
         return queryset.order_by("order")
 
 
@@ -118,10 +118,10 @@ class LevelNoPG(ListAPIView):
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if subject:
-            queryset = queryset.filter(subject__id=subject)
+            queryset = queryset.filter(subject_id=subject)
 
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            queryset = queryset.filter(filial_id=filial)
         return queryset
 
     def get_paginated_response(self, data):
@@ -146,7 +146,7 @@ class ThemeList(ListCreateAPIView):
             queryset = queryset.filter(theme=theme)
         course = self.request.GET.get("course")
         if course:
-            queryset = queryset.filter(course__id=course)
+            queryset = queryset.filter(course_id=course)
 
         id = self.request.GET.get("id")
         group_id = self.request.GET.get("group")
@@ -167,7 +167,7 @@ class ThemeList(ListCreateAPIView):
                 pass  # Agar Group topilmasa, filtr qo'llanilmaydi
 
         if level:
-            queryset = queryset.filter(level__id=level)
+            queryset = queryset.filter(level_id=level)
 
         return queryset
 
@@ -205,14 +205,14 @@ class ThemePgList(ListCreateAPIView):
 
         if theme_filter and group_id:
             # Check if there are any attendance records for this group
-            attendance_count = Attendance.objects.filter(group__id=group_id).count()
+            attendance_count = Attendance.objects.filter(group_id=group_id).count()
 
             if theme_filter == "Repeat":
                 if attendance_count == 0:
                     return Theme.objects.none()
 
                 # Get themes that have been used in attendance records for this group
-                attendance_qs = Attendance.objects.filter(group__id=group_id).exclude(
+                attendance_qs = Attendance.objects.filter(group_id=group_id).exclude(
                     theme__isnull=True
                 )
 

@@ -22,7 +22,7 @@ class ThemeDumpDownloadAPIView(APIView):
         themes = Theme.objects.all()
 
         if course:
-            themes = themes.filter(course__id=course)
+            themes = themes.filter(course_id=course)
         serializer = ThemeDumpSerializer(themes, many=True)
 
         dump = [

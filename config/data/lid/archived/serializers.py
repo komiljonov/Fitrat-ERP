@@ -14,11 +14,14 @@ from data.student.student.serializers import StudentSerializer
 
 class ArchivedSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+
     lid = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), allow_null=True
+        queryset=Lid.objects.all(),
+        allow_null=True,
     )
     student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), allow_null=True
+        queryset=Student.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -49,10 +52,13 @@ class ArchivedSerializer(serializers.ModelSerializer):
             representation["creator"] = UserSerializer(
                 instance.creator, remove_fields=["pages"]
             ).data
+
         if instance.lid:
             representation["lid"] = LeadSerializer(instance.lid).data
+
         if instance.student:
             representation["student"] = StudentSerializer(instance.student).data
+
         if instance.comment:
             representation["comment"] = CommentSerializer(instance.comment).data
 
@@ -96,13 +102,16 @@ class StuffArchivedSerializer(ArchivedSerializer):
 
 class FrozenSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
     lid = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), allow_null=True
+        queryset=Lid.objects.all(),
+        allow_null=True,
     )
     student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), allow_null=True
+        queryset=Student.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -131,10 +140,13 @@ class FrozenSerializer(serializers.ModelSerializer):
         # Add detailed serialization for related fields
         if instance.creator:
             representation["creator"] = UserSerializer(instance.creator).data
+
         if instance.lid:
             representation["lid"] = LeadSerializer(instance.lid).data
+
         if instance.student:
             representation["student"] = StudentSerializer(instance.student).data
+
         if instance.comment:
             representation["comment"] = CommentSerializer(instance.comment).data
 
@@ -144,4 +156,5 @@ class FrozenSerializer(serializers.ModelSerializer):
             for key, value in representation.items()
             if value not in [{}, [], None, "", False]
         }
+
         return filtered_data

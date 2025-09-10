@@ -41,7 +41,7 @@ class TaskListCreateView(ListCreateAPIView):
         performer = self.request.GET.get("performer")
         queryset = Task.objects.all()
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            queryset = queryset.filter(filial_id=filial)
         if creator:
             queryset = queryset.filter(creator=self.request.user).order_by(
                 "-date_of_expired"
@@ -69,7 +69,7 @@ class TaskListNoPGView(ListAPIView):
         filial = self.request.GET.get("filial")
         queryset = Task.objects.all()
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            queryset = queryset.filter(filial_id=filial)
         queryset = queryset.filter(creator=self.request.user).order_by(
             "-date_of_expired"
         )

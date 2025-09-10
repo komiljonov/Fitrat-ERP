@@ -13,7 +13,7 @@ app.conf.beat_schedule = {
     # Frequent tasks (Runs every minute)
     "send-daily-messages": {
         "task": "data.tasks.tasks.check_daily_tasks",
-        "schedule": crontab(hour=0,minute=0),
+        "schedule": crontab(hour=0, minute=0),
     },
     "check-daily-leads": {
         "task": "data.lid.new_lid.tasks.check_daily_leads",
@@ -21,20 +21,19 @@ app.conf.beat_schedule = {
     },
     "update-frozen-days": {
         "task": "data.student.student.task.update_frozen_days",
-        "schedule": crontab(hour=0,minute=0),
+        "schedule": crontab(hour=0, minute=0),
     },
     "event-task": {
         "task": "data.event.tasks.check_today_tasks",
-        "schedule": crontab(hour=9,minute=0),
+        "schedule": crontab(hour=9, minute=0),
     },
-
     # Daily tasks
     "check_attendance_daily": {
         "task": "data.finances.timetracker.tasks.check_daily_user_attendance",
         "schedule": crontab(hour=0, minute=0),
     },
-    "check_today_task":{
-        "task":"data.tasks.tasks.check_today_task",
+    "check_today_task": {
+        "task": "data.tasks.tasks.check_today_task",
         "schedule": crontab(hour=0, minute=0),
     },
     # "send_daily_excel_report": {
@@ -49,7 +48,6 @@ app.conf.beat_schedule = {
         "task": "data.student.quiz.tasks.handle_task_creation",
         "schedule": crontab(minute=0),
     },
-
     # Monthly tasks (Runs on the 1st or 28th of the month)
     "check-monthly-extra-lessons": {
         "task": "data.student.mastering.tasks.check_monthly_extra_lessons",
@@ -63,7 +61,6 @@ app.conf.beat_schedule = {
         "task": "data.finance.compensation.tasks.check_monthly_student_catching_monitoring",
         "schedule": crontab(day_of_month=28, hour=0, minute=0),
     },
-
     # KPI Checks (Runs on the 1st of the month)
     "check_attendance_manager_kpi": {
         "task": "data.student.mastering.tasks.check_attendance_manager_kpi",

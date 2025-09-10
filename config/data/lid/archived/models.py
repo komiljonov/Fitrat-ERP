@@ -58,6 +58,7 @@ class Frozen(BaseModel):
         on_delete=models.CASCADE,
         related_name="frozen_user_creator",
     )
+
     lid: "Lid" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
@@ -65,6 +66,7 @@ class Frozen(BaseModel):
         blank=True,
         related_name="frozen_lead",
     )
+
     student: "Student" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
@@ -72,7 +74,9 @@ class Frozen(BaseModel):
         blank=True,
         related_name="frozen_students",
     )
+
     reason = models.TextField()
+
     comment: "Comment" = models.ForeignKey(
         "comments.Comment",
         on_delete=models.SET_NULL,
@@ -80,6 +84,7 @@ class Frozen(BaseModel):
         blank=True,
         related_name="frozen_comments",
     )
+
     is_frozen = models.BooleanField(default=False)
 
     def __str__(self):

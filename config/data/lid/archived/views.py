@@ -86,20 +86,20 @@ class ArchivedListAPIView(ListCreateAPIView):
 
         if filial:
             queryset = queryset.filter(
-                Q(student__filial__id=filial) | Q(lid__filial__id=filial)
+                Q(student__filial_id=filial) | Q(lid__filial_id=filial)
             )
 
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if lid:
-            queryset = queryset.filter(lid__id=lid)
+            queryset = queryset.filter(lid_id=lid)
 
         if student:
-            queryset = queryset.filter(student__id=student)
+            queryset = queryset.filter(student_id=student)
 
         if creator:
-            queryset = queryset.filter(creator__id=creator)
+            queryset = queryset.filter(creator_id=creator)
 
         if comment:
             queryset = queryset.filter(comment__icontains=comment)
@@ -111,25 +111,25 @@ class ArchivedListAPIView(ListCreateAPIView):
 
         if subject:
             queryset = queryset.filter(
-                Q(student__subject__id=subject) | Q(lid__subject__id=subject)
+                Q(student__subject_id=subject) | Q(lid__subject_id=subject)
             )
 
         if call_operator:
             queryset = queryset.filter(
-                Q(student__call_operator__id=call_operator)
-                | Q(lid__call_operator__id=call_operator)
+                Q(student__call_operator_id=call_operator)
+                | Q(lid__call_operator_id=call_operator)
             )
 
         if sales_manager:
             queryset = queryset.filter(
-                Q(student__sales_manager__id=sales_manager)
-                | Q(lid__sales_manager__id=sales_manager)
+                Q(student__sales_manager_id=sales_manager)
+                | Q(lid__sales_manager_id=sales_manager)
             )
 
         if service_manager:
             queryset = queryset.filter(
-                Q(student__service_manager__id=service_manager)
-                | Q(lid__service_manager__id=service_manager)
+                Q(student__service_manager_id=service_manager)
+                | Q(lid__service_manager_id=service_manager)
             )
 
         if balance_from or balance_to:
@@ -192,7 +192,7 @@ class StudentArchivedListAPIView(ListAPIView):
         id = self.request.query_params.get("id", None)
         print(id)
         if id:
-            queryset = queryset.filter(Q(student__id=id) | Q(lid__id=id))
+            queryset = queryset.filter(Q(student_id=id) | Q(lid_id=id))
         return queryset
 
 
@@ -248,11 +248,14 @@ class FrozenListCreateList(ListCreateAPIView):
         student = self.request.GET.get("student")
 
         if creator:
-            queryset = queryset.filter(creator__id=creator)
+            queryset = queryset.filter(creator_id=creator)
+
         if lid:
-            queryset = queryset.filter(lid__id=lid)
+            queryset = queryset.filter(lid_id=lid)
+
         if student:
-            queryset = queryset.filter(student__id=student)
+            queryset = queryset.filter(student_id=student)
+
         return queryset
 
 
@@ -304,28 +307,28 @@ class ExportLidsExcelView(APIView):
             )
         if call_operator:
             queryset = queryset.filter(
-                Q(lid__call_operator__id=call_operator)
-                | Q(student__call_operator__id=call_operator)
+                Q(lid__call_operator_id=call_operator)
+                | Q(student__call_operator_id=call_operator)
             )
         if sales_manager:
             queryset = queryset.filter(
-                Q(lid__sales_manager__id=sales_manager)
-                | Q(student__sales_manager__id=sales_manager)
+                Q(lid__sales_manager_id=sales_manager)
+                | Q(student__sales_manager_id=sales_manager)
             )
         if service_manager:
             queryset = queryset.filter(
-                Q(lid__service_manager__id=service_manager)
-                | Q(student__service_manager__id=service_manager)
+                Q(lid__service_manager_id=service_manager)
+                | Q(student__service_manager_id=service_manager)
             )
 
         if filial:
             queryset = queryset.filter(
-                Q(lid__filial__id=filial) | Q(student__filial__id=filial)
+                Q(lid__filial_id=filial) | Q(student__filial_id=filial)
             )
 
         if subject:
             queryset = queryset.filter(
-                Q(lid__subject__id=subject) | Q(student__subject__id=subject)
+                Q(lid__subject_id=subject) | Q(student__subject_id=subject)
             )
 
         if from_balance and to_balance:
@@ -532,21 +535,21 @@ class LidStudentArchivedStatistics(APIView):
             queryset = queryset.filter(**{field: education_lang})
 
         if subject:
-            field = "lid__subject__id" if is_lid else "student__subject__id"
+            field = "lid__subject_id" if is_lid else "student__subject_id"
             queryset = queryset.filter(**{field: subject})
 
         if call_operator:
-            field = "lid__call_operator__id" if is_lid else "student__call_operator__id"
+            field = "lid__call_operator_id" if is_lid else "student__call_operator_id"
             queryset = queryset.filter(**{field: call_operator})
 
         if service_manager:
             field = (
-                "lid__service_manager__id" if is_lid else "student__service_manager__id"
+                "lid__service_manager_id" if is_lid else "student__service_manager_id"
             )
             queryset = queryset.filter(**{field: service_manager})
 
         if sales_manager:
-            field = "lid__sales_manager__id" if is_lid else "student__sales_manager__id"
+            field = "lid__sales_manager_id" if is_lid else "student__sales_manager_id"
             queryset = queryset.filter(**{field: sales_manager})
 
         if balance_from and balance_to:

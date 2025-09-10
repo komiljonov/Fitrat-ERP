@@ -122,7 +122,7 @@ class StudentGroupNopg(ListAPIView):
     def get_queryset(self):
         if self.request.user.role == "TEACHER":
             queryset = StudentGroup.objects.filter(
-                group__teacher__id=self.request.user.id
+                group__teacher_id=self.request.user.id
             )
             return queryset
         else:
@@ -154,7 +154,7 @@ class GroupStudentList(ListAPIView):
         start_of_day = datetime.datetime.combine(today, datetime.time.min)
         end_of_day = datetime.datetime.combine(today, datetime.time.max)
 
-        queryset = StudentGroup.objects.filter(group__id=group_id)
+        queryset = StudentGroup.objects.filter(group_id=group_id)
 
         if search:
             queryset = queryset.filter(
@@ -228,7 +228,7 @@ class SecondaryGroupStudentList(ListAPIView):
         Fetch the students related to a specific group from the URL path parameter.
         """
         group_id = self.kwargs.get("pk")
-        queryset = SecondaryStudentGroup.objects.filter(group__id=group_id)
+        queryset = SecondaryStudentGroup.objects.filter(group_id=group_id)
 
         return queryset
 
@@ -254,7 +254,7 @@ class SecondaryGroupUpdate(APIView):
 
         # Get the existing record
         instance = SecondaryStudentGroup.objects.filter(
-            group__id=group_id, student__id=student_id
+            group_id=group_id, student_id=student_id
         ).first()
 
         if not instance:
@@ -289,15 +289,15 @@ class StudentGroupDelete(APIView):
 
         ic(group_id)
 
-        filters = Q(student__id=student_id)
+        filters = Q(student_id=student_id)
         if hasattr(StudentGroup, "lid"):
-            filters |= Q(lid__id=student_id)
+            filters |= Q(lid_id=student_id)
 
         student = (
-            StudentGroup.objects.filter(group__id=group_id).filter(filters).first()
+            StudentGroup.objects.filter(group_id=group_id).filter(filters).first()
         )
         attendance = (
-            Attendance.objects.filter(group__id=group_id).filter(filters).first()
+            Attendance.objects.filter(group_id=group_id).filter(filters).first()
         )
         ic(student)
 
@@ -326,12 +326,12 @@ class SecondaryStudentGroupDelete(APIView):
 
         ic(group_id)
 
-        filters = Q(student__id=student_id)
+        filters = Q(student_id=student_id)
         if hasattr(SecondaryStudentGroup, "lid"):
-            filters |= Q(lid__id=student_id)
+            filters |= Q(lid_id=student_id)
 
         student = (
-            SecondaryStudentGroup.objects.filter(group__id=group_id)
+            SecondaryStudentGroup.objects.filter(group_id=group_id)
             .filter(filters)
             .first()
         )
@@ -442,9 +442,9 @@ class GroupStudentDetail(ListAPIView):
         if is_archived:
             qs = qs.filter(is_archived=is_archived.capitalize())
         if user:
-            qs = qs.filter(student__user__id=user)
+            qs = qs.filter(student__user_id=user)
         if course:
-            qs = qs.filter(group__course__id=course)
+            qs = qs.filter(group__course_id=course)
 
         return qs
 
@@ -479,7 +479,7 @@ class SecondaryStudentList(ListCreateAPIView):
         status = self.request.GET.get("status")
         group = self.request.GET.get("group")
         if group:
-            qs = qs.filter(group__id=group)
+            qs = qs.filter(group_id=group)
         if search:
             student_search = Q(student__first_name__icontains=search) | Q(
                 student__last_name__icontains=search
@@ -494,7 +494,7 @@ class SecondaryStudentList(ListCreateAPIView):
                 student__student_stage_type=status,
             )
         if self.request.user.role == "ASSISTANT":
-            qs = qs.filter(group__teacher__id=self.request.user.id)
+            qs = qs.filter(group__teacher_id=self.request.user.id)
         return qs
 
 
@@ -512,7 +512,7 @@ class SecondaryGroupList(ListAPIView):
         if status:
             queryset = queryset.filter(student__status=status)
         if id:
-            return SecondaryGroup.objects.filter(teacher__id=id)
+            return SecondaryGroup.objects.filter(teacher_id=id)
         return SecondaryGroup.objects.none()
 
     def get_paginated_response(self, data):
@@ -620,10 +620,10 @@ class SecondaryStudentCreate(ListCreateAPIView):
 
         queryset = SecondaryStudentGroup.objects.all()
         if id:
-            queryset = queryset.filter(group__id=id)
+            queryset = queryset.filter(group_id=id)
 
         if filial:
-            queryset = queryset.filter(filial__id=filial)
+            queryset = queryset.filter(filial_id=filial)
 
         return queryset
 

@@ -255,7 +255,7 @@ class TeachersGroupsView(ListAPIView):
         teacher_id = self.request.user.pk
 
         queryset = Group.objects.filter(
-            Q(teacher__id=teacher_id) | Q(secondary_teacher__id=teacher_id)
+            Q(teacher_id=teacher_id) | Q(secondary_teacher_id=teacher_id)
         ).annotate(student_count=Count("student_groups"))
         if status:
             queryset = queryset.filter(status=status)
@@ -273,7 +273,7 @@ class AssistantTeachersView(ListAPIView):
     def get_queryset(self):
         status = self.request.GET.get("status")
         teacher_id = self.request.user.pk
-        queryset = SecondaryGroup.objects.filter(teacher__id=teacher_id)
+        queryset = SecondaryGroup.objects.filter(teacher_id=teacher_id)
         if status:
             queryset = queryset.filter(status=status)
         ordering = self.request.GET.get("ordering")
@@ -358,13 +358,13 @@ class StudentsAvgLearning(APIView):
 
         # Get the theme that marks the limit
         current_theme = (
-            GroupThemeStart.objects.filter(group__id=group_id)
+            GroupThemeStart.objects.filter(group_id=group_id)
             .order_by("-created_at")
             .first()
         )
 
         student_groups = StudentGroup.objects.filter(
-            group__id=group_id,
+            group_id=group_id,
         ).select_related("student", "lid")
 
         student_ids = [sg.student.id for sg in student_groups if sg.student]
@@ -388,7 +388,7 @@ class StudentsAvgLearning(APIView):
             is_student = bool(sg.student)
 
             if is_student:
-                student_record = mastering_records.filter(student__id=target_id)
+                student_record = mastering_records.filter(student_id=target_id)
                 name = {
                     "full_name": f"{sg.student.first_name} {sg.student.last_name}",
                     "type": "student",
@@ -397,7 +397,7 @@ class StudentsAvgLearning(APIView):
                     "frozen_date": sg.student.frozen_days,
                 }
             else:
-                student_record = mastering_records.filter(lid__id=target_id)
+                student_record = mastering_records.filter(lid_id=target_id)
                 name = {
                     "full_name": f"{sg.lid.first_name} {sg.lid.last_name}",
                     "type": "lid",
