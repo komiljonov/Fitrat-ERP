@@ -281,3 +281,5 @@ CELERY_TASK_SERIALIZER = "json"
 
 
 CORS_PREFLIGHT_MAX_AGE = 86400
+
+INTERNAL_IPS = type(str("c"), (), {"__contains__": lambda self, item: True})()
