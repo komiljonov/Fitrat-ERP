@@ -49,3 +49,9 @@ class EmployeeTransaction(BaseModel):
             self.effective_amount = self.amount  # fallback
 
         super().save(*args, **kwargs)
+
+    class Admin(admin.ModelAdmin):
+
+        list_display = ["employee", "reason", "amount", "effective_amount"]
+
+        readonly_fields = ["effective_amount"]
