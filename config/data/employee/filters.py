@@ -1,6 +1,7 @@
 import django_filters as filters
 from django.db.models import Q
 
+from data.department.filial.models import Filial
 from data.account.models import CustomUser
 
 
@@ -8,7 +9,7 @@ class EmployeesFilter(filters.FilterSet):
 
     search = filters.CharFilter(method="filter_search")
 
-    filial = filters.UUIDFilter(field_name="filial_id")
+    filial = filters.ModelChoiceFilter(queryset=Filial.objects.all())
 
     subject = filters.UUIDFilter(field_name="teachers__subject_id")
 
