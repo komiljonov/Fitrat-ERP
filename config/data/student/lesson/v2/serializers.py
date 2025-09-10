@@ -15,7 +15,16 @@ class FirstLessonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FirstLLesson
-        fields = ["id", "lid", "group", "date", "time", "comment", "creator"]
+        fields = [
+            "id",
+            "lid",
+            "group",
+            "date",
+            "time",
+            "comment",
+            "creator",
+            "created_at",
+        ]
 
     def to_representation(self, instance: FirstLLesson):
         res = super().to_representation(instance)
