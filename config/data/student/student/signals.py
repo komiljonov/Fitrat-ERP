@@ -72,6 +72,7 @@ def on_create_user(sender, instance: Student, created, **kwargs):
 
         user, created = CustomUser.objects.get_or_create(
             phone=instance.phone,
+            role="Student",
         )
 
         if user:
