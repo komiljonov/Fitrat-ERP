@@ -1,7 +1,6 @@
 from rest_framework.generics import ListCreateAPIView
 
 from data.employee.models import Employee
-from data.account.models import CustomUser
 from data.employee.filters import EmployeesFilter
 from data.employee.serializers import EmployeeSerializer
 
