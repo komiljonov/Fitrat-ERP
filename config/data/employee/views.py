@@ -1,5 +1,6 @@
 from rest_framework.generics import ListCreateAPIView
 
+from data.employee.models import Employee
 from data.account.models import CustomUser
 from data.employee.filters import EmployeesFilter
 from data.employee.serializers import EmployeeSerializer
@@ -7,9 +8,9 @@ from data.employee.serializers import EmployeeSerializer
 
 class EmployeeListAPIView(ListCreateAPIView):
 
-    queryset = CustomUser.objects.exclude(
-        role__in=["Student", "Parents"]
-    ).select_related("photo")
+    queryset = Employee.objects.exclude(role__in=["Student", "Parents"]).select_related(
+        "photo"
+    )
 
     filterset_class = EmployeesFilter
 

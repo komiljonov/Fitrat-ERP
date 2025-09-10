@@ -1,13 +1,14 @@
 from rest_framework import serializers
 
-from data.account.models import CustomUser
+from data.employee.models import Employee
 from data.upload.serializers import FileUploadSerializer
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = CustomUser
+        model = Employee
+
         fields = [
             "id",
             "phone",
@@ -50,7 +51,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             for field_name in fields_to_remove:
                 self.fields.pop(field_name, None)
 
-    def to_representation(self, instance: CustomUser):
+    def to_representation(self, instance: Employee):
         rep = super().to_representation(instance)
 
         if "photo" in rep:
