@@ -18,7 +18,7 @@ class Employee(CustomUser):
 
     class Admin(admin.ModelAdmin):
 
-        list_display = ["id", "full_name", "phone", "role", "balance", "filial"]
+        list_display = ["id", "full_name", "phone", "role", "balance"]
 
         list_filter = ["filial", "role"]
 
