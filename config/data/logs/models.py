@@ -1,14 +1,18 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 
-from data.account.models import CustomUser
 from data.command.models import BaseModel
-from data.finances.finance.models import Finance
-from data.lid.archived.models import Archived
-from data.lid.new_lid.models import Lid
-from data.results.models import Results
-from data.student.lesson.models import FirstLLesson
-from data.student.student.models import Student
-from data.tasks.models import Task
+
+if TYPE_CHECKING:
+    from data.tasks.models import Task
+    from data.student.student.models import Student
+    from data.student.lesson.models import FirstLLesson
+    from data.results.models import Results
+    from data.finances.finance.models import Finance
+    from data.lid.archived.models import Archived, Frozen
+    from data.lid.new_lid.models import Lid
+    from data.account.models import CustomUser
 
 
 class Log(BaseModel):
@@ -114,6 +118,14 @@ class Log(BaseModel):
         null=True,
         blank=True,
         related_name="log_tasks",
+    )
+
+    frozen: "Frozen | None" = models.ForeignKey(
+        "archived.Frozen",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="logs",
     )
 
     comment = models.TextField(null=True, blank=True)
