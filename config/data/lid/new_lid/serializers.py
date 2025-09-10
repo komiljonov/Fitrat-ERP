@@ -212,18 +212,18 @@ class LeadSerializer(serializers.ModelSerializer):
             )
         )
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: Lid):
         representation = super().to_representation(instance)
 
-        representation["photo"] = FileUploadSerializer(
-            instance.photo, context=self.context
-        ).data
+        representation["photo"] = (
+            FileUploadSerializer(instance.photo, context=self.context).data
+            if instance.photo
+            else None
+        )
 
         representation["filial"] = (
             FilialSerializer(instance.filial).data if instance.filial else None
         )
-        
-        
 
         representation["marketing_channel"] = (
             MarketingChannelSerializer(instance.marketing_channel).data
@@ -241,8 +241,11 @@ class LeadSerializer(serializers.ModelSerializer):
         )
 
         representation["file"] = FileUploadSerializer(
-            instance.file.all(), many=True, context=self.context
+            instance.file.all(),
+            many=True,
+            context=self.context,
         ).data
+
         representation["sales_manager"] = (
             {
                 "id": instance.sales_manager.id,
