@@ -86,6 +86,6 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
 
         res["employee"] = EmployeeSerializer(
             instance.employee, include_only=["id", "full_name"]
-        )
+        ).data
 
         return res
