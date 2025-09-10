@@ -1,6 +1,6 @@
 from django.db import models
 
-from config.data.command.models import BaseModel
+from data.command.models import BaseModel
 from data.account.models import CustomUser
 from data.employee.manager import EmployeeManager
 
