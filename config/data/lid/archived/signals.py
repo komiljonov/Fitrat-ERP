@@ -88,7 +88,7 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             model_action="Created",
             lid=instance.lid,
             student=instance.student,
-            archive=instance,
+            frozen=instance,
             comment=f"Muzlatildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
         )
 
@@ -108,7 +108,7 @@ def on_create(sender, instance: Frozen, created, **kwargs):
             model_action="Created",
             lid=instance.lid,
             student=instance.student,
-            archive=instance,
+            frozen=instance,
             comment=f"Muzlatishdan chiqarildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
         )
 
