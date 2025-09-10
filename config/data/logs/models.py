@@ -172,9 +172,15 @@ class Log(BaseModel):
 
     class Admin(admin.ModelAdmin):
 
-        list_display = ["id", "object", "action", "created_at"]
+        list_display = ["id", "object", "action_raw", "action", "created_at"]
 
         list_filter = [
             "object",
             "action",
         ]
+
+        def action_raw(self, obj):
+
+            return obj.action
+
+        action_raw.short_description = "Action (Raw)"
