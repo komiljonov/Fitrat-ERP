@@ -18,6 +18,12 @@ def on_create(sender, instance: Task, created, **kwargs):
         else:
             instance.status = "EXPIRED"
 
+        instance.performer.notifications.create(
+            comment="Sizda yangi vazifa bor.",
+            choice="Tasks",
+            come_from="Vazifa yaratilganda keldi.",
+        )
+
         # Save the status change to the task
         instance.save(update_fields=["status"])
 

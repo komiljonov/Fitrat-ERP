@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 import uuid
 from decimal import Decimal
 
@@ -7,6 +8,9 @@ from django.db import models
 from data.department.filial.models import Filial
 from data.account.managers import UserManager
 from data.upload.models import File
+
+if TYPE_CHECKING:
+    from data.notifications.models import Notification
 
 
 class CustomUser(AbstractUser):
@@ -103,6 +107,8 @@ class CustomUser(AbstractUser):
     # REQUIRED_FIELDS = ['phone']
 
     objects = UserManager()
+
+    notifications: "models.QuerySet[Notification]"
 
     class Meta:
         ordering = ("-created_at",)

@@ -10,6 +10,7 @@ class Notification(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="notifications",
     )
     comment = models.TextField(null=True, blank=True)
     choice = models.CharField(
@@ -30,8 +31,11 @@ class Notification(BaseModel):
             ("Archive", "Archive"),
         ]
     )
+
     come_from = models.TextField(null=True, blank=True)
+
     is_read = models.BooleanField(default=False)
+
     has_read = models.BooleanField(default=False)
 
     def __str__(self):

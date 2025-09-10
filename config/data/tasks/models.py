@@ -33,7 +33,7 @@ class Task(BaseModel):
 
     task = models.TextField()
 
-    performer = models.ForeignKey(
+    performer: "CustomUser | None" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.CASCADE,
         null=True,
