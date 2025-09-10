@@ -14,7 +14,8 @@ class TaskSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
 
     lid = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), allow_null=True, required=False
+        queryset=Lid.objects.all(),
+        allow_null=True,
     )
 
     student = serializers.PrimaryKeyRelatedField(
@@ -28,6 +29,7 @@ class TaskSerializer(serializers.ModelSerializer):
     file = serializers.PrimaryKeyRelatedField(
         queryset=File.objects.all(),
         allow_null=True,
+        required=False,
     )
 
     class Meta:
