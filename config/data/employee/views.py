@@ -7,7 +7,9 @@ from data.employee.serializers import EmployeeSerializer
 
 class EmployeeListAPIView(ListCreateAPIView):
 
-    queryset = CustomUser.objects.exclude(role__in=["Student", "Parents"])
+    queryset = CustomUser.objects.exclude(
+        role__in=["Student", "Parents"]
+    ).select_related("photo")
 
     filterset_class = EmployeesFilter
 
