@@ -60,15 +60,12 @@ class LeadListCreateView(ListCreateAPIView):
     # ]
 
     def get_serializer(self, *args, **kwargs):
-
-        # super().get_serializer()
-
         serializer_class = self.get_serializer_class()
         kwargs.setdefault("context", self.get_serializer_context())
-        return serializer_class(
-            *args,
-            **kwargs,
-            include_only=[
+
+        # Only add include_only if the request is GET (or exclude if it's POST)
+        if self.request.method == "GET":
+            kwargs["include_only"] = [
                 "id",
                 "first_name",
                 "last_name",
@@ -84,8 +81,9 @@ class LeadListCreateView(ListCreateAPIView):
                 "is_archived",
                 "ordered_date",
                 "created_at",
-            ],
-        )
+            ]
+
+        return serializer_class(*args, **kwargs)
 
     def get_queryset(self):
         user = self.request.user

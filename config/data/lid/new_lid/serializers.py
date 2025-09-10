@@ -222,6 +222,8 @@ class LeadSerializer(serializers.ModelSerializer):
         representation["filial"] = (
             FilialSerializer(instance.filial).data if instance.filial else None
         )
+        
+        
 
         representation["marketing_channel"] = (
             MarketingChannelSerializer(instance.marketing_channel).data

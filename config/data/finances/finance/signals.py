@@ -125,7 +125,7 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
 
 
 @receiver(post_save, sender=KpiFinance)
-def on_create(sender, instance: KpiFinance, created, **kwargs):
+def on_kpi_finance_create(sender, instance: KpiFinance, created, **kwargs):
     if created:
         if instance.type == "INCOME":
             # instance.user.balance += Decimal(instance.amount)
