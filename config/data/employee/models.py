@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib import admin
 
 from data.command.models import BaseModel
 from data.account.models import CustomUser
@@ -14,6 +15,12 @@ class Employee(CustomUser):
 
     class Meta:
         proxy = True
+
+    class Admin(admin.ModelAdmin):
+
+        list_display = ["id", "full_name", "phone", "role", "balance", "filial"]
+
+        list_filter = ["filial", "role"]
 
 
 class EmployeeTransaction(BaseModel):
