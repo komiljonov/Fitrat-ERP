@@ -22,7 +22,7 @@ try:
 
         except admin.sites.AlreadyRegistered as e:
 
-            pass
+            print(e)
 except Exception as e:
 
-    pass
+    print(e)
