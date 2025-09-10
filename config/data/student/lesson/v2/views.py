@@ -7,4 +7,4 @@ from data.student.lesson.v2.serializers import FirstLessonSerializer
 class FirstLessonListCreateAPIView(ListCreateAPIView):
 
     serializer_class = FirstLessonSerializer
-    queryset = FirstLLesson.objects.all()
+    queryset = FirstLLesson.objects.select_related("group", "lid")
