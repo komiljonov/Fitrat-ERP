@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "data.command",
     "data.results",
     "data.comments",
+    "data.employee",
     # 'data.moderator',
     "data.upload",
     "data.dashboard",
