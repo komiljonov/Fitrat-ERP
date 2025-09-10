@@ -22,5 +22,5 @@ urlpatterns = [
         ParentsNotificationsRetrieveAPIView.as_view(),
     ),
     path("retrive/<uuid:user__id>", ParentRetrieveAPIView.as_view()),
-    path("childrens/", ParentStudentAvgAPIView.as_view()),
+    path("children/", ParentStudentAvgAPIView.as_view()),
 ]

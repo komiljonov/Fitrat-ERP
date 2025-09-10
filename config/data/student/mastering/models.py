@@ -12,7 +12,7 @@ from data.lid.new_lid.models import Lid
 
 # Create your models here.
 class Mastering(BaseModel):
-    theme: "Theme" = models.ForeignKey(
+    theme: "Theme | None" = models.ForeignKey(
         Theme,
         on_delete=models.SET_NULL,
         null=True,
@@ -20,21 +20,21 @@ class Mastering(BaseModel):
         related_name="mastering_theme",
     )
 
-    lid: "Lid" = models.ForeignKey(
+    lid: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
 
-    student: "Student" = models.ForeignKey(
+    student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
 
-    test: "Quiz" = models.ForeignKey(
+    test: "Quiz | None" = models.ForeignKey(
         "quiz.Quiz",
         on_delete=models.SET_NULL,
         null=True,
@@ -64,7 +64,7 @@ class Mastering(BaseModel):
         related_name="mastering_mock",
     )
 
-    updater = models.ForeignKey(
+    updater: "CustomUser | None" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,
         null=True,
@@ -73,7 +73,8 @@ class Mastering(BaseModel):
     )
 
     ball = models.FloatField(default=0)
-    level_exam: "LevelExam" = models.ForeignKey(
+
+    level_exam: "LevelExam | None" = models.ForeignKey(
         "exam_results.LevelExam",
         on_delete=models.SET_NULL,
         null=True,
@@ -89,7 +90,7 @@ class Mastering(BaseModel):
 
 
 class MasteringTeachers(BaseModel):
-    teacher: "CustomUser" = models.ForeignKey(
+    teacher: "CustomUser | None" = models.ForeignKey(
         "account.CustomUser",
         on_delete=models.SET_NULL,
         null=True,

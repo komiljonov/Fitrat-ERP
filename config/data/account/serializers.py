@@ -326,20 +326,30 @@ class UserListSerializer(ModelSerializer):
 
     def get_pages(self, obj):
         pages = Page.objects.filter(user=obj).values(
-            "id", "name", "user", "is_editable", "is_readable", "is_parent"
+            "id",
+            "name",
+            "user",
+            "is_editable",
+            "is_readable",
+            "is_parent",
         )
         return list(pages)
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: CustomUser):
         rep = super().to_representation(instance)
+
         if "photo" in rep:
-            rep["photo"] = FileUploadSerializer(
-                instance.photo, context=self.context
-            ).data
+            rep["photo"] = (
+                FileUploadSerializer(instance.photo, context=self.context).data
+                if instance.photo
+                else None
+            )
+
         if "files" in rep:
             rep["files"] = FileUploadSerializer(
                 instance.files.all(), many=True, context=self.context
             ).data
+
         return rep
 
 

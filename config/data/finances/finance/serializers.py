@@ -539,13 +539,16 @@ class FinanceTeacherSerializer(serializers.ModelSerializer):
 
 class KpiFinanceSerializer(serializers.ModelSerializer):
     lid = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(), allow_null=True
+        queryset=Lid.objects.all(),
+        allow_null=True,
     )
     student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), allow_null=True
+        queryset=Student.objects.all(),
+        allow_null=True,
     )
     user = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -561,9 +564,13 @@ class KpiFinanceSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: KpiFinance):
         data = super().to_representation(instance)
-        data["user"] = UserListSerializer(instance.user).data
+        data["user"] = (
+            UserListSerializer(instance.user, include_only=["id", "full_name"]).data
+            if instance.user
+            else None
+        )
         return data
 
 

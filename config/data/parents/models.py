@@ -15,8 +15,12 @@ class Relatives(BaseModel):
     who = models.CharField(null=True, blank=True, max_length=100)
 
     lid: "Lid" = models.ForeignKey(
-        "new_lid.Lid", on_delete=models.SET_NULL, null=True, blank=True
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
+
     student: "Student" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
