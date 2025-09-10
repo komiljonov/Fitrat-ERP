@@ -39,6 +39,13 @@ class EmployeeTransaction(BaseModel):
 
     effective_amount = models.DecimalField(decimal_places=2, max_digits=12)
 
+    created_by: "Employee | None" = models.ForeignKey(
+        "employee.Employee",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
     def save(self, *args, **kwargs):
         # Apply business rule before saving
         if self.reason == "BONUS":

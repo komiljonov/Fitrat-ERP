@@ -31,7 +31,7 @@ def on_employee_transaction_created(
             employee_transaction=instance,
             employee=employee,
             comment=(
-                f"Transaction created for employee {employee.full_name}. "
+                f"Transaction created for employee {employee.full_name}. {f'By {instance.created_by.full_name}({instance.created_by.phone})' if instance.created_by else "-"}, "
                 f"Start: {start_balance}, Change: +{instance.effective_amount}, "
                 f"Final: {final_balance}."
             ),
@@ -57,7 +57,7 @@ def on_transaction_deleted(sender, instance: EmployeeTransaction, **kwargs):
             employee_transaction=instance,
             employee=employee,
             comment=(
-                f"Transaction deleted for employee {employee.full_name}. "
+                f"Transaction deleted for employee {employee.full_name}. {f'By {instance.created_by.full_name}({instance.created_by.phone})' if instance.created_by else "-"}, "
                 f"Start: {start_balance}, Change: -{instance.effective_amount}, "
                 f"Final: {final_balance}."
             ),
