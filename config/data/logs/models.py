@@ -173,3 +173,8 @@ class Log(BaseModel):
     class Admin(admin.ModelAdmin):
 
         list_display = ["id", "object", "action", "created_at"]
+
+        list_filter = [
+            "object",
+            "action",
+        ]
