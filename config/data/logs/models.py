@@ -51,6 +51,7 @@ class Log(BaseModel):
         choices=[
             ("LEAD", "Lead"),
             ("STUDENT", "Student"),
+            ("EMPLOYEE", "Employee"),
         ],
     )
 
