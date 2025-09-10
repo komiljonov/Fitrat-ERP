@@ -110,6 +110,10 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "command.renderers.NoFormBrowsableAPIRenderer",  # use the class from Option A
+    ],
     "PAGE_SIZE": 30,  # Adjust the page size as needed
     # 'DEFAULT_RENDERER_CLASSES': [
     #     # 'rest_framework.renderers.BrowsableAPIRenderer',
