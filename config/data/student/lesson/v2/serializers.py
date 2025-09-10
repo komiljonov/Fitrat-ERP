@@ -32,6 +32,7 @@ class FirstLessonSerializer(serializers.ModelSerializer):
                     "phone_number",
                     "balance",
                     "sales_manager",
+                    "filial",
                 ],
             ).data
             if instance.lid
