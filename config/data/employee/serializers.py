@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from data.employee.models import Employee
+from data.employee.models import Employee, EmployeeTransaction
 from data.upload.serializers import FileUploadSerializer
 
 
@@ -69,3 +69,23 @@ class EmployeeSerializer(serializers.ModelSerializer):
             ).data
 
         return rep
+
+
+class EmployeeTransactionSerializer(serializers.ModelSerializer):
+
+    employee = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
+
+    class Meta:
+        model = EmployeeTransaction
+        fields = ["id", "employee", "reason", "amount", "effective_amount"]
+
+        read_only_fields = ["effective_amount"]
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+
+        res["employee"] = EmployeeSerializer(
+            instance.employee, include_only=["id", "full_name"]
+        )
+
+        return res

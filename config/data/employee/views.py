@@ -31,3 +31,10 @@ class EmployeeListAPIView(ListCreateAPIView):
                 "created_at",
             ],
         )
+
+
+
+class EmployeeTransactionsListCreateAPIView(ListCreateAPIView):
+    
+    def get_queryset(self):
+        pass
