@@ -50,8 +50,10 @@ class EmployeeTransaction(BaseModel):
         # Apply business rule before saving
         if self.reason == "BONUS":
             self.effective_amount = self.amount
+
         elif self.reason == "FINE":
             self.effective_amount = -self.amount
+
         else:
             self.effective_amount = self.amount  # fallback
 

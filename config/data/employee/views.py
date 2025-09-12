@@ -1,11 +1,16 @@
 from django.shortcuts import get_object_or_404
-
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.exceptions import ValidationError
 
 from data.employee.models import Employee, EmployeeTransaction
 from data.employee.filters import EmployeesFilter
-from data.employee.serializers import EmployeeSerializer, EmployeeTransactionSerializer
+from data.employee.serializers import EmployeeSerializer
+
+
+from data.employee.transactions.views import (
+    EmployeeTransactionsListCreateAPIView as ETLCAV,
+    EmployeeTransactionRetrieveDestroyAPIView as ETRDAV,
+)
 
 
 class EmployeeListAPIView(ListCreateAPIView):
@@ -36,17 +41,13 @@ class EmployeeListAPIView(ListCreateAPIView):
         )
 
 
-class EmployeeTransactionsListCreateAPIView(ListCreateAPIView):
+class EmployeeTransactionsListCreateAPIView(ETLCAV):
     """
     GET  /<uuid:employee>/transactions      -> list transactions for that employee
     POST /<uuid:employee>/transactions      -> create a transaction for that employee
     """
 
-    serializer_class = EmployeeTransactionSerializer
     lookup_url_kwarg = "employee"  # from your URLConf
-
-    # If your model has timestamps, prefer ordering by -created_at; otherwise -id
-    default_ordering = "-created_at"
 
     def get_employee(self) -> Employee:
         return get_object_or_404(Employee, pk=self.kwargs[self.lookup_url_kwarg])
@@ -59,11 +60,6 @@ class EmployeeTransactionsListCreateAPIView(ListCreateAPIView):
 
         return qs
 
-    def get_serializer_context(self):
-        ctx = super().get_serializer_context()
-        ctx["employee"] = self.get_employee()  # handy if the serializer wants it
-        return ctx
-
     def perform_create(self, serializer):
         url_employee = self.get_employee()
 
@@ -73,3 +69,19 @@ class EmployeeTransactionsListCreateAPIView(ListCreateAPIView):
             raise ValidationError({"employee": "Must match the employee in the URL."})
 
         serializer.save(employee=url_employee)
+
+
+class EmployeeTransactionRetrieveDestroyAPIView(ETRDAV):
+
+    lookup_url_kwarg = "employee"  # from your URLConf
+
+    def get_employee(self) -> Employee:
+        return get_object_or_404(Employee, pk=self.kwargs[self.lookup_url_kwarg])
+
+    def get_queryset(self):
+        employee = self.get_employee()
+        qs = EmployeeTransaction.objects.select_related("employee").filter(
+            employee=employee
+        )
+
+        return qs
