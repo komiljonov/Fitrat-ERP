@@ -37,6 +37,7 @@ def give_coins(sender, instance: Mastering, created, **kwargs):
                 "homework": str(homework.id),
                 "is_online": is_online,
             }
+
             if instance.choice == "Homework":
                 Notification.objects.create(
                     user=instance.student.user,

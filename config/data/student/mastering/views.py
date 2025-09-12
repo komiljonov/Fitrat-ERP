@@ -23,8 +23,6 @@ from data.student.attendance.models import Attendance
 from data.student.groups.models import Group
 from data.student.subject.models import Theme, GroupThemeStart
 from data.account.models import CustomUser
-from data.finances.finance.models import KpiFinance
-from data.finances.finance.serializers import KpiFinanceSerializer
 from data.notifications.models import Notification
 
 

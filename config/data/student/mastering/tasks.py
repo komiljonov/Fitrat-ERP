@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 from celery import shared_task
 from django.utils.timezone import now
+from data.employee.models import EmployeeTransaction
 from data.student.lesson.models import ExtraLesson
 from data.student.student.models import Student
 from data.student.studentgroup.models import StudentGroup
@@ -40,13 +41,25 @@ def check_monthly_extra_lessons():
                 student=lesson.student,
                 group__status="ACTIVE",
             ).first()
+
             if group:
-                KpiFinance.objects.create(
-                    user=lesson.teacher,
-                    lid=None,
+
+                # KpiFinance.objects.create(
+                #     user=lesson.teacher,
+                #     lid=None,
+                #     student=lesson.student,
+                #     type=f"{lesson.date.strftime('%d %m %Y')} da {lesson.student.first_name} {lesson.student.last_name} "
+                #     f"uchun tashkil qilingan qo'shimcha dars uchun bonus",
+                # )
+
+                EmployeeTransaction.objects.create(
+                    employee=lesson.teacher,
                     student=lesson.student,
-                    type=f"{lesson.date.strftime('%d %m %Y')} da {lesson.student.first_name} {lesson.student.last_name} "
-                    f"uchun tashkil qilingan qo'shimcha dars uchun bonus",
+                    reason="BONUS_FOR_EXTRA_LESSON",
+                    comment=(
+                        f"{lesson.date.strftime('%d %m %Y')} da {lesson.student.first_name} {lesson.student.last_name} "
+                        "uchun tashkil qilingan qo'shimcha dars uchun bonus",
+                    ),
                 )
 
     return list(teachers)

@@ -4,6 +4,7 @@ from django.contrib import admin
 from data.command.models import BaseModel
 from data.account.models import CustomUser
 from data.employee.manager import EmployeeManager
+from data.student.student.models import Student
 
 
 # Create your models here.
@@ -42,6 +43,15 @@ class EmployeeTransaction(BaseModel):
 
     action = models.CharField(
         choices=[("INCOME", "Kirim"), ("EXPENSE", "Chiqim")],
+    )
+
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="student_employee_transaction",
+        help_text="Field for referencing student in Employee transactions, for something like course_payment or other things.",
     )
 
     amount = models.DecimalField(decimal_places=2, max_digits=12)
