@@ -5,7 +5,7 @@ from django.dispatch import receiver
 
 from data.finances.finance.choices import FinanceKindTypeChoices
 
-from .models import Finance, VoucherStudent, Casher, Kind, KpiFinance
+from .models import Finance, VoucherStudent, Casher, Kind
 from data.logs.models import Log
 
 
@@ -123,40 +123,41 @@ def on_create(sender, instance: VoucherStudent, created, **kwargs):
             finance.student.save()
 
 
-@receiver(post_save, sender=KpiFinance)
-def on_kpi_finance_create(sender, instance: KpiFinance, created, **kwargs):
-    if created:
-        if instance.type == "INCOME":
-            # instance.user.balance += Decimal(instance.amount)
-            # instance.user.save()
+# Bu modelni polni olib tashlavomman, shunga o'chirib qo'ydim.
+# @receiver(post_save, sender=KpiFinance)
+# def on_kpi_finance_create(sender, instance: KpiFinance, created, **kwargs):
+#     if created:
+#         if instance.type == "INCOME":
+#             # instance.user.balance += Decimal(instance.amount)
+#             # instance.user.save()
 
-            Finance.objects.create(
-                casher=Casher.objects.filter(
-                    filial__in=instance.user.filial.all(),
-                    role__in=["ADMINISTRATOR", "ACCOUNTANT"],
-                ).first(),
-                action="EXPENSE",
-                amount=instance.amount,
-                # kind=Kind.objects.filter(name="Bonus").first(),
-                kind=Kind.get(FinanceKindTypeChoices.BONUS),
-                stuff=instance.user,
-                # comment = "Xodim uchun bonus sifatida qo'shildi!"
-                comment=instance.reason,
-            )
-        else:
+#             Finance.objects.create(
+#                 casher=Casher.objects.filter(
+#                     filial__in=instance.user.filial.all(),
+#                     role__in=["ADMINISTRATOR", "ACCOUNTANT"],
+#                 ).first(),
+#                 action="EXPENSE",
+#                 amount=instance.amount,
+#                 # kind=Kind.objects.filter(name="Bonus").first(),
+#                 kind=Kind.get(FinanceKindTypeChoices.BONUS),
+#                 stuff=instance.user,
+#                 # comment = "Xodim uchun bonus sifatida qo'shildi!"
+#                 comment=instance.reason,
+#             )
+#         else:
 
-            # instance.user.balance -= Decimal(instance.amount)
-            # instance.user.save()
+#             # instance.user.balance -= Decimal(instance.amount)
+#             # instance.user.save()
 
-            Finance.objects.create(
-                casher=Casher.objects.filter(
-                    filial__in=instance.user.filial.all(),
-                    role__in=["ADMINISTRATOR", "ACCOUNTANT"],
-                ).first(),
-                action="INCOME",
-                amount=instance.amount,
-                # kind=Kind.objects.filter(name="Money back").first(),
-                kind=Kind.get(FinanceKindTypeChoices.MONEY_BACK),
-                stuff=instance.user,
-                comment="Xodim uchun jarima sifatida qo'shildi!",
-            )
+#             Finance.objects.create(
+#                 casher=Casher.objects.filter(
+#                     filial__in=instance.user.filial.all(),
+#                     role__in=["ADMINISTRATOR", "ACCOUNTANT"],
+#                 ).first(),
+#                 action="INCOME",
+#                 amount=instance.amount,
+#                 # kind=Kind.objects.filter(name="Money back").first(),
+#                 kind=Kind.get(FinanceKindTypeChoices.MONEY_BACK),
+#                 stuff=instance.user,
+#                 comment="Xodim uchun jarima sifatida qo'shildi!",
+#             )

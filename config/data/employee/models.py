@@ -35,6 +35,8 @@ class EmployeeTransaction(BaseModel):
         max_length=255, choices=[("BONUS", "Bonus"), ("FINE", "Fine")]
     )
 
+    action = models.CharField(choices=[("INCOME", "Kirim"), ("EXPENSE", "Chiqim")])
+
     amount = models.DecimalField(decimal_places=2, max_digits=12)
 
     effective_amount = models.DecimalField(decimal_places=2, max_digits=12)
