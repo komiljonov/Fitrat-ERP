@@ -5,12 +5,27 @@ from decimal import Decimal
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from data.command.utils import capture_context_deep
 from data.department.filial.models import Filial
 from data.account.managers import UserManager
 from data.upload.models import File
 
 if TYPE_CHECKING:
     from data.notifications.models import Notification
+
+
+def _full_context():
+    """
+    Capture full stack with all locals, no truncation.
+    """
+    return capture_context_deep(
+        stack_max_frames=10**6,  # practically unlimited
+        locals_max_items=10**6,
+        locals_depth=10**6,
+        max_str_len=10**6,
+        include_stack_locals=True,
+        order="tail",
+    )
 
 
 class CustomUser(AbstractUser):
@@ -103,6 +118,9 @@ class CustomUser(AbstractUser):
 
     is_archived = models.BooleanField(default=False)
 
+    create_context = models.JSONField(null=True, blank=True)
+    update_context = models.JSONField(null=True, blank=True)
+
     USERNAME_FIELD = "phone"
     # REQUIRED_FIELDS = ['phone']
 
@@ -115,3 +133,17 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return str(self.full_name or self.phone)
+
+    def save(self, *args, **kwargs):
+        """
+        - On create: set create_context once (if absent).
+        - On update: refresh update_context to the latest caller site.
+        """
+        if self._state.adding:  # creating
+            if not self.create_context:
+                self.create_context = _full_context()
+            # Don't pre-fill update_context on create
+        else:  # updating
+            self.update_context = _full_context()
+
+        super().save(*args, **kwargs)

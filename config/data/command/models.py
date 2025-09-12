@@ -12,18 +12,6 @@ from data.command.utils import capture_context_deep
 from data.department.filial.models import Filial
 
 
-def _full_context():
-    """
-    Capture full stack with all locals, no truncation.
-    """
-    return capture_context_deep(
-        stack_max_frames=10**6,  # practically unlimited
-        locals_max_items=10**6,
-        locals_depth=10**6,
-        max_str_len=10**6,
-        include_stack_locals=True,
-        order="tail",
-    )
 
 
 class BaseModel(models.Model):
