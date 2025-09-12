@@ -85,7 +85,7 @@ class Kind(BaseModel):
             models.UniqueConstraint(
                 fields=["name"],
                 name="unique_name_not_archived",
-                condition=models.Q(is_archive=False),
+                condition=models.Q(is_archived=False),
             ),
         ]
 
