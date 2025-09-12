@@ -6,6 +6,7 @@ from django.contrib import admin
 from data.command.models import BaseModel
 from data.account.models import CustomUser
 from data.employee.manager import EmployeeManager
+from data.lid.new_lid.models import Lid
 
 if TYPE_CHECKING:
     from data.student.lesson.models import FirstLLesson
@@ -70,9 +71,19 @@ class EmployeeTransaction(BaseModel):
         help_text="Field for referencing student in Employee transactions, for something like ",
     )
 
+    lead: "Lid | None" = models.ForeignKey(
+        "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="employee_transactions",
+    )
+
     amount = models.DecimalField(decimal_places=2, max_digits=12)
 
     effective_amount = models.DecimalField(decimal_places=2, max_digits=12)
+
+    comment = models.TextField(null=True, blank=True)
 
     created_by: "Employee | None" = models.ForeignKey(
         "employee.Employee",
