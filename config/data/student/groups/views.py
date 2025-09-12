@@ -100,12 +100,12 @@ class StudentGroupsView(ListCreateAPIView):
         if day == "1":
             days = []
             days.append(Day.objects.filter(name="Dushanba"))
-            queryset = queryset.filter(scheduled_day_type__name_in=days)
+            queryset = queryset.filter(scheduled_day_type__in=days)
 
         if day == "0":
             days = []
             days.append(Day.objects.filter(name="Seshanba"))
-            queryset = queryset.filter(scheduled_day_type__name_in=days)
+            queryset = queryset.filter(scheduled_day_type__in=days)
 
         if level:
             queryset = queryset.filter(level_id=level)
