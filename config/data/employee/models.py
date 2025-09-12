@@ -50,10 +50,10 @@ class EmployeeTransaction(BaseModel):
 
     def save(self, *args, **kwargs):
         # Apply business rule before saving
-        if self.reason == "BONUS":
+        if self.action == "INCOME":
             self.effective_amount = self.amount
 
-        elif self.reason == "FINE":
+        elif self.action == "EXPENSE":
             self.effective_amount = -self.amount
 
         else:
