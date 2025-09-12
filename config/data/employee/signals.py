@@ -1,10 +1,23 @@
 from django.dispatch import receiver
 from django.db import transaction
+from django.core.exceptions import ValidationError
 
-from django.db.models.signals import post_save, post_delete
+
+from django.db.models.signals import pre_save, post_save, post_delete
 
 from data.logs.models import Log
 from data.employee.models import EmployeeTransaction
+
+
+@receiver(pre_save, sender=EmployeeTransaction)
+def before_employee_transaction_creating(sender, instance, **kwargs):
+
+    if instance.reason in EmployeeTransaction.REASON_TO_ACTION:
+        instance.action = EmployeeTransaction.REASON_TO_ACTION[instance.reason]
+    else:
+        raise ValidationError(
+            f"Invalid reason '{instance.reason}' for EmployeeTransaction"
+        )
 
 
 @receiver(post_save, sender=EmployeeTransaction)
