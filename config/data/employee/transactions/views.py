@@ -1,7 +1,7 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView
 
-from config.data.employee.models import EmployeeTransaction
-from config.data.employee.serializers import EmployeeTransactionSerializer
+from data.employee.models import EmployeeTransaction
+from data.employee.serializers import EmployeeTransactionSerializer
 
 
 class EmployeeTransactionsListCreateAPIView(ListCreateAPIView):
