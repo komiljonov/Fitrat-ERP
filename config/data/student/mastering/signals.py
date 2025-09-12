@@ -4,6 +4,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from icecream import ic
 
+from data.employee.models import EmployeeTransaction
+
 from .models import Mastering
 from data.student.attendance.models import Attendance
 from data.student.homeworks.models import Homework
@@ -117,13 +119,23 @@ def bonus_call_operator(sender, instance: FirstLLesson, created, **kwargs):
         ).first()
         ic(bonus)
         if bonus and instance.lid.call_operator:
-            KpiFinance.objects.create(
-                user=instance.lid.call_operator,
-                reason="Markazga kelgan o‘quvchi uchun bonus",
+
+            # KpiFinance.objects.create(
+            #     user=instance.lid.call_operator,
+            #     reason="Markazga kelgan o‘quvchi uchun bonus",
+            #     amount=bonus.amount if bonus else 0,
+            #     type="INCOME",
+            #     lid=instance,
+            #     student=None,
+            # )
+
+            EmployeeTransaction.objects.create(
+                employee=instance.lid.call_operator,
+                reason="BONUS_FOR_FIRST_LESSON",
                 amount=bonus.amount if bonus else 0,
-                type="INCOME",
-                lid=instance,
-                student=None,
+                first_lesson=instance,
+                lead=instance.lid,
+                comment="Markazga kelgan o‘quvchi uchun bonus",
             )
 
 

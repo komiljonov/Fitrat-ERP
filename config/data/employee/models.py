@@ -1,10 +1,16 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 from django.contrib import admin
 
 from data.command.models import BaseModel
 from data.account.models import CustomUser
 from data.employee.manager import EmployeeManager
-from data.student.student.models import Student
+
+if TYPE_CHECKING:
+    from data.student.lesson.models import FirstLLesson
+
+    from data.student.student.models import Student
 
 
 # Create your models here.
@@ -29,6 +35,7 @@ class EmployeeTransaction(BaseModel):
     REASON_TO_ACTION = {
         "BONUS": "INCOME",
         "FINE": "EXPENSE",
+        "BONUS_FOR_FIRST_LESSON": "INCOME",
     }
 
     employee: "Employee" = models.ForeignKey(
@@ -52,6 +59,15 @@ class EmployeeTransaction(BaseModel):
         blank=True,
         related_name="student_employee_transaction",
         help_text="Field for referencing student in Employee transactions, for something like course_payment or other things.",
+    )
+
+    first_lesson: "FirstLLesson | None" = models.ForeignKey(
+        "lesson.FirstLLesson",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="employee_transactions",
+        help_text="Field for referencing student in Employee transactions, for something like ",
     )
 
     amount = models.DecimalField(decimal_places=2, max_digits=12)
