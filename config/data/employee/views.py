@@ -2,8 +2,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.exceptions import ValidationError
 
-from data.employee.models import Employee, EmployeeTransaction
+# from data.employee.models import Employee, EmployeeTransaction
 from data.employee.filters import EmployeesFilter
+from data.employee.models import Employee, EmployeeTransaction
 from data.employee.serializers import EmployeeSerializer
 
 
