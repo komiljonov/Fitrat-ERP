@@ -32,7 +32,7 @@ class Lid(BaseModel):
     last_name = models.CharField(max_length=100, null=True, blank=True)
     middle_name = models.CharField(max_length=100, null=True, blank=True)
     phone_number = models.CharField(max_length=100, null=True, blank=True)
-    date_of_birth = models.DateField(default=timezone.now)
+    date_of_birth = models.DateField(null=True, blank=True)
     extra_number = models.CharField(max_length=100, null=True, blank=True)
 
     LANGUAGE_CHOICES = (

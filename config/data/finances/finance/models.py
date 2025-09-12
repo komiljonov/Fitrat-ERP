@@ -36,7 +36,7 @@ class Casher(BaseModel):
 
 class Kind(BaseModel):
 
-    name = models.CharField(max_length=100,unique=True)
+    name = models.CharField(max_length=100, unique=True)
 
     kind = models.CharField(
         max_length=255,
