@@ -173,7 +173,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             except ValueError:
                 pass  # Handle invalid date format, if necessary
 
-        return queryset
+        return queryset.order_by("-created_at")
 
 
 class StudentDetailView(RetrieveUpdateDestroyAPIView):
