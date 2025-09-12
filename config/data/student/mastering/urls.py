@@ -6,8 +6,8 @@ from .views import (
     MasteringDetail,
     MasteringQuizFilter,
     MasteringStudentFilter,
-    StuffMasteringList,
-    MasteringTeachersList,
+    # StuffMasteringList,
+    # MasteringTeachersList,
     TeacherMasteringList,
 )
 
@@ -17,7 +17,7 @@ urlpatterns = [
     path("no-pg/", MasteringNoPG.as_view(), name="mastering_nopg"),
     path("quiz/<uuid:pk>/", MasteringQuizFilter.as_view(), name="mastering_quiz"),
     path("student/", MasteringStudentFilter.as_view(), name="mastering_student"),
-    path("employee/", StuffMasteringList.as_view(), name="mastering_list"),
-    path("employee/<uuid:pk>/", MasteringTeachersList.as_view(), name="mastering_list"),
+    # path("employee/", StuffMasteringList.as_view(), name="mastering_list"),
+    # path("employee/<uuid:pk>/", MasteringTeachersList.as_view(), name="mastering_list"),
     path("stuff/<uuid:pk>/", TeacherMasteringList.as_view(), name="mastering_detail"),
 ]

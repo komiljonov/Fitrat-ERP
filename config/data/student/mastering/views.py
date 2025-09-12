@@ -83,26 +83,26 @@ class TeacherMasteringList(ListAPIView):
         return MasteringTeachers.objects.none()
 
 
-class StuffMasteringList(ListCreateAPIView):
+# class StuffMasteringList(ListCreateAPIView):
 
-    serializer_class = KpiFinanceSerializer
+#     serializer_class = KpiFinanceSerializer
 
-    permission_classes = [IsAuthenticated]
+#     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+#     def get_queryset(self):
 
-        id = self.request.query_params.get("id")
+#         id = self.request.query_params.get("id")
 
-        if id:
-            return KpiFinance.objects.filter(user_id=id).select_related("user")
+#         if id:
+#             return KpiFinance.objects.filter(user_id=id).select_related("user")
 
-        return KpiFinance.objects.all().select_related("user")
+#         return KpiFinance.objects.all().select_related("user")
 
 
-class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
-    queryset = KpiFinance.objects.all()
-    serializer_class = KpiFinanceSerializer
-    permission_classes = [IsAuthenticated]
+# class MasteringTeachersList(RetrieveUpdateDestroyAPIView):
+#     queryset = KpiFinance.objects.all()
+#     serializer_class = KpiFinanceSerializer
+#     permission_classes = [IsAuthenticated]
 
 
 class MasteringStudentFilter(ListAPIView):

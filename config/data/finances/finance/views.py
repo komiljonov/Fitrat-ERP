@@ -99,7 +99,7 @@ class CasherNoPg(ListAPIView):
         role = self.request.GET.get("role", None)
 
         filter = {}
-        
+
         if role:
             filter["role"] = role
 
@@ -1077,10 +1077,10 @@ class FinanceExcel(APIView):
 class KindList(ListCreateAPIView):
     serializer_class = KindSerializer
     permission_classes = [IsAuthenticated]
-    queryset = Kind.objects.all()
 
     def get_queryset(self):
         kind = self.request.GET.get("action")
+        
         if kind:
             queryset = Kind.objects.filter(action=kind)
             return queryset
