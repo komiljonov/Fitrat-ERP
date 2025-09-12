@@ -114,4 +114,4 @@ class CustomUser(AbstractUser):
         ordering = ("-created_at",)
 
     def __str__(self):
-        return self.full_name or self.phone
+        return str(self.full_name or self.phone)

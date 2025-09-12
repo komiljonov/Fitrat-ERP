@@ -21,6 +21,9 @@ class Employee(CustomUser):
         list_display = ["id", "full_name", "phone", "role", "balance"]
 
         list_filter = ["filial", "role"]
+        
+        
+        
 
 
 class EmployeeTransaction(BaseModel):
