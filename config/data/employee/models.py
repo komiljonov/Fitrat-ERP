@@ -36,7 +36,7 @@ class EmployeeTransaction(BaseModel):
     )
 
     action = models.CharField(
-        choices=[("INCOME", "Kirim"), ("EXPENSE", "Chiqim")], null=True, blank=True
+        choices=[("INCOME", "Kirim"), ("EXPENSE", "Chiqim")],
     )
 
     amount = models.DecimalField(decimal_places=2, max_digits=12)
