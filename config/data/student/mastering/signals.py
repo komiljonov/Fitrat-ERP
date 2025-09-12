@@ -152,6 +152,7 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
             and bonus != None
             and bonus.amount > 0
         ):
+            # TODO: Replace with EmployeeTransaction
             KpiFinance.objects.create(
                 user=instance.call_operator,
                 lid=instance,
@@ -184,6 +185,8 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
         ).first()
 
         if attendances_count == 1 and instance.student.sales_manager:
+
+            # TODO: Replace with EmployeeTransaction
             KpiFinance.objects.create(
                 lid=None,
                 user=instance.student.sales_manager,

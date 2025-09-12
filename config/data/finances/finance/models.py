@@ -39,7 +39,10 @@ class Kind(BaseModel):
     name = models.CharField(max_length=100)
 
     kind = models.CharField(
-        max_length=255, choices=FinanceKindTypeChoices.CHOICES, null=True, blank=True
+        max_length=255,
+        choices=FinanceKindTypeChoices.CHOICES,
+        null=True,
+        blank=True,
     )
 
     action = models.CharField(
@@ -69,6 +72,22 @@ class Kind(BaseModel):
             return cls.objects.get(kind=kind)
 
         return cls.objects.get_or_create(kind=kind, action=action)[0]
+
+    class Meta:
+        constraints = [
+            # ✅ unique `kind` only when not null
+            models.UniqueConstraint(
+                fields=["kind"],
+                name="unique_kind_not_null",
+                condition=~models.Q(kind=None),
+            ),
+            # ✅ unique `name` only when not archived
+            models.UniqueConstraint(
+                fields=["name"],
+                name="unique_name_not_archived",
+                condition=models.Q(is_archive=False),
+            ),
+        ]
 
 
 class PaymentMethod(BaseModel):
@@ -176,11 +195,13 @@ class Handover(BaseModel):
         on_delete=models.CASCADE,
         related_name="finances_casher_handover",
     )
+
     receiver: "Casher" = models.ForeignKey(
         "finance.Casher",
         on_delete=models.CASCADE,
         related_name="finances_receiver_handover",
     )
+
     amount = models.FloatField(default=0)
 
     def __str__(self):
