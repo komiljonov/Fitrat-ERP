@@ -392,10 +392,12 @@ class CustomRefreshTokenView(APIView):
 
             user_id = refresh["user_id"]
             user = CustomUser.objects.filter(id=user_id).first()
+
             if not user:
                 raise AuthenticationFailed("User not found.")
 
             filial = list(user.filial.values_list("pk", flat=True))  # adjust if needed
+
             student_id = (
                 Student.objects.filter(user=user.id)
                 .values_list("id", flat=True)

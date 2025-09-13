@@ -235,8 +235,10 @@ class RoomListAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         filial = self.request.GET.get("filial", None)
+
         if filial:
             return Room.objects.filter(filial=filial)
+
         return Room.objects.all()  # Ensure it always returns a queryset
 
     def perform_create(self, serializer):
