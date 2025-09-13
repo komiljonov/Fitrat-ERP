@@ -58,6 +58,7 @@ from data.student.groups.models import Group
 
 from data.finances.finance.choices import FinanceKindTypeChoices
 
+from django.db import transaction
 
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
@@ -167,6 +168,10 @@ class FinanceListAPIView(ListCreateAPIView):
             )
 
         return queryset.select_related("kind", "creator")
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
 
 class FinanceDetailAPIView(RetrieveUpdateDestroyAPIView):
