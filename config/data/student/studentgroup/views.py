@@ -1,8 +1,8 @@
 import datetime
 from icecream import ic
 
-from django.db.models import OuterRef, Exists, Q, Count
-from django.db.models.functions import Coalesce
+from django.db.models import OuterRef, Exists, Q, Count, Case, When,Value,IntegerField
+from django.db.models.functions import Coalesce,Lower
 from django.utils.timezone import now, localdate
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -284,8 +284,7 @@ class GroupStudentList(ListAPIView):
     #     )
 
     #     return queryset
-    
-    
+
     def get_queryset(self):
         group_id = self.kwargs.get("pk")
         reason = self.request.query_params.get("reason", None)
@@ -339,44 +338,40 @@ class GroupStudentList(ListAPIView):
             ).values_list("student_id", "lid_id", flat=False)
         else:
             # No attendance filtering → just order & return
-            return (
-                queryset
-                .annotate(
-                    bucket=Case(
-                        When(lid__isnull=False, then=Value(0)),                     # lids first
-                        When(student__is_frozen=False, then=Value(1)),              # students (not frozen)
-                        When(student__is_frozen=True, then=Value(2)),               # frozen students
-                        default=Value(2),
-                        output_field=IntegerField(),
-                    ),
-                    first_name=Lower(Coalesce("student__first_name", "lid__first_name")),
-                    last_name=Lower(Coalesce("student__last_name", "lid__last_name")),
-                )
-                .order_by("bucket", "first_name", "last_name")
-            )
-
-        # Apply attendance filter
-        student_ids = {s for s, _ in present_attendance if s is not None}
-        lid_ids = {l for _, l in present_attendance if l is not None}
-
-        queryset = queryset.filter(Q(student_id__in=student_ids) | Q(lid_id__in=lid_ids))
-
-        # Final ordering: lid → students (not frozen) → students (frozen), then by name
-        queryset = (
-            queryset
-            .annotate(
+            return queryset.annotate(
                 bucket=Case(
-                    When(lid__isnull=False, then=Value(0)),
-                    When(student__is_frozen=False, then=Value(1)),
-                    When(student__is_frozen=True, then=Value(2)),
+                    When(lid__isnull=False, then=Value(0)),  # lids first
+                    When(
+                        student__is_frozen=False, then=Value(1)
+                    ),  # students (not frozen)
+                    When(student__is_frozen=True, then=Value(2)),  # frozen students
                     default=Value(2),
                     output_field=IntegerField(),
                 ),
                 first_name=Lower(Coalesce("student__first_name", "lid__first_name")),
                 last_name=Lower(Coalesce("student__last_name", "lid__last_name")),
-            )
-            .order_by("bucket", "first_name", "last_name")
+            ).order_by("bucket", "first_name", "last_name")
+
+        # Apply attendance filter
+        student_ids = {s for s, _ in present_attendance if s is not None}
+        lid_ids = {l for _, l in present_attendance if l is not None}
+
+        queryset = queryset.filter(
+            Q(student_id__in=student_ids) | Q(lid_id__in=lid_ids)
         )
+
+        # Final ordering: lid → students (not frozen) → students (frozen), then by name
+        queryset = queryset.annotate(
+            bucket=Case(
+                When(lid__isnull=False, then=Value(0)),
+                When(student__is_frozen=False, then=Value(1)),
+                When(student__is_frozen=True, then=Value(2)),
+                default=Value(2),
+                output_field=IntegerField(),
+            ),
+            first_name=Lower(Coalesce("student__first_name", "lid__first_name")),
+            last_name=Lower(Coalesce("student__last_name", "lid__last_name")),
+        ).order_by("bucket", "first_name", "last_name")
 
         return queryset
 
