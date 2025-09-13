@@ -1080,9 +1080,11 @@ class KindList(ListCreateAPIView):
 
     def get_queryset(self):
         kind = self.request.GET.get("action")
-        
+
         if kind:
-            queryset = Kind.objects.filter(action=kind)
+            queryset = Kind.objects.filter(action=kind).exclude(
+                kind=FinanceKindTypeChoices.BONUS
+            )
             return queryset
 
         return Kind.objects.none()
