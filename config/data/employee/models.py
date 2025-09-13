@@ -6,6 +6,7 @@ from django.contrib import admin
 from data.command.models import BaseModel
 from data.account.models import CustomUser
 from data.employee.manager import EmployeeManager
+from data.finances.finance.models import Finance
 from data.lid.new_lid.models import Lid
 
 if TYPE_CHECKING:
@@ -33,10 +34,15 @@ class Employee(CustomUser):
 
 class EmployeeTransaction(BaseModel):
 
+    INCOME = "INCOME"
+    EXPENSE = "EXPENSE"
+
     REASON_TO_ACTION = {
-        "BONUS": "INCOME",
-        "FINE": "EXPENSE",
-        "BONUS_FOR_FIRST_LESSON": "INCOME",
+        "BONUS": INCOME,
+        "FINE": EXPENSE,
+        "BONUS_FOR_FIRST_LESSON": INCOME,
+        "SALARY": INCOME,
+        "ADVANCE": EXPENSE,
     }
 
     employee: "Employee" = models.ForeignKey(
@@ -46,11 +52,18 @@ class EmployeeTransaction(BaseModel):
     )
 
     reason = models.CharField(
-        max_length=255, choices=[("BONUS", "Bonus"), ("FINE", "Fine")]
+        max_length=255,
+        choices=[
+            ("BONUS", "Bonus"),
+            ("FINE", "Fine"),
+        ],
     )
 
     action = models.CharField(
-        choices=[("INCOME", "Kirim"), ("EXPENSE", "Chiqim")],
+        choices=[
+            (INCOME, "Kirim"),
+            (EXPENSE, "Chiqim"),
+        ],
     )
 
     student: "Student | None" = models.ForeignKey(
@@ -73,6 +86,14 @@ class EmployeeTransaction(BaseModel):
 
     lead: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="employee_transactions",
+    )
+
+    finance: "Finance | None" = models.ForeignKey(
+        "finance.Finance",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

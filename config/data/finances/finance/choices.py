@@ -7,8 +7,17 @@ class FinanceKindTypeChoices:
     CASHIER_HANDOVER = "CASHIER_HANDOVER"
 
     BONUS = "BONUS"
+
+    # Hodimga berilgan maosh
     SALARY = "SALARY"
+
+    # Hodimga berilgan avans
+    ADVANCE = "ADVANCE"
+
+    # Hodimga jarima
+    # XXX: deprecated
     MONEY_BACK = "MONEY_BACK"
+
     LESSON_PAYMENT = "LESSON_PAYMENT"
     COURSE_PAYMENT = "COURSE_PAYMENT"
     VOUCHER = "VOUCHER"
@@ -18,6 +27,7 @@ class FinanceKindTypeChoices:
         (CASHIER_HANDOVER, CASHIER_HANDOVER),
         (BONUS, BONUS),
         (SALARY, SALARY),
+        (ADVANCE, ADVANCE),
         (MONEY_BACK, MONEY_BACK),
         (LESSON_PAYMENT, LESSON_PAYMENT),
         (COURSE_PAYMENT, COURSE_PAYMENT),
@@ -25,12 +35,15 @@ class FinanceKindTypeChoices:
     ]
 
     ACTIONS = {
+        # Kirimlar
         CASHIER_ACCEPTANCE: INCOME,
+        LESSON_PAYMENT: INCOME,
+        MONEY_BACK: INCOME,
+        COURSE_PAYMENT: INCOME,
+        # Chiqimlar
         CASHIER_HANDOVER: EXPENSE,
         BONUS: EXPENSE,
         SALARY: EXPENSE,
-        MONEY_BACK: INCOME,
-        LESSON_PAYMENT: INCOME,
-        COURSE_PAYMENT: INCOME,
         VOUCHER: EXPENSE,
+        ADVANCE: EXPENSE,
     }

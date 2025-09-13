@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from data.employee.models import EmployeeTransaction
 from data.finances.finance.choices import FinanceKindTypeChoices
 
 from .models import Finance, VoucherStudent, Casher, Kind
@@ -31,20 +32,45 @@ def on_create(sender, instance: Finance, created, **kwargs):
                     instance.student.balance -= Decimal(instance.amount)
                     instance.student.save()
 
+        # if instance.stuff:
+        #     if (
+        #         instance.action == "EXPENSE"
+        #         and instance.kind is not None
+        #         # and instance.kind.name == "Salary"
+        #         and instance.kind.kind == FinanceKindTypeChoices.SALARY
+        #     ):
+        #         instance.stuff.balance -= Decimal(instance.amount)
+        #         instance.stuff.save()
+        #     else:
+        #         # if instance.kind.name != "Lesson payment":
+        #         if instance.kind.kind != FinanceKindTypeChoices.LESSON_PAYMENT:
+        #             instance.stuff.balance += Decimal(instance.amount)
+        #             instance.stuff.save()
+
         if instance.stuff:
             if (
                 instance.action == "EXPENSE"
-                and instance.kind is not None
-                # and instance.kind.name == "Salary"
                 and instance.kind.kind == FinanceKindTypeChoices.SALARY
             ):
-                instance.stuff.balance -= Decimal(instance.amount)
-                instance.stuff.save()
-            else:
-                # if instance.kind.name != "Lesson payment":
-                if instance.kind.kind != FinanceKindTypeChoices.LESSON_PAYMENT:
-                    instance.stuff.balance += Decimal(instance.amount)
-                    instance.stuff.save()
+                EmployeeTransaction.objects.create(
+                    employee=instance.stuff,
+                    reason="SALARY",
+                    amount=instance.amount,
+                    finance=instance,
+                    comment=instance.comment,
+                )
+
+            if (
+                instance.action == "EXPENSE"
+                and instance.kind.kind == FinanceKindTypeChoices.ADVANCE
+            ):
+                EmployeeTransaction.objects.create(
+                    employee=instance.stuff,
+                    reason="ADVANCE",
+                    amount=instance.amount,
+                    finance=instance,
+                    comment=instance.comment,
+                )
 
 
 @receiver(post_save, sender=Finance)

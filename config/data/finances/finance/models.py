@@ -1,3 +1,4 @@
+from typing import Literal
 from django.db import models
 
 from data.finances.finance.choices import FinanceKindTypeChoices
@@ -109,7 +110,7 @@ class Finance(BaseModel):
         blank=True,
     )
 
-    action = models.CharField(
+    action: Literal["INCOME", "EXPENSE"] = models.CharField(
         choices=[
             ("INCOME", "INCOME"),
             ("EXPENSE", "EXPENSE"),
