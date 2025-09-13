@@ -87,6 +87,8 @@ class Kind(BaseModel):
                 condition=~models.Q(kind=None),
             )
         ]
+        
+    
 
 
 class PaymentMethod(BaseModel):

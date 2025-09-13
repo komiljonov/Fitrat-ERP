@@ -9,7 +9,18 @@ from .models import Casher, Finance, KpiFinance, SaleStudent, Kind
 @admin.register(Kind)
 class KindAdmin(admin.ModelAdmin):
 
-    list_display = ["name", "kind", "action"]
+    list_display = [
+        "name",
+        "kind",
+        "action",
+        "employee_required",
+        "student_required",
+        "lead_required",
+    ]
+
+    list_filter = ["action", "employee_required"]
+
+    search_fields = ["name", "kind", "action"]
 
 
 @admin.register(Finance)
