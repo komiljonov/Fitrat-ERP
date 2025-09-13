@@ -55,7 +55,7 @@ def on_create(sender, instance: Finance, created, **kwargs):
                 EmployeeTransaction.objects.create(
                     employee=instance.stuff,
                     reason="SALARY",
-                    amount=instance.amount,
+                    amount=Decimal(instance.amount),
                     finance=instance,
                     comment=instance.comment,
                 )
@@ -67,7 +67,7 @@ def on_create(sender, instance: Finance, created, **kwargs):
                 EmployeeTransaction.objects.create(
                     employee=instance.stuff,
                     reason="ADVANCE",
-                    amount=instance.amount,
+                    amount=Decimal(instance.amount),
                     finance=instance,
                     comment=instance.comment,
                 )
