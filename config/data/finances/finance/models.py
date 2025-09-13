@@ -61,6 +61,10 @@ class Kind(BaseModel):
         blank=True,
     )
 
+    employee_required = models.BooleanField(default=False)
+    student_required = models.BooleanField(default=False)
+    lead_required = models.BooleanField(default=False)
+
     def __str__(self):
         return f"{self.action} {self.name}"
 

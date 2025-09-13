@@ -41,6 +41,9 @@ class KindSerializer(serializers.ModelSerializer):
             "kind",
             "action",
             "color",
+            "employee_required",
+            "student_required",
+            "lead_required",
             "created_at",
         ]
 
