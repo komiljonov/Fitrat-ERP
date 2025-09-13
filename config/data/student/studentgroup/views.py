@@ -211,6 +211,81 @@ class GroupStudentList(ListAPIView):
 
     #     return queryset
 
+    # def get_queryset(self):
+    #     group_id = self.kwargs.get("pk")
+    #     reason = self.request.query_params.get("reason", None)
+
+    #     status = self.request.query_params.get("status")
+    #     is_archived = self.request.GET.get("is_archived", False)
+    #     search = self.request.GET.get("search")
+
+    #     today = now().date()
+    #     start_of_day = datetime.datetime.combine(today, datetime.time.min)
+    #     end_of_day = datetime.datetime.combine(today, datetime.time.max)
+
+    #     queryset = StudentGroup.objects.filter(group_id=group_id)
+
+    #     if search:
+    #         queryset = queryset.filter(
+    #             Q(student__first_name__icontains=search)
+    #             | Q(lid__first_name__icontains=search)
+    #             | Q(student__last_name__icontains=search)
+    #             | Q(lid__last_name__icontains=search)
+    #             | Q(lid__phone_number__icontains=search)
+    #             | Q(student__phone__icontains=search)
+    #         )
+
+    #     if is_archived:
+    #         queryset = queryset.filter(
+    #             Q(student__is_archived=is_archived.capitalize())
+    #             | Q(lid__is_archived=is_archived.capitalize())
+    #         )
+
+    #         queryset = queryset.filter(is_archived=is_archived.capitalize())
+
+    #     if status:
+    #         queryset = queryset.filter(student__student_stage_type=status)
+
+    #     if reason == "1":
+    #         present_attendance = Attendance.objects.filter(
+    #             group_id=group_id,
+    #             reason="IS_PRESENT",
+    #             lid__isnull=True,
+    #             created_at__gte=start_of_day,
+    #             created_at__lte=end_of_day,
+    #         ).values_list("student_id", "lid_id", flat=False)
+
+    #     elif reason == "0":
+    #         present_attendance = Attendance.objects.filter(
+    #             group_id=group_id,
+    #             reason__in=["UNREASONED", "REASONED"],
+    #             lid__isnull=True,
+    #             created_at__gte=start_of_day,
+    #             created_at__lte=end_of_day,
+    #         ).values_list("student_id", "lid_id", flat=False)
+
+    #     else:
+    #         return queryset.order_by(
+    #             Coalesce("student__first_name", "lid__first_name"),
+    #             Coalesce("student__last_name", "lid__last_name"),
+    #         )
+
+    #     student_ids = {entry[0] for entry in present_attendance if entry[0] is not None}
+    #     lid_ids = {entry[1] for entry in present_attendance if entry[1] is not None}
+
+    #     queryset = queryset.filter(
+    #         Q(student_id__in=student_ids) | Q(lid_id__in=lid_ids)
+    #     )
+
+    #     # ✅ Order by student's name first, fallback to lid's
+    #     queryset = queryset.order_by(
+    #         Coalesce("student__first_name", "lid__first_name"),
+    #         Coalesce("student__last_name", "lid__last_name"),
+    #     )
+
+    #     return queryset
+    
+    
     def get_queryset(self):
         group_id = self.kwargs.get("pk")
         reason = self.request.query_params.get("reason", None)
@@ -240,12 +315,12 @@ class GroupStudentList(ListAPIView):
                 Q(student__is_archived=is_archived.capitalize())
                 | Q(lid__is_archived=is_archived.capitalize())
             )
-
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if status:
             queryset = queryset.filter(student__student_stage_type=status)
 
+        # --- attendance filter ---
         if reason == "1":
             present_attendance = Attendance.objects.filter(
                 group_id=group_id,
@@ -254,7 +329,6 @@ class GroupStudentList(ListAPIView):
                 created_at__gte=start_of_day,
                 created_at__lte=end_of_day,
             ).values_list("student_id", "lid_id", flat=False)
-
         elif reason == "0":
             present_attendance = Attendance.objects.filter(
                 group_id=group_id,
@@ -263,24 +337,45 @@ class GroupStudentList(ListAPIView):
                 created_at__gte=start_of_day,
                 created_at__lte=end_of_day,
             ).values_list("student_id", "lid_id", flat=False)
-
         else:
-            return queryset.order_by(
-                Coalesce("student__first_name", "lid__first_name"),
-                Coalesce("student__last_name", "lid__last_name"),
+            # No attendance filtering → just order & return
+            return (
+                queryset
+                .annotate(
+                    bucket=Case(
+                        When(lid__isnull=False, then=Value(0)),                     # lids first
+                        When(student__is_frozen=False, then=Value(1)),              # students (not frozen)
+                        When(student__is_frozen=True, then=Value(2)),               # frozen students
+                        default=Value(2),
+                        output_field=IntegerField(),
+                    ),
+                    first_name=Lower(Coalesce("student__first_name", "lid__first_name")),
+                    last_name=Lower(Coalesce("student__last_name", "lid__last_name")),
+                )
+                .order_by("bucket", "first_name", "last_name")
             )
 
-        student_ids = {entry[0] for entry in present_attendance if entry[0] is not None}
-        lid_ids = {entry[1] for entry in present_attendance if entry[1] is not None}
+        # Apply attendance filter
+        student_ids = {s for s, _ in present_attendance if s is not None}
+        lid_ids = {l for _, l in present_attendance if l is not None}
 
-        queryset = queryset.filter(
-            Q(student_id__in=student_ids) | Q(lid_id__in=lid_ids)
-        )
+        queryset = queryset.filter(Q(student_id__in=student_ids) | Q(lid_id__in=lid_ids))
 
-        # ✅ Order by student's name first, fallback to lid's
-        queryset = queryset.order_by(
-            Coalesce("student__first_name", "lid__first_name"),
-            Coalesce("student__last_name", "lid__last_name"),
+        # Final ordering: lid → students (not frozen) → students (frozen), then by name
+        queryset = (
+            queryset
+            .annotate(
+                bucket=Case(
+                    When(lid__isnull=False, then=Value(0)),
+                    When(student__is_frozen=False, then=Value(1)),
+                    When(student__is_frozen=True, then=Value(2)),
+                    default=Value(2),
+                    output_field=IntegerField(),
+                ),
+                first_name=Lower(Coalesce("student__first_name", "lid__first_name")),
+                last_name=Lower(Coalesce("student__last_name", "lid__last_name")),
+            )
+            .order_by("bucket", "first_name", "last_name")
         )
 
         return queryset
