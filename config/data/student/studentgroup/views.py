@@ -1,9 +1,10 @@
 import datetime
+from icecream import ic
 
 from django.db.models import OuterRef, Exists, Q, Count
+from django.db.models.functions import Coalesce
 from django.utils.timezone import now, localdate
 from django_filters.rest_framework import DjangoFilterBackend
-from icecream import ic
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import (
@@ -16,16 +17,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
+from data.student.attendance.models import Attendance
+from data.student.attendance.serializers import AttendanceSerializer
+from data.student.groups.models import SecondaryGroup, Group
+from data.student.groups.serializers import SecondaryGroupModelSerializer
+
 from .models import StudentGroup, SecondaryStudentGroup
 from .serializers import (
     StudentGroupUpdateSerializer,
     StudentsGroupSerializer,
     SecondaryStudentsGroupSerializer,
 )
-from data.student.attendance.models import Attendance
-from data.student.attendance.serializers import AttendanceSerializer
-from data.student.groups.models import SecondaryGroup, Group
-from data.student.groups.serializers import SecondaryGroupModelSerializer
 
 
 def _parse_bool(val):
@@ -136,19 +139,85 @@ class GroupStudentList(ListAPIView):
     serializer_class = StudentsGroupSerializer
     permission_classes = [IsAuthenticated]
 
+    # def get_queryset(self):
+    #     """
+    #     Fetch students related to a specific group, filtering based on attendance reason and date.
+    #     """
+    #     group_id = self.kwargs.get("pk")
+    #     reason = self.request.query_params.get("reason", None)
+
+    #     status = self.request.query_params.get("status")
+    #     is_archived = self.request.GET.get("is_archived", False)
+
+    #     search = self.request.GET.get("search")
+
+    #     print(is_archived)
+
+    #     today = now().date()
+    #     start_of_day = datetime.datetime.combine(today, datetime.time.min)
+    #     end_of_day = datetime.datetime.combine(today, datetime.time.max)
+
+    #     queryset = StudentGroup.objects.filter(group_id=group_id)
+
+    #     if search:
+    #         queryset = queryset.filter(
+    #             Q(student__first_name__icontains=search)
+    #             | Q(lid__first_name__icontains=search)
+    #             | Q(student__last_name__icontains=search)
+    #             | Q(lid__last_name__icontains=search)
+    #             | Q(lid__phone_number__icontains=search)
+    #             | Q(student__phone__icontains=search)
+    #         )
+
+    #     if is_archived:
+    #         queryset = queryset.filter(
+    #             Q(student__is_archived=is_archived.capitalize())
+    #             | Q(lid__is_archived=is_archived.capitalize())
+    #         ).distinct("id")
+
+    #         queryset = queryset.filter(is_archived=is_archived.capitalize())
+
+    #     if status:
+    #         queryset = queryset.filter(student__student_stage_type=status)
+
+    #     if reason == "1":
+
+    #         present_attendance = Attendance.objects.filter(
+    #             group_id=group_id,
+    #             reason="IS_PRESENT",
+    #             lid__isnull=True,
+    #             created_at__gte=start_of_day,
+    #             created_at__lte=end_of_day,
+    #         ).values_list("student_id", "lid_id", flat=False)
+
+    #     elif reason == "0":
+    #         present_attendance = Attendance.objects.filter(
+    #             group_id=group_id,
+    #             reason__in=["UNREASONED", "REASONED"],
+    #             lid__isnull=True,
+    #             created_at__gte=start_of_day,
+    #             created_at__lte=end_of_day,
+    #         ).values_list("student_id", "lid_id", flat=False)
+
+    #     else:
+    #         return queryset
+
+    #     student_ids = {entry[0] for entry in present_attendance if entry[0] is not None}
+    #     lid_ids = {entry[1] for entry in present_attendance if entry[1] is not None}
+
+    #     queryset = queryset.filter(
+    #         Q(student_id__in=student_ids) | Q(lid_id__in=lid_ids)
+    #     )
+
+    #     return queryset
+
     def get_queryset(self):
-        """
-        Fetch students related to a specific group, filtering based on attendance reason and date.
-        """
         group_id = self.kwargs.get("pk")
         reason = self.request.query_params.get("reason", None)
 
         status = self.request.query_params.get("status")
         is_archived = self.request.GET.get("is_archived", False)
-
         search = self.request.GET.get("search")
-
-        print(is_archived)
 
         today = now().date()
         start_of_day = datetime.datetime.combine(today, datetime.time.min)
@@ -178,7 +247,6 @@ class GroupStudentList(ListAPIView):
             queryset = queryset.filter(student__student_stage_type=status)
 
         if reason == "1":
-
             present_attendance = Attendance.objects.filter(
                 group_id=group_id,
                 reason="IS_PRESENT",
@@ -197,13 +265,22 @@ class GroupStudentList(ListAPIView):
             ).values_list("student_id", "lid_id", flat=False)
 
         else:
-            return queryset
+            return queryset.order_by(
+                Coalesce("student__first_name", "lid__first_name"),
+                Coalesce("student__last_name", "lid__last_name"),
+            )
 
         student_ids = {entry[0] for entry in present_attendance if entry[0] is not None}
         lid_ids = {entry[1] for entry in present_attendance if entry[1] is not None}
 
         queryset = queryset.filter(
-            Q(student__id__in=student_ids) | Q(lid__id__in=lid_ids)
+            Q(student_id__in=student_ids) | Q(lid_id__in=lid_ids)
+        )
+
+        # ✅ Order by student's name first, fallback to lid's
+        queryset = queryset.order_by(
+            Coalesce("student__first_name", "lid__first_name"),
+            Coalesce("student__last_name", "lid__last_name"),
         )
 
         return queryset
@@ -293,9 +370,7 @@ class StudentGroupDelete(APIView):
         if hasattr(StudentGroup, "lid"):
             filters |= Q(lid_id=student_id)
 
-        student = (
-            StudentGroup.objects.filter(group_id=group_id).filter(filters).first()
-        )
+        student = StudentGroup.objects.filter(group_id=group_id).filter(filters).first()
         attendance = (
             Attendance.objects.filter(group_id=group_id).filter(filters).first()
         )
