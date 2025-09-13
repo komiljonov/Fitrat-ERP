@@ -268,6 +268,7 @@ class CheckRoomLessonScheduleView(APIView):
         current_group = request.GET.get("group")
 
         raw_days = request.GET.getlist("scheduled_day_type")
+
         if len(raw_days) == 1 and "," in raw_days[0]:
             raw_days = [d.strip() for d in raw_days[0].split(",") if d.strip()]
 
@@ -309,6 +310,7 @@ class CheckRoomLessonScheduleView(APIView):
             Group.objects.filter(date_window)
             .filter(on_any_requested_day)
             .filter(time_overlap)
+            .exclude(stauts="INACTIVE")
             .distinct()
         )
 
