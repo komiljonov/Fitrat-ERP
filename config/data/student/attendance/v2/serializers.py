@@ -4,7 +4,7 @@ from datetime import date
 from rest_framework import serializers
 
 from data.lid.new_lid.models import Lid
-from data.student.attendance.choices import AttendanceReasonChoices
+from data.student.attendance.choices import AttendanceStatusChoices
 from data.student.groups.models import Group
 from data.student.student.models import Student
 from data.student.studentgroup.models import StudentGroup
@@ -25,11 +25,9 @@ class CreateAttendanceV2ItemSerializer(serializers.Serializer):
 
     student = serializers.PrimaryKeyRelatedField(queryset=StudentGroup.objects.all())
 
-    status = serializers.ChoiceField(AttendanceReasonChoices.CHOICES)
+    status = serializers.ChoiceField(AttendanceStatusChoices.CHOICES)
 
     comment = serializers.CharField(allow_blank=True, allow_null=True, required=False)
-    
-    
 
     # def validate(self, attrs):
     #     student = attrs.get("student")

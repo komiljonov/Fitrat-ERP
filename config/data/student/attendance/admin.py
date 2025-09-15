@@ -11,19 +11,19 @@ class AttendanceAdmin(admin.ModelAdmin):
         "lid",
         "student_info",
         "group",
-        "reason",
+        "status",
         "created_at",
     )
 
     list_filter = (
-        "reason",
+        "status",
         ("created_at", DateRangeFilter),
         "student",
         "lid",
     )
 
     search_fields = (
-        "reason",
+        "status",
         "lid__first_name",
         "student__first_name",
         "student__phone",
@@ -50,17 +50,17 @@ class SecondaryAttendanceAdmin(admin.ModelAdmin):
         "student_info",
         "group",
         "theme",
-        "reason",
+        "status",
         "created_at",
         "updated_at",
     )
     list_filter = (
-        "reason",
+        "status",
         ("created_at", DateRangeFilter),
         "group",
     )
     search_fields = (
-        "reason",
+        "status",
         "student__first_name",
         "student__last_name",
         "student__phone",
@@ -78,8 +78,8 @@ class SecondaryAttendanceAdmin(admin.ModelAdmin):
                     "student",
                     "group",
                     "theme",
-                    "reason",
-                    "remarks",
+                    "status",
+                    "comment",
                 ),
             },
         ),
@@ -97,13 +97,13 @@ class SecondaryAttendanceAdmin(admin.ModelAdmin):
     student_info.short_description = "Student Info"
 
     def mark_as_absent(self, request, queryset):
-        updated = queryset.update(reason="IS_ABSENT")
+        updated = queryset.update(status="IS_ABSENT")
         self.message_user(request, f"{updated} entries marked as absent.")
 
     mark_as_absent.short_description = "Mark selected as Absent"
 
     def mark_as_present(self, request, queryset):
-        updated = queryset.update(reason="IS_PRESENT")
+        updated = queryset.update(status="IS_PRESENT")
         self.message_user(request, f"{updated} entries marked as present.")
 
     mark_as_present.short_description = "Mark selected as Present"

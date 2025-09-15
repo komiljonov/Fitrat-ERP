@@ -1,4 +1,4 @@
-class AttendanceReasonChoices:
+class AttendanceStatusChoices:
 
     IS_PRESENT = "IS_PRESENT"
     REASONED = "REASONED"

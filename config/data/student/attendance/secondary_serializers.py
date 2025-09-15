@@ -34,18 +34,21 @@ class SecondaryAttendanceBulkSerializer(serializers.ListSerializer):
 
 class SecondaryAttendanceSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(), allow_null=True
+        queryset=Student.objects.all(),
+        allow_null=True,
     )
     group = serializers.PrimaryKeyRelatedField(
-        queryset=SecondaryGroup.objects.all(), allow_null=True
+        queryset=SecondaryGroup.objects.all(),
+        allow_null=True,
     )
     theme = serializers.PrimaryKeyRelatedField(
-        queryset=Theme.objects.all(), allow_null=True
+        queryset=Theme.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
         model = SecondaryAttendance
-        fields = ["id", "student", "group", "theme", "reason", "remarks", "updated_at"]
+        fields = ["id", "student", "group", "theme", "status", "comment", "updated_at"]
         list_serializer_class = SecondaryAttendanceBulkSerializer
         extra_kwargs = {"id": {"read_only": True}}
 

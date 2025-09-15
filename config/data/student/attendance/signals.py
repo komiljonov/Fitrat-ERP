@@ -11,6 +11,7 @@ from icecream import ic
 
 from data.finances.finance.choices import FinanceKindTypeChoices
 from data.exam_results.tasks import send_unit_test_notification
+from data.student.attendance.choices import AttendanceStatusChoices
 from .models import Attendance
 from data.student.groups.lesson_date_calculator import calculate_lessons
 from data.student.groups.models import GroupSaleStudent
@@ -78,16 +79,12 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
     if instance.lid:
         attendances_count = Attendance.objects.filter(lid=instance.lid).count()
 
-        if (
-            attendances_count == 1
-            and instance.reason != "IS_PRESENT"
-            and instance.lid is not None
-        ):
+        if attendances_count == 1 and instance.status != "IS_PRESENT":
             Notification.objects.create(
                 user=(
                     instance.lid.call_operator if instance.lid else instance.student.id
                 ),
-                comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan !",
+                comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan!",
                 come_from=instance.lid.id if instance.lid else instance.student.id,
                 choice="First_Lesson_Lid",
             )
@@ -113,7 +110,11 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
     if instance.student:
         attendances_count = Attendance.objects.filter(student=instance.student).count()
         dn_come_attendance_count = Attendance.objects.filter(
-            student=instance.student, reason__in=["REASONED", "UNREASONED"]
+            student=instance.student,
+            status__in=[
+                AttendanceStatusChoices.REASONED,
+                AttendanceStatusChoices.UNREASONED,
+            ],
         ).count()
 
         if dn_come_attendance_count >= 5:
@@ -123,7 +124,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
         if attendances_count <= 3:
             stage = (
                 "BIRINCHI_DARS"
-                if instance.reason == "IS_PRESENT"
+                if instance.status == AttendanceStatusChoices.IS_PRESENT
                 else "BIRINCHI_DARSGA_KELMAGAN"
             )
             instance.student.new_student_stages = stage
@@ -131,7 +132,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 
         if attendances_count > 1:
             if (
-                instance.reason == "IS_PRESENT"
+                instance.status == AttendanceStatusChoices.IS_PRESENT
                 and instance.student.balance_status == "INACTIVE"
             ):
                 Notification.objects.create(
@@ -140,7 +141,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                     come_from=instance.student.id,
                     choice="New_Student",
                 )
-            elif instance.reason == "UNREASONED":
+            elif instance.status == AttendanceStatusChoices.UNREASONED:
                 Notification.objects.create(
                     user=instance.student.sales_manager,
                     comment=f"Talaba {instance.student.first_name} {instance.student.phone} - {attendances_count} darsga qatnashmagan!",
@@ -169,7 +170,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         if not created or not instance.student or not instance.group:
             return
 
-        if instance.reason not in ["IS_PRESENT", "UNREASONED", "REASONED"]:
+        if instance.status not in ["IS_PRESENT", "UNREASONED", "REASONED"]:
             return
 
         # kind = Kind.objects.get(name="Lesson payment")

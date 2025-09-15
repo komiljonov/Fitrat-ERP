@@ -9,6 +9,7 @@ from data.student.groups.models import Group
 from data.student.homeworks.models import Homework, Homework_history
 from data.student.mastering.models import Mastering
 from data.student.quiz.models import Quiz
+from data.student.studentgroup.models import StudentGroup
 from data.student.subject.models import Theme
 
 from rest_framework.response import Response
@@ -39,15 +40,22 @@ class AttendanceCreateAPIView(APIView):
                 # student = item["student"]
                 # lead = item["lead"]
 
+                student: "StudentGroup" = item["student"]
+
                 status = item["status"]
                 comment = item.get("comment")
 
                 attendance, created = Attendance.objects.update_or_create(
-                    student=student,
-                    lid=lead,
+                    student=student.student,
+                    lid=student.lid,
                     date=date,
                     group=group,
-                    defaults=dict(reason=status, remarks=comment, repeated=repeated),
+                    defaults=dict(
+                        status=status,
+                        comment=comment,
+                        repeated=repeated,
+                        first_lesson=student.first_lesson,
+                    ),
                 )
 
                 attendance.theme.add(theme)
@@ -62,8 +70,8 @@ class AttendanceCreateAPIView(APIView):
                         )
 
                     mastering = Mastering.objects.create(
-                        student=student,
-                        lid=lead,
+                        student=student.student,
+                        lid=student.lid,
                         theme=theme,
                         test=quiz,
                         ball=0,
@@ -72,8 +80,8 @@ class AttendanceCreateAPIView(APIView):
                     if theme.course.subject.is_language:
 
                         Mastering.objects.create(
-                            student=student,
-                            lid=lead,
+                            student=student.student,
+                            lid=student.lid,
                             theme=theme,
                             test=None,
                             choice="Speaking",

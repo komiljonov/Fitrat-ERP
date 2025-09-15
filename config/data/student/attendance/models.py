@@ -5,7 +5,7 @@ from django.db.models import Q
 
 
 from data.firstlesson.models import FirstLesson
-from data.student.attendance.choices import AttendanceReasonChoices
+from data.student.attendance.choices import AttendanceStatusChoices
 from data.command.models import BaseModel
 
 if TYPE_CHECKING:
@@ -35,6 +35,14 @@ class Attendance(BaseModel):
 
     repeated = models.BooleanField(default=False)
 
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attendances",
+    )
+
     lid: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
@@ -51,29 +59,14 @@ class Attendance(BaseModel):
         related_name="attendances",
     )
 
-    student: "Student | None" = models.ForeignKey(
-        "student.Student",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="attendances",
-    )
-
-    # REASON_CHOICES = [
-    #     ("IS_PRESENT", "Is Present"),
-    #     ("REASONED", "Sababli"),
-    #     ("UNREASONED", "Sababsiz"),
-    #     ("HOLIDAY", "Dam olish kuni"),
-    # ]
-
-    reason = models.CharField(
+    status = models.CharField(
         max_length=20,
-        choices=AttendanceReasonChoices.CHOICES,
-        default=AttendanceReasonChoices.UNREASONED,
+        choices=AttendanceStatusChoices.CHOICES,
+        default=AttendanceStatusChoices.UNREASONED,
         help_text="Attendance reason (Sababli/Sababsiz)",
     )
 
-    remarks: str = models.TextField(blank=True, null=True, help_text="Comment")
+    comment: str = models.TextField(blank=True, null=True, help_text="Comment")
 
     amount = models.CharField(
         max_length=50,
@@ -85,7 +78,7 @@ class Attendance(BaseModel):
     attended_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f" {self.group} is marked as {self.reason}"
+        return f" {self.group} is marked as {self.status}"
 
     class Meta:
         constraints = [
@@ -135,21 +128,14 @@ class SecondaryAttendance(BaseModel):
         related_name="secondary_attendance_student",
     )
 
-    REASON_CHOICES = [
-        ("IS_PRESENT", "Is Present"),
-        ("REASONED", "Sababli"),
-        ("UNREASONED", "Sababsiz"),
-        ("HOLIDAY", "Dam olish kuni"),
-    ]
-
-    reason = models.CharField(
+    status = models.CharField(
         max_length=20,
-        choices=REASON_CHOICES,
-        default="UNREASONED",
-        help_text="Attendance reason (Sababli/Sababsiz)",
+        choices=AttendanceStatusChoices.CHOICES,
+        default=AttendanceStatusChoices.UNREASONED,
+        help_text="Attendance holati (Sababli/Sababsiz)",
     )
 
-    remarks: str = models.TextField(blank=True, null=True)
+    comment: str = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f" {self.group} is marked as {self.reason}"
