@@ -181,7 +181,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
     if created:
         attendances_count = Attendance.objects.filter(
             student=instance.student,
-            reason="IS_PRESENT",
+            status="IS_PRESENT",
         ).count()
 
         sale_manager = Lid.objects.filter(
@@ -243,7 +243,7 @@ def new_created_order(sender, instance: Finance, created, **kwargs):
 def new_created_order(sender, instance: Attendance, created, **kwargs):
     if created:
         attendances_count = Attendance.objects.filter(
-            student=instance.student, reason=["UNREASONED"]
+            student=instance.student, status=["UNREASONED"]
         ).count()
         amount = Bonus.objects.filter(
             user=(
@@ -292,7 +292,7 @@ def new_created_order(sender, instance: Student, created, **kwargs):
 @receiver(post_save, sender=Student)
 def new_created_order(sender, instance: Student, created, **kwargs):
     if not created and instance.is_archived == True:
-        att = Attendance.objects.filter(student=instance, reason="UNREASONED").count()
+        att = Attendance.objects.filter(student=instance, status="UNREASONED").count()
         if att > 2 and instance.service_manager:
             amount = Bonus.objects.filter(
                 user=instance.service_manager,
