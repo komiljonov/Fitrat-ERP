@@ -56,6 +56,12 @@ class FirstLesson(BaseModel):
 
         verbose_name_plural = "Sinov darslari"
 
+        onstraints = [
+            models.UniqueConstraint(
+                fields=["lead", "group", "date"], name="unique_lead_group_date"
+            )
+        ]
+
     class Admin(admin.ModelAdmin):
 
         list_display = ["lead", "group", "date", "status", "comment", "creator"]
