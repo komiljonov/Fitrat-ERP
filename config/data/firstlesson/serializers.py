@@ -76,6 +76,7 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
                 "sales_manager",
                 "balance",
                 "filial",
+                "photo",
             ],
         ).data
 
