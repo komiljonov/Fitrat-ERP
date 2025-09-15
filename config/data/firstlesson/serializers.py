@@ -83,3 +83,5 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
                 "balance",
             ],
         )
+
+        return res
