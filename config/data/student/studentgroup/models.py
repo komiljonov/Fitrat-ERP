@@ -18,7 +18,7 @@ class StudentGroup(BaseModel):
     group: "Group | None" = models.ForeignKey(
         "groups.Group",
         on_delete=models.PROTECT,
-        related_name="student_groups",
+        related_name="students",
     )
 
     student: "Student | None" = models.ForeignKey(

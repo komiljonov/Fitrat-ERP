@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from data.student.student.models import Student
     from data.lid.new_lid.models import Lid
     from data.student.subject.models import Level
+    from data.student.studentgroup.models import StudentGroup
 
 from data.account.models import CustomUser
 
@@ -120,6 +121,8 @@ class Group(BaseModel):
     is_archived = models.BooleanField(
         default=False, help_text="Is this group archived?"
     )
+
+    students: "models.QuerySet[StudentGroup]"
 
     def __str__(self):
         return f"{self.name} - {self.price_type}"
