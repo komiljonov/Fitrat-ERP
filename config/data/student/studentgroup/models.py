@@ -23,7 +23,7 @@ class StudentGroup(BaseModel):
 
     student: "Student | None" = models.ForeignKey(
         "student.Student",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="students_group",
@@ -31,7 +31,7 @@ class StudentGroup(BaseModel):
 
     lid: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="lead_groups",

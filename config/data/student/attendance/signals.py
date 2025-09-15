@@ -89,6 +89,8 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 choice="First_Lesson_Lid",
             )
 
+        instance.first_lesson.status = "CAME"
+
         instance.lid.is_student = True
         instance.lid.save()
 
