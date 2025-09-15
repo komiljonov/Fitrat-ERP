@@ -294,8 +294,8 @@ class StudentSerializer(serializers.ModelSerializer):
         ).distinct()
         return list(courses)
 
-    def get_relatives(self, obj):
-        return list(obj.relatives_student.values("name", "phone", "who"))
+    def get_relatives(self, obj: Student):
+        return list(obj.relatives.values("name", "phone", "who"))
 
     def get_attendance_count(self, obj):
         count = getattr(obj, "attendance_count", None)

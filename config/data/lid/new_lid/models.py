@@ -5,6 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from data.command.models import BaseModel
+from data.lid.new_lid.methods import LeadMethods
 
 if TYPE_CHECKING:
     from data.department.marketing_channel.models import MarketingChannel
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from data.upload.models import File
 
 
-class Lid(BaseModel):
+class Lid(BaseModel, LeadMethods):
 
     sender_id = models.CharField(max_length=500, null=True, blank=True)
     message_text = models.CharField(max_length=500, null=True, blank=True)

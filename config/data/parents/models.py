@@ -19,6 +19,7 @@ class Relatives(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        related_name="relatives",
     )
 
     student: "Student" = models.ForeignKey(
@@ -26,7 +27,7 @@ class Relatives(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="relatives_student",
+        related_name="relatives",
     )
 
     user: "CustomUser" = models.ForeignKey(
