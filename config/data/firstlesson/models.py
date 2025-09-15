@@ -56,7 +56,7 @@ class FirstLesson(BaseModel):
 
         verbose_name_plural = "Sinov darslari"
 
-        onstraints = [
+        constraints = [
             models.UniqueConstraint(
                 fields=["lead", "group", "date"], name="unique_lead_group_date"
             )
