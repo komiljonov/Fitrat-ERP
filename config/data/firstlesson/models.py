@@ -15,11 +15,10 @@ if TYPE_CHECKING:
 
 class FirstLesson(BaseModel):
 
-    lead: "Lid | None" = models.ForeignKey(
+    lead: "Lid" = models.ForeignKey(
         "new_lid.Lid",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.CASCADE,
+        related_name="frist_lessons",
     )
 
     group: "Group" = models.ForeignKey(
