@@ -95,7 +95,7 @@ class StudentGroupsView(ListCreateAPIView):
             queryset = queryset.filter(is_archived=is_archived.capitalize())
 
         if student:
-            queryset = queryset.filter(student_groups__student_id=student)
+            queryset = queryset.filter(students__student_id=student)
 
         if day == "1":
             days = []
@@ -128,7 +128,7 @@ class StudentGroupsView(ListCreateAPIView):
         if not_added and not_added.lower() == "true":
             queryset = queryset.exclude(status="INACTIVE")
 
-        queryset = queryset.annotate(student_count=Count("student_groups"))
+        queryset = queryset.annotate(student_count=Count("students"))
         return queryset.order_by("-student_count")
 
 
@@ -171,7 +171,7 @@ class GroupListAPIView(ListAPIView):
         if status:
             filter["status"] = status
         if student:
-            filter["student_groups__student__id"] = student
+            filter["students__student__id"] = student
         if filial:
             filter["filial__id"] = filial
         if course:
