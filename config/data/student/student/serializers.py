@@ -301,7 +301,7 @@ class StudentSerializer(serializers.ModelSerializer):
         count = getattr(obj, "attendance_count", None)
         if count is not None:
             return count + 1
-        return Attendance.objects.filter(student=obj, reason="IS_PRESENT").count() + 1
+        return Attendance.objects.filter(student=obj, status="IS_PRESENT").count() + 1
 
     def update(self, instance, validated_data):
         password = validated_data.get("password")

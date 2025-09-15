@@ -63,7 +63,7 @@ class AttendanceList(ListCreateAPIView):
             queryset = queryset.filter(student_id=student)
 
         if reason:
-            queryset = queryset.filter(reason=reason)
+            queryset = queryset.filter(status=reason)
 
         return (
             queryset.select_related("student")

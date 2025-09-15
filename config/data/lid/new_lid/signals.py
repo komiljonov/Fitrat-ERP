@@ -125,10 +125,10 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
             #     number=student.phone,
             #     message=f"""
             #     Fitrat Student ilovasiga muvaffaqiyatli ro‘yxatdan o‘tdingiz!
-            #
+
             #     Login: {student.phone}
             #     Parol: {password}
-            #
+
             #     Iltimos, ushbu ma’lumotlarni hech kimga bermang. Ilovaga kirib bolangizning natijalarini kuzatishingiz mumkin.
             #     """
             # )
@@ -156,6 +156,7 @@ def on_details_create(sender, instance: Lid, created, **kwargs):
                     if instance.balance == 0
                     else student.balance + instance.balance
                 )
+
                 student.save()
 
                 # sms.send_sms(
