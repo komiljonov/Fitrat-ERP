@@ -8,7 +8,7 @@ from data.command.models import UserFilial
 class FilialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Filial
-        fields = "__all__"
+        fields = ["id", "name"]
 
 
 class UserFilialSerializer(serializers.ModelSerializer):
