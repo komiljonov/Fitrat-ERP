@@ -5,6 +5,7 @@ from django.db import transaction
 
 from data.student.attendance.models import Attendance
 from data.student.attendance.v2.serializers import CreateAttendanceV2Serializer
+from data.student.groups.models import Group
 from data.student.homeworks.models import Homework, Homework_history
 from data.student.mastering.models import Mastering
 from data.student.quiz.models import Quiz
@@ -23,7 +24,7 @@ class AttendanceCreateAPIView(APIView):
 
         data = serializer.validated_data
 
-        group = data["group"]
+        group: "Group" = data["group"]
         date = data["date"]
         theme: "Theme" = data["theme"]
         repeated = data["repeated"]

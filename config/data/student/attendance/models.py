@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Q
 
 
+from data.firstlesson.models import FirstLesson
 from data.student.attendance.choices import AttendanceReasonChoices
 from data.command.models import BaseModel
 
@@ -29,7 +30,7 @@ class Attendance(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="attendance_group",
+        related_name="attendances",
     )
 
     repeated = models.BooleanField(default=False)
@@ -39,7 +40,15 @@ class Attendance(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="attendance_lid",
+        related_name="attendances",
+    )
+
+    first_lesson: "FirstLesson | None" = models.ForeignKey(
+        "firstlesson.FirstLesson",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attendances",
     )
 
     student: "Student | None" = models.ForeignKey(
@@ -47,7 +56,7 @@ class Attendance(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="attendance_student",
+        related_name="attendances",
     )
 
     # REASON_CHOICES = [

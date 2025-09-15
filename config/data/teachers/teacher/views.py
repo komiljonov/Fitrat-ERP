@@ -256,7 +256,7 @@ class TeachersGroupsView(ListAPIView):
 
         queryset = Group.objects.filter(
             Q(teacher_id=teacher_id) | Q(secondary_teacher_id=teacher_id)
-        ).annotate(student_count=Count("student_groups"))
+        ).annotate(student_count=Count("students"))
         if status:
             queryset = queryset.filter(status=status)
 

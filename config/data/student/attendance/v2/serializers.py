@@ -11,6 +11,7 @@ from data.student.subject.models import Theme
 
 
 class CreateAttendanceV2ItemSerializer(serializers.Serializer):
+
     student = serializers.PrimaryKeyRelatedField(
         queryset=Student.objects.all(),
         allow_null=True,
