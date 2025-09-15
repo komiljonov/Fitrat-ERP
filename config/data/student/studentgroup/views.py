@@ -323,7 +323,7 @@ class GroupStudentList(ListAPIView):
         if reason == "1":
             present_attendance = Attendance.objects.filter(
                 group_id=group_id,
-                reason="IS_PRESENT",
+                status="IS_PRESENT",
                 lid__isnull=True,
                 created_at__gte=start_of_day,
                 created_at__lte=end_of_day,
@@ -331,7 +331,7 @@ class GroupStudentList(ListAPIView):
         elif reason == "0":
             present_attendance = Attendance.objects.filter(
                 group_id=group_id,
-                reason__in=["UNREASONED", "REASONED"],
+                status__in=["UNREASONED", "REASONED"],
                 lid__isnull=True,
                 created_at__gte=start_of_day,
                 created_at__lte=end_of_day,
@@ -534,12 +534,12 @@ class GroupStudentStatisticsAPIView(APIView):
             group=group,
             created_at__gte=start_of_day,
             created_at__lte=end_of_day,
-            reason="IS_PRESENT",
+            status="IS_PRESENT",
         ).count()
 
         is_absent = Attendance.objects.filter(
             group=group,
-            reason__in=["REASONED", "UNREASONED"],
+            status__in=["REASONED", "UNREASONED"],
             created_at__gte=start_of_day,
             created_at__lte=end_of_day,
         ).count()
