@@ -82,6 +82,6 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
                 "sales_manager",
                 "balance",
             ],
-        )
+        ).data
 
         return res
