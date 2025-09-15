@@ -76,7 +76,7 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
                 "id",
                 "first_name",
                 "last_name",
-                "middle_namw",
+                "middle_name",
                 "phone_number",
                 "service_manager",
                 "sales_manager",
