@@ -1,8 +1,8 @@
 import datetime
 from icecream import ic
 
-from django.db.models import OuterRef, Exists, Q, Count, Case, When,Value,IntegerField
-from django.db.models.functions import Coalesce,Lower
+from django.db.models import OuterRef, Exists, Q, Count, Case, When, Value, IntegerField
+from django.db.models.functions import Coalesce, Lower
 from django.utils.timezone import now, localdate
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -578,12 +578,11 @@ class GroupAttendedStudents(ListAPIView):
             created_at__gte=datetime.date.today(),
         ).distinct()
 
-        ic(reason)
-
         if reason and reason == "1":
-            queryset = queryset.filter(reason="IS_PRESENT")
+            queryset = queryset.filter(status="IS_PRESENT")
         if reason and reason == "0":
-            queryset = queryset.filter(reason__in=["REASONED", "UNREASONED"])
+            queryset = queryset.filter(status__in=["REASONED", "UNREASONED"])
+
         return queryset.distinct()
 
     def get_paginated_response(self, data):
