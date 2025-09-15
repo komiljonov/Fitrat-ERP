@@ -141,6 +141,7 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                     come_from=instance.student.id,
                     choice="New_Student",
                 )
+                
             elif instance.status == AttendanceStatusChoices.UNREASONED:
                 Notification.objects.create(
                     user=instance.student.sales_manager,

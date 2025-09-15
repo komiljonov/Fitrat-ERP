@@ -646,14 +646,14 @@ class TeacherGroupFinanceAPIView(APIView):
             )
 
             # Student filter
-            student_filters = {"attendance_student__group__id": group_id}
+            student_filters = {"attendances__group__id": group_id}
             if start_date and end_date:
-                student_filters["attendance_student__created_at__range"] = (
+                student_filters["attendance__created_at__range"] = (
                     start_date,
                     end_date,
                 )
             elif start_date:
-                student_filters["attendance_student__created_at__gte"] = start_date
+                student_filters["attendance__created_at__gte"] = start_date
 
             students = Student.objects.filter(**student_filters).distinct()
             student_data = []

@@ -111,21 +111,21 @@ class SecondaryAttendance(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="secondary_group_attendance_theme",
+        related_name="secondary_group_attendance",
     )
     group: "SecondaryGroup | None" = models.ForeignKey(
         "groups.SecondaryGroup",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="secondary_group_attendance_secondary_group",
+        related_name="attendances",
     )
     student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="secondary_attendance_student",
+        related_name="secondary_attendances",
     )
 
     status = models.CharField(
