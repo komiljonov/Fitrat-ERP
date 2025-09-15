@@ -13,4 +13,6 @@ class FirstLessonListCreateAPIView(ListCreateAPIView):
     serializer_class = FirstLessonSerializer
 
     def perform_create(self, serializer):
-        return serializer.save(creator=self.request.user)
+        return serializer.save(
+            creator=self.request.user if self.request.user.is_authenticated else None
+        )
