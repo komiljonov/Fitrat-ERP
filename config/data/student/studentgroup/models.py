@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, CheckConstraint
+from django.core.exceptions import ValidationError
+
 
 from data.command.models import BaseModel
 
@@ -8,6 +10,7 @@ if TYPE_CHECKING:
     from data.student.student.models import Student
     from data.lid.new_lid.models import Lid
     from data.student.groups.models import Group, SecondaryGroup
+    from data.firstlesson.models import FirstLesson
 
 
 class StudentGroup(BaseModel):
@@ -32,6 +35,14 @@ class StudentGroup(BaseModel):
         null=True,
         blank=True,
         related_name="lead_groups",
+    )
+
+    first_lesson: "FirstLesson | None" = models.ForeignKey(
+        "firstlesson.FirstLesson",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="studentgroups",
     )
 
     is_archived = models.BooleanField(default=False)
@@ -66,10 +77,26 @@ class StudentGroup(BaseModel):
                 condition=Q(lid__isnull=False, is_archived=False),
                 # deferrable=models.Deferrable.DEFERRED,
             ),
+            # Make first_lesson required if lead is presented
+            CheckConstraint(
+                name="lead_requires_first_lesson_when_active",
+                condition=Q(is_archived=True)
+                | Q(lid__isnull=True)
+                | Q(first_lesson__isnull=False),
+            ),
         ]
 
     def __str__(self):
         return self.group.name if self.group else ""
+
+    def clean(self):
+        super().clean()
+        if not self.is_archived and self.lid_id and not self.first_lesson_id:
+            raise ValidationError(
+                {
+                    "first_lesson": "First lesson is required when a lead (lid) is set for an active record."
+                }
+            )
 
 
 class SecondaryStudentGroup(BaseModel):

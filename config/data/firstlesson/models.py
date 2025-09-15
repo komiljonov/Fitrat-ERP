@@ -49,6 +49,8 @@ class FirstLesson(BaseModel):
         blank=True,
     )
 
+    is_archived = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "Sinov darsi"
 
