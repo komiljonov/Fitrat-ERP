@@ -62,6 +62,8 @@ class StudentGroup(BaseModel):
         verbose_name = "Student Group"
         verbose_name_plural = "Student Groups"
 
+        ordering = ["-created_at"]
+
         constraints = [
             # No duplicate active student in the same group
             models.UniqueConstraint(
