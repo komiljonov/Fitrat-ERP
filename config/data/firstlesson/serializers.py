@@ -71,7 +71,7 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
         res = super().to_representation(instance)
 
         res["lead"] = LeadSerializer(
-            instance,
+            instance.lead,
             include_only=[
                 "id",
                 "first_name",
