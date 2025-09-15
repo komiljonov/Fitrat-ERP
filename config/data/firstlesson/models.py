@@ -84,10 +84,10 @@ class FirstLesson(BaseModel):
     def _sync_from_group(self):
         if self.group_id:
             # these names assume Group has these FKs/fields
-            self.teacher = getattr(self.group, "teacher", None)
-            self.subject = getattr(self.group, "subject", None)
-            self.level = getattr(self.group, "level", None)
-            self.course = getattr(self.group, "course", None)
+            self.teacher = self.group.teacher
+            self.subject = self.group.course.subject
+            self.level = self.group.level
+            self.course = self.group.course
 
     def save(self, *args, **kwargs):
         # always sync before saving (covers creates & updates)

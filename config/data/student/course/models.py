@@ -14,7 +14,7 @@ class Course(BaseModel):
 
     subject: "Subject" = models.ForeignKey("subject.Subject", on_delete=models.CASCADE)
 
-    level: "Level" = models.ForeignKey(
+    level: "Level | None" = models.ForeignKey(
         "subject.Level",
         on_delete=models.SET_NULL,
         null=True,
