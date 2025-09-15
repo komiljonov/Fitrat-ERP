@@ -2,10 +2,11 @@ from rest_framework import serializers
 
 from data.firstlesson.models import FirstLesson
 from data.lid.new_lid.models import Lid
+from data.lid.new_lid.serializers import LeadSerializer
 from data.student.groups.models import Group
 
 
-class FirstLessonSerializer(serializers.ModelSerializer):
+class FirstLessonListSerializer(serializers.ModelSerializer):
     lead = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
     group = serializers.PrimaryKeyRelatedField(
         queryset=Group.objects.filter(status="ACTIVE")
@@ -31,7 +32,9 @@ class FirstLessonSerializer(serializers.ModelSerializer):
             "status",
             "comment",
             "creator",
+            "created_at",
         ]
+
         read_only_fields = [
             "status",
             "creator",
@@ -63,3 +66,20 @@ class FirstLessonSerializer(serializers.ModelSerializer):
         if "group" in validated_data:
             self._apply_group_defaults(validated_data)
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance: FirstLesson):
+        res = super().to_representation(instance)
+
+        res["lead"] = LeadSerializer(
+            instance,
+            include_only=[
+                "id",
+                "first_name",
+                "last_name",
+                "middle_namw",
+                "phone_number",
+                "service_manager",
+                "sales_manager",
+                "balance",
+            ],
+        )
