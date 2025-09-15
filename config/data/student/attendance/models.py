@@ -37,7 +37,7 @@ class Attendance(BaseModel):
 
     student: "Student | None" = models.ForeignKey(
         "student.Student",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="attendances",
@@ -45,7 +45,7 @@ class Attendance(BaseModel):
 
     lid: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="attendances",
