@@ -87,8 +87,6 @@ class Kind(BaseModel):
                 condition=~models.Q(kind=None),
             )
         ]
-        
-    
 
 
 class PaymentMethod(BaseModel):
@@ -325,11 +323,13 @@ class SaleStudent(BaseModel):
         null=True,
         blank=True,
     )
+
     sale: "Sale" = models.ForeignKey(
         "finance.Sale",
         on_delete=models.CASCADE,
         related_name="finances_sale_student",
     )
+
     student: "Student" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
@@ -337,11 +337,13 @@ class SaleStudent(BaseModel):
         null=True,
         blank=True,
     )
+
     lid: "Lid" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        related_name="sales",
     )
 
     group = models.ForeignKey(

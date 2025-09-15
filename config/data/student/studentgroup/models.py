@@ -26,7 +26,7 @@ class StudentGroup(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="students_group",
+        related_name="groups",
     )
 
     lid: "Lid | None" = models.ForeignKey(
@@ -34,7 +34,7 @@ class StudentGroup(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="lead_groups",
+        related_name="groups",
     )
 
     first_lesson: "FirstLesson | None" = models.ForeignKey(
@@ -42,7 +42,7 @@ class StudentGroup(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="studentgroups",
+        related_name="groups",
     )
 
     is_archived = models.BooleanField(default=False)
@@ -111,7 +111,7 @@ class SecondaryStudentGroup(BaseModel):
     student: "Student | None" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
-        related_name="students_secondary_group",
+        related_name="secondary_groups",
         null=True,
         blank=True,
     )
@@ -119,7 +119,7 @@ class SecondaryStudentGroup(BaseModel):
     lid: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.SET_NULL,
-        related_name="lids_secondary_group",
+        related_name="secondary_groups",
         null=True,
         blank=True,
     )

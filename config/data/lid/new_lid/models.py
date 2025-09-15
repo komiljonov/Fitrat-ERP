@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 from decimal import Decimal
 from django.db import models
-from django.utils import timezone
 
 from data.command.models import BaseModel
 from data.lid.new_lid.methods import LeadMethods
@@ -14,6 +13,10 @@ if TYPE_CHECKING:
     from data.student.student.models import Student
     from data.account.models import CustomUser
     from data.upload.models import File
+    from data.finances.finance.models import SaleStudent
+    from data.student.attendance.models import Attendance
+    from data.student.studentgroup.models import SecondaryStudentGroup
+    from data.parents.models import Relatives
 
 
 class Lid(BaseModel, LeadMethods):
@@ -209,7 +212,11 @@ class Lid(BaseModel, LeadMethods):
 
     first_lesson_created_at = models.DateTimeField(null=True, blank=True)
 
-    lead_groups: "models.QuerySet[StudentGroup]"
+    sales: "models.QuerySet[SaleStudent]"
+    attendances: "models.QuerySet[Attendance]"
+    groups: "models.QuerySet[StudentGroup]"
+    secondary_groups: "models.QuerySet[SecondaryStudentGroup]"
+    relatives: "models.QuerySet[Relatives]"
 
     def __str__(self):
         return (

@@ -5,11 +5,7 @@ from typing import TYPE_CHECKING
 from datetime import datetime
 from django.contrib.auth.hashers import make_password
 
-from data.finances.finance.models import SaleStudent
-from data.parents.models import Relatives
-from data.student.attendance.models import Attendance
 from data.student.student.models import Student
-from data.student.studentgroup.models import SecondaryStudentGroup, StudentGroup
 
 if TYPE_CHECKING:
     from data.lid.new_lid.models import Lid
@@ -94,15 +90,20 @@ class LeadMethods:
             #     """
             # )
 
-        StudentGroup.objects.filter(lid=self).update(student=student, lid=None)
+        # StudentGroup.objects.filter(lid=self).update(student=student, lid=None)
+        self.groups.update(student=student, lid=None)
 
-        SecondaryStudentGroup.objects.filter(lid=self).update(student=student, lid=None)
+        self.secondary_groups.update(student=student, lid=None)
 
-        Attendance.objects.filter(lid=self).update(student=student, lid=None)
+        # Attendance.objects.filter(lid=self).update(student=student, lid=None)
+        self.attendances.update(student=student, lid=None)
 
-        SaleStudent.objects.filter(lid=self).update(student=student, lid=None)
+        # SaleStudent.objects.filter(lid=self).update(student=student, lid=None)
 
-        Relatives.objects.filter(lid=self).update(student=student)
+        self.sales.update(student=student, lid=None)
+
+        # Relatives.objects.filter(lid=self).update(student=student)
+        self.relatives.update(student=student)
 
         self.is_archived = True
         self.save()
