@@ -165,7 +165,10 @@ def add_sales_student(sender, instance: GroupSaleStudent, created: bool, **kwarg
         amount = instance.group.price - instance.amount
         creator = CustomUser.objects.filter(role="DIRECTOR").first()
         sale = Sale.objects.create(
-            creator=creator, name="Sale", status="ACTIVE", amount=amount
+            creator=creator,
+            name="Sale",
+            status="ACTIVE",
+            amount=amount,
         )
         sale_student = SaleStudent.objects.create(
             student=instance.student if instance.student else None,

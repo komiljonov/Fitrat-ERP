@@ -26,7 +26,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://api.dev.sectorsoft.uz",
     "https://api.fitrat.sectorsoft.uz",
     "https://fitrat.sectorsoft.uz",
-    "https://www.fitrat.sectorsoft.uz" "https://api.dev.fitrat.sectorsoft.uz",
+    "https://www.fitrat.sectorsoft.uz",
+    "https://api.dev.fitrat.sectorsoft.uz",
     "https://dev.fitrat.sectorsoft.uz",
     "https://api.dev.fitrat.sectorsoft.uz",
 ]
