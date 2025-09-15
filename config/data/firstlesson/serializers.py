@@ -82,7 +82,7 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
         return res
 
 
-class FirstLessonListSerializer(serializers.ModelSerializer):
+class FirstLessonSingleSerializer(serializers.ModelSerializer):
     lead = LeadSerializer()
     group = serializers.PrimaryKeyRelatedField(
         queryset=Group.objects.filter(status="ACTIVE")
