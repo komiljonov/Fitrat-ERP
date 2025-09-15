@@ -4,11 +4,14 @@ from django.contrib import admin
 
 
 from data.command.models import BaseModel
+from data.student.course.models import Course
+from data.student.subject.models import Level
 
 if TYPE_CHECKING:
     from data.student.groups.models import Group
     from data.lid.new_lid.models import Lid
     from data.employee.models import Employee
+    from data.student.subject.models import Subject
 
 # Create your models here.
 
@@ -23,6 +26,34 @@ class FirstLesson(BaseModel):
 
     group: "Group" = models.ForeignKey(
         "groups.Group",
+        on_delete=models.CASCADE,
+        related_name="first_lessons",
+    )
+
+    teacher: "Employee | None" = models.ForeignKey(
+        "employee.Employee",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="first_lessons",
+    )
+
+    subject: "Subject" = models.ForeignKey(
+        "subject.Subject",
+        on_delete=models.CASCADE,
+        related_name="first_lessons",
+    )
+
+    level: "Level | None" = models.ForeignKey(
+        "subject.Level",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="first_lessons",
+    )
+
+    course: "Course" = models.ForeignKey(
+        "course.Course",
         on_delete=models.CASCADE,
         related_name="first_lessons",
     )
@@ -49,6 +80,19 @@ class FirstLesson(BaseModel):
     )
 
     is_archived = models.BooleanField(default=False)
+
+    def _sync_from_group(self):
+        if self.group_id:
+            # these names assume Group has these FKs/fields
+            self.teacher = getattr(self.group, "teacher", None)
+            self.subject = getattr(self.group, "subject", None)
+            self.level = getattr(self.group, "level", None)
+            self.course = getattr(self.group, "course", None)
+
+    def save(self, *args, **kwargs):
+        # always sync before saving (covers creates & updates)
+        self._sync_from_group()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Sinov darsi"

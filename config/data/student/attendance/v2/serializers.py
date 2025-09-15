@@ -7,34 +7,40 @@ from data.lid.new_lid.models import Lid
 from data.student.attendance.choices import AttendanceReasonChoices
 from data.student.groups.models import Group
 from data.student.student.models import Student
+from data.student.studentgroup.models import StudentGroup
 from data.student.subject.models import Theme
 
 
 class CreateAttendanceV2ItemSerializer(serializers.Serializer):
 
-    student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.all(),
-        allow_null=True,
-    )
-    lead = serializers.PrimaryKeyRelatedField(
-        queryset=Lid.objects.all(),
-        allow_null=True,
-    )
+    # student = serializers.PrimaryKeyRelatedField(
+    #     queryset=Student.objects.all(),
+    #     allow_null=True,
+    # )
+
+    # lead = serializers.PrimaryKeyRelatedField(
+    #     queryset=Lid.objects.all(),
+    #     allow_null=True,
+    # )
+
+    student = serializers.PrimaryKeyRelatedField(queryset=StudentGroup.objects.all())
 
     status = serializers.ChoiceField(AttendanceReasonChoices.CHOICES)
 
     comment = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    
+    
 
-    def validate(self, attrs):
-        student = attrs.get("student")
-        lead = attrs.get("lead")
+    # def validate(self, attrs):
+    #     student = attrs.get("student")
+    #     lead = attrs.get("lead")
 
-        if bool(student) == bool(lead):  # both True or both False
-            raise serializers.ValidationError(
-                "Exactly one of student or lead must be provided."
-            )
+    #     if bool(student) == bool(lead):  # both True or both False
+    #         raise serializers.ValidationError(
+    #             "Exactly one of student or lead must be provided."
+    #         )
 
-        return attrs
+    #     return attrs
 
 
 class CreateAttendanceV2Serializer(serializers.Serializer):

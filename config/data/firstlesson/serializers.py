@@ -11,7 +11,55 @@ class FirstLessonSerializer(serializers.ModelSerializer):
         queryset=Group.objects.filter(status="ACTIVE")
     )
 
+    # expose these in responses, but never accept them from input
+    teacher = serializers.PrimaryKeyRelatedField(read_only=True)
+    subject = serializers.PrimaryKeyRelatedField(read_only=True)
+    level = serializers.PrimaryKeyRelatedField(read_only=True)
+    course = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = FirstLesson
-        fields = ["id", "lead", "group", "date", "status", "comment", "creator"]
-        read_only_fields = ["status", "creator"]
+        fields = [
+            "id",
+            "lead",
+            "group",
+            "teacher",
+            "subject",
+            "level",
+            "course",
+            "date",
+            "status",
+            "comment",
+            "creator",
+        ]
+        read_only_fields = [
+            "status",
+            "creator",
+            "teacher",
+            "subject",
+            "level",
+            "course",
+        ]
+
+    def _apply_group_defaults(self, validated_data):
+        group = validated_data.get("group")
+        if group:
+            validated_data["teacher"] = getattr(group, "teacher", None)
+            validated_data["subject"] = getattr(group, "subject", None)
+            validated_data["level"] = getattr(group, "level", None)
+            validated_data["course"] = getattr(group, "course", None)
+
+    def create(self, validated_data):
+        # set creator if you map users->employees
+        req = self.context.get("request")
+        if req and hasattr(req.user, "employee"):
+            validated_data["creator"] = req.user.employee
+
+        self._apply_group_defaults(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # If group is being changed via API, re-sync derived fields for the saved object
+        if "group" in validated_data:
+            self._apply_group_defaults(validated_data)
+        return super().update(instance, validated_data)

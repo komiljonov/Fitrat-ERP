@@ -13,13 +13,16 @@ if TYPE_CHECKING:
 class Subject(BaseModel):
     name = models.CharField(max_length=100)
     label = models.CharField(max_length=100, blank=True, null=True)
-    image: "File" = models.ForeignKey(
+
+    image: "File | None" = models.ForeignKey(
         "upload.File",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
+
     is_language = models.BooleanField(default=False)
+
     has_level = models.BooleanField(default=False)
 
     is_archived = models.BooleanField(default=False)

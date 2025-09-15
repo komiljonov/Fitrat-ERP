@@ -36,8 +36,8 @@ class AttendanceCreateAPIView(APIView):
 
         with transaction.atomic():
             for item in items:
-                student = item["student"]
-                lead = item["lead"]
+                # student = item["student"]
+                # lead = item["lead"]
 
                 status = item["status"]
                 comment = item.get("comment")
