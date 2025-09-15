@@ -208,10 +208,10 @@ class DashboardView(APIView):
             )
             first_lesson = first_lesson.filter(group__teacher__id=teacher)
             first_lesson_come = first_lesson_come.filter(
-                students_group__group__teacher_id=teacher
+                groups__group__teacher_id=teacher
             )
             first_lesson_come_archived = first_lesson_come_archived.filter(
-                students_group__group__teacher_id=teacher
+                groups__group__teacher_id=teacher
             )
 
         if course:
@@ -226,10 +226,10 @@ class DashboardView(APIView):
             )
             first_lesson = first_lesson.filter(group__course__id=course)
             first_lesson_come = first_lesson_come.filter(
-                students_group__group__course_id=course
+                groups__group__course_id=course
             )
             first_lesson_come_archived = first_lesson_come_archived.filter(
-                students_group__group__course_id=course
+                groups__group__course_id=course
             )
 
         # Final Data Output
@@ -467,16 +467,16 @@ class DashboardSecondView(APIView):
             )
             first_lesson = first_lesson.filter(group__teacher_id=teacher)
             first_lesson_come = first_lesson_come.filter(
-                students_group__group__teacher_id=teacher
+                groups__group__teacher_id=teacher
             )
             first_lesson_come_archived = first_lesson_come_archived.filter(
-                students_group__group_id=teacher
+                groups__group_id=teacher
             )
             first_course_payment = first_course_payment.filter(
-                students_group__group__teacher_id=teacher
+                groups__group__teacher_id=teacher
             )
             first_course_payment_archived = first_course_payment_archived.filter(
-                students_group__group__teacher_id=teacher
+                groups__group__teacher_id=teacher
             )
 
         if course:
@@ -488,16 +488,16 @@ class DashboardSecondView(APIView):
             )
             first_lesson = first_lesson.filter(group__course_id=course)
             first_lesson_come = first_lesson_come.filter(
-                students_group__group__course_id=course
+                groups__group__course_id=course
             )
             first_lesson_come_archived = first_lesson_come_archived.filter(
-                students_group__group__course_id=course
+                groups__group__course_id=course
             )
             first_course_payment = first_course_payment.filter(
-                students_group__group__course_id=course
+                groups__group__course_id=course
             )
             first_course_payment_archived = first_course_payment_archived.filter(
-                students_group__group__course_id=course
+                groups__group__course_id=course
             )
 
         # Final Data Output
@@ -1688,8 +1688,8 @@ class ExportDashboardToExcelAPIView(APIView):
                 total_sale_discount=Sum(
                     Case(
                         When(
-                            student__students_group__group__price_type="monthly",
-                            then=F("student__students_group__group__price")
+                            groups__group__price_type="monthly",
+                            then=F("groups__group__price")
                             * F("sale__amount")
                             / Value(100),
                         ),

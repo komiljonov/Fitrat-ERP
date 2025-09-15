@@ -283,7 +283,7 @@ class StudentSerializer(serializers.ModelSerializer):
         return list(courses)
 
     def get_group(self, obj: Student):
-        courses = obj.students_group.values(
+        courses = obj.groups.values(
             "group__id",
             "group__name",
             "group__status",

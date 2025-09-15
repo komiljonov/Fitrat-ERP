@@ -123,7 +123,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             queryset = queryset.filter(filial__id=filial_id)
 
         if teacher_id:
-            queryset = queryset.filter(students_group__group__teacher__id=teacher_id)
+            queryset = queryset.filter(groups__group__teacher__id=teacher_id)
 
         if from_price:
             queryset = queryset.filter(balance__gte=from_price)
@@ -147,13 +147,13 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         if course_id:
             queryset = queryset.filter(
-                students_group__group__course__id=course_id
+                groups__group__course__id=course_id
             )  # Assuming Many-to-Many relation in groups
         if service_manager:
             queryset = queryset.filter(service_manager__id=service_manager)
 
         if group_id:
-            queryset = queryset.filter(students_group__group__id=group_id)
+            queryset = queryset.filter(groups__group__id=group_id)
 
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
@@ -410,7 +410,7 @@ class ExportLidToExcelAPIView(APIView):
             queryset = queryset.filter(filial__id=filial_id)
 
         if teacher_id:
-            queryset = queryset.filter(students_group__group__teacher__id=teacher_id)
+            queryset = queryset.filter(groups__group__teacher__id=teacher_id)
 
         if from_price:
             queryset = queryset.filter(balance__gte=from_price)
@@ -434,13 +434,13 @@ class ExportLidToExcelAPIView(APIView):
             queryset = queryset.filter(call_operator__id=call_operator_id)
 
         if course_id:
-            queryset = queryset.filter(students_group__group__course__id=course_id)
+            queryset = queryset.filter(groups__group__course__id=course_id)
 
         if service_manager:
             queryset = queryset.filter(service_manager__id=service_manager)
 
         if group_id:
-            queryset = queryset.filter(students_group__group__id=group_id)
+            queryset = queryset.filter(groups__group__id=group_id)
 
         date_format = "%Y-%m-%d"
         if start_date_str and end_date_str:

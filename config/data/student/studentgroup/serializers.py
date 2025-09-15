@@ -349,7 +349,7 @@ class StudentGroupUpdateSerializer(serializers.Serializer):
 
         student: Student = attrs["student"]
 
-        if student.students_group.filter(group=attrs["group"]).exists():
+        if student.groups.filter(group=attrs["group"]).exists():
             raise serializers.ValidationError(
                 "Can't  add students group to already existing  one."
             )

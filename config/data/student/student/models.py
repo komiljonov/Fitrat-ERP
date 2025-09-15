@@ -202,7 +202,7 @@ class Student(BaseModel):
         default=Decimal("0.00"),
     )
 
-    students_group: "models.QuerySet[StudentGroup]"
+    groups: "models.QuerySet[StudentGroup]"
     relatives: "models.QuerySet[Relatives]"
 
     class Meta:
