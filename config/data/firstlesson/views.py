@@ -1,6 +1,7 @@
 from rest_framework.generics import ListCreateAPIView
 
 from data.firstlesson.models import FirstLesson
+from data.firstlesson.serializers import FirstLessonSerializer
 
 # Create your views here.
 
@@ -8,3 +9,5 @@ from data.firstlesson.models import FirstLesson
 class FirstLessonListCreateAPIView(ListCreateAPIView):
 
     queryset = FirstLesson.objects.all()
+
+    serializer_class = FirstLessonSerializer
