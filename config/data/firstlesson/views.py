@@ -11,3 +11,6 @@ class FirstLessonListCreateAPIView(ListCreateAPIView):
     queryset = FirstLesson.objects.all()
 
     serializer_class = FirstLessonSerializer
+
+    def perform_create(self, serializer):
+        return serializer.save(creator=self.request.user)

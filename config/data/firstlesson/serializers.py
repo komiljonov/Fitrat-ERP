@@ -6,9 +6,7 @@ from data.student.groups.models import Group
 
 
 class FirstLessonSerializer(serializers.ModelSerializer):
-
     lead = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
-
     group = serializers.PrimaryKeyRelatedField(
         queryset=Group.objects.filter(status="ACTIVE")
     )
@@ -16,3 +14,4 @@ class FirstLessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = FirstLesson
         fields = ["id", "lead", "group", "date", "status", "comment", "creator"]
+        read_only_fields = ["status", "creator"]
