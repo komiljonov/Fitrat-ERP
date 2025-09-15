@@ -22,6 +22,11 @@ class Room(BaseModel):
     )
     room_filling = models.FloatField(default=10, null=True, blank=True)
 
+    room_type = models.CharField(
+        choices=[("LESSON_ROOM", "Dars xonasi"), ("COWORKING_ZONE", "Coworking zone")],
+        default="LESSON_ROOM",
+    )
+
     def __str__(self):
         return self.room_number
 
