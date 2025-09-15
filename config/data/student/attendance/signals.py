@@ -89,10 +89,13 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                 choice="First_Lesson_Lid",
             )
 
-        instance.first_lesson.status = "CAME"
+        if instance.status == AttendanceStatusChoices.IS_PRESENT:
 
-        instance.lid.is_student = True
-        instance.lid.save()
+            instance.first_lesson.status = "CAME"
+            instance.first_lesson.save()
+
+            instance.lid.is_student = True
+            instance.lid.save()
 
         # student = Lid.objects.filter(id=instance.lid.id).first()
     # <<<<<<< HEAD
