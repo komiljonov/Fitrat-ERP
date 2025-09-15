@@ -1,4 +1,4 @@
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 from data.firstlesson.models import FirstLesson
 from data.firstlesson.serializers import FirstLessonListSerializer
@@ -16,3 +16,10 @@ class FirstLessonListCreateAPIView(ListCreateAPIView):
         return serializer.save(
             creator=self.request.user if self.request.user.is_authenticated else None
         )
+
+
+class FirstLessonRetrieveAPIView(RetrieveUpdateDestroyAPIView):
+
+    queryset = FirstLesson.objects.all()
+
+    serializer_class = FirstLessonListSerializer
