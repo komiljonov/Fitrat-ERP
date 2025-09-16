@@ -14,7 +14,6 @@ from data.firstlesson.serializers import (
 
 class FirstLessonListCreateAPIView(ListCreateAPIView):
 
-    
     queryset = (
         FirstLesson.objects.exclude(status="CAME")
         .annotate(
@@ -39,9 +38,11 @@ class FirstLessonListCreateAPIView(ListCreateAPIView):
     filterset_class = FirstLessonsFilter
 
     def perform_create(self, serializer):
-        return serializer.save(
+        instance: FirstLesson = serializer.save(
             creator=self.request.user if self.request.user.is_authenticated else None
         )
+
+        instance.group.students.get_or_create(lid=instance.lead, first_lesson=instance)
 
 
 class FirstLessonRetrieveAPIView(RetrieveUpdateDestroyAPIView):

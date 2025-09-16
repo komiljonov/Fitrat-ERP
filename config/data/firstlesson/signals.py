@@ -14,10 +14,10 @@ def on_new_first_lesson(sender, instance: "FirstLesson", created, **kwargs):
     instance.lead.save(update_fields=["ordered_stages"])
 
 
-@receiver(post_save, sender=FirstLesson)
-def on_new_first_lesson(sender, instance: "FirstLesson", created, **kwargs):
+# @receiver(post_save, sender=FirstLesson)
+# def on_new_first_lesson(sender, instance: "FirstLesson", created, **kwargs):
 
-    if not created:
-        return
+#     if not created:
+#         return
 
-    instance.group.students.get_or_create(lid=instance.lead, first_lesson=instance)
+#     instance.group.students.get_or_create(lid=instance.lead, first_lesson=instance)

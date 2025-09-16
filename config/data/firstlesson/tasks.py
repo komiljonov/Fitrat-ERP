@@ -18,7 +18,7 @@ def recreate_first_lesson():
       move all StudentGroup links (formerly pointing to old lesson) to the new lesson,
       and (optionally) archive the old row.
     """
-
+ 
     qs = (
         FirstLesson.objects.filter(
             Q(status__in=["PENDING", "DIDNTCOME"]), is_archived=False
