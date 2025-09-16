@@ -63,7 +63,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def get_relatives(self, obj:Attendance):
+    def get_relatives(self, obj: Attendance):
         parents = []
 
         if obj.student and obj.lead is None:
