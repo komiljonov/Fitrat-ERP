@@ -66,6 +66,7 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
 
         res["lead"] = LeadSerializer(
             instance.lead,
+            context=self.context,
             include_only=[
                 "id",
                 "first_name",
