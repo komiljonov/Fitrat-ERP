@@ -76,8 +76,8 @@ def create_finance_record(
 
 @receiver(post_save, sender=Attendance)
 def on_attendance_create(sender, instance: Attendance, created, **kwargs):
-    if instance.lid:
-        attendances_count = Attendance.objects.filter(lid=instance.lid).count()
+    if instance.lead:
+        attendances_count = Attendance.objects.filter(lid=instance.lead).count()
 
         if attendances_count == 1 and instance.status != "IS_PRESENT":
 
@@ -86,10 +86,12 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
 
             Notification.objects.create(
                 user=(
-                    instance.lid.call_operator if instance.lid else instance.student.id
+                    instance.lead.call_operator
+                    if instance.lead
+                    else instance.student.id
                 ),
-                comment=f"Lead {instance.lid.first_name} {instance.lid.phone_number} - {attendances_count} darsga qatnashmagan!",
-                come_from=instance.lid.id if instance.lid else instance.student.id,
+                comment=f"Lead {instance.lead.first_name} {instance.lead.phone_number} - {attendances_count} darsga qatnashmagan!",
+                come_from=instance.lead.id if instance.lead else instance.student.id,
                 choice="First_Lesson_Lid",
             )
 
@@ -98,8 +100,8 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
             instance.first_lesson.status = "CAME"
             instance.first_lesson.save()
 
-            instance.lid.is_student = True
-            instance.lid.save()
+            instance.lead.is_student = True
+            instance.lead.save()
 
         # student = Lid.objects.filter(id=instance.lid.id).first()
     # <<<<<<< HEAD

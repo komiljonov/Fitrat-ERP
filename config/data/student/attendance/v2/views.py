@@ -1,10 +1,21 @@
+from django.db import transaction
+from django.utils import timezone
+
+from django.db.models import Q
+
 from rest_framework.views import APIView
 from rest_framework.request import HttpRequest, Request
 
-from django.db import transaction
+from rest_framework.generics import ListAPIView
+
+from rest_framework.exceptions import NotFound
+
 
 from data.student.attendance.models import Attendance
-from data.student.attendance.v2.serializers import CreateAttendanceV2Serializer
+from data.student.attendance.v2.serializers import (
+    AttendanceGroupStateSerializer,
+    CreateAttendanceV2Serializer,
+)
 from data.student.groups.models import Group
 from data.student.homeworks.models import Homework, Homework_history
 from data.student.mastering.models import Mastering
@@ -89,3 +100,37 @@ class AttendanceCreateAPIView(APIView):
                         )
 
         return Response({"ok": True})
+
+
+class AttendanceGroupStateAPIView(ListAPIView):
+
+    serializer_class = AttendanceGroupStateSerializer
+
+    def get_queryset(self):
+        group = Group.objects.filter(id=self.kwargs["group"]).first()
+
+        if group is None:
+            raise NotFound("Guruh topilmadi.")
+
+        students = group.students.all()
+
+        return students.select_related("student", "lid")
+
+    def get_serializer_context(self):
+
+        context = super().get_serializer_context()
+
+        attendances = Attendance.objects.filter(
+            date=timezone.now().date(),
+            group_id=self.kwargs["group"],
+        )
+
+        context["student_attendances"] = {
+            a.student_id: a for a in attendances if a.student_id is not None
+        }
+
+        context["lead_attendances"] = {
+            a.lead_id: a for a in attendances if a.lead_id is not None
+        }
+
+        return context

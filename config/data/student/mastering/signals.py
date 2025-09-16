@@ -249,7 +249,7 @@ def new_created_order(sender, instance: Attendance, created, **kwargs):
             user=(
                 instance.student.sales_manager
                 if instance.student
-                else instance.lid.sales_manager
+                else instance.lead.sales_manager
             ),
             name="Sinov darsiga yozilib kelmaganlar uchun jarima    ",
         ).first()

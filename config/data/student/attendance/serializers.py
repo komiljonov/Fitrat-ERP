@@ -275,8 +275,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
         #     else None
         # )
 
-        if instance.lid:
-            rep["lid"] = LeadSerializer(instance.lid, context=self.context).data
+        if instance.lead:
+            rep["lid"] = LeadSerializer(instance.lead, context=self.context).data
         else:
             rep.pop("lid", None)
 

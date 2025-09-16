@@ -3,16 +3,16 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.db.models import Q
 
-
-from data.firstlesson.models import FirstLesson
-from data.student.attendance.choices import AttendanceStatusChoices
 from data.command.models import BaseModel
+
+from data.student.attendance.choices import AttendanceStatusChoices
 
 if TYPE_CHECKING:
     from data.student.subject.models import Theme
     from data.lid.new_lid.models import Lid
     from data.student.student.models import Student
     from data.student.groups.models import Group, SecondaryGroup
+    from data.firstlesson.models import FirstLesson
 
 
 class Attendance(BaseModel):
@@ -43,7 +43,7 @@ class Attendance(BaseModel):
         related_name="attendances",
     )
 
-    lid: "Lid | None" = models.ForeignKey(
+    lead: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.CASCADE,
         null=True,
