@@ -24,6 +24,8 @@ class FirstLessonListCreateAPIView(ListCreateAPIView):
             )
         )
         .order_by("status_order")
+    ).select_related(
+        "lead", "lead__sales_manager", "lead__service_manager", "lead__filial"
     )
 
     serializer_class = FirstLessonListSerializer
