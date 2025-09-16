@@ -1,5 +1,6 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
+from data.firstlesson.filters import FirstLessonsFilter
 from data.firstlesson.models import FirstLesson
 from data.firstlesson.serializers import (
     FirstLessonListSerializer,
@@ -11,9 +12,14 @@ from data.firstlesson.serializers import (
 
 class FirstLessonListCreateAPIView(ListCreateAPIView):
 
-    queryset = FirstLesson.objects.all()
-
     serializer_class = FirstLessonListSerializer
+
+    filterset_class = FirstLessonsFilter
+
+    def get_queryset(self):
+        queryset = FirstLesson.objects.exclude(status="CAME")
+
+        return queryset
 
     def perform_create(self, serializer):
         return serializer.save(

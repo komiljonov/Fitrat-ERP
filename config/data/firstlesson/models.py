@@ -88,6 +88,7 @@ class FirstLesson(BaseModel):
             self.subject = self.group.course.subject
             self.level = self.group.level
             self.course = self.group.course
+            self.filial = self.lead.filial
 
     def save(self, *args, **kwargs):
         # always sync before saving (covers creates & updates)
