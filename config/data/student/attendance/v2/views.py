@@ -61,7 +61,7 @@ class AttendanceCreateAPIView(APIView):
                 attendance.theme.add(theme)
 
                 if created:
-                    if student != None and homework:
+                    if student.student != None and homework:
                         Homework_history.objects.create(
                             homework=homework,
                             student=student.student,
