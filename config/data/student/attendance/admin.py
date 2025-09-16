@@ -8,7 +8,7 @@ from .models import Attendance, SecondaryAttendance
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "lid",
+        "lead",
         "student_info",
         "group",
         "status",
@@ -19,12 +19,12 @@ class AttendanceAdmin(admin.ModelAdmin):
         "status",
         ("created_at", DateRangeFilter),
         "student",
-        "lid",
+        "lead",
     )
 
     search_fields = (
         "status",
-        "lid__first_name",
+        "lead__first_name",
         "student__first_name",
         "student__phone",
     )
