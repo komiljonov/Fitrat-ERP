@@ -1,5 +1,7 @@
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone  # NEW
+
 
 from celery import shared_task
 
@@ -18,10 +20,12 @@ def recreate_first_lesson():
       move all StudentGroup links (formerly pointing to old lesson) to the new lesson,
       and (optionally) archive the old row.
     """
- 
+
     qs = (
         FirstLesson.objects.filter(
-            Q(status__in=["PENDING", "DIDNTCOME"]), is_archived=False
+            Q(status__in=["PENDING", "DIDNTCOME"]),
+            is_archived=False,
+            date__lt=timezone.now(),
         )
         .select_related("group")
         .order_by("id")  # deterministic
@@ -38,7 +42,11 @@ def recreate_first_lesson():
                 continue  # it was processed by another worker
 
             # Re-check current state after lock
-            if orig.is_archived or orig.status not in {"PENDING", "DIDNTCOME"}:
+            if (
+                orig.is_archived
+                or orig.status not in {"PENDING", "DIDNTCOME"}
+                or orig.date >= timezone.now()  # NEW: skip if lesson is in the future
+            ):
                 continue
 
             attempts = getattr(orig, "lesson_number", 1)

@@ -78,6 +78,10 @@ app.conf.beat_schedule = {
         "task": "data.student.mastering.tasks.check_monitoring_manager_kpi",
         "schedule": crontab(day_of_month=1, hour=0, minute=0),
     },
+    "rearrange_first_lessons_everyday_to_next_lesson_day": {
+        "task": "data.firstlesson.tasks.recreate_first_lesson",
+        "schedule": crontab(hour=0, minute=1),  # every day at 00:01
+    },
 }
 
 
