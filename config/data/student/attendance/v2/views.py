@@ -106,6 +106,8 @@ class AttendanceGroupStateAPIView(ListAPIView):
 
     serializer_class = AttendanceGroupStateSerializer
 
+    pagination_class = None
+
     def get_queryset(self):
         group = Group.objects.filter(id=self.kwargs["group"]).first()
 
