@@ -29,7 +29,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         queryset=Theme.objects.all(), many=True, write_only=True
     )
 
-    lid = serializers.PrimaryKeyRelatedField(
+    lead = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(),
         allow_null=True,
     )
@@ -51,7 +51,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             "theme",
             "repeated",
             "group",
-            "lid",
+            "lead",
             "student",
             "teacher",
             "status",
@@ -63,10 +63,10 @@ class AttendanceSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def get_relatives(self, obj):
+    def get_relatives(self, obj:Attendance):
         parents = []
 
-        if obj.student and obj.lid is None:
+        if obj.student and obj.lead is None:
             relatives = Relatives.objects.filter(student=obj.student)
             for rel in relatives:
                 parents.append(
@@ -79,7 +79,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 )
 
         else:
-            relatives = Relatives.objects.filter(lid=obj.lid)
+            relatives = Relatives.objects.filter(lid=obj.lead)
             for rel in relatives:
                 parents.append(
                     {
@@ -104,10 +104,10 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """
-        Ensure that a student or lid can only have one attendance per group per day.
+        Ensure that a student or lead can only have one attendance per group per day.
         """
         student = data.get("student", None)
-        lid = data.get("lid", None)
+        lead = data.get("lead", None)
         group = data.get("group", None)
 
         att_date = data.get("date", timezone.now().date())
@@ -116,9 +116,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
         # today = now().date()
 
-        if not student and not lid:
+        if not student and not lead:
             raise serializers.ValidationError(
-                "Either 'student' or 'lid' must be provided."
+                "Either 'student' or 'lead' must be provided."
             )
 
         instance_id = self.instance.id if self.instance else None
@@ -146,11 +146,11 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 )
 
         # Check if attendance exists for lid
-        if lid:
+        if lead:
             existing_attendance = (
                 Attendance.objects.filter(
                     date=att_date,
-                    lid=lid,
+                    lead=lead,
                     group=group,
                     # created_at__range=(start_datetime, end_datetime),
                 )
@@ -160,7 +160,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
             if existing_attendance:
                 raise serializers.ValidationError(
-                    "This lid has already been marked present today in this group."
+                    "This lead has already been marked present today in this group."
                 )
 
         return data
@@ -276,9 +276,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
         # )
 
         if instance.lead:
-            rep["lid"] = LeadSerializer(instance.lead, context=self.context).data
+            rep["lead"] = LeadSerializer(instance.lead, context=self.context).data
         else:
-            rep.pop("lid", None)
+            rep.pop("lead", None)
 
         if instance.student:
             rep["student"] = StudentSerializer(
@@ -329,7 +329,7 @@ class AttendanceBulkSerializer(serializers.ModelSerializer):
             "theme",
             "repeated",
             "group",
-            "lid",
+            "lead",
             "student",
             "teacher",
             "status",
@@ -347,7 +347,7 @@ class AttendanceBulkSerializer(serializers.ModelSerializer):
         Ensure that a student or lid can only have one attendance per group per day.
         """
         student = data.get("student", None)
-        lid = data.get("lid", None)
+        lid = data.get("lead", None)
         group = data.get("group", None)
         today = now().date()
 
@@ -412,9 +412,9 @@ class AttendanceBulkSerializer(serializers.ModelSerializer):
             many=True,
         ).data
         if instance.lid:
-            rep["lid"] = LeadSerializer(instance.lid, context=self.context).data
+            rep["lead"] = LeadSerializer(instance.lid, context=self.context).data
         else:
-            rep.pop("lid", None)
+            rep.pop("lead", None)
 
         if instance.student:
             rep["student"] = StudentSerializer(
