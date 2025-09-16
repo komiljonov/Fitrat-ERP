@@ -191,7 +191,7 @@ class LeadSerializer(serializers.ModelSerializer):
             }
 
     def get_lessons_count(self, obj):
-        return Attendance.objects.filter(lid=obj, status="IS_PRESENT").count()
+        return Attendance.objects.filter(lead=obj, status="IS_PRESENT").count()
 
     def get_relatives(self, obj):
         relative = Relatives.objects.filter(lid=obj).values("name", "phone", "who")
