@@ -24,7 +24,7 @@ UZBEK_WEEKDAYS = [
 
 
 def calculate_finish_date(
-    course: "Course", level: "Level", week_days: QuerySet[Day], start_date: date
+    course: "Course", level: "Level", week_days: "QuerySet[Day]", start_date: date
 ):
 
     themes = Theme.objects.filter(course=course, level=level, is_archived=False)
