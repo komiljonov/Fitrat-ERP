@@ -201,7 +201,20 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
 
         if instance.student:
             rep["student"] = StudentSerializer(
-                instance.student, context=self.context
+                instance.student,
+                context=self.context,
+                include_only=[
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "middle_name",
+                    "phone",
+                    "teacher",
+                    "sales_manager",
+                    "service_manager",
+                    "learning",
+                    "balance",
+                ],
             ).data
         else:
             rep.pop("student", None)
