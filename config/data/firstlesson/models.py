@@ -5,6 +5,7 @@ from django.contrib import admin
 
 from data.command.models import BaseModel
 from data.student.course.models import Course
+from data.student.studentgroup.models import StudentGroup
 from data.student.subject.models import Level
 
 if TYPE_CHECKING:
@@ -88,6 +89,8 @@ class FirstLesson(BaseModel):
     )
 
     is_archived = models.BooleanField(default=False)
+
+    groups: "models.QuerySet[StudentGroup]"
 
     def _sync_from_group(self):
         if self.group_id:

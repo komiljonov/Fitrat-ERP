@@ -8,7 +8,9 @@ if TYPE_CHECKING:
     from data.student.course.models import Course
     from data.student.subject.models import Level
     from data.student.groups.models import Day
+    from data.student.groups.models import Group
 
+from data.student.subject.models import Theme
 
 UZBEK_WEEKDAYS = [
     "Dushanba",
@@ -19,8 +21,6 @@ UZBEK_WEEKDAYS = [
     "Shanba",
     "Yakshanba",
 ]
-
-from data.student.subject.models import Theme
 
 
 def calculate_finish_date(
@@ -48,3 +48,26 @@ def calculate_finish_date(
         finish_date += timedelta(days=1)
 
     return finish_date
+
+
+def _group_weekdays(group: "Group") -> list[int]:
+    """
+    Return sorted list of weekday indices (1=Mon..7=Sun) for the group's scheduled days.
+    """
+    return sorted(group.scheduled_day_type.values_list("index", flat=True))
+
+
+def next_lesson_date(from_date, weekdays: list[int]):
+    """
+    Given a date and a list of weekdays (1=Mon..7=Sun),
+    return the next scheduled date strictly after from_date.
+    """
+    if not weekdays:
+        return None
+
+    weekdays = sorted(weekdays)  # ensure order
+    wd = from_date.isoweekday()  # Monday=1..Sunday=7
+
+    # Compute deltas (1..7), never 0 so we always move forward
+    deltas = [((w - wd) % 7) or 7 for w in weekdays]
+    return from_date + timedelta(days=min(deltas))
