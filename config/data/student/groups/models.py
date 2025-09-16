@@ -37,6 +37,8 @@ class Day(BaseModel):
 
     display_name = models.CharField(max_length=255)
 
+    index = models.IntegerField(null=True, blank=True, unique=True)
+
     def __str__(self):
         return self.name
 

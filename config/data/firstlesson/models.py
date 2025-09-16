@@ -70,6 +70,14 @@ class FirstLesson(BaseModel):
         default="PENDING",
     )
 
+    lesson_number = models.IntegerField(
+        default=1,
+        help_text=(
+            "O'quvchining nechinmi martta sinov darsiga yozilvotti?\n"
+            "Bu narsa lead 3 martta darsga  kelmasa, archivelavorish uchun kerak.",
+        ),
+    )
+
     comment = models.TextField(null=True, blank=True)
 
     creator: "Employee | None" = models.ForeignKey(

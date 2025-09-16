@@ -1,0 +1,101 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web API Device Orientation Events</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+
+        #orientationData,
+        #motionData {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>
+        GeeksForGeeks | Device
+        Orientation and Motion Example
+    </h1>
+
+    <div id="orientationData">
+        <h2>Device Orientation Data:</h2>
+
+        <!-- Display values of alpha, beta, 
+			gamma, and absolute -->
+        <p>Alpha: <span id="alpha">0</span></p>
+        <p>Beta: <span id="beta">0</span></p>
+        <p>Gamma: <span id="gamma">0</span></p>
+        <p>Absolute: <span id="absolute">false</span></p>
+    </div>
+
+    <div id="motionData">
+        <h2>Device Motion Data:</h2>
+
+        <!-- Display values of acceleration along 
+			X, Y, Z axes, and interval -->
+        <p>Acceleration X: <span id="accelerationX">
+                0</span>
+        </p>
+        <p>Acceleration Y: <span id="accelerationY">
+                0</span>
+        </p>
+        <p>Acceleration Z: <span id="accelerationZ">
+                0</span>
+        </p>
+        <p>Interval: <span id="interval">
+                0</span> ms
+        </p>
+    </div>
+
+    <!-- JavaScript to handle device 
+		orientation and motion events -->
+    <script>
+        // Add event listeners for device 
+        // orientation and motion
+        window.addEventListener(
+            'deviceorientation', handleOrientation);
+        window.addEventListener(
+            'devicemotion', handleMotion);
+
+        // Function to handle device orientation events
+        function handleOrientation(event) {
+            // Update HTML elements with device orientation data
+            document.getElementById('alpha').innerText =
+                event.alpha.toFixed(2);
+            document.getElementById('beta').innerText =
+                event.beta.toFixed(2);
+            document.getElementById('gamma').innerText =
+                event.gamma.toFixed(2);
+            document.getElementById('absolute').innerText =
+                event.absolute;
+        }
+
+        // Function to handle device motion events
+        function handleMotion(event) {
+            // Update HTML elements with device motion data
+            document.getElementById('accelerationX').innerText =
+                event.acceleration.x.toFixed(2);
+            document.getElementById('accelerationY').innerText =
+                event.acceleration.y.toFixed(2);
+            document.getElementById('accelerationZ').innerText =
+                event.acceleration.z.toFixed(2);
+            document.getElementById('interval').innerText =
+                event.interval;
+        }
+
+
+        {
+            "order_id": 1123234,
+                "client_id": 2345345
+        }
+    </script>
+</body>
+
+</html>
