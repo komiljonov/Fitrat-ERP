@@ -60,7 +60,7 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
 
         return "STUDENT" if obj.student is not None else "ORDER"
 
-    def get_status(self, obj: StudentGroup):
+    def get_attendance(self, obj: StudentGroup):
 
         student_atts = self.context["student_attendances"]
         lead_atts = self.context["lead_attendances"]
