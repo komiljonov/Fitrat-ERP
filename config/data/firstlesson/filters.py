@@ -1,5 +1,7 @@
 import django_filters as filters
 
+from django_filters.widgets import RangeWidget
+
 from data.department.filial.models import Filial
 from data.department.marketing_channel.models import MarketingChannel
 from data.employee.models import Employee
@@ -35,6 +37,13 @@ class FirstLessonsFilter(filters.FilterSet):
         field_name="group__teacher", queryset=Employee.objects.filter(role="TEACHER")
     )
 
+    created_at = filters.DateFromToRangeFilter(
+        field_name="created_at",
+        widget=RangeWidget(
+            attrs={"placeholder": "YYYY-MM-DD"}, suffixes=["start", "end"]
+        ),
+    )
+
     class Meta:
         model = FirstLesson
         fields = [
@@ -46,4 +55,5 @@ class FirstLessonsFilter(filters.FilterSet):
             "course",
             "marketing_channel",
             "teacher",
+            "created_at",
         ]
