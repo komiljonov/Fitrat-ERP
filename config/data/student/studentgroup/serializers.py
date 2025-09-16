@@ -195,7 +195,21 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             rep.pop("group", None)
 
         if instance.lid:
-            rep["lid"] = LeadSerializer(instance.lid, context=self.context).data
+            rep["lid"] = LeadSerializer(
+                instance.lid,
+                context=self.context,
+                include_only=[
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "middle_name",
+                    "phone",
+                    "teacher",
+                    "sales_manager",
+                    "service_manager",
+                    "balance",
+                ],
+            ).data
         else:
             rep.pop("lid", None)
 
