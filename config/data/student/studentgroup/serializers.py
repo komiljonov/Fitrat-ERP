@@ -358,7 +358,7 @@ class StudentGroupUpdateSerializer(serializers.Serializer):
 
         order: Lid = attrs["order"]
 
-        if order.lead_groups.filter(group=attrs["group"]).exists():
+        if order.groups.filter(group=attrs["group"]).exists():
             raise serializers.ValidationError(
                 "Can't  add students group to already existing  one."
             )

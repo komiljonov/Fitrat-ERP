@@ -197,14 +197,14 @@ class DashboardView(APIView):
             )
 
         if teacher:
-            lead = lead.filter(lead_groups__group__teacher_id=teacher)
-            archived_lead = archived_lead.filter(lead_groups__group__teacher_id=teacher)
-            orders = orders.filter(lead_groups__group__teacher_id=teacher)
+            lead = lead.filter(groups__group__teacher_id=teacher)
+            archived_lead = archived_lead.filter(groups__group__teacher_id=teacher)
+            orders = orders.filter(groups__group__teacher_id=teacher)
             order_fix_created = order_fix_created.filter(
-                lead_groups__group__teacher_id=teacher
+                groups__group__teacher_id=teacher
             )
             orders_archived = orders_archived.filter(
-                lead_groups__group__teacher_id=teacher
+                groups__group__teacher_id=teacher
             )
             first_lesson = first_lesson.filter(group__teacher__id=teacher)
             first_lesson_come = first_lesson_come.filter(
@@ -215,14 +215,14 @@ class DashboardView(APIView):
             )
 
         if course:
-            lead = lead.filter(lead_groups__group__course_id=course)
-            archived_lead = archived_lead.filter(lead_groups__group__course_id=course)
-            orders = orders.filter(lead_groups__group__course_id=course)
+            lead = lead.filter(groups__group__course_id=course)
+            archived_lead = archived_lead.filter(groups__group__course_id=course)
+            orders = orders.filter(groups__group__course_id=course)
             order_fix_created = order_fix_created.filter(
-                lead_groups__group__course_id=course
+                groups__group__course_id=course
             )
             orders_archived = orders_archived.filter(
-                lead_groups__group__course_id=course
+                groups__group__course_id=course
             )
             first_lesson = first_lesson.filter(group__course__id=course)
             first_lesson_come = first_lesson_come.filter(
@@ -459,11 +459,11 @@ class DashboardSecondView(APIView):
             )
 
         if teacher:
-            lid = lid.filter(lead_groups__group__teacher_id=teacher)
-            archived_lid = archived_lid.filter(lead_groups__group__teacher_id=teacher)
-            orders = orders.filter(lead_groups__group__teacher_id=teacher)
+            lid = lid.filter(groups__group__teacher_id=teacher)
+            archived_lid = archived_lid.filter(groups__group__teacher_id=teacher)
+            orders = orders.filter(groups__group__teacher_id=teacher)
             orders_archived = orders_archived.filter(
-                lead_groups__group__teacher_id=teacher
+                groups__group__teacher_id=teacher
             )
             first_lesson = first_lesson.filter(group__teacher_id=teacher)
             first_lesson_come = first_lesson_come.filter(
@@ -480,11 +480,11 @@ class DashboardSecondView(APIView):
             )
 
         if course:
-            lid = lid.filter(lead_groups__group__course_id=course)
-            archived_lid = archived_lid.filter(lead_groups__group__course_id=course)
-            orders = orders.filter(lead_groups__group__course_id=course)
+            lid = lid.filter(groups__group__course_id=course)
+            archived_lid = archived_lid.filter(groups__group__course_id=course)
+            orders = orders.filter(groups__group__course_id=course)
             orders_archived = orders_archived.filter(
-                lead_groups__group__course_id=course
+                groups__group__course_id=course
             )
             first_lesson = first_lesson.filter(group__course_id=course)
             first_lesson_come = first_lesson_come.filter(
