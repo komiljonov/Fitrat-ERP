@@ -80,6 +80,10 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
         attendances_count = Attendance.objects.filter(lid=instance.lid).count()
 
         if attendances_count == 1 and instance.status != "IS_PRESENT":
+
+            instance.first_lesson.status = "DIDNTCOME"
+            instance.first_lesson.save()
+
             Notification.objects.create(
                 user=(
                     instance.lid.call_operator if instance.lid else instance.student.id
