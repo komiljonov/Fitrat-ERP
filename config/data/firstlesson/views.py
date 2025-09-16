@@ -15,7 +15,8 @@ from data.firstlesson.serializers import (
 class FirstLessonListCreateAPIView(ListCreateAPIView):
 
     queryset = (
-        FirstLesson.objects.exclude(status="CAME")
+        FirstLesson.objects.filter(is_archived=False)
+        .exclude(status="CAME")
         .annotate(
             status_order=Case(
                 When(status="DIDNTCOME", then=Value(0)),
