@@ -203,7 +203,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
                     "first_name",
                     "last_name",
                     "middle_name",
-                    "phone",
+                    "phone_number",
                     "teacher",
                     "sales_manager",
                     "service_manager",
