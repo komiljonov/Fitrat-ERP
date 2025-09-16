@@ -1,3 +1,5 @@
+from django.db.models import Case, When, Value, IntegerField
+
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 from data.firstlesson.filters import FirstLessonsFilter
@@ -11,7 +13,18 @@ from data.firstlesson.serializers import (
 
 
 class FirstLessonListCreateAPIView(ListCreateAPIView):
-    queryset = FirstLesson.objects.exclude(status="CAME")
+    queryset = (
+        FirstLesson.objects.exclude(status="CAME")
+        .annotate(
+            status_order=Case(
+                When(status="DIDNTCOME", then=Value(0)),
+                When(status="PENDING", then=Value(1)),
+                default=Value(2),
+                output_field=IntegerField(),
+            )
+        )
+        .order_by("status_order")
+    )
 
     serializer_class = FirstLessonListSerializer
 
