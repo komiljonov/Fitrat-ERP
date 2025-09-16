@@ -96,7 +96,7 @@ class LeadMethods:
         self.secondary_groups.update(student=student, lid=None)
 
         # Attendance.objects.filter(lid=self).update(student=student, lid=None)
-        self.attendances.update(student=student, lid=None)
+        self.attendances.update(student=student, lead=None)
 
         # SaleStudent.objects.filter(lid=self).update(student=student, lid=None)
 
