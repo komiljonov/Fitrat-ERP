@@ -23,7 +23,7 @@ class FirstLessonListCreateAPIView(ListCreateAPIView):
                 output_field=IntegerField(),
             )
         )
-        .order_by("status_order")
+        .order_by("status_order", "-created_at")
     ).select_related(
         "lead",
         "lead__sales_manager",
