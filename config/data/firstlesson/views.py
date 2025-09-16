@@ -13,6 +13,8 @@ from data.firstlesson.serializers import (
 
 
 class FirstLessonListCreateAPIView(ListCreateAPIView):
+
+    
     queryset = (
         FirstLesson.objects.exclude(status="CAME")
         .annotate(

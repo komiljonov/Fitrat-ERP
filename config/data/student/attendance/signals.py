@@ -77,7 +77,7 @@ def create_finance_record(
 @receiver(post_save, sender=Attendance)
 def on_attendance_create(sender, instance: Attendance, created, **kwargs):
     if instance.lead:
-        attendances_count = Attendance.objects.filter(lid=instance.lead).count()
+        attendances_count = Attendance.objects.filter(lead=instance.lead).count()
 
         if attendances_count == 1 and instance.status != "IS_PRESENT":
 
