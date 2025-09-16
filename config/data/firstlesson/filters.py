@@ -40,7 +40,7 @@ class FirstLessonsFilter(filters.FilterSet):
     created_at = filters.DateFromToRangeFilter(
         field_name="created_at",
         widget=RangeWidget(
-            attrs={"placeholder": "YYYY-MM-DD"}, suffixes=["start", "end"]
+            attrs={"placeholder": "YYYY-MM-DD", "suffixes": ["start", "end"]}
         ),
     )
 
