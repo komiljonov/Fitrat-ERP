@@ -58,7 +58,7 @@ class AttendanceCreateAPIView(APIView):
 
                 attendance, created = Attendance.objects.update_or_create(
                     student=student.student,
-                    lid=student.lid,
+                    lead=student.lid,
                     date=date,
                     group=group,
                     defaults=dict(
