@@ -119,7 +119,15 @@ class FirstLesson(BaseModel):
 
     class Admin(admin.ModelAdmin):
 
-        list_display = ["lead", "group", "date", "status", "comment", "creator"]
+        list_display = [
+            "lead",
+            "group",
+            "date",
+            "status",
+            "lesson_number",
+            "comment",
+            "creator",
+        ]
 
         search_fields = [
             "lead__first_name",
