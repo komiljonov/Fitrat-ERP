@@ -22,4 +22,4 @@ def recreate_first_lesson():
             continue
 
         lesson.pk = None
-        lesson.date = 
+        # lesson.date = 
