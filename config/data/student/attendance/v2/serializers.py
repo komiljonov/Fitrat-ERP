@@ -36,11 +36,12 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
 
     name = serializers.SerializerMethodField()
     stage = serializers.SerializerMethodField()
-    status = serializers.SerializerMethodField()
+
+    attendance = serializers.SerializerMethodField()
 
     class Meta:
         model = StudentGroup
-        fields = ["id", "name", "stage", "status"]
+        fields = ["id", "name", "stage", "attendance"]
 
     def get_name(self, obj: StudentGroup):
 
@@ -68,4 +69,8 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
             obj.lid_id
         )
 
-        return att.status if att else None
+        return (
+            {"id": att.id, "comment": att.comment, "status": att.status}
+            if att
+            else None
+        )
