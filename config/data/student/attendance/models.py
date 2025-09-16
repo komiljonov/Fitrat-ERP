@@ -83,25 +83,25 @@ class Attendance(BaseModel):
     class Meta:
         constraints = [
             # Exactly one of student or lid must be set (XOR)
-            models.CheckConstraint(
-                name="attendance_xor_student_or_lead",
-                check=(
-                    (Q(student__isnull=True) & Q(lead__isnull=False))
-                    | (Q(student__isnull=False) & Q(lead__isnull=True))
-                ),
-            ),
-            # Unique per (date, group, student) when student is set
-            models.UniqueConstraint(
-                fields=["date", "group", "student"],
-                name="attendance_unique_date_group_student",
-                condition=Q(student__isnull=False),
-            ),
-            # Unique per (date, group, lead) when lead is set
-            models.UniqueConstraint(
-                fields=["date", "group", "lead"],
-                name="attendance_unique_date_group_lead",
-                condition=Q(lead__isnull=False),
-            ),
+            # models.CheckConstraint(
+            #     name="attendance_xor_student_or_lead",
+            #     check=(
+            #         (Q(student__isnull=True) & Q(lead__isnull=False))
+            #         | (Q(student__isnull=False) & Q(lead__isnull=True))
+            #     ),
+            # ),
+            # # Unique per (date, group, student) when student is set
+            # models.UniqueConstraint(
+            #     fields=["date", "group", "student"],
+            #     name="attendance_unique_date_group_student",
+            #     condition=Q(student__isnull=False),
+            # ),
+            # # Unique per (date, group, lead) when lead is set
+            # models.UniqueConstraint(
+            #     fields=["date", "group", "lead"],
+            #     name="attendance_unique_date_group_lead",
+            #     condition=Q(lead__isnull=False),
+            # ),
         ]
 
 
