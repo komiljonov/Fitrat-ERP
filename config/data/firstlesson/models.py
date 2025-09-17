@@ -125,6 +125,7 @@ class FirstLesson(BaseModel):
             "date",
             "status",
             "lesson_number",
+            "is_archived",
             "comment",
             "creator",
         ]
