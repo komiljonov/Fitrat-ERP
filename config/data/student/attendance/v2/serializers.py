@@ -43,7 +43,7 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentGroup
-        fields = ["id", "name", "stage", "attendance"]
+        fields = ["id", "name", "stage", "attendance", "frozen_date"]
 
     def get_name(self, obj: StudentGroup):
 
