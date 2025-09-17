@@ -22,7 +22,7 @@ class FirstLesson(BaseModel):
     lead: "Lid" = models.ForeignKey(
         "new_lid.Lid",
         on_delete=models.CASCADE,
-        related_name="frist_lessons",
+        related_name="first_lessons",
     )
 
     group: "Group" = models.ForeignKey(

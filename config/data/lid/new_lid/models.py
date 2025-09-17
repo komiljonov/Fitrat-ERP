@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from data.student.attendance.models import Attendance
     from data.student.studentgroup.models import SecondaryStudentGroup
     from data.parents.models import Relatives
+    from data.firstlesson.models import FirstLesson
 
 
 class Lid(BaseModel, LeadMethods):
@@ -217,6 +218,7 @@ class Lid(BaseModel, LeadMethods):
     groups: "models.QuerySet[StudentGroup]"
     secondary_groups: "models.QuerySet[SecondaryStudentGroup]"
     relatives: "models.QuerySet[Relatives]"
+    first_lessons: "models.QuerySet[FirstLesson]"
 
     def __str__(self):
         return (

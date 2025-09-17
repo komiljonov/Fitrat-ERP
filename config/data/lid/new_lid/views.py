@@ -1,19 +1,14 @@
 from datetime import datetime, timedelta
 
+from django.db import transaction
 from django.core.exceptions import FieldError
 from django.db.models import Q, Sum, Value, F
 from django.db.models.functions import Coalesce
 from django.http import HttpRequest, HttpResponse
 from django.utils.dateparse import parse_datetime
 from django.db.models import Case, When, IntegerField, FloatField
+
 from rest_framework.exceptions import NotFound
-
-
-from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -28,11 +23,20 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Lid
-from .serializers import LeadArchiveSerializer, LeadSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
+
+
 from data.lid.archived.models import Archived
 from data.student.lesson.models import FirstLLesson
-from datetime import datetime, timedelta
+
+from .models import Lid
+from .serializers import LeadArchiveSerializer, LeadSerializer
 
 
 class CustomPagination(PageNumberPagination):
@@ -1043,29 +1047,28 @@ class LeadStatistics(ListAPIView):
 
 
 class LeadArchiveAPIView(APIView):
-
     permission_classes = [IsAuthenticated]
 
-    def post(self, request: HttpRequest):
-
-        lead = Lid.objects.filter(id=self.kwargs["pk"]).first()
-
-        if lead is None:
-            raise NotFound("Lead topilmadi")
-
+    def post(self, request: HttpRequest, *args, **kwargs):
         serializer = LeadArchiveSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        serializer.is_valid()
+        with transaction.atomic():
+            lead = Lid.objects.select_for_update().filter(id=self.kwargs["pk"]).first()
+            if lead is None:
+                raise NotFound("Lead topilmadi")
 
-        lead.is_archived = True
-        lead.save()
+            if not lead.is_archived:
+                lead.is_archived = True
+                lead.save(update_fields=["is_archived"])
+                lead.first_lessons.filter(is_archived=False).update(is_archived=True)
 
-        Archived.objects.get_or_create(
-            lid=lead,
-            defaults=dict(
-                reason=serializer.validated_data["comment"],
-                creator=self.request.user,
-            ),
-        )
+                Archived.objects.update_or_create(
+                    lid=lead,
+                    defaults={
+                        "reason": serializer.validated_data["comment"],
+                        "creator": request.user,
+                    },
+                )
 
         return Response({"ok": True})
