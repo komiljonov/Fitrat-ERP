@@ -54,10 +54,37 @@ class ArchivedSerializer(serializers.ModelSerializer):
             ).data
 
         if instance.lid:
-            representation["lid"] = LeadSerializer(instance.lid).data
+            representation["lid"] = LeadSerializer(
+                instance.lid,
+                include_only=[
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "middle_name",
+                    "sales_manger",
+                    "service_manager",
+                    "lid_stage_type",
+                    "lid_stages",
+                    "ordered_stages",
+                ],
+            ).data
 
         if instance.student:
-            representation["student"] = StudentSerializer(instance.student).data
+            representation["student"] = StudentSerializer(
+                instance.student,
+                include_only=[
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "middle_name",
+                    "phone",
+                    "balance",
+                    "sales_manager",
+                    "service_manager",
+                    "student_stage_type",
+                    "new_student_stages",
+                ],
+            ).data
 
         if instance.comment:
             representation["comment"] = CommentSerializer(instance.comment).data
