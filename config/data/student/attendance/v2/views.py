@@ -121,7 +121,7 @@ class AttendanceGroupStateAPIView(ListAPIView):
 
         return (
             students.select_related("student", "lid")
-            # .exclude(Q(first_lesson__date__date__gt=today))
+            .exclude(Q(first_lesson__date__date__gt=today))
         )
 
     def get_serializer_context(self):
