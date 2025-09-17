@@ -114,7 +114,7 @@ class AttendanceGroupStateAPIView(ListAPIView):
         if group is None:
             raise NotFound("Guruh topilmadi.")
 
-        students = group.students.all()
+        students = group.students.filter(is_archived=False)
 
         return students.select_related("student", "lid")
 

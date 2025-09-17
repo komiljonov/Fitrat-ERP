@@ -37,6 +37,8 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     stage = serializers.SerializerMethodField()
 
+    frozen_date = serializers.SerializerMethodField()
+
     attendance = serializers.SerializerMethodField()
 
     class Meta:
@@ -59,6 +61,12 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
     def get_stage(self, obj: StudentGroup):
 
         return "STUDENT" if obj.student is not None else "ORDER"
+
+    def get_frozen_date(self, obj: StudentGroup):
+
+        return (
+            obj.student.frozen_days if obj.student and obj.student.is_frozen else None
+        )
 
     def get_attendance(self, obj: StudentGroup):
 
