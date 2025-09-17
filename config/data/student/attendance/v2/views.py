@@ -117,7 +117,7 @@ class AttendanceGroupStateAPIView(ListAPIView):
         students = group.students.filter(is_archived=False)
 
         return students.select_related("student", "lid").exclude(
-            first_lesson__date__gte=timezone.now().date()
+            first_lesson__date__gt=timezone.now().date()
         )
 
     def get_serializer_context(self):
