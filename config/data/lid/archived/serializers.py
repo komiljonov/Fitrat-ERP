@@ -66,6 +66,7 @@ class ArchivedSerializer(serializers.ModelSerializer):
                     "lid_stage_type",
                     "lid_stages",
                     "ordered_stages",
+                    "call_operator",
                 ],
             ).data
 
