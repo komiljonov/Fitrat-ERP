@@ -61,6 +61,7 @@ class ArchivedSerializer(serializers.ModelSerializer):
                     "first_name",
                     "last_name",
                     "middle_name",
+                    "phone_number",
                     "sales_manager",
                     "service_manager",
                     "lid_stage_type",
