@@ -163,7 +163,9 @@ class ArchivedListAPIView(ListCreateAPIView):
 
             queryset = queryset.filter(created_at__range=(start_datetime, end_datetime))
 
-        return queryset.order_by(Coalesce(F("student__balance"), F("lid__balance")))
+        return queryset.order_by(
+            Coalesce(F("student__balance"), F("lid__balance")), "-created_at"
+        )
 
 
 class ArchivedDetailAPIView(RetrieveUpdateDestroyAPIView):
