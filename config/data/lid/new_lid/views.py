@@ -1061,7 +1061,10 @@ class LeadArchiveAPIView(APIView):
             if not lead.is_archived:
                 lead.is_archived = True
                 lead.save(update_fields=["is_archived"])
-                lead.first_lessons.filter(is_archived=False).update(is_archived=True)
+
+                arvhied_first_lessons = lead.first_lessons.filter(is_archived=False).update(is_archived=True)
+
+                print(arvhied_first_lessons)
 
                 Archived.objects.update_or_create(
                     lid=lead,
