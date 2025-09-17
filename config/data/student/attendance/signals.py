@@ -103,6 +103,8 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
             instance.lead.is_student = True
             instance.lead.save()
 
+            instance.lead.migrate_to_student()
+
         # student = Lid.objects.filter(id=instance.lid.id).first()
     # <<<<<<< HEAD
     # if student:
