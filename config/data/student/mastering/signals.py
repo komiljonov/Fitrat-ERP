@@ -179,6 +179,10 @@ def new_created_order(sender, instance: Lid, created, **kwargs):
 @receiver(post_save, sender=Attendance)
 def new_created_order(sender, instance: Attendance, created, **kwargs):
     if created:
+
+        if instance.student is None:
+            return
+
         attendances_count = Attendance.objects.filter(
             student=instance.student,
             status="IS_PRESENT",
