@@ -543,6 +543,6 @@ class LidBulkUpdateSerializer(serializers.ModelSerializer):
         return lids_to_update
 
 
-class LeadArchiveSerializer(serializers.ModelSerializer):
+class LeadArchiveSerializer(serializers.Serializer):
 
     comment = serializers.CharField()
