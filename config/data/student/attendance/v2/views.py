@@ -114,11 +114,11 @@ class AttendanceGroupStateAPIView(ListAPIView):
             raise NotFound("Guruh topilmadi.")
 
         students = group.students.filter(is_archived=False)
-        today = timezone.localdate()  # or timezone.now().date()
+        today = timezone.localdate()
 
         return students.select_related("student", "lid").filter(
-            first_lesson__date__lte=today
-        )  # show only on/after first day
+            Q(first_lesson__date__lte=today) | Q(first_lesson__date__isnull=True)
+        )
 
     def get_serializer_context(self):
 
