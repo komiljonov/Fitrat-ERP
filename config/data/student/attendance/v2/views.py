@@ -117,7 +117,7 @@ class AttendanceGroupStateAPIView(ListAPIView):
         today = timezone.localdate()
 
         return students.select_related("student", "lid").filter(
-            Q(first_lesson__date__lte=today) | Q(first_lesson__date__isnull=True)
+            Q(first_lesson__date__date__lte=today) | Q(first_lesson__date__isnull=True)
         )
 
     def get_serializer_context(self):
