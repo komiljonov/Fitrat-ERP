@@ -110,11 +110,14 @@ class AttendanceGroupStateAPIView(ListAPIView):
 
     def get_queryset(self):
         group = Group.objects.filter(id=self.kwargs["group"]).first()
+
         if group is None:
             raise NotFound("Guruh topilmadi.")
 
         students = group.students.filter(is_archived=False)
         today = timezone.localdate()
+        
+        print(today)
 
         return students.select_related("student", "lid").filter(
             Q(first_lesson__date__date__lte=today) | Q(first_lesson__date__isnull=True)
