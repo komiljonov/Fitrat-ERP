@@ -1068,6 +1068,7 @@ class LeadArchiveAPIView(APIView):
 
                 Archived.objects.update_or_create(
                     lid=lead,
+                    is_archived=True,
                     defaults={
                         "reason": serializer.validated_data["comment"],
                         "creator": request.user,
