@@ -67,7 +67,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
                 creator=instance.creator,
                 lid=instance.lid,
                 student=None,
-                comment=f"Arxivlandi {instance.created_at.date()} sanasida, sabab: {instance.reason}",
+                comment=f"Archivedan chiqarildi {instance.created_at.date()} sanasida, sabab: {instance.reason}",
             )
 
 
