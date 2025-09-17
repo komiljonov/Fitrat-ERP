@@ -83,13 +83,13 @@ class Attendance(BaseModel):
     class Meta:
         constraints = [
             # Exactly one of student or lid must be set (XOR)
-            models.CheckConstraint(
-                name="attendance_xor_student_or_lead",
-                check=(
-                    (Q(student__isnull=True) & Q(lead__isnull=False))
-                    | (Q(student__isnull=False) & Q(lead__isnull=True))
-                ),
-            ),
+            # models.CheckConstraint(
+            #     name="attendance_xor_student_or_lead",
+            #     check=(
+            #         (Q(student__isnull=True) & Q(lead__isnull=False))
+            #         | (Q(student__isnull=False) & Q(lead__isnull=True))
+            #     ),
+            # ),
             # Unique per (date, group, student) when student is set
             models.UniqueConstraint(
                 fields=["date", "group", "student"],
