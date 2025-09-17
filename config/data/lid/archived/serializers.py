@@ -56,18 +56,18 @@ class ArchivedSerializer(serializers.ModelSerializer):
         if instance.lid:
             representation["lid"] = LeadSerializer(
                 instance.lid,
-                # include_only=[
-                #     "id",
-                #     "first_name",
-                #     "last_name",
-                #     "middle_name",
-                #     "sales_manger",
-                #     "service_manager",
-                #     "lid_stage_type",
-                #     "lid_stages",
-                #     "ordered_stages",
-                #     "call_operator",
-                # ],
+                include_only=[
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "middle_name",
+                    "sales_manager",
+                    "service_manager",
+                    "lid_stage_type",
+                    "lid_stages",
+                    "ordered_stages",
+                    "call_operator",
+                ],
             ).data
 
         if instance.student:
