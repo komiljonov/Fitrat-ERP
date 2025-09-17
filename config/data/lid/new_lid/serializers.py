@@ -1,4 +1,3 @@
-
 from django.db.models import Q
 
 from rest_framework import serializers
@@ -542,3 +541,8 @@ class LidBulkUpdateSerializer(serializers.ModelSerializer):
                 ],
             )
         return lids_to_update
+
+
+class LeadArchiveSerializer(serializers.ModelSerializer):
+
+    comment = serializers.CharField()

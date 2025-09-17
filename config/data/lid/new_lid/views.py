@@ -3,9 +3,10 @@ from datetime import datetime, timedelta
 from django.core.exceptions import FieldError
 from django.db.models import Q, Sum, Value, F
 from django.db.models.functions import Coalesce
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.utils.dateparse import parse_datetime
 from django.db.models import Case, When, IntegerField, FloatField
+from rest_framework.exceptions import NotFound
 
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -28,7 +29,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Lid
-from .serializers import LeadSerializer
+from .serializers import LeadArchiveSerializer, LeadSerializer
 from data.lid.archived.models import Archived
 from data.student.lesson.models import FirstLLesson
 from datetime import datetime, timedelta
@@ -240,13 +241,13 @@ class OrderListCreateView(LeadListCreateView):
         queryset.order_by("")
 
 
-class LidRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+class LeadRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     serializer_class = LeadSerializer
     queryset = Lid.objects.all()
     permission_classes = [IsAuthenticated]
 
 
-class LidListNoPG(ListAPIView):
+class LeadListNoPG(ListAPIView):
     queryset = Lid.objects.all()
     serializer_class = LeadSerializer
     pagination_class = None
@@ -302,7 +303,7 @@ class FirstLessonCreate(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class ExportLidToExcelAPIView(APIView):
+class ExportLeadToExcelAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -502,7 +503,7 @@ class ExportLidToExcelAPIView(APIView):
         return response
 
 
-class LidStatisticsView(ListAPIView):
+class LeadStatisticsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Lid.objects.all()
 
@@ -930,7 +931,7 @@ class BulkUpdate(APIView):
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LidStatistics(ListAPIView):
+class LeadStatistics(ListAPIView):
     serializer_class = LeadSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -1039,3 +1040,32 @@ class LidStatistics(ListAPIView):
                 pass
 
         return queryset
+
+
+class LeadArchiveAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: HttpRequest):
+
+        lead = Lid.objects.filter(id=self.kwargs["pk"]).first()
+
+        if lead is None:
+            raise NotFound("Lead topilmadi")
+
+        serializer = LeadArchiveSerializer(data=request.data)
+
+        serializer.is_valid()
+
+        lead.is_archived = True
+        lead.save()
+
+        Archived.objects.get_or_create(
+            lid=lead,
+            defaults=dict(
+                reason=serializer.validated_data["comment"],
+                creator=self.request.user,
+            ),
+        )
+
+        return Response({"ok": True})

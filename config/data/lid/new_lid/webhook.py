@@ -11,7 +11,7 @@ from data.parents.models import Relatives
 from data.student.subject.models import Subject
 
 
-class LidWebhook(APIView):
+class LeadWebhook(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         if not data:
