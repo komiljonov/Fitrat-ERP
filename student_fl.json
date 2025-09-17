@@ -1,0 +1,1087 @@
+{
+    "pid": 65,
+    "file": "/usr/src/app/data/command/models.py",
+    "func": "_full_context",
+    "line": 19,
+    "stack": [
+        {
+            "code": "self._bootstrap_inner()",
+            "file": "/usr/local/lib/python3.13/threading.py",
+            "func": "_bootstrap",
+            "line": 1012,
+            "locals": {
+                "self": "<Thread at 0x7e559fa41390>"
+            }
+        },
+        {
+            "code": "self.run()",
+            "file": "/usr/local/lib/python3.13/threading.py",
+            "func": "_bootstrap_inner",
+            "line": 1041,
+            "locals": {
+                "self": "<Thread at 0x7e559fa41390>"
+            }
+        },
+        {
+            "code": "self._target(*self._args, **self._kwargs)",
+            "file": "/usr/local/lib/python3.13/threading.py",
+            "func": "run",
+            "line": 992,
+            "locals": {
+                "self": "<Thread at 0x7e559fa41390>"
+            }
+        },
+        {
+            "code": "self.finish_request(request, client_address)",
+            "file": "/usr/local/lib/python3.13/socketserver.py",
+            "func": "process_request_thread",
+            "line": 692,
+            "locals": {
+                "self": "<WSGIServer at 0x7e55a36db4d0>",
+                "request": "<socket.socket fd=7, family=2, type=1, proto=0, laddr=('172.19.0.2', 8000), raddr=('172.19.0.1', 41770)>",
+                "client_address": [
+                    "172.19.0.1",
+                    41770
+                ]
+            }
+        },
+        {
+            "code": "self.RequestHandlerClass(request, client_address, self)",
+            "file": "/usr/local/lib/python3.13/socketserver.py",
+            "func": "finish_request",
+            "line": 362,
+            "locals": {
+                "self": "<WSGIServer at 0x7e55a36db4d0>",
+                "request": "<socket.socket fd=7, family=2, type=1, proto=0, laddr=('172.19.0.2', 8000), raddr=('172.19.0.1', 41770)>",
+                "client_address": [
+                    "172.19.0.1",
+                    41770
+                ]
+            }
+        },
+        {
+            "code": "self.handle()",
+            "file": "/usr/local/lib/python3.13/socketserver.py",
+            "func": "__init__",
+            "line": 761,
+            "locals": {
+                "self": "<WSGIRequestHandler at 0x7e559f637590>",
+                "server": "<WSGIServer at 0x7e55a36db4d0>",
+                "request": "<socket.socket fd=7, family=2, type=1, proto=0, laddr=('172.19.0.2', 8000), raddr=('172.19.0.1', 41770)>",
+                "client_address": [
+                    "172.19.0.1",
+                    41770
+                ]
+            }
+        },
+        {
+            "code": "self.handle_one_request()",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/servers/basehttp.py",
+            "func": "handle",
+            "line": 228,
+            "locals": {
+                "self": "<WSGIRequestHandler at 0x7e559f637590>"
+            }
+        },
+        {
+            "code": "handler.run(self.server.get_app())",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/servers/basehttp.py",
+            "func": "handle_one_request",
+            "line": 253,
+            "locals": {
+                "self": "<WSGIRequestHandler at 0x7e559f637590>",
+                "handler": "<ServerHandler at 0x7e559f637650>"
+            }
+        },
+        {
+            "code": "self.result = application(self.environ, self.start_response)",
+            "file": "/usr/local/lib/python3.13/wsgiref/handlers.py",
+            "func": "run",
+            "line": 137,
+            "locals": {
+                "self": "<ServerHandler at 0x7e559f637650>",
+                "application": "<StaticFilesHandler at 0x7e55a36db620>"
+            }
+        },
+        {
+            "code": "return self.application(environ, start_response)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/contrib/staticfiles/handlers.py",
+            "func": "__call__",
+            "line": 80,
+            "locals": {
+                "self": "<StaticFilesHandler at 0x7e55a36db620>",
+                "environ": {
+                    "TZ": "Asia/Tashkent",
+                    "HOME": "/root",
+                    "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "DEBUG": "True",
+                    "TT_URL": "https://api.tictac.sector-soft.ru/restapi",
+                    "GPG_KEY": "7169605F62C751356D054A26A821E680E5FA6305",
+                    "HOSTNAME": "61039056a547",
+                    "HTTP_DNT": "1",
+                    "PAYME_ID": "67c81ae3a5b222fe47a813f1",
+                    "RUN_MAIN": "true",
+                    "BOT_TOKEN": "***",
+                    "HTTP_HOST": "api.dev.fitrat.sectorsoft.uz",
+                    "PATH_INFO": "/api/first_lessons/",
+                    "PAYME_KEY": "8xo&tKHtBo0Pe%TcFYwXPs7DQTe5nV@k2N1g",
+                    "PYTHONPATH": "/usr/src/app",
+                    "SECRET_KEY": "***",
+                    "wsgi.input": "<LimitedStream at 0x7e559eca9990>",
+                    "CSRF_COOKIE": "***",
+                    "HTTP_ACCEPT": "application/json, text/plain, */*",
+                    "HTTP_COOKIE": "***",
+                    "HTTP_ORIGIN": "https://dev.fitrat.sectorsoft.uz",
+                    "HTTP_PRAGMA": "no-cache",
+                    "POSTGRES_DB": "fitrat",
+                    "REMOTE_ADDR": "172.19.0.1",
+                    "REMOTE_HOST": "",
+                    "SCRIPT_NAME": "",
+                    "SERVER_NAME": "61039056a547",
+                    "SERVER_PORT": "8000",
+                    "wsgi.errors": "<TextIOWrapper at 0x7e55b9be5d20>",
+                    "CONTENT_TYPE": "application/json",
+                    "DATABASE_URL": "postgres://postgres:1@localhost:5432/fitrat",
+                    "HTTP_REFERER": "https://dev.fitrat.sectorsoft.uz/",
+                    "QUERY_STRING": "",
+                    "SAYQAL_TOKEN": "***",
+                    "wsgi.version": [
+                        1,
+                        0
+                    ],
+                    "ALLOWED_HOSTS": "127.0.0.1,localhost:3000,fitrat-erp.vercel.app,api.fitrat.sector-soft.ru,fitrat.sector-soft.ru,www.fitrat.sector-soft.ru,www.f.sector-soft.ru,f.sector-soft.ru,api.f.sector-soft.ru",
+                    "POSTGRES_HOST": "postgres",
+                    "POSTGRES_PORT": "5432",
+                    "POSTGRES_USER": "fitrat_user",
+                    "PYTHON_SHA256": "086de5882e3cb310d4dca48457522e2e48018ecd43da9cdf827f6a0759efb07d",
+                    "wsgi.run_once": false,
+                    "CONTENT_LENGTH": "114",
+                    "HTTP_SEC_CH_UA": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+                    "HTTP_X_REAL_IP": "195.158.2.126",
+                    "PYTHON_VERSION": "3.13.0",
+                    "REQUEST_METHOD": "POST",
+                    "WEBHOOK_SECRET": "***",
+                    "HTTP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+                    "SAYQAL_USERNAME": "sectorsoft",
+                    "SERVER_PROTOCOL": "HTTP/1.1",
+                    "SERVER_SOFTWARE": "WSGIServer/0.2",
+                    "wsgi.url_scheme": "http",
+                    "CLICK_SECRET_KEY": "***",
+                    "CLICK_SERVICE_ID": "78717",
+                    "PYTHONUNBUFFERED": "1",
+                    "wsgi.multithread": true,
+                    "CLICK_MERCHANT_ID": "ZkSisTJOY8cS",
+                    "GATEWAY_INTERFACE": "CGI/1.1",
+                    "INTEGRATION_TOKEN": "***",
+                    "POSTGRES_PASSWORD": "***",
+                    "wsgi.file_wrapper": "<type at 0x7e55b52ccc00>",
+                    "wsgi.multiprocess": false,
+                    "CLICK_AMOUNT_FIELD": "amount",
+                    "HTTP_AUTHORIZATION": "***",
+                    "HTTP_CACHE_CONTROL": "no-cache",
+                    "CLICK_ACCOUNT_MODEL": "clickuz.models.Order",
+                    "HTTP_SEC_FETCH_DEST": "empty",
+                    "HTTP_SEC_FETCH_MODE": "cors",
+                    "HTTP_SEC_FETCH_SITE": "same-site",
+                    "PAYME_ACCOUNT_FIELD": "id",
+                    "PAYME_ACCOUNT_MODEL": "student.student.model.Student",
+                    "COMPOSE_PROJECT_NAME": "fitrat_dev",
+                    "HTTP_ACCEPT_ENCODING": "gzip, deflate, br, zstd",
+                    "HTTP_ACCEPT_LANGUAGE": "en-US,en;q=0.9,uz;q=0.8,ru;q=0.7",
+                    "HTTP_X_FORWARDED_FOR": "195.158.2.126",
+                    "HTTP_SEC_CH_UA_MOBILE": "?0",
+                    "DJANGO_SETTINGS_MODULE": "root.settings",
+                    "PAYME_ONE_TIME_PAYMENT": "False",
+                    "HTTP_SEC_CH_UA_PLATFORM": "\"Windows\"",
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "DJANGO_ALLOW_ASYNC_UNSAFE": "true"
+                },
+                "__class__": "<type at 0x7e55b3ac1310>",
+                "start_response": "<method at 0x7e559ecba740>"
+            }
+        },
+        {
+            "code": "response = self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/wsgi.py",
+            "func": "__call__",
+            "line": 124,
+            "locals": {
+                "self": "<WSGIHandler at 0x7e55b715ae40>",
+                "environ": {
+                    "TZ": "Asia/Tashkent",
+                    "HOME": "/root",
+                    "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "DEBUG": "True",
+                    "TT_URL": "https://api.tictac.sector-soft.ru/restapi",
+                    "GPG_KEY": "7169605F62C751356D054A26A821E680E5FA6305",
+                    "HOSTNAME": "61039056a547",
+                    "HTTP_DNT": "1",
+                    "PAYME_ID": "67c81ae3a5b222fe47a813f1",
+                    "RUN_MAIN": "true",
+                    "BOT_TOKEN": "***",
+                    "HTTP_HOST": "api.dev.fitrat.sectorsoft.uz",
+                    "PATH_INFO": "/api/first_lessons/",
+                    "PAYME_KEY": "8xo&tKHtBo0Pe%TcFYwXPs7DQTe5nV@k2N1g",
+                    "PYTHONPATH": "/usr/src/app",
+                    "SECRET_KEY": "***",
+                    "wsgi.input": "<LimitedStream at 0x7e559eca9990>",
+                    "CSRF_COOKIE": "***",
+                    "HTTP_ACCEPT": "application/json, text/plain, */*",
+                    "HTTP_COOKIE": "***",
+                    "HTTP_ORIGIN": "https://dev.fitrat.sectorsoft.uz",
+                    "HTTP_PRAGMA": "no-cache",
+                    "POSTGRES_DB": "fitrat",
+                    "REMOTE_ADDR": "172.19.0.1",
+                    "REMOTE_HOST": "",
+                    "SCRIPT_NAME": "",
+                    "SERVER_NAME": "61039056a547",
+                    "SERVER_PORT": "8000",
+                    "wsgi.errors": "<TextIOWrapper at 0x7e55b9be5d20>",
+                    "CONTENT_TYPE": "application/json",
+                    "DATABASE_URL": "postgres://postgres:1@localhost:5432/fitrat",
+                    "HTTP_REFERER": "https://dev.fitrat.sectorsoft.uz/",
+                    "QUERY_STRING": "",
+                    "SAYQAL_TOKEN": "***",
+                    "wsgi.version": [
+                        1,
+                        0
+                    ],
+                    "ALLOWED_HOSTS": "127.0.0.1,localhost:3000,fitrat-erp.vercel.app,api.fitrat.sector-soft.ru,fitrat.sector-soft.ru,www.fitrat.sector-soft.ru,www.f.sector-soft.ru,f.sector-soft.ru,api.f.sector-soft.ru",
+                    "POSTGRES_HOST": "postgres",
+                    "POSTGRES_PORT": "5432",
+                    "POSTGRES_USER": "fitrat_user",
+                    "PYTHON_SHA256": "086de5882e3cb310d4dca48457522e2e48018ecd43da9cdf827f6a0759efb07d",
+                    "wsgi.run_once": false,
+                    "CONTENT_LENGTH": "114",
+                    "HTTP_SEC_CH_UA": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+                    "HTTP_X_REAL_IP": "195.158.2.126",
+                    "PYTHON_VERSION": "3.13.0",
+                    "REQUEST_METHOD": "POST",
+                    "WEBHOOK_SECRET": "***",
+                    "HTTP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+                    "SAYQAL_USERNAME": "sectorsoft",
+                    "SERVER_PROTOCOL": "HTTP/1.1",
+                    "SERVER_SOFTWARE": "WSGIServer/0.2",
+                    "wsgi.url_scheme": "http",
+                    "CLICK_SECRET_KEY": "***",
+                    "CLICK_SERVICE_ID": "78717",
+                    "PYTHONUNBUFFERED": "1",
+                    "wsgi.multithread": true,
+                    "CLICK_MERCHANT_ID": "ZkSisTJOY8cS",
+                    "GATEWAY_INTERFACE": "CGI/1.1",
+                    "INTEGRATION_TOKEN": "***",
+                    "POSTGRES_PASSWORD": "***",
+                    "wsgi.file_wrapper": "<type at 0x7e55b52ccc00>",
+                    "wsgi.multiprocess": false,
+                    "CLICK_AMOUNT_FIELD": "amount",
+                    "HTTP_AUTHORIZATION": "***",
+                    "HTTP_CACHE_CONTROL": "no-cache",
+                    "CLICK_ACCOUNT_MODEL": "clickuz.models.Order",
+                    "HTTP_SEC_FETCH_DEST": "empty",
+                    "HTTP_SEC_FETCH_MODE": "cors",
+                    "HTTP_SEC_FETCH_SITE": "same-site",
+                    "PAYME_ACCOUNT_FIELD": "id",
+                    "PAYME_ACCOUNT_MODEL": "student.student.model.Student",
+                    "COMPOSE_PROJECT_NAME": "fitrat_dev",
+                    "HTTP_ACCEPT_ENCODING": "gzip, deflate, br, zstd",
+                    "HTTP_ACCEPT_LANGUAGE": "en-US,en;q=0.9,uz;q=0.8,ru;q=0.7",
+                    "HTTP_X_FORWARDED_FOR": "195.158.2.126",
+                    "HTTP_SEC_CH_UA_MOBILE": "?0",
+                    "DJANGO_SETTINGS_MODULE": "root.settings",
+                    "PAYME_ONE_TIME_PAYMENT": "False",
+                    "HTTP_SEC_CH_UA_PLATFORM": "\"Windows\"",
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "DJANGO_ALLOW_ASYNC_UNSAFE": "true"
+                },
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "start_response": "<method at 0x7e559ecba740>"
+            }
+        },
+        {
+            "code": "response = self._middleware_chain(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/base.py",
+            "func": "get_response",
+            "line": 140,
+            "locals": {
+                "self": "<WSGIHandler at 0x7e55b715ae40>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>"
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "get_response": "<method at 0x7e55b71e4300>"
+            }
+        },
+        {
+            "code": "result = self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/corsheaders/middleware.py",
+            "func": "__call__",
+            "line": 56,
+            "locals": {
+                "self": "<CorsMiddleware at 0x7e55a36db770>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "get_response": "<method at 0x7e55b71e4300>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7e55b715b230>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "get_response": "<method at 0x7e55b71e4300>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7e55b715b230>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "get_response": "<method at 0x7e55b71e4300>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7e55b715b230>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "get_response": "<method at 0x7e55b71e4300>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7e55b715b230>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "get_response": "<method at 0x7e55b71e4300>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7e55b715b230>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "get_response": "<method at 0x7e55b71e4300>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7e55b715b230>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "get_response": "<method at 0x7e55b71e4300>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7e55b715b230>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "get_response": "<method at 0x7e55b71e4300>"
+            }
+        },
+        {
+            "code": "response = wrapped_callback(request, *callback_args, **callback_kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/base.py",
+            "func": "_get_response",
+            "line": 197,
+            "locals": {
+                "self": "<WSGIHandler at 0x7e55b715ae40>",
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "callback": "<function at 0x7e55b370a3e0>",
+                "response": null,
+                "callback_args": [],
+                "callback_kwargs": {},
+                "wrapped_callback": "<function at 0x7e55b370a3e0>",
+                "middleware_method": "<method at 0x7e55a3596640>"
+            }
+        },
+        {
+            "code": "return view_func(request, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/views/decorators/csrf.py",
+            "func": "_view_wrapper",
+            "line": 65,
+            "locals": {
+                "args": [],
+                "kwargs": {},
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "view_func": "<function at 0x7e55b370a340>"
+            }
+        },
+        {
+            "code": "return self.dispatch(request, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/views/generic/base.py",
+            "func": "view",
+            "line": 104,
+            "locals": {
+                "cls": "<type at 0x7e55b38fc2e0>",
+                "args": [],
+                "self": "<FirstLessonListCreateAPIView at 0x7e559f65e170>",
+                "kwargs": {},
+                "request": "<WSGIRequest at 0x7e55a042fe10>",
+                "initkwargs": {}
+            }
+        },
+        {
+            "code": "response = handler(request, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/rest_framework/views.py",
+            "func": "dispatch",
+            "line": 506,
+            "locals": {
+                "args": [],
+                "self": "<FirstLessonListCreateAPIView at 0x7e559f65e170>",
+                "kwargs": {},
+                "handler": "<method at 0x7e559ec05080>",
+                "request": "<Request at 0x7e559ecbc9f0>"
+            }
+        },
+        {
+            "code": "return self.create(request, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/rest_framework/generics.py",
+            "func": "post",
+            "line": 246,
+            "locals": {
+                "args": [],
+                "self": "<FirstLessonListCreateAPIView at 0x7e559f65e170>",
+                "kwargs": {},
+                "request": "<Request at 0x7e559ecbc9f0>"
+            }
+        },
+        {
+            "code": "self.perform_create(serializer)",
+            "file": "/usr/local/lib/python3.13/site-packages/rest_framework/mixins.py",
+            "func": "create",
+            "line": 19,
+            "locals": {
+                "args": [],
+                "self": "<FirstLessonListCreateAPIView at 0x7e559f65e170>",
+                "kwargs": {},
+                "request": "<Request at 0x7e559ecbc9f0>",
+                "serializer": "<FirstLessonListSerializer at 0x7e559ec3df20>"
+            }
+        },
+        {
+            "code": "return serializer.save(",
+            "file": "/usr/src/app/data/firstlesson/views.py",
+            "func": "perform_create",
+            "line": 19,
+            "locals": {
+                "self": "<FirstLessonListCreateAPIView at 0x7e559f65e170>",
+                "serializer": "<FirstLessonListSerializer at 0x7e559ec3df20>"
+            }
+        },
+        {
+            "code": "self.instance = self.create(validated_data)",
+            "file": "/usr/local/lib/python3.13/site-packages/rest_framework/serializers.py",
+            "func": "save",
+            "line": 208,
+            "locals": {
+                "self": "<FirstLessonListSerializer at 0x7e559ec3df20>",
+                "kwargs": {
+                    "creator": "<CustomUser at 0x7e559fb3f250>"
+                },
+                "validated_data": {
+                    "date": "datetime.datetime(2025, 9, 26, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Tashkent'))",
+                    "lead": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "level": "<Level at 0x7e559f637a10>",
+                    "course": "<Course at 0x7e559f637c50>",
+                    "creator": "<CustomUser at 0x7e559fb3f250>",
+                    "subject": null,
+                    "teacher": "<CustomUser at 0x7e559fb3dbd0>"
+                }
+            }
+        },
+        {
+            "code": "return super().create(validated_data)",
+            "file": "/usr/src/app/data/firstlesson/serializers.py",
+            "func": "create",
+            "line": 56,
+            "locals": {
+                "req": "<Request at 0x7e559ecbc9f0>",
+                "self": "<FirstLessonListSerializer at 0x7e559ec3df20>",
+                "__class__": "<SerializerMetaclass at 0x7e55b38fb700>",
+                "validated_data": {
+                    "date": "datetime.datetime(2025, 9, 26, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Tashkent'))",
+                    "lead": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "level": "<Level at 0x7e559f637a10>",
+                    "course": "<Course at 0x7e559f637c50>",
+                    "creator": "<CustomUser at 0x7e559fb3f250>",
+                    "subject": null,
+                    "teacher": "<CustomUser at 0x7e559fb3dbd0>"
+                }
+            }
+        },
+        {
+            "code": "instance = ModelClass._default_manager.create(**validated_data)",
+            "file": "/usr/local/lib/python3.13/site-packages/rest_framework/serializers.py",
+            "func": "create",
+            "line": 989,
+            "locals": {
+                "info": [
+                    "<UUIDField at 0x7e55b6204730>",
+                    {
+                        "date": "<DateTimeField at 0x7e55b61d7b10>",
+                        "status": "<CharField at 0x7e55b61d7c50>",
+                        "comment": "<TextField at 0x7e55b61d7d90>",
+                        "created_at": "<DateTimeField at 0x7e55b62050e0>",
+                        "deleted_at": "<DateTimeField at 0x7e55b6205220>",
+                        "updated_at": "<DateTimeField at 0x7e55b6205180>",
+                        "is_archived": "<BooleanField at 0x7e55b620c050>",
+                        "create_context": "<JSONField at 0x7e55b62052c0>",
+                        "update_context": "<JSONField at 0x7e55b6205360>"
+                    },
+                    {
+                        "lead": [
+                            "<ForeignKey at 0x7e55b61d7390>",
+                            "<ModelBase at 0x7e55b611cf60>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "group": [
+                            "<ForeignKey at 0x7e55b61d74d0>",
+                            "<ModelBase at 0x7e55b5fe6ef0>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "level": [
+                            "<ForeignKey at 0x7e55b61d7890>",
+                            "<ModelBase at 0x7e55b60dffb0>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "course": [
+                            "<ForeignKey at 0x7e55b61d79d0>",
+                            "<ModelBase at 0x7e55b6121a40>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "filial": [
+                            "<ForeignKey at 0x7e55b6204fa0>",
+                            "<ModelBase at 0x7e55b6296780>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "creator": [
+                            "<ForeignKey at 0x7e55b61d7ed0>",
+                            "<ModelBase at 0x7e55b51233e0>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "subject": [
+                            "<ForeignKey at 0x7e55b61d7750>",
+                            "<ModelBase at 0x7e55b60dec00>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "teacher": [
+                            "<ForeignKey at 0x7e55b61d7610>",
+                            "<ModelBase at 0x7e55b51233e0>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ]
+                    },
+                    {
+                        "groups": [
+                            null,
+                            "<ModelBase at 0x7e55b5265410>",
+                            true,
+                            null,
+                            false,
+                            true
+                        ],
+                        "attendances": [
+                            null,
+                            "<ModelBase at 0x7e55b6120e70>",
+                            true,
+                            null,
+                            false,
+                            true
+                        ]
+                    },
+                    {
+                        "id": "<UUIDField at 0x7e55b6204730>",
+                        "pk": "<UUIDField at 0x7e55b6204730>",
+                        "date": "<DateTimeField at 0x7e55b61d7b10>",
+                        "status": "<CharField at 0x7e55b61d7c50>",
+                        "comment": "<TextField at 0x7e55b61d7d90>",
+                        "created_at": "<DateTimeField at 0x7e55b62050e0>",
+                        "deleted_at": "<DateTimeField at 0x7e55b6205220>",
+                        "updated_at": "<DateTimeField at 0x7e55b6205180>",
+                        "is_archived": "<BooleanField at 0x7e55b620c050>",
+                        "create_context": "<JSONField at 0x7e55b62052c0>",
+                        "update_context": "<JSONField at 0x7e55b6205360>"
+                    },
+                    {
+                        "lead": [
+                            "<ForeignKey at 0x7e55b61d7390>",
+                            "<ModelBase at 0x7e55b611cf60>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "group": [
+                            "<ForeignKey at 0x7e55b61d74d0>",
+                            "<ModelBase at 0x7e55b5fe6ef0>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "level": [
+                            "<ForeignKey at 0x7e55b61d7890>",
+                            "<ModelBase at 0x7e55b60dffb0>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "course": [
+                            "<ForeignKey at 0x7e55b61d79d0>",
+                            "<ModelBase at 0x7e55b6121a40>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "filial": [
+                            "<ForeignKey at 0x7e55b6204fa0>",
+                            "<ModelBase at 0x7e55b6296780>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "groups": [
+                            null,
+                            "<ModelBase at 0x7e55b5265410>",
+                            true,
+                            null,
+                            false,
+                            true
+                        ],
+                        "creator": [
+                            "<ForeignKey at 0x7e55b61d7ed0>",
+                            "<ModelBase at 0x7e55b51233e0>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "subject": [
+                            "<ForeignKey at 0x7e55b61d7750>",
+                            "<ModelBase at 0x7e55b60dec00>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "teacher": [
+                            "<ForeignKey at 0x7e55b61d7610>",
+                            "<ModelBase at 0x7e55b51233e0>",
+                            false,
+                            null,
+                            false,
+                            false
+                        ],
+                        "attendances": [
+                            null,
+                            "<ModelBase at 0x7e55b6120e70>",
+                            true,
+                            null,
+                            false,
+                            true
+                        ]
+                    }
+                ],
+                "self": "<FirstLessonListSerializer at 0x7e559ec3df20>",
+                "ModelClass": "<ModelBase at 0x7e55b60b83a0>",
+                "field_name": "attendances",
+                "many_to_many": {},
+                "relation_info": [
+                    null,
+                    "<ModelBase at 0x7e55b6120e70>",
+                    true,
+                    null,
+                    false,
+                    true
+                ],
+                "validated_data": {
+                    "date": "datetime.datetime(2025, 9, 26, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Tashkent'))",
+                    "lead": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "level": "<Level at 0x7e559f637a10>",
+                    "course": "<Course at 0x7e559f637c50>",
+                    "creator": "<CustomUser at 0x7e559fb3f250>",
+                    "subject": null,
+                    "teacher": "<CustomUser at 0x7e559fb3dbd0>"
+                }
+            }
+        },
+        {
+            "code": "return getattr(self.get_queryset(), name)(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/manager.py",
+            "func": "manager_method",
+            "line": 87,
+            "locals": {
+                "args": [],
+                "name": "get_or_create",
+                "self": "<RelatedManager at 0x7e55a042cfc0>",
+                "kwargs": {
+                    "lid": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "first_lesson": "<FirstLesson at 0x7e55a16fa030>"
+                }
+            }
+        },
+        {
+            "code": "obj.save(force_insert=True, using=self.db)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/query.py",
+            "func": "create",
+            "line": 679,
+            "locals": {
+                "obj": "<StudentGroup at 0x7e559ecae4e0>",
+                "self": "<QuerySet at 0x7e559f91a5d0>",
+                "kwargs": {
+                    "lid": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "first_lesson": "<FirstLesson at 0x7e55a16fa030>"
+                },
+                "reverse_one_to_one_fields": "frozenset()"
+            }
+        },
+        {
+            "code": "super().save(*args, **kwargs)",
+            "file": "/usr/src/app/data/firstlesson/models.py",
+            "func": "save",
+            "line": 95,
+            "locals": {
+                "args": [],
+                "self": "<FirstLesson at 0x7e55a16fa030>",
+                "kwargs": {
+                    "using": "default",
+                    "force_insert": true
+                },
+                "__class__": "<ModelBase at 0x7e55b60b83a0>"
+            }
+        },
+        {
+            "code": "super().save(*args, **kwargs)",
+            "file": "/usr/src/app/data/command/models.py",
+            "func": "save",
+            "line": 63,
+            "locals": {
+                "args": [],
+                "self": "<FirstLesson at 0x7e55a16fa030>",
+                "kwargs": {
+                    "using": "default",
+                    "force_insert": true
+                },
+                "__class__": "<ModelBase at 0x7e55b62aba30>"
+            }
+        },
+        {
+            "code": "self.save_base(",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/base.py",
+            "func": "save",
+            "line": 892,
+            "locals": {
+                "args": [],
+                "self": "<FirstLesson at 0x7e55a16fa030>",
+                "using": "default",
+                "force_insert": true,
+                "force_update": false,
+                "update_fields": null,
+                "deferred_non_generated_fields": []
+            }
+        },
+        {
+            "code": "post_save.send(",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/base.py",
+            "func": "save_base",
+            "line": 1013,
+            "locals": {
+                "cls": "<ModelBase at 0x7e55b60b83a0>",
+                "raw": false,
+                "meta": "<Options at 0x7e55b620c190>",
+                "self": "<FirstLesson at 0x7e55a16fa030>",
+                "using": "default",
+                "origin": "<ModelBase at 0x7e55b60b83a0>",
+                "updated": false,
+                "force_insert": [
+                    "<ModelBase at 0x7e55b60b83a0>"
+                ],
+                "force_update": false,
+                "update_fields": null,
+                "context_manager": "<_GeneratorContextManager at 0x7e55a2643ee0>",
+                "parent_inserted": false
+            }
+        },
+        {
+            "code": "response = receiver(signal=self, sender=sender, **named)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/dispatch/dispatcher.py",
+            "func": "send",
+            "line": 189,
+            "locals": {
+                "self": "<ModelSignal at 0x7e55b78248a0>",
+                "named": {
+                    "raw": false,
+                    "using": "default",
+                    "created": true,
+                    "instance": "<FirstLesson at 0x7e55a16fa030>",
+                    "update_fields": null
+                },
+                "sender": "<ModelBase at 0x7e55b60b83a0>",
+                "receiver": "<function at 0x7e55b3a38b80>",
+                "response": null,
+                "responses": [
+                    [
+                        "<function at 0x7e55b3a38900>",
+                        null
+                    ]
+                ],
+                "sync_receivers": [
+                    "<function at 0x7e55b3a38900>",
+                    "<function at 0x7e55b3a38b80>"
+                ],
+                "async_receivers": []
+            }
+        },
+        {
+            "code": "instance.group.students.get_or_create(lid=instance.lead, first_lesson=instance)",
+            "file": "/usr/src/app/data/firstlesson/signals.py",
+            "func": "on_new_first_lesson",
+            "line": 23,
+            "locals": {
+                "kwargs": {
+                    "raw": false,
+                    "using": "default",
+                    "signal": "<ModelSignal at 0x7e55b78248a0>",
+                    "update_fields": null
+                },
+                "sender": "<ModelBase at 0x7e55b60b83a0>",
+                "created": true,
+                "instance": "<FirstLesson at 0x7e55a16fa030>"
+            }
+        },
+        {
+            "code": "return super(RelatedManager, self.db_manager(db)).get_or_create(**kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py",
+            "func": "get_or_create",
+            "line": 866,
+            "locals": {
+                "db": "default",
+                "self": "<RelatedManager at 0x7e559fca0cd0>",
+                "kwargs": {
+                    "lid": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "first_lesson": "<FirstLesson at 0x7e55a16fa030>"
+                },
+                "__class__": "<type at 0x7e55a26f93e0>",
+                "RelatedManager": "<type at 0x7e55a26f93e0>"
+            }
+        },
+        {
+            "code": "return getattr(self.get_queryset(), name)(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/manager.py",
+            "func": "manager_method",
+            "line": 87,
+            "locals": {
+                "args": [],
+                "name": "get_or_create",
+                "self": "<RelatedManager at 0x7e55a042cfc0>",
+                "kwargs": {
+                    "lid": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "first_lesson": "<FirstLesson at 0x7e55a16fa030>"
+                }
+            }
+        },
+        {
+            "code": "return self.create(**params), True",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/query.py",
+            "func": "get_or_create",
+            "line": 955,
+            "locals": {
+                "self": "<QuerySet at 0x7e559f91a5d0>",
+                "kwargs": {
+                    "lid": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "first_lesson": "<FirstLesson at 0x7e55a16fa030>"
+                },
+                "params": {
+                    "lid": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "first_lesson": "<FirstLesson at 0x7e55a16fa030>"
+                },
+                "defaults": null
+            }
+        },
+        {
+            "code": "obj.save(force_insert=True, using=self.db)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/query.py",
+            "func": "create",
+            "line": 679,
+            "locals": {
+                "obj": "<StudentGroup at 0x7e559ecae4e0>",
+                "self": "<QuerySet at 0x7e559f91a5d0>",
+                "kwargs": {
+                    "lid": "<Lid at 0x7e55a232f390>",
+                    "group": "<Group at 0x7e55a1863490>",
+                    "first_lesson": "<FirstLesson at 0x7e55a16fa030>"
+                },
+                "reverse_one_to_one_fields": "frozenset()"
+            }
+        },
+        {
+            "code": "self.create_context = _full_context()",
+            "file": "/usr/src/app/data/command/models.py",
+            "func": "save",
+            "line": 58,
+            "locals": {
+                "args": [],
+                "self": "<StudentGroup at 0x7e559ecae4e0>",
+                "kwargs": {
+                    "using": "default",
+                    "force_insert": true
+                },
+                "__class__": "<ModelBase at 0x7e55b62aba30>"
+            }
+        },
+        {
+            "code": "return capture_context_deep(",
+            "file": "/usr/src/app/data/command/models.py",
+            "func": "_full_context",
+            "line": 19,
+            "locals": {}
+        }
+    ],
+    "locals": {},
+    "python": "3.13.0",
+    "code_line": "    return capture_context_deep(",
+    "thread_name": "Thread-872 (process_request_thread)",
+    "created_at_utc": "2025-09-15T14:52:30.125685+00:00"
+}
