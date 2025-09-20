@@ -101,7 +101,7 @@ class BaseModel(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # After constructing (even new objects), capture initial state.
-        self._capture_initial_state()
+        self._capture_initial_state_from_dict()
 
     def changed_fields(self) -> list[str]:
         """
@@ -139,7 +139,7 @@ class BaseModel(models.Model):
 
         super().save(*args, **kwargs)
 
-        self._capture_initial_state()
+        self._capture_initial_state_from_dict()
 
 
 class UserFilial(BaseModel):
