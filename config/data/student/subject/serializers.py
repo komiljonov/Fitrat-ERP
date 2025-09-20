@@ -128,7 +128,11 @@ class LevelSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         rep = super().to_representation(obj)
-        rep["subject"] = SubjectSerializer(obj.subject).data
+
+        # Only include if "subject" is in the serializer's fields
+        if "subject" in self.fields:
+            rep["subject"] = SubjectSerializer(obj.subject).data
+
         return rep
 
 
