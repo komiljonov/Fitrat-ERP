@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
         s = Student.objects.filter(id="2097747b-d703-4235-a6d2-896dac2681a9").first()
 
-        sg = s.groups.first()
+        sg = s.groups.filter(id="2963b48c-6b94-4494-b2a9-5f863c24f283").first()
 
         print(sg.streak())
 
