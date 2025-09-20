@@ -170,7 +170,7 @@ class GroupSerializer(serializers.ModelSerializer):
         res = super().to_representation(instance)
         if "level" in res:
             res["level"] = LevelSerializer(
-                instance.level,context=self.context, include_only=["id", "name"]
+                instance.level, context=self.context, include_only=["id", "name"]
             ).data
 
         if "teacher" in res:
@@ -187,7 +187,10 @@ class GroupSerializer(serializers.ModelSerializer):
             ).data
 
         if "course" in res:
-            res["course"] = CourseSerializer(instance.course).data
+            res["course"] = CourseSerializer(
+                instance.course,
+                context=self.context,
+            ).data
 
         return res
 
