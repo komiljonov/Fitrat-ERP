@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 
 
 from data.command.models import BaseModel
+from data.student.attendance.models import Attendance
 
 if TYPE_CHECKING:
     from data.student.student.models import Student
@@ -86,6 +87,11 @@ class StudentGroup(BaseModel):
                 | Q(lid__isnull=True)
                 | Q(first_lesson__isnull=False),
             ),
+            # Require student or lead or both to be set.
+            CheckConstraint(
+                name="student_or_lid_required",
+                condition=Q(student__isnull=False) | Q(lid__isnull=False),
+            ),
         ]
 
     def __str__(self):
@@ -99,6 +105,17 @@ class StudentGroup(BaseModel):
                     "first_lesson": "First lesson is required when a lead (lid) is set for an active record."
                 }
             )
+
+    def streak(self):
+        """Get streak of UNREASONED DIDNTCOME attendance for this student or lead."""
+
+        if self.student:
+            return Attendance.streak_for_student(self.student)
+
+        if self.lid:
+            return Attendance.streak_for_lead(self.lid)
+
+        raise Exception("Student or Lead must be provided.")
 
 
 class SecondaryStudentGroup(BaseModel):

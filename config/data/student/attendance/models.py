@@ -6,6 +6,7 @@ from django.db.models import Q
 from data.command.models import BaseModel
 
 from data.student.attendance.choices import AttendanceStatusChoices
+from data.student.attendance.utils import current_streak
 
 if TYPE_CHECKING:
     from data.student.subject.models import Theme
@@ -62,7 +63,7 @@ class Attendance(BaseModel):
     status = models.CharField(
         max_length=20,
         choices=AttendanceStatusChoices.CHOICES,
-        default=AttendanceStatusChoices.UNREASONED,
+        default=AttendanceStatusChoices.EMPTY,
         help_text="Attendance reason (Sababli/Sababsiz)",
     )
 
@@ -103,6 +104,15 @@ class Attendance(BaseModel):
                 condition=Q(lead__isnull=False),
             ),
         ]
+
+    @classmethod
+    def streak_for_student(self, student: "Student"):
+
+        return current_streak(student=student)
+    @classmethod
+    def streak_for_lead(self, lead: "Lid"):
+
+        return current_streak(lead=lead)
 
 
 class SecondaryAttendance(BaseModel):
