@@ -190,6 +190,7 @@ class GroupSerializer(serializers.ModelSerializer):
             res["course"] = CourseSerializer(
                 instance.course,
                 context=self.context,
+                include_only=["id", "name"],
             ).data
 
         return res

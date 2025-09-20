@@ -40,6 +40,27 @@ class CourseSerializer(serializers.ModelSerializer):
             "is_archived",
         ]
 
+    def __init__(self, *args, **kwargs):
+        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        include_only: list | None = kwargs.pop("include_only", None)
+
+        if fields_to_remove and include_only:
+            raise ValueError(
+                "You cannot use 'remove_fields' and 'include_only' at the same time."
+            )
+
+        super(CourseSerializer, self).__init__(*args, **kwargs)
+
+        if include_only is not None:
+            allowed = set(include_only)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+        elif fields_to_remove:
+            for field_name in fields_to_remove:
+                self.fields.pop(field_name, None)
+
     def to_internal_value(self, data):
         res = super().to_internal_value(data)
         res["theme"] = res.get("theme", [])
@@ -87,14 +108,16 @@ class CourseSerializer(serializers.ModelSerializer):
         rep["subject"] = SubjectSerializer(instance.subject).data
 
         # if instance.level:
-        rep["level"] = (
-            LevelSerializer(instance.level, context=self.context).data
-            if instance.level
-            else None
-        )
+        if "level" in self.fields:
+            rep["level"] = (
+                LevelSerializer(instance.level, context=self.context).data
+                if instance.level
+                else None
+            )
 
-        rep["theme"] = ThemeSerializer(
-            instance.theme.all(), many=True, context=self.context
-        ).data  # Return full theme data
+        if "theme" in self.fields:
+            rep["theme"] = ThemeSerializer(
+                instance.theme.all(), many=True, context=self.context
+            ).data  # Return full theme data
 
         return rep
