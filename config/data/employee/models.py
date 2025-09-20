@@ -22,7 +22,7 @@ class Employee(CustomUser):
 
     objects = EmployeeManager()
 
-    class Meta(BaseModel.Meta):
+    class Meta:
         proxy = True
 
     class Admin(admin.ModelAdmin):
