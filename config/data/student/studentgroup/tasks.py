@@ -3,44 +3,48 @@ from celery import shared_task
 from data.student.studentgroup.models import StudentGroup
 from data.logs.models import Log
 
+from django.db import transaction
+
 
 @shared_task
 def check_for_streak_students():
 
-    students = StudentGroup.objects.filter(is_archived=False).exclude(student=None)
+    with transaction.atomic():
 
-    for student in students:
+        students = StudentGroup.objects.filter(is_archived=False).exclude(student=None)
 
-        streak = student.streak()
+        for student in students:
 
-        if (student.student.status == "NEW_STUDENT" and streak == 3) or (
-            student.student.status == "ACTIVE_STUDENT" and streak == 5
-        ):
+            streak = student.streak()
 
-            student.is_archived = True
-            student.save()
+            if (student.student.status == "NEW_STUDENT" and streak == 3) or (
+                student.student.status == "ACTIVE_STUDENT" and streak == 5
+            ):
 
-            print(
-                f"Kicket {student.student.first_name} {student.student.last_name} from group:{student.group.name}, streak is: {streak}"
-            )
+                student.is_archived = True
+                student.save()
 
-            Log.object.create(
-                object="STUDENT",
-                action="STUDENT_GROUP_ARCHIVED",
-                comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, guruhdan chetlashtirildi.",
-                student=student.student,
-            )
-
-            if student.student.groups.filter(is_archived=False).count() == 1:
-                student.student.is_archived = True
-                student.student.save()
+                print(
+                    f"Kicket {student.student.first_name} {student.student.last_name} from group:{student.group.name}, streak is: {streak}"
+                )
 
                 Log.object.create(
                     object="STUDENT",
-                    action="STUDENT_ARCHIVED",
-                    comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, archivelandi.",
+                    action="STUDENT_GROUP_ARCHIVED",
+                    comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, guruhdan chetlashtirildi.",
+                    student=student.student,
                 )
 
-                print(
-                    f"Archived student: {student.student.first_name} {student.student.last_name}"
-                )
+                if student.student.groups.filter(is_archived=False).count() == 1:
+                    student.student.is_archived = True
+                    student.student.save()
+
+                    Log.object.create(
+                        object="STUDENT",
+                        action="STUDENT_ARCHIVED",
+                        comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, archivelandi.",
+                    )
+
+                    print(
+                        f"Archived student: {student.student.first_name} {student.student.last_name}"
+                    )
