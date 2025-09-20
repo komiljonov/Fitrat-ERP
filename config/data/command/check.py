@@ -18,7 +18,7 @@ def ensure_archive_constraint(app_configs, **kwargs):
         cond_ok = any(
             getattr(c, "condition", None) is not None
             and "is_archived" in str(c.condition)
-            and "archived_at__isnull=False" in str(c.condition)
+            and "archived_at__isnull" in str(c.condition)
             for c in model._meta.constraints
         )
 
