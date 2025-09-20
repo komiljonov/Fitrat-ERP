@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 
 
 from data.command.models import BaseModel
-from data.student.attendance.models import Attendance
 
 if TYPE_CHECKING:
     from data.student.student.models import Student
@@ -108,6 +107,9 @@ class StudentGroup(BaseModel):
 
     def streak(self):
         """Get streak of UNREASONED DIDNTCOME attendance for this student or lead."""
+        
+        from data.student.attendance.models import Attendance
+        
 
         if self.student:
             return Attendance.streak_for_student(self.student)
