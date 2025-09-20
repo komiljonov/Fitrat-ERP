@@ -17,6 +17,10 @@ def check_for_streak_students():
 
             streak = student.streak()
 
+            print(
+                f"{student.student.first_name} {student.student.last_name} - {streak}"
+            )
+
             if (student.student.status == "NEW_STUDENT" and streak == 3) or (
                 student.student.status == "ACTIVE_STUDENT" and streak == 5
             ):
