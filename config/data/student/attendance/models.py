@@ -79,7 +79,7 @@ class Attendance(BaseModel):
     attended_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f" {self.group} is marked as {self.status}"
+        return f" Attendance(date={self.date.strftime("%d/%m/%Y")} st={self.student} gr={self.group})"
 
     class Meta:
         constraints = [
