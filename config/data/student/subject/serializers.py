@@ -45,6 +45,27 @@ class SubjectSerializer(serializers.ModelSerializer):
             "is_archived",
         ]
 
+    def __init__(self, *args, **kwargs):
+        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        include_only: list | None = kwargs.pop("include_only", None)
+
+        if fields_to_remove and include_only:
+            raise ValueError(
+                "You cannot use 'remove_fields' and 'include_only' at the same time."
+            )
+
+        super(SubjectSerializer, self).__init__(*args, **kwargs)
+
+        if include_only is not None:
+            allowed = set(include_only)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+        elif fields_to_remove:
+            for field_name in fields_to_remove:
+                self.fields.pop(field_name, None)
+
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
         if not filial:
@@ -131,7 +152,9 @@ class LevelSerializer(serializers.ModelSerializer):
 
         # Only include if "subject" is in the serializer's fields
         if "subject" in self.fields:
-            rep["subject"] = SubjectSerializer(obj.subject).data
+            rep["subject"] = SubjectSerializer(
+                obj.subject, include_only=["id", "name"]
+            ).data
 
         return rep
 
