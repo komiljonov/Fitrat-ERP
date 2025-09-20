@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 
 
 from data.student.attendance.choices import AttendanceStatusChoices
+from data.student.groups.models import Group
 
 
 if TYPE_CHECKING:
@@ -21,13 +22,16 @@ ABSENCE_NEUTRAL = {
 
 
 def current_streak(
-    *, student: "Student | None" = None, lead: "Lid | None" = None
+    group: "Group",
+    *,
+    student: "Student | None" = None,
+    lead: "Lid | None" = None,
 ) -> int:
     """
     Current streak of UNREASONED absences for either a Student OR a Lid.
     Keyword-only. Exactly one of (student, lead) must be provided.
     """
-    from data.student.attendance.models import Attendance
+    # from data.student.attendance.models import Attendance
     from data.lid.new_lid.models import Lid
     from data.student.student.models import Student
 
@@ -45,7 +49,7 @@ def current_streak(
     base_filter = {"student": student} if student is not None else {"lead": lead}
 
     last_break_date_sq = (
-        Attendance.objects.filter(**base_filter)
+        group.attendances.filter(**base_filter)
         .exclude(status__in=ABSENCE_NEUTRAL)  # breakers: e.g., COME/IS_PRESENT/LATE/...
         .order_by("-date")
         .values("date")[:1]
@@ -55,7 +59,7 @@ def current_streak(
 
     default_old_date = _date(1900, 1, 1)
 
-    return Attendance.objects.filter(
+    return group.attendances.filter(
         **base_filter,
         status=[AttendanceStatusChoices.UNREASONED, AttendanceStatusChoices.EMPTY],
         date__gt=Coalesce(
