@@ -28,6 +28,8 @@ def current_streak(
     Keyword-only. Exactly one of (student, lead) must be provided.
     """
     from data.student.attendance.models import Attendance
+    from data.lid.new_lid.models import Lid
+    from data.student.student.models import Student
 
     if (student is None and lead is None) or (student is not None and lead is not None):
         raise ValidationError(
@@ -36,6 +38,7 @@ def current_streak(
 
     if student is not None and not isinstance(student, Student):
         raise ValidationError("'student' must be a Student instance.")
+
     if lead is not None and not isinstance(lead, Lid):
         raise ValidationError("'lead' must be a Lid instance.")
 
