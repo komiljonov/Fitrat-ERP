@@ -82,6 +82,10 @@ app.conf.beat_schedule = {
         "task": "data.firstlesson.tasks.recreate_first_lesson",
         "schedule": crontab(hour=0, minute=1),  # every day at 00:01
     },
+    "kick_streak_students_every_day": {
+        "task": "data.student.studentgroup.tasks.check_for_streak_students",
+        "schedule": crontab(hour=0, minute=1),  # every day at 00:01
+    },
 }
 
 
