@@ -45,7 +45,6 @@ class StudentGroup(BaseModel):
         related_name="groups",
     )
 
-    is_archived = models.BooleanField(default=False)
 
     HOMEWORK_ONLINE = "Online"
     HOMEWORK_OFFLINE = "Offline"
@@ -143,7 +142,6 @@ class SecondaryStudentGroup(BaseModel):
         blank=True,
     )
 
-    is_archived = models.BooleanField(default=False)
 
     class Meta(BaseModel.Meta):
         verbose_name = "Secondary Add group"

@@ -25,8 +25,6 @@ class Subject(BaseModel):
 
     has_level = models.BooleanField(default=False)
 
-    is_archived = models.BooleanField(default=False)
-
     themes: "models.QuerySet[Theme]"
 
     def __str__(self):
@@ -51,7 +49,6 @@ class Level(BaseModel):
 
     order = models.IntegerField(default=0)
 
-    is_archived = models.BooleanField(default=False)
 
     class Meta(BaseModel.Meta):
         ordering = ["created_at"]
@@ -133,7 +130,6 @@ class Theme(BaseModel):
         related_name="theme_photos",
     )
 
-    is_archived = models.BooleanField(default=False)
 
     class Meta(BaseModel.Meta):
         ordering = ("created_at",)
