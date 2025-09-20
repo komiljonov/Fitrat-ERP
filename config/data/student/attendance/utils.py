@@ -21,7 +21,7 @@ ABSENCE_NEUTRAL = {
 
 
 def current_streak(
-    *, student: "Student" | None = None, lead: "Lid" | None = None
+    *, student: "Student | None" = None, lead: "Lid | None" = None
 ) -> int:
     """
     Current streak of UNREASONED absences for either a Student OR a Lid.
