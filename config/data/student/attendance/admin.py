@@ -8,8 +8,8 @@ from .models import Attendance, SecondaryAttendance
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = (
         "date",
-        "lead",
         "student_info",
+        "lead",
         "group",
         "status",
         "created_at",
