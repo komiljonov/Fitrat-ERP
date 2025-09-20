@@ -49,14 +49,14 @@ def on_update(sender, instance: "FirstLesson", **kwargs):
 
     # 1) Archive old group's StudentGroup (active rows) for this lead
     StudentGroup.objects.filter(
-        lead_id=instance.lead_id,
+        idd_id=instance.lead_id,
         group_id=old_gid,
         is_archived=False,
     ).update(is_archived=True)
 
     # 2) Create or unarchive the new group's StudentGroup for this lead
     sg, created = StudentGroup.objects.update_or_create(
-        lead_id=instance.lead_id,
+        lid_id=instance.lead_id,
         group_id=new_gid,
         defaults=dict(first_lesson=instance, is_archived=False),
     )
