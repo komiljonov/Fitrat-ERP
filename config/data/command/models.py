@@ -68,7 +68,7 @@ class BaseModel(models.Model):
 
         constraints = [
             CheckConstraint(
-                name="archived_requires_timestamp",
+                name="%(app_label)s_%(class)s_arch_ts_chk",
                 condition=Q(is_archived=False) | Q(archived_at__isnull=False),
             )
         ]
