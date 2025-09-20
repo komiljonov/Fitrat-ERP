@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError
 
 
 from data.student.attendance.choices import AttendanceStatusChoices
-from data.student.attendance.models import Attendance
 
 
 if TYPE_CHECKING:
@@ -28,6 +27,8 @@ def current_streak(
     Current streak of UNREASONED absences for either a Student OR a Lid.
     Keyword-only. Exactly one of (student, lead) must be provided.
     """
+    from data.student.attendance.models import Attendance
+
     if (student is None and lead is None) or (student is not None and lead is not None):
         raise ValidationError(
             "Provide exactly one of 'student' or 'lead' (keyword-only)."
