@@ -4,6 +4,8 @@ from uuid import uuid4
 from django.db import models
 from django.utils import timezone
 
+from django.db.models.fields.files import FieldFile
+
 
 if TYPE_CHECKING:
     from data.account.models import CustomUser
@@ -24,6 +26,13 @@ def _full_context():
         include_stack_locals=True,
         order="tail",
     )
+
+
+def _value_for_compare(v):
+    # Normalize file fields etc. to a stable comparable value
+    if isinstance(v, FieldFile):
+        return v.name  # just the path stored in DB
+    return v
 
 
 class BaseModel(models.Model):
@@ -48,6 +57,48 @@ class BaseModel(models.Model):
         abstract = True
         ordering = ["-created_at"]
 
+    # ---------- change tracking ----------
+    def _capture_initial_state(self):
+        """
+        Take a snapshot of current concrete field values for later diffing.
+        """
+        self.__initial_state__ = {
+            f.attname: _value_for_compare(getattr(self, f.attname))
+            for f in self._meta.concrete_fields  # excludes m2m automatically
+        }
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        """
+        Ensure objects loaded from the DB have their initial state captured.
+        """
+        instance = super().from_db(db, field_names, values)
+        instance._capture_initial_state()
+        return instance
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # After constructing (even new objects), capture initial state.
+        self._capture_initial_state()
+
+    def changed_fields(self) -> list[str]:
+        """
+        Return a list of concrete field *names* (model attribute names)
+        whose current values differ from the captured initial state.
+        Works for both new (unsaved) and existing instances.
+        """
+        initial = getattr(self, "__initial_state__", {}) or {}
+        changed: list[str] = []
+        for f in self._meta.concrete_fields:
+            name = f.attname
+            before = initial.get(name, None)
+            now = _value_for_compare(getattr(self, name))
+            if before != now:
+                changed.append(
+                    f.name
+                )  # use logical field name (not attname) for clarity
+        return changed
+
     def save(self, *args, **kwargs):
         """
         - On create: set create_context once (if absent).
@@ -61,6 +112,8 @@ class BaseModel(models.Model):
             self.update_context = _full_context()
 
         super().save(*args, **kwargs)
+
+        self._capture_initial_state()
 
 
 class UserFilial(BaseModel):
