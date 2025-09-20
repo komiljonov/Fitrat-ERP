@@ -7,7 +7,7 @@ from .models import Attendance, SecondaryAttendance
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
+        "date",
         "lead",
         "student_info",
         "group",
