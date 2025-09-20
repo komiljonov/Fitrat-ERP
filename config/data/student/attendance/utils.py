@@ -55,7 +55,7 @@ def current_streak(
         .values("date")[:1]
     )
 
-    print(last_break_date_sq)
+    # print(last_break_date_sq)
 
     default_old_date = _date(1900, 1, 1)
 
@@ -68,6 +68,6 @@ def current_streak(
         ),
     )
 
-    print(res)
+    # print(res)
 
     return res.count()

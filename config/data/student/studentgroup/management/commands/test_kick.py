@@ -17,6 +17,6 @@ class Command(BaseCommand):
 
         # sg = s.groups.filter(id="2963b48c-6b94-4494-b2a9-5f863c24f283").first()
 
-        # check_for_streak_students()
+        check_for_streak_students()
 
-        # print("End")
+        print("End")
