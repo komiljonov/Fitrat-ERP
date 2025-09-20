@@ -65,6 +65,7 @@ class StudentGroup(BaseModel):
         ordering = ["-created_at"]
 
         constraints = [
+            *BaseModel.Meta.constraints,
             # No duplicate active student in the same group
             models.UniqueConstraint(
                 fields=["group", "student"],
@@ -149,6 +150,7 @@ class SecondaryStudentGroup(BaseModel):
         verbose_name_plural = "Secondary Add group"
 
         constraints = [
+            *BaseModel.Meta.constraints,
             # No duplicate active student in the same group
             models.UniqueConstraint(
                 fields=["group", "student"],

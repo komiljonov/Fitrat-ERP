@@ -85,11 +85,12 @@ class Kind(BaseModel):
     class Meta(BaseModel.Meta):
         constraints = [
             # ✅ unique `kind` only when not null
+            *BaseModel.Meta.constraints,
             models.UniqueConstraint(
                 fields=["kind"],
                 name="unique_kind_not_null",
                 condition=~models.Q(kind=None),
-            )
+            ),
         ]
 
 

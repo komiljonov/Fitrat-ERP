@@ -83,6 +83,7 @@ class Attendance(BaseModel):
 
     class Meta(BaseModel.Meta):
         constraints = [
+            *BaseModel.Meta.constraints,
             # Exactly one of student or lid must be set (XOR)
             # models.CheckConstraint(
             #     name="attendance_xor_student_or_lead",
