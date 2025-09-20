@@ -49,7 +49,7 @@ def on_update(sender, instance: "FirstLesson", **kwargs):
 
     # 1) Archive old group's StudentGroup (active rows) for this lead
     StudentGroup.objects.filter(
-        idd_id=instance.lead_id,
+        lid_id=instance.lead_id,
         group_id=old_gid,
         is_archived=False,
     ).update(is_archived=True)
