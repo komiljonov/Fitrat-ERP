@@ -105,7 +105,11 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["subject"] = SubjectSerializer(instance.subject).data
+
+        if "subject" in self.fields:
+            rep["subject"] = SubjectSerializer(
+                instance.subject, context=self.context
+            ).data
 
         # if instance.level:
         if "level" in self.fields:
