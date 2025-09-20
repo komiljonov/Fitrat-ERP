@@ -106,16 +106,16 @@ class Attendance(BaseModel):
         ]
 
     @classmethod
-    def streak_for_student(self, student: "Student"):
+    def streak_for_student(self, group: "Group", student: "Student"):
 
         print(f"Getting streak for student: {student}")
 
-        return current_streak(student=student)
+        return current_streak(group, student=student)
 
     @classmethod
-    def streak_for_lead(self, lead: "Lid"):
+    def streak_for_lead(self, group: "Group", lead: "Lid"):
 
-        return current_streak(lead=lead)
+        return current_streak(group, lead=lead)
 
 
 class SecondaryAttendance(BaseModel):

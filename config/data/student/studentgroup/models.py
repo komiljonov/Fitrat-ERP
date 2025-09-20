@@ -107,15 +107,14 @@ class StudentGroup(BaseModel):
 
     def streak(self):
         """Get streak of UNREASONED DIDNTCOME attendance for this student or lead."""
-        
+
         from data.student.attendance.models import Attendance
-        
 
         if self.student:
-            return Attendance.streak_for_student(self.student)
+            return Attendance.streak_for_student(self.group, self.student)
 
         if self.lid:
-            return Attendance.streak_for_lead(self.lid)
+            return Attendance.streak_for_lead(self.group, self.lid)
 
         raise Exception("Student or Lead must be provided.")
 
