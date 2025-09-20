@@ -7,7 +7,7 @@ from .models import StudentGroup, SecondaryStudentGroup
 class StudentGroupAdmin(admin.ModelAdmin):
     list_display = ("group", "student", "lid", "is_archived", "created_at")
     search_fields = (
-        "group",
+        "group__name",
         "student__first_name",
         "student__last_name",
         "student__middle_name",
