@@ -32,7 +32,7 @@ def check_for_streak_students():
                     f"Kicket {student.student.first_name} {student.student.last_name} from group:{student.group.name}, streak is: {streak}"
                 )
 
-                Log.object.create(
+                Log.objects.create(
                     object="STUDENT",
                     action="STUDENT_GROUP_ARCHIVED",
                     comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, guruhdan chetlashtirildi.",
@@ -43,7 +43,7 @@ def check_for_streak_students():
                     student.student.is_archived = True
                     student.student.save()
 
-                    Log.object.create(
+                    Log.objects.create(
                         object="STUDENT",
                         action="STUDENT_ARCHIVED",
                         comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, archivelandi.",
