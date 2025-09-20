@@ -59,11 +59,15 @@ def current_streak(
 
     default_old_date = _date(1900, 1, 1)
 
-    return group.attendances.filter(
+    res = group.attendances.filter(
         **base_filter,
         # status__in=[AttendanceStatusChoices.UNREASONED, AttendanceStatusChoices.EMPTY],
         date__gt=Coalesce(
             Subquery(last_break_date_sq),
             Value(default_old_date, output_field=DateField()),
         ),
-    ).count()
+    )
+
+    print(res)
+
+    return res.count()
