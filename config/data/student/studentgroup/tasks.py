@@ -19,8 +19,8 @@ def check_for_streak_students():
 
             print(f"{sg.student.first_name} {sg.student.last_name} - {streak}")
 
-            if (sg.student.status == "NEW_STUDENT" and streak == 3) or (
-                sg.student.status == "ACTIVE_STUDENT" and streak == 5
+            if (sg.student.status == "NEW_STUDENT" and streak >= 3) or (
+                sg.student.status == "ACTIVE_STUDENT" and streak >= 5
             ):
 
                 sg.is_archived = True
