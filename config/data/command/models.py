@@ -6,6 +6,8 @@ from django.utils import timezone
 
 from django.db.models.fields.files import FieldFile
 
+from django.db.models import Q, CheckConstraint
+
 
 if TYPE_CHECKING:
     from data.account.models import CustomUser
@@ -48,6 +50,9 @@ class BaseModel(models.Model):
         blank=True,
     )
 
+    is_archived = models.BooleanField(default=False)
+    archived_at = models.BooleanField(null=True, blank=True)
+
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
@@ -59,6 +64,13 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
         ordering = ["-created_at"]
+
+        constraints = [
+            CheckConstraint(
+                name="archived_requires_timestamp",
+                condition=Q(is_archived=False) | Q(archived_at__isnull=False),
+            )
+        ]
 
     # ---------- change tracking ----------
     def _capture_initial_state_from_dict(self):
