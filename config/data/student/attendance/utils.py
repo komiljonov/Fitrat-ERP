@@ -51,6 +51,8 @@ def current_streak(
         .values("date")[:1]
     )
 
+    print(last_break_date_sq)
+
     default_old_date = _date(1900, 1, 1)
 
     return Attendance.objects.filter(
