@@ -130,7 +130,7 @@ class Page(BaseModel):
 class Asos(BaseModel):
     name = models.CharField(max_length=256)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         ordering = ["created_at"]
 
     def __str__(self):
@@ -191,7 +191,7 @@ class Monitoring(BaseModel):
 
     counter = models.IntegerField()
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Monitoring"
         verbose_name_plural = "Monitoring 3, 12, 13, 14"
 
@@ -226,7 +226,7 @@ class ResultName(BaseModel):
     )
     is_archived = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Natijalar"
         verbose_name_plural = "Natijalar monitoringi"
 
@@ -299,7 +299,7 @@ class ResultSubjects(BaseModel):
     is_archived = models.BooleanField(default=False)
     coin = models.IntegerField(default=0)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Monitoring"
         verbose_name_plural = "Natija turi"
 
@@ -341,7 +341,7 @@ class MonitoringAsos4(BaseModel):
         max_length=15,
     )
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Monitoring 4"
         verbose_name_plural = "Monitoring 4"
 
@@ -371,7 +371,7 @@ class StudentCountMonitoring(BaseModel):
     from_point = models.CharField(max_length=256, null=True, blank=True)
     to_point = models.CharField(max_length=256, null=True, blank=True)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Monitoring"
         verbose_name_plural = "O'quvchini soni monitoringi"
 
@@ -390,7 +390,7 @@ class Monitoring5(BaseModel):
         related_name="Monitoring5_creator_comments",
     )
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Monitoring 5"
         verbose_name_plural = "Monitoring 5"
 
@@ -419,7 +419,7 @@ class StudentCatchingMonitoring(BaseModel):
     )
     ball = models.FloatField(default=0, null=True, blank=True)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Monitoring"
         verbose_name_plural = "O'quvchini olib qolish monitoringi"
 

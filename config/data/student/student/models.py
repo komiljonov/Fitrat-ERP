@@ -211,7 +211,7 @@ class Student(BaseModel):
     groups: "models.QuerySet[StudentGroup]"
     relatives: "models.QuerySet[Relatives]"
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         ordering = ("is_frozen", "-created_at")
 
     def __str__(self):
@@ -250,6 +250,6 @@ class FistLesson_data(BaseModel):
         blank=True,
     )
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Fist Lesson data"
         verbose_name_plural = "Fist Lesson data"

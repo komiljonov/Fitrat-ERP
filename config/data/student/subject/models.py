@@ -53,7 +53,7 @@ class Level(BaseModel):
 
     is_archived = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         ordering = ["created_at"]
 
     def __str__(self):
@@ -135,7 +135,7 @@ class Theme(BaseModel):
 
     is_archived = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         ordering = ("created_at",)
 
     def __str__(self):

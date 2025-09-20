@@ -58,7 +58,7 @@ class StudentGroup(BaseModel):
         max_length=20,
     )
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Student Group"
         verbose_name_plural = "Student Groups"
 
@@ -144,7 +144,7 @@ class SecondaryStudentGroup(BaseModel):
 
     is_archived = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Secondary Add group"
         verbose_name_plural = "Secondary Add group"
 

@@ -41,6 +41,7 @@ _SENTINEL = object()
 
 
 class BaseModel(models.Model):
+
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
 
     filial: "Filial | None" = models.ForeignKey(

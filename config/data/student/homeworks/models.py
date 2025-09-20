@@ -34,7 +34,7 @@ class Homework(BaseModel):
 
     test_checked = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Homework"
         verbose_name_plural = "Homeworks"
 
@@ -75,7 +75,7 @@ class Homework_history(BaseModel):
 
     test_checked = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Homeworks History"
         verbose_name_plural = "Histories"
         ordering = ["created_at"]

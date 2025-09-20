@@ -82,7 +82,7 @@ class Kind(BaseModel):
 
         return cls.objects.get_or_create(kind=kind, action=action)[0]
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         constraints = [
             # ✅ unique `kind` only when not null
             models.UniqueConstraint(

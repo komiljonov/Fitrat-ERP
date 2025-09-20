@@ -11,6 +11,7 @@ def ensure_archive_constraint(app_configs, **kwargs):
     for model in apps.get_models():
         if not issubclass(model, BaseModel) or model._meta.abstract:
             continue
+
         # look for our constraint condition signature
         cond_ok = any(
             getattr(c, "condition", None) is not None

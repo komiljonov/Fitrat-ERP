@@ -106,7 +106,7 @@ class FirstLesson(BaseModel):
         self._sync_from_group()
         super().save(*args, **kwargs)
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "Sinov darsi"
 
         verbose_name_plural = "Sinov darslari"

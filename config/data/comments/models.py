@@ -40,7 +40,7 @@ class Comment(BaseModel):
     def __str__(self):
         return self.comment
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         ordering = []
 
 

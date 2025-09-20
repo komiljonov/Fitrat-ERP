@@ -86,7 +86,7 @@ class FirstLLesson(BaseModel):
         blank=True,
     )
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = "First Lesson"
         verbose_name_plural = "First Lessons"
 

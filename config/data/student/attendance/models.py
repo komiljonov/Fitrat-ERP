@@ -81,7 +81,7 @@ class Attendance(BaseModel):
     def __str__(self):
         return f" Attendance(date={self.date.strftime("%d/%m/%Y")} st={self.student} gr={self.group})"
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         constraints = [
             # Exactly one of student or lid must be set (XOR)
             # models.CheckConstraint(

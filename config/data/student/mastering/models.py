@@ -85,7 +85,7 @@ class Mastering(BaseModel):
     # def __str__(self):
     #     return self.lid.first_name if self.lid else self.student.first_name
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         ordering = ("created_at",)
 
 
