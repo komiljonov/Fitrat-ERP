@@ -20,6 +20,10 @@ def check_for_streak_students():
             student.is_archived = True
             student.save()
 
+            print(
+                f"Kicket {student.student.first_name} {student.student.last_name} from group:{student.group.name}, streak is: {streak}"
+            )
+
             Log.object.create(
                 object="STUDENT",
                 action="STUDENT_GROUP_ARCHIVED",
@@ -35,4 +39,8 @@ def check_for_streak_students():
                     object="STUDENT",
                     action="STUDENT_ARCHIVED",
                     comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, archivelandi.",
+                )
+
+                print(
+                    f"Archived student: {student.student.first_name} {student.student.last_name}"
                 )
