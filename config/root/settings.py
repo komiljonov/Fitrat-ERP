@@ -6,7 +6,6 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SECRET_KEY = config("SECRET_KEY")
 

@@ -7,12 +7,7 @@ class FileUploadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = File
-        fields = [
-            'id',
-            'file',
-            "choice",
-            "url"
-        ]
+        fields = ["id", "file", "choice", "url"]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -25,7 +20,8 @@ class FileUploadSerializer(serializers.ModelSerializer):
                 choice = data.get("choice")
 
         if choice == "file":
-            representation["file"] = request.build_absolute_uri(instance.file.url)
+            url = request.build_absolute_uri(instance.file.url)
+            representation["file"] = url.replace("http://", "https://")
 
         return representation
 
@@ -33,11 +29,8 @@ class FileUploadSerializer(serializers.ModelSerializer):
 class ContractUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contract
-        fields = [
-            'id',
-            'file'
+        fields = ["id", "file"]
 
-       ]
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         request = self.context.get("request")
