@@ -44,8 +44,11 @@ class StoresSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["photo"] = FileUploadSerializer(instance.photo, context=self.context).data
+
         rep["video"] = FileUploadSerializer(
-            instance.video, many=True, context=self.context
+            instance.video,
+            many=True,
+            context=self.context,
         ).data
         return rep
 
@@ -85,7 +88,9 @@ class StudentAPPSerializer(serializers.ModelSerializer):
     group = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
     file = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), many=True, allow_null=True
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=True,
     )
     password = serializers.CharField(write_only=True, required=False, allow_null=True)
     attendance_count = serializers.SerializerMethodField()
@@ -243,7 +248,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
         # Annotate the queryset to rename teacher's id, first_name, and last_name
         teacher = (
             SecondaryStudentGroup.objects.filter(student=obj)
-            .annotate(
+        .annotate(
                 teacher_id=F("group__teacher__id"),  # Rename to 'teacher_id'
                 teacher_first_name=F(
                     "group__teacher__first_name"
