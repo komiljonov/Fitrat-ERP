@@ -248,7 +248,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
         # Annotate the queryset to rename teacher's id, first_name, and last_name
         teacher = (
             SecondaryStudentGroup.objects.filter(student=obj)
-        .annotate(
+            .annotate(
                 teacher_id=F("group__teacher__id"),  # Rename to 'teacher_id'
                 teacher_first_name=F(
                     "group__teacher__first_name"

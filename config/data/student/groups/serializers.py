@@ -169,7 +169,10 @@ class GroupSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         res = super().to_representation(instance)
         if "level" in res:
-            res["level"] = LevelSerializer(instance.level).data
+            res["level"] = LevelSerializer(
+                instance.level, include_only=["id", "name"]
+            ).data
+
         if "teacher" in res:
             res["teacher"] = UserSerializer(
                 instance.teacher,
@@ -178,8 +181,10 @@ class GroupSerializer(serializers.ModelSerializer):
 
         if "room_number" in res:
             res["room_number"] = RoomsSerializer(instance.room_number).data
+
         if "course" in res:
             res["course"] = CourseSerializer(instance.course).data
+
         return res
 
     def create(self, validated_data):
