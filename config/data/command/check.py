@@ -12,6 +12,8 @@ def ensure_archive_constraint(app_configs, **kwargs):
         if not issubclass(model, BaseModel) or model._meta.abstract:
             continue
 
+        print([c for c in model._meta.constraints])
+
         # look for our constraint condition signature
         cond_ok = any(
             getattr(c, "condition", None) is not None
@@ -19,6 +21,7 @@ def ensure_archive_constraint(app_configs, **kwargs):
             and "archived_at__isnull=False" in str(c.condition)
             for c in model._meta.constraints
         )
+
         if not cond_ok:
             errors.append(
                 Error(
