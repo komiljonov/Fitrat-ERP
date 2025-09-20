@@ -1,12 +1,16 @@
+from typing import TYPE_CHECKING
+
 from typing import Literal
 from django.db import models
 
 from data.finances.finance.choices import FinanceKindTypeChoices
-from data.account.models import CustomUser
 from data.command.models import BaseModel
-from data.lid.new_lid.models import Lid
-from data.student.attendance.models import Attendance
-from data.student.student.models import Student
+
+if TYPE_CHECKING:
+    from data.student.student.models import Student
+    from data.student.attendance.models import Attendance
+    from data.lid.new_lid.models import Lid
+    from data.account.models import CustomUser
 
 
 class Casher(BaseModel):
