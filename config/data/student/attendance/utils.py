@@ -61,7 +61,7 @@ def current_streak(
 
     return group.attendances.filter(
         **base_filter,
-        status__in=[AttendanceStatusChoices.UNREASONED, AttendanceStatusChoices.EMPTY],
+        # status__in=[AttendanceStatusChoices.UNREASONED, AttendanceStatusChoices.EMPTY],
         date__gt=Coalesce(
             Subquery(last_break_date_sq),
             Value(default_old_date, output_field=DateField()),
