@@ -35,6 +35,9 @@ def _value_for_compare(v):
     return v
 
 
+_SENTINEL = object()
+
+
 class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
 
@@ -58,22 +61,41 @@ class BaseModel(models.Model):
         ordering = ["-created_at"]
 
     # ---------- change tracking ----------
-    def _capture_initial_state(self):
+    def _capture_initial_state_from_dict(self):
         """
-        Take a snapshot of current concrete field values for later diffing.
+        Snapshot using raw __dict__ (never triggers DB loads for deferred attrs).
+        Only records fields that already exist in __dict__.
         """
-        self.__initial_state__ = {
-            f.attname: _value_for_compare(getattr(self, f.attname))
-            for f in self._meta.concrete_fields  # excludes m2m automatically
-        }
+        self.__initial_state__ = {}
+        for f in self._meta.concrete_fields:
+            raw = self.__dict__.get(f.attname, _SENTINEL)
+            if raw is _SENTINEL:
+                # field is deferred/not populated; skip to avoid DB hits
+                continue
+            self.__initial_state__[f.attname] = _value_for_compare(raw)
 
     @classmethod
     def from_db(cls, db, field_names, values):
         """
-        Ensure objects loaded from the DB have their initial state captured.
+        Called when instantiating from the DB. We can build the snapshot directly
+        from (field_names, values) without touching descriptors.
         """
         instance = super().from_db(db, field_names, values)
-        instance._capture_initial_state()
+        state = {}
+        # field_names may be None (select *), so fallback to model fields
+        if field_names is None:
+            # When None, values align with all concrete fields in their definition order
+            for f, v in zip(instance._meta.concrete_fields, values):
+                state[f.attname] = _value_for_compare(v)
+        else:
+            name_to_val = dict(zip(field_names, values))
+            for f in instance._meta.concrete_fields:
+                if f.attname in name_to_val:
+                    state[f.attname] = _value_for_compare(name_to_val[f.attname])
+                elif f.name in name_to_val:
+                    state[f.attname] = _value_for_compare(name_to_val[f.name])
+                # else: field deferred → leave it out to avoid DB load
+        instance.__initial_state__ = state
         return instance
 
     def __init__(self, *args, **kwargs):
@@ -83,20 +105,24 @@ class BaseModel(models.Model):
 
     def changed_fields(self) -> list[str]:
         """
-        Return a list of concrete field *names* (model attribute names)
-        whose current values differ from the captured initial state.
-        Works for both new (unsaved) and existing instances.
+        Compare current raw values vs initial snapshot. Uses __dict__ to avoid
+        triggering deferred loads. If a field wasn't in the initial snapshot
+        (deferred at load time) but is now present, we consider it "changed".
         """
         initial = getattr(self, "__initial_state__", {}) or {}
         changed: list[str] = []
         for f in self._meta.concrete_fields:
-            name = f.attname
-            before = initial.get(name, None)
-            now = _value_for_compare(getattr(self, name))
-            if before != now:
-                changed.append(
-                    f.name
-                )  # use logical field name (not attname) for clarity
+            att = f.attname
+            before = initial.get(att, _SENTINEL)
+            now_raw = self.__dict__.get(att, _SENTINEL)
+            # Normalize (but only if present)
+            now = _value_for_compare(now_raw) if now_raw is not _SENTINEL else _SENTINEL
+            if before is _SENTINEL and now is _SENTINEL:
+                continue  # both absent (still deferred)
+            if before is _SENTINEL and now is not _SENTINEL:
+                changed.append(f.name)  # newly populated → treat as changed
+            elif before != now:
+                changed.append(f.name)
         return changed
 
     def save(self, *args, **kwargs):
