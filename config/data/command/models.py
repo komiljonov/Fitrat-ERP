@@ -52,7 +52,7 @@ class BaseModel(models.Model):
     )
 
     is_archived = models.BooleanField(default=False)
-    archived_at = models.BooleanField(null=True, blank=True,default=timezone.now)
+    archived_at = models.DateTimeField(null=True, blank=True,default=timezone.now)
 
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
