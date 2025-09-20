@@ -13,13 +13,13 @@ class FileUploadSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         request = self.context.get("request")
 
-        choice = None
-        if request:
-            data = request.data
-            if isinstance(data, dict):
-                choice = data.get("choice")
+        # choice = None
+        # if request:
+        #     data = request.data
+        #     if isinstance(data, dict):
+        #         choice = data.get("choice")
 
-        if choice == "file":
+        if instance.choice == "file":
             url = request.build_absolute_uri(instance.file.url)
             representation["file"] = url.replace("http://", "https://")
 
