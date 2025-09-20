@@ -12,7 +12,7 @@ def ensure_archive_constraint(app_configs, **kwargs):
         if not issubclass(model, BaseModel) or model._meta.abstract:
             continue
 
-        print([c for c in model._meta.constraints])
+        print([[str(c.condition), str(c.condition)] for c in model._meta.constraints])
 
         # look for our constraint condition signature
         cond_ok = any(
