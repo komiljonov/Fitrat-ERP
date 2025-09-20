@@ -51,7 +51,6 @@ class BaseModel(models.Model):
         blank=True,
     )
 
-    is_archived = models.BooleanField(default=False)
     archived_at = models.DateTimeField(null=True, blank=True,default=timezone.now)
 
     created_at = models.DateTimeField(default=timezone.now)
@@ -170,5 +169,3 @@ class UserFilial(BaseModel):
         blank=True,
         related_name="userfilial_user",
     )
-
-    is_archived = models.BooleanField(default=False)

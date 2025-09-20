@@ -224,7 +224,6 @@ class ResultName(BaseModel):
         null=True,
         blank=True,
     )
-    is_archived = models.BooleanField(default=False)
 
     class Meta(BaseModel.Meta):
         verbose_name = "Natijalar"
@@ -296,7 +295,6 @@ class ResultSubjects(BaseModel):
     to_point = models.CharField(max_length=10, null=True, blank=True)
 
     amount = models.CharField(max_length=128, null=True, blank=True)
-    is_archived = models.BooleanField(default=False)
     coin = models.IntegerField(default=0)
 
     class Meta(BaseModel.Meta):

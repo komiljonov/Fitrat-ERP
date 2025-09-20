@@ -42,8 +42,6 @@ class Archived(BaseModel):
         related_name="archived_comments",
     )
 
-    is_archived = models.BooleanField(default=False)
-
     def __str__(self):
         # Prefer lid if available, otherwise fall back to student
         obj = self.lid or self.student

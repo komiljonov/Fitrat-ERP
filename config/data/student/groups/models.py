@@ -121,9 +121,6 @@ class Group(BaseModel):
 
     comment = models.TextField(null=True, blank=True)
 
-    is_archived = models.BooleanField(
-        default=False, help_text="Is this group archived?"
-    )
 
     students: "models.QuerySet[StudentGroup]"
     attendances: "models.QuerySet[Attendance]"

@@ -88,8 +88,6 @@ class FirstLesson(BaseModel):
         blank=True,
     )
 
-    is_archived = models.BooleanField(default=False)
-
     groups: "models.QuerySet[StudentGroup]"
 
     def _sync_from_group(self):

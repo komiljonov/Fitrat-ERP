@@ -32,7 +32,6 @@ class Casher(BaseModel):
         max_length=20,
     )
 
-    is_archived = models.BooleanField(default=False)
     comment = models.TextField(blank=True)
 
     def __str__(self):

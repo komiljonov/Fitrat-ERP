@@ -65,4 +65,3 @@ class StuffComments(BaseModel):
         blank=True,
         related_name="comments_stuff_user",
     )
-    is_archived = models.BooleanField(default=False)

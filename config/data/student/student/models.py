@@ -163,10 +163,6 @@ class Student(BaseModel):
         null=True,
     )
 
-    is_archived = models.BooleanField(
-        default=False,
-        help_text="Is this student archived or not",
-    )
 
     is_frozen = models.BooleanField(
         default=False,

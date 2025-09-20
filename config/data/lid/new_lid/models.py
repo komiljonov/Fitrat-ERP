@@ -144,11 +144,6 @@ class Lid(BaseModel, LeadMethods):
         blank=True,
     )
 
-    is_archived = models.BooleanField(
-        default=False,
-        help_text="Is this Lead archived or not",
-    )
-
     is_double = models.BooleanField(
         default=False,
         help_text="Is this Lead duble or not",
