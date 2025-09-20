@@ -66,7 +66,6 @@ INSTALLED_APPS = [
     "data.student.appsettings",
     "data.student.shop",
     "data.parents",
-    "data.command",
     "data.results",
     "data.comments",
     "data.employee",
@@ -88,6 +87,7 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    "data.command",
 ]
 
 MIDDLEWARE = [

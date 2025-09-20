@@ -115,5 +115,3 @@ class FirstLesson(BaseModel):
                 fields=["lead", "group", "date"], name="unique_lead_group_date"
             ),
         ]
-
-    
