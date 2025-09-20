@@ -7,6 +7,7 @@ from data.command.models import BaseModel
 
 from django.contrib import admin
 
+
 if TYPE_CHECKING:
     from data.tasks.models import Task
     from data.student.student.models import Student
@@ -18,33 +19,10 @@ if TYPE_CHECKING:
     from data.account.models import CustomUser
     from data.employee.models import Employee
     from data.employee.models import EmployeeTransaction
+    from data.student.studentgroup.models import StudentGroup
 
 
 class Log(BaseModel):
-    # app = models.CharField(
-    #     choices=[
-    #         ("Finance", "Finance"),
-    #         ("Account", "Account"),
-    #         ("Lid", "Lid"),
-    #         ("Archive", "Archive"),
-    #         ("Frozen", "Frozen"),
-    #         ("Clickuz", "Clickuz"),
-    #         ("Exam_results", "Exam_results"),
-    #         ("Parents", "Parents"),
-    #         ("Paycomuz", "Paycomuz"),
-    #         ("Results", "Results"),
-    #         ("Student", "Student"),
-    #         ("Tasks", "Tasks"),
-    #         ("Teachers", "Teachers"),
-    #         ("Upload", "Upload"),
-    #         ("EMPLOYEE", "Employee"),
-    #     ],
-    #     max_length=255,
-    #     null=True,
-    #     blank=True,
-    # )
-
-    # model = models.CharField(max_length=255, null=True, blank=True)
 
     object = models.CharField(
         max_length=255,
@@ -163,6 +141,14 @@ class Log(BaseModel):
 
     employee_transaction: "EmployeeTransaction | None" = models.ForeignKey(
         "employee.EmployeeTransaction",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="logs",
+    )
+
+    student_group: "StudentGroup | None" = models.ForeignKey(
+        "studentgroup.StudentGroup",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from datetime import datetime
 from decimal import Decimal
 
@@ -105,6 +105,7 @@ class Student(BaseModel):
         help_text="Marketing channel for this student",
     )
 
+    # Student yangi o'quvchimi yoki, aktiv o'quvchimi?
     student_stage_type = models.CharField(
         choices=[
             ("NEW_STUDENT", "NEW_STUDENT"),
@@ -112,8 +113,13 @@ class Student(BaseModel):
         ],
         default="NEW_STUDENT",
         max_length=100,
-        help_text="Student stage type",
+        help_text="Student yangi o'quvchimi yoki aktiv o'quvchimi?",
     )
+
+    @property
+    def status(self) -> Literal["NEW_STUDENT", "ACTIVE_STUDENT"]:
+
+        return self.student_stage_type
 
     new_student_stages = models.CharField(
         choices=[
@@ -125,7 +131,7 @@ class Student(BaseModel):
         null=True,
         blank=True,
         max_length=100,
-        help_text="Student stage type",
+        help_text="Student statusi",
     )
 
     balance = models.DecimalField(
