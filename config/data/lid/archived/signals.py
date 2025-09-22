@@ -35,7 +35,7 @@ def on_create(sender, instance: Archived, created, **kwargs):
                     choice="Archive",
                     comment=f"Siz {ssg.group.name} guruhidan {instance.created_at.date()} sanasida {instance.reason} sababi bilan arxivlandingiz!",
                 )
-
+/
         if instance.lid:
             instance.lid.is_archived = True
             instance.lid.save()

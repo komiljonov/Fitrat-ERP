@@ -20,8 +20,8 @@ from .serializers import (
     MockExamResultSerializer,
     LevelExamSerializer,
 )
-from ..results.models import Results
-from ..upload.serializers import FileUploadSerializer
+from data.results.models import Results
+from data.upload.serializers import FileUploadSerializer
 
 
 class UnitTestListCreateAPIView(ListCreateAPIView):

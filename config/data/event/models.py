@@ -1,8 +1,8 @@
 from django.db import models
 
 # Create your models here.
-from ..upload.models import File
-from ..command.models import BaseModel
+from data.upload.models import File
+from data.command.models import BaseModel
 
 
 class Event(BaseModel):

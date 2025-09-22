@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 from .models import Event
-from ..upload.models import File
-from ..upload.serializers import FileUploadSerializer
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class EventSerializer(serializers.ModelSerializer):

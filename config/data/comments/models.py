@@ -1,14 +1,14 @@
 from django.db import models
 
-from ..command.models import BaseModel
+from data.command.models import BaseModel
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..lid.new_lid.models import Lid
-    from ..student.student.models import Student
-    from ..account.models import CustomUser
-    from ..upload.models import File
+    from data.lid.new_lid.models import Lid
+    from data.student.student.models import Student
+    from data.account.models import CustomUser
+    from data.upload.models import File
 
 
 class Comment(BaseModel):

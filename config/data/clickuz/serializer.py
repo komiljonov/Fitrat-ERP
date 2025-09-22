@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ..clickuz.models import Order
+from data.clickuz.models import Order
 
 
 class ClickUzSerializer(serializers.Serializer):

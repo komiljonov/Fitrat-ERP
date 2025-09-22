@@ -1,10 +1,8 @@
 from django.utils import timezone
 import logging
 from celery import shared_task
-from datetime import date
 
 from .models import Event
-from ..notifications.models import Notification
 
 logger = logging.getLogger(__name__)
 

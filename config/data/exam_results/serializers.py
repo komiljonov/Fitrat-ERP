@@ -8,11 +8,11 @@ from .models import (
     MockExamResult,
     LevelExam,
 )
-from ..student.course.models import Course
-from ..student.groups.models import Group
-from ..student.mastering.models import Mastering
-from ..student.quiz.models import Quiz
-from ..student.quiz.serializers import (
+from data.student.course.models import Course
+from data.student.groups.models import Group
+from data.student.mastering.models import Mastering
+from data.student.quiz.models import Quiz
+from data.student.quiz.serializers import (
     QuestionSerializer,
     MatchPairsSerializer,
     True_FalseSerializer,
@@ -21,18 +21,22 @@ from ..student.quiz.serializers import (
     Cloze_TestSerializer,
     ImageObjectiveTestSerializer,
 )
-from ..student.student.models import Student
-from ..student.studentgroup.models import StudentGroup
-from ..student.subject.models import Theme, Subject
-from ..student.subject.serializers import ThemeSerializer, SubjectSerializer
+from data.student.student.models import Student
+from data.student.studentgroup.models import StudentGroup
+from data.student.subject.models import Theme, Subject
+from data.student.subject.serializers import ThemeSerializer, SubjectSerializer
 
 
 class UnitTestSerializer(serializers.ModelSerializer):
     themes = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Theme.objects.all(), required=False
+        many=True,
+        queryset=Theme.objects.all(),
+        required=False,
     )
     theme_after = serializers.PrimaryKeyRelatedField(
-        queryset=Theme.objects.all(), allow_null=True, required=False
+        queryset=Theme.objects.all(),
+        allow_null=True,
+        required=False,
     )
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
 
@@ -211,13 +215,19 @@ class QuizResultSerializer(serializers.ModelSerializer):
 
 class MockExamSerializer(serializers.ModelSerializer):
     options = serializers.PrimaryKeyRelatedField(
-        queryset=Subject.objects.all(), allow_null=True, required=False
+        queryset=Subject.objects.all(),
+        allow_null=True,
+        required=False,
     )
     group = serializers.PrimaryKeyRelatedField(
-        queryset=Group.objects.all(), allow_null=True, required=False
+        queryset=Group.objects.all(),
+        allow_null=True,
+        required=False,
     )
     course = serializers.PrimaryKeyRelatedField(
-        queryset=Course.objects.all(), allow_null=True, required=False
+        queryset=Course.objects.all(),
+        allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -337,13 +347,19 @@ class MockExamResultSerializer(serializers.ModelSerializer):
 
 class LevelExamSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(
-        queryset=Subject.objects.all(), allow_null=True, required=False
+        queryset=Subject.objects.all(),
+        allow_null=True,
+        required=False,
     )
     course = serializers.PrimaryKeyRelatedField(
-        queryset=Course.objects.all(), allow_null=True, required=False
+        queryset=Course.objects.all(),
+        allow_null=True,
+        required=False,
     )
     group = serializers.PrimaryKeyRelatedField(
-        queryset=Group.objects.all(), allow_null=True, required=False
+        queryset=Group.objects.all(),
+        allow_null=True,
+        required=False,
     )
 
     class Meta:

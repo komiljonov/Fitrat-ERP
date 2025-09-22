@@ -2,10 +2,10 @@ from django.db import models
 
 from data.account.models import CustomUser
 from data.student.student.models import Student
-from ..command.models import BaseModel
-from ..student.course.models import Course
-from ..student.groups.models import Group
-from ..student.subject.models import Subject
+from data.command.models import BaseModel
+from data.student.course.models import Course
+from data.student.groups.models import Group
+from data.student.subject.models import Subject
 
 
 class QuizResult(BaseModel):

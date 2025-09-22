@@ -1,7 +1,7 @@
 from django.db import models
 from django.http import HttpRequest
 
-from ..command.models import BaseModel
+from data.command.models import BaseModel
 
 
 class File(BaseModel):

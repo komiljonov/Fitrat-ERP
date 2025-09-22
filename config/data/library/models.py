@@ -1,7 +1,7 @@
 from django.db import models
 
-from ..command.models import BaseModel
-from ..upload.models import File
+from data.command.models import BaseModel
+from data.upload.models import File
 
 # Create your models here.
 

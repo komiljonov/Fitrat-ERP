@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import MockExamResult
-from ..student.mastering.models import Mastering
+from data.student.mastering.models import Mastering
 
 
 @receiver(post_save, sender=MockExamResult)

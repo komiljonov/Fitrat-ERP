@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 from .models import LibraryCategory, Library
-from ..upload.models import File
-from ..upload.serializers import FileUploadSerializer
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 import fitz
 from django.core.files.base import ContentFile
 from io import BytesIO
@@ -22,13 +22,17 @@ class LibraryCategorySerializer(serializers.ModelSerializer):
 
 class LibrarySerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), allow_null=False
+        queryset=File.objects.all(),
+        allow_null=False,
     )
     file = serializers.PrimaryKeyRelatedField(
-        queryset=File.objects.all(), many=True, allow_null=False
+        queryset=File.objects.all(),
+        many=True,
+        allow_null=False,
     )
     category = serializers.PrimaryKeyRelatedField(
-        queryset=LibraryCategory.objects.all(), allow_null=False
+        queryset=LibraryCategory.objects.all(),
+        allow_null=False,
     )
 
     class Meta:

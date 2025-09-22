@@ -10,7 +10,7 @@ class ClickUz:
 
     def check_order(self, order_id: str, amount: str):
 
-        from ..clickuz.models import Order
+        from data.clickuz.models import Order
 
         student_order = Order.objects.filter(id=order_id).first()
 
@@ -23,7 +23,7 @@ class ClickUz:
         return ORDER_FOUND
 
     def successfully_payment(self, order_id: str, transaction: object):
-        from ..clickuz.models import Order
+        from data.clickuz.models import Order
 
         order = Order.objects.filter(id=order_id).first()
         if not order:
@@ -41,7 +41,7 @@ class ClickUz:
             order.lid.save()
 
     def cancel_payment(self, order_id: str, transaction: object):
-        from ..clickuz.models import Order
+        from data.clickuz.models import Order
 
         order = Order.objects.filter(id=order_id).first()
         if not order:

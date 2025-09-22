@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
 from .models import Comment, StuffComments
-from ..account.models import CustomUser
-from ..upload.models import File
-from ..upload.serializers import FileUploadSerializer
+from data.account.models import CustomUser
+from data.upload.models import File
+from data.upload.serializers import FileUploadSerializer
 
 
 class CommentSerializer(serializers.ModelSerializer):
