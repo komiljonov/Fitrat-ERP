@@ -81,4 +81,10 @@ class Archive(BaseModel):
                 ),
                 violation_error_message="Either lead or student must be set, but not both.",
             ),
+            # 2. No duplicate (lead, student) if unarchived_at is NULL
+            models.UniqueConstraint(
+                fields=["lead", "student"],
+                condition=Q(unarchived_at__isnull=True),
+                name="uniq_active_archive_lead_student",
+            ),
         ]
