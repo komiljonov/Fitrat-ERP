@@ -1,5 +1,6 @@
 from django.db.models import Q
 
+from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -359,11 +360,12 @@ class LeadSerializer(serializers.ModelSerializer):
         return rep
 
     def update(self, instance, validated_data):
-        request = self.context["request"]
+        request: HttpRequest = self.context["request"]
 
         # Ensure call_operator is updated properly
         if (
             instance.lid_stage_type == "NEW_LID"
+            and request.user.is_authenticated
             and request.user.role == "CALL_OPERATOR"
             or request.user.is_call_center == True
         ):
@@ -371,6 +373,7 @@ class LeadSerializer(serializers.ModelSerializer):
 
         if (
             instance.lid_stage_type == "ORDERED_LID"
+            and request.user.is_authenticated
             and request.user.role == "ADMINISTRATOR"
         ):
             # instance.
