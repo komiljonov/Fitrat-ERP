@@ -53,9 +53,9 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
                 "relatives_not_found",
             )
 
-        lesson_dates = group.scheduled_day_type.filter(index=date.weekday())
+        lesson_dates = group.scheduled_day_type.filter(index=date.weekday() + 1)
 
-        print(lesson_dates, date.weekday(), date)
+        print(lesson_dates, date.weekday() + 1, date)
 
         if lesson_dates.count() == 0:
             raise ValidationError("Guruhda bu kunga darslar yo'q.", "no_lesson_date")
