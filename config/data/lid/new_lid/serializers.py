@@ -366,8 +366,10 @@ class LeadSerializer(serializers.ModelSerializer):
         if (
             instance.lid_stage_type == "NEW_LID"
             and request.user.is_authenticated
-            and request.user.role == "CALL_OPERATOR"
-            or request.user.is_call_center == True
+            and (
+                request.user.role == "CALL_OPERATOR"
+                or request.user.is_call_center == True
+            )
         ):
             instance.call_operator = request.user
 
