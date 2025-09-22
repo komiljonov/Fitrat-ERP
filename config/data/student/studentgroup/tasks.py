@@ -1,5 +1,8 @@
 from celery import shared_task
 
+from django.utils import timezone
+from django.db.models import Q
+
 from data.student.studentgroup.models import StudentGroup
 from data.logs.models import Log
 
@@ -9,9 +12,14 @@ from django.db import transaction
 @shared_task
 def check_for_streak_students():
 
+    today = timezone.now().date()
+
     with transaction.atomic():
 
-        students = StudentGroup.objects.filter(is_archived=False).exclude(student=None)
+        students = StudentGroup.objects.filter(is_archived=False).exclude(
+            Q(student__is_frozen=True) & Q(frozen_days__lt=today),
+            student=None,
+        )
 
         for sg in students:
 
