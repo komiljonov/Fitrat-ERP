@@ -156,6 +156,7 @@ class FrozenSerializer(serializers.ModelSerializer):
             "reason",
             "comment",
             "is_frozen",
+            "archived_at",
             "created_at",
         ]
 
