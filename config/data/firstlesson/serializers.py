@@ -1,4 +1,7 @@
+from datetime import date as _date
+
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from data.firstlesson.models import FirstLesson
 from data.lid.new_lid.models import Lid
@@ -37,6 +40,23 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
             "level",
             "course",
         ]
+
+    def validate(self, attrs):
+
+        lead: "Lid" = attrs["lead"]
+        group: "Group" = attrs["group"]
+        date: _date = attrs["date"]
+
+        if lead.relatives.count() == 0:
+            raise ValidationError(
+                "O'quvchining kamida 1 ta qarindoshi bo'lishi kerak.",
+                "relatives_not_found",
+            )
+
+        if group.scheduled_day_type.filter(index=date.weekday()).count() == 0:
+            raise ValidationError("Guruhda bu kunga darslar yo'q.", "no_lesson_date")
+
+        return attrs
 
     def _apply_group_defaults(self, validated_data):
         group = validated_data.get("group")
