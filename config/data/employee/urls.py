@@ -17,7 +17,7 @@ transaction_urls = [
 urlpatterns = [
     path("", EmployeeListAPIView.as_view()),
     path("<uuid:pk>", EmployeeRetrieveAPIView.as_view()),
-    path("<uuid:pk/archive", EmployeeArchiveAPIView.as_view()),
+    path("<uuid:pk>/archive", EmployeeArchiveAPIView.as_view()),
     # Urls for transactions
     *transaction_urls,
 ]
