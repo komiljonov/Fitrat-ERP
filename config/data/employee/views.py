@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.exceptions import ValidationError
 
 # from data.employee.models import Employee, EmployeeTransaction
@@ -40,6 +40,13 @@ class EmployeeListAPIView(ListCreateAPIView):
                 "created_at",
             ],
         )
+
+
+class EmployeeRetrieveAPIView(RetrieveUpdateDestroyAPIView):
+
+    queryset = Employee.objects.select_related("photo")
+
+    serializer_class = EmployeeSerializer
 
 
 class EmployeeTransactionsListCreateAPIView(ETLCAV):
