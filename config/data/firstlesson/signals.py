@@ -22,7 +22,7 @@ def on_new_first_lesson(sender, instance: "FirstLesson", created, **kwargs):
         instance.lead.call_operator.transactions.create(
             reason="BONUS",
             lead=instance.lead,
-            first_lesson=instance,
+            first_lesson_new=instance,
             amount=instance.lead.sales_manager.f_sm_bonus_create_first_lesson,
             comment=f"Yangi sinov darsi uchun bonus. Buyurtma: {instance.lead.first_name} {instance.lead.last_name}. Sinov darsi: {instance.id}",
         )
