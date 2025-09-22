@@ -1,6 +1,8 @@
+from django.db import models
 from django.contrib import admin
 
 from data.account.models import CustomUser
+from data.archive.models import Archive
 from data.employee.manager import EmployeeManager
 
 
@@ -13,6 +15,9 @@ from data.employee.transactions.models import EmployeeTransaction
 class Employee(CustomUser):
 
     objects = EmployeeManager()
+
+    archives: "models.QuerySet[Archive]"
+    unarchives: "models.QuerySet[Archive]"
 
     class Meta:
         proxy = True

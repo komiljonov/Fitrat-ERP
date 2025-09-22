@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "data.department.filial",
     "data.department.marketing_channel",
     "data.firstlesson",
+    "data.archive",
     # Installed
     "corsheaders",
     "rangefilter",

@@ -174,7 +174,7 @@ class ArchivedDetailAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
 
-class ListArchivedListNOPgAPIView(ListAPIView):
+class ListArchivedListNoPgAPIView(ListAPIView):
     queryset = Archived.objects.all()
     serializer_class = ArchivedSerializer
     permission_classes = (IsAuthenticated,)
