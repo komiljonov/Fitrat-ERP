@@ -8,6 +8,7 @@ from django.db import models
 from data.command.utils import capture_context_deep
 from data.department.filial.models import Filial
 from data.account.managers import UserManager
+from data.employee.finance import EmployeeFinanceFields
 from data.upload.models import File
 
 if TYPE_CHECKING:
@@ -28,7 +29,7 @@ def _full_context():
     )
 
 
-class CustomUser(AbstractUser):
+class CustomUser(AbstractUser, EmployeeFinanceFields):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     username = None
