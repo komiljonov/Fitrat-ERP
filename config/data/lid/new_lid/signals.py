@@ -40,31 +40,32 @@ sms = SayqalSms()
 #             lid=instance,
 #         )
 
+# XXX: Call operator har doim frontenddan belgilanib, keyin orderga o'tqaziladi, shunga obtashaldi. 22.09.2025 16:31 Sadriddin bilan maslahatlashildi.
 
-@receiver(pre_save, sender=Lid)
-def on_pre_save(sender, instance, **kwargs):
-    """
-    Before saving a Lid instance, check if:
-    - The lid_stage_type is changing from 'NEW_LID' to 'ORDERED_LID'
-    - The call_operator field is None, then assign the first available call operator.
-    """
+# @receiver(pre_save, sender=Lid)
+# def on_pre_save(sender, instance, **kwargs):
+#     """
+#     Before saving a Lid instance, check if:
+#     - The lid_stage_type is changing from 'NEW_LID' to 'ORDERED_LID'
+#     - The call_operator field is None, then assign the first available call operator.
+#     """
 
-    if not instance._state.adding:  # Ensure it's an update, not a new instance
-        # Fetch previous value of `lid_stage_type` before update
-        previous_instance = sender.objects.get(pk=instance.pk)
+#     if not instance._state.adding:  # Ensure it's an update, not a new instance
+#         # Fetch previous value of `lid_stage_type` before update
+#         previous_instance = sender.objects.get(pk=instance.pk)
 
-        if (
-            previous_instance.lid_stage_type == "NEW_LID"
-            and instance.lid_stage_type == "ORDERED_LID"
-            and instance.call_operator is None
-        ):
-            call_operator = CustomUser.objects.filter(role="CALL_OPERATOR").first()
-            if call_operator:
-                instance.call_operator = call_operator  # Corrected assignment
+#         if (
+#             previous_instance.lid_stage_type == "NEW_LID"
+#             and instance.lid_stage_type == "ORDERED_LID"
+#             and instance.call_operator is None
+#         ):
+#             call_operator = CustomUser.objects.filter(role="CALL_OPERATOR").first()
+#             if call_operator:
+#                 instance.call_operator = call_operator  # Corrected assignment
 
-                # Ensure atomic transaction to avoid partially updated data
-                with transaction.atomic():
-                    instance.save(update_fields=["call_operator"])
+#                 # Ensure atomic transaction to avoid partially updated data
+#                 with transaction.atomic():
+#                     instance.save(update_fields=["call_operator"])
 
 
 @receiver(post_save, sender=Lid)

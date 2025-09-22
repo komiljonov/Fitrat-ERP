@@ -17,6 +17,7 @@ from rest_framework.generics import (
     ListAPIView,
     ListCreateAPIView,
     CreateAPIView,
+    UpdateAPIView,
 )
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -33,7 +34,6 @@ from openpyxl.styles import Font, Alignment
 
 
 from data.archive.models import Archive
-from data.comments.models import Comment
 from data.lid.archived.models import Archived
 from data.student.lesson.models import FirstLLesson
 
@@ -1079,3 +1079,8 @@ class LeadArchiveAPIView(APIView):
                 )
 
         return Response({"ok": True})
+
+
+class LeadCreateOrderAPIView(UpdateAPIView):
+
+    queryset = Lid.objects.filter()

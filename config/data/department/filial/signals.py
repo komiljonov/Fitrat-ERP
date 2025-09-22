@@ -1,6 +1,7 @@
 from data.department.filial.models import Filial
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 from data.account.models import CustomUser
 from data.command.models import UserFilial
@@ -17,7 +18,7 @@ def sync_user_filials(sender, instance: CustomUser, action, pk_set, **kwargs):
 
     elif action == "post_remove":
         UserFilial.objects.filter(user=instance, filial_id__in=pk_set).update(
-            is_archived=True
+            is_archived=True, archived_at=timezone.now()
         )
 
 

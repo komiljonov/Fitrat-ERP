@@ -10,6 +10,7 @@ from .views import (
     BulkUpdate,
     LeadStatistics,
     LeadArchiveAPIView,
+    LeadCreateOrderAPIView,
 )
 from .webhook import LeadWebhook
 
@@ -19,6 +20,7 @@ urlpatterns = [
     path("<uuid:pk>", LeadRetrieveUpdateDestroyView.as_view(), name="lead_retrieve"),
     path("<uuid:pk>/", LeadRetrieveUpdateDestroyView.as_view(), name="lead_retrieve"),
     path("<uuid:pk>/archive", LeadArchiveAPIView.as_view()),
+    path("<uuid:pk>/create_order", LeadCreateOrderAPIView.as_view()),
     path("no-pg/", LeadListNoPG.as_view(), name="lead_list_pg"),
     path("excel/", ExportLeadToExcelAPIView.as_view(), name="lead_list_excel"),
     path("statistic", LeadStatisticsView.as_view(), name="lead_statistic"),
