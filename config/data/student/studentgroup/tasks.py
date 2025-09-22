@@ -16,9 +16,10 @@ def check_for_streak_students():
 
     with transaction.atomic():
 
-        students = StudentGroup.objects.filter(is_archived=False).exclude(
-            Q(student__is_frozen=True) & Q(frozen_days__lt=today),
-            student=None,
+        students = StudentGroup.objects.filter(
+            is_archived=False, student__isnull=False
+        ).exclude(  # skip groups without student
+            Q(student__is_frozen=True) & Q(student__frozen_days__gte=today)
         )
 
         for sg in students:
