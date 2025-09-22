@@ -9,7 +9,7 @@ from data.lid.new_lid.models import Lid
 
 
 # Don't remove, it must apply as model in this app.
-from .transactions import EmployeeTransaction
+from data.employee.transactions.models import EmployeeTransaction
 
 # Create your models here.
 
