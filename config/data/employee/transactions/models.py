@@ -56,7 +56,7 @@ class EmployeeTransaction(BaseModel):
         help_text="Field for referencing student in Employee transactions, for something like course_payment or other things.",
     )
 
-    first_lesson: "FirstLLesson | None" = models.ForeignKey(
+    old_first_lesson: "FirstLLesson | None" = models.ForeignKey(
         "lesson.FirstLLesson",
         on_delete=models.SET_NULL,
         null=True,
