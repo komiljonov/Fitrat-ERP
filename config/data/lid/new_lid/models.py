@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.db import models
 
 from data.command.models import BaseModel
+from data.employee.models import Employee
 from data.lid.new_lid.methods import LeadMethods
 
 if TYPE_CHECKING:
@@ -154,8 +155,8 @@ class Lid(BaseModel, LeadMethods):
         help_text="Is this Lead frozen or not",
     )
 
-    call_operator: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
+    call_operator: "Employee" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

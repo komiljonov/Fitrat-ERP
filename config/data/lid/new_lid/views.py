@@ -1084,3 +1084,16 @@ class LeadArchiveAPIView(APIView):
 class LeadCreateOrderAPIView(UpdateAPIView):
 
     queryset = Lid.objects.filter()
+
+    serializer_class = LeadSerializer
+
+    def perform_update(self, serializer: LeadSerializer):
+
+        instance:Lid = serializer.save(lid_stage_type="ORDERED_LID", ordered_stages="YANGI_BUYURTMA")
+        
+        
+        
+        if instance.call_operator:
+            instance.call_operator
+
+        return super().perform_update(serializer)
