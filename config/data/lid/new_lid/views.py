@@ -1089,11 +1089,20 @@ class LeadCreateOrderAPIView(UpdateAPIView):
 
     def perform_update(self, serializer: LeadSerializer):
 
-        instance:Lid = serializer.save(lid_stage_type="ORDERED_LID", ordered_stages="YANGI_BUYURTMA")
-        
-        
-        
-        if instance.call_operator:
+        instance: Lid = serializer.save(
+            lid_stage_type="ORDERED_LID", ordered_stages="YANGI_BUYURTMA"
+        )
+
+        if (
             instance.call_operator
+            and instance.call_operator.f_op_bonus_create_order > 0
+        ):
+
+            instance.call_operator.transactions.create(
+                reason="BONUS",
+                lead=instance,
+                amount=instance.call_operator.f_op_bonus_create_order,
+                comment=f"Yangi buyurtma yaratgani uchun bonus. Buyurtma: {instance.first_name} {instance.last_name}",
+            )
 
         return super().perform_update(serializer)
