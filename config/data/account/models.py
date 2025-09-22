@@ -118,6 +118,7 @@ class CustomUser(AbstractUser, EmployeeFinanceFields):
     )
 
     is_archived = models.BooleanField(default=False)
+    archived_at = models.DateTimeField(null=True, blank=True)
 
     create_context = models.JSONField(null=True, blank=True)
     update_context = models.JSONField(null=True, blank=True)

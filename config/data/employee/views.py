@@ -1,5 +1,8 @@
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+
+
 from rest_framework.request import Request
 from rest_framework.generics import (
     ListCreateAPIView,
@@ -132,6 +135,7 @@ class EmployeeArchiveAPIView(APIView):
                 )
 
         employee.is_archived = True
+        employee.archived_at = timezone.now()
         employee.save()
 
         return Response(

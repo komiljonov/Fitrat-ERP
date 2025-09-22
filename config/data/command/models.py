@@ -67,6 +67,10 @@ class BaseModel(models.Model):
     create_context = models.JSONField(null=True, blank=True)
     update_context = models.JSONField(null=True, blank=True)
 
+    def set_archived_at(self):
+
+        self.archived_at = timezone.now()
+
     class Meta:
         abstract = True
         ordering = ["-created_at"]
