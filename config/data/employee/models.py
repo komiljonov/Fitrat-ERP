@@ -18,6 +18,7 @@ class Employee(CustomUser):
 
     archives: "models.QuerySet[Archive]"
     unarchives: "models.QuerySet[Archive]"
+    transactions: "models.QuerySet[EmployeeTransaction]"
 
     class Meta:
         proxy = True
