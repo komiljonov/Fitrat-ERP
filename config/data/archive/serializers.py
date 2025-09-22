@@ -36,8 +36,8 @@ class ArchiveSerializer(serializers.ModelSerializer):
             ).data
 
         if instance.lead:
-            representation["lid"] = LeadSerializer(
-                instance.lid,
+            representation["lead"] = LeadSerializer(
+                instance.lead,
                 include_only=[
                     "id",
                     "first_name",
