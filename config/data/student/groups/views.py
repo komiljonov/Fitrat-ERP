@@ -312,7 +312,7 @@ class CheckRoomLessonScheduleView(APIView):
             Group.objects.filter(date_window)
             .filter(on_any_requested_day)
             .filter(time_overlap)
-            .exclude(stauts="INACTIVE")
+            .exclude(status="INACTIVE")
             .distinct()
         )
 
