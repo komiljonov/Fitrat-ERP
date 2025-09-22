@@ -32,6 +32,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
 
+from data.archive.models import Archive
 from data.lid.archived.models import Archived
 from data.student.lesson.models import FirstLLesson
 
@@ -1068,13 +1069,10 @@ class LeadArchiveAPIView(APIView):
 
                 print(arvhied_first_lessons)
 
-                Archived.objects.update_or_create(
-                    lid=lead,
-                    is_archived=True,
-                    defaults={
-                        "reason": serializer.validated_data["comment"],
-                        "creator": request.user,
-                    },
+                Archive.objects.create(
+                    lead=lead,
+                    reason=serializer.validated_data["comment"],
+                    creator=request.user,
                 )
 
         return Response({"ok": True})
