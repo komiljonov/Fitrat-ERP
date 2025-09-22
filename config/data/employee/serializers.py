@@ -28,6 +28,21 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "photo",
             "filial",
             "created_at",
+            ############################################
+            ##     Finance fields bonus and fines     ##
+            ############################################
+            "f_op_bonus_create_order",
+            "f_sm_bonus_create_first_lesson",
+            "f_sm_bonus_first_lesson_come",
+            "f_sm_bonus_new_active_student",
+            "f_sm_fine_firstlesson_archived",
+            "f_sm_fine_new_student_archived",
+            "f_svm_bonus_for_each_active_student",
+            "f_svm_fine_student_archived",
+            "f_managers_bonus_for_each_active_student",
+            "f_ht_bonus_for_each_active_student",
+            "f_t_lesson_payment_percent",
+            "f_t_fine_failed_first_lesson",
         ]
 
     def __init__(self, *args, **kwargs):
