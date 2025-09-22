@@ -116,7 +116,7 @@ class EmployeeArchiveAPIView(APIView):
     def get_employee(self) -> Employee:
         return get_object_or_404(Employee, pk=self.kwargs[self.lookup_url_kwarg])
 
-    def post(self, request: HttpRequest | Request):
+    def post(self, request: HttpRequest | Request, pk: str):
 
         employee = self.get_employee()
 
