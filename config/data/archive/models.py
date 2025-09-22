@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 from django.db import models
+from django.db.models import Q
 
 from data.command.models import BaseModel
 
@@ -68,3 +69,16 @@ class Archive(BaseModel):
         blank=True,
         related_name="unarchives",
     )
+
+    class Meta(BaseModel.Meta):
+        constraints = [
+            *BaseModel.Meta.constraints,
+            models.CheckConstraint(
+                name="archive_xor_lead_student",  # make sure this name is unique DB-wide
+                check=(
+                    (Q(lead__isnull=False) & Q(student__isnull=True))
+                    | (Q(lead__isnull=True) & Q(student__isnull=False))
+                ),
+                violation_error_message="Either lead or student must be set, but not both.",
+            ),
+        ]
