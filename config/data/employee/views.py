@@ -22,7 +22,7 @@ from data.employee.transactions.views import (
     EmployeeTransactionsListCreateAPIView as ETLCAV,
     EmployeeTransactionRetrieveDestroyAPIView as ETRDAV,
 )
-from data.finances.timetracker.sinx import HrPulseIntegration
+from data.finances.timetracker.hrpulse import HrPulseIntegration
 
 
 class EmployeeListAPIView(ListCreateAPIView):

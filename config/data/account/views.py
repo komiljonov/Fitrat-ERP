@@ -41,7 +41,7 @@ from data.account.serializers import (
     UserSerializer,
 )
 from data.department.marketing_channel.models import ConfirmationCode
-from data.finances.timetracker.sinx import HrPulseIntegration
+from data.finances.timetracker.hrpulse import HrPulseIntegration
 from data.student.student.models import Student
 from data.student.student.sms import SayqalSms
 

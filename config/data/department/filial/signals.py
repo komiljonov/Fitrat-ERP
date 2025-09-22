@@ -4,7 +4,7 @@ from django.dispatch import receiver
 
 from data.account.models import CustomUser
 from data.command.models import UserFilial
-from data.finances.timetracker.sinx import HrPulseIntegration
+from data.finances.timetracker.hrpulse import HrPulseIntegration
 
 
 # Handle additions and removals

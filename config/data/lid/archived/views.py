@@ -25,7 +25,7 @@ from rest_framework.views import APIView
 from .models import Archived, Frozen
 from .serializers import ArchivedSerializer, StuffArchivedSerializer, FrozenSerializer
 from data.account.models import CustomUser
-from data.finances.timetracker.sinx import HrPulseIntegration
+from data.finances.timetracker.hrpulse import HrPulseIntegration
 
 
 class ArchivedListAPIView(ListCreateAPIView):
