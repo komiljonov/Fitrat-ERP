@@ -41,7 +41,7 @@ class Day(BaseModel):
     index = models.IntegerField(null=True, blank=True, unique=True)
 
     def __str__(self):
-        return self.name
+        return f"Day({self.name} index={self.index})"
 
 
 def one_year_from_now():
@@ -120,7 +120,6 @@ class Group(BaseModel):
     finish_date = models.DateTimeField(default=one_year_from_now)
 
     comment = models.TextField(null=True, blank=True)
-
 
     students: "models.QuerySet[StudentGroup]"
     attendances: "models.QuerySet[Attendance]"
