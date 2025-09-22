@@ -19,7 +19,7 @@ def on_new_first_lesson(sender, instance: "FirstLesson", created, **kwargs):
         instance.lead.sales_manager
         and instance.lead.sales_manager.f_sm_bonus_create_first_lesson > 0
     ):
-        instance.lead.call_operator.transactions.create(
+        instance.lead.sales_manager.transactions.create(
             reason="BONUS",
             lead=instance.lead,
             first_lesson_new=instance,
