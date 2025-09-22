@@ -4,6 +4,7 @@ from django.contrib import admin
 
 
 from data.command.models import BaseModel
+from data.firstlesson.models import FirstLesson
 
 if TYPE_CHECKING:
     from data.student.lesson.models import FirstLLesson
@@ -63,6 +64,14 @@ class EmployeeTransaction(BaseModel):
         blank=True,
         related_name="employee_transactions",
         help_text="Field for referencing student in Employee transactions, for something like ",
+    )
+
+    first_lesson: "FirstLesson | None" = models.ForeignKey(
+        "firstlesson.FirstLesson",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="employee_transactions",
     )
 
     lead: "Lid | None" = models.ForeignKey(
