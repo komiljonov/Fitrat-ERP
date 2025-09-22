@@ -12,6 +12,7 @@ class Command(BaseCommand):
         models = BaseModel.__subclasses__()
 
         for model in models:
+            print("Updating", model.__name__)
             # archived = True → archived_at = now (only if not already set)
             updated_archived = model.objects.filter(
                 is_archived=True, archived_at__isnull=True
