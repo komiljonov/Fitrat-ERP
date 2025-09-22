@@ -43,7 +43,7 @@ def on_update(sender, instance: "FirstLesson", **kwargs):
         lid_id=instance.lead_id,
         group_id=old_gid,
         is_archived=False,
-    ).update(is_archived=True)
+    ).update(is_archived=True, archived_at=timezone.now())
 
     # 2) Create or unarchive the new group's StudentGroup for this lead
     sg, created = StudentGroup.objects.update_or_create(
@@ -53,5 +53,6 @@ def on_update(sender, instance: "FirstLesson", **kwargs):
     )
     if not created and sg.is_archived:
         sg.is_archived = False
+        sg.archived_at = None
         sg.first_lesson = instance
-        sg.save(update_fields=["is_archived", "first_lesson"])
+        sg.save(update_fields=["is_archived", "archived_at", "first_lesson"])

@@ -90,4 +90,6 @@ def recreate_first_lesson():
             )
 
             # (Optional but typical) archive the previous attempt so only the newest is active
-            FirstLesson.objects.filter(pk=old_pk).update(is_archived=True)
+            FirstLesson.objects.filter(pk=old_pk).update(
+                is_archived=True, archived_at=timezone.now()
+            )
