@@ -119,7 +119,7 @@ class StudentGroupsView(ListCreateAPIView):
         if subject:
             queryset = queryset.filter(course__subject_id=subject)
 
-        if filial:
+        if filial and filial.isnumeric():
             queryset = queryset.filter(filial_id=filial)
 
         if price_type:
