@@ -1,5 +1,6 @@
 import icecream
 from rest_framework import serializers
+from django.utils import timezone
 
 from .models import Archived, Frozen
 from data.lid.new_lid.models import Lid
@@ -160,7 +161,12 @@ class FrozenSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context["request"]
+
         validated_data["creator"] = request.user
+
+        if validated_data["is_archived"]:
+            validated_data["archived_at"] = timezone.now()
+
         return super().create(validated_data)
 
     def to_representation(self, instance):
