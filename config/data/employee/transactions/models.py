@@ -4,13 +4,13 @@ from django.contrib import admin
 
 
 from data.command.models import BaseModel
-from data.finances.finance.models import Finance
-from data.lid.new_lid.models import Lid
 
 if TYPE_CHECKING:
     from data.student.lesson.models import FirstLLesson
     from data.student.student.models import Student
     from data.employee.models import Employee
+    from data.lid.new_lid.models import Lid
+    from data.finances.finance.models import Finance
 
 
 class EmployeeTransaction(BaseModel):

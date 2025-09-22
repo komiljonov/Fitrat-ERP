@@ -4,7 +4,6 @@ from decimal import Decimal
 from django.db import models
 
 from data.command.models import BaseModel
-from data.employee.models import Employee
 from data.lid.new_lid.methods import LeadMethods
 
 if TYPE_CHECKING:
@@ -19,6 +18,7 @@ if TYPE_CHECKING:
     from data.student.studentgroup.models import SecondaryStudentGroup
     from data.parents.models import Relatives
     from data.firstlesson.models import FirstLesson
+    from data.employee.models import Employee
 
 
 class Lid(BaseModel, LeadMethods):
