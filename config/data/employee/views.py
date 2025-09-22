@@ -1,5 +1,15 @@
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.request import Request
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
+from rest_framework import status
+
+from rest_framework.response import Response
+
+from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 
 # from data.employee.models import Employee, EmployeeTransaction
@@ -12,6 +22,7 @@ from data.employee.transactions.views import (
     EmployeeTransactionsListCreateAPIView as ETLCAV,
     EmployeeTransactionRetrieveDestroyAPIView as ETRDAV,
 )
+from data.finances.timetracker.sinx import HrPulseIntegration
 
 
 class EmployeeListAPIView(ListCreateAPIView):
@@ -93,3 +104,40 @@ class EmployeeTransactionRetrieveDestroyAPIView(ETRDAV):
         )
 
         return qs
+
+
+class EmployeeArchiveAPIView(APIView):
+
+    lookup_url_kwarg = "pk"  # from your URLConf
+
+    def get_employee(self) -> Employee:
+        return get_object_or_404(Employee, pk=self.kwargs[self.lookup_url_kwarg])
+
+    def post(self, request: HttpRequest | Request):
+
+        employee = self.get_employee()
+
+        if employee.is_archived:
+            raise ValidationError("Employee already archived", "already_archived")
+
+        if employee.second_user:
+            tt = HrPulseIntegration()
+
+            tt_response = tt.archive_employee(employee.second_user)
+
+            if not tt_response or "error" in tt_response:
+                return Response(
+                    {"error": "TimeTracker bilan bog'lanib bo'lmadi."},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
+
+        employee.is_archived = True
+        employee.save()
+
+        return Response(
+            {
+                "ok": True,
+                "message": "Xodim arxivlandi!",
+            },
+            status=status.HTTP_200_OK,
+        )

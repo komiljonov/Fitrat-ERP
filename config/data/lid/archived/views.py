@@ -25,7 +25,7 @@ from rest_framework.views import APIView
 from .models import Archived, Frozen
 from .serializers import ArchivedSerializer, StuffArchivedSerializer, FrozenSerializer
 from data.account.models import CustomUser
-from data.finances.timetracker.sinx import TimetrackerSinc
+from data.finances.timetracker.sinx import HrPulseIntegration
 
 
 class ArchivedListAPIView(ListCreateAPIView):
@@ -220,7 +220,7 @@ class StuffArchive(CreateAPIView):
             )
 
         # Archive in TimeTracker
-        tt = TimetrackerSinc()
+        tt = HrPulseIntegration()
         if user.second_user:
             tt_response = tt.archive_employee(user.second_user)
             ic(tt_response)  # Debug

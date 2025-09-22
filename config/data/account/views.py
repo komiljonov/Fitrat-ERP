@@ -41,7 +41,7 @@ from data.account.serializers import (
     UserSerializer,
 )
 from data.department.marketing_channel.models import ConfirmationCode
-from data.finances.timetracker.sinx import TimetrackerSinc
+from data.finances.timetracker.sinx import HrPulseIntegration
 from data.student.student.models import Student
 from data.student.student.sms import SayqalSms
 
@@ -65,7 +65,7 @@ class RegisterAPIView(CreateAPIView):
         user = serializer.save()
         user_serializer = UserCreateSerializer(user)
 
-        tt = TimetrackerSinc()
+        tt = HrPulseIntegration()
 
         photo_id_data = tt.upload_tt_foto(user.photo.file) if user.photo else None
         photo_id = photo_id_data.get("id") if photo_id_data else None
@@ -187,7 +187,7 @@ class UserList(ListAPIView):
 
 class TT_Data(APIView):
     def get(self, request):
-        tt = TimetrackerSinc()
+        tt = HrPulseIntegration()
         tt_data = tt.get_data()
         count = 0
 

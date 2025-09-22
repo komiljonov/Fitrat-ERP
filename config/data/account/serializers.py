@@ -12,7 +12,7 @@ from data.account.permission import PhoneAuthBackend
 from data.department.filial.models import Filial
 from data.finances.compensation.models import Compensation, Bonus, Page
 from data.finances.finance.models import Casher, Finance
-from data.finances.timetracker.sinx import TimetrackerSinc
+from data.finances.timetracker.sinx import HrPulseIntegration
 from data.student.student.models import Student
 from data.upload.models import File
 from data.upload.serializers import FileUploadSerializer
@@ -174,7 +174,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        tt = TimetrackerSinc()
+        tt = HrPulseIntegration()
         should_sync = False
         updated_fields = {}
 
