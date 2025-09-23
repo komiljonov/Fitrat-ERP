@@ -1,9 +1,13 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 from django.contrib import admin
 
 from data.account.models import CustomUser
-from data.archive.models import Archive
 from data.employee.manager import EmployeeManager
+
+if TYPE_CHECKING:
+    from data.archive.models import Archive
 
 
 # Don't remove, it must apply as model in this app.

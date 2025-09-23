@@ -7,7 +7,6 @@ from django.utils import timezone
 
 from data.command.models import BaseModel
 from data.lid.new_lid.methods import LeadMethods
-from data.logs.models import Log
 
 if TYPE_CHECKING:
     from data.department.marketing_channel.models import MarketingChannel
@@ -23,6 +22,7 @@ if TYPE_CHECKING:
     from data.firstlesson.models import FirstLesson
     from data.employee.models import Employee
 
+from data.logs.models import Log
 
 class Lid(BaseModel, LeadMethods):
 

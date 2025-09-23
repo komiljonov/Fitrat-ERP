@@ -5,10 +5,8 @@ from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 
-from data.archive.models import Archive
 from data.command.models import BaseModel
-from data.employee.models import Employee
-from data.employee.transactions.models import EmployeeTransaction
+from data.archive.models import Archive
 from data.logs.models import Log
 
 
@@ -22,6 +20,7 @@ if TYPE_CHECKING:
     from data.student.subject.models import Level, Subject
     from data.parents.models import Relatives
     from data.account.models import CustomUser
+    from data.employee.models import Employee
 
 
 class Student(BaseModel):

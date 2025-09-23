@@ -2,9 +2,9 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.db.models import Q
 
-from data.archive.methods import ArchiveMethods
 from data.command.models import BaseModel
 
+from data.archive.methods import ArchiveMethods
 
 if TYPE_CHECKING:
     from data.comments.views import Comment
