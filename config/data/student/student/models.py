@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Literal
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.db import models
@@ -229,11 +229,11 @@ class Student(BaseModel):
         self.is_archived = True
         self.save()
 
-        Log.objects.filter(
+        Log.objects.create(
             object="STUDENT",
             action="ARCHIVE_STUDENT",
             student=self,
-            comment=f"O'quvchi archive'landi. Comment: {comment}",
+            comment=f"O'quvchi arxiv'landi. Comment: {comment}",
         )
 
         if (
@@ -257,6 +257,49 @@ class Student(BaseModel):
                 student=self,
                 amount=self.sales_manager.f_sm_fine_new_student_archived,
                 comment="Yangi o'quvchi archivelangani uchun jarima.",
+            )
+
+    def unarchive(self, comment: str):
+        now = timezone.now()
+        cutoff = now - timedelta(hours=24)
+
+        # Check if this student was archived within last 24 hours
+        if self.archived_at and self.archived_at >= cutoff:
+            self.archived_at = None
+            self.is_archived = None
+            self.save()
+
+            Log.objects.create(
+                object="STUDENT",
+                action="UNARCHIVE_STUDENT",
+                student=self,
+                comment=f"O'quvchi arxivdan chiqarildi. Comment: {comment}",
+            )
+
+            # Unarchive related groups archived within last 24 hours
+            groups = self.groups.filter(is_archived=True, archived_at__gte=cutoff)
+            for group in groups:
+                group.unarchive(comment)  # assuming Group model also has .unarchive()
+        else:
+            Lid.objects.filter(
+                first_name=self.first_name,
+                last_name=self.last_name,
+                middle_name=self.middle_name,
+                phone_number=self.phone,
+                date_of_birth=self.date_of_birth,
+                education_lang=self.education_lang,
+                student_type=self.student_type,
+                edu_class=self.edu_class,
+                edu_organization=self.edu_organization,
+                edu_level=self.edu_level,
+                subject=self.subject,
+                ball=self.ball,
+                filial=self.filial,
+                marketing_channel=self.marketing_channel,
+                lid_stage_type="ORDERED_LID",
+                ordered_stages="YANGI_BUYURTMA",
+                service_manager=self.service_manager,
+                sales_manager=self.sales_manager,
             )
 
 

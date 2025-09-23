@@ -126,12 +126,27 @@ class StudentGroup(BaseModel):
 
         self.save()
 
-        Log.objects.filter(
+        Log.objects.create(
             object="STUDENT",
             action="ARCHIVE_STUDENT_GROUP",
             student=self.student,
             student_group=self,
             comment=f"O'quvchi guruhi archivelandi. Comment: {comment}",
+        )
+
+    def unarchive(self):
+
+        self.archived_at = None
+        self.is_archived = False
+
+        self.save()
+
+        Log.objects.create(
+            object="STUDENT",
+            action="UNARCHIVE_STUDENT_GROUP",
+            student=self.student,
+            student_group=self,
+            comment=f"O'quvchi guruhi arxivdan chiqarildi.",
         )
 
 

@@ -21,8 +21,6 @@ class ArchiveRetrieveDestroyAPIView(RetrieveDestroyAPIView):
 
     def perform_destroy(self, instance: Archive):
 
-        instance.unarchived_at = timezone.now()
-        instance.unarchived_by = (
-            self.request.user if self.request.user.is_authenticated else None
-        )
+        instance.unarchive()
+
         instance.save()

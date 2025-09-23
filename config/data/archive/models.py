@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.db.models import Q
 
+from data.archive.methods import ArchiveMethods
 from data.command.models import BaseModel
 
 
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 # Create your models here.
 
 
-class Archive(BaseModel):
+class Archive(BaseModel, ArchiveMethods):
 
     creator: "Employee | None" = models.ForeignKey(
         "employee.Employee",

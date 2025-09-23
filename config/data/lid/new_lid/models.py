@@ -1,10 +1,13 @@
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from decimal import Decimal
-from django.db import models
+from django.db import models, transaction
+from django.utils import timezone
 
 from data.command.models import BaseModel
 from data.lid.new_lid.methods import LeadMethods
+from data.logs.models import Log
 
 if TYPE_CHECKING:
     from data.department.marketing_channel.models import MarketingChannel
@@ -220,3 +223,46 @@ class Lid(BaseModel, LeadMethods):
         return (
             f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"
         )
+
+    def unarchive(self):
+        now = timezone.now()
+        cutoff = now - timedelta(hours=24)
+        today = timezone.localdate()  # if first_lesson.date is a DateField
+
+        # Capture original values BEFORE mutating
+        was_archived_at = self.archived_at
+        stage_ok = (
+            self.lid_stage_type == "ORDERED_LID"
+            and self.ordered_stages == "BIRINCHI_DARS_BELGILANGAN"
+        )
+        within_24h = bool(was_archived_at and was_archived_at >= cutoff)
+
+        with transaction.atomic():
+            # Always unarchive the student (per your current code)
+            self.archived_at = None
+            # If is_archived is a BooleanField, prefer False; if it's Nullable, None is fine.
+            self.is_archived = False
+            self.save(update_fields=["archived_at", "is_archived"])
+
+            Log.objects.create(
+                object="STUDENT",
+                action="UNARCHIVE_STUDENT",
+                student=self,
+                comment="Lid arxivdan chiqarildi.",
+            )
+
+            if stage_ok and within_24h:
+                # Unarchive ONLY first lessons:
+                # - archived within last 24h
+                # - lesson date not passed (>= today)
+                lessons_qs = self.first_lessons.filter(
+                    is_archived=True,
+                    archived_at__isnull=False,
+                    archived_at__gte=cutoff,
+                    date__gte=today,
+                )
+                lessons_qs.update(is_archived=False, archived_at=None)
+            else:
+                # If the condition doesn't hold, adjust stage as you intended
+                self.ordered_stages = "KUTULMOQDA"
+                self.save(update_fields=["ordered_stages"])
