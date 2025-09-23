@@ -53,18 +53,18 @@ class LogListView(ListAPIView):
             queryset = queryset.filter(finance__id=finance)
 
         if lid:
-            queryset = queryset.filter(lid__id=lid)
+            queryset = queryset.filter(lead__id=lid)
 
         if first_lessons:
             queryset = queryset.filter(first_lessons__id=first_lessons)
 
         if student:
             queryset = queryset.filter(
-                Q(student__id=student) | Q(lid__student__id=student)
+                Q(student__id=student) | Q(lead__student__id=student)
             )
 
         if archive:
-            queryset = queryset.filter(Q(lid__id=archive) | Q(student__id=archive))
+            queryset = queryset.filter(Q(lead__id=archive) | Q(student__id=archive))
 
         if account:
             queryset = queryset.filter(account__id=account)
