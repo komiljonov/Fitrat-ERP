@@ -49,15 +49,13 @@ class AttendanceList(ListCreateAPIView):
                 )
             )
 
-            queryset = queryset.filter(
-                created_at__gte=start_date, created_at__lte=end_date
-            )
+            queryset = queryset.filter(date__gte=start_date, date__lte=end_date)
 
         if group:
             queryset = queryset.filter(group_id=group)
 
         if start_date:
-            queryset = queryset.filter(created_at__gte=start_date)
+            queryset = queryset.filter(date__gte=start_date)
 
         if student:
             queryset = queryset.filter(student_id=student)

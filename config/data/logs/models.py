@@ -38,6 +38,7 @@ class Log(BaseModel):
             ("Finance", "Finance"),
             ("Log", "Log"),
             ("CreateTransaction", "CreateTransaction"),
+            ("ARCHIVE_STUDENT_GROUP"),
         ],
         max_length=255,
         null=True,

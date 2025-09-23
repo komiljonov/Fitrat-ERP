@@ -61,7 +61,5 @@ class UserRFToken(BaseModel):
         blank=True,
         related_name="user_rf_token",
     )
-    token = models.TextField(null=True, blank=True)
 
-    # def __str__(self):
-    #     return f"{self.user.phone}"
+    token = models.TextField(null=True, blank=True)

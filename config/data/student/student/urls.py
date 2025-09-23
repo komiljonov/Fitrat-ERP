@@ -12,6 +12,7 @@ from .views import (
     FirstLesson_dataListRetrive,
     CheckPhoneAPIView,
     FirstLessonStatistics,
+    StudentArchiveAPIView,
 )
 
 urlpatterns = [
@@ -34,4 +35,5 @@ urlpatterns = [
         FirstLessonStatistics.as_view(),
         name="first-lesson-statistics",
     ),
+    path("<uuid:pk>/archive", StudentArchiveAPIView.as_view()),
 ]

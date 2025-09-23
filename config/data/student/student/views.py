@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.db.models import Sum, Count, Q
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -21,9 +22,13 @@ from rest_framework.views import APIView
 
 from rest_framework.request import HttpRequest, Request
 
+from rest_framework.exceptions import ValidationError
 
-from .models import Student, FistLesson_data
-from .serializers import StudentSerializer, FistLesson_dataSerializer
+from django.db import transaction
+from django.utils import timezone, timesince
+
+from .models import Student
+from .serializers import StudentSerializer
 from data.student.lesson.models import Lesson, FirstLLesson
 from data.student.lesson.serializers import LessonSerializer, FirstLessonSerializer
 from data.student.studentgroup.models import StudentGroup
@@ -675,3 +680,24 @@ class FirstLessonStatistics(APIView):
                 "no_debt_amount": no_debt_amount,
             }
         )
+
+
+class StudentArchiveAPIView(APIView):
+
+    def post(self, request: HttpRequest | Request, pk: str):
+
+        student = get_object_or_404(Student, pk=pk)
+
+        if student.is_archived:
+            raise ValidationError("student is already archived")
+
+        with transaction.atomic():
+
+            groups = student.groups.filter(is_archived=False)
+
+            for group in groups:
+                group.archive("Student archivelandi")
+
+            # TODO: Write fines for emploees
+
+            return Response({"ok": True})

@@ -2,9 +2,11 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.db.models import Q, CheckConstraint
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 from data.command.models import BaseModel
+from data.logs.models import Log
 
 if TYPE_CHECKING:
     from data.student.student.models import Student
@@ -44,7 +46,6 @@ class StudentGroup(BaseModel):
         blank=True,
         related_name="groups",
     )
-
 
     HOMEWORK_ONLINE = "Online"
     HOMEWORK_OFFLINE = "Offline"
@@ -118,6 +119,21 @@ class StudentGroup(BaseModel):
 
         raise Exception("Student or Lead must be provided.")
 
+    def archive(self, comment: str):
+
+        self.archived_at = timezone.now()
+        self.is_archived = True
+
+        self.save()
+
+        Log.object.filter(
+            object="STUDENT",
+            action="ARCHIVE_STUDENT_GROUP",
+            student=self.student,
+            student_group=self,
+            comment=f"O'quvchi guruhi archivelandi. Comment: {comment}",
+        )
+
 
 class SecondaryStudentGroup(BaseModel):
 
@@ -141,7 +157,6 @@ class SecondaryStudentGroup(BaseModel):
         null=True,
         blank=True,
     )
-
 
     class Meta(BaseModel.Meta):
         verbose_name = "Secondary Add group"
