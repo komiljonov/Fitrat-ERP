@@ -247,6 +247,18 @@ class Student(BaseModel):
                 comment="O'quvchi archivelangani uchun jarima.",
             )
 
+        if (
+            self.student_stage_type == "NEW_STUDENT"
+            and self.sales_manager
+            and self.sales_manager.f_sm_fine_new_student_archived
+        ):
+            self.sales_manager.transactions.create(
+                reason="FINE_FOR_STUDENT_ARCHIVED",
+                student=self,
+                amount=self.sales_manager.f_sm_fine_new_student_archived,
+                comment="Yangi o'quvchi archivelangani uchun jarima.",
+            )
+
 
 class FistLesson_data(BaseModel):
 

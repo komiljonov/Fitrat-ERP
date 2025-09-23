@@ -35,5 +35,5 @@ urlpatterns = [
         FirstLessonStatistics.as_view(),
         name="first-lesson-statistics",
     ),
-    path("<uuid:pk>/archive", StudentArchiveAPIView.as_view()),
+    path("<uuid:pk>/archive", StudentArchiveAPIView.as_view()),  # Komiljonov
 ]
