@@ -701,7 +701,10 @@ class StudentArchiveAPIView(APIView):
             for group in groups:
                 group.archive("Student archivelandi")
 
-            student.archive(comment.strip())
+            student.archive(
+                comment.strip(),
+                archived_by=request.user if request.user.is_authenticated else None,
+            )
 
             # TODO: Write fines for employees
 
