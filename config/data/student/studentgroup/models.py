@@ -126,7 +126,7 @@ class StudentGroup(BaseModel):
 
         self.save()
 
-        Log.object.filter(
+        Log.objects.filter(
             object="STUDENT",
             action="ARCHIVE_STUDENT_GROUP",
             student=self.student,
