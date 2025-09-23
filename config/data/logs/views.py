@@ -15,10 +15,10 @@ class LogListView(ListAPIView):
     def get_queryset(self):
         queryset = Log.objects.all()
 
-        app = self.request.GET.get("app")
-        model = self.request.GET.get("model")
+        # app = self.request.GET.get("app")
+        # model = self.request.GET.get("model")
         action = self.request.GET.get("action")
-        model_action = self.request.GET.get("model_action")
+        # model_action = self.request.GET.get("model_action")
         finance = self.request.GET.get("finance")
         lid = self.request.GET.get("lid")
         first_lessons = self.request.GET.get("first_lessons")
@@ -37,17 +37,17 @@ class LogListView(ListAPIView):
                 start_date__gte=start_date, end_date__lte=end_date
             )
 
-        if app:
-            queryset = queryset.filter(app=app)
+        # if app:
+        #     queryset = queryset.filter(app=app)
 
-        if model:
-            queryset = queryset.filter(model=model)
+        # if model:
+        #     queryset = queryset.filter(model=model)
 
         if action:
             queryset = queryset.filter(action=action)
 
-        if model_action:
-            queryset = queryset.filter(model_action=model_action)
+        # if model_action:
+        #     queryset = queryset.filter(model_action=model_action)
 
         if finance:
             queryset = queryset.filter(finance__id=finance)
