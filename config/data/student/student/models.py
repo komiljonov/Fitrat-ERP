@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from data.archive.models import Archive
 from data.command.models import BaseModel
+from data.employee.transactions.models import EmployeeTransaction
 from data.logs.models import Log
 
 
@@ -233,6 +234,18 @@ class Student(BaseModel):
             student=self,
             comment=f"O'quvchi archive'landi. Comment: {comment}",
         )
+
+        if (
+            self.service_manager
+            and self.service_manager.f_svm_fine_student_archived > 0
+        ):
+            EmployeeTransaction.objects.create(
+                employee=self.service_manager,
+                reason="FINE_FOR_STUDENT_ARCHIVED",
+                student=self,
+                amount=self.service_manager.f_svm_fine_student_archived,
+                comment="O'quvchi archivelangani uchun jarima.",
+            )
 
 
 class FistLesson_data(BaseModel):

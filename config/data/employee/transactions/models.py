@@ -20,10 +20,13 @@ class EmployeeTransaction(BaseModel):
     EXPENSE = "EXPENSE"
 
     REASON_TO_ACTION = {
+        # Income and incomes
         "BONUS": INCOME,
         "FINE": EXPENSE,
         "BONUS_FOR_FIRST_LESSON": INCOME,
         "SALARY": INCOME,
+        # Expense and fines
+        "FINE_FOR_STUDENT_ARCHIVED": EXPENSE,
         "ADVANCE": EXPENSE,
     }
 
