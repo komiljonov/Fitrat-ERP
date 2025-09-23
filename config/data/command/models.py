@@ -57,7 +57,7 @@ class BaseModel(models.Model):
         null=True,
         blank=True,
         # TODO: Remove comment when migrating to prod.
-        # default=timezone.now
+        default=timezone.now
     )
 
     created_at = models.DateTimeField(default=timezone.now)
