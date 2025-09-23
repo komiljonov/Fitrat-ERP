@@ -278,7 +278,7 @@ class Student(BaseModel):
             # Unarchive related groups archived within last 24 hours
             groups = self.groups.filter(is_archived=True, archived_at__gte=cutoff)
             for group in groups:
-                group.unarchive(comment)  # assuming Group model also has .unarchive()
+                group.unarchive()  # assuming Group model also has .unarchive()
         else:
             Lid.objects.filter(
                 first_name=self.first_name,
