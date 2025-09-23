@@ -14,7 +14,7 @@ class LogSerializer(serializers.ModelSerializer):
         queryset=Student.objects.all(),
         allow_null=True,
     )
-    lid = serializers.PrimaryKeyRelatedField(
+    lead = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(),
         allow_null=True,
     )
@@ -35,12 +35,12 @@ class LogSerializer(serializers.ModelSerializer):
         model = Log
         fields = [
             "id",
-            "app",
-            "model",
+            # "app",
+            # "model",
             "action",
-            "model_action",
+            # "model_action",
             "finance",
-            "lid",
+            "lead",
             "first_lessons",
             "student",
             "archive",
@@ -49,7 +49,7 @@ class LogSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: Log):
         rep = super().to_representation(instance)
         rep["student"] = (
             {
@@ -61,14 +61,14 @@ class LogSerializer(serializers.ModelSerializer):
             if instance.student
             else {}
         )
-        rep["lid"] = (
+        rep["lead"] = (
             {
-                "id": instance.lid.id,
-                "full_name": f"{instance.lid.first_name} {instance.lid.last_name}",
-                "balance": f"{instance.lid.balance}",
-                "phone": f"{instance.lid.phone_number}",
+                "id": instance.lead.id,
+                "full_name": f"{instance.lead.first_name} {instance.lead.last_name}",
+                "balance": f"{instance.lead.balance}",
+                "phone": f"{instance.lead.phone_number}",
             }
-            if instance.lid
+            if instance.lead
             else {}
         )
         rep["account"] = (
