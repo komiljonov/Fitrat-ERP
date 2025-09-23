@@ -32,32 +32,40 @@ def check_for_streak_students():
                 sg.student.status == "ACTIVE_STUDENT" and streak >= 5
             ):
 
-                sg.is_archived = True
-                sg.save()
-
-                print(
-                    f"Kicket {sg.student.first_name} {sg.student.last_name} from group:{sg.group.name}, streak is: {streak}"
+                sg.archive(
+                    f"O'quvchi {streak} kun darslarga kelmagani uchun, guruhdan chetlashtirildi."
                 )
 
-                Log.objects.create(
-                    object="STUDENT",
-                    action="STUDENT_GROUP_ARCHIVED",
-                    comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, guruhdan chetlashtirildi.",
-                    student=sg.student,
-                    student_group=sg,
-                )
+                # sg.is_archived = True
+                # sg.save()
+
+                # print(
+                #     f"Kicket {sg.student.first_name} {sg.student.last_name} from group:{sg.group.name}, streak is: {streak}"
+                # )
+
+                # Log.objects.create(
+                #     object="STUDENT",
+                #     action="STUDENT_GROUP_ARCHIVED",
+                #     comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, guruhdan chetlashtirildi.",
+                #     student=sg.student,
+                #     student_group=sg,
+                # )
 
                 if sg.student.groups.filter(is_archived=False).count() == 1:
-                    sg.student.is_archived = True
-                    sg.student.save()
+                    # sg.student.is_archived = True
+                    # sg.student.save()
 
-                    Log.objects.create(
-                        object="STUDENT",
-                        action="STUDENT_ARCHIVED",
-                        comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, archivelandi.",
-                        student=sg.student,
-                        student_group=sg,
+                    sg.student.archive(
+                        f"O'quvchi {streak} kun darslarga kelmagani uchun, archivelandi."
                     )
+
+                    # Log.objects.create(
+                    #     object="STUDENT",
+                    #     action="STUDENT_ARCHIVED",
+                    #     comment=f"O'quvchi {streak} kun darslarga kelmagani uchun, archivelandi.",
+                    #     student=sg.student,
+                    #     student_group=sg,
+                    # )
 
                     print(
                         f"Archived student: {sg.student.first_name} {sg.student.last_name}"

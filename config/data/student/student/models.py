@@ -216,7 +216,7 @@ class Student(BaseModel):
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
 
-    def archive(self, comment: str = None, *, archived_by):
+    def archive(self, comment: str = None, *, archived_by=None):
 
         Archive.objects.create(
             creator=archived_by,
