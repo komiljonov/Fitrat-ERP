@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from data.archive.models import Archive
 from data.command.models import BaseModel
+from data.employee.models import Employee
 from data.employee.transactions.models import EmployeeTransaction
 from data.logs.models import Log
 
@@ -151,8 +152,8 @@ class Student(BaseModel):
         help_text="Balance status",
     )
 
-    service_manager: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
+    service_manager: "Employee" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -160,8 +161,8 @@ class Student(BaseModel):
         related_name="student_service_manager",
     )
 
-    sales_manager: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
+    sales_manager: "Employee" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.CASCADE,
         null=True,
     )
@@ -239,8 +240,7 @@ class Student(BaseModel):
             self.service_manager
             and self.service_manager.f_svm_fine_student_archived > 0
         ):
-            EmployeeTransaction.objects.create(
-                employee=self.service_manager,
+            self.service_manager.transactions.create(
                 reason="FINE_FOR_STUDENT_ARCHIVED",
                 student=self,
                 amount=self.service_manager.f_svm_fine_student_archived,
