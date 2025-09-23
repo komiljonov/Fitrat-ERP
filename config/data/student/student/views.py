@@ -685,22 +685,24 @@ class FirstLessonStatistics(APIView):
 class StudentArchiveAPIView(APIView):
 
     def post(self, request: HttpRequest | Request, pk: str):
-
         student = get_object_or_404(Student, pk=pk)
 
         if student.is_archived:
-            raise ValidationError("student is already archived")
+            raise ValidationError("Student is already archived")
+
+        # Validate comment
+        comment = request.data.get("comment")
+        if not comment or not str(comment).strip():
+            raise ValidationError({"comment": "This field is required."})
 
         with transaction.atomic():
-
             groups = student.groups.filter(is_archived=False)
 
             for group in groups:
                 group.archive("Student archivelandi")
 
-            student.archive()
-            
+            student.archive(comment.strip())
 
-            # TODO: Write fines for emploees
+            # TODO: Write fines for employees
 
             return Response({"ok": True})

@@ -5,6 +5,7 @@ from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 
+from data.archive.models import Archive
 from data.command.models import BaseModel
 from data.logs.models import Log
 
@@ -213,7 +214,14 @@ class Student(BaseModel):
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
 
-    def archive(self, comment: str):
+    def archive(self, comment: str = None, *, archived_by):
+
+        Archive.objects.create(
+            creator=archived_by,
+            student=self,
+            obj_status=self.student_stage_type,
+            reason=comment,
+        )
 
         self.archived_at = timezone.now()
         self.is_archived = True
