@@ -53,7 +53,15 @@ def recreate_first_lesson():
             if attempts >= 3:
                 # Max attempts reached → archive and stop
                 orig.is_archived = True
-                orig.save(update_fields=["is_archived", "updated_at"])
+                orig.archived_at = True
+                orig.is_archived_automatically = True
+                orig.save(
+                    update_fields=[
+                        "is_archived",
+                        "updated_at",
+                        "is_archived_automatically",
+                    ]
+                )
                 continue
 
             # Pull group's scheduled weekdays (1=Mon..7=Sun)
@@ -80,6 +88,7 @@ def recreate_first_lesson():
             orig.status = "PENDING"
             setattr(orig, "lesson_number", attempts + 1)
             orig.is_archived = False
+            orig.archived_at = None
             orig.save()  # now 'orig' refers to the NEW row
 
             new_lesson = orig  # for clarity
@@ -91,5 +100,7 @@ def recreate_first_lesson():
 
             # (Optional but typical) archive the previous attempt so only the newest is active
             FirstLesson.objects.filter(pk=old_pk).update(
-                is_archived=True, archived_at=timezone.now()
+                is_archived=True,
+                archived_at=timezone.now(),
+                is_archived_automatically=True,
             )
