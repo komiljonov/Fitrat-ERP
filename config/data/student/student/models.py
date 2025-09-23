@@ -230,8 +230,7 @@ class Student(BaseModel):
         Log.objects.filter(
             object="STUDENT",
             action="ARCHIVE_STUDENT",
-            student=self.student,
-            student_group=self,
+            student=self,
             comment=f"O'quvchi archive'landi. Comment: {comment}",
         )
 
