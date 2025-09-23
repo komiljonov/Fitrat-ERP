@@ -92,7 +92,18 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmployeeTransaction
-        fields = ["id", "employee", "reason", "amount", "effective_amount", "comment"]
+        fields = [
+            "id",
+            "employee",
+            "reason",
+            "amount",
+            "effective_amount",
+            "comment",
+            "student",
+            "first_lesson_new",
+            "lead",
+            "finance",
+        ]
 
         read_only_fields = ["effective_amount"]
 
