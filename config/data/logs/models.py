@@ -38,7 +38,7 @@ class Log(BaseModel):
             ("Finance", "Finance"),
             ("Log", "Log"),
             ("CreateTransaction", "CreateTransaction"),
-            ("ARCHIVE_STUDENT_GROUP"),
+            ("ARCHIVE_STUDENT_GROUP", "O'quvchi guruhi archivelandi."),
         ],
         max_length=255,
         null=True,
