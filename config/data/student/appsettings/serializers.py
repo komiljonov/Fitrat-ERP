@@ -350,13 +350,19 @@ class StudentAPPSerializer(serializers.ModelSerializer):
         )
 
         representation["sales_manager"] = (
-            UserSerializer(instance.sales_manager).data
+            UserSerializer(
+                instance.sales_manager,
+                include_only=["id", "first_name", "last_name", "middle_name"],
+            ).data
             if instance.sales_manager
             else None
         )
 
         representation["service_manager"] = (
-            UserSerializer(instance.service_manager).data
+            UserSerializer(
+                instance.service_manager,
+                include_only=["id", "first_name", "last_name", "middle_name"],
+            ).data
             if instance.service_manager
             else None
         )
