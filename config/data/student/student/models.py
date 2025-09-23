@@ -258,7 +258,7 @@ class Student(BaseModel):
                 comment="Yangi o'quvchi archivelangani uchun jarima.",
             )
 
-    def unarchive(self, comment: str):
+    def unarchive(self, comment: str = ""):
         now = timezone.now()
         cutoff = now - timedelta(hours=24)
 

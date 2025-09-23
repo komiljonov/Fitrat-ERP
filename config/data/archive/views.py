@@ -1,6 +1,8 @@
 from django.utils import timezone
 from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView
 
+from django.db import transaction
+
 from data.archive.models import Archive
 from data.archive.serializers import ArchiveSerializer
 
@@ -21,6 +23,8 @@ class ArchiveRetrieveDestroyAPIView(RetrieveDestroyAPIView):
 
     def perform_destroy(self, instance: Archive):
 
-        instance.unarchive()
+        with transaction.atomic():
+
+            instance.unarchive()
 
         instance.save()
