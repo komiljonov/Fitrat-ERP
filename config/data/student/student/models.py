@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from data.command.models import BaseModel
+from data.logs.models import Log
 
 
 if TYPE_CHECKING:
@@ -163,7 +164,6 @@ class Student(BaseModel):
         null=True,
     )
 
-
     is_frozen = models.BooleanField(
         default=False,
         help_text="Is this student frozen or not",
@@ -212,6 +212,20 @@ class Student(BaseModel):
 
     def __str__(self):
         return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
+
+    def archive(self, comment: str):
+
+        self.archived_at = timezone.now()
+        self.is_archived = True
+        self.save()
+
+        Log.objects.filter(
+            object="STUDENT",
+            action="ARCHIVE_STUDENT",
+            student=self.student,
+            student_group=self,
+            comment=f"O'quvchi archive'landi. Comment: {comment}",
+        )
 
 
 class FistLesson_data(BaseModel):

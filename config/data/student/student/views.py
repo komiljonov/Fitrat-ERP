@@ -698,6 +698,9 @@ class StudentArchiveAPIView(APIView):
             for group in groups:
                 group.archive("Student archivelandi")
 
+            student.archive()
+            
+
             # TODO: Write fines for emploees
 
             return Response({"ok": True})
