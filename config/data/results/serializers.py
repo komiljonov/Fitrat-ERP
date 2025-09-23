@@ -17,23 +17,26 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
 
-    upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True, allow_null=True)
+    upload_file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), many=True, allow_null=True
+    )
+
     class Meta:
         model = Results
         fields = [
-            'id',
+            "id",
             "who",
-            'results',
-            'teacher',
-            'student',
-            'university_type',
-            'university_name',
-            'university_entering_type',
-            'university_entering_ball',
-            'upload_file',
-            'status',
-            'created_at',
-            'updated_at',
+            "results",
+            "teacher",
+            "student",
+            "university_type",
+            "university_name",
+            "university_entering_type",
+            "university_entering_ball",
+            "upload_file",
+            "status",
+            "created_at",
+            "updated_at",
         ]
 
     def validate(self, attrs):
@@ -47,13 +50,15 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
             university_type = self.instance.university_type
         else:
             # Creation scenario
-            university_entering_type = attrs.get('university_entering_type')
-            university_type = attrs.get('university_type')
+            university_entering_type = attrs.get("university_entering_type")
+            university_type = attrs.get("university_type")
 
         # Only validate if we have the required fields
         if university_entering_type and university_type:
             entry = "Grant" if university_entering_type == "Grant" else "Contract"
-            mapped_university_type = "Personal" if university_type == "Unofficial" else "National"
+            mapped_university_type = (
+                "Personal" if university_type == "Unofficial" else "National"
+            )
 
             level = ResultSubjects.objects.filter(
                 asos__name__icontains="ASOS_4",
@@ -62,12 +67,14 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
             ).first()
 
             if not level:
-                raise serializers.ValidationError("Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!")
+                raise serializers.ValidationError(
+                    "Ushbu amalni tasdiqlash uchun monitoring yaratilmagan!"
+                )
 
         return attrs
 
     def create(self, validated_data):
-        upload_files = validated_data.pop('upload_file', [])
+        upload_files = validated_data.pop("upload_file", [])
 
         certificate = Results.objects.create(**validated_data)
 
@@ -79,10 +86,10 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get("request")
 
-        upload_files = validated_data.pop('upload_file', None)
+        upload_files = validated_data.pop("upload_file", None)
 
         if validated_data.get("status"):
-            validated_data['updater'] = request.user
+            validated_data["updater"] = request.user
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -99,7 +106,13 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,context=self.context).data if instance.upload_file else None
+        rep["upload_file"] = (
+            FileUploadSerializer(
+                instance.upload_file, many=True, context=self.context
+            ).data
+            if instance.upload_file
+            else None
+        )
         rep["teacher"] = UserListSerializer(instance.teacher).data
         rep["student"] = StudentSerializer(instance.student).data
         return rep
@@ -107,28 +120,35 @@ class UniversityResultsSerializer(serializers.ModelSerializer):
 
 class CertificationResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), allow_null=True)
-    result_fk_name = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(), allow_null=True)
-    upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all(), allow_null=True
+    )
+    result_fk_name = serializers.PrimaryKeyRelatedField(
+        queryset=ResultName.objects.all(), allow_null=True
+    )
+    upload_file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), many=True, allow_null=True
+    )
+
     class Meta:
         model = Results
         fields = [
-            'id',
+            "id",
             "who",
-            'results',
+            "results",
             "result_fk_name",
-            'teacher',
-            'student',
+            "teacher",
+            "student",
             # 'certificate_type',
-            'band_score',
-            'reading_score',
-            'listening_score',
-            'speaking_score',
-            'writing_score',
-            'upload_file',
-            'status',
-            'created_at',
-            'updated_at',
+            "band_score",
+            "reading_score",
+            "listening_score",
+            "speaking_score",
+            "writing_score",
+            "upload_file",
+            "status",
+            "created_at",
+            "updated_at",
         ]
 
     def validate(self, attrs):
@@ -136,9 +156,12 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
         # Call parent validation first
         attrs = super().validate(attrs)
 
-
-        if not (self.instance and self.instance.result_fk_name and
-                self.instance.point and self.instance.who):
+        if not (
+            self.instance
+            and self.instance.result_fk_name
+            and self.instance.point
+            and self.instance.who
+        ):
             return attrs
 
         try:
@@ -183,14 +206,26 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["result_fk_name"] = ResultsNameSerializer(instance.result_fk_name).data if instance.result_fk_name else None
-        rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,context=self.context).data if instance.upload_file else None
+        rep["result_fk_name"] = (
+            ResultsNameSerializer(instance.result_fk_name).data
+            if instance.result_fk_name
+            else None
+        )
+        rep["upload_file"] = (
+            FileUploadSerializer(
+                instance.upload_file, many=True, context=self.context
+            ).data
+            if instance.upload_file
+            else None
+        )
         rep["teacher"] = UserListSerializer(instance.teacher).data
-        rep["student"] = StudentSerializer(instance.student).data if instance.student else None
+        rep["student"] = (
+            StudentSerializer(instance.student).data if instance.student else None
+        )
         return rep
 
     def create(self, validated_data):
-        upload_files = validated_data.pop('upload_file', [])
+        upload_files = validated_data.pop("upload_file", [])
 
         certificate = Results.objects.create(**validated_data)
 
@@ -203,59 +238,77 @@ class CertificationResultsSerializer(serializers.ModelSerializer):
 class StudentResultsSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
-    upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, allow_null=True)
-    national = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(),allow_null=True)
-    result_fk_name = serializers.PrimaryKeyRelatedField(queryset=ResultName.objects.all(),allow_null=True)
-
+    upload_file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), many=True, allow_null=True
+    )
+    national = serializers.PrimaryKeyRelatedField(
+        queryset=Subject.objects.all(), allow_null=True
+    )
+    result_fk_name = serializers.PrimaryKeyRelatedField(
+        queryset=ResultName.objects.all(), allow_null=True
+    )
 
     class Meta:
         model = Results
         fields = [
-            'id',
+            "id",
             "who",
-            'results',
-            'teacher',
-            'student',
+            "results",
+            "teacher",
+            "student",
             "result_fk_name",
-#             'certificate_type',
-            'band_score',
-            'reading_score',
-            'listening_score',
-            'speaking_score',
-            'writing_score',
-            'university_type',
-            'university_name',
-            'university_entering_type',
-            'university_entering_ball',
-
-            'national',
-
-            'result_name',
-            'result_score',
-            'subject_name',
-
-            'upload_file',
-            'status',
+            #             'certificate_type',
+            "band_score",
+            "reading_score",
+            "listening_score",
+            "speaking_score",
+            "writing_score",
+            "university_type",
+            "university_name",
+            "university_entering_type",
+            "university_entering_ball",
+            "national",
+            "result_name",
+            "result_score",
+            "subject_name",
+            "upload_file",
+            "status",
             "level",
             "degree",
-
             "updater",
-
-            'created_at',
-            'updated_at',
+            "created_at",
+            "updated_at",
         ]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["result_fk_name"] = ResultsNameSerializer(instance.result_fk_name).data if instance.result_fk_name else None
-        rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,context=self.context).data if instance.upload_file else None
-        rep["teacher"] = UserListSerializer(instance.teacher).data
-        rep["student"] = StudentSerializer(instance.student, context=self.context).data
+        rep["result_fk_name"] = (
+            ResultsNameSerializer(instance.result_fk_name).data
+            if instance.result_fk_name
+            else None
+        )
+        rep["upload_file"] = (
+            FileUploadSerializer(
+                instance.upload_file, many=True, context=self.context
+            ).data
+            if instance.upload_file
+            else None
+        )
+        rep["teacher"] = UserListSerializer(
+            instance.teacher,
+            include_only=["id", "first_name", "last_name", "middle_name"],
+        ).data
+
+        rep["student"] = StudentSerializer(
+            instance.student,
+            context=self.context,
+            include_only=["id", "first_name", "last_name", "middle_name"],
+        ).data
         return rep
 
     def create(self, validated_data):
         # Pop the 'upload_file' field to handle it separately
-        upload_files = validated_data.pop('upload_file', [])
+        upload_files = validated_data.pop("upload_file", [])
 
         # Create the Results instance
         certificate = Results.objects.create(**validated_data)
@@ -269,10 +322,10 @@ class StudentResultsSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get("request")
 
-        upload_files = validated_data.pop('upload_file', None)
+        upload_files = validated_data.pop("upload_file", None)
 
         if validated_data.get("status"):
-            validated_data['updater'] = request.user
+            validated_data["updater"] = request.user
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -289,25 +342,28 @@ class StudentResultsSerializer(serializers.ModelSerializer):
 
 
 class OtherResultsSerializer(serializers.ModelSerializer):
-    upload_file = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(),many=True,allow_null=True)
+    upload_file = serializers.PrimaryKeyRelatedField(
+        queryset=File.objects.all(), many=True, allow_null=True
+    )
+
     class Meta:
         model = Results
         fields = [
-            'id',
+            "id",
             "who",
             "results",
-            'teacher',
-            'student',
-#             'certificate_type',
+            "teacher",
+            "student",
+            #             'certificate_type',
             "level",
-            'result_name',
-            'result_score',
-            'subject_name',
-            'status',
+            "result_name",
+            "result_score",
+            "subject_name",
+            "status",
             "degree",
-            'upload_file',
-            'created_at',
-            'updated_at',
+            "upload_file",
+            "created_at",
+            "updated_at",
         ]
 
     def validate(self, attrs):
@@ -328,15 +384,19 @@ class OtherResultsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['upload_file'] = FileUploadSerializer(
-            instance.upload_file, many=True,context=self.context).data \
-            if instance.upload_file else None
+        rep["upload_file"] = (
+            FileUploadSerializer(
+                instance.upload_file, many=True, context=self.context
+            ).data
+            if instance.upload_file
+            else None
+        )
         rep["teacher"] = UserListSerializer(instance.teacher).data
         rep["student"] = StudentSerializer(instance.student).data
         return rep
 
     def create(self, validated_data):
-        upload_files = validated_data.pop('upload_file', [])
+        upload_files = validated_data.pop("upload_file", [])
 
         certificate = Results.objects.create(**validated_data)
 
@@ -348,10 +408,10 @@ class OtherResultsSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get("request")
 
-        upload_files = validated_data.pop('upload_file', None)
+        upload_files = validated_data.pop("upload_file", None)
 
         if validated_data.get("status"):
-            validated_data['updater'] = request.user
+            validated_data["updater"] = request.user
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -371,29 +431,34 @@ class NationalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Results
         fields = [
-            'id',
+            "id",
             "who",
-            'results',
-            'teacher',
-            'student',
-#             'certificate_type',
-            'national',
-            'band_score',
-            'upload_file',
-            'status',
+            "results",
+            "teacher",
+            "student",
+            #             'certificate_type',
+            "national",
+            "band_score",
+            "upload_file",
+            "status",
         ]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['upload_file'] = FileUploadSerializer(instance.upload_file, many=True,
-                    context=self.context).data if instance.upload_file else None
+        rep["upload_file"] = (
+            FileUploadSerializer(
+                instance.upload_file, many=True, context=self.context
+            ).data
+            if instance.upload_file
+            else None
+        )
         rep["teacher"] = UserListSerializer(instance.teacher).data
         rep["student"] = StudentSerializer(instance.student).data
         return rep
 
     def create(self, validated_data):
         # Pop the 'upload_file' field to handle it separately
-        upload_files = validated_data.pop('upload_file', [])
+        upload_files = validated_data.pop("upload_file", [])
 
         # Create the Results instance
         certificate = Results.objects.create(**validated_data)
@@ -407,36 +472,37 @@ class NationalSerializer(serializers.ModelSerializer):
 
 class ResultsSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+
     class Meta:
         model = Results
         fields = [
-            'id',
+            "id",
             "who",
-            'results',
-            'teacher',
+            "results",
+            "teacher",
             "level",
-            'student',
+            "student",
             "national",
-            'university_type',
-            'university_name',
-            'university_entering_type',
-            'university_entering_ball',
-#             'certificate_type',
+            "university_type",
+            "university_name",
+            "university_entering_type",
+            "university_entering_ball",
+            #             'certificate_type',
             "degree",
-            'band_score',
-            'reading_score',
-            'listening_score',
-            'speaking_score',
-            'writing_score',
-            'result_name',
-            'result_score',
-            'subject_name',
-            'upload_file',
-            'status',
+            "band_score",
+            "reading_score",
+            "listening_score",
+            "speaking_score",
+            "writing_score",
+            "result_name",
+            "result_score",
+            "subject_name",
+            "upload_file",
+            "status",
             "updater",
             "result_fk_name",
-            'created_at',
-            'updated_at',
+            "created_at",
+            "updated_at",
         ]
 
     def update(self, instance, validated_data):
@@ -444,19 +510,32 @@ class ResultsSerializer(serializers.ModelSerializer):
 
         # Set updater for any update
         if request and request.user:
-            validated_data['updater'] = request.user
+            validated_data["updater"] = request.user
 
         # Call the parent update method to handle all field updates
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-
-        """ Remove fields that are None or empty """
+        """Remove fields that are None or empty"""
 
         data = super().to_representation(instance)
-        data["result_fk_name"] = ResultsNameSerializer(instance.result_fk_name).data if instance.result_fk_name else None
-        data["updater"] = UserListSerializer(instance.updater).data if instance.updater else None
-        data['upload_file'] = FileUploadSerializer(instance.upload_file,context=self.context, many=True,).data
-        data['student'] = StudentSerializer(instance.student,context=self.context).data
-        data['teacher'] = UserListSerializer(instance.teacher,context=self.context).data
-        return {key: value for key, value in data.items() if value not in [None, "", []]}
+        data["result_fk_name"] = (
+            ResultsNameSerializer(instance.result_fk_name).data
+            if instance.result_fk_name
+            else None
+        )
+        data["updater"] = (
+            UserListSerializer(instance.updater).data if instance.updater else None
+        )
+        data["upload_file"] = FileUploadSerializer(
+            instance.upload_file,
+            context=self.context,
+            many=True,
+        ).data
+        data["student"] = StudentSerializer(instance.student, context=self.context).data
+        data["teacher"] = UserListSerializer(
+            instance.teacher, context=self.context
+        ).data
+        return {
+            key: value for key, value in data.items() if value not in [None, "", []]
+        }
