@@ -265,7 +265,7 @@ class Student(BaseModel):
         # Check if this student was archived within last 24 hours
         if self.archived_at and self.archived_at >= cutoff:
             self.archived_at = None
-            self.is_archived = None
+            self.is_archived = False
             self.save()
 
             Log.objects.create(
