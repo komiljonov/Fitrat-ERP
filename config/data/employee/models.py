@@ -11,12 +11,13 @@ if TYPE_CHECKING:
 
 
 # Don't remove, it must apply as model in this app.
+from data.employee.methods import EmployeeMethods
 from data.employee.transactions.models import EmployeeTransaction
 
 # Create your models here.
 
 
-class Employee(CustomUser):
+class Employee(CustomUser, EmployeeMethods):
 
     objects = EmployeeManager()
 

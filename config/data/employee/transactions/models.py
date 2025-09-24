@@ -26,6 +26,7 @@ class EmployeeTransaction(BaseModel):
         "BONUS_FOR_FIRST_LESSON": INCOME,
         "BONUS_FOR_NEW_STUDENT": INCOME,
         "BONUS_FOR_NEW_ACTIVE_STUDENT": INCOME,
+        "BONUS_FOR_EACH_ACTIVE_STUDENT": INCOME,
         "SALARY": INCOME,
         # Expense and fines
         "FINE_FOR_STUDENT_ARCHIVED": EXPENSE,
