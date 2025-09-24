@@ -19,73 +19,67 @@ def on_create(sender, instance: Student, created, **kwargs):
         return
 
     if not created:
-        try:
-            _signal_active = True  # Set the flag to prevent recursion
-            if (
-                instance.new_student_date == None
-                and instance.student_stage_type == "NEW_STUDENT"
-            ):
-                instance.new_student_date = datetime.now()
+        _signal_active = True  # Set the flag to prevent recursion
+        if (
+            instance.new_student_date == None
+            and instance.student_stage_type == "NEW_STUDENT"
+        ):
+            instance.new_student_date = datetime.now()
 
-            if instance.balance <= 0:
-                Notification.objects.create(
-                    user=instance.call_operator,
-                    comment=f"{instance.first_name} {instance.last_name} ning balance miqdori {instance.balance} sum,"
-                    f" to'lov amalga oshirishi haqida eslating!",
-                    come_from=instance.id,
-                    choice="Tasks",
-                )
-                if instance.balance_status == "ACTIVE":
-                    instance.balance_status = "INACTIVE"
-                    instance.save(
-                        update_fields=["balance_status"]
-                    )  # Save only the specific field
-
-            elif (
-                instance.student_stage_type == "NEW_STUDENT"
-                and instance.balance >= 100000
-            ):
-                instance.balance_status = "ACTIVE"
-                instance.student_stage_type = "ACTIVE_STUDENT"
-                instance.active_date = datetime.now()
-                instance.new_student_stages = None
+        if instance.balance <= 0:
+            Notification.objects.create(
+                user=instance.call_operator,
+                comment=f"{instance.first_name} {instance.last_name} ning balance miqdori {instance.balance} sum,"
+                f" to'lov amalga oshirishi haqida eslating!",
+                come_from=instance.id,
+                choice="Tasks",
+            )
+            if instance.balance_status == "ACTIVE":
+                instance.balance_status = "INACTIVE"
                 instance.save(
-                    update_fields=[
-                        "balance_status",
-                        "student_stage_type",
-                        "new_student_stages",
-                        "active_date",
-                    ]
+                    update_fields=["balance_status"]
                 )  # Save only the specific field
 
-                Log.objects.create(
-                    object="STUDENT",
-                    action="STUDENT_ACTIVATED",
+        elif (
+            instance.student_stage_type == "NEW_STUDENT" and instance.balance >= 100000
+        ):
+            instance.balance_status = "ACTIVE"
+            instance.student_stage_type = "ACTIVE_STUDENT"
+            instance.active_date = datetime.now()
+            instance.new_student_stages = None
+            instance.save(
+                update_fields=[
+                    "balance_status",
+                    "student_stage_type",
+                    "new_student_stages",
+                    "active_date",
+                ]
+            )  # Save only the specific field
+
+            Log.objects.create(
+                object="STUDENT",
+                action="STUDENT_ACTIVATED",
+                student=instance,
+                comment="O'quvchi active holatiga o'tqazildi.",
+            )
+
+            print(
+                instance.sales_manager,
+                instance.sales_manager.f_sm_bonus_new_active_student,
+                instance.sales_manager.f_sm_bonus_new_active_student > 0,
+            )
+            if (
+                instance.sales_manager
+                and instance.sales_manager.f_sm_bonus_new_active_student > 0
+            ):
+                instance.sales_manager.transactions.create(
+                    reason="BONUS_FOR_NEW_ACTIVE_STUDENT",
                     student=instance,
-                    comment="O'quvchi active holatiga o'tqazildi.",
+                    amount=instance.sales_manager.f_sm_bonus_new_active_student,
+                    comment=f"O'quvchi aktiv holatiga o'tgani uchun bonus. O'quvchi: {instance.first_name} {instance.last_name} {instance.middle_name}",
                 )
 
-                print(
-                    instance.sales_manager,
-                    instance.sales_manager.f_sm_bonus_new_active_student,
-                    instance.sales_manager.f_sm_bonus_new_active_student > 0,
-                )
-                if (
-                    instance.sales_manager
-                    and instance.sales_manager.f_sm_bonus_new_active_student > 0
-                ):
-                    instance.sales_manager.transactions.create(
-                        reason="BONUS_FOR_NEW_ACTIVE_STUDENT",
-                        student=instance,
-                        amount=instance.sales_manager.f_sm_bonus_new_active_student,
-                        comment=f"O'quvchi aktiv holatiga o'tgani uchun bonus. O'quvchi: {instance.name} {instance.last_name} {instance.middle_name}",
-                    )
-
-        except Exception as e:
-            print(e)
-
-        finally:
-            _signal_active = False
+        _signal_active = False
 
 
 @receiver(post_save, sender=Student)
