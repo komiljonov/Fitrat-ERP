@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.db import transaction
+from django.utils import timezone
 from django.core.exceptions import FieldError
 from django.db.models import Q, Sum, Value, F
 from django.db.models.functions import Coalesce
@@ -1066,17 +1067,27 @@ class LeadArchiveAPIView(APIView):
 
                 lead.save(update_fields=["is_archived", "archived_at"])
 
-                arvhied_first_lessons = lead.first_lessons.filter(
+                archived_first_lessons = lead.first_lessons.filter(
                     is_archived=False
-                ).update(is_archived=True)
-
-                print(arvhied_first_lessons)
+                ).update(is_archived=True, archived_at=timezone.now())
 
                 Archive.objects.create(
                     lead=lead,
                     reason=serializer.validated_data["comment"],
                     creator=request.user,
                 )
+
+                if lead.ordered_stages == "BIRINCHI_DARS_BELGILANGAN":
+                    if (
+                        lead.sales_manager
+                        and lead.sales_manager.f_sm_fine_firstlesson_archived > 0
+                    ):
+                        lead.sales_manager.transactions.create(
+                            reason="FINE_FOR_ARCHIVED_FIRST_LESSON",
+                            lead=lead,
+                            amount=lead.sales_manager.f_sm_fine_firstlesson_archived,
+                            comment=f"Sinov darsi 3 martta darsga kelmasdan, arxivlanib ketgani uchun jarima: {lead.first_name} {lead.last_name} {lead.middle_name}",
+                        )
 
         return Response({"ok": True})
 
