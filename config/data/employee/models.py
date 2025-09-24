@@ -36,4 +36,4 @@ class Employee(CustomUser, EmployeeMethods):
 
         list_display = ["id", "full_name", "phone", "role", "balance"]
 
-        list_filter = ["filial", "role"]
+        list_filter = ["is_archived", "filial", "role"]
