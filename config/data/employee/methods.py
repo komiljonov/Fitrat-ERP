@@ -12,7 +12,6 @@ class EmployeeMethods:
 
         if self.role == "SERVICE_MANAGER":
 
-
             if self.f_svm_bonus_for_each_active_student > 0:
 
                 self.calculate_monthly_bonus_for_service_manager()
@@ -33,7 +32,6 @@ class EmployeeMethods:
             is_archived=False, student_stage_type="ACTIVE_STUDENT", service_manager=self
         )
 
-
         self.transactions.create(
             reason="BONUS_FOR_EACH_ACTIVE_STUDENT",
             amount=self.f_svm_bonus_for_each_active_student * active_students.count(),
@@ -46,7 +44,9 @@ class EmployeeMethods:
             return
 
         active_students = Student.objects.filter(
-            filial__in=self.filial.all(), is_archived=False
+            filial__in=self.filial.all(),
+            is_archived=False,
+            student_stage_type="ACTIVE_STUDENT",
         )
 
         print(f"Service manager o'quvchilari: {active_students}")
