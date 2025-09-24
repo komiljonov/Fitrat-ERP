@@ -65,6 +65,10 @@ def on_create(sender, instance: Student, created, **kwargs):
                     comment="O'quvchi active holatiga o'tqazildi.",
                 )
 
+                print(
+                    instance.sales_manager,
+                    instance.sales_manager.f_sm_bonus_new_active_student,
+                )
                 if (
                     instance.sales_manager
                     and instance.sales_manager.f_sm_bonus_new_active_student > 0
