@@ -27,6 +27,7 @@ from data.employee.transactions.views import (
 )
 from data.finances.finance.models import Casher
 from data.finances.timetracker.hrpulse import HrPulseIntegration
+from data.firstlesson.models import FirstLesson
 from data.lid.new_lid.models import Lid
 from data.student.groups.models import Group, SecondaryGroup
 from data.student.student.models import Student
@@ -169,12 +170,24 @@ class EmployeeRelatedObjectsAPIView(APIView):
         service_orders = Lid.objects.filter(
             service_manager=employee,
             lid_stage_type="ORDERED_LID",
+            ordered_stages__in=["KUTULMOQDA", "YANGI_BUYURTMA"],
             is_archived=False,
         )
 
         sales_orders = Lid.objects.filter(
             sales_manager=employee,
             lid_stage_type="ORDERED_LID",
+            ordered_stages__in=["KUTULMOQDA", "YANGI_BUYURTMA"],
+            is_archived=False,
+        )
+
+        service_first_lessons = FirstLesson.objects.filter(
+            lead__service_manager=employee,
+            is_archived=False,
+        )
+
+        sales_first_lessons = FirstLesson.objects.filter(
+            lead__sales_manager=employee,
             is_archived=False,
         )
 
@@ -210,6 +223,8 @@ class EmployeeRelatedObjectsAPIView(APIView):
                 "secondary_groups": secondary_groups.count(),
                 "service_orders": service_orders.count(),
                 "sales_orders": sales_orders.count(),
+                "service_first_lessons": service_first_lessons.count(),
+                "sales_first_lessons": sales_first_lessons.count(),
                 "service_active_students": service_active_students.count(),
                 "sales_active_students": sales_active_students.count(),
                 "service_new_students": service_new_students.count(),
