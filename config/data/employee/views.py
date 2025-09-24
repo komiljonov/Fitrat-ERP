@@ -30,7 +30,7 @@ from data.finances.timetracker.hrpulse import HrPulseIntegration
 
 class EmployeeListAPIView(ListCreateAPIView):
 
-    queryset = Employee.objects.filter(is_archived=False).select_related("photo")
+    queryset = Employee.objects.select_related("photo")
 
     filterset_class = EmployeesFilter
 
