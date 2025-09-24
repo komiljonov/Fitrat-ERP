@@ -15,7 +15,12 @@ class LidAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    search_fields = ["first_name", "phone_number", "filial", "call_operator"]
+    search_fields = [
+        "first_name",
+        "phone_number",
+        "filial__name",
+        "call_operator__first_name",
+    ]
 
     list_filter = (
         "first_name",
