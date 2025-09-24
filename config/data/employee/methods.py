@@ -16,9 +16,12 @@ class EmployeeMethods:
 
                 self.calculate_monthly_bonus_for_service_manager()
 
-        if self.role == "FILIAL_Manager":
-
-            print("Filial manager")
+        if self.role in [
+            "FILIAL_Manager",
+            "MONITORING_MANAGER",
+            "TESTOLOG",
+            "HEAD_TEACHER",
+        ]:
 
             if self.f_managers_bonus_for_each_active_student > 0:
                 self.calculate_monthly_bonus_for_filial_manager()
