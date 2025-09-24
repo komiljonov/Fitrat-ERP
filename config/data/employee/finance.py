@@ -25,10 +25,6 @@ from django.db import models
     
 
 
-
-
-
-
 1. Sinovdigi o'quvchi to'lov qilib, darsga kegan vaqtida 100.000 so'mdan ko'p balansi bo'lsa, pramoy aktivga o'tishi kerak. Davomatdan keyin.
 2."""
 

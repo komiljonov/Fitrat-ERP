@@ -3,6 +3,8 @@ from django.db.models import Q
 
 from data.employee.models import Employee
 from data.department.filial.models import Filial
+
+
 class EmployeesFilter(filters.FilterSet):
 
     search = filters.CharFilter(method="filter_search")
@@ -13,7 +15,7 @@ class EmployeesFilter(filters.FilterSet):
 
     role = filters.CharFilter(field_name="role")
 
-    is_archived = filters.BooleanFilter(field_name="is_archived")
+    is_archived = filters.BooleanFilter(field_name="is_archived", initial=False)
 
     class Meta:
         model = Employee
