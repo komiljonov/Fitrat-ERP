@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 from data.logs.models import Log
 
+
 class Lid(BaseModel, LeadMethods):
 
     sender_id = models.CharField(max_length=500, null=True, blank=True)
@@ -180,8 +181,8 @@ class Lid(BaseModel, LeadMethods):
         related_name="service_manager",
     )
 
-    sales_manager: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
+    sales_manager: "Employee" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.CASCADE,
         null=True,
         blank=True,

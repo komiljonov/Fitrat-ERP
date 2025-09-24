@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 from datetime import datetime
 from django.contrib.auth.hashers import make_password
 
+from django.db import transaction
+
 from data.student.student.models import Student
 
 if TYPE_CHECKING:
@@ -13,6 +15,7 @@ if TYPE_CHECKING:
 
 class LeadMethods:
 
+    @transaction.atomic
     def migrate_to_student(self: "Lid"):
 
         password = "".join(random.choices(string.ascii_letters + string.digits, k=8))
@@ -106,4 +109,15 @@ class LeadMethods:
         self.relatives.update(student=student)
 
         self.is_archived = True
+        self.set_archived_at()
         self.save()
+
+        if self.sales_manager and self.sales_manager.f_sm_bonus_first_lesson_come:
+
+            self.sales_manager.transactions.create(
+                reason="BONUS_FOR_NEW_STUDENT",
+                student=student,
+                lead=self,
+                amount=self.sales_manager.f_sm_bonus_first_lesson_come,
+                comment=f"O'quvchi sinov darsiga kelgani uchun bonus. Lead: {self.first_name} {self.last_name} {self.middle_name}",
+            )
