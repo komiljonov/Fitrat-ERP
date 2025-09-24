@@ -22,7 +22,7 @@ class FirstLessonsFilter(filters.FilterSet):
     )
 
     sales_manager = filters.ModelChoiceFilter(
-        field_name="lead__sales_operator",
+        field_name="lead__sales_manager",
         queryset=Employee.objects.filter(role="ADMINISTRATOR"),
     )
 
