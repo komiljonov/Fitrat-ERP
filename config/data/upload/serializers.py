@@ -19,12 +19,11 @@ class FileUploadSerializer(serializers.ModelSerializer):
         #     if isinstance(data, dict):
         #         choice = data.get("choice")
 
-        if instance.choice == "file":
+        if request and instance.choice == "file":
             url = request.build_absolute_uri(instance.file.url)
             representation["file"] = url.replace("http://", "https://")
 
         return representation
-
 
 
 class ContractUploadSerializer(serializers.ModelSerializer):
@@ -38,5 +37,3 @@ class ContractUploadSerializer(serializers.ModelSerializer):
         if request:
             representation["file"] = request.build_absolute_uri(instance.file.url)
         return representation
-
-
