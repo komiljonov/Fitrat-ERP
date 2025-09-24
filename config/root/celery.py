@@ -86,6 +86,10 @@ app.conf.beat_schedule = {
         "task": "data.student.studentgroup.tasks.check_for_streak_students",
         "schedule": crontab(hour=0, minute=1),  # every day at 00:01
     },
+    "bonuses_for_each_active_student": {
+        "task": "data.employee.tasks.bonuses_for_each_active_student",
+        "schedule": crontab(day_of_month=1, hour=0, minute=1),
+    },
 }
 
 
