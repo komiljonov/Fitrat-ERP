@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 @shared_task
-def check_daily_leads():
+def check_for_story_expire():
     # overdue_lead = Lid.objects.filter(
     #     is_archived=False,
     #     updated_at__lte=now() - timedelta(days=3),
@@ -39,6 +39,7 @@ def check_daily_leads():
     for story in overdue_stories:
         story.has_expired = True
         story.save()
+        
         logging.info(f"Story {story.id} marked as expired.")
 
     logging.info("✅ Celery task complete: Daily lead & story checks.")

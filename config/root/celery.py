@@ -16,8 +16,8 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=0, minute=0),
     },
     "check-daily-leads": {
-        "task": "data.lid.new_lid.tasks.check_daily_leads",
-        "schedule": crontab(minute="*/1"),
+        "task": "data.lid.new_lid.tasks.check_for_story_expire",
+        "schedule": crontab(hour="*/5"),
     },
     "update-frozen-days": {
         "task": "data.student.student.task.update_frozen_days",

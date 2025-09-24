@@ -29,6 +29,7 @@ class EmployeeTransaction(BaseModel):
         "SALARY": INCOME,
         # Expense and fines
         "FINE_FOR_STUDENT_ARCHIVED": EXPENSE,
+        "FINE_FOR_ARCHIVED_FIRST_LESSON": EXPENSE,
         "ADVANCE": EXPENSE,
     }
 

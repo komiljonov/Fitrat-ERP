@@ -18,6 +18,7 @@ class Store(BaseModel):
     seen = models.BooleanField(default=False)
 
     expired_date = models.DateField(blank=True, null=True)
+
     has_expired = models.BooleanField(default=False)
 
 
