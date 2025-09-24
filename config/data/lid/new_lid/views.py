@@ -1086,7 +1086,7 @@ class LeadArchiveAPIView(APIView):
                             reason="FINE_FOR_ARCHIVED_FIRST_LESSON",
                             lead=lead,
                             amount=lead.sales_manager.f_sm_fine_firstlesson_archived,
-                            comment=f"Sinov darsi 3 martta darsga kelmasdan, arxivlanib ketgani uchun jarima: {lead.first_name} {lead.last_name} {lead.middle_name}",
+                            comment=f"Sinov darsi etapidagi lead arxivlagani uchun jarima: {lead.first_name} {lead.last_name} {lead.middle_name}",
                         )
 
         return Response({"ok": True})
