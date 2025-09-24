@@ -248,7 +248,7 @@ class Lid(BaseModel, LeadMethods):
             Log.objects.create(
                 object="STUDENT",
                 action="UNARCHIVE_STUDENT",
-                student=self,
+                lead=self,
                 comment="Lid arxivdan chiqarildi.",
             )
 
