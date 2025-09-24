@@ -55,6 +55,13 @@ def on_create(sender, instance: Student, created, **kwargs):
                     ]
                 )  # Save only the specific field
 
+                Log.objects.create(
+                    object="STUDENT",
+                    action="STUDENT_ACTIVATED",
+                    student=instance,
+                    comment="O'quvchi active holatiga o'tqazildi.",
+                )
+
         finally:
             _signal_active = False
 

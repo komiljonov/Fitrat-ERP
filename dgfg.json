@@ -1,0 +1,1611 @@
+{
+    "pid": 10,
+    "file": "/usr/src/app/data/command/models.py",
+    "func": "_full_context",
+    "line": 19,
+    "stack": [
+        {
+            "code": "sys.exit(main())",
+            "file": "/usr/local/bin/celery",
+            "func": "<module>",
+            "line": 8,
+            "locals": {
+                "re": "<module at 0x7fc36eeeb100>",
+                "sys": "<module at 0x7fc36eeb79c0>",
+                "main": "<function at 0x7fc36eaab9c0>",
+                "__doc__": null,
+                "__file__": "/usr/local/bin/celery",
+                "__name__": "__main__",
+                "__spec__": null,
+                "__cached__": null,
+                "__loader__": "<SourceFileLoader at 0x7fc36ee8ad50>",
+                "__package__": null,
+                "__builtins__": "<module at 0x7fc36eec1800>",
+                "__annotations__": {}
+            }
+        },
+        {
+            "code": "sys.exit(_main())",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/__main__.py",
+            "func": "main",
+            "line": 15,
+            "locals": {
+                "_main": "<function at 0x7fc36ca02700>"
+            }
+        },
+        {
+            "code": "return celery(auto_envvar_prefix=\"CELERY\")",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/bin/celery.py",
+            "func": "main",
+            "line": 236,
+            "locals": {}
+        },
+        {
+            "code": "return self.main(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/click/core.py",
+            "func": "__call__",
+            "line": 1161,
+            "locals": {
+                "args": [],
+                "self": "<DYMGroup at 0x7fc36c95b380>",
+                "kwargs": {
+                    "auto_envvar_prefix": "CELERY"
+                }
+            }
+        },
+        {
+            "code": "rv = self.invoke(ctx)",
+            "file": "/usr/local/lib/python3.13/site-packages/click/core.py",
+            "func": "main",
+            "line": 1082,
+            "locals": {
+                "ctx": "<Context at 0x7fc36c95b4d0>",
+                "args": [
+                    "worker",
+                    "--loglevel=info"
+                ],
+                "self": "<DYMGroup at 0x7fc36c95b380>",
+                "extra": {
+                    "auto_envvar_prefix": "CELERY"
+                },
+                "prog_name": "celery",
+                "complete_var": null,
+                "standalone_mode": true,
+                "windows_expand_args": true
+            }
+        },
+        {
+            "code": "return _process_result(sub_ctx.command.invoke(sub_ctx))",
+            "file": "/usr/local/lib/python3.13/site-packages/click/core.py",
+            "func": "invoke",
+            "line": 1697,
+            "locals": {
+                "cmd": "<CeleryDaemonCommand at 0x7fc36c9ee490>",
+                "ctx": "<Context at 0x7fc36c95b4d0>",
+                "args": [],
+                "self": "<DYMGroup at 0x7fc36c95b380>",
+                "sub_ctx": "<Context at 0x7fc36c9efb10>",
+                "cmd_name": "worker",
+                "__class__": "<type at 0x7fc36e918e60>",
+                "_process_result": "<function at 0x7fc36ed03060>"
+            }
+        },
+        {
+            "code": "return ctx.invoke(self.callback, **ctx.params)",
+            "file": "/usr/local/lib/python3.13/site-packages/click/core.py",
+            "func": "invoke",
+            "line": 1443,
+            "locals": {
+                "ctx": "<Context at 0x7fc36c9efb10>",
+                "self": "<CeleryDaemonCommand at 0x7fc36c9ee490>"
+            }
+        },
+        {
+            "code": "return __callback(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/click/core.py",
+            "func": "invoke",
+            "line": 788,
+            "locals": {
+                "ctx": "<Context at 0x7fc36c9efb10>",
+                "args": [],
+                "kwargs": {
+                    "gid": null,
+                    "uid": null,
+                    "beat": null,
+                    "pool": "<type at 0x7fc36cd63360>",
+                    "purge": false,
+                    "umask": null,
+                    "detach": false,
+                    "queues": null,
+                    "include": null,
+                    "logfile": null,
+                    "pidfile": null,
+                    "statedb": null,
+                    "hostname": "celery@e91637cdf909",
+                    "loglevel": 20,
+                    "autoscale": null,
+                    "scheduler": null,
+                    "executable": null,
+                    "time_limit": null,
+                    "concurrency": null,
+                    "task_events": null,
+                    "optimization": "default",
+                    "exclude_queues": null,
+                    "without_gossip": false,
+                    "without_mingle": false,
+                    "soft_time_limit": null,
+                    "schedule_filename": "celerybeat-schedule",
+                    "without_heartbeat": false,
+                    "heartbeat_interval": null,
+                    "max_tasks_per_child": null,
+                    "prefetch_multiplier": 4,
+                    "max_memory_per_child": null
+                },
+                "_Context__self": "<Context at 0x7fc36c9efb10>",
+                "_Context__callback": "<function at 0x7fc36ca03880>"
+            }
+        },
+        {
+            "code": "return f(get_current_context(), *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/click/decorators.py",
+            "func": "new_func",
+            "line": 33,
+            "locals": {
+                "f": "<function at 0x7fc36ca037e0>",
+                "args": [],
+                "kwargs": {
+                    "gid": null,
+                    "uid": null,
+                    "beat": null,
+                    "pool": "<type at 0x7fc36cd63360>",
+                    "purge": false,
+                    "umask": null,
+                    "detach": false,
+                    "queues": null,
+                    "include": null,
+                    "logfile": null,
+                    "pidfile": null,
+                    "statedb": null,
+                    "hostname": "celery@e91637cdf909",
+                    "loglevel": 20,
+                    "autoscale": null,
+                    "scheduler": null,
+                    "executable": null,
+                    "time_limit": null,
+                    "concurrency": null,
+                    "task_events": null,
+                    "optimization": "default",
+                    "exclude_queues": null,
+                    "without_gossip": false,
+                    "without_mingle": false,
+                    "soft_time_limit": null,
+                    "schedule_filename": "celerybeat-schedule",
+                    "without_heartbeat": false,
+                    "heartbeat_interval": null,
+                    "max_tasks_per_child": null,
+                    "prefetch_multiplier": 4,
+                    "max_memory_per_child": null
+                }
+            }
+        },
+        {
+            "code": "return f(ctx, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/bin/base.py",
+            "func": "caller",
+            "line": 135,
+            "locals": {
+                "f": "<function at 0x7fc36ca03740>",
+                "app": "<Celery at 0x7fc36c95be00>",
+                "ctx": "<Context at 0x7fc36c9efb10>",
+                "args": [],
+                "kwargs": {
+                    "gid": null,
+                    "uid": null,
+                    "beat": null,
+                    "pool": "<type at 0x7fc36cd63360>",
+                    "purge": false,
+                    "umask": null,
+                    "detach": false,
+                    "queues": null,
+                    "include": null,
+                    "logfile": null,
+                    "pidfile": null,
+                    "statedb": null,
+                    "hostname": "celery@e91637cdf909",
+                    "loglevel": 20,
+                    "autoscale": null,
+                    "scheduler": null,
+                    "executable": null,
+                    "time_limit": null,
+                    "concurrency": null,
+                    "task_events": null,
+                    "optimization": "default",
+                    "exclude_queues": null,
+                    "without_gossip": false,
+                    "without_mingle": false,
+                    "soft_time_limit": null,
+                    "schedule_filename": "celerybeat-schedule",
+                    "without_heartbeat": false,
+                    "heartbeat_interval": null,
+                    "max_tasks_per_child": null,
+                    "prefetch_multiplier": 4,
+                    "max_memory_per_child": null
+                },
+                "preload_options": []
+            }
+        },
+        {
+            "code": "worker.start()",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/bin/worker.py",
+            "func": "worker",
+            "line": 356,
+            "locals": {
+                "app": "<Celery at 0x7fc36c95be00>",
+                "ctx": "<Context at 0x7fc36c9efb10>",
+                "gid": null,
+                "uid": null,
+                "kwargs": {
+                    "beat": null,
+                    "pool": "<type at 0x7fc36cd63360>",
+                    "purge": false,
+                    "umask": null,
+                    "detach": false,
+                    "queues": null,
+                    "include": null,
+                    "autoscale": null,
+                    "scheduler": null,
+                    "executable": null,
+                    "time_limit": null,
+                    "concurrency": null,
+                    "task_events": null,
+                    "optimization": "default",
+                    "exclude_queues": null,
+                    "without_gossip": false,
+                    "without_mingle": false,
+                    "soft_time_limit": null,
+                    "schedule_filename": "celerybeat-schedule",
+                    "without_heartbeat": false,
+                    "heartbeat_interval": null,
+                    "max_tasks_per_child": null,
+                    "prefetch_multiplier": 4,
+                    "max_memory_per_child": null
+                },
+                "worker": "<Worker at 0x7fc36c8c5400>",
+                "logfile": null,
+                "pidfile": null,
+                "statedb": null,
+                "hostname": "celery@e91637cdf909",
+                "loglevel": 20,
+                "pool_cls": null
+            }
+        },
+        {
+            "code": "self.blueprint.start(self)",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/worker/worker.py",
+            "func": "start",
+            "line": 202,
+            "locals": {
+                "self": "<Worker at 0x7fc36c8c5400>"
+            }
+        },
+        {
+            "code": "step.start(parent)",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/bootsteps.py",
+            "func": "start",
+            "line": 116,
+            "locals": {
+                "i": 1,
+                "self": "<Blueprint at 0x7fc350627e00>",
+                "step": "<Pool at 0x7fc350500ec0>",
+                "parent": "<Worker at 0x7fc36c8c5400>"
+            }
+        },
+        {
+            "code": "return self.obj.start()",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/bootsteps.py",
+            "func": "start",
+            "line": 365,
+            "locals": {
+                "self": "<Pool at 0x7fc350500ec0>",
+                "parent": "<Worker at 0x7fc36c8c5400>"
+            }
+        },
+        {
+            "code": "self.on_start()",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/concurrency/base.py",
+            "func": "start",
+            "line": 130,
+            "locals": {
+                "self": "<TaskPool at 0x7fc3505017f0>"
+            }
+        },
+        {
+            "code": "P = self._pool = Pool(processes=self.limit,",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/concurrency/prefork.py",
+            "func": "on_start",
+            "line": 109,
+            "locals": {
+                "Pool": "<type at 0x7fc36cd62f70>",
+                "self": "<TaskPool at 0x7fc3505017f0>",
+                "proc_alive_timeout": 4.0
+            }
+        },
+        {
+            "code": "super().__init__(processes, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/concurrency/asynpool.py",
+            "func": "__init__",
+            "line": 464,
+            "locals": {
+                "args": [],
+                "self": "<AsynPool at 0x7fc350542120>",
+                "kwargs": {
+                    "threads": false,
+                    "timeout": null,
+                    "initargs": [
+                        "<Celery at 0x7fc36c95be00>",
+                        "celery@e91637cdf909"
+                    ],
+                    "semaphore": "<LaxBoundedSemaphore at 0x7fc3505016a0>",
+                    "initializer": "<function at 0x7fc36c590fe0>",
+                    "max_restarts": 100,
+                    "soft_timeout": null,
+                    "allow_restart": false,
+                    "enable_timeouts": true,
+                    "on_process_exit": "<function at 0x7fc36c592de0>",
+                    "maxtasksperchild": null,
+                    "lost_worker_timeout": 10.0,
+                    "max_memory_per_child": null
+                },
+                "synack": false,
+                "__class__": "<type at 0x7fc36cd62f70>",
+                "processes": 2,
+                "sched_strategy": "default",
+                "proc_alive_timeout": 4.0
+            }
+        },
+        {
+            "code": "self._create_worker_process(i)",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/pool.py",
+            "func": "__init__",
+            "line": 1046,
+            "locals": {
+                "i": 1,
+                "self": "<AsynPool at 0x7fc350542120>",
+                "kwargs": {},
+                "synack": false,
+                "context": null,
+                "threads": false,
+                "timeout": null,
+                "initargs": [
+                    "<Celery at 0x7fc36c95be00>",
+                    "celery@e91637cdf909"
+                ],
+                "putlocks": false,
+                "processes": 2,
+                "semaphore": "<LaxBoundedSemaphore at 0x7fc3505016a0>",
+                "initializer": "<function at 0x7fc36c590fe0>",
+                "max_restarts": 100,
+                "soft_timeout": null,
+                "allow_restart": false,
+                "on_process_up": null,
+                "on_timeout_set": null,
+                "enable_timeouts": true,
+                "on_process_down": null,
+                "on_process_exit": "<function at 0x7fc36c592de0>",
+                "max_restart_freq": 1,
+                "maxtasksperchild": null,
+                "on_timeout_cancel": null,
+                "lost_worker_timeout": 10.0,
+                "max_memory_per_child": null
+            }
+        },
+        {
+            "code": "return super()._create_worker_process(i)",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/concurrency/asynpool.py",
+            "func": "_create_worker_process",
+            "line": 482,
+            "locals": {
+                "i": 1,
+                "self": "<AsynPool at 0x7fc350542120>",
+                "__class__": "<type at 0x7fc36cd62f70>"
+            }
+        },
+        {
+            "code": "w.start()",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/pool.py",
+            "func": "_create_worker_process",
+            "line": 1158,
+            "locals": {
+                "i": 1,
+                "w": "<ForkProcess at 0x7fc3531f8410>",
+                "inq": "<_SimpleQueue at 0x7fc3504ab250>",
+                "outq": "<_SimpleQueue at 0x7fc35056d0f0>",
+                "self": "<AsynPool at 0x7fc350542120>",
+                "synq": null,
+                "sentinel": null,
+                "on_ready_counter": "<Synchronized at 0x7fc3531f8190>"
+            }
+        },
+        {
+            "code": "self._popen = self._Popen(self)",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/process.py",
+            "func": "start",
+            "line": 120,
+            "locals": {
+                "self": "<ForkProcess at 0x7fc3531f8410>"
+            }
+        },
+        {
+            "code": "return Popen(process_obj)",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/context.py",
+            "func": "_Popen",
+            "line": 331,
+            "locals": {
+                "Popen": "<type at 0x7fc35046ba80>",
+                "process_obj": "<ForkProcess at 0x7fc3531f8410>"
+            }
+        },
+        {
+            "code": "self._launch(process_obj)",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/popen_fork.py",
+            "func": "__init__",
+            "line": 22,
+            "locals": {
+                "self": "<Popen at 0x7fc3531f8550>",
+                "process_obj": "<ForkProcess at 0x7fc3531f8410>"
+            }
+        },
+        {
+            "code": "code = process_obj._bootstrap()",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/popen_fork.py",
+            "func": "_launch",
+            "line": 77,
+            "locals": {
+                "code": 1,
+                "self": "<Popen at 0x7fc3531f8550>",
+                "random": "<module at 0x7fc36e0619e0>",
+                "child_w": 18,
+                "parent_r": 17,
+                "process_obj": "<ForkProcess at 0x7fc3531f8410>"
+            }
+        },
+        {
+            "code": "self.run()",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/process.py",
+            "func": "_bootstrap",
+            "line": 323,
+            "locals": {
+                "name": null,
+                "self": "<ForkProcess at 0x7fc3531f8410>",
+                "util": "<module at 0x7fc36dd4c6d0>",
+                "context": "<module at 0x7fc36e171080>",
+                "handler": "<StreamHandler at 0x7fc3587da2c0>",
+                "loggerDict": {
+                    "PIL": "<PlaceHolder at 0x7fc360451d30>",
+                    "amqp": "<Logger at 0x7fc36e2fee40>",
+                    "data": "<PlaceHolder at 0x7fc359dd3bf0>",
+                    "hpack": "<PlaceHolder at 0x7fc35ce75b50>",
+                    "httpx": "<Logger at 0x7fc35d023cf0>",
+                    "kombu": "<PlaceHolder at 0x7fc36dd8b490>",
+                    "celery": "<Logger at 0x7fc36dd4bed0>",
+                    "django": "<Logger at 0x7fc36b8e4910>",
+                    "dotenv": "<PlaceHolder at 0x7fc368812f20>",
+                    "google": "<PlaceHolder at 0x7fc3698e2fd0>",
+                    "aiogram": "<PlaceHolder at 0x7fc3509450d0>",
+                    "aiohttp": "<PlaceHolder at 0x7fc350ce4530>",
+                    "asyncio": "<Logger at 0x7fc36d24a430>",
+                    "passlib": "<PlaceHolder at 0x7fc368176b10>",
+                    "urllib3": "<Logger at 0x7fc36aa891d0>",
+                    "drf_yasg": "<PlaceHolder at 0x7fc3683a48a0>",
+                    "httpcore": "<PlaceHolder at 0x7fc35cfddb50>",
+                    "requests": "<Logger at 0x7fc36a3d09b0>",
+                    "PIL.Image": "<Logger at 0x7fc360457bb0>",
+                    "django.db": "<PlaceHolder at 0x7fc36c2d3dd0>",
+                    "celery.app": "<PlaceHolder at 0x7fc36d4817b0>",
+                    "celery.bin": "<PlaceHolder at 0x7fc36ca0cb90>",
+                    "concurrent": "<PlaceHolder at 0x7fc36d254050>",
+                    "data.event": "<PlaceHolder at 0x7fc359e1db50>",
+                    "data.tasks": "<PlaceHolder at 0x7fc359dd3b90>",
+                    "aiohttp.web": "<Logger at 0x7fc350ce0e10>",
+                    "celery.apps": "<PlaceHolder at 0x7fc36c99d550>",
+                    "celery.pool": "<Logger at 0x7fc36c96fa70>",
+                    "celery.task": "<Logger at 0x7fc36ddc7a80>",
+                    "django.test": "<Logger at 0x7fc369e5e030>",
+                    "dotenv.main": "<Logger at 0x7fc3688553b0>",
+                    "google.auth": "***",
+                    "hpack.hpack": "<Logger at 0x7fc35ce70c30>",
+                    "hpack.table": "<Logger at 0x7fc35ce71770>",
+                    "kombu.utils": "<PlaceHolder at 0x7fc36dd8a780>",
+                    "passlib.ifc": "<Logger at 0x7fc368225c70>",
+                    "celery.utils": "<PlaceHolder at 0x7fc36dd4b610>",
+                    "django.utils": "<PlaceHolder at 0x7fc36c5fc120>",
+                    "kombu.common": "<Logger at 0x7fc36d67b250>",
+                    "kombu.mixins": "<Logger at 0x7fc350538910>",
+                    "kombu.pidbox": "<Logger at 0x7fc350551450>",
+                    "urllib3.util": "<PlaceHolder at 0x7fc36ac93ac0>",
+                    "aiogram.event": "<Logger at 0x7fc350957cf0>",
+                    "aiogram.scene": "<Logger at 0x7fc350957ed0>",
+                    "celery.events": "<PlaceHolder at 0x7fc35050e570>",
+                    "celery.worker": "<Logger at 0x7fc36ddc7bb0>",
+                    "django.server": "<Logger at 0x7fc36c96fc50>",
+                    "google.oauth2": "***",
+                    "passlib.utils": "<Logger at 0x7fc368226030>",
+                    "aiohttp.access": "<Logger at 0x7fc350ce0af0>",
+                    "aiohttp.client": "<Logger at 0x7fc350ce0c30>",
+                    "aiohttp.server": "<Logger at 0x7fc350ce0d70>",
+                    "django.contrib": "<PlaceHolder at 0x7fc369d0a0d0>",
+                    "django.request": "<Logger at 0x7fc36c643430>",
+                    "drf_yasg.utils": "<Logger at 0x7fc3683a05f0>",
+                    "httpcore.http2": "<Logger at 0x7fc35ce56f30>",
+                    "httpcore.proxy": "<Logger at 0x7fc35ce55c70>",
+                    "passlib.crypto": "<PlaceHolder at 0x7fc36809c170>",
+                    "prompt_toolkit": "<PlaceHolder at 0x7fc36ce72250>",
+                    "aiogram.webhook": "<Logger at 0x7fc350957e30>",
+                    "amqp.connection": "<PlaceHolder at 0x7fc36dd48050>",
+                    "celery.app.base": "<Logger at 0x7fc36d44c5f0>",
+                    "celery.backends": "<PlaceHolder at 0x7fc3505780b0>",
+                    "django.dispatch": "<Logger at 0x7fc36c595810>",
+                    "django.security": "<PlaceHolder at 0x7fc36b906090>",
+                    "django.template": "<Logger at 0x7fc36c24b430>",
+                    "drf_yasg.codecs": "<Logger at 0x7fc3683a3bb0>",
+                    "googleapiclient": "<Logger at 0x7fc368ca7250>",
+                    "httpcore.http11": "<Logger at 0x7fc35d0074d0>",
+                    "kombu.transport": "<PlaceHolder at 0x7fc35079fcb0>",
+                    "kombu.utils.url": "<Logger at 0x7fc36d706250>",
+                    "multiprocessing": "<Logger at 0x7fc3681dadf0>",
+                    "passlib.context": "<Logger at 0x7fc3681dbed0>",
+                    "aiohttp.internal": "<Logger at 0x7fc350ce0cd0>",
+                    "celery.app.trace": "<Logger at 0x7fc36cbbb590>",
+                    "celery.bootsteps": "<Logger at 0x7fc36cbb9f10>",
+                    "data.event.tasks": "<Logger at 0x7fc35093f2f0>",
+                    "data.tasks.tasks": "<Logger at 0x7fc35874ed50>",
+                    "django.db.models": "<Logger at 0x7fc36bfa1ef0>",
+                    "drf_yasg.openapi": "<Logger at 0x7fc36839bed0>",
+                    "kombu.connection": "<Logger at 0x7fc36d7068b0>",
+                    "passlib.handlers": "<PlaceHolder at 0x7fc36825b710>",
+                    "passlib.registry": "<Logger at 0x7fc368225950>",
+                    "urllib3.response": "<Logger at 0x7fc36a87ef30>",
+                    "aiohttp.websocket": "<Logger at 0x7fc350ce0eb0>",
+                    "celery.bin.worker": "<Logger at 0x7fc36ca01e50>",
+                    "celery.redirected": "<Logger at 0x7fc3507a4f50>",
+                    "aiogram.dispatcher": "<Logger at 0x7fc350957bb0>",
+                    "celery.app.control": "<Logger at 0x7fc350550cd0>",
+                    "celery.apps.worker": "<Logger at 0x7fc36c87ccd0>",
+                    "celery.concurrency": "<PlaceHolder at 0x7fc36ca0dd60>",
+                    "charset_normalizer": "<Logger at 0x7fc36a3d0cd0>",
+                    "concurrent.futures": "<Logger at 0x7fc36d4059b0>",
+                    "django.db.backends": "<Logger at 0x7fc36bf351d0>",
+                    "kombu.asynchronous": "<PlaceHolder at 0x7fc36c980c50>",
+                    "urllib3.connection": "<Logger at 0x7fc36a87f430>",
+                    "urllib3.util.retry": "<Logger at 0x7fc36a837430>",
+                    "aiogram.middlewares": "<Logger at 0x7fc350957d90>",
+                    "celery.app.builtins": "<Logger at 0x7fc36d52ef30>",
+                    "celery.events.state": "<Logger at 0x7fc35053a030>",
+                    "celery.worker.loops": "<Logger at 0x7fc350506210>",
+                    "django.contrib.auth": "***",
+                    "drf_yasg.generators": "<Logger at 0x7fc3683c5770>",
+                    "drf_yasg.inspectors": "<PlaceHolder at 0x7fc3683d4050>",
+                    "httpcore.connection": "<Logger at 0x7fc35cf387d0>",
+                    "passlib.utils.decor": "<Logger at 0x7fc3682445f0>",
+                    "urllib3.poolmanager": "<Logger at 0x7fc36a8d18b0>",
+                    "celery.backends.base": "<Logger at 0x7fc350568910>",
+                    "celery.worker.pidbox": "<Logger at 0x7fc35051c4b0>",
+                    "django.security.csrf": "<Logger at 0x7fc36b33f930>",
+                    "google.auth._default": "***",
+                    "google_auth_httplib2": "***",
+                    "googleapiclient.http": "<Logger at 0x7fc368ca77f0>",
+                    "passlib.utils.binary": "<Logger at 0x7fc368244190>",
+                    "passlib.utils.compat": "<Logger at 0x7fc368226490>",
+                    "celery.utils.dispatch": "<PlaceHolder at 0x7fc36d527bf0>",
+                    "celery.worker.control": "<Logger at 0x7fc36ca8f7f0>",
+                    "celery.worker.request": "<Logger at 0x7fc36cb16fd0>",
+                    "google.auth.transport": "***",
+                    "googleapiclient.model": "<Logger at 0x7fc3687f0050>",
+                    "kombu.transport.redis": "<Logger at 0x7fc3507a4910>",
+                    "passlib.crypto.digest": "<Logger at 0x7fc368090870>",
+                    "prompt_toolkit.buffer": "<Logger at 0x7fc36d299640>",
+                    "celery.worker.consumer": "<PlaceHolder at 0x7fc3504af110>",
+                    "kombu.asynchronous.hub": "<Logger at 0x7fc36c988310>",
+                    "passlib.utils.handlers": "<Logger at 0x7fc36825d270>",
+                    "urllib3.connectionpool": "<Logger at 0x7fc36a87de50>",
+                    "celery.utils.functional": "<Logger at 0x7fc36ddb5910>",
+                    "celery.worker.autoscale": "<Logger at 0x7fc350504550>",
+                    "django.db.backends.base": "<Logger at 0x7fc36b8a5450>",
+                    "django.utils.autoreload": "<Logger at 0x7fc36c610050>",
+                    "kombu.transport.virtual": "<PlaceHolder at 0x7fc35079e1b0>",
+                    "passlib.handlers.bcrypt": "<Logger at 0x7fc368087e30>",
+                    "drf_yasg.inspectors.base": "<Logger at 0x7fc3683c5c70>",
+                    "drf_yasg.inspectors.view": "<Logger at 0x7fc3683f0690>",
+                    "googleapiclient._helpers": "<Logger at 0x7fc3687cf4d0>",
+                    "kombu.asynchronous.timer": "<Logger at 0x7fc36c988260>",
+                    "django.db.backends.schema": "<Logger at 0x7fc36b734a50>",
+                    "drf_yasg.inspectors.field": "<Logger at 0x7fc3683c74d0>",
+                    "google.oauth2.credentials": "***",
+                    "amqp.connection.Connection": "<PlaceHolder at 0x7fc36e2ff770>",
+                    "celery.concurrency.prefork": "<Logger at 0x7fc36c8c84b0>",
+                    "celery.concurrency.asynpool": "<Logger at 0x7fc36c8aad50>",
+                    "google.auth._refresh_worker": "***",
+                    "celery.utils.dispatch.signal": "<Logger at 0x7fc36d52a450>",
+                    "celery.worker.consumer.tasks": "<Logger at 0x7fc35051ceb0>",
+                    "kombu.transport.virtual.base": "<Logger at 0x7fc3507a5bd0>",
+                    "celery.worker.consumer.gossip": "<Logger at 0x7fc35051def0>",
+                    "celery.worker.consumer.mingle": "<Logger at 0x7fc35051d090>",
+                    "celery.worker.consumer.control": "<Logger at 0x7fc35051c190>",
+                    "google.auth.transport.requests": "***",
+                    "celery.worker.consumer.consumer": "<Logger at 0x7fc3505059f0>",
+                    "celery.worker.consumer.connection": "<Logger at 0x7fc350505450>",
+                    "google.auth.transport._http_client": "***",
+                    "google.auth.transport._mtls_helper": "***",
+                    "amqp.connection.Connection.heartbeat_tick": "<Logger at 0x7fc36e33ead0>"
+                },
+                "logger_names": [
+                    "amqp",
+                    "amqp.connection.Connection.heartbeat_tick",
+                    "amqp.connection.Connection",
+                    "amqp.connection",
+                    "celery",
+                    "celery.task",
+                    "celery.worker",
+                    "celery.utils.functional",
+                    "celery.utils",
+                    "kombu.utils.url",
+                    "kombu.utils",
+                    "kombu",
+                    "kombu.connection",
+                    "kombu.common",
+                    "celery.utils.dispatch.signal",
+                    "celery.utils.dispatch",
+                    "celery.app.builtins",
+                    "celery.app",
+                    "celery.app.base",
+                    "concurrent.futures",
+                    "concurrent",
+                    "asyncio",
+                    "prompt_toolkit.buffer",
+                    "prompt_toolkit",
+                    "celery.bootsteps",
+                    "celery.app.trace",
+                    "kombu.asynchronous.timer",
+                    "kombu.asynchronous",
+                    "kombu.asynchronous.hub",
+                    "celery.pool",
+                    "celery.worker.request",
+                    "celery.worker.control",
+                    "celery.bin.worker",
+                    "celery.bin",
+                    "celery.concurrency.asynpool",
+                    "celery.concurrency",
+                    "celery.concurrency.prefork",
+                    "celery.apps.worker",
+                    "celery.apps",
+                    "django.dispatch",
+                    "django",
+                    "django.utils.autoreload",
+                    "django.utils",
+                    "django.template",
+                    "django.db.models",
+                    "django.db",
+                    "django.db.backends",
+                    "django.request",
+                    "django.server",
+                    "django.security.csrf",
+                    "django.security",
+                    "django.db.backends.base",
+                    "django.db.backends.schema",
+                    "urllib3.util.retry",
+                    "urllib3.util",
+                    "urllib3",
+                    "urllib3.connection",
+                    "urllib3.response",
+                    "urllib3.connectionpool",
+                    "urllib3.poolmanager",
+                    "charset_normalizer",
+                    "requests",
+                    "django.test",
+                    "django.contrib.auth",
+                    "django.contrib",
+                    "google.auth.transport._http_client",
+                    "google.auth.transport",
+                    "google.auth",
+                    "google",
+                    "google.auth._default",
+                    "google.auth._refresh_worker",
+                    "google.auth.transport._mtls_helper",
+                    "google.auth.transport.requests",
+                    "google.oauth2.credentials",
+                    "google.oauth2",
+                    "googleapiclient",
+                    "google_auth_httplib2",
+                    "googleapiclient._helpers",
+                    "googleapiclient.model",
+                    "googleapiclient.http",
+                    "dotenv.main",
+                    "dotenv",
+                    "drf_yasg.utils",
+                    "drf_yasg",
+                    "drf_yasg.openapi",
+                    "drf_yasg.codecs",
+                    "drf_yasg.inspectors.base",
+                    "drf_yasg.inspectors",
+                    "drf_yasg.inspectors.field",
+                    "drf_yasg.inspectors.view",
+                    "drf_yasg.generators",
+                    "passlib.context",
+                    "passlib",
+                    "passlib.registry",
+                    "passlib.ifc",
+                    "passlib.utils.compat",
+                    "passlib.utils",
+                    "passlib.utils.binary",
+                    "passlib.utils.decor",
+                    "passlib.utils.handlers",
+                    "passlib.handlers.bcrypt",
+                    "passlib.handlers",
+                    "passlib.crypto.digest",
+                    "passlib.crypto",
+                    "PIL.Image",
+                    "PIL",
+                    "httpx",
+                    "httpcore.http11",
+                    "httpcore",
+                    "httpcore.connection",
+                    "httpcore.proxy",
+                    "hpack.table",
+                    "hpack",
+                    "hpack.hpack",
+                    "httpcore.http2",
+                    "data.tasks.tasks",
+                    "data.tasks",
+                    "data",
+                    "aiohttp.access",
+                    "aiohttp",
+                    "aiohttp.client",
+                    "aiohttp.internal",
+                    "aiohttp.server",
+                    "aiohttp.web",
+                    "aiohttp.websocket",
+                    "aiogram.dispatcher",
+                    "aiogram",
+                    "aiogram.event",
+                    "aiogram.middlewares",
+                    "aiogram.webhook",
+                    "aiogram.scene",
+                    "data.event.tasks",
+                    "data.event",
+                    "kombu.transport.virtual.base",
+                    "kombu.transport.virtual",
+                    "kombu.transport",
+                    "kombu.transport.redis",
+                    "celery.redirected",
+                    "multiprocessing",
+                    "celery.worker.autoscale",
+                    "celery.worker.consumer.connection",
+                    "celery.worker.consumer",
+                    "celery.worker.loops",
+                    "celery.worker.consumer.consumer",
+                    "celery.worker.pidbox",
+                    "celery.worker.consumer.mingle",
+                    "celery.worker.consumer.tasks",
+                    "celery.worker.consumer.control",
+                    "celery.worker.consumer.gossip",
+                    "kombu.mixins",
+                    "celery.events.state",
+                    "celery.events",
+                    "kombu.pidbox",
+                    "celery.app.control",
+                    "celery.backends.base",
+                    "celery.backends",
+                    null
+                ]
+            }
+        },
+        {
+            "code": "self._target(*self._args, **self._kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/process.py",
+            "func": "run",
+            "line": 110,
+            "locals": {
+                "self": "<ForkProcess at 0x7fc3531f8410>"
+            }
+        },
+        {
+            "code": "sys.exit(self.workloop(pid=pid))",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/pool.py",
+            "func": "__call__",
+            "line": 292,
+            "locals": {
+                "pid": 10,
+                "exit": "<function at 0x7fc3504ea3e0>",
+                "self": "<Worker at 0x7fc3531f82d0>",
+                "_exit": "<built-in function exit>",
+                "_exitcode": [
+                    null
+                ]
+            }
+        },
+        {
+            "code": "result = (True, prepare_result(fun(*args, **kwargs)))",
+            "file": "/usr/local/lib/python3.13/site-packages/billiard/pool.py",
+            "func": "workloop",
+            "line": 362,
+            "locals": {
+                "i": null,
+                "fun": "<function at 0x7fc36c96f6a0>",
+                "job": 1789,
+                "now": "<built-in function monotonic>",
+                "pid": 10,
+                "put": "<method at 0x7fc3509e5bc0>",
+                "req": [
+                    2,
+                    [
+                        1789,
+                        null,
+                        "<function at 0x7fc36c96f6a0>",
+                        [
+                            "data.firstlesson.tasks.recreate_first_lesson",
+                            "00092923-f158-473e-882f-d2c5d771c13a",
+                            {
+                                "id": "00092923-f158-473e-882f-d2c5d771c13a",
+                                "eta": null,
+                                "args": [],
+                                "lang": "py",
+                                "task": "data.firstlesson.tasks.recreate_first_lesson",
+                                "chain": null,
+                                "chord": null,
+                                "group": null,
+                                "kwargs": {},
+                                "origin": "gen1@3c315632b4f1",
+                                "shadow": null,
+                                "stamps": {},
+                                "expires": null,
+                                "retries": 0,
+                                "root_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                                "argsrepr": "()",
+                                "errbacks": null,
+                                "hostname": "celery@e91637cdf909",
+                                "is_eager": false,
+                                "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                                "callbacks": null,
+                                "parent_id": null,
+                                "timelimit": [
+                                    null,
+                                    null
+                                ],
+                                "kwargsrepr": "{}",
+                                "properties": {
+                                    "priority": 0,
+                                    "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                                    "delivery_tag": "72806d02-5328-40c9-94bc-141d086942b4",
+                                    "body_encoding": "base64",
+                                    "delivery_info": {
+                                        "exchange": "",
+                                        "routing_key": "celery"
+                                    },
+                                    "delivery_mode": 2,
+                                    "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a"
+                                },
+                                "group_index": null,
+                                "delivery_info": {
+                                    "exchange": "",
+                                    "priority": 0,
+                                    "redelivered": false,
+                                    "routing_key": "celery"
+                                },
+                                "ignore_result": false,
+                                "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                                "stamped_headers": null,
+                                "replaced_task_nesting": 0
+                            },
+                            "<bytes len=77>",
+                            "application/json",
+                            "utf-8"
+                        ],
+                        {}
+                    ]
+                ],
+                "args": [
+                    "data.firstlesson.tasks.recreate_first_lesson",
+                    "00092923-f158-473e-882f-d2c5d771c13a",
+                    {
+                        "id": "00092923-f158-473e-882f-d2c5d771c13a",
+                        "eta": null,
+                        "args": [],
+                        "lang": "py",
+                        "task": "data.firstlesson.tasks.recreate_first_lesson",
+                        "chain": null,
+                        "chord": null,
+                        "group": null,
+                        "kwargs": {},
+                        "origin": "gen1@3c315632b4f1",
+                        "shadow": null,
+                        "stamps": {},
+                        "expires": null,
+                        "retries": 0,
+                        "root_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                        "argsrepr": "()",
+                        "errbacks": null,
+                        "hostname": "celery@e91637cdf909",
+                        "is_eager": false,
+                        "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                        "callbacks": null,
+                        "parent_id": null,
+                        "timelimit": [
+                            null,
+                            null
+                        ],
+                        "kwargsrepr": "{}",
+                        "properties": {
+                            "priority": 0,
+                            "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                            "delivery_tag": "72806d02-5328-40c9-94bc-141d086942b4",
+                            "body_encoding": "base64",
+                            "delivery_info": {
+                                "exchange": "",
+                                "routing_key": "celery"
+                            },
+                            "delivery_mode": 2,
+                            "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a"
+                        },
+                        "group_index": null,
+                        "delivery_info": {
+                            "exchange": "",
+                            "priority": 0,
+                            "redelivered": false,
+                            "routing_key": "celery"
+                        },
+                        "ignore_result": false,
+                        "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                        "stamped_headers": null,
+                        "replaced_task_nesting": 0
+                    },
+                    "<bytes len=77>",
+                    "application/json",
+                    "utf-8"
+                ],
+                "self": "<Worker at 0x7fc3531f82d0>",
+                "args_": [
+                    1789,
+                    null,
+                    "<function at 0x7fc36c96f6a0>",
+                    [
+                        "data.firstlesson.tasks.recreate_first_lesson",
+                        "00092923-f158-473e-882f-d2c5d771c13a",
+                        {
+                            "id": "00092923-f158-473e-882f-d2c5d771c13a",
+                            "eta": null,
+                            "args": [],
+                            "lang": "py",
+                            "task": "data.firstlesson.tasks.recreate_first_lesson",
+                            "chain": null,
+                            "chord": null,
+                            "group": null,
+                            "kwargs": {},
+                            "origin": "gen1@3c315632b4f1",
+                            "shadow": null,
+                            "stamps": {},
+                            "expires": null,
+                            "retries": 0,
+                            "root_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                            "argsrepr": "()",
+                            "errbacks": null,
+                            "hostname": "celery@e91637cdf909",
+                            "is_eager": false,
+                            "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                            "callbacks": null,
+                            "parent_id": null,
+                            "timelimit": [
+                                null,
+                                null
+                            ],
+                            "kwargsrepr": "{}",
+                            "properties": {
+                                "priority": 0,
+                                "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                                "delivery_tag": "72806d02-5328-40c9-94bc-141d086942b4",
+                                "body_encoding": "base64",
+                                "delivery_info": {
+                                    "exchange": "",
+                                    "routing_key": "celery"
+                                },
+                                "delivery_mode": 2,
+                                "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a"
+                            },
+                            "group_index": null,
+                            "delivery_info": {
+                                "exchange": "",
+                                "priority": 0,
+                                "redelivered": false,
+                                "routing_key": "celery"
+                            },
+                            "ignore_result": false,
+                            "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                            "stamped_headers": null,
+                            "replaced_task_nesting": 0
+                        },
+                        "<bytes len=77>",
+                        "application/json",
+                        "utf-8"
+                    ],
+                    {}
+                ],
+                "debug": "<function at 0x7fc36dd1a0c0>",
+                "type_": 2,
+                "kwargs": {},
+                "result": [
+                    true,
+                    [
+                        0,
+                        "None",
+                        0.023989484005142003
+                    ]
+                ],
+                "inqW_fd": 11,
+                "maxtasks": null,
+                "synqW_fd": null,
+                "completed": 1781,
+                "wait_for_job": "<function at 0x7fc3531f0cc0>",
+                "wait_for_syn": "<function at 0x7fc350364ea0>",
+                "_wait_for_syn": null,
+                "prepare_result": "<method at 0x7fc350573e00>",
+                "max_memory_per_child": 0
+            }
+        },
+        {
+            "code": "R, I, T, Rstr = tasks[task].__trace__(",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/app/trace.py",
+            "func": "fast_trace_task",
+            "line": 651,
+            "locals": {
+                "_": {},
+                "_loc": [
+                    {
+                        "celery.map": "<xmap at 0x7fc3509de120>",
+                        "celery.chain": "<chain at 0x7fc3509dd160>",
+                        "celery.chord": "<chord at 0x7fc3509dd7f0>",
+                        "celery.group": "<group at 0x7fc3509dcad0>",
+                        "celery.chunks": "<chunks at 0x7fc3509dc1a0>",
+                        "celery.starmap": "<xstarmap at 0x7fc3509dcc20>",
+                        "celery.accumulate": "<accumulate at 0x7fc3509dd550>",
+                        "celery.chord_unlock": "<unlock_chord at 0x7fc3509ddbe0>",
+                        "celery.backend_cleanup": "<backend_cleanup at 0x7fc3509dcd70>",
+                        "data.event.tasks.check_today_tasks": "<check_today_tasks at 0x7fc3509dde80>",
+                        "data.tasks.tasks.check_daily_tasks": "<check_daily_tasks at 0x7fc3509dc440>",
+                        "data.tasks.tasks.check_today_tasks": "<check_today_tasks at 0x7fc3509dd940>",
+                        "data.lid.new_lid.tasks.check_daily_leads": "<check_daily_leads at 0x7fc3509ddfd0>",
+                        "data.student.groups.tasks.activate_group": "<activate_group at 0x7fc3509dd010>",
+                        "data.parents.tasks.send_creds_to_relatives": "<send_creds_to_relatives at 0x7fc3509dda90>",
+                        "data.student.groups.tasks.attendance_group": "<attendance_group at 0x7fc3509de3c0>",
+                        "data.dashboard.tasks.send_daily_excel_report": "<send_daily_excel_report at 0x7fc3509de270>",
+                        "data.firstlesson.tasks.recreate_first_lesson": "<recreate_first_lesson at 0x7fc3509dc830>",
+                        "data.student.quiz.tasks.handle_task_creation": "<handle_task_creation at 0x7fc3509ddd30>",
+                        "data.finances.finance.tasks.check_daily_tasks": "<check_daily_tasks at 0x7fc3509dc980>",
+                        "data.student.mastering.tasks.check_accountant_kpi": "<check_accountant_kpi at 0x7fc3509de660>",
+                        "data.exam_results.tasks.send_unit_test_notification": "<send_unit_test_notification at 0x7fc3509dd400>",
+                        "data.student.mastering.tasks.check_filial_manager_kpi": "<check_filial_manager_kpi at 0x7fc3509de510>",
+                        "data.student.mastering.tasks.check_filial_director_kpi": "<check_filial_director_kpi at 0x7fc3509dcec0>",
+                        "data.student.mastering.tasks.check_testolog_manager_kpi": "<check_testolog_manager_kpi at 0x7fc3509dc6e0>",
+                        "data.student.mastering.tasks.check_monthly_extra_lessons": "<check_monthly_extra_lessons at 0x7fc3509dd6a0>",
+                        "data.student.mastering.tasks.check_monitoring_manager_kpi": "<check_monitoring_manager_kpi at 0x7fc3509dd2b0>",
+                        "data.finances.timetracker.tasks.check_daily_user_attendance": "<check_daily_user_attendance at 0x7fc3509dc590>",
+                        "data.finances.compensation.tasks.check_monthly_student_catching_monitoring": "<check_monthly_student_catching_monitoring at 0x7fc3509dc2f0>"
+                    },
+                    [
+                        "application/json"
+                    ],
+                    "celery@e91637cdf909"
+                ],
+                "args": [],
+                "body": "<bytes len=77>",
+                "task": "data.firstlesson.tasks.recreate_first_lesson",
+                "uuid": "00092923-f158-473e-882f-d2c5d771c13a",
+                "embed": {
+                    "chain": null,
+                    "chord": null,
+                    "errbacks": null,
+                    "callbacks": null
+                },
+                "loads": "<method at 0x7fc36d751180>",
+                "tasks": {
+                    "celery.map": "<xmap at 0x7fc3509de120>",
+                    "celery.chain": "<chain at 0x7fc3509dd160>",
+                    "celery.chord": "<chord at 0x7fc3509dd7f0>",
+                    "celery.group": "<group at 0x7fc3509dcad0>",
+                    "celery.chunks": "<chunks at 0x7fc3509dc1a0>",
+                    "celery.starmap": "<xstarmap at 0x7fc3509dcc20>",
+                    "celery.accumulate": "<accumulate at 0x7fc3509dd550>",
+                    "celery.chord_unlock": "<unlock_chord at 0x7fc3509ddbe0>",
+                    "celery.backend_cleanup": "<backend_cleanup at 0x7fc3509dcd70>",
+                    "data.event.tasks.check_today_tasks": "<check_today_tasks at 0x7fc3509dde80>",
+                    "data.tasks.tasks.check_daily_tasks": "<check_daily_tasks at 0x7fc3509dc440>",
+                    "data.tasks.tasks.check_today_tasks": "<check_today_tasks at 0x7fc3509dd940>",
+                    "data.lid.new_lid.tasks.check_daily_leads": "<check_daily_leads at 0x7fc3509ddfd0>",
+                    "data.student.groups.tasks.activate_group": "<activate_group at 0x7fc3509dd010>",
+                    "data.parents.tasks.send_creds_to_relatives": "<send_creds_to_relatives at 0x7fc3509dda90>",
+                    "data.student.groups.tasks.attendance_group": "<attendance_group at 0x7fc3509de3c0>",
+                    "data.dashboard.tasks.send_daily_excel_report": "<send_daily_excel_report at 0x7fc3509de270>",
+                    "data.firstlesson.tasks.recreate_first_lesson": "<recreate_first_lesson at 0x7fc3509dc830>",
+                    "data.student.quiz.tasks.handle_task_creation": "<handle_task_creation at 0x7fc3509ddd30>",
+                    "data.finances.finance.tasks.check_daily_tasks": "<check_daily_tasks at 0x7fc3509dc980>",
+                    "data.student.mastering.tasks.check_accountant_kpi": "<check_accountant_kpi at 0x7fc3509de660>",
+                    "data.exam_results.tasks.send_unit_test_notification": "<send_unit_test_notification at 0x7fc3509dd400>",
+                    "data.student.mastering.tasks.check_filial_manager_kpi": "<check_filial_manager_kpi at 0x7fc3509de510>",
+                    "data.student.mastering.tasks.check_filial_director_kpi": "<check_filial_director_kpi at 0x7fc3509dcec0>",
+                    "data.student.mastering.tasks.check_testolog_manager_kpi": "<check_testolog_manager_kpi at 0x7fc3509dc6e0>",
+                    "data.student.mastering.tasks.check_monthly_extra_lessons": "<check_monthly_extra_lessons at 0x7fc3509dd6a0>",
+                    "data.student.mastering.tasks.check_monitoring_manager_kpi": "<check_monitoring_manager_kpi at 0x7fc3509dd2b0>",
+                    "data.finances.timetracker.tasks.check_daily_user_attendance": "<check_daily_user_attendance at 0x7fc3509dc590>",
+                    "data.finances.compensation.tasks.check_monthly_student_catching_monitoring": "<check_monthly_student_catching_monitoring at 0x7fc3509dc2f0>"
+                },
+                "accept": [
+                    "application/json"
+                ],
+                "kwargs": {},
+                "request": {
+                    "id": "00092923-f158-473e-882f-d2c5d771c13a",
+                    "eta": null,
+                    "args": [],
+                    "lang": "py",
+                    "task": "data.firstlesson.tasks.recreate_first_lesson",
+                    "chain": null,
+                    "chord": null,
+                    "group": null,
+                    "kwargs": {},
+                    "origin": "gen1@3c315632b4f1",
+                    "shadow": null,
+                    "stamps": {},
+                    "expires": null,
+                    "retries": 0,
+                    "root_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                    "argsrepr": "()",
+                    "errbacks": null,
+                    "hostname": "celery@e91637cdf909",
+                    "is_eager": false,
+                    "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                    "callbacks": null,
+                    "parent_id": null,
+                    "timelimit": [
+                        null,
+                        null
+                    ],
+                    "kwargsrepr": "{}",
+                    "properties": {
+                        "priority": 0,
+                        "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                        "delivery_tag": "72806d02-5328-40c9-94bc-141d086942b4",
+                        "body_encoding": "base64",
+                        "delivery_info": {
+                            "exchange": "",
+                            "routing_key": "celery"
+                        },
+                        "delivery_mode": 2,
+                        "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a"
+                    },
+                    "group_index": null,
+                    "delivery_info": {
+                        "exchange": "",
+                        "priority": 0,
+                        "redelivered": false,
+                        "routing_key": "celery"
+                    },
+                    "ignore_result": false,
+                    "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                    "stamped_headers": null,
+                    "replaced_task_nesting": 0
+                },
+                "hostname": "celery@e91637cdf909",
+                "content_type": "application/json",
+                "content_encoding": "utf-8"
+            }
+        },
+        {
+            "code": "R = retval = fun(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/app/trace.py",
+            "func": "trace_task",
+            "line": 453,
+            "locals": {
+                "I": null,
+                "R": null,
+                "T": null,
+                "app": "<Celery at 0x7fc36c95be00>",
+                "fun": "<recreate_first_lesson at 0x7fc3509dc830>",
+                "pid": 10,
+                "Info": "<type at 0x7fc36d5a40c0>",
+                "Rstr": null,
+                "args": [],
+                "name": "data.firstlesson.tasks.recreate_first_lesson",
+                "task": "<recreate_first_lesson at 0x7fc3509dc830>",
+                "uuid": "00092923-f158-473e-882f-d2c5d771c13a",
+                "eager": false,
+                "state": null,
+                "kwargs": {},
+                "retval": null,
+                "request": {
+                    "id": "00092923-f158-473e-882f-d2c5d771c13a",
+                    "eta": null,
+                    "args": [],
+                    "lang": "py",
+                    "task": "data.firstlesson.tasks.recreate_first_lesson",
+                    "chain": null,
+                    "chord": null,
+                    "group": null,
+                    "kwargs": {},
+                    "origin": "gen1@3c315632b4f1",
+                    "shadow": null,
+                    "stamps": {},
+                    "expires": null,
+                    "retries": 0,
+                    "root_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                    "argsrepr": "()",
+                    "errbacks": null,
+                    "hostname": "celery@e91637cdf909",
+                    "is_eager": false,
+                    "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                    "callbacks": null,
+                    "parent_id": null,
+                    "timelimit": [
+                        null,
+                        null
+                    ],
+                    "kwargsrepr": "{}",
+                    "properties": {
+                        "priority": 0,
+                        "reply_to": "3c29da18-7530-398d-98dd-c771276803a9",
+                        "delivery_tag": "72806d02-5328-40c9-94bc-141d086942b4",
+                        "body_encoding": "base64",
+                        "delivery_info": {
+                            "exchange": "",
+                            "routing_key": "celery"
+                        },
+                        "delivery_mode": 2,
+                        "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a"
+                    },
+                    "group_index": null,
+                    "delivery_info": {
+                        "exchange": "",
+                        "priority": 0,
+                        "redelivered": false,
+                        "routing_key": "celery"
+                    },
+                    "ignore_result": false,
+                    "correlation_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                    "stamped_headers": null,
+                    "replaced_task_nesting": 0
+                },
+                "root_id": "00092923-f158-473e-882f-d2c5d771c13a",
+                "hostname": "celery@e91637cdf909",
+                "on_error": "<function at 0x7fc3503c54e0>",
+                "pop_task": "<method at 0x7fc354425fc0>",
+                "monotonic": "<built-in function monotonic>",
+                "push_task": "<method at 0x7fc354426380>",
+                "signature": "<function at 0x7fc36c965080>",
+                "_does_info": true,
+                "time_start": 468238.378141211,
+                "trace_ok_t": "<type at 0x7fc36cf3a750>",
+                "pop_request": "<method at 0x7fc354426280>",
+                "redelivered": false,
+                "push_request": "<method at 0x7fc354426340>",
+                "task_request": "<Context at 0x7fc3503f11d0>",
+                "IGNORE_STATES": "frozenset({'RETRY', 'REJECTED', 'IGNORED'})",
+                "task_priority": null,
+                "track_started": false,
+                "loader_cleanup": "<method at 0x7fc354426940>",
+                "publish_result": true,
+                "task_on_success": null,
+                "loader_task_init": "<method at 0x7fc3509beac0>",
+                "prerun_receivers": [
+                    [
+                        [
+                            140477317949184,
+                            140477362228480
+                        ],
+                        "<weakref at 0x7fc3506ef5d0; to 'celery.fixups.django.DjangoWorkerFixup' at 0x7fc36c8c5550>"
+                    ]
+                ],
+                "postrun_receivers": [
+                    [
+                        [
+                            140477317949344,
+                            140477362228480
+                        ],
+                        "<weakref at 0x7fc3506ef6d0; to 'celery.fixups.django.DjangoWorkerFixup' at 0x7fc36c8c5550>"
+                    ]
+                ],
+                "success_receivers": [],
+                "task_after_return": null,
+                "task_before_start": null,
+                "resultrepr_maxsize": 1024,
+                "inherit_parent_priority": false,
+                "deduplicate_successful_tasks": false
+            }
+        },
+        {
+            "code": "return self.run(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/celery/app/trace.py",
+            "func": "__protected_call__",
+            "line": 736,
+            "locals": {
+                "req": "<Context at 0x7fc3503f11d0>",
+                "args": [],
+                "orig": "<function at 0x7fc36c967380>",
+                "self": "<recreate_first_lesson at 0x7fc3509dc830>",
+                "stack": "<_LocalStack at 0x7fc350995590>",
+                "kwargs": {}
+            }
+        },
+        {
+            "code": "orig.save()  # now 'orig' refers to the NEW row",
+            "file": "/usr/src/app/data/firstlesson/tasks.py",
+            "func": "recreate_first_lesson",
+            "line": 83,
+            "locals": {
+                "qs": "<QuerySet at 0x7fc3503b5a90>",
+                "orig": "<FirstLesson at 0x7fc3504068d0>",
+                "old_pk": "UUID('f1439848-1660-4d2d-8bc8-960a3f22bd1d')",
+                "next_dt": "datetime.datetime(2025, 9, 19, 8, 21, 40, tzinfo=datetime.timezone.utc)",
+                "attempts": 2,
+                "weekdays": [
+                    1,
+                    3,
+                    5
+                ],
+                "new_lesson": "<FirstLesson at 0x7fc35408a3f0>"
+            }
+        },
+        {
+            "code": "super().save(*args, **kwargs)",
+            "file": "/usr/src/app/data/firstlesson/models.py",
+            "func": "save",
+            "line": 107,
+            "locals": {
+                "args": [],
+                "self": "<FirstLesson at 0x7fc3504068d0>",
+                "kwargs": {},
+                "__class__": "<ModelBase at 0x7fc369b38c00>"
+            }
+        },
+        {
+            "code": "super().save(*args, **kwargs)",
+            "file": "/usr/src/app/data/command/models.py",
+            "func": "save",
+            "line": 63,
+            "locals": {
+                "args": [],
+                "self": "<Lid at 0x7fc3503f2ad0>",
+                "kwargs": {
+                    "update_fields": [
+                        "ordered_stages"
+                    ]
+                },
+                "__class__": "<ModelBase at 0x7fc36ac6fff0>"
+            }
+        },
+        {
+            "code": "self.save_base(",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/base.py",
+            "func": "save",
+            "line": 892,
+            "locals": {
+                "args": [],
+                "self": "<Lid at 0x7fc3503f2ad0>",
+                "using": "default",
+                "field_names": "frozenset({'lid_stages', 'message_text', 'student', 'edu_class', 'marketing_channel_id', 'photo_id', 'is_student', 'education_lang', 'filial_id', 'balance', 'last_name', 'updated_at', 'is_frozen', 'extra_number', 'phone_number', 'is_double', 'ordered_stages', 'created_at', 'update_context', 'sales_manager', 'subject', 'photo', 'filial', 'ordered_date', 'create_context', 'call_operator', 'is_expired', 'date_of_birth', 'service_manager_id', 'edu_level', 'student_type', 'sender_id', 'ball', 'sales_manager_id', 'call_operator_id', 'service_manager', 'first_lesson_created_at', 'is_archived', 'lid_stage_type', 'deleted_at', 'marketing_channel', 'first_name', 'subject_id', 'middle_name', 'edu_organization', 'student_id'})",
+                "force_insert": false,
+                "force_update": false,
+                "update_fields": "frozenset({'ordered_stages'})",
+                "non_model_fields": "frozenset()",
+                "deferred_non_generated_fields": []
+            }
+        },
+        {
+            "code": "post_save.send(",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/base.py",
+            "func": "save_base",
+            "line": 1013,
+            "locals": {
+                "cls": "<ModelBase at 0x7fc36ac75680>",
+                "raw": false,
+                "meta": "<Options at 0x7fc36acfa5d0>",
+                "self": "<Lid at 0x7fc3503f2ad0>",
+                "using": "default",
+                "origin": "<ModelBase at 0x7fc36ac75680>",
+                "updated": true,
+                "force_insert": [],
+                "force_update": false,
+                "update_fields": "frozenset({'ordered_stages'})",
+                "context_manager": "<_GeneratorContextManager at 0x7fc34fac6ac0>",
+                "parent_inserted": false
+            }
+        },
+        {
+            "code": "response = receiver(signal=self, sender=sender, **named)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/dispatch/dispatcher.py",
+            "func": "send",
+            "line": 189,
+            "locals": {
+                "self": "<ModelSignal at 0x7fc36c234050>",
+                "named": {
+                    "raw": false,
+                    "using": "default",
+                    "created": false,
+                    "instance": "<Lid at 0x7fc3503f2ad0>",
+                    "update_fields": "frozenset({'ordered_stages'})"
+                },
+                "sender": "<ModelBase at 0x7fc36ac75680>",
+                "receiver": "<function at 0x7fc368854e00>",
+                "response": null,
+                "responses": [
+                    [
+                        "<function at 0x7fc3688702c0>",
+                        null
+                    ],
+                    [
+                        "<function at 0x7fc3688705e0>",
+                        null
+                    ],
+                    [
+                        "<function at 0x7fc368872660>",
+                        null
+                    ]
+                ],
+                "sync_receivers": [
+                    "<function at 0x7fc3688702c0>",
+                    "<function at 0x7fc3688705e0>",
+                    "<function at 0x7fc368872660>",
+                    "<function at 0x7fc368854e00>"
+                ],
+                "async_receivers": []
+            }
+        },
+        {
+            "code": "instance.lead.save(update_fields=[\"ordered_stages\"])",
+            "file": "/usr/src/app/data/firstlesson/signals.py",
+            "func": "on_new_first_lesson",
+            "line": 14,
+            "locals": {
+                "kwargs": {
+                    "raw": false,
+                    "using": "default",
+                    "signal": "<ModelSignal at 0x7fc36c234050>",
+                    "update_fields": null
+                },
+                "sender": "<ModelBase at 0x7fc369b38c00>",
+                "created": true,
+                "instance": "<FirstLesson at 0x7fc3504068d0>"
+            }
+        },
+        {
+            "code": "super().save(*args, **kwargs)",
+            "file": "/usr/src/app/data/command/models.py",
+            "func": "save",
+            "line": 63,
+            "locals": {
+                "args": [],
+                "self": "<Lid at 0x7fc3503f2ad0>",
+                "kwargs": {
+                    "update_fields": [
+                        "ordered_stages"
+                    ]
+                },
+                "__class__": "<ModelBase at 0x7fc36ac6fff0>"
+            }
+        },
+        {
+            "code": "self.save_base(",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/base.py",
+            "func": "save",
+            "line": 892,
+            "locals": {
+                "args": [],
+                "self": "<Lid at 0x7fc3503f2ad0>",
+                "using": "default",
+                "field_names": "frozenset({'lid_stages', 'message_text', 'student', 'edu_class', 'marketing_channel_id', 'photo_id', 'is_student', 'education_lang', 'filial_id', 'balance', 'last_name', 'updated_at', 'is_frozen', 'extra_number', 'phone_number', 'is_double', 'ordered_stages', 'created_at', 'update_context', 'sales_manager', 'subject', 'photo', 'filial', 'ordered_date', 'create_context', 'call_operator', 'is_expired', 'date_of_birth', 'service_manager_id', 'edu_level', 'student_type', 'sender_id', 'ball', 'sales_manager_id', 'call_operator_id', 'service_manager', 'first_lesson_created_at', 'is_archived', 'lid_stage_type', 'deleted_at', 'marketing_channel', 'first_name', 'subject_id', 'middle_name', 'edu_organization', 'student_id'})",
+                "force_insert": false,
+                "force_update": false,
+                "update_fields": "frozenset({'ordered_stages'})",
+                "non_model_fields": "frozenset()",
+                "deferred_non_generated_fields": []
+            }
+        },
+        {
+            "code": "post_save.send(",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/base.py",
+            "func": "save_base",
+            "line": 1013,
+            "locals": {
+                "cls": "<ModelBase at 0x7fc36ac75680>",
+                "raw": false,
+                "meta": "<Options at 0x7fc36acfa5d0>",
+                "self": "<Lid at 0x7fc3503f2ad0>",
+                "using": "default",
+                "origin": "<ModelBase at 0x7fc36ac75680>",
+                "updated": true,
+                "force_insert": [],
+                "force_update": false,
+                "update_fields": "frozenset({'ordered_stages'})",
+                "context_manager": "<_GeneratorContextManager at 0x7fc34fac6ac0>",
+                "parent_inserted": false
+            }
+        },
+        {
+            "code": "response = receiver(signal=self, sender=sender, **named)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/dispatch/dispatcher.py",
+            "func": "send",
+            "line": 189,
+            "locals": {
+                "self": "<ModelSignal at 0x7fc36c234050>",
+                "named": {
+                    "raw": false,
+                    "using": "default",
+                    "created": false,
+                    "instance": "<Lid at 0x7fc3503f2ad0>",
+                    "update_fields": "frozenset({'ordered_stages'})"
+                },
+                "sender": "<ModelBase at 0x7fc36ac75680>",
+                "receiver": "<function at 0x7fc368854e00>",
+                "response": null,
+                "responses": [
+                    [
+                        "<function at 0x7fc3688702c0>",
+                        null
+                    ],
+                    [
+                        "<function at 0x7fc3688705e0>",
+                        null
+                    ],
+                    [
+                        "<function at 0x7fc368872660>",
+                        null
+                    ]
+                ],
+                "sync_receivers": [
+                    "<function at 0x7fc3688702c0>",
+                    "<function at 0x7fc3688705e0>",
+                    "<function at 0x7fc368872660>",
+                    "<function at 0x7fc368854e00>"
+                ],
+                "async_receivers": []
+            }
+        },
+        {
+            "code": "instance.save()",
+            "file": "/usr/src/app/data/lid/new_lid/signals.py",
+            "func": "on_details_create",
+            "line": 107,
+            "locals": {
+                "kwargs": {
+                    "raw": false,
+                    "using": "default",
+                    "signal": "<ModelSignal at 0x7fc36c234050>",
+                    "update_fields": "frozenset({'ordered_stages'})"
+                },
+                "sender": "<ModelBase at 0x7fc36ac75680>",
+                "created": false,
+                "instance": "<Lid at 0x7fc3503f2ad0>"
+            }
+        },
+        {
+            "code": "self.update_context = _full_context()",
+            "file": "/usr/src/app/data/command/models.py",
+            "func": "save",
+            "line": 61,
+            "locals": {
+                "args": [],
+                "self": "<Lid at 0x7fc3503f2ad0>",
+                "kwargs": {},
+                "__class__": "<ModelBase at 0x7fc36ac6fff0>"
+            }
+        },
+        {
+            "code": "return capture_context_deep(",
+            "file": "/usr/src/app/data/command/models.py",
+            "func": "_full_context",
+            "line": 19,
+            "locals": {}
+        }
+    ],
+    "locals": {},
+    "python": "3.13.0",
+    "code_line": "    return capture_context_deep(",
+    "thread_name": "MainThread",
+    "created_at_utc": "2025-09-17T19:01:00.309992+00:00"
+}
