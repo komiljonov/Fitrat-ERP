@@ -68,3 +68,5 @@ def on_update(sender, instance: "FirstLesson", **kwargs):
         sg.archived_at = None
         sg.first_lesson = instance
         sg.save(update_fields=["is_archived", "archived_at", "first_lesson"])
+
+

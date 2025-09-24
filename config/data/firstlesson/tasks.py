@@ -62,6 +62,19 @@ def recreate_first_lesson():
                         "is_archived_automatically",
                     ]
                 )
+
+                if (
+                    orig.lead.sales_manager
+                    and orig.lead.sales_manager.f_sm_fine_firstlesson_archived > 0
+                ):
+                    orig.lead.sales_manager.transactions.create(
+                        reason="FINE_FOR_ARCHIVED_FIRST_LESSON",
+                        lead=orig.lead,
+                        first_lesson_new=orig,
+                        amount=orig.lead.sales_manager.f_sm_fine_firstlesson_archived,
+                        comment=f"Sinov darsi 3 martta darsga kelmasdan, arxivlanib ketgani uchun jarima: {orig.lead.first_name} {orig.lead.last_name} {orig.lead.middle_name}",
+                    )
+
                 continue
 
             # Pull group's scheduled weekdays (1=Mon..7=Sun)
