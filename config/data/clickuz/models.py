@@ -1,6 +1,9 @@
+from typing import TYPE_CHECKING
 from django.db import models
-from data.lid.new_lid.models import Lid
-from data.student.student.models import Student
+
+if TYPE_CHECKING:
+    from data.student.student.models import Student
+    from data.lid.new_lid.models import Lid
 
 # Create your models here.
 
@@ -37,7 +40,7 @@ class Order(models.Model):
         blank=True,
         related_name="ordered_student",
     )
-    type: str = models.CharField(
+    type = models.CharField(
         choices=[
             ("Payme", "Payme"),
             ("Click", "Click"),

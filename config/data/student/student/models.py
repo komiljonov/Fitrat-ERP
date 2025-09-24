@@ -157,7 +157,7 @@ class Student(BaseModel):
         null=True,
         blank=True,
         help_text="service_manager for this student",
-        related_name="student_service_manager",
+        related_name="svm_students",
     )
 
     sales_manager: "Employee" = models.ForeignKey(

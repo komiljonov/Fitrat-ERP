@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 from django.utils import timezone
 
-from data.employee.models import Employee
 
 if TYPE_CHECKING:
     from data.archive.models import Archive
+    from data.employee.models import Employee
 
 
 class ArchiveMethods:

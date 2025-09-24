@@ -8,6 +8,7 @@ from data.employee.manager import EmployeeManager
 
 if TYPE_CHECKING:
     from data.archive.models import Archive
+    from data.student.student.models import Student
 
 
 # Don't remove, it must apply as model in this app.
@@ -24,6 +25,9 @@ class Employee(CustomUser, EmployeeMethods):
     archives: "models.QuerySet[Archive]"
     unarchives: "models.QuerySet[Archive]"
     transactions: "models.QuerySet[EmployeeTransaction]"
+
+    # Service manager bo'yicha o'quvchilar
+    svm_students: "models.QuerySet[Student]"
 
     class Meta:
         proxy = True
