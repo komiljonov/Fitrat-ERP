@@ -64,6 +64,18 @@ def on_create(sender, instance: Student, created, **kwargs):
                     student=instance,
                     comment="O'quvchi active holatiga o'tqazildi.",
                 )
+
+                if (
+                    instance.sales_manager
+                    and instance.sales_manager.f_sm_bonus_new_active_student > 0
+                ):
+                    instance.sales_manager.transactions.create(
+                        reason="BONUS_FOR_NEW_ACTIVE_STUDENT",
+                        student=instance,
+                        amount=instance.sales_manager.f_sm_bonus_new_active_student,
+                        comment=f"O'quvchi aktiv holatiga o'tgani uchun bonus. O'quvchi: {instance.name} {instance.last_name} {instance.middle_name}",
+                    )
+
         except Exception as e:
             print(e)
 
