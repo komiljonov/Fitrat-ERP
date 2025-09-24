@@ -68,6 +68,7 @@ def on_create(sender, instance: Student, created, **kwargs):
                 print(
                     instance.sales_manager,
                     instance.sales_manager.f_sm_bonus_new_active_student,
+                    instance.sales_manager.f_sm_bonus_new_active_student > 0,
                 )
                 if (
                     instance.sales_manager
