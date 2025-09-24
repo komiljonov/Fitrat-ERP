@@ -41,7 +41,10 @@ def on_create(sender, instance: Student, created, **kwargs):
                         update_fields=["balance_status"]
                     )  # Save only the specific field
 
-            elif instance.balance >= 100000:
+            elif (
+                instance.student_stage_type == "NEW_STUDENT"
+                and instance.balance >= 100000
+            ):
                 instance.balance_status = "ACTIVE"
                 instance.student_stage_type = "ACTIVE_STUDENT"
                 instance.active_date = datetime.now()
@@ -61,6 +64,8 @@ def on_create(sender, instance: Student, created, **kwargs):
                     student=instance,
                     comment="O'quvchi active holatiga o'tqazildi.",
                 )
+        except Exception as e:
+            print(e)
 
         finally:
             _signal_active = False
