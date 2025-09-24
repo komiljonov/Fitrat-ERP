@@ -25,7 +25,11 @@ from data.employee.transactions.views import (
     EmployeeTransactionsListCreateAPIView as ETLCAV,
     EmployeeTransactionRetrieveDestroyAPIView as ETRDAV,
 )
+from data.finances.finance.models import Casher
 from data.finances.timetracker.hrpulse import HrPulseIntegration
+from data.lid.new_lid.models import Lid
+from data.student.groups.models import Group, SecondaryGroup
+from data.student.student.models import Student
 
 
 class EmployeeListAPIView(ListCreateAPIView):
@@ -113,12 +117,9 @@ class EmployeeArchiveAPIView(APIView):
 
     lookup_url_kwarg = "pk"  # from your URLConf
 
-    def get_employee(self) -> Employee:
-        return get_object_or_404(Employee, pk=self.kwargs[self.lookup_url_kwarg])
-
     def post(self, request: HttpRequest | Request, pk: str):
 
-        employee = self.get_employee()
+        employee = get_object_or_404(Employee, pk=pk)
 
         if employee.is_archived:
             raise ValidationError("Employee already archived", "already_archived")
@@ -144,4 +145,74 @@ class EmployeeArchiveAPIView(APIView):
                 "message": "Xodim arxivlandi!",
             },
             status=status.HTTP_200_OK,
+        )
+
+
+class EmployeeRelatedObjectsAPIView(APIView):
+
+    def get(self, request: HttpRequest, pk: str):
+
+        employee = get_object_or_404(Employee, pk=pk)
+
+        groups = Group.objects.filter(
+            teacher=employee,
+            is_archived=False,
+            status="ACTIVE",
+        )
+
+        secondary_groups = SecondaryGroup.objects.filter(
+            teacher=employee,
+            status="ACTIVE",
+            is_archived=False,
+        )
+
+        service_orders = Lid.objects.filter(
+            service_manager=employee,
+            lid_stage_type="ORDERED_LID",
+            is_archived=False,
+        )
+
+        sales_orders = Lid.objects.filter(
+            sales_manager=employee,
+            lid_stage_type="ORDERED_LID",
+            is_archived=False,
+        )
+
+        service_active_students = Student.objects.filter(
+            service_manager=employee,
+            is_archived=False,
+            student_stage_type="ACTIVE_STUDENT",
+        )
+
+        sales_active_students = Student.objects.filter(
+            sales_manager=employee,
+            is_archived=False,
+            student_stage_type="ACTIVE_STUDENT",
+        )
+
+        service_new_students = Student.objects.filter(
+            service_manager=employee,
+            is_archived=False,
+            student_stage_type="NEW_STUDENT",
+        )
+
+        sales_new_students = Student.objects.filter(
+            sales_manager=employee,
+            is_archived=False,
+            student_stage_type="NEW_STUDENT",
+        )
+
+        finance_cashiers = Casher.objects.filter(user=employee, is_archived=False)
+
+        return Response(
+            {
+                "groups": groups.count(),
+                "secondary_groups": secondary_groups.count(),
+                "service_orders": service_orders.count(),
+                "sales_orders": sales_orders.count(),
+                "service_active_students": service_active_students.count(),
+                "sales_active_students": sales_active_students.count(),
+                "service_new_students": service_new_students.count(),
+                "sales_new_students": sales_new_students.count(),
+            }
         )

@@ -173,8 +173,8 @@ class Lid(BaseModel, LeadMethods):
         help_text="Is this student or not",
     )
 
-    service_manager: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
+    service_manager: "Employee" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

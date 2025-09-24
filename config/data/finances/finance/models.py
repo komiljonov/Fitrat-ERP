@@ -11,13 +11,14 @@ if TYPE_CHECKING:
     from data.student.attendance.models import Attendance
     from data.lid.new_lid.models import Lid
     from data.account.models import CustomUser
+    from data.employee.models import Employee
 
 
 class Casher(BaseModel):
     name = models.CharField(max_length=100)
 
-    user: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
+    user: "Employee" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.CASCADE,
         related_name="finances",
     )

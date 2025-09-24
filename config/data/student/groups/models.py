@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from data.student.subject.models import Level
     from data.student.studentgroup.models import StudentGroup
     from data.student.attendance.models import Attendance
+    from data.employee.models import Employee
 
 from data.account.models import CustomUser
 
@@ -65,16 +66,16 @@ class Group(BaseModel):
         related_name="groups_level",
     )
 
-    teacher: "CustomUser | None" = models.ForeignKey(
-        "account.CustomUser",
+    teacher: "Employee | None" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="teachers_groups",
     )
 
-    secondary_teacher: "CustomUser | None" = models.ForeignKey(
-        "account.CustomUser",
+    secondary_teacher: "Employee | None" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -155,8 +156,8 @@ class SecondaryGroup(BaseModel):
     name = models.CharField(max_length=100, null=True, blank=True)
     group: "Group" = models.ForeignKey("groups.Group", on_delete=models.CASCADE)
 
-    teacher: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
+    teacher: "Employee" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

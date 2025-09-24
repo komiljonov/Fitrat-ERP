@@ -4,6 +4,7 @@ from .views import (
     EmployeeRetrieveAPIView,
     EmployeeTransactionsListCreateAPIView,
     EmployeeArchiveAPIView,
+    EmployeeRelatedObjectsAPIView,
 )
 
 
@@ -18,6 +19,7 @@ urlpatterns = [
     path("", EmployeeListAPIView.as_view()),
     path("<uuid:pk>", EmployeeRetrieveAPIView.as_view()),
     path("<uuid:pk>/archive", EmployeeArchiveAPIView.as_view()),
+    path("<uuid:pk>/related_objects", EmployeeRelatedObjectsAPIView.as_view())
     # Urls for transactions
-    *transaction_urls,
+    * transaction_urls,
 ]
