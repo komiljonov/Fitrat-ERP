@@ -1,11 +1,15 @@
 import datetime
 
-from django.utils.module_loading import import_string
 from icecream import ic
 from rest_framework import serializers
 
-from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
-from data.student.attendance.models import Attendance
+from .models import (
+    # Lesson,
+    FirstLLesson,
+    ExtraLesson,
+    ExtraLessonGroup,
+)
+
 from data.student.groups.lesson_date_calculator import calculate_lessons
 from data.student.groups.models import Group, Room
 from data.student.groups.serializers import GroupSerializer, RoomsSerializer
@@ -15,63 +19,63 @@ from data.account.serializers import UserSerializer
 from data.lid.new_lid.models import Lid
 
 
-class LessonSerializer(serializers.ModelSerializer):
-    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
-    attendance = serializers.SerializerMethodField()
+# class LessonSerializer(serializers.ModelSerializer):
+#     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
+#     attendance = serializers.SerializerMethodField()
 
-    teacher = serializers.StringRelatedField(source="group.teacher")
-    room = serializers.StringRelatedField(source="group.room_number")
+#     teacher = serializers.StringRelatedField(source="group.teacher")
+#     room = serializers.StringRelatedField(source="group.room_number")
 
-    # current_theme = serializers.SerializerMethodField()
+#     # current_theme = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Lesson
-        fields = [
-            "id",
-            "name",
-            "subject",
-            "type",
-            "group",
-            "comment",
-            "teacher",
-            "room",
-            "theme",
-            # 'current_theme',
-            "lesson_status",
-            "lessons_count",
-            "attendance",
-            "created_at",
-            "updated_at",
-        ]
+#     class Meta:
+#         model = Lesson
+#         fields = [
+#             "id",
+#             "name",
+#             "subject",
+#             "type",
+#             "group",
+#             "comment",
+#             "teacher",
+#             "room",
+#             "theme",
+#             # 'current_theme',
+#             "lesson_status",
+#             "lessons_count",
+#             "attendance",
+#             "created_at",
+#             "updated_at",
+#         ]
 
-    # def get_current_theme(self, obj):
-    #     """
-    #     Calculate lesson dates based on the group data.
-    #     """
-    #     # Retrieve required data from the Group instance
-    #     start_date = obj.start_date.strftime("%Y-%m-%d") if obj.start_date else None
-    #     end_date = obj.finish_date.strftime("%Y-%m-%d") if obj.finish_date else None
-    #     lesson_type = obj.scheduled_day_type  # Assume this corresponds to 'ODD', 'EVEN', or 'EVERYDAY'
-    #     holidays = ['']  # Replace with actual logic to fetch holidays, e.g., from another model
-    #     days_off = ["Sunday"]  # Replace or fetch from settings/config
-    #
-    #     if start_date and end_date:
-    #         # Use the calculate_lessons function to get lesson dates
-    #         lesson_dates = calculate_lessons(start_date, end_date, lesson_type, holidays, days_off)
-    #         return lesson_dates
-    #     return []
+#     # def get_current_theme(self, obj):
+#     #     """
+#     #     Calculate lesson dates based on the group data.
+#     #     """
+#     #     # Retrieve required data from the Group instance
+#     #     start_date = obj.start_date.strftime("%Y-%m-%d") if obj.start_date else None
+#     #     end_date = obj.finish_date.strftime("%Y-%m-%d") if obj.finish_date else None
+#     #     lesson_type = obj.scheduled_day_type  # Assume this corresponds to 'ODD', 'EVEN', or 'EVERYDAY'
+#     #     holidays = ['']  # Replace with actual logic to fetch holidays, e.g., from another model
+#     #     days_off = ["Sunday"]  # Replace or fetch from settings/config
+#     #
+#     #     if start_date and end_date:
+#     #         # Use the calculate_lessons function to get lesson dates
+#     #         lesson_dates = calculate_lessons(start_date, end_date, lesson_type, holidays, days_off)
+#     #         return lesson_dates
+#     #     return []
 
-    def get_attendance(self, obj):
-        attendance = Attendance.objects.filter(lesson=obj)
-        AttendanceSerializer = import_string(
-            "data.student.attendance.serializers.AttendanceSerializer"
-        )
-        return AttendanceSerializer(attendance, many=True).data
+#     def get_attendance(self, obj):
+#         attendance = Attendance.objects.filter(lesson=obj)
+#         AttendanceSerializer = import_string(
+#             "data.student.attendance.serializers.AttendanceSerializer"
+#         )
+#         return AttendanceSerializer(attendance, many=True).data
 
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        rep["group"] = GroupSerializer(instance.group).data
-        return rep
+#     def to_representation(self, instance):
+#         rep = super().to_representation(instance)
+#         rep["group"] = GroupSerializer(instance.group).data
+#         return rep
 
 
 class LessonScheduleWebSerializer(serializers.ModelSerializer):

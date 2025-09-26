@@ -19,8 +19,6 @@ from data.results.models import Results
 from data.student.groups.models import Group, SecondaryGroup
 from data.student.groups.serializers import GroupSerializer, SecondaryGroupSerializer
 from data.student.homeworks.models import Homework_history
-from data.student.lesson.models import Lesson
-from data.student.lesson.serializers import LessonSerializer
 from data.student.mastering.models import Mastering, MasteringTeachers
 from data.student.mastering.serializers import StuffMasteringSerializer
 from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
@@ -49,15 +47,15 @@ class TeachersNoPGList(ListAPIView):
         return Response(data)
 
 
-class TeacherScheduleView(ListAPIView):
-    serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated]
+# class TeacherScheduleView(ListAPIView):
+#     serializer_class = LessonSerializer
+#     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        # Filter lessons for the logged-in teacher
-        return Lesson.objects.filter(group__teacher=self.request.user).order_by(
-            "day", "start_time"
-        )
+#     def get_queryset(self):
+#         # Filter lessons for the logged-in teacher
+#         return Lesson.objects.filter(
+#             group__teacher=self.request.user
+#         ).order_by("day", "start_time")
 
 
 class TeacherStatistics(ListAPIView):

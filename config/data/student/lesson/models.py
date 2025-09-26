@@ -15,6 +15,7 @@ from data.student.student.models import Student
 from data.student.groups.models import Room
 
 
+# class Lesson(BaseModel):
 class Lesson(BaseModel):
     name = models.CharField(max_length=100)
     subject: "Subject" = models.ForeignKey(

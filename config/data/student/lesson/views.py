@@ -2,24 +2,30 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from django_filters.rest_framework import DjangoFilterBackend
+# from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import status
-from rest_framework.filters import SearchFilter, OrderingFilter
+
+# from rest_framework.filters import SearchFilter, OrderingFilter
 
 from rest_framework.generics import (
     ListAPIView,
     ListCreateAPIView,
-    RetrieveUpdateDestroyAPIView,
+    # RetrieveUpdateDestroyAPIView,
     get_object_or_404,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Lesson, FirstLLesson, ExtraLesson, ExtraLessonGroup
+from .models import (
+    # Lesson,
+    FirstLLesson,
+    ExtraLesson,
+    ExtraLessonGroup,
+)
 from .serializers import (
-    LessonSerializer,
-    LessonScheduleSerializer,
+    # LessonSerializer,
+    # LessonScheduleSerializer,
     FirstLessonSerializer,
     ExtraLessonSerializer,
     ExtraLessonGroupSerializer,
@@ -30,69 +36,69 @@ from data.lid.new_lid.models import Lid
 from data.lid.new_lid.serializers import LeadSerializer
 
 
-class LessonList(ListCreateAPIView):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+# class LessonList(ListCreateAPIView):
+#     queryset = Lesson.objects.all()
+#     serializer_class = LessonSerializer
+#     permission_classes = [IsAuthenticated]
+#     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
 
-    search_fields = (
-        "name",
-        "type",
-        "group__name",
-        "comment",
-        "lesson_status",
-    )
-    ordering_fields = (
-        "name",
-        "type",
-        "group__name",
-        "comment",
-        "lesson_status",
-    )
-    filterset_fields = (
-        "name",
-        "type",
-        "group__name",
-        "comment",
-        "lesson_status",
-    )
-
-
-class LessonDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated]
+#     search_fields = (
+#         "name",
+#         "type",
+#         "group__name",
+#         "comment",
+#         "lesson_status",
+#     )
+#     ordering_fields = (
+#         "name",
+#         "type",
+#         "group__name",
+#         "comment",
+#         "lesson_status",
+#     )
+#     filterset_fields = (
+#         "name",
+#         "type",
+#         "group__name",
+#         "comment",
+#         "lesson_status",
+#     )
 
 
-class LessonNoPG(ListAPIView):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_paginated_response(self, data):
-        return Response(data)
+# class LessonDetail(RetrieveUpdateDestroyAPIView):
+#     queryset = Lesson.objects.all()
+#     serializer_class = LessonSerializer
+#     permission_classes = [IsAuthenticated]
 
 
-class LessonSchedule(ListAPIView):
-    permission_classes = [IsAuthenticated]
-    queryset = Lesson.objects.all()
-    serializer_class = LessonScheduleSerializer
+# class LessonNoPG(ListAPIView):
+#     queryset = Lesson.objects.all()
+#     serializer_class = LessonSerializer
+#     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        serializer = LessonScheduleSerializer(data=request.data)
-        if serializer.is_valid():
-            lesson = serializer.save()
-            return Response(
-                {"message": "Lesson created successfully.", "lesson_id": lesson.id}
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     def get_paginated_response(self, data):
+#         return Response(data)
 
 
-class AllLessonsView(ListAPIView):
-    queryset = Lesson.objects.all().order_by("day", "start_time")
-    serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated]
+# class LessonSchedule(ListAPIView):
+#     permission_classes = [IsAuthenticated]
+#     queryset = Lesson.objects.all()
+#     serializer_class = LessonScheduleSerializer
+
+#     def post(self, request):
+#         serializer = LessonScheduleSerializer(data=request.data)
+#         if serializer.is_valid():
+#             lesson = serializer.save()
+#             return Response(
+#                 {"message": "Lesson created successfully.", "lesson_id": lesson.id}
+#             )
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class AllLessonsView(ListAPIView):
+#     queryset = Lesson.objects.all().order_by("day", "start_time")
+#     serializer_class = LessonSerializer
+#     permission_classes = [IsAuthenticated]
 
 
 class FistLessonView(ListCreateAPIView):

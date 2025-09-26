@@ -25,11 +25,10 @@ from rest_framework.request import HttpRequest, Request
 from rest_framework.exceptions import ValidationError
 
 from django.db import transaction
-from django.utils import timezone, timesince
 
 from .models import Student
 from .serializers import StudentSerializer
-from data.student.lesson.models import Lesson, FirstLLesson
+from data.student.lesson.models import FirstLLesson
 from data.student.lesson.serializers import LessonSerializer, FirstLessonSerializer
 from data.student.studentgroup.models import StudentGroup
 from data.account.permission import FilialRestrictedQuerySetMixin
@@ -205,17 +204,17 @@ class StudentListNoPG(FilialRestrictedQuerySetMixin, ListAPIView):
         return Response(data)
 
 
-class StudentScheduleView(FilialRestrictedQuerySetMixin, ListAPIView):
-    serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated]
+# class StudentScheduleView(FilialRestrictedQuerySetMixin, ListAPIView):
+#     serializer_class = LessonSerializer
+#     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        student_groups = StudentGroup.objects.filter(
-            student_id=self.kwargs["pk"]
-        ).values_list("group_id", flat=True)
-        return Lesson.objects.filter(group_id__in=student_groups).order_by(
-            "day", "start_time"
-        )
+#     def get_queryset(self):
+#         student_groups = StudentGroup.objects.filter(
+#             student_id=self.kwargs["pk"]
+#         ).values_list("group_id", flat=True)
+#         return Lesson.objects.filter(group_id__in=student_groups).order_by(
+#             "day", "start_time"
+#         )
 
 
 class StudentStatistics(FilialRestrictedQuerySetMixin, ListAPIView):
