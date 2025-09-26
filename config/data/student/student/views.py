@@ -29,7 +29,7 @@ from django.db import transaction
 from .models import Student
 from .serializers import StudentSerializer
 from data.student.lesson.models import FirstLLesson
-from data.student.lesson.serializers import LessonSerializer, FirstLessonSerializer
+from data.student.lesson.serializers import FirstLessonSerializer
 from data.student.studentgroup.models import StudentGroup
 from data.account.permission import FilialRestrictedQuerySetMixin
 from data.finances.finance.models import Finance
