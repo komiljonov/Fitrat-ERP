@@ -138,7 +138,7 @@ class GroupLesson(BaseModel):
     group: "Group" = models.ForeignKey(
         "groups.Group",
         on_delete=models.CASCADE,
-        related_name="lessons",
+        related_name="group_lessons",
     )
 
     date = models.DateField()
@@ -148,7 +148,7 @@ class GroupLesson(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="lessons",
+        related_name="group_lessons",
     )
 
     is_repeat = models.BooleanField(
