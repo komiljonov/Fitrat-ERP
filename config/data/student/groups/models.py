@@ -2,6 +2,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.timezone import now
 
@@ -15,8 +16,7 @@ if TYPE_CHECKING:
     from data.student.studentgroup.models import StudentGroup
     from data.student.attendance.models import Attendance
     from data.employee.models import Employee
-
-from data.account.models import CustomUser
+    from data.student.subject.models import Theme
 
 
 class Room(BaseModel):
@@ -26,7 +26,10 @@ class Room(BaseModel):
     room_filling = models.FloatField(default=10, null=True, blank=True)
 
     room_type = models.CharField(
-        choices=[("LESSON_ROOM", "Dars xonasi"), ("COWORKING_ZONE", "Coworking zone")],
+        choices=[
+            ("LESSON_ROOM", "Dars xonasi"),
+            ("COWORKING_ZONE", "Coworking zone"),
+        ],
         default="LESSON_ROOM",
     )
 
@@ -129,9 +132,54 @@ class Group(BaseModel):
         return f"{self.name} - {self.price_type}"
 
 
+class GroupLesson(BaseModel):
+    """Guruhni aynan biron kun uchun o'tilgan darslari haqida ma'lumot"""
+
+    group: "Group" = models.ForeignKey(
+        "groups.Group",
+        on_delete=models.CASCADE,
+        related_name="lessons",
+    )
+
+    date = models.DateField()
+
+    theme: "Theme | None" = models.ForeignKey(
+        "subject.Theme",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lessons",
+    )
+
+    is_repeat = models.BooleanField(
+        default=False,
+        help_text="Bu kundagi dars takrorlashmidi yoki yo'q.",
+    )
+
+    class Meta(BaseModel.Meta):
+
+        constraints = [
+            *BaseModel.Meta.constraints,
+            # Keep one lesson per day per group
+            models.UniqueConstraint(
+                fields=["group", "date"],
+                name="unique_group_date",
+            ),
+            # Theme must be unique within a group when NOT a repeat.
+            # Allows duplicates when is_repeat=True and also ignores NULL themes.
+            models.UniqueConstraint(
+                fields=["group", "theme"],
+                name="unique_theme_per_group_when_not_repeat",
+                condition=Q(is_repeat=False, theme__isnull=False),
+            ),
+        ]
+
+
 class GroupSaleStudent(BaseModel):
     group: "Group" = models.ForeignKey(
-        "groups.Group", on_delete=models.CASCADE, related_name="sale_student_group"
+        "groups.Group",
+        on_delete=models.CASCADE,
+        related_name="sale_student_group",
     )
     student: "Student" = models.ForeignKey(
         "student.Student",

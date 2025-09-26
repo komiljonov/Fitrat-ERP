@@ -18,20 +18,20 @@ if TYPE_CHECKING:
 
 class Attendance(BaseModel):
 
-    date = models.DateField()
-
-    theme: "models.ManyToManyField[Theme]" = models.ManyToManyField(
-        "subject.Theme",
-        blank=True,
-        related_name="attendance_theme",
-    )
-
     group: "Group | None" = models.ForeignKey(
         "groups.Group",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="attendances",
+    )
+
+    date = models.DateField()
+
+    theme: "models.ManyToManyField[Theme]" = models.ManyToManyField(
+        "subject.Theme",
+        blank=True,
+        related_name="attendance_theme",
     )
 
     repeated = models.BooleanField(default=False)
