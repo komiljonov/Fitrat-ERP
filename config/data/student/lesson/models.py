@@ -1,21 +1,19 @@
-from typing import TYPE_CHECKING
+# from typing import TYPE_CHECKING
 
 from django.db import models
 
 from data.account.models import CustomUser
 
-if TYPE_CHECKING:
-    from data.student.subject.models import Theme
+# if TYPE_CHECKING:
+#     from data.student.subject.models import Theme
 
 from data.student.groups.models import Group
-from data.student.subject.models import Subject
 from data.command.models import BaseModel
 from data.lid.new_lid.models import Lid
 from data.student.student.models import Student
 from data.student.groups.models import Room
 
 
-# class Lesson(BaseModel):
 # class Lesson(BaseModel):
 #     name = models.CharField(max_length=100)
 #     subject: "Subject" = models.ForeignKey(
@@ -76,7 +74,7 @@ class FirstLLesson(BaseModel):
         blank=True,
     )
 
-    group: "Group" = models.ForeignKey(
+    group: "Group | None" = models.ForeignKey(
         "groups.Group",
         on_delete=models.SET_NULL,
         null=True,
