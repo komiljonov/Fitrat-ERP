@@ -15,15 +15,11 @@ class AttendanceAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    list_filter = (
-        "status",
-        ("created_at", DateRangeFilter),
-        "student",
-        "lead",
-    )
+    list_filter = ("status", ("created_at", DateRangeFilter), "group")
 
     search_fields = (
         "status",
+        "group__name",
         "lead__first_name",
         "student__first_name",
         "student__phone",
