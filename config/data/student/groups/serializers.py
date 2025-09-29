@@ -454,6 +454,15 @@ class GroupSaleStudentSerializer(serializers.ModelSerializer):
         model = GroupSaleStudent
         fields = ["id", "group", "student", "lid", "amount", "comment"]
 
+    
+    def validate(self, attrs):
+        student = attrs.get("student")
+        lid = attrs.get("lid")
+        if not student and not lid:
+            raise serializers.ValidationError(
+                "Either 'student' or 'lid' must be provided."
+            )
+        return attrs
 
 class CheckRoomTeacherConflictSerializer(serializers.Serializer):
 
