@@ -19,7 +19,7 @@ class Command(BaseCommand):
                 lid=attendance.lead,
                 group=attendance.group,
                 is_archived=False,
-            )
+            ).first()
 
             attendance.student_group = sg
             attendance.save()
