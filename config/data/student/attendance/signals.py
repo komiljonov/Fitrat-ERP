@@ -244,6 +244,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         instance.group.teacher.transactions.create(
             reason="LESSON_PAYMENT",
+            attendance=instance,
             student=instance.student,
             lead=instance.lead,
             amount=bonus_amount,

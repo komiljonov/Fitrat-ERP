@@ -5,6 +5,7 @@ from django.contrib import admin
 
 from data.command.models import BaseModel
 from data.firstlesson.models import FirstLesson
+from data.student.attendance.models import Attendance
 
 if TYPE_CHECKING:
     from data.student.lesson.models import FirstLLesson
@@ -54,6 +55,14 @@ class EmployeeTransaction(BaseModel):
             (INCOME, "Kirim"),
             (EXPENSE, "Chiqim"),
         ],
+    )
+
+    attendance: "Attendance | None" = models.ForeignKey(
+        "attendance.Attendance",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions",
     )
 
     student: "Student | None" = models.ForeignKey(
