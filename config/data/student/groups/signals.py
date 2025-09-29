@@ -7,7 +7,7 @@ from .models import Group, SecondaryGroup, Day, GroupSaleStudent
 from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from data.student.subject.models import Theme
 from data.account.models import CustomUser
-from data.department.marketing_channel.models import Group_Type
+# from data.department.marketing_channel.models import Group_Type
 from data.finances.finance.models import SaleStudent, Sale
 from data.notifications.models import Notification
 
