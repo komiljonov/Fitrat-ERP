@@ -37,7 +37,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
     )
 
     lesson_count = serializers.SerializerMethodField()
-    current_theme = serializers.SerializerMethodField()
+    # current_theme = serializers.SerializerMethodField()
     group_price = serializers.SerializerMethodField()
 
     class Meta:
@@ -49,7 +49,7 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             "student",
             "homework_type",
             "lesson_count",
-            "current_theme",
+            # "current_theme",
             "group_price",
             "is_archived",
         ]
@@ -89,22 +89,22 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             else None
         )
 
-    def get_current_theme(self, obj):
-        """
-        Themes taken today for this group (deduped).
-        Use a single per-request cache keyed by group_id to avoid N+1.
-        """
-        cache = self.context.get("_today_theme_cache")
-        items = cache.get(obj.group_id) if cache else None
-        if items is None:
-            items = list(
-                Attendance.objects.filter(
-                    group_id=obj.group_id, created_at__date=date.today()
-                )
-                .values("theme", "repeated")
-                .distinct()
-            )
-        return items
+    # def get_current_theme(self, obj):
+    #     """
+    #     Themes taken today for this group (deduped).
+    #     Use a single per-request cache keyed by group_id to avoid N+1.
+    #     """
+    #     cache = self.context.get("_today_theme_cache")
+    #     items = cache.get(obj.group_id) if cache else None
+    #     if items is None:
+    #         items = list(
+    #             Attendance.objects.filter(
+    #                 group_id=obj.group_id, created_at__date=date.today()
+    #             )
+    #             .values("theme", "repeated")
+    #             .distinct()
+    #         )
+    #     return items
 
     def get_lesson_count(self, obj):
         """
