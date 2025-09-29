@@ -3,7 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 from threading import local
 
-from django.db.models.signals import post_save, m2m_changed
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from icecream import ic
@@ -169,159 +169,214 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
                         )
 
 
-@receiver(post_save, sender=Attendance)
-def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
-    if getattr(_signal_state, "processing", False):
+# @receiver(post_save, sender=Attendance)
+# def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
+#     if getattr(_signal_state, "processing", False):
+#         return
+
+#     _signal_state.processing = True
+#     try:
+#         if not created or not instance.student or not instance.group:
+#             return
+
+#         if instance.status not in ["IS_PRESENT", "UNREASONED", "REASONED"]:
+#             return
+
+#         kind = Kind.get(kind=FinanceKindTypeChoices.LESSON_PAYMENT)
+
+#         is_first_income = not Finance.objects.filter(action="INCOME").exists()
+
+#         # bonus = (
+#         #     Bonus.objects.filter(
+#         #         user=instance.group.teacher,
+#         #         name="O’quvchi to’lagan summadan foiz beriladi",
+#         #     )
+#         #     .values("amount")
+#         #     .first()
+#         # )
+
+#         # bonus_percent = Decimal(bonus["amount"]) if bonus else Decimal("0.0")
+
+#         bonus_percent = Decimal(instance.group.teacher.f_t_lesson_payment_percent)
+
+#         group_sale_price = GroupSaleStudent.objects.filter(
+#             student=instance.student,
+#             group=instance.group,
+#         ).first()
+
+#         if group_sale_price:
+#             price = Decimal(group_sale_price.amount)
+#         else:
+#             price = Decimal(instance.group.price)
+
+#         sale = get_sale_for_instance(instance)
+
+#         # if instance.group.price_type == "DAILY":
+
+#         final_price = apply_discount(price, sale)
+
+#         instance.amount = final_price
+#         instance.save(update_fields=["amount"])
+
+#         instance.student.balance -= final_price
+#         instance.student.save(update_fields=["balance"])
+
+#         bonus_amount, income_amount = calculate_bonus_and_income(
+#             final_price, bonus_percent
+#         )
+
+#         # instance.group.teacher.balance += bonus_amount
+#         # instance.group.teacher.save(update_fields=["balance"])
+
+#         # create_finance_record(
+#         #     "EXPENSE",
+#         #     bonus_amount,
+#         #     teacher=instance.group.teacher,
+#         #     kind=kind,
+#         #     instance=instance,
+#         #     student=instance.student,
+#         #     is_first=is_first_income,
+#         # )
+
+#         instance.group.teacher.transactions.create(
+#             reason="LESSON_PAYMENT",
+#             attendance=instance,
+#             student=instance.student,
+#             lead=instance.lead,
+#             amount=bonus_amount,
+#             comment=f"{instance.date.strftime("%d/%m/%Y")} dagi dars uchun to'lov.",
+#         )
+
+#         create_finance_record(
+#             "INCOME",
+#             income_amount,
+#             kind,
+#             instance,
+#             instance.student,
+#             is_first=is_first_income,
+#         )
+
+#         # elif instance.group.price_type == "MONTHLY":
+#         #     current_month = datetime.date.today().replace(day=1)
+#         #     month_key = current_month.strftime("%Y-%m")
+#         #     last_day = calendar.monthrange(current_month.year, current_month.month)[1]
+#         #     end_of_month = current_month.replace(day=last_day)
+
+#         #     ic(month_key, end_of_month)
+
+#         #     lesson_days_qs = instance.group.scheduled_day_type.all()
+#         #     lesson_days = (
+#         #         ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
+#         #     )
+
+#         #     holidays = []
+#         #     days_off = []
+
+#         #     lessons_per_month = calculate_lessons(
+#         #         start_date=current_month.strftime("%Y-%m-%d"),
+#         #         end_date=end_of_month.strftime("%Y-%m-%d"),
+#         #         lesson_type=lesson_days,
+#         #         holidays=holidays,
+#         #         days_off=days_off,
+#         #     )
+
+#         #     lessons = lessons_per_month.get(month_key, [])
+#         #     lesson_count = len(lessons)
+
+#         #     if lesson_count > 0:
+#         #         per_lesson_price = price / lesson_count
+#         #         per_lesson_price = apply_discount(per_lesson_price, sale)
+
+#         #         instance.student.balance -= per_lesson_price
+#         #         instance.student.save(update_fields=["balance"])
+
+#         #         instance.amount = per_lesson_price
+#         #         instance.save(update_fields=["amount"])
+
+#         #         bonus_amount, income_amount = calculate_bonus_and_income(
+#         #             per_lesson_price, bonus_percent
+#         #         )
+
+#         #         # instance.group.teacher.balance += bonus_amount
+#         #         # instance.group.teacher.save(update_fields=["balance"])
+#         #         create_finance_record(
+#         #             "EXPENSE",
+#         #             bonus_amount,
+#         #             teacher=instance.group.teacher,
+#         #             kind=kind,
+#         #             instance=instance,
+#         #             student=instance.student,
+#         #             is_first=is_first_income,
+#         #         )
+#         #         create_finance_record(
+#         #             "INCOME",
+#         #             income_amount,
+#         #             kind,
+#         #             instance,
+#         #             instance.student,
+#         #             is_first=is_first_income,
+#         #         )
+
+#         # else:
+#         #     ic(f"No lessons scheduled for {month_key}, skipping balance deduction.")
+
+#     finally:
+#         _signal_state.processing = False
+
+
+@receiver(pre_save, sender=Attendance)
+def on_attendance(sender, instance: Attendance, **kwargs):
+    """
+    Handle teacher LESSON_PAYMENT:
+    - Run only if attendance status actually changed
+    - Archive old transactions for this attendance
+    - Create a new LESSON_PAYMENT if status is IS_PRESENT
+    """
+
+    try:
+        old_instance = Attendance.objects.get(pk=instance.pk)
+        status_changed = old_instance.status != instance.status
+    except Attendance.DoesNotExist:
+        # New attendance, consider status as changed
+        status_changed = True
+
+    if not status_changed:
         return
 
-    _signal_state.processing = True
-    try:
-        if not created or not instance.student or not instance.group:
-            return
+    teacher = instance.group.teacher
 
-        if instance.status not in ["IS_PRESENT", "UNREASONED", "REASONED"]:
-            return
+    # Archive old transactions
+    teacher.transactions.filter(
+        attendance=instance, reason="LESSON_PAYMENT", is_archived=False
+    ).update(is_archived=True)
 
-        kind = Kind.get(kind=FinanceKindTypeChoices.LESSON_PAYMENT)
+    if instance.status != "IS_PRESENT":
+        return
 
-        is_first_income = not Finance.objects.filter(action="INCOME").exists()
+    # Determine lesson price
+    group_sale_price = GroupSaleStudent.objects.filter(
+        student=instance.student,
+        group=instance.group,
+    ).first()
+    price = (
+        Decimal(group_sale_price.amount)
+        if group_sale_price
+        else Decimal(instance.group.price)
+    )
 
-        # bonus = (
-        #     Bonus.objects.filter(
-        #         user=instance.group.teacher,
-        #         name="O’quvchi to’lagan summadan foiz beriladi",
-        #     )
-        #     .values("amount")
-        #     .first()
-        # )
+    # Teacher's bonus percent
+    bonus_percent = Decimal(teacher.f_t_lesson_payment_percent)
+    bonus_amount, _ = calculate_bonus_and_income(price, bonus_percent)
 
-        # bonus_percent = Decimal(bonus["amount"]) if bonus else Decimal("0.0")
-
-        bonus_percent = Decimal(instance.group.teacher.f_t_lesson_payment_percent)
-
-        group_sale_price = GroupSaleStudent.objects.filter(
-            student=instance.student,
-            group=instance.group,
-        ).first()
-
-        if group_sale_price:
-            price = Decimal(group_sale_price.amount)
-        else:
-            price = Decimal(instance.group.price)
-
-        sale = get_sale_for_instance(instance)
-
-        # if instance.group.price_type == "DAILY":
-
-        final_price = apply_discount(price, sale)
-
-        instance.amount = final_price
-        instance.save(update_fields=["amount"])
-
-        instance.student.balance -= final_price
-        instance.student.save(update_fields=["balance"])
-
-        bonus_amount, income_amount = calculate_bonus_and_income(
-            final_price, bonus_percent
-        )
-
-        # instance.group.teacher.balance += bonus_amount
-        # instance.group.teacher.save(update_fields=["balance"])
-
-        # create_finance_record(
-        #     "EXPENSE",
-        #     bonus_amount,
-        #     teacher=instance.group.teacher,
-        #     kind=kind,
-        #     instance=instance,
-        #     student=instance.student,
-        #     is_first=is_first_income,
-        # )
-
-        instance.group.teacher.transactions.create(
+    if bonus_amount > 0:
+        teacher.transactions.create(
             reason="LESSON_PAYMENT",
             attendance=instance,
             student=instance.student,
             lead=instance.lead,
             amount=bonus_amount,
-            comment=f"{instance.date.strftime("%d/%m/%Y")} dagi dars uchun to'lov.",
+            comment=f"{instance.date.strftime('%d/%m/%Y')} dagi dars uchun to'lov.",
         )
-
-        create_finance_record(
-            "INCOME",
-            income_amount,
-            kind,
-            instance,
-            instance.student,
-            is_first=is_first_income,
-        )
-
-        # elif instance.group.price_type == "MONTHLY":
-        #     current_month = datetime.date.today().replace(day=1)
-        #     month_key = current_month.strftime("%Y-%m")
-        #     last_day = calendar.monthrange(current_month.year, current_month.month)[1]
-        #     end_of_month = current_month.replace(day=last_day)
-
-        #     ic(month_key, end_of_month)
-
-        #     lesson_days_qs = instance.group.scheduled_day_type.all()
-        #     lesson_days = (
-        #         ",".join([day.name for day in lesson_days_qs]) if lesson_days_qs else ""
-        #     )
-
-        #     holidays = []
-        #     days_off = []
-
-        #     lessons_per_month = calculate_lessons(
-        #         start_date=current_month.strftime("%Y-%m-%d"),
-        #         end_date=end_of_month.strftime("%Y-%m-%d"),
-        #         lesson_type=lesson_days,
-        #         holidays=holidays,
-        #         days_off=days_off,
-        #     )
-
-        #     lessons = lessons_per_month.get(month_key, [])
-        #     lesson_count = len(lessons)
-
-        #     if lesson_count > 0:
-        #         per_lesson_price = price / lesson_count
-        #         per_lesson_price = apply_discount(per_lesson_price, sale)
-
-        #         instance.student.balance -= per_lesson_price
-        #         instance.student.save(update_fields=["balance"])
-
-        #         instance.amount = per_lesson_price
-        #         instance.save(update_fields=["amount"])
-
-        #         bonus_amount, income_amount = calculate_bonus_and_income(
-        #             per_lesson_price, bonus_percent
-        #         )
-
-        #         # instance.group.teacher.balance += bonus_amount
-        #         # instance.group.teacher.save(update_fields=["balance"])
-        #         create_finance_record(
-        #             "EXPENSE",
-        #             bonus_amount,
-        #             teacher=instance.group.teacher,
-        #             kind=kind,
-        #             instance=instance,
-        #             student=instance.student,
-        #             is_first=is_first_income,
-        #         )
-        #         create_finance_record(
-        #             "INCOME",
-        #             income_amount,
-        #             kind,
-        #             instance,
-        #             instance.student,
-        #             is_first=is_first_income,
-        #         )
-
-        # else:
-        #     ic(f"No lessons scheduled for {month_key}, skipping balance deduction.")
-
-    finally:
-        _signal_state.processing = False
 
 
 #
