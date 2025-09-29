@@ -161,9 +161,9 @@ class EmployeeTransaction(BaseModel):
                 employee_transaction=self,
                 employee=self.employee,
                 comment=(
-                    f"Transaction archived for employee {self.employee.full_name}. {f'By {instance.created_by.full_name}({instance.created_by.phone})' if instance.created_by else "-"}, "
+                    f"Transaction archived for employee {self.employee.full_name}. "
                     f"Start: {start_balance}, Change: -{self.effective_amount}, "
-                    f"Final: {final_balance}."
+                    f"Final: {final_balance}. Comment: {comment}"
                 ),
             )
 
