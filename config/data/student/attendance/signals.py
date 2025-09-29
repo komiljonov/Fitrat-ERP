@@ -190,16 +190,18 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         is_first_income = not Finance.objects.filter(action="INCOME").exists()
 
-        bonus = (
-            Bonus.objects.filter(
-                user=instance.group.teacher,
-                name="O’quvchi to’lagan summadan foiz beriladi",
-            )
-            .values("amount")
-            .first()
-        )
+        # bonus = (
+        #     Bonus.objects.filter(
+        #         user=instance.group.teacher,
+        #         name="O’quvchi to’lagan summadan foiz beriladi",
+        #     )
+        #     .values("amount")
+        #     .first()
+        # )
 
-        bonus_percent = Decimal(bonus["amount"]) if bonus else Decimal("0.0")
+        # bonus_percent = Decimal(bonus["amount"]) if bonus else Decimal("0.0")
+
+        bonus_percent = instance.group.teacher.f_t_lesson_payment_percent
 
         group_sale_price = GroupSaleStudent.objects.filter(
             student=instance.student,
@@ -245,7 +247,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
             student=instance.student,
             lead=instance.lead,
             amount=bonus_amount,
-            comment=f" {instance.date.strftime("%d/%m/%Y")} dagi dars uchun to'lov.",
+            comment=f"{instance.date.strftime("%d/%m/%Y")} dagi dars uchun to'lov.",
         )
 
         create_finance_record(
