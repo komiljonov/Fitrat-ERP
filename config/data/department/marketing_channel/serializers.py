@@ -1,4 +1,4 @@
-from .models import MarketingChannel, Group_Type
+from .models import MarketingChannel
 from rest_framework import serializers
 
 
