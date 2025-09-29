@@ -201,7 +201,7 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 
         # bonus_percent = Decimal(bonus["amount"]) if bonus else Decimal("0.0")
 
-        bonus_percent = instance.group.teacher.f_t_lesson_payment_percent
+        bonus_percent = Decimal(instance.group.teacher.f_t_lesson_payment_percent)
 
         group_sale_price = GroupSaleStudent.objects.filter(
             student=instance.student,
