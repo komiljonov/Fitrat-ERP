@@ -34,7 +34,7 @@ class GroupSerializer(serializers.ModelSerializer):
     )
     student_count = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
-    current_theme = serializers.SerializerMethodField()
+    # current_theme = serializers.SerializerMethodField()
     room_number = serializers.PrimaryKeyRelatedField(
         queryset=Room.objects.all(), allow_null=True
     )
@@ -72,7 +72,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "real_student",
             "is_secondary",
             "is_archived",
-            "current_theme",
+            # "current_theme",
             "created_at",
         ]
 
@@ -123,17 +123,17 @@ class GroupSerializer(serializers.ModelSerializer):
             .first()
         )
 
-    def get_current_theme(self, obj):
-        today = date.today()
+    # def get_current_theme(self, obj):
+    #     today = date.today()
 
-        # Ensures we compare only the date and remove duplicate themes
-        attendance = (
-            Attendance.objects.filter(group=obj, created_at__date=today)
-            .values("theme", "repeated")
-            .distinct()  # Remove duplicates
-        )
+    #     # Ensures we compare only the date and remove duplicate themes
+    #     attendance = (
+    #         Attendance.objects.filter(group=obj, created_at__date=today)
+    #         .values("theme", "repeated")
+    #         .distinct()  # Remove duplicates
+    #     )
 
-        return list(attendance)
+    #     return list(attendance)
 
     def get_lessons_count(self, obj: Group):
         total_lessons = Theme.objects.filter(
