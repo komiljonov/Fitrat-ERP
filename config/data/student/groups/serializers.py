@@ -15,7 +15,6 @@ from data.student.subject.models import Theme, Level
 from data.student.subject.serializers import LevelSerializer
 from data.account.models import CustomUser
 from data.account.serializers import UserSerializer
-from data.department.marketing_channel.models import Group_Type
 from data.lid.new_lid.models import Lid
 
 
