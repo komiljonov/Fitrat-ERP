@@ -1,4 +1,6 @@
 from django.contrib import admin
+
+from data.student.studentgroup.actions import sync_group_price
 from .models import StudentGroup, SecondaryStudentGroup
 
 
@@ -16,6 +18,8 @@ class StudentGroupAdmin(admin.ModelAdmin):
         "lid__middle_name",
     )
     list_filter = ("group", "group__teacher", "is_archived", "student")
+
+    actions = [sync_group_price]
 
 
 @admin.register(SecondaryStudentGroup)
