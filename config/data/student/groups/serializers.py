@@ -142,13 +142,17 @@ class GroupSerializer(serializers.ModelSerializer):
             is_archived=False,
         ).count()
 
+        # attended_lessons = (
+        #     Attendance.objects.filter(
+        #         group=obj,
+        #     )
+        #     .values("theme")  # Group by lesson
+        #     .annotate(attended_count=Count("id"))  # Count attendance per lesson
+        #     .count()  # Count unique lessons with attendance records
+        # )
+
         attended_lessons = (
-            Attendance.objects.filter(
-                group=obj,
-            )
-            .values("theme")  # Group by lesson
-            .annotate(attended_count=Count("id"))  # Count attendance per lesson
-            .count()  # Count unique lessons with attendance records
+            obj.lessons.values("theme").annotate(attended_count=Count("id")).count()
         )
 
         return {
@@ -454,7 +458,6 @@ class GroupSaleStudentSerializer(serializers.ModelSerializer):
         model = GroupSaleStudent
         fields = ["id", "group", "student", "lid", "amount", "comment"]
 
-    
     def validate(self, attrs):
         student = attrs.get("student")
         lid = attrs.get("lid")
@@ -463,6 +466,7 @@ class GroupSaleStudentSerializer(serializers.ModelSerializer):
                 "Either 'student' or 'lid' must be provided."
             )
         return attrs
+
 
 class CheckRoomTeacherConflictSerializer(serializers.Serializer):
 
