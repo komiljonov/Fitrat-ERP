@@ -3,8 +3,8 @@ from .views import (
     MarketingChannelList,
     MarketingChannelNOPG,
     MarketingChannelDetail,
-    GroupTypeList,
-    GroupTypeDetail,
+    # GroupTypeList,
+    # GroupTypeDetail,
 )
 
 urlpatterns = [
@@ -13,6 +13,6 @@ urlpatterns = [
         "<uuid:pk>/", MarketingChannelDetail.as_view(), name="marketing_channel_detail"
     ),
     path("no-pg/", MarketingChannelNOPG.as_view(), name="marketing_channelNOPG"),
-    path("group/", GroupTypeList.as_view(), name="group_type_list"),
-    path("group/<uuid:pk>/", GroupTypeDetail.as_view(), name="group_type_detail"),
+    # path("group/", GroupTypeList.as_view(), name="group_type_list"),
+    # path("group/<uuid:pk>/", GroupTypeDetail.as_view(), name="group_type_detail"),
 ]
