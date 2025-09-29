@@ -348,7 +348,7 @@ def on_attendance(sender, instance: Attendance, **kwargs):
     # Archive old transactions
     teacher.transactions.filter(
         attendance=instance, reason="LESSON_PAYMENT", is_archived=False
-    ).update(is_archived=True)
+    ).update(is_archived=True, archived_at=timezone.now())
 
     if instance.status != "IS_PRESENT":
         return
