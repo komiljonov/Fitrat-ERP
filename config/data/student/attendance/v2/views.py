@@ -58,35 +58,36 @@ class AttendanceCreateAPIView(APIView):
 
             for item in items:
 
-                student: "StudentGroup" = item["student"]
+                student_group: "StudentGroup" = item["student"]
 
                 status = item["status"]
                 comment = item.get("comment")
 
                 attendance, created = Attendance.objects.update_or_create(
-                    student=student.student,
-                    lead=student.lid,
+                    student_group=student_group,
+                    student=student_group.student,
+                    lead=student_group.lid,
                     date=date,
                     group=group,
                     defaults=dict(
                         status=status,
                         comment=comment,
-                        first_lesson=student.first_lesson,
+                        first_lesson=student_group.first_lesson,
                     ),
                 )
 
                 if created:
-                    if student.student != None and homework:
+                    if student_group.student != None and homework:
                         Homework_history.objects.create(
                             homework=homework,
-                            student=student.student,
+                            student=student_group.student,
                             status="Passed",
                             mark=0,
                         )
 
                     mastering = Mastering.objects.create(
-                        student=student.student,
-                        lid=student.lid,
+                        student=student_group.student,
+                        lid=student_group.lid,
                         theme=theme,
                         test=quiz,
                         ball=0,
@@ -95,8 +96,8 @@ class AttendanceCreateAPIView(APIView):
                     if theme.course.subject.is_language:
 
                         Mastering.objects.create(
-                            student=student.student,
-                            lid=student.lid,
+                            student=student_group.student,
+                            lid=student_group.lid,
                             theme=theme,
                             test=None,
                             choice="Speaking",
