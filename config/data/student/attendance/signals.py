@@ -346,9 +346,14 @@ def on_attendance(sender, instance: Attendance, **kwargs):
     teacher = instance.group.teacher
 
     # Archive old transactions
-    teacher.transactions.filter(
+    # teacher.transactions.filter(
+    #     attendance=instance, reason="LESSON_PAYMENT", is_archived=False
+    # ).update(is_archived=True, archived_at=timezone.now())
+
+    for transaction in teacher.transactions.filter(
         attendance=instance, reason="LESSON_PAYMENT", is_archived=False
-    ).update(is_archived=True, archived_at=timezone.now())
+    ):
+        transaction.cancel(f"Attendance state changed: {instance.status}")
 
     if instance.status != "IS_PRESENT":
         return

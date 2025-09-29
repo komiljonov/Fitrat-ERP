@@ -5,7 +5,11 @@ from django.contrib import admin
 
 from data.command.models import BaseModel
 from data.firstlesson.models import FirstLesson
+from data.logs.models import Log
 from data.student.attendance.models import Attendance
+
+from django.db import transaction
+
 
 if TYPE_CHECKING:
     from data.student.lesson.models import FirstLLesson
@@ -138,3 +142,31 @@ class EmployeeTransaction(BaseModel):
         list_display = ["employee", "reason", "amount", "effective_amount"]
 
         readonly_fields = ["effective_amount"]
+
+    def cancel(self, comment: str | None = None):
+
+        with transaction.atomic():
+
+            start_balance = self.employee.balance
+            final_balance = start_balance - self.effective_amount
+
+            # Update balance
+            self.employee.balance = final_balance
+            self.employee.save(update_fields=["balance"])
+
+            # Log deletion
+            Log.objects.create(
+                object="EMPLOYEE",
+                action="TRANSACTION_DELETED",
+                employee_transaction=self,
+                employee=self.employee,
+                comment=(
+                    f"Transaction archived for employee {self.employee.full_name}. {f'By {instance.created_by.full_name}({instance.created_by.phone})' if instance.created_by else "-"}, "
+                    f"Start: {start_balance}, Change: -{self.effective_amount}, "
+                    f"Final: {final_balance}."
+                ),
+            )
+
+            self.is_archived = True
+            self.set_archived_at()
+            self.save()
