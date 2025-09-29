@@ -1,5 +1,6 @@
 from typing import Any
 from django.core.management.base import BaseCommand
+from tqdm import tqdm
 
 from data.student.attendance.models import Attendance
 from data.student.studentgroup.models import StudentGroup
