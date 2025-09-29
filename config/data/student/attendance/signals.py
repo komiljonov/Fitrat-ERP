@@ -1,4 +1,3 @@
-import calendar
 import datetime
 from datetime import timedelta
 from decimal import Decimal
@@ -13,11 +12,9 @@ from data.finances.finance.choices import FinanceKindTypeChoices
 from data.exam_results.tasks import send_unit_test_notification
 from data.student.attendance.choices import AttendanceStatusChoices
 from .models import Attendance
-from data.student.groups.lesson_date_calculator import calculate_lessons
 from data.student.groups.models import GroupSaleStudent
 from data.student.subject.models import Theme, Level
 from data.exam_results.models import UnitTest
-from data.finances.compensation.models import Bonus
 from data.finances.finance.models import Finance, Kind, SaleStudent
 from data.notifications.models import Notification
 from data.parents.models import Relatives
@@ -185,7 +182,6 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
         if instance.status not in ["IS_PRESENT", "UNREASONED", "REASONED"]:
             return
 
-        # kind = Kind.objects.get(name="Lesson payment")
         kind = Kind.get(kind=FinanceKindTypeChoices.LESSON_PAYMENT)
 
         is_first_income = not Finance.objects.filter(action="INCOME").exists()

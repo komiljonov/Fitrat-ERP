@@ -7,6 +7,7 @@ from data.command.models import BaseModel
 
 from data.student.attendance.choices import AttendanceStatusChoices
 from data.student.attendance.utils import current_streak
+from data.student.studentgroup.models import StudentGroup
 
 if TYPE_CHECKING:
     from data.student.subject.models import Theme
@@ -18,6 +19,8 @@ if TYPE_CHECKING:
 
 class Attendance(BaseModel):
 
+    date = models.DateField()
+
     group: "Group | None" = models.ForeignKey(
         "groups.Group",
         on_delete=models.CASCADE,
@@ -25,16 +28,6 @@ class Attendance(BaseModel):
         blank=True,
         related_name="attendances",
     )
-
-    date = models.DateField()
-
-    theme: "models.ManyToManyField[Theme]" = models.ManyToManyField(
-        "subject.Theme",
-        blank=True,
-        related_name="attendance_theme",
-    )
-
-    repeated = models.BooleanField(default=False)
 
     student: "Student | None" = models.ForeignKey(
         "student.Student",
@@ -50,6 +43,14 @@ class Attendance(BaseModel):
         null=True,
         blank=True,
         related_name="attendances",
+    )
+
+    student_group: "StudentGroup" = models.ForeignKey(
+        "studentgroup.StudentGroup",
+        on_delete=models.PROTECT,
+        related_name="attendances",
+        null=True,
+        blank=False,
     )
 
     first_lesson: "FirstLesson | None" = models.ForeignKey(
