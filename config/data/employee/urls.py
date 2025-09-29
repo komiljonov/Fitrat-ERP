@@ -11,7 +11,7 @@ from .views import (
 transaction_urls = [
     path("transactions/", include("data.employee.transactions.urls")),
     path(
-        "<uuid:employee>/transactions", EmployeeTransactionsListCreateAPIView.as_view()
+        "<uid:employee>/transactions", EmployeeTransactionsListCreateAPIView.as_view()
     ),
 ]
 

@@ -2,6 +2,8 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
+from django.http import Http404
+
 
 from rest_framework.request import Request
 from rest_framework.generics import (
@@ -77,7 +79,17 @@ class EmployeeTransactionsListCreateAPIView(ETLCAV):
     lookup_url_kwarg = "employee"  # from your URLConf
 
     def get_employee(self) -> Employee:
-        return get_object_or_404(Employee, pk=self.kwargs[self.lookup_url_kwarg])
+        pk = self.kwargs[self.lookup_url_kwarg]
+
+        if pk == "me":
+            user = self.request.user
+            if not user or not user.is_authenticated:
+                raise Http404("Employee not found.")
+
+            # assuming request.user *is* the Employee model
+            return user
+
+        return get_object_or_404(Employee, pk=pk)
 
     def get_queryset(self):
         employee = self.get_employee()
