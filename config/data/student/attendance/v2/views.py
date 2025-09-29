@@ -52,7 +52,7 @@ class AttendanceCreateAPIView(APIView):
                 date=date,
                 defaults=dict(
                     theme=theme,
-                    repeated=repeated,
+                    is_repeat=repeated,
                 ),
             )
 
