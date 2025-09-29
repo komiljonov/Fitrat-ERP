@@ -11,6 +11,7 @@ class AttendanceAdmin(admin.ModelAdmin):
         "student_info",
         "lead",
         "group",
+        "student_group",
         "status",
         "created_at",
     )
