@@ -47,9 +47,16 @@ class AttendanceCreateAPIView(APIView):
         quiz = Quiz.objects.filter(homework=homework).first()
 
         with transaction.atomic():
+
+            lesson, created = group.lessons.update_or_create(
+                date=date,
+                defaults=dict(
+                    theme=theme,
+                    repeated=repeated,
+                ),
+            )
+
             for item in items:
-                # student = item["student"]
-                # lead = item["lead"]
 
                 student: "StudentGroup" = item["student"]
 
@@ -64,12 +71,9 @@ class AttendanceCreateAPIView(APIView):
                     defaults=dict(
                         status=status,
                         comment=comment,
-                        repeated=repeated,
                         first_lesson=student.first_lesson,
                     ),
                 )
-
-                attendance.theme.add(theme)
 
                 if created:
                     if student.student != None and homework:

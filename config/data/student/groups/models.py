@@ -127,6 +127,7 @@ class Group(BaseModel):
 
     students: "models.QuerySet[StudentGroup]"
     attendances: "models.QuerySet[Attendance]"
+    lessons: "models.QuerySet[GroupLesson]"
 
     def __str__(self):
         return f"{self.name} - {self.price_type}"
