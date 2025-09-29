@@ -10,7 +10,7 @@ class EmployeeTransactionsListCreateAPIView(ListCreateAPIView):
     POST /transactions      -> create a transaction for all employees
     """
 
-    queryset = EmployeeTransaction.objects.all()
+    queryset = EmployeeTransaction.objects.filter(is_archived=False)
 
     serializer_class = EmployeeTransactionSerializer
 
@@ -20,6 +20,6 @@ class EmployeeTransactionsListCreateAPIView(ListCreateAPIView):
 
 class EmployeeTransactionRetrieveDestroyAPIView(RetrieveDestroyAPIView):
 
-    queryset = EmployeeTransaction.objects.all()
+    queryset = EmployeeTransaction.objects.filter(is_archived=False)
 
     serializer_class = EmployeeTransactionSerializer
