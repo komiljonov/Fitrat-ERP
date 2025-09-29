@@ -15,8 +15,8 @@ class RoomAdmin(admin.ModelAdmin):
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ("name", "teacher", "status", "room_number", "price_type", "price")
-    search_fields = ("name", "teacher", "status", "room_number", "price_type", "price")
+    list_display = ("name", "teacher", "status", "room_number", "price")
+    search_fields = ("name", "teacher", "status", "room_number", "price")
 
 
 @admin.register(SecondaryGroup)

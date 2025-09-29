@@ -97,14 +97,14 @@ class Group(BaseModel):
 
     room_number: "Room" = models.ForeignKey("groups.Room", on_delete=models.CASCADE)
 
-    price_type = models.CharField(
-        choices=[
-            ("DAILY", "Daily payment"),
-            ("MONTHLY", "Monthly payment"),
-        ],
-        default="DAILY",
-        max_length=100,
-    )
+    # price_type = models.CharField(
+    #     choices=[
+    #         ("DAILY", "Daily payment"),
+    #         ("MONTHLY", "Monthly payment"),
+    #     ],
+    #     default="DAILY",
+    #     max_length=100,
+    # )
 
     price = models.FloatField(default=0, null=True, blank=True)
 
@@ -130,7 +130,7 @@ class Group(BaseModel):
     lessons: "models.QuerySet[GroupLesson]"
 
     def __str__(self):
-        return f"{self.name} - {self.price_type}"
+        return f"{self.name}"
 
 
 class GroupLesson(BaseModel):

@@ -63,7 +63,7 @@ class StudentGroupsView(ListCreateAPIView):
         "scheduled_day_type",
         "start_date",
         "end_date",
-        "price_type",
+        # "price_type",
         "status",
         "teacher__id",
         "course__subject__id",
@@ -71,7 +71,7 @@ class StudentGroupsView(ListCreateAPIView):
     filterset_fields = (
         "name",
         "scheduled_day_type__name",
-        "price_type",
+        # "price_type",
         "status",
         "teacher__id",
         "course__subject__id",
@@ -84,7 +84,7 @@ class StudentGroupsView(ListCreateAPIView):
         subject = self.request.GET.get("subject", None)
         filial = self.request.GET.get("filial", None)
         day = self.request.GET.get("day", None)
-        price_type = self.request.GET.get("price_type", None)
+        # price_type = self.request.GET.get("price_type", None)
         level = self.request.GET.get("course__level__id", None)
         not_added = self.request.GET.get("not_added", None)
         student = self.request.GET.get("student", None)
@@ -122,8 +122,8 @@ class StudentGroupsView(ListCreateAPIView):
         if filial and filial.isnumeric():
             queryset = queryset.filter(filial_id=filial)
 
-        if price_type:
-            queryset = queryset.filter(price_type=price_type)
+        # if price_type:
+        #     queryset = queryset.filter(price_type=price_type)
 
         if not_added and not_added.lower() == "true":
             queryset = queryset.exclude(status="INACTIVE")

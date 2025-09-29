@@ -12,12 +12,12 @@ from data.finances.finance.models import SaleStudent, Sale
 from data.notifications.models import Notification
 
 
-@receiver(pre_save, sender=Group)
-def set_price_type_on_create(sender, instance: Group, **kwargs):
-    if instance.pk is None and not instance.price_type:
-        group_type = Group_Type.objects.first()
-        if group_type and group_type.price_type:
-            instance.price_type = group_type.price_type
+# @receiver(pre_save, sender=Group)
+# def set_price_type_on_create(sender, instance: Group, **kwargs):
+#     if instance.pk is None and not instance.price_type:
+#         group_type = Group_Type.objects.first()
+#         if group_type and group_type.price_type:
+#             instance.price_type = group_type.price_type
 
 
 @receiver(post_save, sender=Group)
@@ -83,12 +83,12 @@ def on_create(sender, instance: Group, created, **kwargs):
     #     )
 
 
-@receiver(post_save, sender=Group)
-def on_payment_method(sender, instance: Group, created: bool, **kwargs):
-    if created:
-        group_count = Group.objects.all().count()
-        if group_count == 1:
-            Group_Type.objects.create(price_type=instance.price_type)
+# @receiver(post_save, sender=Group)
+# def on_payment_method(sender, instance: Group, created: bool, **kwargs):
+#     if created:
+#         group_count = Group.objects.all().count()
+#         if group_count == 1:
+#             Group_Type.objects.create(price_type=instance.price_type)
 
 
 @receiver(post_save, sender=Group)

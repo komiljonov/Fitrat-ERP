@@ -62,7 +62,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "student_count",
             "lessons_count",
             "room_number",
-            "price_type",
+            # "price_type",
             "price",
             "scheduled_day_type",
             "comment",
@@ -210,11 +210,11 @@ class GroupSerializer(serializers.ModelSerializer):
                 {"filial": "Filial could not be determined."}
             )
 
-        if not status:
-            group_type = Group_Type.objects.filter().first()
-            if group_type:
-                status = group_type.price_type
-                validated_data["status"] = status
+        # if not status:
+        #     group_type = Group_Type.objects.filter().first()
+        #     if group_type:
+        #         status = group_type.price_type
+        #         validated_data["status"] = status
 
         # ✅ Ensure course exists
         course = validated_data.get("course")
@@ -241,7 +241,7 @@ class GroupLessonSerializer(serializers.ModelSerializer):
             "teacher",
             "status",
             "room_number",
-            "price_type",
+            # "price_type",
             "course",
             "price",
             "scheduled_day_type",
