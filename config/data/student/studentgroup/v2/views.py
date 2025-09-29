@@ -6,7 +6,13 @@ from rest_framework.request import HttpRequest, Request
 from rest_framework.response import Response
 
 from data.student.studentgroup.models import SecondaryStudentGroup, StudentGroup
-from data.student.studentgroup.v2.serializers import GroupStatisticsFilterSerializer
+from data.student.studentgroup.v2.serializers import (
+    GroupStatisticsFilterSerializer,
+    StudentGroupPriceSerializer,
+)
+
+
+from rest_framework.generics import CreateAPIView
 
 
 class GroupStatisticsAPIView(APIView):
@@ -201,3 +207,8 @@ class GroupStatisticsAPIView(APIView):
             "students": students.count(),
             "frozen": archived_or_frozen.count(),
         }
+
+
+class StudentGroupPriceCreateAPIView(CreateAPIView):
+
+    serializer_class = StudentGroupPriceSerializer

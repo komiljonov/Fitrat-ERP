@@ -47,6 +47,8 @@ class StudentsGroupSerializer(serializers.ModelSerializer):
             "group",
             "lid",
             "student",
+            "price",
+            "price_comment",
             "homework_type",
             "lesson_count",
             # "current_theme",

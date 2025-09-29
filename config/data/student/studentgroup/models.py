@@ -47,6 +47,9 @@ class StudentGroup(BaseModel):
         related_name="groups",
     )
 
+    price = models.IntegerField(default=0)
+    price_comment = models.TextField(null=True, blank=True)
+
     HOMEWORK_ONLINE = "Online"
     HOMEWORK_OFFLINE = "Offline"
 
@@ -194,3 +197,16 @@ class SecondaryStudentGroup(BaseModel):
                 # deferrable=models.Deferrable.DEFERRED,
             ),
         ]
+
+
+class StudentGroupPrice(BaseModel):
+
+    student_group: "StudentGroup" = models.ForeignKey(
+        "studentgroup.StudentGroup",
+        on_delete=models.CASCADE,
+        related_name="prices",
+    )
+
+    amount = models.IntegerField()
+
+    comment = models.TextField(null=True, blank=True)

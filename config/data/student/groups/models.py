@@ -177,11 +177,13 @@ class GroupLesson(BaseModel):
 
 
 class GroupSaleStudent(BaseModel):
+
     group: "Group" = models.ForeignKey(
         "groups.Group",
         on_delete=models.CASCADE,
         related_name="sale_student_group",
     )
+
     student: "Student" = models.ForeignKey(
         "student.Student",
         on_delete=models.SET_NULL,
@@ -196,6 +198,15 @@ class GroupSaleStudent(BaseModel):
         blank=True,
         related_name="sale_student_lid",
     )
+
+    student_group: "StudentGroup" = models.ForeignKey(
+        "studentgroup.StudentGroup",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=False,
+        related_name="group_sale_students",
+    )
+
     amount = models.FloatField(default=0, null=True, blank=True)
 
     comment = models.TextField(null=True, blank=True)
