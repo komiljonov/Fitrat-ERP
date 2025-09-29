@@ -12,4 +12,4 @@ def on_new_student_group_price(sender, instance: StudentGroupPrice, created, **k
 
     instance.student_group.price = instance.amount
     instance.student_group.price_comment = instance.comment
-    instance.save()
+    instance.student_group.save()
