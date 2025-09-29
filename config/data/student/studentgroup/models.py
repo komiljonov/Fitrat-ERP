@@ -209,4 +209,4 @@ class StudentGroupPrice(BaseModel):
 
     amount = models.IntegerField()
 
-    comment = models.TextField(null=True, blank=True)
+    comment = models.TextField()
