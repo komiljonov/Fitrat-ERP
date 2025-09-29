@@ -94,7 +94,8 @@ class EmployeeTransactionsListCreateAPIView(ETLCAV):
     def get_queryset(self):
         employee = self.get_employee()
         qs = EmployeeTransaction.objects.select_related("employee").filter(
-            employee=employee
+            employee=employee,
+            is_archived=False,
         )
 
         return qs
@@ -120,7 +121,8 @@ class EmployeeTransactionRetrieveDestroyAPIView(ETRDAV):
     def get_queryset(self):
         employee = self.get_employee()
         qs = EmployeeTransaction.objects.select_related("employee").filter(
-            employee=employee
+            employee=employee,
+            is_archived=False,
         )
 
         return qs
