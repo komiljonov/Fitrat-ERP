@@ -392,3 +392,10 @@ class StudentGroupUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "Can't  add students group to already existing  one."
             )
+
+
+{
+    "student_group": "6e1d9a6c-7bf4-4b6a-b728-7c0d0c215a3c",
+    "amount": 6002,
+    "comment": "AAABBB",
+}

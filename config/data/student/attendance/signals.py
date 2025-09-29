@@ -358,16 +358,19 @@ def on_attendance(sender, instance: Attendance, **kwargs):
     if instance.status != "IS_PRESENT":
         return
 
-    # Determine lesson price
-    group_sale_price = GroupSaleStudent.objects.filter(
-        student=instance.student,
-        group=instance.group,
-    ).first()
-    price = (
-        Decimal(group_sale_price.amount)
-        if group_sale_price
-        else Decimal(instance.group.price)
-    )
+    # # Determine lesson price
+    # group_sale_price = GroupSaleStudent.objects.filter(
+    #     student=instance.student,
+    #     group=instance.group,
+    # ).first()
+
+    # price = (
+    #     Decimal(group_sale_price.amount)
+    #     if group_sale_price
+    #     else Decimal(instance.group.price)
+    # )
+
+    price = instance.student_group.price
 
     # Teacher's bonus percent
     bonus_percent = Decimal(teacher.f_t_lesson_payment_percent)
