@@ -96,6 +96,7 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
             "id",
             "employee",
             "reason",
+            "action",
             "amount",
             "effective_amount",
             "comment",
