@@ -378,36 +378,36 @@ def on_attendance_money_back(sender, instance: Attendance, created, **kwargs):
 #                 mark=0
 #             )
 
+# TODO: 29.09.2025 commentga olindi. Attendancedan theme field obtashalganda.
+# @receiver(m2m_changed, sender=Attendance.theme.through)
+# def group_level_update(sender, instance: Attendance, action, **kwargs):
+#     if action != "post_add":
+#         return
 
-@receiver(m2m_changed, sender=Attendance.theme.through)
-def group_level_update(sender, instance: Attendance, action, **kwargs):
-    if action != "post_add":
-        return
+#     theme_instance = instance.theme.first()
+#     if not theme_instance:
+#         return
 
-    theme_instance = instance.theme.first()
-    if not theme_instance:
-        return
+#     if instance.group.course.level:
+#         group = instance.group
+#         course = group.course
+#         level = theme_instance.level
 
-    if instance.group.course.level:
-        group = instance.group
-        course = group.course
-        level = theme_instance.level
+#         next_level = Level.objects.filter(order=level.order + 1, courses=course).first()
+#         if not next_level:
+#             group.status = "INACTIVE"
+#             group.save(update_fields=["status"])
+#             return
 
-        next_level = Level.objects.filter(order=level.order + 1, courses=course).first()
-        if not next_level:
-            group.status = "INACTIVE"
-            group.save(update_fields=["status"])
-            return
+#         group_themes = Theme.objects.filter(
+#             course=course, level=level, subject=course.subject
+#         )
 
-        group_themes = Theme.objects.filter(
-            course=course, level=level, subject=course.subject
-        )
+#         last_theme = group_themes.last()
 
-        last_theme = group_themes.last()
-
-        if last_theme and theme_instance == last_theme:
-            group.level = next_level
-            group.save(update_fields=["level"])
+#         if last_theme and theme_instance == last_theme:
+#             group.level = next_level
+#             group.save(update_fields=["level"])
 
 
 @receiver(post_save, sender=Attendance)
