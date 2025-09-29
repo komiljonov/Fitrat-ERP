@@ -18,7 +18,6 @@ class Command(BaseCommand):
                 student=attendance.student,
                 lid=attendance.lead,
                 group=attendance.group,
-                is_archived=False,
             ).first()
 
             attendance.student_group = sg
