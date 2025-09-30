@@ -25,6 +25,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "is_archived",
             "extra_number",
             "is_call_center",
+            "is_service_manager",
             "photo",
             "filial",
             "created_at",

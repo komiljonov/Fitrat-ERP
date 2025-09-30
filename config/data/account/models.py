@@ -88,6 +88,7 @@ class CustomUser(AbstractUser, EmployeeFinanceFields):
     )
 
     is_call_center = models.BooleanField(default=False)
+    is_service_manager = models.BooleanField(default=False)
 
     role = models.CharField(choices=ROLE_CHOICES, max_length=30, default="DIRECTOR")
 

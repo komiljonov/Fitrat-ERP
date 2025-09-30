@@ -41,6 +41,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "files",
             "extra_number",
             "is_call_center",
+            "is_service_manager",
             "enter",
             "leave",
             "date_of_birth",
@@ -170,6 +171,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             "filial",
             "extra_number",
             "is_call_center",
+            "is_service_manager",
             "date_of_birth",
         ]
 
@@ -277,6 +279,7 @@ class UserListSerializer(ModelSerializer):
             "is_archived",
             "extra_number",
             "is_call_center",
+            "is_service_manager",
             "photo",
             "filial",
             "bonus",
@@ -422,6 +425,7 @@ class UserSerializer(serializers.ModelSerializer):
             "salary",
             "extra_number",
             "is_call_center",
+            "is_service_manager",
             "second_user",
             "student_id",
             "enter",
