@@ -249,7 +249,7 @@ class ThemePgList(ListCreateAPIView):
                     GroupLesson.objects.filter(
                         group_id=group_id,
                         theme__isnull=False,
-                        is_repeated=False,
+                        is_repeat=False,
                     )
                     .order_by("-date")
                     .first()
@@ -262,7 +262,7 @@ class ThemePgList(ListCreateAPIView):
                         next_theme = qs.filter(
                             created_at__gt=last_theme.created_at
                         ).first()
-                        
+
                         if next_theme:
                             return Theme.objects.filter(id=next_theme.id)
                         else:
