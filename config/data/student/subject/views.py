@@ -20,7 +20,7 @@ from .models import Subject, Level, Theme
 from .serializers import SubjectSerializer, LevelSerializer, ThemeSerializer
 from data.student.attendance.models import Attendance
 from data.student.course.models import Course
-from data.student.groups.models import Group
+from data.student.groups.models import Group, GroupLesson
 from data.student.homeworks.models import Homework
 
 
@@ -238,20 +238,31 @@ class ThemePgList(ListCreateAPIView):
                         return Theme.objects.none()
 
                 # Find the last attendance record for this group
-                last_att = (
-                    Attendance.objects.filter(group_id=group_id)
-                    .exclude(theme__isnull=True)
-                    .order_by("-created_at")
+                # last_att = (
+                #     Attendance.objects.filter(group_id=group_id)
+                #     .exclude(theme__isnull=True)
+                #     .order_by("-created_at")
+                #     .first()
+                # )
+
+                last_lesson = (
+                    GroupLesson.objects.filter(
+                        group_id=group_id,
+                        theme__isnull=False,
+                        is_repeated=False,
+                    )
+                    .order_by("-date")
                     .first()
                 )
 
-                if last_att and last_att.theme.exists():
-                    last_theme = last_att.theme.order_by("-created_at").first()
+                if last_lesson:
+                    last_theme = last_lesson.theme
 
                     if last_theme:
                         next_theme = qs.filter(
                             created_at__gt=last_theme.created_at
                         ).first()
+                        
                         if next_theme:
                             return Theme.objects.filter(id=next_theme.id)
                         else:
