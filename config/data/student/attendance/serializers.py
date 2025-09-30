@@ -25,9 +25,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     date = serializers.DateField(required=False, default=date.today)
 
-    theme = serializers.PrimaryKeyRelatedField(
-        queryset=Theme.objects.all(), many=True, write_only=True
-    )
 
     lead = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(),
@@ -48,8 +45,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "date",
-            "theme",
-            "repeated",
             "group",
             "lead",
             "student",
