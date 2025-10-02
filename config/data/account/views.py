@@ -48,34 +48,121 @@ from data.student.student.sms import SayqalSms
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+# class RegisterAPIView(CreateAPIView):
+#     serializer_class = UserCreateSerializer
+
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+
+#         phone = serializer.validated_data["phone"]
+#         if CustomUser.objects.filter(phone=phone).exists():
+#             return Response(
+#                 {"success": False, "message": "already_used_number"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         user = serializer.save()
+#         user_serializer = UserCreateSerializer(user)
+
+#         tt = HrPulseIntegration()
+
+#         photo_id_data = tt.upload_tt_foto(user.photo.file) if user.photo else None
+#         photo_id = photo_id_data.get("id") if photo_id_data else None
+
+#         filial_ids = []
+#         for filial in user.filial.all():
+
+#             if filial.tt_filial is None:
+#                 response = tt.get_filial({filial.name})
+
+#                 tt_id = (
+#                     response[0].get("id")
+#                     if isinstance(response, list) and response
+#                     else None
+#                 )
+
+#                 if tt_id:
+#                     filial.tt_filial = tt_id
+#                     filial.save()
+#                 else:
+#                     filial_tt = tt.create_filial({"name": filial.name})
+#                     if filial_tt:
+#                         filial.tt_filial = filial_tt.get("id")
+#                         filial.save()
+
+#             if filial.tt_filial:
+#                 filial_ids.append(filial.tt_filial)
+
+#         external_data = {
+#             "image": photo_id,
+#             "name": user.full_name,
+#             "phone_number": user.phone,
+#             "filials": filial_ids,
+#             "salary": user.salary,
+#             **build_weekly_schedule(user),
+#             "lunch_time": None,
+#         }
+
+#         external_response = tt.create_data(external_data)
+#         print(external_response)
+
+#         if external_response and external_response.get("id"):
+#             user.second_user = external_response["id"]
+#             user.save()
+
+#         return Response(
+#             {
+#                 "success": True,
+#                 "user": user_serializer.data,
+#                 "external_response": external_response,
+#             },
+#             status=status.HTTP_201_CREATED,
+#         )
+
+
 class RegisterAPIView(CreateAPIView):
     serializer_class = UserCreateSerializer
 
     def create(self, request, *args, **kwargs):
+        print("Start: Received request")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        print("Step 1: Serializer validated")
 
         phone = serializer.validated_data["phone"]
         if CustomUser.objects.filter(phone=phone).exists():
+            print("Step 2: Phone already used")
             return Response(
                 {"success": False, "message": "already_used_number"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        print("Step 3: Saving user")
         user = serializer.save()
         user_serializer = UserCreateSerializer(user)
+        print(f"Step 4: User saved: {user.id}")
 
         tt = HrPulseIntegration()
+        print("Step 5: HrPulseIntegration instance created")
 
-        photo_id_data = tt.upload_tt_foto(user.photo.file) if user.photo else None
-        photo_id = photo_id_data.get("id") if photo_id_data else None
+        if user.photo:
+            print("Step 6: Uploading user photo")
+            photo_id_data = tt.upload_tt_foto(user.photo.file)
+            photo_id = photo_id_data.get("id") if photo_id_data else None
+            print(f"Step 6: Photo uploaded, id: {photo_id}")
+        else:
+            print("Step 6: No photo to upload")
+            photo_id = None
 
         filial_ids = []
+        print("Step 7: Processing filials")
         for filial in user.filial.all():
+            print(f"Processing filial: {filial.name}")
 
             if filial.tt_filial is None:
+                print("  tt_filial is None, fetching from TT")
                 response = tt.get_filial({filial.name})
-
                 tt_id = (
                     response[0].get("id")
                     if isinstance(response, list) and response
@@ -83,16 +170,21 @@ class RegisterAPIView(CreateAPIView):
                 )
 
                 if tt_id:
+                    print(f"  Found TT filial id: {tt_id}")
                     filial.tt_filial = tt_id
                     filial.save()
                 else:
+                    print("  TT filial not found, creating new")
                     filial_tt = tt.create_filial({"name": filial.name})
                     if filial_tt:
                         filial.tt_filial = filial_tt.get("id")
                         filial.save()
+                        print(f"  Created TT filial id: {filial.tt_filial}")
 
             if filial.tt_filial:
                 filial_ids.append(filial.tt_filial)
+
+        print(f"Step 8: Filial IDs prepared: {filial_ids}")
 
         external_data = {
             "image": photo_id,
@@ -104,13 +196,16 @@ class RegisterAPIView(CreateAPIView):
             "lunch_time": None,
         }
 
+        print("Step 9: Sending data to external system")
         external_response = tt.create_data(external_data)
-        print(external_response)
+        print(f"Step 10: External response received: {external_response}")
 
         if external_response and external_response.get("id"):
+            print(f"Step 11: Saving external id to user: {external_response['id']}")
             user.second_user = external_response["id"]
             user.save()
 
+        print("Step 12: Returning response")
         return Response(
             {
                 "success": True,
