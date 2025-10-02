@@ -2,9 +2,12 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from django.db.models.signals import pre_save, post_save
+from django.core.exceptions import ValidationError
 
 from data.firstlesson.models import FirstLesson
 from data.student.studentgroup.models import StudentGroup
+
+from django.db.models import Q
 
 
 @receiver(post_save, sender=FirstLesson)
@@ -26,6 +29,18 @@ def on_new_first_lesson(sender, instance: "FirstLesson", created, **kwargs):
             amount=instance.lead.sales_manager.f_sm_bonus_create_first_lesson,
             comment=f"Yangi sinov darsi uchun bonus. Buyurtma: {instance.lead.first_name} {instance.lead.last_name}. Sinov darsi: {instance.id}",
         )
+
+
+@receiver(pre_save, sender=FirstLesson)
+def validate_before_saving(sender, instance: "FirstLesson", **kwargs):
+
+    existing_students = instance.group.students.filter(
+        Q(student__phone=instance.lead.phone_number)
+        | Q(lid__phone_number=instance.lead.phone_number)
+    ).exclude(first_lesson=instance)
+
+    if existing_students.exists():
+        raise ValidationError("BU raqam bilan o'quvchi allaqachon mavjud bu guruhda.")
 
 
 @receiver(pre_save, sender=FirstLesson)
