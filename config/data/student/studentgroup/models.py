@@ -98,7 +98,7 @@ class StudentGroup(BaseModel):
         ]
 
     def __str__(self):
-        return self.group.name if self.group else ""
+        return f"FirstLesson(id={self.id} group = {self.group} st_l={self.student or self.lid})"
 
     def clean(self):
         super().clean()
