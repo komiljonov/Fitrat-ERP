@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from data.student.studentgroup.models import StudentGroup
     from data.department.filial.models import Filial
     from data.student.student.models import Student
-    from data.account.models import CustomUser
     from data.upload.models import File
     from data.finances.finance.models import SaleStudent
     from data.student.attendance.models import Attendance
@@ -222,7 +221,8 @@ class Lid(BaseModel, LeadMethods):
 
     def __str__(self):
         return (
-            f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"
+            # f"{self.first_name} {self.subject} {self.ball} in {self.lid_stages} stage"
+            f"Lead(id={self.id} name={self.first_name} {self.last_name} {self.middle_name} phone={self.phone_number})"
         )
 
     def unarchive(self):
