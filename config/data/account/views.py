@@ -192,6 +192,7 @@ class RegisterAPIView(CreateAPIView):
             "phone_number": user.phone,
             "filials": filial_ids,
             "salary": user.salary,
+            "wt_mode": "NIGHTMARE",
             **build_weekly_schedule(user),
             "lunch_time": None,
         }
