@@ -213,7 +213,8 @@ class Student(BaseModel):
         ordering = ("is_frozen", "-created_at")
 
     def __str__(self):
-        return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
+        # return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
+        return f"Student(id={self.id} name={self.first_name} {self.last_name} {self.middle_name} phone={self.phone})"
 
     def archive(self, comment: str = None, *, archived_by=None):
 
