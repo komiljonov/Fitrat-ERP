@@ -91,12 +91,15 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
 
     employee = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
 
+    reason_text = serializers.SerializerMethodField()
+
     class Meta:
         model = EmployeeTransaction
         fields = [
             "id",
             "employee",
             "reason",
+            "reason_text",
             "action",
             "amount",
             "effective_amount",
@@ -117,3 +120,7 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
         ).data
 
         return res
+
+    def get_reason_text(self, obj: EmployeeTransaction):
+
+        return EmployeeTransaction.REASON_TO_TEXT.get(obj.reason, obj.reason)
