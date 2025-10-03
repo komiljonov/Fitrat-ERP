@@ -192,6 +192,7 @@ class Student(BaseModel):
         help_text="Call operator",
         related_name="student_call_operator",
     )
+
     new_student_date = models.DateTimeField(null=True, blank=True)
     active_date = models.DateTimeField(null=True, blank=True)
 
