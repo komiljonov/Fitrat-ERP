@@ -41,8 +41,12 @@ class ArchiveStatsAPIView(APIView):
         archived_leads = archives.filter(lead__lid_stage_type="NEW_LID")
         archived_orders = archives.filter(lead__lid_stage_type="ORDERED_LID")
 
-        archived_new_students = archives.filter(student_stage_type="NEW_STUDENT")
-        archived_active_students = archives.filter(student_stage_type="ACTIVE_STUDENT")
+        archived_new_students = archives.filter(
+            student__student_stage_type="NEW_STUDENT"
+        )
+        archived_active_students = archives.filter(
+            student__student_stage_type="ACTIVE_STUDENT"
+        )
 
         return Response(
             {
