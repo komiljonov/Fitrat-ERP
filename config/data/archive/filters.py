@@ -3,16 +3,24 @@ import django_filters as filters
 from django.db.models import Q
 
 from data.archive.models import Archive
+from data.department.filial.models import Filial
 from data.employee.models import Employee
 from data.student.subject.models import Subject
 
 
 class ArchiveFilter(filters.FilterSet):
     # map non-Archive fields through related FKs (student/lead)
+
+    filial = filters.ModelChoiceFilter(
+        queryset=Filial.objects.all(),
+        method="filter_filial",
+    )
+
     lang = filters.CharFilter(method="filter_lang")
 
     subject = filters.ModelChoiceFilter(
-        queryset=Subject.objects.all(), method="filter_subject"
+        queryset=Subject.objects.all(),
+        method="filter_subject",
     )
 
     operator = filters.ModelChoiceFilter(
@@ -25,6 +33,7 @@ class ArchiveFilter(filters.FilterSet):
         queryset=Employee.objects.filter(role="ADMINISTRATOR"),
         method="filter_sales_manager",
     )
+    
     service_manager = filters.ModelChoiceFilter(
         queryset=Employee.objects.filter(
             Q(role="SERVICE_MANAGER") | Q(is_service_manager=True)
@@ -74,6 +83,9 @@ class ArchiveFilter(filters.FilterSet):
 
     def filter_service_manager(self, qs, name, value):
         return self._either(qs, "service_manager", value)
+
+    def filter_filial(self, qs, name, value):
+        return self._either(qs, "filial", value)
 
     def filter_balance(self, qs, name, value):
         if not value:

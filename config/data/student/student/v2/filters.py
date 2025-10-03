@@ -59,7 +59,7 @@ class StudentFilter(filters.FilterSet):
         ]
 
     def filter_teacher(self, qs, name, value):
-        return qs.filter(groups__teacher=value)
+        return qs.filter(groups__group__teacher=value)
 
     def filter_balance(self, qs, name, value):
         if not value:
