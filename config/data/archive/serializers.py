@@ -50,6 +50,7 @@ class ArchiveSerializer(serializers.ModelSerializer):
                     "lid_stages",
                     "ordered_stages",
                     "call_operator",
+                    "balance",
                 ],
             ).data
 
@@ -67,6 +68,7 @@ class ArchiveSerializer(serializers.ModelSerializer):
                     "service_manager",
                     "student_stage_type",
                     "new_student_stages",
+                    "balance",
                 ],
             ).data
 
