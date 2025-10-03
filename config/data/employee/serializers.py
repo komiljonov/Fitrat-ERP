@@ -97,7 +97,6 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
 
     student = StudentSerializer.mininal()
     lead = LeadSerializer.mininal()
-    
 
     class Meta:
         model = EmployeeTransaction
