@@ -91,12 +91,12 @@ class ArchiveStatsAPIView(APIView):
                 "entitled": {
                     "count": entitled.count(),
                     "total_amount": entitled_total,
-                    "ids": entitled.values_list("id", flat=True),
+                    # "ids": entitled.values_list("id", flat=True),
                 },
                 "indebted": {
                     "count": indebted.count(),
                     "total_amount": indebted_total,
-                    "ids": indebted.values_list("id", flat=True),
+                    # "ids": indebted.values_list("id", flat=True),
                 },
             }
         )
