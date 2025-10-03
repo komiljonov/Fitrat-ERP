@@ -366,6 +366,18 @@ class StudentSerializer(serializers.ModelSerializer):
 
         return representation
 
+    @classmethod
+    def mininal(cls):
+        return cls(
+            include_only=[
+                "id",
+                "first_name",
+                "last_name",
+                "middle_name",
+                "phone",
+            ]
+        )
+
 
 class StudentAppSerializer(serializers.ModelSerializer):
     class Meta:

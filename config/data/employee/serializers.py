@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from data.employee.models import Employee, EmployeeTransaction
+from data.lid.new_lid.serializers import LeadSerializer
+from data.student.student.serializers import StudentSerializer
 from data.upload.serializers import FileUploadSerializer
 
 
@@ -92,6 +94,10 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
     employee = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
 
     reason_text = serializers.SerializerMethodField()
+
+    student = StudentSerializer.mininal()
+    lead = LeadSerializer.mininal()
+    
 
     class Meta:
         model = EmployeeTransaction

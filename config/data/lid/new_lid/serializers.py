@@ -430,6 +430,18 @@ class LeadSerializer(serializers.ModelSerializer):
 
         return instance
 
+    @classmethod
+    def mininal(cls):
+        return cls(
+            include_only=[
+                "id",
+                "first_name",
+                "last_name",
+                "middle_name",
+                "phone_number",
+            ]
+        )
+
 
 class LidStatisticsSerializer(serializers.ModelSerializer):
     class Meta:
