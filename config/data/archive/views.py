@@ -3,8 +3,10 @@ from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum, Case, When, F, DecimalField
+
 
 from data.archive.models import Archive
 from data.archive.serializers import ArchiveSerializer
@@ -49,8 +51,35 @@ class ArchiveStatsAPIView(APIView):
             student__student_stage_type="ACTIVE_STUDENT"
         )
 
-        entited = archives.filter(Q(lead__balance__gt=0) | Q(student__balance__gt=0))
+        entitled = archives.filter(Q(lead__balance__gt=0) | Q(student__balance__gt=0))
         indebted = archives.filter(Q(lead__balance__lt=0) | Q(student__balance__lt=0))
+
+        # use conditional CASE so we can handle both lead and student balances in one total
+        entitled_total = (
+            entitled.aggregate(
+                total=Sum(
+                    Case(
+                        When(lead__isnull=False, then=F("lead__balance")),
+                        When(student__isnull=False, then=F("student__balance")),
+                        output_field=DecimalField(),
+                    )
+                )
+            )["total"]
+            or 0
+        )
+
+        indebted_total = (
+            indebted.aggregate(
+                total=Sum(
+                    Case(
+                        When(lead__isnull=False, then=F("lead__balance")),
+                        When(student__isnull=False, then=F("student__balance")),
+                        output_field=DecimalField(),
+                    )
+                )
+            )["total"]
+            or 0
+        )
 
         return Response(
             {
@@ -59,5 +88,13 @@ class ArchiveStatsAPIView(APIView):
                 "orders": archived_orders.count(),
                 "new_students": archived_new_students.count(),
                 "active_students": archived_active_students.count(),
+                "entitled": {
+                    "count": entitled.count(),
+                    "total_amount": entitled_total,
+                },
+                "indebted": {
+                    "count": indebted.count(),
+                    "total_amount": indebted_total,
+                },
             }
         )
