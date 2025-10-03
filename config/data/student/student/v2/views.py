@@ -12,20 +12,23 @@ from data.student.student.v2.filters import StudentFilter
 
 # views.py
 class StudentsStatsAPIView(APIView):
-    STAGE_MAP = {
-        "new": "NEW_STUDENT",
-        "active": "ACTIVE_STUDENT",
-    }
+    STAGE_MAP = {"new": "NEW_STUDENT", "active": "ACTIVE_STUDENT", "all": "ALL"}
 
     def get(self, request: HttpRequest, stage: str):
+
         stage_type = self.STAGE_MAP.get(stage)
+
         if not stage_type:
             return Response({"error": "Invalid stage"}, status=400)
 
-        students = Student.objects.filter(
-            is_archived=False,
-            student_stage_type=stage_type,
-        )
+        if stage_type != "ALL":
+
+            students = Student.objects.filter(
+                is_archived=False,
+                student_stage_type=stage_type,
+            )
+        else:
+            students = Student.objects.filter(is_archived=False)
 
         s_f = StudentFilter(
             data=request.query_params, queryset=students, request=request
