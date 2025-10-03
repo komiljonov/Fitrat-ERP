@@ -10,6 +10,7 @@ from data.student.subject.models import Subject
 class ArchiveFilter(filters.FilterSet):
     # map non-Archive fields through related FKs (student/lead)
     lang = filters.CharFilter(method="filter_lang")
+
     subject = filters.ModelChoiceFilter(
         queryset=Subject.objects.all(), method="filter_subject"
     )
