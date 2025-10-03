@@ -1,9 +1,8 @@
 from django.urls import path
 
-
-from .views import NewStudentsStatsAPIView
+from data.student.student.v2.views import StudentsStatsAPIView
 
 
 urlpatterns = [
-    path("stats/new_students", NewStudentsStatsAPIView.as_view())
+    path("stats/<str:stage>", StudentsStatsAPIView.as_view()),
 ]

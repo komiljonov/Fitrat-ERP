@@ -10,26 +10,33 @@ from data.student.student.models import Student
 from data.student.student.v2.filters import StudentFilter
 
 
-class NewStudentsStatsAPIView(APIView):
+# views.py
+class StudentsStatsAPIView(APIView):
+    STAGE_MAP = {
+        "new": "NEW_STUDENT",
+        "active": "ACTIVE_STUDENT",
+    }
 
-    def get(self, request: HttpRequest):
+    def get(self, request: HttpRequest, stage: str):
+        stage_type = self.STAGE_MAP.get(stage)
+        if not stage_type:
+            return Response({"error": "Invalid stage"}, status=400)
 
         students = Student.objects.filter(
             is_archived=False,
-            student_stage_type="NEW_STUDENT",
+            student_stage_type=stage_type,
         )
 
         s_f = StudentFilter(
             data=request.query_params, queryset=students, request=request
         )
-
         students = s_f.qs
 
         entitled = students.filter(balance__gt=0)
         indebted = students.filter(balance__lt=0)
 
         ever_archived = Archive.objects.filter(
-            student__student_stage_type="NEW_STUDENT",
+            student__student_stage_type=stage_type,
         )
 
         return Response(
@@ -46,8 +53,5 @@ class NewStudentsStatsAPIView(APIView):
                     "ids": indebted.values_list("id", "first_name", "balance"),
                 },
                 "archived": ever_archived.count(),
-                "activated": Student.objects.filter(
-                    student_stage_type="ACTIVE_STUDENT"
-                ).count(),
             }
         )
