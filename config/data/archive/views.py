@@ -36,4 +36,20 @@ class ArchiveStatsAPIView(APIView):
 
     def get(self, request: HttpRequest):
 
-        return Response({"total": Archive.objects.filter(unarchived_at=None).count()})
+        archives = Archive.objects.filter(unarchived_at=None)
+
+        archived_leads = archives.filter(lead__lid_stage_type="NEW_LID")
+        archived_orders = archives.filter(lead__lid_stage_type="ORDERED_LID")
+
+        archived_new_students = archives.filter(student_stage_type="NEW_STUDENT")
+        archived_active_students = archives.filter(student_stage_type="ACTIVE_STUDENT")
+
+        return Response(
+            {
+                "total": archives.count(),
+                "leads": archived_leads.count(),
+                "orders": archived_orders.count(),
+                "new_students": archived_new_students.count(),
+                "active_students": archived_active_students.count(),
+            }
+        )
