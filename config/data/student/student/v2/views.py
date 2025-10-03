@@ -34,7 +34,7 @@ class NewStudentsStatsAPIView(APIView):
                 "indebted": {
                     "count": indebted.count(),
                     "amount": indebted.aggregate(total=Sum("balance")),
-                    "ids": indebted.values_list("id", "balance", flat=True),
+                    "ids": indebted.values_list("id", "balance"),
                 },
                 "archived": ever_archived.count(),
                 "activated": Student.objects.filter(
