@@ -30,6 +30,7 @@ class NewStudentsStatsAPIView(APIView):
                 "entitled": {
                     "count": entitled.count(),
                     "amount": entitled.aggregate(total=Sum("balance")),
+                    "ids": entitled.values_list("id", "balance"),
                 },
                 "indebted": {
                     "count": indebted.count(),
