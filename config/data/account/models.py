@@ -87,7 +87,12 @@ class CustomUser(AbstractUser, EmployeeFinanceFields):
         ("Parents", "Parents"),
     )
 
+    # XXX: Eskisini olib tashlash kerak.
+
     is_call_center = models.BooleanField(default=False)
+
+    is_call_operator = models.BooleanField(default=False)
+
     is_service_manager = models.BooleanField(default=False)
 
     role = models.CharField(choices=ROLE_CHOICES, max_length=30, default="DIRECTOR")

@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q, Sum, Case, When, F, DecimalField
 
 
+from data.archive.filters import ArchiveFilter
 from data.archive.models import Archive
 from data.archive.serializers import ArchiveSerializer
 
@@ -18,6 +19,8 @@ class ArchiveListAPIView(ListAPIView):
 
     queryset = Archive.objects.filter(unarchived_at=None)
     serializer_class = ArchiveSerializer
+
+    filterset_class = ArchiveFilter
 
 
 class ArchiveRetrieveDestroyAPIView(RetrieveDestroyAPIView):
@@ -40,6 +43,10 @@ class ArchiveStatsAPIView(APIView):
     def get(self, request: HttpRequest):
 
         archives = Archive.objects.filter(unarchived_at=None)
+
+        f = ArchiveFilter(data=request.query_params, queryset=archives, request=request)
+
+        archives = f.qs
 
         archived_leads = archives.filter(lead__lid_stage_type="NEW_LID")
         archived_orders = archives.filter(lead__lid_stage_type="ORDERED_LID")
