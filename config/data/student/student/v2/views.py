@@ -30,12 +30,12 @@ class NewStudentsStatsAPIView(APIView):
                 "entitled": {
                     "count": entitled.count(),
                     "amount": entitled.aggregate(total=Sum("balance")),
-                    "ids": entitled.values_list("id", "name", "balance"),
+                    "ids": entitled.values_list("id", "first_name", "balance"),
                 },
                 "indebted": {
                     "count": indebted.count(),
                     "amount": indebted.aggregate(total=Sum("balance")),
-                    "ids": indebted.values_list("id", "name", "balance"),
+                    "ids": indebted.values_list("id", "first_name", "balance"),
                 },
                 "archived": ever_archived.count(),
                 "activated": Student.objects.filter(
