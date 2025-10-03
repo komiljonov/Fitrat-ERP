@@ -1,6 +1,8 @@
 from statistics import mean
 
 from rest_framework import serializers
+
+from data.student.groups.models import GroupLesson
 from .models import Homework, Homework_history
 from data.student.attendance.models import Attendance
 from data.student.mastering.models import Mastering
@@ -117,10 +119,11 @@ class HomeworkSerializer(serializers.ModelSerializer):
         }
 
     def get_is_active(self, obj):
-        att = Attendance.objects.filter(theme=obj.theme).first()
+        att = GroupLesson.objects.filter(theme=obj.theme).first()
 
         if att:
             return True
+
         return False
 
     def to_representation(self, instance):
