@@ -6,7 +6,7 @@ from .models import Student, FistLesson_data
 # Register your models here.
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "last_name", "phone", "student_stage_type")
+    list_display = ("first_name", "last_name", "phone", "balance", "student_stage_type")
     search_fields = ("first_name", "last_name", "phone")
     list_filter = ["student_stage_type", "is_archived"]
 

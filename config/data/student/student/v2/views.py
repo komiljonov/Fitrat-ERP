@@ -14,7 +14,8 @@ class NewStudentsStatsAPIView(APIView):
     def get(self, request: HttpRequest):
 
         students = Student.objects.filter(
-            is_archived=False, student_stage_type="NEW_STUDENT"
+            is_archived=False,
+            student_stage_type="NEW_STUDENT",
         )
 
         entitled = students.filter(balance__gt=0)
