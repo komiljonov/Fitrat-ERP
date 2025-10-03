@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from django.db import transaction
+from django.db.models import Q
 
 from data.archive.models import Archive
 from data.archive.serializers import ArchiveSerializer
@@ -47,6 +48,9 @@ class ArchiveStatsAPIView(APIView):
         archived_active_students = archives.filter(
             student__student_stage_type="ACTIVE_STUDENT"
         )
+
+        entited = archives.filter(Q(lead__balance__gt=0) | Q(student__balance__gt=0))
+        indebted = archives.filter(Q(lead__balance__lt=0) | Q(student__balance__lt=0))
 
         return Response(
             {
