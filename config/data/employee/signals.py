@@ -12,8 +12,11 @@ from data.employee.models import EmployeeTransaction
 @receiver(pre_save, sender=EmployeeTransaction)
 def before_employee_transaction_creating(sender, instance, **kwargs):
 
+    print("AAA", instance.reason)
+
     if instance.reason in EmployeeTransaction.REASON_TO_ACTION:
         instance.action = EmployeeTransaction.REASON_TO_ACTION[instance.reason]
+        print(instance.action)
     else:
         raise ValidationError(
             f"Invalid reason '{instance.reason}' for EmployeeTransaction"
