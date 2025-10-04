@@ -16,7 +16,6 @@ from data.student.attendance.models import Attendance
 from data.student.attendance.v2.serializers import (
     AttendanceGroupStateSerializer,
     AttendanceThemeRequestSerializer,
-    AttendanceThemeSerializer,
     CreateAttendanceV2Serializer,
 )
 from data.student.groups.models import Group
