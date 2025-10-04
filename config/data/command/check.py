@@ -1,6 +1,8 @@
 # yourapp/checks.py
+import sys
 from django.core.checks import register, Error, Tags
 from django.apps import apps
+from django.db import connections
 
 from data.command.models import BaseModel
 
@@ -33,13 +35,15 @@ def ensure_archive_constraint(app_configs, **kwargs):
     return errors
 
 
-from django.db import connections
-
 REQUIRED_EXTENSIONS = {"btree_gist", "btree_gin"}  # add more if you need
 
 
 @register(Tags.database)
 def check_postgres_extensions(app_configs, **kwargs):
+
+    if "psql_ext" in sys.argv:
+        return []
+
     errors = []
     for alias in connections:
         conn = connections[alias]
