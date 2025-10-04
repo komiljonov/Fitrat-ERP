@@ -86,6 +86,8 @@ class EmployeeMethods:
         else:
             entitled_students = 0
 
+        print(entitled_students)
+
         # Find matching KPI rule
         kpi = self.finance_manager_kpis.filter(
             range__num_contains=entitled_students
@@ -119,3 +121,6 @@ class EmployeeMethods:
                         comment=f"KPI Bonus: {entitled_students}% entitled students",
                         student=student,
                     )
+
+
+# Employee.objects.filter(id="b18ef020-7a11-49d9-8ef3-a71ca7d723d6").first().calculate_monthly_salary()
