@@ -5,7 +5,7 @@ from data.employee.models import Employee, EmployeeTransaction
 from data.lid.new_lid.serializers import LeadSerializer
 from data.student.student.serializers import StudentSerializer
 from data.upload.serializers import FileUploadSerializer
-from psycopg.types.numeric import NumericRange
+from psycopg2.extras import NumericRange
 
 
 class DecimalRangeFieldSerializer(serializers.Field):
