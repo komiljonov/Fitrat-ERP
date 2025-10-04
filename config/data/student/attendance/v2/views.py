@@ -215,6 +215,6 @@ class AttendanceThemesAPIView(APIView):
         return Response(
             {
                 "themes": data,
-                "today_theme_id": todays_theme_id,  # optional helper
+                "today_theme": todays_theme_id,  # optional helper
             }
         )
