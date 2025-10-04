@@ -4,6 +4,8 @@ from django.core.checks import register, Error, Tags
 from django.apps import apps
 from django.db import connections
 
+from django.core import checks
+
 from data.command.models import BaseModel
 
 
