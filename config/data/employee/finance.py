@@ -157,4 +157,10 @@ class FinanceManagerKpi(BaseModel):
                     ("range", RangeOperators.OVERLAPS),
                 ],
             ),
+            models.CheckConstraint(
+                check=models.expressions.RawSQL(
+                    "lower(span) >= 0 AND upper(span) <= 100", []
+                ),
+                name="range_within_bounds_0_100",
+            ),
         ]
