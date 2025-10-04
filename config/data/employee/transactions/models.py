@@ -142,6 +142,9 @@ class EmployeeTransaction(BaseModel):
     )
 
     def save(self, *args, **kwargs):
+
+        print(self.action, self.amount)
+
         # Apply business rule before saving
         if self.action == "INCOME":
             self.effective_amount = self.amount
