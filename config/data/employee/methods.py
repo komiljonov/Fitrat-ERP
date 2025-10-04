@@ -118,7 +118,7 @@ class EmployeeMethods:
                     self.transactions.create(
                         reason="FINE_FOR_EACH_INDEBT_STUDENT",
                         amount=kpi.amount,
-                        comment=f"KPI Bonus: {entitled_students}% entitled students",
+                        comment=f"KPI Fine: {entitled_students}% entitled students",
                         student=student,
                     )
 
