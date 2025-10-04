@@ -7,18 +7,8 @@ from data.command.models import BaseModel
 from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import DecimalRangeField
 from django.contrib.postgres.fields.ranges import RangeOperators
-from django.db.models import Func, F, Value
 
-
-# Django wrappers around Postgres range-bound functions
-class RangeLower(Func):
-    function = "lower"
-    arity = 1
-
-
-class RangeUpper(Func):
-    function = "upper"
-    arity = 1
+from django.core.exceptions import ValidationError
 
 
 if TYPE_CHECKING:
@@ -159,6 +149,27 @@ class FinanceManagerKpi(BaseModel):
 
     amount = models.IntegerField()
 
+    def clean(self):
+        """Ensure valid numeric range and enforce min/max limits."""
+        if not self.range:
+            raise ValidationError("Range (range) is required.")
+
+        lower, upper = self.range.lower, self.range.upper
+
+        # must be defined
+        if lower is None or upper is None:
+            raise ValidationError("Both start and end values must be provided.")
+
+        # order
+        if lower >= upper:
+            raise ValidationError("Start must be less than end.")
+
+        # boundaries
+        if lower < 0:
+            raise ValidationError("Start cannot be less than 0.")
+        if upper > 100:
+            raise ValidationError("End cannot exceed 100.")
+
     class Meta(BaseModel.Meta):
         constraints = [
             *BaseModel.Meta.constraints,
@@ -168,20 +179,5 @@ class FinanceManagerKpi(BaseModel):
                     ("employee", RangeOperators.EQUAL),
                     ("range", RangeOperators.OVERLAPS),
                 ],
-            ),
-            # end <= 100
-            models.CheckConstraint(
-                name="kpi_span_lower_gte_0",
-                check=RangeLower(F("span")) >= Value(0),
-            ),
-            # end <= 100
-            models.CheckConstraint(
-                name="kpi_span_upper_lte_100",
-                check=RangeUpper(F("span")) <= Value(100),
-            ),
-            # start < end
-            models.CheckConstraint(
-                name="kpi_span_lower_lt_upper",
-                check=RangeLower(F("span")) < RangeUpper(F("span")),
             ),
         ]
