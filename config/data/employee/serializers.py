@@ -1,12 +1,22 @@
 from rest_framework import serializers
 
+from data.employee.finance import FinanceManagerKpi
 from data.employee.models import Employee, EmployeeTransaction
 from data.lid.new_lid.serializers import LeadSerializer
 from data.student.student.serializers import StudentSerializer
 from data.upload.serializers import FileUploadSerializer
 
 
+class FinanceManagerKpiSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FinanceManagerKpi
+        fields = ["id", "employee", "action", "range", "amount"]
+
+
 class EmployeeSerializer(serializers.ModelSerializer):
+
+    finance_manager_kpis = FinanceManagerKpiSerializer(many=True)
 
     class Meta:
         model = Employee
@@ -46,6 +56,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "f_ht_bonus_for_each_active_student",
             "f_t_lesson_payment_percent",
             "f_t_fine_failed_first_lesson",
+            "finance_manager_kpis",
         ]
 
     def __init__(self, *args, **kwargs):
