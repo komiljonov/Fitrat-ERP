@@ -1,11 +1,15 @@
+from django.db import transaction
+
+from psycopg2.extras import NumericRange
+
 from rest_framework import serializers
+
 
 from data.employee.finance import FinanceManagerKpi
 from data.employee.models import Employee, EmployeeTransaction
 from data.lid.new_lid.serializers import LeadSerializer
 from data.student.student.serializers import StudentSerializer
 from data.upload.serializers import FileUploadSerializer
-from psycopg2.extras import NumericRange
 
 
 class DecimalRangeFieldSerializer(serializers.Field):
@@ -49,7 +53,11 @@ class FinanceManagerKpiSerializer(serializers.ModelSerializer):
 
 class EmployeeSerializer(serializers.ModelSerializer):
 
-    finance_manager_kpis = FinanceManagerKpiSerializer(many=True)
+    finance_manager_kpis = FinanceManagerKpiSerializer(
+        many=True,
+        required=False,
+        allow_empty=True,
+    )
 
     class Meta:
         model = Employee
@@ -131,6 +139,30 @@ class EmployeeSerializer(serializers.ModelSerializer):
             ).data
 
         return rep
+
+    def _replace_kpis(self, employee: Employee, kpis_data: list[dict] | None):
+        employee.finance_manager_kpis.all().delete()
+        if not kpis_data:
+            return
+        for item in kpis_data:
+            item.pop("employee", None)  # ignore if client sent it
+            FinanceManagerKpi.objects.create(employee=employee, **item)
+
+    def create(self, validated_data):
+        kpis = validated_data.pop("finance_manager_kpis", None)
+        with transaction.atomic():
+            employee = super().create(validated_data)
+            if kpis is not None:
+                self._replace_kpis(employee, kpis)
+        return employee
+
+    def update(self, instance, validated_data):
+        kpis = validated_data.pop("finance_manager_kpis", None)
+        with transaction.atomic():
+            instance = super().update(instance, validated_data)
+            if kpis is not None:
+                self._replace_kpis(instance, kpis)
+        return instance
 
 
 class EmployeeTransactionSerializer(serializers.ModelSerializer):
