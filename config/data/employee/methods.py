@@ -116,7 +116,7 @@ class EmployeeMethods:
                 # Create fine transaction for each student
                 for student in students.filter(balance__lt=0):
                     self.transactions.create(
-                        reason="FINE_FOR_EACH_INDEBT_STUDENT_FOR_EACH_ENTITLED_STUDENT",
+                        reason="FINE_FOR_EACH_INDEBT_STUDENT",
                         amount=kpi.amount,
                         comment=f"KPI Bonus: {entitled_students}% entitled students",
                         student=student,
