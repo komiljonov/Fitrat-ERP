@@ -200,12 +200,12 @@ class AttendanceThemesAPIView(APIView):
 
         # build response list
         data = []
-        for t in themes_qs.only("id", "name"):
+        for t in themes_qs.only("id", "title"):
             c = counts_map.get(t.id, {"used_count": 0, "repeat_count": 0})
             data.append(
                 {
                     "id": t.id,
-                    "name": t.name,
+                    "title": t.title,
                     "was_used": c["used_count"] > 0,
                     "repeat_count": c["repeat_count"],
                     "is_today": (t.id == todays_theme_id),
