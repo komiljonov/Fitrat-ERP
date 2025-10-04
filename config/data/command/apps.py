@@ -7,3 +7,4 @@ class CommandConfig(AppConfig):
 
     def ready(self):
         import data.command.check
+        import data.command.lookup

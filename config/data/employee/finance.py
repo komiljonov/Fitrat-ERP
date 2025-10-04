@@ -185,3 +185,6 @@ class FinanceManagerKpi(BaseModel):
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
+
+
+
