@@ -1,4 +1,16 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
+
+from data.command.models import BaseModel
+
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import DecimalRangeField
+from django.contrib.postgres.fields.ranges import RangeOperators
+
+
+if TYPE_CHECKING:
+    from data.employee.models import Employee
 
 
 """1. Operator
@@ -117,3 +129,32 @@ class EmployeeFinanceFields(models.Model):
 
     class Meta:
         abstract = True
+
+
+class FinanceManagerKpi(BaseModel):
+
+    employee: "Employee" = models.ForeignKey(
+        "employee.Employee",
+        on_delete=models.CASCADE,
+        related_name="finance_manager_kpis",
+    )
+
+    action = models.CharField(
+        max_length=255, choices=[("BONUS", "Bonus"), ("FINE", "Jarima")]
+    )
+
+    range = DecimalRangeField()
+
+    amount = models.IntegerField()
+
+    class Meta(BaseModel.Meta):
+        constraints = [
+            *BaseModel.Meta.constraints,
+            ExclusionConstraint(
+                name="kpi_no_overlap_per_employee",
+                expressions=[
+                    ("employee", RangeOperators.EQUAL),
+                    ("range", RangeOperators.OVERLAPS),
+                ],
+            ),
+        ]
