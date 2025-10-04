@@ -1,5 +1,5 @@
 # yourapp/checks.py
-from django.core.checks import register, Error
+from django.core.checks import register, Error, Tags
 from django.apps import apps
 
 from data.command.models import BaseModel
@@ -28,6 +28,44 @@ def ensure_archive_constraint(app_configs, **kwargs):
                     f"{model._meta.label} is missing archive constraint "
                     "(inherits BaseModel but overrides Meta incorrectly).",
                     id="yourapp.E001",
+                )
+            )
+    return errors
+
+
+from django.db import connections
+
+REQUIRED_EXTENSIONS = {"btree_gist", "btree_gin"}  # add more if you need
+
+
+@register(Tags.database)
+def check_postgres_extensions(app_configs, **kwargs):
+    errors = []
+    for alias in connections:
+        conn = connections[alias]
+        # Only enforce on PostgreSQL backends
+        if "postgresql" not in conn.vendor:
+            continue
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT extname FROM pg_extension;")
+                installed = {row[0] for row in cur.fetchall()}
+        except Exception as e:
+            errors.append(
+                checks.Error(
+                    f"[{alias}] Could not query pg_extension: {e}",
+                    id="PG.E000",
+                )
+            )
+            continue
+
+        missing = REQUIRED_EXTENSIONS - installed
+        if missing:
+            errors.append(
+                checks.Error(
+                    f"[{alias}] Missing PostgreSQL extensions: {', '.join(sorted(missing))}",
+                    hint="Run: python manage.py enable_pg_extensions",
+                    id="PG.E001",
                 )
             )
     return errors
