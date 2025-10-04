@@ -5,9 +5,42 @@ from data.employee.models import Employee, EmployeeTransaction
 from data.lid.new_lid.serializers import LeadSerializer
 from data.student.student.serializers import StudentSerializer
 from data.upload.serializers import FileUploadSerializer
+from psycopg.types.numeric import NumericRange
+
+
+class DecimalRangeFieldSerializer(serializers.Field):
+    """Serializer for Django's DecimalRangeField (psycopg NumericRange)."""
+
+    def to_representation(self, value):
+        if value is None:
+            return None
+        return {
+            "lower": value.lower,
+            "upper": value.upper,
+            "bounds": value._bounds,  # usually '[)' by default
+        }
+
+    def to_internal_value(self, data):
+        if data is None:
+            return None
+
+        try:
+            lower = data.get("lower")
+            upper = data.get("upper")
+            bounds = data.get("bounds", "[)")
+
+            if lower is None or upper is None:
+                raise serializers.ValidationError(
+                    "Both 'lower' and 'upper' are required."
+                )
+            return NumericRange(lower, upper, bounds)
+        except Exception as e:
+            raise serializers.ValidationError(f"Invalid range data: {e}")
 
 
 class FinanceManagerKpiSerializer(serializers.ModelSerializer):
+
+    range = DecimalRangeFieldSerializer()
 
     class Meta:
         model = FinanceManagerKpi
