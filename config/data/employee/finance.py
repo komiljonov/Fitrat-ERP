@@ -7,6 +7,18 @@ from data.command.models import BaseModel
 from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import DecimalRangeField
 from django.contrib.postgres.fields.ranges import RangeOperators
+from django.db.models import Func, F, Value
+
+
+# Django wrappers around Postgres range-bound functions
+class RangeLower(Func):
+    function = "lower"
+    arity = 1
+
+
+class RangeUpper(Func):
+    function = "upper"
+    arity = 1
 
 
 if TYPE_CHECKING:
@@ -157,10 +169,19 @@ class FinanceManagerKpi(BaseModel):
                     ("range", RangeOperators.OVERLAPS),
                 ],
             ),
+            # end <= 100
             models.CheckConstraint(
-                check=models.expressions.RawSQL(
-                    "lower(span) >= 0 AND upper(span) <= 100", []
-                ),
-                name="range_within_bounds_0_100",
+                name="kpi_span_lower_gte_0",
+                check=RangeLower(F("span")) >= Value(0),
+            ),
+            # end <= 100
+            models.CheckConstraint(
+                name="kpi_span_upper_lte_100",
+                check=RangeUpper(F("span")) <= Value(100),
+            ),
+            # start < end
+            models.CheckConstraint(
+                name="kpi_span_lower_lt_upper",
+                check=RangeLower(F("span")) < RangeUpper(F("span")),
             ),
         ]
