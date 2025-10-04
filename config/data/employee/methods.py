@@ -97,9 +97,9 @@ class EmployeeMethods:
             return
 
         with transaction.atomic():
-            if kpi.action == "bonus":
+            if kpi.action == "BONUS":
                 # Create bonus income transaction for each student
-                for student in students:
+                for student in students.filter(balance__gte=0):
                     self.transactions.create(
                         reason="BONUS_FOR_EACH_ENTITLED_STUDENT",
                         amount=kpi.amount,
@@ -112,11 +112,11 @@ class EmployeeMethods:
                         # description=f"KPI Bonus: {entitled_students}% entitled students",
                         # related_kpi=kpi,  # Optional: if you want to track which KPI triggered it
                     )
-            elif kpi.action == "fine":
+            elif kpi.action == "FINE":
                 # Create fine transaction for each student
-                for student in students:
+                for student in students.filter(balance__lt=0):
                     self.transactions.create(
-                        reason="BONUSFINE_FOR_EACH_INDEBT_STUDENT_FOR_EACH_ENTITLED_STUDENT",
+                        reason="FINE_FOR_EACH_INDEBT_STUDENT_FOR_EACH_ENTITLED_STUDENT",
                         amount=kpi.amount,
                         comment=f"KPI Bonus: {entitled_students}% entitled students",
                         student=student,
