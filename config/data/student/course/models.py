@@ -27,7 +27,9 @@ class Course(BaseModel):
     )
 
     theme: "models.ManyToManyField[Theme]" = models.ManyToManyField(
-        "subject.Theme", related_name="courses", blank=True
+        "subject.Theme",
+        related_name="courses",
+        blank=True,
     )
 
     status = models.CharField(
@@ -38,6 +40,9 @@ class Course(BaseModel):
         default="INACTIVE",
         max_length=100,
     )
+
+    themes: "models.QuerySet[Theme]"
+    levels: "models.QuerySet[Level]"
 
     def __str__(self):
         return f"{self.name} {self.subject} {self.status}"

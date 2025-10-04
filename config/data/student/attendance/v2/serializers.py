@@ -119,3 +119,10 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
             if att
             else None
         )
+
+
+class AttendanceThemeRequestSerializer(serializers.Serializer):
+
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
+
+    date = serializers.DateField(required=False, allow_null=True)

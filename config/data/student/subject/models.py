@@ -32,23 +32,27 @@ class Subject(BaseModel):
 
 
 class Level(BaseModel):
-    subject: "Subject" = models.ForeignKey(
+
+    subject: "Subject | None" = models.ForeignKey(
         "subject.Subject",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
+
     name = models.CharField(max_length=100)
-    courses: "Course" = models.ForeignKey(
+
+    courses: "Course | None" = models.ForeignKey(
         "course.Course",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="levels_course",
+        related_name="levels",
     )
 
     order = models.IntegerField(default=0)
 
+    themes: "models.QuerySet[Theme]"
 
     class Meta(BaseModel.Meta):
         ordering = ["created_at"]
@@ -85,7 +89,7 @@ class Theme(BaseModel):
     course: "Course" = models.ForeignKey(
         "course.Course",
         on_delete=models.CASCADE,
-        related_name="courses_themes",
+        related_name="themes",
     )
 
     level: "Level" = models.ForeignKey(
@@ -93,7 +97,7 @@ class Theme(BaseModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="themes_level",
+        related_name="themes",
     )
 
     # Separate fields for different types of work within the same Theme
@@ -129,7 +133,6 @@ class Theme(BaseModel):
         blank=True,
         related_name="theme_photos",
     )
-
 
     class Meta(BaseModel.Meta):
         ordering = ("created_at",)

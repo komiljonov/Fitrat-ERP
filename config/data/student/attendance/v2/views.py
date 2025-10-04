@@ -1,7 +1,8 @@
 from django.db import transaction
 from django.utils import timezone
+from datetime import date as _date
 
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from rest_framework.views import APIView
 from rest_framework.request import HttpRequest, Request
@@ -14,6 +15,8 @@ from rest_framework.exceptions import NotFound
 from data.student.attendance.models import Attendance
 from data.student.attendance.v2.serializers import (
     AttendanceGroupStateSerializer,
+    AttendanceThemeRequestSerializer,
+    AttendanceThemeSerializer,
     CreateAttendanceV2Serializer,
 )
 from data.student.groups.models import Group
@@ -147,3 +150,72 @@ class AttendanceGroupStateAPIView(ListAPIView):
         }
 
         return context
+
+
+class AttendanceThemesAPIView(APIView):
+    def get(self, request: HttpRequest):
+        serializer = AttendanceThemeRequestSerializer(
+            request.GET, data=request.query_params
+        )
+        serializer.is_valid(raise_exception=True)
+        filters = serializer.validated_data
+
+        group: "Group" = filters["group"]
+        date = filters.get("date")
+
+        themes_qs = group.course.themes.filter(level=group.level)
+        theme_ids = list(themes_qs.values_list("id", flat=True))
+
+        lessons = group.lessons.filter(Q(date__lt=date) if date else Q())
+
+        # counts per theme for this group
+        counts = lessons.values("theme_id").annotate(
+            used_count=Count("id"),
+            repeat_count=Count("id", filter=Q(is_repeat=True)),
+        )
+        counts_map = {c["theme_id"]: c for c in counts}
+
+        # determine "today's" theme id
+        if date:
+            todays_theme_id = (
+                group.lessons.filter(date=date)
+                .values_list("theme_id", flat=True)
+                .first()
+            )
+        else:
+            last_non_repeat_theme_id = (
+                lessons.filter(theme__isnull=False, is_repeat=False)
+                .order_by("-date", "-id")
+                .values_list("theme_id", flat=True)
+                .first()
+            )
+            if last_non_repeat_theme_id in theme_ids:
+                idx = theme_ids.index(last_non_repeat_theme_id)
+                todays_theme_id = (
+                    theme_ids[idx + 1] if idx + 1 < len(theme_ids) else None
+                )
+            else:
+                todays_theme_id = (
+                    theme_ids[0] if theme_ids else None
+                )  # start from first if none used yet
+
+        # build response list
+        data = []
+        for t in themes_qs.only("id", "name"):
+            c = counts_map.get(t.id, {"used_count": 0, "repeat_count": 0})
+            data.append(
+                {
+                    "id": t.id,
+                    "name": t.name,
+                    "was_used": c["used_count"] > 0,
+                    "repeat_count": c["repeat_count"],
+                    "is_today": (t.id == todays_theme_id),
+                }
+            )
+
+        return Response(
+            {
+                "themes": data,
+                "today_theme_id": todays_theme_id,  # optional helper
+            }
+        )
