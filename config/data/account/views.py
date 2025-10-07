@@ -647,7 +647,7 @@ class StuffRolesView(ListAPIView):
                 Q(is_call_center=is_call_operator_bool) | Q(role="CALL_OPERATOR")
             )
 
-        return queryset.distinct()
+        return queryset.distinct().prefetch_related("filials")
 
     def get_paginated_response(self, data):
         return Response(data)
