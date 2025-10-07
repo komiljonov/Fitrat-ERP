@@ -176,7 +176,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             except ValueError:
                 pass  # Handle invalid date format, if necessary
 
-        return queryset.order_by("-created_at").select_related(
+        return queryset.order_by("is_frozen", "-created_at").select_related(
             "photo", "service_manager", "sales_manager"
         )
 
