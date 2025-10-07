@@ -15,6 +15,8 @@ from data.firstlesson.serializers import (
 )
 from data.student.attendance.serializers import AttendanceSerializer
 
+from django.db import transaction
+
 
 # Create your views here.
 
@@ -45,6 +47,7 @@ class FirstLessonListCreateAPIView(ListCreateAPIView):
 
     filterset_class = FirstLessonsFilter
 
+    @transaction.atomic
     def perform_create(self, serializer):
         instance: FirstLesson = serializer.save(
             creator=self.request.user if self.request.user.is_authenticated else None

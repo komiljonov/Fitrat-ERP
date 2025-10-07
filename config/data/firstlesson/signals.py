@@ -83,3 +83,16 @@ def on_update(sender, instance: "FirstLesson", **kwargs):
         sg.archived_at = None
         sg.first_lesson = instance
         sg.save(update_fields=["is_archived", "archived_at", "first_lesson"])
+
+
+@receiver(pre_save, sender=FirstLesson)
+def on_date_change(sender, instance: "FirstLesson", **kwargs):
+
+    if instance._state.adding:
+        return
+    changes = set(instance.changed_fields() or [])
+
+    if "date" not in changes:
+        return
+
+    instance.status = "PENDING"

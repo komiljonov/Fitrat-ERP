@@ -191,6 +191,7 @@ DATABASES = {
         "HOST": config("POSTGRES_HOST", default="localhost"),
         "PORT": config("POSTGRES_PORT", default=5434, cast=int),
         "DISABLE_SERVER_SIDE_CURSORS": True,
+        "ATOMIC_REQUESTS": True,
         "OPTIONS": {
             "client_encoding": "UTF8",
         },
