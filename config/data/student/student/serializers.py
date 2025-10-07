@@ -183,9 +183,11 @@ class StudentSerializer(serializers.ModelSerializer):
             .select_related("group__teacher")
             .first()
         )
+
         if group and group.group and group.group.teacher:
             teacher = group.group.teacher
             return {"id": teacher.id, "full_name": teacher.full_name}
+
         return None
 
     def get_learning(self, obj):
@@ -283,6 +285,7 @@ class StudentSerializer(serializers.ModelSerializer):
         return list(courses)
 
     def get_group(self, obj: Student):
+
         courses = obj.groups.values(
             "group__id",
             "group__name",
@@ -292,6 +295,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "group__teacher__first_name",
             "group__teacher__last_name",
         ).distinct()
+
         return list(courses)
 
     def get_relatives(self, obj: Student):
@@ -299,8 +303,10 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def get_attendance_count(self, obj):
         count = getattr(obj, "attendance_count", None)
+
         if count is not None:
             return count + 1
+
         return Attendance.objects.filter(student=obj, status="IS_PRESENT").count() + 1
 
     def update(self, instance, validated_data):

@@ -76,17 +76,17 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
                 "balance",
                 "learning",
                 "student_stage_type",
-                "teacher",
-                "secondary_teacher",
+                # "teacher",
+                # "secondary_teacher",
                 "balance_status",
                 "service_manager",
                 "sales_manager",
-                "attendance_count",
+                # "attendance_count",
                 "group",
                 "created_at",
                 "active_date",
                 "is_frozen",
-                "secondary_group",
+                # "secondary_group",
                 "frozen_days",
             ],
         )
@@ -95,7 +95,6 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         """
         Customize queryset filtering based on user roles and other criteria.
         """
-        user = self.request.user
 
         # queryset = self.queryset.filter(filial=user.filial.first())
         queryset = self.queryset.all()
@@ -177,7 +176,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             except ValueError:
                 pass  # Handle invalid date format, if necessary
 
-        return queryset.order_by("-created_at")
+        return queryset.order_by("-created_at").select_related(
+            "photo", "service_manager", "sales_manager"
+        )
 
 
 class StudentDetailView(RetrieveUpdateDestroyAPIView):
