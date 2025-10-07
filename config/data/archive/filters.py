@@ -49,6 +49,8 @@ class ArchiveFilter(filters.FilterSet):
 
     only = filters.CharFilter(method="filter_only")
 
+    order_by = filters.CharFilter(method="filter_order_by")
+
     class Meta:
         model = Archive
         fields = [
@@ -119,6 +121,28 @@ class ArchiveFilter(filters.FilterSet):
         if not cond:
             return qs
         return qs.filter(cond).distinct()
+
+    def filter_order_by(self, qs, name, value):
+        if not value:
+            return qs
+
+        value = value.strip()
+        allowed = {"balance", "-balance", "created_at", "-created_at"}
+
+        if value not in allowed:
+            return qs
+
+        if "balance" in value:
+            direction = "-" if value.startswith("-") else ""
+            # Sort by student or lead balance (whichever exists)
+            qs = qs.order_by(
+                f"{direction}student__balance",
+                f"{direction}lead__balance",
+            )
+        elif "created_at" in value:
+            qs = qs.order_by(value)
+
+        return qs
 
 
 # education_lang
