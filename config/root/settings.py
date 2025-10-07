@@ -6,6 +6,8 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+import sentry_sdk
+
 
 SECRET_KEY = config("SECRET_KEY")
 
@@ -293,3 +295,11 @@ INTERNAL_IPS = type(str("c"), (), {"__contains__": lambda self, item: True})()
 
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+
+sentry_sdk.init(
+    dsn="https://020e8263780a3e371fdfd31f0c7f0471@o4510131047235584.ingest.us.sentry.io/4510147063250944",
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+)
