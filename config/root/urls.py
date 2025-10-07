@@ -35,6 +35,11 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+
 urlpatterns = [
     path("api/v2/", include("api.v2")),
     path("api/", include("api.urls")),
@@ -81,6 +86,7 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    path("sentry-debug/", trigger_error),
 ]
 
 urlpatterns += [
