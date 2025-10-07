@@ -136,5 +136,5 @@ class CourseSerializer(serializers.ModelSerializer):
         return rep
 
     @classmethod
-    def mininal(cls, *args, **kwargs):
+    def minimal(cls, *args, **kwargs):
         return cls(*args, include_only=["id", "name"], **kwargs)

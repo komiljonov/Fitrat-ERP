@@ -72,7 +72,7 @@ class CourseDetail(RetrieveUpdateDestroyAPIView):
 
 class CourseNoPG(ListAPIView):
     queryset = Course.objects.all()
-    serializer_class = CourseSerializer
+    # serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = None
 
