@@ -25,7 +25,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     date = serializers.DateField(required=False, default=date.today)
 
-
     lead = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(),
         allow_null=True,
@@ -270,27 +269,29 @@ class AttendanceSerializer(serializers.ModelSerializer):
         #     else None
         # )
 
-        if instance.lead:
-            rep["lead"] = LeadSerializer(instance.lead, context=self.context).data
-        else:
-            rep.pop("lead", None)
+        if "lead" in self.fields:
+            if instance.lead:
+                rep["lead"] = LeadSerializer(instance.lead, context=self.context).data
+            else:
+                rep.pop("lead", None)
 
-        if instance.student:
-            rep["student"] = StudentSerializer(
-                instance.student,
-                context=self.context,
-                include_only=[
-                    "id",
-                    "first_name",
-                    "last_name",
-                    "middle_name",
-                    "phone",
-                    "service_manager",
-                    "group",
-                    "balance",
-                    "sales_manager",
-                ],
-            ).data
+        if "student" in self.fields:
+            if instance.student:
+                rep["student"] = StudentSerializer(
+                    instance.student,
+                    context=self.context,
+                    include_only=[
+                        "id",
+                        "first_name",
+                        "last_name",
+                        "middle_name",
+                        "phone",
+                        "service_manager",
+                        "group",
+                        "balance",
+                        "sales_manager",
+                    ],
+                ).data
 
         if instance.group:
             rep["group"] = instance.group.name

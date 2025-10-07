@@ -64,6 +64,12 @@ class FirstLessonAttendanceListAPIView(ListAPIView):
 
     serializer_class = AttendanceSerializer
 
+    def get_serializer(self, *args, **kwargs):
+
+        kwargs.setdefault("context", self.get_serializer_context())
+
+        return AttendanceSerializer(*args, remove_fields=["lead", "student"], **kwargs)
+
     def get_queryset(self):
 
         first_lesson = get_object_or_404(FirstLesson, pk=self.kwargs["pk"])
