@@ -49,17 +49,17 @@ class StudentsStatsAPIView(APIView):
                 "entitled": {
                     "count": entitled.count(),
                     "amount": entitled.aggregate(total=Sum("balance")),
-                    "ids": entitled.values_list("id", "first_name", "balance"),
+                    # "ids": entitled.values_list("id", "first_name", "balance"),
                 },
                 "indebted": {
                     "count": indebted.count(),
                     "amount": indebted.aggregate(total=Sum("balance")),
-                    "ids": indebted.values_list("id", "first_name", "balance"),
+                    # "ids": indebted.values_list("id", "first_name", "balance"),
                 },
                 "near_debt": {
                     "count": near_debt.count(),
                     "amount": near_debt.aggregate(total=Sum("balance")),
-                    "ids": near_debt.values_list("id", "first_name", "balance"),
+                    # "ids": near_debt.values_list("id", "first_name", "balance"),
                 },
                 "archived": ever_archived.count(),
             }
