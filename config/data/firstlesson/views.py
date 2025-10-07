@@ -68,7 +68,9 @@ class FirstLessonAttendanceListAPIView(ListAPIView):
 
         kwargs.setdefault("context", self.get_serializer_context())
 
-        return AttendanceSerializer(*args, remove_fields=["lead", "student"], **kwargs)
+        return AttendanceSerializer(
+            *args, remove_fields=["lead", "student", "relatives"], **kwargs
+        )
 
     def get_queryset(self):
 
