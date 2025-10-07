@@ -1,5 +1,7 @@
 import django_filters as filters
 
+from django.db.models import Case, When, Value, IntegerField, ValueRange
+
 from django_filters.widgets import RangeWidget
 
 from data.department.filial.models import Filial
@@ -44,6 +46,8 @@ class FirstLessonsFilter(filters.FilterSet):
         ),
     )
 
+    order_by = filters.CharFilter(method="filter_order_by")
+
     class Meta:
         model = FirstLesson
         fields = [
@@ -57,3 +61,48 @@ class FirstLessonsFilter(filters.FilterSet):
             "teacher",
             "created_at",
         ]
+
+    def filter_order_by(self, qs, name, value):
+        if not value:
+            return qs
+
+        value = value.strip()
+        allowed = {
+            "balance",
+            "-balance",
+            "created_at",
+            "-created_at",
+            "date",
+            "-date",
+            "status",
+            "-status",
+        }
+
+        if value not in allowed:
+            return qs
+
+        if "balance" in value:
+            direction = "-" if value.startswith("-") else ""
+            qs = qs.order_by(f"{direction}balance")
+
+        elif "created_at" in value or "date" in value:
+            qs = qs.order_by(value)
+
+        elif "status" in value:
+            direction = "-" if value.startswith("-") else ""
+            # Keep only PENDING and DIDNTCOME in order
+            order = ["PENDING", "DIDNTCOME"]
+            # Exclude CAME entirely
+            qs = (
+                qs.exclude(status="CAME")
+                .annotate(
+                    _status_order=Case(
+                        *[When(status=s, then=Value(i)) for i, s in enumerate(order)],
+                        default=Value(len(order)),
+                        output_field=IntegerField(),
+                    )
+                )
+                .order_by(f"{direction}_status_order")
+            )
+
+        return qs
