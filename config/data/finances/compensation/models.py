@@ -132,7 +132,7 @@ class Page(BaseModel):
 
     class Meta(BaseModel.Meta):
         constraints = [
-            BaseModel.Meta.constrains,
+            BaseModel.Meta.constraints,
             models.UniqueConstraint(fields=["user", "name"], name="unique_user_name"),
         ]
 
