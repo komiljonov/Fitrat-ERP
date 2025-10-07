@@ -12,15 +12,24 @@ from data.student.subject.serializers import (
 
 
 class CourseSerializer(serializers.ModelSerializer):
+
     level = serializers.PrimaryKeyRelatedField(
-        queryset=Level.objects.all(), allow_null=True
+        queryset=Level.objects.all(),
+        allow_null=True,
     )
+
     theme = serializers.PrimaryKeyRelatedField(
-        queryset=Theme.objects.all(), many=True, required=False, allow_null=True
+        queryset=Theme.objects.all(),
+        many=True,
+        required=False,
+        allow_null=True,
     )
+
     subject = serializers.PrimaryKeyRelatedField(
-        queryset=Subject.objects.all(), allow_null=True
+        queryset=Subject.objects.all(),
+        allow_null=True,
     )
+
     lessons_number = serializers.SerializerMethodField()
 
     level_counts = serializers.SerializerMethodField()
@@ -125,3 +134,7 @@ class CourseSerializer(serializers.ModelSerializer):
             ).data  # Return full theme data
 
         return rep
+
+    @classmethod
+    def mininal(cls, *args, **kwargs):
+        return cls(*args, include_only=["id", "name"], **kwargs)
