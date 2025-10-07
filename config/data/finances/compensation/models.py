@@ -115,9 +115,13 @@ class Bonus(BaseModel):
 
 class Page(BaseModel):
     user: "CustomUser" = models.ForeignKey(
-        "account.CustomUser", on_delete=models.CASCADE, null=True, blank=True
+        "account.CustomUser",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     name = models.CharField(max_length=256)
+
     is_editable = models.BooleanField(default=False)
     is_readable = models.BooleanField(default=False)
 
@@ -125,6 +129,12 @@ class Page(BaseModel):
 
     def __str__(self):
         return f"{self.name, self.is_editable, self.is_readable, self.is_parent}"
+
+    class Meta(BaseModel.Meta):
+        constraints = [
+            BaseModel.Meta.constrains,
+            models.UniqueConstraint(fields=["user", "name"], name="unique_user_name"),
+        ]
 
 
 class Asos(BaseModel):
