@@ -1,6 +1,11 @@
 from django.db.models import Case, When, Value, IntegerField
 
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from django.shortcuts import get_object_or_404
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 
 from data.firstlesson.filters import FirstLessonsFilter
 from data.firstlesson.models import FirstLesson
@@ -8,6 +13,8 @@ from data.firstlesson.serializers import (
     FirstLessonListSerializer,
     FirstLessonSingleSerializer,
 )
+from data.student.attendance.serializers import AttendanceSerializer
+
 
 # Create your views here.
 
@@ -51,3 +58,14 @@ class FirstLessonRetrieveAPIView(RetrieveUpdateDestroyAPIView):
     queryset = FirstLesson.objects.all()
 
     serializer_class = FirstLessonSingleSerializer
+
+
+class FirstLessonAttendanceListAPIView(ListAPIView):
+
+    serializer_class = AttendanceSerializer
+
+    def get_queryset(self):
+
+        first_lesson = get_object_or_404(FirstLesson, pk=self.kwargs["pk"])
+
+        return first_lesson.lead.attendances.all()
