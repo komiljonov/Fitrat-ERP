@@ -66,10 +66,15 @@ class CommentStuff(ListCreateAPIView):
     def get_queryset(self):
         id = self.request.query_params.get("id")
         creator = self.request.query_params.get("creator")
+
         if id:
-            return StuffComments.objects.filter(stuff__id=id)
+            return StuffComments.objects.filter(stuff__id=id).order_by("-created_at")
+
         if creator:
-            return StuffComments.objects.filter(stuff__id=id, creator__id=creator)
+            return StuffComments.objects.filter(
+                stuff__id=id, creator__id=creator
+            ).order_by("-created_at")
+
         return StuffComments.objects.none()
 
 

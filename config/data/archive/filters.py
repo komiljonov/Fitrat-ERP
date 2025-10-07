@@ -33,7 +33,7 @@ class ArchiveFilter(filters.FilterSet):
         queryset=Employee.objects.filter(role="ADMINISTRATOR"),
         method="filter_sales_manager",
     )
-    
+
     service_manager = filters.ModelChoiceFilter(
         queryset=Employee.objects.filter(
             Q(role="SERVICE_MANAGER") | Q(is_service_manager=True)
@@ -46,6 +46,8 @@ class ArchiveFilter(filters.FilterSet):
     created_at = filters.DateTimeFromToRangeFilter(
         field_name="created_at"
     )  # Archive's own field
+
+    only = filters.CharFilter(method="filter_only")
 
     class Meta:
         model = Archive
@@ -98,6 +100,25 @@ class ArchiveFilter(filters.FilterSet):
         if value.stop is not None:
             q &= Q(student__balance__lte=value.stop) | Q(lead__balance__lte=value.stop)
         return qs.filter(q).distinct()
+
+    def filter_only(self, qs, name, value):
+        if not value:
+            return qs
+
+        v = str(value).upper()
+        mapping = {
+            "LEADS": Q(lead__lid_stage_type="NEW_LID"),
+            "ORDERS": Q(lead__lid_stage_type="ORDERED_LID"),
+            "NEW_STUDENTS": Q(student__student_stage_type="NEW_STUDENT"),
+            "ACTIVE_STUDENTS": Q(student__student_stage_type="ACTIVE_STUDENT"),
+            "ENTITLED": Q(lead__balance__gt=0) | Q(student__balance__gt=0),
+            "INDEBTED": Q(lead__balance__lt=0) | Q(student__balance__lt=0),
+        }
+
+        cond = mapping.get(v)
+        if not cond:
+            return qs
+        return qs.filter(cond).distinct()
 
 
 # education_lang
