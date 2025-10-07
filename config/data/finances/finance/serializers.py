@@ -399,7 +399,7 @@ class FinanceSerializer(serializers.ModelSerializer):
 
         return super().create(validated_data)
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: "Finance"):
         representation = super().to_representation(instance)
 
         if instance.lid:
@@ -409,7 +409,10 @@ class FinanceSerializer(serializers.ModelSerializer):
             }
 
         representation["creator"] = (
-            UserListSerializer(instance.creator, include_only=["id", "name"]).data
+            UserListSerializer(
+                instance.creator,
+                include_only=["id", "full_name", "first_name", "last_name"],
+            ).data
             if instance.creator
             else None
         )

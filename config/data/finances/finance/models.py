@@ -175,8 +175,8 @@ class Finance(BaseModel):
         blank=True,
     )
 
-    creator: "CustomUser | None" = models.ForeignKey(
-        "account.CustomUser",
+    creator: "Employee | None" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
