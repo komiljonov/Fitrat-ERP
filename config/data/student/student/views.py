@@ -26,6 +26,8 @@ from rest_framework.exceptions import ValidationError
 
 from django.db import transaction
 
+from data.student.student.filters import StudentFilter
+
 from .models import Student
 from .serializers import StudentSerializer
 from data.student.lesson.models import FirstLLesson
@@ -56,6 +58,8 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         "sales_manager",
         "call_operator",
     ]
+
+    filterset_class = StudentFilter
 
     def get_serializer(self, *args, **kwargs):
 
