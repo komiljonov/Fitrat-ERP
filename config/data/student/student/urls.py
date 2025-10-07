@@ -23,9 +23,6 @@ urlpatterns = [
     path("statistics/", StudentStatistics.as_view(), name="student-statistics"),
     path("excel/", ExportLidToExcelAPIView.as_view(), name="student-excel"),
     path("statistics/all", StudentAllStatistics.as_view(), name="student-statistics"),
-    
-    
-    
     path("first/lesson/data", FistLesson_dataList.as_view(), name="first-lesson-data"),
     path(
         "first/lesson/data/<uuid:pk>/",

@@ -35,7 +35,8 @@ class StudentsStatsAPIView(APIView):
         )
         students = s_f.qs
 
-        entitled = students.filter(balance__gt=0)
+        entitled = students.filter(balance__gte=100000)
+        near_debt = students.filter(balance__gt=0, balance__lt=100000)
         indebted = students.filter(balance__lt=0)
 
         ever_archived = Archive.objects.filter(
@@ -54,6 +55,11 @@ class StudentsStatsAPIView(APIView):
                     "count": indebted.count(),
                     "amount": indebted.aggregate(total=Sum("balance")),
                     "ids": indebted.values_list("id", "first_name", "balance"),
+                },
+                "near_debt": {
+                    "count": near_debt.count(),
+                    "amount": near_debt.aggregate(total=Sum("balance")),
+                    "ids": near_debt.values_list("id", "first_name", "balance"),
                 },
                 "archived": ever_archived.count(),
             }
