@@ -93,7 +93,7 @@ class CourseNoPG(ListAPIView):
             queryset = queryset.filter(subject__id=subject)
         if is_archived:
             queryset = queryset.filter(is_archived=is_archived.capitalize())
-        return queryset
+        return queryset.select_related("subject", "subject__image")
 
 
 class StudentCourse(ListAPIView):
