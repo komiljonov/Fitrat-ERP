@@ -1,8 +1,11 @@
 import django_filters as filters
 
-from django.db.models import Case, When, Value, IntegerField, ValueRange
+from django.db.models import Case, When, Value, IntegerField
+from datetime import datetime, time, timedelta
 
-from django_filters.widgets import RangeWidget
+
+from django.utils import timezone
+
 
 from data.department.filial.models import Filial
 from data.department.marketing_channel.models import MarketingChannel
@@ -44,12 +47,8 @@ class FirstLessonsFilter(filters.FilterSet):
         field_name="group__teacher", queryset=Employee.objects.filter(role="TEACHER")
     )
 
-    created_at = filters.DateFromToRangeFilter(
-        field_name="created_at",
-        widget=RangeWidget(
-            attrs={"placeholder": "YYYY-MM-DD", "suffixes": ["start", "end"]}
-        ),
-    )
+    created_at_start = filters.CharFilter(method="filter_created_at_range")
+    created_at_end = filters.CharFilter(method="filter_created_at_range")
 
     order_by = filters.CharFilter(method="filter_order_by")
 
@@ -110,5 +109,25 @@ class FirstLessonsFilter(filters.FilterSet):
                 )
                 .order_by(f"{direction}_status_order")
             )
+
+        return qs
+
+    def filter_created_at_range(self, qs, name, value):
+        tz = timezone.get_current_timezone()
+        start_str = self.data.get("created_at_start")
+        end_str = self.data.get("created_at_end")
+
+        if start_str:
+            d = self._parse_date(start_str)
+            if d:
+                start_dt = tz.localize(datetime.combine(d, time.min))
+                qs = qs.filter(created_at__gte=start_dt)
+
+        if end_str:
+            d = self._parse_date(end_str)
+            if d:
+                # end is exclusive: < next day 00:00
+                end_dt = tz.localize(datetime.combine(d + timedelta(days=1), time.min))
+                qs = qs.filter(created_at__lt=end_dt)
 
         return qs
