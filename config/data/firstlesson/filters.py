@@ -28,6 +28,11 @@ class FirstLessonsFilter(filters.FilterSet):
         queryset=Employee.objects.filter(role="ADMINISTRATOR"),
     )
 
+    service_manager = filters.ModelChoiceFilter(
+        field_name="lead__service_manager",
+        queryset=Employee.objects.filter(role="SERVICE_MANAGER"),
+    )
+
     subject = filters.ModelChoiceFilter(queryset=Subject.objects.all())
     course = filters.ModelChoiceFilter(queryset=Course.objects.all())
 
@@ -55,6 +60,7 @@ class FirstLessonsFilter(filters.FilterSet):
             "status",
             "operator",
             "sales_manager",
+            "service_manager",
             "subject",
             "course",
             "marketing_channel",
