@@ -112,6 +112,12 @@ class FirstLessonsFilter(filters.FilterSet):
 
         return qs
 
+    def _parse_date(self, s: str):
+        try:
+            return datetime.strptime(s, "%Y-%m-%d").date()
+        except Exception:
+            return None
+
     def filter_created_at_range(self, qs, name, value):
         tz = timezone.get_current_timezone()
         start_str = self.data.get("created_at_start")
