@@ -1,3 +1,4 @@
+from typing import Dict
 from django.db import transaction
 from django.utils import timezone
 from datetime import date as _date
@@ -218,3 +219,127 @@ class AttendanceThemesAPIView(APIView):
                 "today_theme": todays_theme_id,  # optional helper
             }
         )
+
+
+class AttendanceStatusForDateAPIView(APIView):
+
+    def get(self, request: HttpRequest):
+
+        serializer = AttendanceThemeRequestSerializer(
+            request.GET, data=request.query_params
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        filters = serializer.validated_data
+
+        theme_response = self.themes(filters)
+
+        status_response = self.get_status_response(filters)
+
+        return Response(
+            {
+                "themes": theme_response["themes"],
+                "today_theme": theme_response["today_theme"],
+                "statuses": status_response,
+            }
+        )
+
+    def themes(self, filters: Dict):
+
+        group: "Group" = filters["group"]
+        date = filters.get("date")
+
+        themes_qs = group.course.themes.filter(level=group.level)
+        theme_ids = list(themes_qs.values_list("id", flat=True))
+
+        lessons = group.lessons.filter(Q(date__lt=date) if date else Q())
+
+        # counts per theme for this group
+        counts = lessons.values("theme_id").annotate(
+            used_count=Count("id"),
+            repeat_count=Count("id", filter=Q(is_repeat=True)),
+        )
+        counts_map = {c["theme_id"]: c for c in counts}
+
+        # determine "today's" theme id
+        if date:
+            todays_theme_id = (
+                group.lessons.filter(date=date)
+                .values_list("theme_id", flat=True)
+                .first()
+            )
+        else:
+            last_non_repeat_theme_id = (
+                lessons.filter(theme__isnull=False, is_repeat=False)
+                .order_by("-date", "-id")
+                .values_list("theme_id", flat=True)
+                .first()
+            )
+            if last_non_repeat_theme_id in theme_ids:
+                idx = theme_ids.index(last_non_repeat_theme_id)
+                todays_theme_id = (
+                    theme_ids[idx + 1] if idx + 1 < len(theme_ids) else None
+                )
+            else:
+                todays_theme_id = (
+                    theme_ids[0] if theme_ids else None
+                )  # start from first if none used yet
+
+        # build response list
+        data = []
+        for t in themes_qs.only("id", "title"):
+            c = counts_map.get(t.id, {"used_count": 0, "repeat_count": 0})
+            data.append(
+                {
+                    "id": t.id,
+                    "title": t.title,
+                    "was_used": c["used_count"] > 0,
+                    "repeat_count": c["repeat_count"],
+                    "is_today": (t.id == todays_theme_id),
+                }
+            )
+
+        return {
+            "themes": data,
+            "today_theme": todays_theme_id,  # optional helper
+        }
+
+    def get_serializer_context(self, filters: Dict):
+
+        context = {"request": self.request}
+
+        attendances = Attendance.objects.filter(
+            date=filters.get("date", timezone.now().date()) or timezone.now().date(),
+            group=filters["group"],
+        )
+
+        context["student_attendances"] = {
+            a.student_id: a for a in attendances if a.student_id is not None
+        }
+
+        context["lead_attendances"] = {
+            a.lead_id: a for a in attendances if a.lead_id is not None
+        }
+
+        return context
+
+    def get_status_response(self, filters: Dict):
+
+        # group = Group.objects.filter(id=self.kwargs["group"]).first()
+
+        group: Group = filters["group"]
+
+        students = group.students.filter(is_archived=False)
+
+        today = timezone.localdate()
+
+        print(today)
+
+        students = students.select_related("student", "lid").exclude(
+            Q(first_lesson__date__date__gt=today)
+        )
+
+        return AttendanceGroupStateSerializer(
+            students, context=self.get_serializer_context(filters), many=True
+        ).data
