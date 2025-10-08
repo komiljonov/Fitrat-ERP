@@ -119,21 +119,20 @@ class FirstLessonsFilter(filters.FilterSet):
             return None
 
     def filter_created_at_range(self, qs, name, value):
-        tz = timezone.get_current_timezone()
         start_str = self.data.get("created_at_start")
         end_str = self.data.get("created_at_end")
 
         if start_str:
             d = self._parse_date(start_str)
             if d:
-                start_dt = tz.localize(datetime.combine(d, time.min))
+                start_dt = datetime.combine(d, time.min)
                 qs = qs.filter(created_at__gte=start_dt)
 
         if end_str:
             d = self._parse_date(end_str)
             if d:
                 # end is exclusive: < next day 00:00
-                end_dt = tz.localize(datetime.combine(d + timedelta(days=1), time.min))
+                end_dt = datetime.combine(d + timedelta(days=1), time.min)
                 qs = qs.filter(created_at__lt=end_dt)
 
         return qs
