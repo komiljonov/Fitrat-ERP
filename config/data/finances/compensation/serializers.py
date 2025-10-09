@@ -57,6 +57,8 @@ class PagesSerializer(serializers.ModelSerializer):
 
         extra_kwargs = {"id": {"required": False}, "user": {"required": False}}
 
+        readonly_fields = ["user"]
+
     def create(self, validated_data):
         if isinstance(validated_data, list):
             return Page.objects.bulk_create([Page(**data) for data in validated_data])
