@@ -367,7 +367,7 @@ class UserSerializer(serializers.ModelSerializer):
     pages = serializers.SerializerMethodField()
     # bonus = serializers.SerializerMethodField()
     # compensation = serializers.SerializerMethodField()
-    penalty = serializers.SerializerMethodField()
+    # penalty = serializers.SerializerMethodField()
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
     is_linked = serializers.SerializerMethodField()
     student_id = serializers.SerializerMethodField()
@@ -417,7 +417,7 @@ class UserSerializer(serializers.ModelSerializer):
             "calculate_bonus",
             "phone",
             "role",
-            "penalty",
+            # "penalty",
             "pages",
             "files",
             "lessons_payment",
