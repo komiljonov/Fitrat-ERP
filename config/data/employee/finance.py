@@ -8,6 +8,8 @@ from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import DecimalRangeField
 from django.contrib.postgres.fields.ranges import RangeOperators
 
+from django.db.models.constraints import Deferrable
+
 from django.core.exceptions import ValidationError
 
 
@@ -179,12 +181,10 @@ class FinanceManagerKpi(BaseModel):
                     ("employee", RangeOperators.EQUAL),
                     ("range", RangeOperators.OVERLAPS),
                 ],
+                deferrable=Deferrable.DEFERRED,
             ),
         ]
 
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
-
-
-
