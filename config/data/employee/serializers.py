@@ -52,6 +52,8 @@ class FinanceManagerKpiSerializer(serializers.ModelSerializer):
         model = FinanceManagerKpi
         fields = ["id", "employee", "action", "range", "amount"]
 
+        extra_kwargs = {"id": {"required": False}, "employee": {"required": False}}
+
 
 class EmployeeSerializer(serializers.ModelSerializer):
 
@@ -174,7 +176,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             if kpis is not None:
                 self._replace_kpis(employee, kpis)
             if pages is not None:
-                self._replace_pages(instance, pages)
+                self._replace_pages(employee, pages)
         return employee
 
     def update(self, instance, validated_data):
