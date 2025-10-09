@@ -54,7 +54,7 @@ class PagesSerializer(serializers.ModelSerializer):
         model = Page
         fields = ["id", "name", "user", "is_editable", "is_readable", "is_parent"]
 
-        extra_kwargs = {"id": {"required": False}, "employee": {"required": False}}
+        extra_kwargs = {"id": {"required": False}, "user": {"required": False}}
 
     def create(self, validated_data):
         if isinstance(validated_data, list):
