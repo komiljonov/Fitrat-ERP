@@ -7,6 +7,8 @@ from rest_framework import serializers
 
 from data.employee.finance import FinanceManagerKpi
 from data.employee.models import Employee, EmployeeTransaction
+from data.finances.compensation.models import Page
+from data.finances.compensation.serializers import PagesSerializer
 from data.lid.new_lid.serializers import LeadSerializer
 from data.student.student.serializers import StudentSerializer
 from data.upload.serializers import FileUploadSerializer
@@ -59,6 +61,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
         allow_empty=True,
     )
 
+    pages = PagesSerializer(many=True, required=False)
+
     class Meta:
         model = Employee
 
@@ -98,6 +102,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "f_t_lesson_payment_percent",
             "f_t_fine_failed_first_lesson",
             "finance_manager_kpis",
+            "pages",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -148,6 +153,18 @@ class EmployeeSerializer(serializers.ModelSerializer):
             item.pop("employee", None)  # ignore if client sent it
             FinanceManagerKpi.objects.create(employee=employee, **item)
 
+    def _replace_pages(self, employee: Employee, pages_data: list[dict] | None):
+        employee.pages.all().delete()
+        if not pages_data:
+            return
+        objs = []
+        for item in pages_data:
+            item.pop("user", None)  # always bind to this employee
+            item.pop("id", None)  # fresh rows on replace
+            objs.append(Page(user=employee, **item))
+
+        Page.objects.bulk_create(objs)
+
     def create(self, validated_data):
         kpis = validated_data.pop("finance_manager_kpis", None)
         with transaction.atomic():
@@ -158,10 +175,13 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         kpis = validated_data.pop("finance_manager_kpis", None)
+        pages = validated_data.pop("pages", None)
         with transaction.atomic():
             instance = super().update(instance, validated_data)
             if kpis is not None:
                 self._replace_kpis(instance, kpis)
+            if pages is not None:
+                self._replace_pages(instance, pages)
         return instance
 
 
