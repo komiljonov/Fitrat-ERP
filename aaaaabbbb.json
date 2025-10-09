@@ -1,0 +1,328 @@
+{
+    "id": "4705f911-5a01-414b-bd67-19451223c3bd",
+    "name": "settings",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "2ed27a8a-ab31-4dff-832b-15378c0eb667",
+    "name": "shop_orders",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "7e422c13-65e9-46fd-98c8-f67645f1b28d",
+    "name": "shop_products",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "1cb23bea-8c49-456e-a429-ff6e082e9610",
+    "name": "shop",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "1d728164-8b64-46d2-930f-5df4b27aa27c",
+    "name": "event",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "5036d143-f4e2-4e5b-a918-5b2a35552a31",
+    "name": "library",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "aeb65da2-b2e0-493e-ad08-01d0650cd225",
+    "name": "stories",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "64ad1c03-88e5-4b44-968d-1640de32c895",
+    "name": "media",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "d0d1a26e-7bed-46af-9ca8-03655c4df21a",
+    "name": "employees_att",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "53f70a7c-7285-4c1c-99a2-f52ad3d592e1",
+    "name": "employees_archive",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "60802e3e-282b-4110-bdf5-6d9011b9d778",
+    "name": "employees_data",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "648da949-ab69-41d6-8260-675b4fa6914c",
+    "name": "employees",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "468db543-932e-45b1-9da5-d10d70e70c97",
+    "name": "tasks",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": true,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "eb5addd8-fc80-4247-91c3-98ea5e8e7756",
+    "name": "cashiers_archive",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "31d7d792-7dad-459e-87ea-3a38f347f39e",
+    "name": "cashiers_data",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "2e606cd3-0cce-486d-9be2-d691c5f339a7",
+    "name": "add_bonus",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "daee5502-707f-442b-8f0e-519e5a9ed5df",
+    "name": "cashiers",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "85c5c6af-270e-43c3-a14f-b213a3c50d3e",
+    "name": "test",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "bd4be8dc-50df-4ebb-b560-1709fca84539",
+    "name": "monitoring_page",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "48b89cbe-6b5a-4822-8770-0ef3c4c1cf23",
+    "name": "past_att",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "b41e633c-02b5-4076-82bd-59c1de1b1232",
+    "name": "control",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "48afd25f-712a-4e16-95c8-04819f130334",
+    "name": "results",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "41ac7a5a-2be3-4847-a0ee-37d0b99ffdd5",
+    "name": "schedule",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": true,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "e10c62cb-0c1e-4c43-9b04-e8cbf659510e",
+    "name": "rooms",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "f4ff3b5e-b39a-4813-b662-6b70c7501153",
+    "name": "groups",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "d5536fa0-bacc-43b1-9fff-3c48319af97a",
+    "name": "materials",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "20520d9b-fc30-4a51-a693-1350507b8860",
+    "name": "edu_section",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "1a1507c9-5b17-424a-8d46-97effa7b548f",
+    "name": "archived_students",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "e17ef02c-c90f-456c-af7b-4535c551e639",
+    "name": "all_students",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "56aadce3-9e4d-4a79-90a5-47a3efd8d073",
+    "name": "testing_students",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "3e902edc-75f5-48e4-936d-9d03a73831f7",
+    "name": "active_students",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "cb401ada-95f3-4e90-8db8-134848fad589",
+    "name": "new_students",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "191a68f6-aec1-4c56-bd6a-e9adfd78b133",
+    "name": "students",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "b1889414-550d-4f45-be01-765701b63a5b",
+    "name": "orders",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": true,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "bdeeb16a-d4ba-414f-8aa7-ab7325741d76",
+    "name": "new_leads",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": true,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "bb22c341-80cb-4d08-889d-657984aeca60",
+    "name": "leads",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": true,
+    "is_readable": true,
+    "is_parent": false
+},
+{
+    "id": "2bd2d62f-89a2-4675-bb14-73aff6f37343",
+    "name": "finance_report",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "f3b1d95f-b488-4b1c-9fee-b40c958ff364",
+    "name": "monitoring",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "4d61d30f-d4ce-44e3-a5f6-c1e04b583899",
+    "name": "edu_report",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "88a4b351-9382-4b2c-833a-721beede3f33",
+    "name": "admin_report",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+},
+{
+    "id": "5b58c836-b0f7-4ba7-a1be-bc554005fedc",
+    "name": "reports",
+    "user": "5d8231cb-838c-4f80-8cbd-f172d989ca5a",
+    "is_editable": false,
+    "is_readable": false,
+    "is_parent": false
+}
