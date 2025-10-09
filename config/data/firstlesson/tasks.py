@@ -1,6 +1,6 @@
 from django.db import transaction
 from django.db.models import Q
-from django.utils import timezone  # NEW
+from django.utils import timezone
 
 
 from celery import shared_task

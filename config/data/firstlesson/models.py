@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING
 from django.db import models
-from django.contrib import admin
-
 
 from data.command.models import BaseModel
 from data.student.course.models import Course

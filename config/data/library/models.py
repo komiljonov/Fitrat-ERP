@@ -15,7 +15,10 @@ class LibraryCategory(BaseModel):
 
 class Library(BaseModel):
     category: "LibraryCategory" = models.ForeignKey(
-        "library.LibraryCategory", on_delete=models.SET_NULL, null=True, blank=True
+        "library.LibraryCategory",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     name = models.TextField()
     choice = models.CharField(
