@@ -68,13 +68,16 @@ class AsosSerializer(serializers.ModelSerializer):
 
 class MonitoringSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
     point = serializers.PrimaryKeyRelatedField(
-        queryset=Point.objects.all(), allow_null=True
+        queryset=Point.objects.all(),
+        allow_null=True,
     )
     creator = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -103,16 +106,20 @@ class MonitoringSerializer(serializers.ModelSerializer):
 
 class CommentsSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
     asos = serializers.PrimaryKeyRelatedField(
-        queryset=Asos.objects.all(), allow_null=True
+        queryset=Asos.objects.all(),
+        allow_null=True,
     )
     creator = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
     monitoring = serializers.PrimaryKeyRelatedField(
-        queryset=Monitoring.objects.all(), allow_null=True
+        queryset=Monitoring.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -193,11 +200,13 @@ class PointSerializer(serializers.ModelSerializer):
 
 class ResultPointsSerializer(serializers.ModelSerializer):
     asos = serializers.PrimaryKeyRelatedField(
-        queryset=Asos.objects.all(), allow_null=True
+        queryset=Asos.objects.all(),
+        allow_null=True,
     )
 
     result = serializers.PrimaryKeyRelatedField(
-        queryset=ResultName.objects.all(), allow_null=True
+        queryset=ResultName.objects.all(),
+        allow_null=True,
     )
     # results = serializers.SerializerMethodField()
 
@@ -233,7 +242,8 @@ class ResultPointsSerializer(serializers.ModelSerializer):
 
 class StudentCountMonitoringSerializer(serializers.ModelSerializer):
     asos = serializers.PrimaryKeyRelatedField(
-        queryset=Asos.objects.all(), allow_null=True
+        queryset=Asos.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -271,19 +281,24 @@ class ResultsNameSerializer(serializers.ModelSerializer):
 
 class MonitoringAsos4Serializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
     user = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
     asos = serializers.PrimaryKeyRelatedField(
-        queryset=Asos.objects.all(), allow_null=True
+        queryset=Asos.objects.all(),
+        allow_null=True,
     )
     result = serializers.PrimaryKeyRelatedField(
-        queryset=ResultName.objects.all(), allow_null=True
+        queryset=ResultName.objects.all(),
+        allow_null=True,
     )
     subject = serializers.PrimaryKeyRelatedField(
-        queryset=ResultSubjects.objects.all(), allow_null=True
+        queryset=ResultSubjects.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -312,7 +327,8 @@ class MonitoringAsos4Serializer(serializers.ModelSerializer):
 
 class StudentCatchupSerializer(serializers.ModelSerializer):
     asos = serializers.PrimaryKeyRelatedField(
-        queryset=Asos.objects.all(), allow_null=True
+        queryset=Asos.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -336,7 +352,8 @@ class StudentCatchupSerializer(serializers.ModelSerializer):
 
 class Monitoring5Serializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
@@ -370,7 +387,8 @@ class Monitoring1_2serializer(serializers.ModelSerializer):
 
 class UserMonitoring1_2Serializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.all(), allow_null=True
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
     )
 
     class Meta:
