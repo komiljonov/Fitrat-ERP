@@ -29,8 +29,8 @@ from .models import (
     Asos1_2,
 )
 from .serializers import (
-    BonusSerializer,
-    CompensationSerializer,
+    # BonusSerializer,
+    # CompensationSerializer,
     PagesSerializer,
     AsosSerializer,
     MonitoringSerializer,
@@ -47,63 +47,63 @@ from .serializers import (
 from data.account.models import CustomUser
 
 
-class BonusList(ListCreateAPIView):
-    queryset = Bonus.objects.all()
-    serializer_class = BonusSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    search_fields = ("name",)
-    filterset_fields = ("name",)
-    ordering_fields = ("name",)
+# class BonusList(ListCreateAPIView):
+#     queryset = Bonus.objects.all()
+#     serializer_class = BonusSerializer
+#     permission_classes = [IsAuthenticated]
+#     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+#     search_fields = ("name",)
+#     filterset_fields = ("name",)
+#     ordering_fields = ("name",)
 
-    def create(self, request, *args, **kwargs):
+#     def create(self, request, *args, **kwargs):
 
-        if isinstance(request.data, list):
-            serializer = self.get_serializer(
-                data=request.data, many=True
-            )  # Use `many=True`
-        else:
-            serializer = self.get_serializer(data=request.data)
+#         if isinstance(request.data, list):
+#             serializer = self.get_serializer(
+#                 data=request.data, many=True
+#             )  # Use `many=True`
+#         else:
+#             serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         serializer.is_valid(raise_exception=True)
+#         self.perform_create(serializer)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def get_queryset(self):
-        queryset = Bonus.objects.all()
+#     def get_queryset(self):
+#         queryset = Bonus.objects.all()
 
-        print(queryset.values_list())
+#         print(queryset.values_list())
 
-        return queryset
-
-
-class BonusDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Bonus.objects.all()
-    serializer_class = BonusSerializer
-    permission_classes = [IsAuthenticated]
+#         return queryset
 
 
-class BonusNoPG(ListAPIView):
-    queryset = Bonus.objects.all()
-    serializer_class = BonusSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = None
+# class BonusDetail(RetrieveUpdateDestroyAPIView):
+#     queryset = Bonus.objects.all()
+#     serializer_class = BonusSerializer
+#     permission_classes = [IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    search_fields = ("name",)
-    filterset_fields = ("name",)
-    ordering_fields = ("name",)
 
-    def get_queryset(self):
-        queryset = Bonus.objects.all()
-        ic(queryset.values_list())
-        name = self.request.query_params.get("name")
-        if name:
-            queryset = queryset.filter(name__icontains=name)
-        return queryset
+# class BonusNoPG(ListAPIView):
+#     queryset = Bonus.objects.all()
+#     serializer_class = BonusSerializer
+#     permission_classes = [IsAuthenticated]
+#     pagination_class = None
 
-    def get_paginated_response(self, data):
-        return Response(data)
+#     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+#     search_fields = ("name",)
+#     filterset_fields = ("name",)
+#     ordering_fields = ("name",)
+
+#     def get_queryset(self):
+#         queryset = Bonus.objects.all()
+#         ic(queryset.values_list())
+#         name = self.request.query_params.get("name")
+#         if name:
+#             queryset = queryset.filter(name__icontains=name)
+#         return queryset
+
+#     def get_paginated_response(self, data):
+#         return Response(data)
 
 
 # class CompensationList(ListCreateAPIView):
