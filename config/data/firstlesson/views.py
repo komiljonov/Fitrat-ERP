@@ -1,4 +1,7 @@
 from django.db.models import Case, When, Value, IntegerField
+from django.http import HttpRequest
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import (
@@ -13,6 +16,7 @@ from data.firstlesson.serializers import (
     FirstLessonListSerializer,
     FirstLessonSingleSerializer,
 )
+from data.lid.new_lid.models import Lid
 from data.student.attendance.serializers import AttendanceSerializer
 
 from django.db import transaction
@@ -80,3 +84,20 @@ class FirstLessonAttendanceListAPIView(ListAPIView):
         first_lesson = get_object_or_404(FirstLesson, pk=self.kwargs["pk"])
 
         return first_lesson.lead.attendances.all()
+
+
+class FirstLessonLeadNoPgAPIView(APIView):
+    def get(self, request: HttpRequest):
+        leads = (
+            FirstLesson.objects.filter(is_archived=False)
+            .values_list("lead", flat=True)
+            .distinct()
+        )
+
+        data = (
+            Lid.objects.filter(id__in=leads)
+            .values("id", "first_name", "last_name", "middle_name")
+            .order_by("id")
+        )
+
+        return Response(list(data))
