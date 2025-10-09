@@ -10,7 +10,11 @@ from data.finances.finance.choices import FinanceKindTypeChoices
 from .models import CustomUser
 from data.account.permission import PhoneAuthBackend
 from data.department.filial.models import Filial
-from data.finances.compensation.models import Compensation, Bonus, Page
+from data.finances.compensation.models import (
+    # Compensation,
+    # Bonus,
+    Page,
+)
 from data.finances.finance.models import Casher, Finance
 from data.finances.timetracker.hrpulse import HrPulseIntegration
 from data.student.student.models import Student
@@ -255,8 +259,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class UserListSerializer(ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
-    bonus = serializers.SerializerMethodField()
-    compensation = serializers.SerializerMethodField()
+    # bonus = serializers.SerializerMethodField()
+    # compensation = serializers.SerializerMethodField()
     pages = serializers.SerializerMethodField()
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
 
@@ -282,8 +286,8 @@ class UserListSerializer(ModelSerializer):
             "is_service_manager",
             "photo",
             "filial",
-            "bonus",
-            "compensation",
+            # "bonus",
+            # "compensation",
             "created_at",
         ]
 
@@ -317,15 +321,15 @@ class UserListSerializer(ModelSerializer):
             for field_name in fields_to_remove:
                 self.fields.pop(field_name, None)
 
-    def get_bonus(self, obj):
-        bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
-        return list(bonus)
+    # def get_bonus(self, obj):
+    #     bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
+    #     return list(bonus)
 
-    def get_compensation(self, obj):
-        compensation = Compensation.objects.filter(user=obj).values(
-            "id", "name", "amount"
-        )
-        return list(compensation)
+    # def get_compensation(self, obj):
+    #     compensation = Compensation.objects.filter(user=obj).values(
+    #         "id", "name", "amount"
+    #     )
+    #     return list(compensation)
 
     def get_pages(self, obj):
         pages = Page.objects.filter(user=obj).values(
@@ -361,8 +365,8 @@ class UserSerializer(serializers.ModelSerializer):
         queryset=File.objects.all(), allow_null=True
     )
     pages = serializers.SerializerMethodField()
-    bonus = serializers.SerializerMethodField()
-    compensation = serializers.SerializerMethodField()
+    # bonus = serializers.SerializerMethodField()
+    # compensation = serializers.SerializerMethodField()
     penalty = serializers.SerializerMethodField()
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True)
     is_linked = serializers.SerializerMethodField()
@@ -481,31 +485,31 @@ class UserSerializer(serializers.ModelSerializer):
     def get_student_id(self, obj):
         return Student.objects.filter(user=obj).values_list("id", flat=True).first()
 
-    def get_penalty(self, obj):
-        # Use .aggregate() to get the sum of the 'amount' field
-        compensation = Compensation.objects.filter(user=obj).aggregate(
-            total_penalty=Sum("amount")
-        )
+    # def get_penalty(self, obj):
+    #     # Use .aggregate() to get the sum of the 'amount' field
+    #     compensation = Compensation.objects.filter(user=obj).aggregate(
+    #         total_penalty=Sum("amount")
+    #     )
 
-        # Extract the sum value
-        total_penalty = compensation.get(
-            "total_penalty", 0
-        )  # Defaults to 0 if there's no match
+    #     # Extract the sum value
+    #     total_penalty = compensation.get(
+    #         "total_penalty", 0
+    #     )  # Defaults to 0 if there's no match
 
-        return total_penalty
+    #     return total_penalty
 
     def get_is_linked(self, obj):
         return [True if Casher.objects.filter(user=obj).exists() else False]
 
-    def get_bonus(self, obj):
-        bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
-        return list(bonus)
+    # def get_bonus(self, obj):
+    #     bonus = Bonus.objects.filter(user=obj).values("id", "name", "amount")
+    #     return list(bonus)
 
-    def get_compensation(self, obj):
-        compensation = Compensation.objects.filter(user=obj).values(
-            "id", "name", "amount"
-        )
-        return list(compensation)
+    # def get_compensation(self, obj):
+    #     compensation = Compensation.objects.filter(user=obj).values(
+    #         "id", "name", "amount"
+    #     )
+    #     return list(compensation)
 
     def get_pages(self, obj):
         pages = Page.objects.filter(user=obj).values(

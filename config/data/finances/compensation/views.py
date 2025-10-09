@@ -13,8 +13,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import (
-    Bonus,
-    Compensation,
+    # Bonus,
+    # Compensation,
     Page,
     Asos,
     Monitoring,
@@ -106,45 +106,45 @@ class BonusNoPG(ListAPIView):
         return Response(data)
 
 
-class CompensationList(ListCreateAPIView):
-    queryset = Compensation.objects.all()
-    serializer_class = CompensationSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    search_fields = ("name",)
-    filterset_fields = ("name",)
-    ordering_fields = ("name",)
+# class CompensationList(ListCreateAPIView):
+#     queryset = Compensation.objects.all()
+#     serializer_class = CompensationSerializer
+#     permission_classes = [IsAuthenticated]
+#     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+#     search_fields = ("name",)
+#     filterset_fields = ("name",)
+#     ordering_fields = ("name",)
 
-    def create(self, request, *args, **kwargs):
-        if isinstance(request.data, list):
-            serializer = self.get_serializer(
-                data=request.data, many=True
-            )  # Use `many=True`
-        else:
-            serializer = self.get_serializer(data=request.data)
+#     def create(self, request, *args, **kwargs):
+#         if isinstance(request.data, list):
+#             serializer = self.get_serializer(
+#                 data=request.data, many=True
+#             )  # Use `many=True`
+#         else:
+#             serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class CompensationDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Compensation.objects.all()
-    serializer_class = CompensationSerializer
+#         serializer.is_valid(raise_exception=True)
+#         self.perform_create(serializer)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CompensationNoPG(ListAPIView):
-    queryset = Compensation.objects.all()
-    serializer_class = CompensationSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = None
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    search_fields = ("name",)
-    filterset_fields = ("name",)
-    ordering_fields = ("name",)
+# class CompensationDetail(RetrieveUpdateDestroyAPIView):
+#     queryset = Compensation.objects.all()
+#     serializer_class = CompensationSerializer
 
-    def get_paginated_response(self, data):
-        return Response(data)
+
+# class CompensationNoPG(ListAPIView):
+#     queryset = Compensation.objects.all()
+#     serializer_class = CompensationSerializer
+#     permission_classes = [IsAuthenticated]
+#     pagination_class = None
+#     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+#     search_fields = ("name",)
+#     filterset_fields = ("name",)
+#     ordering_fields = ("name",)
+
+#     def get_paginated_response(self, data):
+#         return Response(data)
 
 
 class PageCreateView(ListCreateAPIView):

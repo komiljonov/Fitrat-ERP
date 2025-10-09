@@ -53,31 +53,31 @@ app.conf.beat_schedule = {
         "task": "data.student.mastering.tasks.check_monthly_extra_lessons",
         "schedule": crontab(day_of_month=1, hour=0, minute=0),
     },
-    "check_accountant_kpi": {
-        "task": "data.student.mastering.tasks.check_accountant_kpi",
-        "schedule": crontab(day_of_month=28, hour=0, minute=0),
-    },
+    # "check_accountant_kpi": {
+    #     "task": "data.student.mastering.tasks.check_accountant_kpi",
+    #     "schedule": crontab(day_of_month=28, hour=0, minute=0),
+    # },
     "check_monthly_asos5": {
         "task": "data.finance.compensation.tasks.check_monthly_student_catching_monitoring",
         "schedule": crontab(day_of_month=28, hour=0, minute=0),
     },
     # KPI Checks (Runs on the 1st of the month)
-    "check_attendance_manager_kpi": {
-        "task": "data.student.mastering.tasks.check_attendance_manager_kpi",
-        "schedule": crontab(day_of_month=1, hour=0, minute=0),
-    },
-    "check_filial_manager_kpi": {
-        "task": "data.student.mastering.tasks.check_filial_manager_kpi",
-        "schedule": crontab(day_of_month=1, hour=0, minute=0),
-    },
-    "check_filial_director_kpi": {
-        "task": "data.student.mastering.tasks.check_filial_director_kpi",
-        "schedule": crontab(day_of_month=1, hour=0, minute=0),
-    },
-    "check_monitoring_manager_kpi": {
-        "task": "data.student.mastering.tasks.check_monitoring_manager_kpi",
-        "schedule": crontab(day_of_month=1, hour=0, minute=0),
-    },
+    # "check_attendance_manager_kpi": {
+    #     "task": "data.student.mastering.tasks.check_attendance_manager_kpi",
+    #     "schedule": crontab(day_of_month=1, hour=0, minute=0),
+    # },
+    # "check_filial_manager_kpi": {
+    #     "task": "data.student.mastering.tasks.check_filial_manager_kpi",
+    #     "schedule": crontab(day_of_month=1, hour=0, minute=0),
+    # },
+    # "check_filial_director_kpi": {
+    #     "task": "data.student.mastering.tasks.check_filial_director_kpi",
+    #     "schedule": crontab(day_of_month=1, hour=0, minute=0),
+    # },
+    # "check_monitoring_manager_kpi": {
+    #     "task": "data.student.mastering.tasks.check_monitoring_manager_kpi",
+    #     "schedule": crontab(day_of_month=1, hour=0, minute=0),
+    # },
     "rearrange_first_lessons_everyday_to_next_lesson_day": {
         "task": "data.firstlesson.tasks.recreate_first_lesson",
         "schedule": crontab(hour=0, minute=1),  # every day at 00:01

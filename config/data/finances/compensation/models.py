@@ -9,110 +9,110 @@ if TYPE_CHECKING:
     from data.employee.models import Employee
 
 
-class Compensation(BaseModel):
-    name = models.CharField(
-        choices=[
-            (
-                "Sinov darsiga yozilib kelmaganlar uchun jarima",
-                "Sinov darsiga yozilib kelmaganlar uchun jarima",
-            ),
-            (
-                "Sinov darsiga keldi lekin aktivga o‘tmaganligi uchun jarima",
-                "Sinov darsiga keldi lekin aktivga o‘tmaganligi uchun jarima",
-            ),
-            (
-                "Aktivdan ketgan o‘quvchi uchun jarima",
-                "Aktivdan ketgan o‘quvchi uchun jarima",
-            ),
-            (
-                "Jami qarzdor o‘quvchilar sonining 80.1% dan 85% gacha bo‘lgan qismi uchun jarima",
-                "Jami qarzdor o‘quvchilar sonining 80.1% dan 85% gacha bo‘lgan qismi uchun jarima",
-            ),
-            (
-                "Jami qarzdor o‘quvchilar sonining 70% dan 80% gacha bo‘lgan qismi uchun jarima",
-                "Jami qarzdor o‘quvchilar sonining 70% dan 80% gacha bo‘lgan qismi uchun jarima",
-            ),
-            (
-                "Jami qarzdor o‘quvchilar sonining 69.9% dan kichik bo‘lgan qismi uchu jarima",
-                "Jami qarzdor o‘quvchilar sonining 69.9% dan kichik bo‘lgan qismi uchu jarima",
-            ),
-        ],
-        max_length=256,
-        null=True,
-        blank=True,
-    )
-    user: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
-        on_delete=models.CASCADE,
-    )
-    amount = models.DecimalField(decimal_places=2, max_digits=10)
+# class Compensation(BaseModel):
+#     name = models.CharField(
+#         choices=[
+#             (
+#                 "Sinov darsiga yozilib kelmaganlar uchun jarima",
+#                 "Sinov darsiga yozilib kelmaganlar uchun jarima",
+#             ),
+#             (
+#                 "Sinov darsiga keldi lekin aktivga o‘tmaganligi uchun jarima",
+#                 "Sinov darsiga keldi lekin aktivga o‘tmaganligi uchun jarima",
+#             ),
+#             (
+#                 "Aktivdan ketgan o‘quvchi uchun jarima",
+#                 "Aktivdan ketgan o‘quvchi uchun jarima",
+#             ),
+#             (
+#                 "Jami qarzdor o‘quvchilar sonining 80.1% dan 85% gacha bo‘lgan qismi uchun jarima",
+#                 "Jami qarzdor o‘quvchilar sonining 80.1% dan 85% gacha bo‘lgan qismi uchun jarima",
+#             ),
+#             (
+#                 "Jami qarzdor o‘quvchilar sonining 70% dan 80% gacha bo‘lgan qismi uchun jarima",
+#                 "Jami qarzdor o‘quvchilar sonining 70% dan 80% gacha bo‘lgan qismi uchun jarima",
+#             ),
+#             (
+#                 "Jami qarzdor o‘quvchilar sonining 69.9% dan kichik bo‘lgan qismi uchu jarima",
+#                 "Jami qarzdor o‘quvchilar sonining 69.9% dan kichik bo‘lgan qismi uchu jarima",
+#             ),
+#         ],
+#         max_length=256,
+#         null=True,
+#         blank=True,
+#     )
+#     user: "CustomUser" = models.ForeignKey(
+#         "account.CustomUser",
+#         on_delete=models.CASCADE,
+#     )
+#     amount = models.DecimalField(decimal_places=2, max_digits=10)
 
-    def __str__(self):
-        return f"{self.name}  {self.amount}"
+#     def __str__(self):
+#         return f"{self.name}  {self.amount}"
 
 
-class Bonus(BaseModel):
-    name = models.CharField(
-        choices=[
-            (
-                "Markazga kelgan o‘quvchi uchun bonus",
-                "Markazga kelgan o‘quvchi uchun bonus",
-            ),
-            ("Yaratilgan buyurtma uchun bonus", "Yaratilgan buyurtma uchun bonus"),
-            (
-                "Sinov darsiga kelgan o‘quvchi uchun bonus",
-                "Sinov darsiga kelgan o‘quvchi uchun bonus",
-            ),
-            (
-                "Xizmat ko‘rsatgan har bir aktiv o‘quvchi uchun bonus",
-                "Xizmat ko‘rsatgan har bir aktiv o‘quvchi uchun bonus",
-            ),
-            (
-                "Aktiv o‘quvchiga aylangan yangi o‘quvchi uchun bonus",
-                "Aktiv o‘quvchiga aylangan yangi o‘quvchi uchun bonus",
-            ),
-            (
-                "Har bir qarzdor bo‘lmagan va aktiv o‘quvchi uchun bonus",
-                "Har bir qarzdor bo‘lmagan va aktiv o‘quvchi uchun bonus",
-            ),
-            (
-                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 93% dan 94.9% gacha bo‘lgan qismi uchun bonus",
-                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 93% dan 94.9% gacha bo‘lgan qismi uchun bonus",
-            ),
-            (
-                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 95% dan 97.9% gacha bo‘lgan qismi uchun bonus",
-                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 95% dan 97.9% gacha bo‘lgan qismi uchun bonus",
-            ),
-            (
-                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 98% dan 99.9% gacha bo‘lgan qismi uchun bonus",
-                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 98% dan 99.9% gacha bo‘lgan qismi uchun bonus",
-            ),
-            (
-                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 100% gacha bo‘lgan qismi uchun bonus",
-                "Jami yangi va aktiv o‘quvchi o‘quvchilarning 100% gacha bo‘lgan qismi uchun bonus",
-            ),
-            ("Aktiv o‘quvchi soniga bonus", "Aktiv o‘quvchi soniga bonus"),
-            (
-                "Bir oyda 10 marta kelgan har bir o‘quvchi uchun bonus",
-                "Bir oyda 10 marta kelgan har bir o‘quvchi uchun bonus",
-            ),
-            (
-                "O‘quvchi to‘lagan summadan foiz beriladi",
-                "O‘quvchi to‘lagan summadan foiz beriladi",
-            ),
-        ],
-        max_length=256,
-        null=True,
-        blank=True,
-    )
-    user: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
-        on_delete=models.CASCADE,
-    )
-    amount = models.DecimalField(decimal_places=2, max_digits=10)
+# class Bonus(BaseModel):
+#     name = models.CharField(
+#         choices=[
+#             (
+#                 "Markazga kelgan o‘quvchi uchun bonus",
+#                 "Markazga kelgan o‘quvchi uchun bonus",
+#             ),
+#             ("Yaratilgan buyurtma uchun bonus", "Yaratilgan buyurtma uchun bonus"),
+#             (
+#                 "Sinov darsiga kelgan o‘quvchi uchun bonus",
+#                 "Sinov darsiga kelgan o‘quvchi uchun bonus",
+#             ),
+#             (
+#                 "Xizmat ko‘rsatgan har bir aktiv o‘quvchi uchun bonus",
+#                 "Xizmat ko‘rsatgan har bir aktiv o‘quvchi uchun bonus",
+#             ),
+#             (
+#                 "Aktiv o‘quvchiga aylangan yangi o‘quvchi uchun bonus",
+#                 "Aktiv o‘quvchiga aylangan yangi o‘quvchi uchun bonus",
+#             ),
+#             (
+#                 "Har bir qarzdor bo‘lmagan va aktiv o‘quvchi uchun bonus",
+#                 "Har bir qarzdor bo‘lmagan va aktiv o‘quvchi uchun bonus",
+#             ),
+#             (
+#                 "Jami yangi va aktiv o‘quvchi o‘quvchilarning 93% dan 94.9% gacha bo‘lgan qismi uchun bonus",
+#                 "Jami yangi va aktiv o‘quvchi o‘quvchilarning 93% dan 94.9% gacha bo‘lgan qismi uchun bonus",
+#             ),
+#             (
+#                 "Jami yangi va aktiv o‘quvchi o‘quvchilarning 95% dan 97.9% gacha bo‘lgan qismi uchun bonus",
+#                 "Jami yangi va aktiv o‘quvchi o‘quvchilarning 95% dan 97.9% gacha bo‘lgan qismi uchun bonus",
+#             ),
+#             (
+#                 "Jami yangi va aktiv o‘quvchi o‘quvchilarning 98% dan 99.9% gacha bo‘lgan qismi uchun bonus",
+#                 "Jami yangi va aktiv o‘quvchi o‘quvchilarning 98% dan 99.9% gacha bo‘lgan qismi uchun bonus",
+#             ),
+#             (
+#                 "Jami yangi va aktiv o‘quvchi o‘quvchilarning 100% gacha bo‘lgan qismi uchun bonus",
+#                 "Jami yangi va aktiv o‘quvchi o‘quvchilarning 100% gacha bo‘lgan qismi uchun bonus",
+#             ),
+#             ("Aktiv o‘quvchi soniga bonus", "Aktiv o‘quvchi soniga bonus"),
+#             (
+#                 "Bir oyda 10 marta kelgan har bir o‘quvchi uchun bonus",
+#                 "Bir oyda 10 marta kelgan har bir o‘quvchi uchun bonus",
+#             ),
+#             (
+#                 "O‘quvchi to‘lagan summadan foiz beriladi",
+#                 "O‘quvchi to‘lagan summadan foiz beriladi",
+#             ),
+#         ],
+#         max_length=256,
+#         null=True,
+#         blank=True,
+#     )
+#     user: "CustomUser" = models.ForeignKey(
+#         "account.CustomUser",
+#         on_delete=models.CASCADE,
+#     )
+#     amount = models.DecimalField(decimal_places=2, max_digits=10)
 
-    def __str__(self):
-        return f"{self.name}  {self.amount}"
+#     def __str__(self):
+#         return f"{self.name}  {self.amount}"
 
 
 class Page(BaseModel):

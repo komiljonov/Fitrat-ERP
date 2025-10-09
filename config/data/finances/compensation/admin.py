@@ -1,8 +1,8 @@
 from django.contrib import admin
 
 from data.finances.compensation.models import (
-    Compensation,
-    Bonus,
+    # Compensation,
+    # Bonus,
     Page,
     Asos,
     Monitoring,
@@ -14,22 +14,22 @@ from data.finances.compensation.models import (
 )
 
 
-@admin.register(Compensation)
-class CompensationAdmin(admin.ModelAdmin):
-    list_display = ("user__full_name", "name", "amount")
-    search_fields = (
-        "user__full_name",
-        "name",
-    )
+# @admin.register(Compensation)
+# class CompensationAdmin(admin.ModelAdmin):
+#     list_display = ("user__full_name", "name", "amount")
+#     search_fields = (
+#         "user__full_name",
+#         "name",
+#     )
 
 
-@admin.register(Bonus)
-class BonsAdmin(admin.ModelAdmin):
-    list_display = ("user__full_name", "name", "amount")
-    search_fields = (
-        "user__full_name",
-        "name",
-    )
+# @admin.register(Bonus)
+# class BonsAdmin(admin.ModelAdmin):
+#     list_display = ("user__full_name", "name", "amount")
+#     search_fields = (
+#         "user__full_name",
+#         "name",
+#     )
 
 
 @admin.register(Page)
