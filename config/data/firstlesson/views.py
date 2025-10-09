@@ -90,9 +90,12 @@ class FirstLessonLeadNoPgAPIView(APIView):
     def get(self, request: HttpRequest):
         leads = (
             FirstLesson.objects.filter(is_archived=False)
+            .exclude(status="CAME")
             .values_list("lead", flat=True)
             .distinct()
         )
+        
+        
 
         data = (
             Lid.objects.filter(id__in=leads)

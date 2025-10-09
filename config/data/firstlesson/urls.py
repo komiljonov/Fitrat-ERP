@@ -14,3 +14,4 @@ urlpatterns = [
     path("<uuid:pk>", FirstLessonRetrieveAPIView.as_view()),
     path("<uuid:pk>/attendances", FirstLessonAttendanceListAPIView.as_view()),
 ]
+
