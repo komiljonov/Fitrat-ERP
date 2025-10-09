@@ -98,7 +98,7 @@ class FirstLessonLeadNoPgAPIView(APIView):
 
         data = (
             Lid.objects.filter(id__in=leads)
-            .values("id", "first_name", "last_name", "middle_name")
+            .values("id", "first_name", "last_name", "middle_name", "phone_number")
             .order_by("id")
         )
 

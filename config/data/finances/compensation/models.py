@@ -6,6 +6,7 @@ from data.command.models import BaseModel
 
 if TYPE_CHECKING:
     from data.account.models import CustomUser
+    from data.employee.models import Employee
 
 
 class Compensation(BaseModel):
@@ -41,7 +42,8 @@ class Compensation(BaseModel):
         blank=True,
     )
     user: "CustomUser" = models.ForeignKey(
-        "account.CustomUser", on_delete=models.CASCADE
+        "account.CustomUser",
+        on_delete=models.CASCADE,
     )
     amount = models.DecimalField(decimal_places=2, max_digits=10)
 
@@ -114,11 +116,12 @@ class Bonus(BaseModel):
 
 
 class Page(BaseModel):
-    user: "CustomUser" = models.ForeignKey(
-        "account.CustomUser",
+    user: "Employee" = models.ForeignKey(
+        "employee.Employee",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="pages",
     )
     name = models.CharField(max_length=256)
 

@@ -32,6 +32,8 @@ class Employee(CustomUser, EmployeeMethods):
     svm_students: "models.QuerySet[Student]"
 
     finance_manager_kpis: "models.QuerySet[FinanceManagerKpi]"
+    
+    
 
     class Meta:
         proxy = True
