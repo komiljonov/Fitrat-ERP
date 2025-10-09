@@ -50,6 +50,7 @@ from data.account.serializers import UserListSerializer, UserSerializer
 
 
 class PagesSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Page
         fields = ["id", "name", "user", "is_editable", "is_readable", "is_parent"]
