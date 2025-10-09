@@ -57,7 +57,7 @@ class PagesSerializer(serializers.ModelSerializer):
 
         extra_kwargs = {"id": {"required": False}, "user": {"required": False}}
 
-        readonly_fields = ["user"]
+        read_only_fields = ["user"]
 
     def create(self, validated_data):
         if isinstance(validated_data, list):
