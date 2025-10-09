@@ -167,10 +167,14 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         kpis = validated_data.pop("finance_manager_kpis", None)
+        pages = validated_data.pop("pages", None)
+
         with transaction.atomic():
             employee = super().create(validated_data)
             if kpis is not None:
                 self._replace_kpis(employee, kpis)
+            if pages is not None:
+                self._replace_pages(instance, pages)
         return employee
 
     def update(self, instance, validated_data):
