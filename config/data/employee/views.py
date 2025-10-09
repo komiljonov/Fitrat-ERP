@@ -36,31 +36,34 @@ from data.student.student.models import Student
 
 
 class EmployeeListAPIView(ListCreateAPIView):
-
     queryset = Employee.objects.select_related("photo")
-
     filterset_class = EmployeesFilter
 
     def get_serializer(self, *args, **kwargs):
-
         kwargs.setdefault("context", self.get_serializer_context())
-        return EmployeeSerializer(
-            *args,
-            **kwargs,
-            include_only=[
-                "id",
-                "first_name",
-                "last_name",
-                "full_name",
-                "phone",
-                "balance",
-                "photo",
-                "monitoring",
-                "role",
-                "calculate_penalties",
-                "created_at",
-            ],
-        )
+
+        if self.request.method == "POST":
+            # Creating new employee — do not restrict fields
+            return EmployeeSerializer(*args, **kwargs)
+        else:
+            # Listing employees — limit fields
+            return EmployeeSerializer(
+                *args,
+                **kwargs,
+                include_only=[
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "full_name",
+                    "phone",
+                    "balance",
+                    "photo",
+                    "monitoring",
+                    "role",
+                    "calculate_penalties",
+                    "created_at",
+                ],
+            )
 
 
 class EmployeeRetrieveAPIView(RetrieveUpdateDestroyAPIView):
