@@ -43,7 +43,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def get_student_count(self, obj: Group):
 
-        return obj.students.filter(is_archive=False).count()
+        return obj.students.filter(is_archived=False).count()
 
     def get_lessons(self, obj: Group):
 
