@@ -11,6 +11,8 @@ from data.student.subject.models import Subject
 class ArchiveFilter(filters.FilterSet):
     # map non-Archive fields through related FKs (student/lead)
 
+    q = filters.CharFilter(method="search")
+
     filial = filters.ModelChoiceFilter(
         queryset=Filial.objects.all(),
         method="filter_filial",
@@ -54,6 +56,7 @@ class ArchiveFilter(filters.FilterSet):
     class Meta:
         model = Archive
         fields = [
+            "q",
             "lang",
             "subject",
             "operator",
@@ -143,6 +146,28 @@ class ArchiveFilter(filters.FilterSet):
             qs = qs.order_by(value)
 
         return qs
+
+    def search(self, qs, name, value):
+
+        if not value:
+            return value
+
+        return qs.filter(
+            # Search by lead
+            Q(lead__first_name__icontains=value)
+            | Q(lead__last_name__icontains=value)
+            | Q(lead__middle_name__icontains=value)
+            | Q(lead__phone_number__icontains=value)
+            # Search by students
+            | Q(student__first_name__icontains=value)
+            | Q(student__last_name__icontains=value)
+            | Q(student__middle_name__icontains=value)
+            | Q(student__phone_number__icontains=value)
+            # Search by metadata
+            | Q(reason__icontains=value)
+            # Search by creator
+            | Q(creator__full_name__icontains=value)
+        )
 
 
 # education_lang
