@@ -255,6 +255,8 @@ class AttendanceStatusForDateAPIView(APIView):
         theme_ids = list(themes_qs.values_list("id", flat=True))
 
         lessons = group.lessons.filter(Q(date__lt=date) if date else Q())
+        
+        print(lessons)
 
         counts = lessons.values("theme_id").annotate(
             used_count=Count("id"),
