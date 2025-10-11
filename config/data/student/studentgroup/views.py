@@ -14,6 +14,7 @@ from django.db.models import (
     Count,
     Exists,
 )
+
 from django.db.models.functions import Coalesce, Lower
 from django.utils.timezone import now, localdate
 from django_filters.rest_framework import DjangoFilterBackend
@@ -25,6 +26,7 @@ from rest_framework.generics import (
     ListAPIView,
     get_object_or_404,
 )
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView

@@ -290,7 +290,9 @@ class AttendanceStatusForDateAPIView(APIView):
             )
             if last_non_repeat_theme_id in theme_ids:
                 idx = theme_ids.index(last_non_repeat_theme_id)
-                todays_theme_id = theme_ids[idx + 1] if idx + 1 < len(theme_ids) else None
+                todays_theme_id = (
+                    theme_ids[idx + 1] if idx + 1 < len(theme_ids) else None
+                )
             else:
                 todays_theme_id = theme_ids[0] if theme_ids else None
             is_repeat_today = False  # derived "next" is never a repeat
@@ -345,9 +347,10 @@ class AttendanceStatusForDateAPIView(APIView):
 
         print(today)
 
-        students = students.select_related("student", "lid").exclude(
-            Q(first_lesson__date__date__gt=today)
-        )
+        students = students.select_related("student", "lid")
+        # .exclude(
+        # Q(first_lesson__date__date__gt=today)
+        # )
 
         return AttendanceGroupStateSerializer(
             students, context=self.get_serializer_context(filters), many=True
