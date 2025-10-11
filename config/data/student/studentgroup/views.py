@@ -526,22 +526,18 @@ class GroupStudentStatisticsAPIView(APIView):
 
         # Get today's start and end time
         today = now().date()
-        start_of_day = datetime.datetime.combine(today, datetime.time.min)
-        end_of_day = datetime.datetime.combine(today, datetime.time.max)
 
         # Get attendance statistics
         is_attendanded = Attendance.objects.filter(
             group=group,
-            created_at__gte=start_of_day,
-            created_at__lte=end_of_day,
+            date=today,
             status="IS_PRESENT",
         ).count()
 
         is_absent = Attendance.objects.filter(
             group=group,
+            date=today,
             status__in=["REASONED", "UNREASONED", "EMPTY"],
-            created_at__gte=start_of_day,
-            created_at__lte=end_of_day,
         ).count()
 
         # Calculate attendance percentages
