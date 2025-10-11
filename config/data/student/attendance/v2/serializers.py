@@ -80,7 +80,7 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
 
     attendance = serializers.SerializerMethodField()
 
-    first_lesson = FirstLessonSingleSerializer.only("id", "date", "status")
+    first_lesson = FirstLessonSingleSerializer.only("id", "date", "status")()
 
     class Meta:
         model = StudentGroup
