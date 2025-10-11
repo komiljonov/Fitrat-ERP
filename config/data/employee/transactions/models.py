@@ -49,11 +49,13 @@ class EmployeeTransaction(BaseModel):
         "BONUS_FOR_NEW_STUDENT": "Sinov darsiga kelgani uchun",
         "BONUS_FOR_NEW_ACTIVE_STUDENT": "O'quvchi aktiv holatiga o'tgani uchun",
         "BONUS_FOR_EACH_ACTIVE_STUDENT": "Har bir aktiv o'quvchi uchun",
+        "BONUS_FOR_EACH_ENTITLED_STUDENT": "Qarzdor bo'lmagan o'quvchi uchun to'lov",
         "LESSON_PAYMENT": "Dars uchun to'lov",
         "SALARY": "Maosh",
         # Expense and fines
         "FINE_FOR_STUDENT_ARCHIVED": "O'quvchi arxivlangani uchun",
         "FINE_FOR_ARCHIVED_FIRST_LESSON": "Sinov darsi arxhivlangani uchun",
+        "FINE_FOR_EACH_INDEBT_STUDENT": "Qardzor bo'lgan o'quvchi uchun jarima",
         "ADVANCE": "Avans",
     }
 

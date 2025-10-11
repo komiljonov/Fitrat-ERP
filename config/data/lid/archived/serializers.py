@@ -136,10 +136,12 @@ class FrozenSerializer(serializers.ModelSerializer):
         queryset=CustomUser.objects.all(),
         allow_null=True,
     )
+
     lid = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(),
         allow_null=True,
     )
+
     student = serializers.PrimaryKeyRelatedField(
         queryset=Student.objects.all(),
         allow_null=True,
