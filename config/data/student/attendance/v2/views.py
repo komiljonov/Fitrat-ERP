@@ -239,8 +239,10 @@ class AttendanceStatusForDateAPIView(APIView):
 
         return Response(
             {
-                "themes": theme_response["themes"],
-                "today_theme": theme_response["today_theme"],
+                **theme_response,
+                # "themes": theme_response["themes"],
+                # "today_theme": theme_response["today_theme"],
+                # "is_repeat": theme_response["today_theme"],
                 "statuses": status_response,
             }
         )
