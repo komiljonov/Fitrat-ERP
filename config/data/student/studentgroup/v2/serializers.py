@@ -42,7 +42,14 @@ class StudentGroupPriceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentGroupPrice
-        fields = ["id", "student_group", "amount", "comment", "created_by"]
+        fields = [
+            "id",
+            "student_group",
+            "amount",
+            "comment",
+            "created_by",
+            "created_at",
+        ]
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
