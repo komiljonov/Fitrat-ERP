@@ -237,6 +237,6 @@ class StudentGroupPriceCreateAPIView(ListCreateAPIView):
         return qs.select_related(
             "student_group",
             "student_group__student",
-            "student_group__lead",
+            "student_group__lid",
             "student_group__group",
         ).distinct()

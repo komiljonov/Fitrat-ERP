@@ -58,9 +58,9 @@ class StudentGroupPriceSerializer(serializers.ModelSerializer):
                 else None
             ),
             "lead": {
-                "id": obj.student_group.lead_id,
-                "first_name": obj.student_group.lead.first_name,
-                "last_name": obj.student_group.lead.last_name,
-                "middle_name": obj.student_group.lead.middle_name,
+                "id": obj.student_group.lid_id,
+                "first_name": obj.student_group.lid.first_name,
+                "last_name": obj.student_group.lid.last_name,
+                "middle_name": obj.student_group.lid.middle_name,
             },
         }
