@@ -58,7 +58,7 @@ class GroupSerializer(serializers.ModelSerializer):
         )
 
         return {
-            "lessons": total_lessons,
+            "total_count": total_lessons,
             "attended": attended_lessons,
             "lessons": [
                 {
