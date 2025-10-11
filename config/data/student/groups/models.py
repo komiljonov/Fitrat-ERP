@@ -172,7 +172,7 @@ class GroupLesson(BaseModel):
             models.UniqueConstraint(
                 fields=["group", "theme"],
                 name="unique_theme_per_group_when_not_repeat",
-                condition=Q(is_repeat=False),
+                condition=Q(is_repeat=False, theme__isnull=False),
             ),
         ]
 
