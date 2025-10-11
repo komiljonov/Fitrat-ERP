@@ -5,14 +5,18 @@ from rest_framework.views import APIView
 from rest_framework.request import HttpRequest, Request
 from rest_framework.response import Response
 
-from data.student.studentgroup.models import SecondaryStudentGroup, StudentGroup
+from data.student.studentgroup.models import (
+    SecondaryStudentGroup,
+    StudentGroup,
+    StudentGroupPrice,
+)
 from data.student.studentgroup.v2.serializers import (
     GroupStatisticsFilterSerializer,
     StudentGroupPriceSerializer,
 )
 
 
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import ListCreateAPIView
 
 
 class GroupStatisticsAPIView(APIView):
@@ -209,6 +213,25 @@ class GroupStatisticsAPIView(APIView):
         }
 
 
-class StudentGroupPriceCreateAPIView(CreateAPIView):
+class StudentGroupPriceCreateAPIView(ListCreateAPIView):
 
     serializer_class = StudentGroupPriceSerializer
+
+    queryset = StudentGroupPrice.objects.all()
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        sg_id = self.request.query_params.get("student_group")
+        student_id = self.request.query_params.get("student")
+
+        cond = Q()
+
+        if sg_id:
+            cond &= Q(student_group_id=sg_id)
+        if student_id:
+            cond &= Q(student_group__student_id=student_id)
+
+        if cond:
+            qs = qs.filter(cond)
+
+        return qs.select_related("student_group", "student_group__student").distinct()
