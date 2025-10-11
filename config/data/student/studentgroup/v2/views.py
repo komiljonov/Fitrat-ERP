@@ -229,7 +229,9 @@ class StudentGroupPriceCreateAPIView(ListCreateAPIView):
         if sg_id:
             cond &= Q(student_group_id=sg_id)
         if student_id:
-            cond &= Q(student_group__student_id=student_id)
+            cond &= Q(student_group__student_id=student_id) | Q(
+                student_group__lid_id=student_id
+            )
 
         if cond:
             qs = qs.filter(cond)
