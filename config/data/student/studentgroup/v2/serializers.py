@@ -57,10 +57,14 @@ class StudentGroupPriceSerializer(serializers.ModelSerializer):
                 if obj.student_group.student
                 else None
             ),
-            "lead": {
-                "id": obj.student_group.lid_id,
-                "first_name": obj.student_group.lid.first_name,
-                "last_name": obj.student_group.lid.last_name,
-                "middle_name": obj.student_group.lid.middle_name,
-            },
+            "lead": (
+                {
+                    "id": obj.student_group.lid_id,
+                    "first_name": obj.student_group.lid.first_name,
+                    "last_name": obj.student_group.lid.last_name,
+                    "middle_name": obj.student_group.lid.middle_name,
+                }
+                if obj.student_group.lid
+                else None
+            ),
         }
