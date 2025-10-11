@@ -27,7 +27,7 @@ class Archive(BaseModel, ArchiveMethods):
 
     lead: "Lid | None" = models.ForeignKey(
         "new_lid.Lid",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="archive",
@@ -35,7 +35,7 @@ class Archive(BaseModel, ArchiveMethods):
 
     student: "Student | None" = models.ForeignKey(
         "student.Student",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="archives",
