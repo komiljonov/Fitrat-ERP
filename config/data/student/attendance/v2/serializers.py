@@ -10,7 +10,7 @@ from data.student.groups.models import Group, GroupLesson
 from data.student.studentgroup.models import StudentGroup
 from data.student.subject.models import Theme
 
-from data.firstlesson.serializers import FirstLessonSing, FirstLessonSingleSerializer
+from data.firstlesson.serializers import FirstLessonSingleSerializer
 
 
 class CreateAttendanceV2ItemSerializer(serializers.Serializer):
