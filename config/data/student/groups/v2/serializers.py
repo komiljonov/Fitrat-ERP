@@ -58,11 +58,10 @@ class GroupSerializer(serializers.ModelSerializer):
         )
 
         return {
-            "total_count": total_lessons,
+            "total_count": total_lessons.count(),
             "attended": attended_lessons.count(),
             "repeated": attended_lessons.filter(is_repeat=True).count(),
             "non_repeat": attended_lessons.filter(is_repeat=False).count(),
-         
             # "lessons": [
             #     {
             #         "id": lesson.id,
