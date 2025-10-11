@@ -539,7 +539,7 @@ class GroupStudentStatisticsAPIView(APIView):
 
         is_absent = Attendance.objects.filter(
             group=group,
-            status__in=["REASONED", "UNREASONED"],
+            status__in=["REASONED", "UNREASONED", "EMPTY"],
             created_at__gte=start_of_day,
             created_at__lte=end_of_day,
         ).count()
