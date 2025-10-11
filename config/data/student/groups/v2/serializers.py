@@ -17,7 +17,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
     course = CourseSerializer.minimal()
 
-    subject = SubjectSerializer.minimal()
+    # subject = SubjectSerializer.minimal()
 
     student_count = serializers.SerializerMethodField()
 
@@ -33,7 +33,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "teacher",
             "status",
             "course",
-            "subject",
+            # "subject",
             "student_count",
             "room_number",
             "lessons",
