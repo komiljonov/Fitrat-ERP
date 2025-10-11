@@ -1,6 +1,7 @@
 import django_filters as filters
 
 from django.db.models import Q
+from django.db.models.functions import Coalesce
 
 from data.archive.models import Archive
 from data.department.filial.models import Filial
@@ -138,9 +139,10 @@ class ArchiveFilter(filters.FilterSet):
         if "balance" in value:
             direction = "-" if value.startswith("-") else ""
             # Sort by student or lead balance (whichever exists)
-            qs = qs.order_by(
-                f"{direction}student__balance",
-                f"{direction}lead__balance",
+            qs = qs.annotate(
+                _balance=Coalesce("lead__balance", "student__balance")
+            ).order_by(
+                f"{direction}_balance",
             )
         elif "created_at" in value:
             qs = qs.order_by(value)
