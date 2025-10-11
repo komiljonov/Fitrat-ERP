@@ -162,7 +162,7 @@ class ArchiveFilter(filters.FilterSet):
             | Q(student__first_name__icontains=value)
             | Q(student__last_name__icontains=value)
             | Q(student__middle_name__icontains=value)
-            | Q(student__phone_number__icontains=value)
+            | Q(student__phone__icontains=value)
             # Search by metadata
             | Q(reason__icontains=value)
             # Search by creator
