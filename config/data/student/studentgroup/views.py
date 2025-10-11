@@ -1,7 +1,19 @@
 import datetime
 from icecream import ic
 
-from django.db.models import OuterRef, Exists, Q, Count, Case, When, Value, IntegerField
+from django.db.models import (
+    Q,
+    Value,
+    CharField,
+    IntegerField,
+    OuterRef,
+    Subquery,
+    Case,
+    When,
+    Sum,
+    Count,
+    Exists,
+)
 from django.db.models.functions import Coalesce, Lower
 from django.utils.timezone import now, localdate
 from django_filters.rest_framework import DjangoFilterBackend
@@ -544,7 +556,6 @@ class SecondaryStudentGroupDelete(APIView):
 #         percentage_is_attendanded = (
 #             (is_attendanded / students * 100) if students > 0 else 0
 #         )
-
 #         percentage_is_apcent = (is_absent / students * 100) if students > 0 else 0
 
 #         return Response(
@@ -558,65 +569,65 @@ class SecondaryStudentGroupDelete(APIView):
 #         )
 
 
-# class GroupStudentStatisticsAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
+class GroupStudentStatisticsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-#     def get(self, request, pk, **kwargs):
-#         group = get_object_or_404(Group, pk=pk)
-#         today = now().date()
+    def get(self, request, pk, **kwargs):
+        group = get_object_or_404(Group, pk=pk)
+        today = now().date()
 
-#         base_students = StudentGroup.objects.filter(
-#             group=group, is_archived=False
-#         ).filter(Q(student__is_archived=False) | Q(lid__is_archived=False))
+        base_students = StudentGroup.objects.filter(
+            group=group, is_archived=False
+        ).filter(Q(student__is_archived=False) | Q(lid__is_archived=False))
 
-#         # Latest (or only) attendance status for this student_group today
-#         att_status_sq = (
-#             Attendance.objects.filter(student_group=OuterRef("pk"), date=today)
-#             .order_by("-id")  # fallback if multiple rows exist
-#             .values("status")[:1]
-#         )
+        # Latest (or only) attendance status for this student_group today
+        att_status_sq = (
+            Attendance.objects.filter(student_group=OuterRef("pk"), date=today)
+            .order_by("-id")  # fallback if multiple rows exist
+            .values("status")[:1]
+        )
 
-#         annotated = base_students.annotate(
-#             today_status=Subquery(att_status_sq, output_field=CharField())
-#         ).annotate(
-#             is_present=Case(
-#                 When(today_status="IS_PRESENT", then=Value(1)),
-#                 default=Value(0),
-#                 output_field=IntegerField(),
-#             ),
-#             # Missing attendance => absent
-#             is_absent=Case(
-#                 When(
-#                     today_status__in=["REASONED", "UNREASONED", "EMPTY"], then=Value(1)
-#                 ),
-#                 When(today_status__isnull=True, then=Value(1)),
-#                 default=Value(0),
-#                 output_field=IntegerField(),
-#             ),
-#         )
+        annotated = base_students.annotate(
+            today_status=Subquery(att_status_sq, output_field=CharField())
+        ).annotate(
+            is_present=Case(
+                When(today_status="IS_PRESENT", then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            ),
+            # Missing attendance => absent
+            is_absent=Case(
+                When(
+                    today_status__in=["REASONED", "UNREASONED", "EMPTY"], then=Value(1)
+                ),
+                When(today_status__isnull=True, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            ),
+        )
 
-#         totals = annotated.aggregate(
-#             students=Count("id"),
-#             present=Sum("is_present"),
-#             absent=Sum("is_absent"),
-#         )
+        totals = annotated.aggregate(
+            students=Count("id"),
+            present=Sum("is_present"),
+            absent=Sum("is_absent"),
+        )
 
-#         students = totals["students"] or 0
-#         present = totals["present"] or 0
-#         absent = totals["absent"] or 0
+        students = totals["students"] or 0
+        present = totals["present"] or 0
+        absent = totals["absent"] or 0
 
-#         pct_present = round((present / students * 100), 2) if students else 0.0
-#         pct_absent = round((absent / students * 100), 2) if students else 0.0
+        pct_present = round((present / students * 100), 2) if students else 0.0
+        pct_absent = round((absent / students * 100), 2) if students else 0.0
 
-#         return Response(
-#             {
-#                 "students": students,
-#                 "is_attendant": present,  # keeping your original key
-#                 "is_absent": absent,
-#                 "percentage_is_attendant": pct_present,
-#                 "percentage_is_absent": pct_absent,
-#             }
-#         )
+        return Response(
+            {
+                "students": students,
+                "is_attendant": present,  # keeping your original key
+                "is_absent": absent,
+                "percentage_is_attendant": pct_present,
+                "percentage_is_absent": pct_absent,
+            }
+        )
 
 
 class GroupAttendedStudents(ListAPIView):
