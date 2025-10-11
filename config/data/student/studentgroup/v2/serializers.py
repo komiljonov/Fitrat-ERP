@@ -51,6 +51,8 @@ class StudentGroupPriceSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+        read_only_fields = ["created_by"]
+
     def to_representation(self, instance):
         res = super().to_representation(instance)
 
