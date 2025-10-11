@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 from django.db.models import Q
+from django.contrib import admin
 from django.utils import timezone
 from django.utils.timezone import now
 
@@ -174,6 +175,16 @@ class GroupLesson(BaseModel):
                 condition=Q(is_repeat=False, theme__isnull=False),
             ),
         ]
+
+    class Admin(admin.ModelAdmin):
+
+        list_display = ["group", "date", "theme", "is_repeat"]
+
+        list_filter = ["group"]
+
+        date_hierarchy = "date"
+
+        search_fields = ["id", "group__name", "theme__title"]
 
 
 class GroupSaleStudent(BaseModel):
