@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from data.account.models import CustomUser
+from data.employee.serializers import EmployeeSerializer
 from data.student.course.models import Course
 from data.department.filial.models import Filial
 from data.student.studentgroup.models import StudentGroup, StudentGroupPrice
@@ -37,9 +38,11 @@ class StudentGroupPriceSerializer(serializers.ModelSerializer):
         queryset=StudentGroup.objects.all()
     )
 
+    created_by = EmployeeSerializer.minimal()
+
     class Meta:
         model = StudentGroupPrice
-        fields = ["id", "student_group", "amount", "comment"]
+        fields = ["id", "student_group", "amount", "comment", "created_by"]
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
