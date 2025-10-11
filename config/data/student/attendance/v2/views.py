@@ -246,29 +246,34 @@ class AttendanceStatusForDateAPIView(APIView):
         )
 
     def themes(self, filters: Dict):
-
         group: "Group" = filters["group"]
-        date = filters.get("date")
+        date = filters.get("date", timezone.now().date())
 
         themes_qs = group.course.themes.filter(level=group.level)
         theme_ids = list(themes_qs.values_list("id", flat=True))
 
         lessons = group.lessons.filter(Q(date__lt=date) if date else Q())
 
-        # counts per theme for this group
         counts = lessons.values("theme_id").annotate(
             used_count=Count("id"),
             repeat_count=Count("id", filter=Q(is_repeat=True)),
         )
         counts_map = {c["theme_id"]: c for c in counts}
 
-        # determine "today's" theme id
+        # determine today's theme + is_repeat
+        is_repeat_today = False
+        todays_theme_id = None
+
         if date:
-            todays_theme_id = (
+            today_lesson = (
                 group.lessons.filter(date=date)
-                .values_list("theme_id", flat=True)
+                .order_by("-id")
+                .values("theme_id", "is_repeat")
                 .first()
             )
+            if today_lesson:
+                todays_theme_id = today_lesson["theme_id"]
+                is_repeat_today = bool(today_lesson["is_repeat"])
         else:
             last_non_repeat_theme_id = (
                 lessons.filter(theme__isnull=False, is_repeat=False)
@@ -282,11 +287,9 @@ class AttendanceStatusForDateAPIView(APIView):
                     theme_ids[idx + 1] if idx + 1 < len(theme_ids) else None
                 )
             else:
-                todays_theme_id = (
-                    theme_ids[0] if theme_ids else None
-                )  # start from first if none used yet
+                todays_theme_id = theme_ids[0] if theme_ids else None
+            is_repeat_today = False  # deriving next theme, not a repeat
 
-        # build response list
         data = []
         for t in themes_qs.only("id", "title"):
             c = counts_map.get(t.id, {"used_count": 0, "repeat_count": 0})
@@ -301,8 +304,9 @@ class AttendanceStatusForDateAPIView(APIView):
             )
 
         return {
+            "today_theme": todays_theme_id,
+            "is_repeat": is_repeat_today,
             "themes": data,
-            "today_theme": todays_theme_id,  # optional helper
         }
 
     def get_serializer_context(self, filters: Dict):
