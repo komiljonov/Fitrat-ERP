@@ -51,23 +51,26 @@ class GroupSerializer(serializers.ModelSerializer):
             course=obj.course,
             level=obj.level,
             is_archived=False,
-        ).count()
+        )
 
-        attended_lessons = (
-            obj.lessons.values("theme").annotate(attended_count=Count("id")).count()
+        attended_lessons = obj.lessons.values("theme").annotate(
+            attended_count=Count("id")
         )
 
         return {
             "total_count": total_lessons,
-            "attended": attended_lessons,
-            "lessons": [
-                {
-                    "id": lesson.id,
-                    "theme": {"id": lesson.theme.id, "name": lesson.theme.title},
-                    "is_repeat": lesson.is_repeat,
-                }
-                for lesson in obj.lessons.select_related("theme").only(
-                    "id", "theme", "is_repeat"
-                )
-            ],
+            "attended": attended_lessons.count(),
+            "repeated": attended_lessons.filter(is_repeat=True).count(),
+            "non_repeat": attended_lessons.filter(is_repeat=False).count(),
+         
+            # "lessons": [
+            #     {
+            #         "id": lesson.id,
+            #         "theme": {"id": lesson.theme.id, "name": lesson.theme.title},
+            #         "is_repeat": lesson.is_repeat,
+            #     }
+            #     for lesson in obj.lessons.select_related("theme").only(
+            #         "id", "theme", "is_repeat"
+            #     )
+            # ],
         }
