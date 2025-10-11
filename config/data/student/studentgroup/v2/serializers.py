@@ -3,7 +3,7 @@ from rest_framework import serializers
 from data.account.models import CustomUser
 from data.student.course.models import Course
 from data.department.filial.models import Filial
-from data.student.studentgroup.models import StudentGroupPrice
+from data.student.studentgroup.models import StudentGroup, StudentGroupPrice
 from data.student.studentgroup.serializers import StudentsGroupSerializer
 
 
@@ -33,11 +33,20 @@ class GroupStatisticsFilterSerializer(serializers.Serializer):
 
 class StudentGroupPriceSerializer(serializers.ModelSerializer):
 
-    student_group = serializers.SerializerMethodField()
+    student_group = serializers.PrimaryKeyRelatedField(
+        queryset=StudentGroup.objects.all()
+    )
 
     class Meta:
         model = StudentGroupPrice
         fields = ["id", "student_group", "amount", "comment"]
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+
+        res["student_group"] = self.get_student_group(instance)
+
+        return res
 
     def get_student_group(self, obj: StudentGroupPrice):
 
