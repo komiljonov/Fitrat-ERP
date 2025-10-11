@@ -3,6 +3,7 @@ from datetime import date as _date
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from data.command.serializers import BaseSerializer
 from data.firstlesson.models import FirstLesson
 from data.lid.new_lid.models import Lid
 from data.lid.new_lid.serializers import LeadSerializer
@@ -108,7 +109,7 @@ class FirstLessonListSerializer(serializers.ModelSerializer):
         return res
 
 
-class FirstLessonSingleSerializer(serializers.ModelSerializer):
+class FirstLessonSingleSerializer(BaseSerializer, serializers.ModelSerializer):
     lead = LeadSerializer()
     group = serializers.PrimaryKeyRelatedField(
         queryset=Group.objects.filter(status="ACTIVE")
@@ -162,3 +163,24 @@ class FirstLessonSingleSerializer(serializers.ModelSerializer):
         if "group" in validated_data:
             self._apply_group_defaults(validated_data)
         return super().update(instance, validated_data)
+
+    def __init__(self, *args, **kwargs):
+        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
+        include_only: list | None = kwargs.pop("include_only", None)
+
+        if fields_to_remove and include_only:
+            raise ValueError(
+                "You cannot use 'remove_fields' and 'include_only' at the same time."
+            )
+
+        super().__init__(*args, **kwargs)
+
+        if include_only is not None:
+            allowed = set(include_only)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+        elif fields_to_remove:
+            for field_name in fields_to_remove:
+                self.fields.pop(field_name, None)

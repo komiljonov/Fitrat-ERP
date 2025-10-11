@@ -348,6 +348,7 @@ class AttendanceStatusForDateAPIView(APIView):
         print(today)
 
         students = students.select_related("student", "lid")
+
         # .exclude(
         # Q(first_lesson__date__date__gt=today)
         # )

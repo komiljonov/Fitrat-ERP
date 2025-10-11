@@ -10,6 +10,8 @@ from data.student.groups.models import Group, GroupLesson
 from data.student.studentgroup.models import StudentGroup
 from data.student.subject.models import Theme
 
+from data.firstlesson.serializers import FirstLessonSing, FirstLessonSingleSerializer
+
 
 class CreateAttendanceV2ItemSerializer(serializers.Serializer):
 
@@ -78,9 +80,11 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
 
     attendance = serializers.SerializerMethodField()
 
+    first_lesson = FirstLessonSingleSerializer.only("id", "date", "status")
+
     class Meta:
         model = StudentGroup
-        fields = ["id", "name", "stage", "attendance", "frozen_date"]
+        fields = ["id", "name", "stage", "attendance", "frozen_date", "first_lesson"]
 
     def get_name(self, obj: StudentGroup):
 
