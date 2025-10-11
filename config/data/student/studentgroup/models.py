@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from data.lid.new_lid.models import Lid
     from data.student.groups.models import Group, SecondaryGroup
     from data.firstlesson.models import FirstLesson
+    from data.employee.models import Employee
 
 
 class StudentGroup(BaseModel):
@@ -210,3 +211,11 @@ class StudentGroupPrice(BaseModel):
     amount = models.IntegerField()
 
     comment = models.TextField()
+
+    created_by: "Employee | None" = models.ForeignKey(
+        "employee.Employee",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=False,
+        related_name="student_group_prices",
+    )

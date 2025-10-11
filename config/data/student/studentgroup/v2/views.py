@@ -5,6 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.request import HttpRequest, Request
 from rest_framework.response import Response
 
+from rest_framework.permissions import IsAuthenticated
+
+
 from data.student.studentgroup.models import (
     SecondaryStudentGroup,
     StudentGroup,
@@ -217,6 +220,8 @@ class StudentGroupPriceCreateAPIView(ListCreateAPIView):
 
     serializer_class = StudentGroupPriceSerializer
 
+    permission_classes = [IsAuthenticated]
+
     queryset = StudentGroupPrice.objects.all()
 
     def get_queryset(self):
@@ -242,3 +247,6 @@ class StudentGroupPriceCreateAPIView(ListCreateAPIView):
             "student_group__lid",
             "student_group__group",
         ).distinct()
+
+    def perform_create(self, serializer):
+        return serializer.save(created_by=self.request.user)
