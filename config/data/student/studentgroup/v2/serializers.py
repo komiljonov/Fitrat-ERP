@@ -38,7 +38,7 @@ class StudentGroupPriceSerializer(serializers.ModelSerializer):
         queryset=StudentGroup.objects.all()
     )
 
-    created_by = EmployeeSerializer.minimal()
+    created_by = EmployeeSerializer.minimal(read_only=True)
 
     class Meta:
         model = StudentGroupPrice
