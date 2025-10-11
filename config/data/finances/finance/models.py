@@ -44,7 +44,7 @@ class Casher(BaseModel):
             *BaseModel.Meta.constraints,
             models.UniqueConstraint(
                 condition=Q(role="WEALTH"),
-                fields=[],
+                fields=["role"],
                 name="unique_wealth_casher",
             ),
         ]
