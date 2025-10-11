@@ -34,7 +34,7 @@ class Casher(BaseModel):
         max_length=20,
     )
 
-    comment = models.TextField(blank=True)
+    comment = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.phone} {self.role}"

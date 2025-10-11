@@ -64,33 +64,61 @@ from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 
 
-class CasherListCreateAPIView(ListCreateAPIView):
+# class CashierListCreateAPIView(ListCreateAPIView):
+#     queryset = Casher.objects.all()
+#     serializer_class = CasherSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         role = self.request.GET.get("role", None)
+#         is_archived = self.request.GET.get("is_archived", False)
+
+#         filter = {}
+
+#         if is_archived:
+#             filter["is_archived"] = is_archived.capitalize()
+
+#         if role:
+#             filter["role"] = role
+
+#         return Casher.objects.filter(filial=self.request.user.filial.first(), **filter)
+
+
+class CashierListCreateAPIView(ListCreateAPIView):
     queryset = Casher.objects.all()
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        role = self.request.GET.get("role", None)
-        is_archived = self.request.GET.get("is_archived", False)
+        user = self.request.user
+        role = self.request.GET.get("role")
+        is_archived = self.request.GET.get("is_archived")
 
-        filter = {}
+        filters = {}
 
-        if is_archived:
-            filter["is_archived"] = is_archived.capitalize()
+        # Convert "true"/"false" string to actual boolean
+        if is_archived is not None:
+            filters["is_archived"] = str(is_archived).lower() in ["true", "1"]
 
         if role:
-            filter["role"] = role
+            filters["role"] = role
 
-        return Casher.objects.filter(filial=self.request.user.filial.first(), **filter)
+        queryset = Casher.objects.filter(**filters)
+
+        # Directors always see WEALTH cashers too
+        if user.role == "DIRECTOR":
+            queryset = queryset | Casher.objects.filter(role="WEALTH")
+
+        return queryset.distinct()
 
 
-class CasherRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+class CashierRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Casher.objects.all()
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
 
 
-class CasherNoPg(ListAPIView):
+class CashierNoPg(ListAPIView):
     queryset = Casher.objects.all()
     serializer_class = CasherSerializer
     permission_classes = [IsAuthenticated]
@@ -443,7 +471,7 @@ class CasherHandoverHistory(ListAPIView):
         return Finance.objects.none()
 
 
-class CasherStatisticsAPIView(APIView):
+class CashierStatisticsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
