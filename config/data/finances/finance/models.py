@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from typing import Literal
 from django.db import models
+from django.db.models import Q
 
 from data.finances.finance.choices import FinanceKindTypeChoices
 from data.command.models import BaseModel
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class Casher(BaseModel):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     user: "Employee" = models.ForeignKey(
         "employee.Employee",
@@ -25,8 +26,8 @@ class Casher(BaseModel):
 
     role = models.CharField(
         choices=[
-            ("ADMINISTRATOR", "ADMINISTRATOR"),
             ("WEALTH", "WEALTH"),
+            ("ADMINISTRATOR", "ADMINISTRATOR"),
             ("ACCOUNTANT", "ACCOUNTANT"),
         ],
         default="ADMINISTRATOR",
@@ -37,6 +38,16 @@ class Casher(BaseModel):
 
     def __str__(self):
         return f"{self.user.phone} {self.role}"
+
+    class Meta(BaseModel.Meta):
+        constraints = [
+            *BaseModel.Meta.constraints,
+            models.UniqueConstraint(
+                condition=Q(role="WEALTH"),
+                fields=[],
+                name="unique_wealth_casher",
+            ),
+        ]
 
 
 class Kind(BaseModel):
