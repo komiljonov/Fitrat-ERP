@@ -46,9 +46,7 @@ class ArchiveFilter(filters.FilterSet):
 
     balance = filters.NumericRangeFilter(method="filter_balance")
 
-    created_at = filters.DateTimeFromToRangeFilter(
-        field_name="created_at"
-    )  # Archive's own field
+    created_at = filters.DateTimeFromToRangeFilter(field_name="created_at")
 
     only = filters.CharFilter(method="filter_only")
 
