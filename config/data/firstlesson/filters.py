@@ -52,6 +52,8 @@ class FirstLessonsFilter(filters.FilterSet):
     created_at_start = filters.CharFilter(method="filter_created_at_range")
     created_at_end = filters.CharFilter(method="filter_created_at_range")
 
+    created_at = filters.DateTimeFromToRangeFilter(field_name="created_at")
+
     order_by = filters.CharFilter(method="filter_order_by")
 
     class Meta:
