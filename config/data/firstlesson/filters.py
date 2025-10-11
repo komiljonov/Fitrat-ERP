@@ -1,6 +1,6 @@
 import django_filters as filters
 
-from django.db.models import Case, When, Value, IntegerField
+from django.db.models import Case, When, Value, IntegerField, Q
 from datetime import datetime, time, timedelta
 
 
@@ -16,6 +16,8 @@ from data.student.subject.models import Subject
 
 
 class FirstLessonsFilter(filters.FilterSet):
+
+    q = filters.CharFilter(method="search")
 
     filial = filters.ModelChoiceFilter(queryset=Filial.objects.all())
 
@@ -65,6 +67,7 @@ class FirstLessonsFilter(filters.FilterSet):
             "marketing_channel",
             "teacher",
             "created_at",
+            "q",
         ]
 
     def filter_order_by(self, qs, name, value):
@@ -136,3 +139,16 @@ class FirstLessonsFilter(filters.FilterSet):
                 qs = qs.filter(created_at__lt=end_dt)
 
         return qs
+
+    def search(self, qs, name, value):
+
+        if not value:
+            return value
+
+        return qs.filter(
+            Q(lead__first_name__icontains=value)
+            | Q(lead__last_name__icontains=value)
+            | Q(lead__middle_name__icontains=value)
+            | Q(lead__phone_number__icontains=value)
+            | Q(group__name__icontains=value)
+        )
