@@ -6,6 +6,7 @@ from rest_framework import serializers
 from data.employee.serializers import EmployeeSerializer
 from data.student.course.serializers import CourseSerializer
 from data.student.groups.models import Group
+from data.student.groups.serializers import RoomsSerializer
 from data.student.subject.models import Theme
 from data.student.subject.serializers import SubjectSerializer
 
@@ -22,6 +23,8 @@ class GroupSerializer(serializers.ModelSerializer):
 
     lessons = serializers.SerializerMethodField()
 
+    room_number = RoomsSerializer()
+
     class Meta:
         model = Group
         fields = [
@@ -33,6 +36,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "subject",
             "student_count",
             "room_number",
+            "lessons",
             "started_at",
             "ended_at",
         ]
