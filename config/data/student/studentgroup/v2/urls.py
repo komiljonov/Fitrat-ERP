@@ -10,5 +10,4 @@ from .views import (
 urlpatterns = [
     path("stats", GroupStatisticsAPIView.as_view()),
     path("price", StudentGroupPriceCreateAPIView.as_view()),
-    path("price/history", StudentGroupPriceChangeHistory.as_view()),
 ]
