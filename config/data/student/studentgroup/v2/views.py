@@ -234,4 +234,9 @@ class StudentGroupPriceCreateAPIView(ListCreateAPIView):
         if cond:
             qs = qs.filter(cond)
 
-        return qs.select_related("student_group", "student_group__student").distinct()
+        return qs.select_related(
+            "student_group",
+            "student_group__student",
+            "student_group__lead",
+            "student_group__group",
+        ).distinct()

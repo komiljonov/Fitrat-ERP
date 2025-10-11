@@ -7,7 +7,6 @@ from rest_framework.validators import UniqueTogetherValidator
 from data.upload.serializers import FileUploadSerializer
 
 from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
-from data.student.attendance.models import Attendance
 from data.student.groups.models import Group, SecondaryGroup, GroupSaleStudent
 from data.student.groups.serializers import (
     SecondaryGroupSerializer,
