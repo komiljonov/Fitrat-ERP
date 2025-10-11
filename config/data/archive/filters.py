@@ -65,6 +65,8 @@ class ArchiveFilter(filters.FilterSet):
             "service_manager",
             "balance",
             "created_at",
+            "only",
+            "order_by",
         ]
 
     # --- helpers ---
@@ -127,6 +129,7 @@ class ArchiveFilter(filters.FilterSet):
         return qs.filter(cond).distinct()
 
     def filter_order_by(self, qs, name, value):
+
         if not value:
             return qs
 
