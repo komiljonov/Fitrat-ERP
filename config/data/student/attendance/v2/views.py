@@ -254,9 +254,8 @@ class AttendanceStatusForDateAPIView(APIView):
         themes_qs = group.course.themes.filter(level=group.level)
         theme_ids = list(themes_qs.values_list("id", flat=True))
 
+        # lessons strictly before the reference date (or all if date is falsy)
         lessons = group.lessons.filter(Q(date__lt=date) if date else Q())
-        
-        print(lessons)
 
         counts = lessons.values("theme_id").annotate(
             used_count=Count("id"),
@@ -264,10 +263,11 @@ class AttendanceStatusForDateAPIView(APIView):
         )
         counts_map = {c["theme_id"]: c for c in counts}
 
-        # determine today's theme + is_repeat
-        is_repeat_today = False
         todays_theme_id = None
+        is_repeat_today = False
 
+        # if a date is provided, only use that day's theme when it's actually selected
+        today_lesson = None
         if date:
             today_lesson = (
                 group.lessons.filter(date=date)
@@ -275,10 +275,13 @@ class AttendanceStatusForDateAPIView(APIView):
                 .values("theme_id", "is_repeat")
                 .first()
             )
-            if today_lesson:
-                todays_theme_id = today_lesson["theme_id"]
-                is_repeat_today = bool(today_lesson["is_repeat"])
+
+        if today_lesson and today_lesson["theme_id"] is not None:
+            # Respect explicitly selected theme for that date
+            todays_theme_id = today_lesson["theme_id"]
+            is_repeat_today = bool(today_lesson["is_repeat"])
         else:
+            # Derive "next" theme relative to the date (or today if date is falsy)
             last_non_repeat_theme_id = (
                 lessons.filter(theme__isnull=False, is_repeat=False)
                 .order_by("-date", "-id")
@@ -287,12 +290,10 @@ class AttendanceStatusForDateAPIView(APIView):
             )
             if last_non_repeat_theme_id in theme_ids:
                 idx = theme_ids.index(last_non_repeat_theme_id)
-                todays_theme_id = (
-                    theme_ids[idx + 1] if idx + 1 < len(theme_ids) else None
-                )
+                todays_theme_id = theme_ids[idx + 1] if idx + 1 < len(theme_ids) else None
             else:
                 todays_theme_id = theme_ids[0] if theme_ids else None
-            is_repeat_today = False  # deriving next theme, not a repeat
+            is_repeat_today = False  # derived "next" is never a repeat
 
         data = []
         for t in themes_qs.only("id", "title"):
