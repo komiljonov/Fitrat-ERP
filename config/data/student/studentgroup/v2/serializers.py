@@ -34,4 +34,4 @@ class StudentGroupPriceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentGroupPrice
-        fields = "__all__"
+        fields = ["id", "student_group", "amount", "comment"]
