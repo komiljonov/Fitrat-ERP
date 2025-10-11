@@ -190,6 +190,20 @@ class EmployeeSerializer(serializers.ModelSerializer):
                 self._replace_pages(instance, pages)
         return instance
 
+    @classmethod
+    def minimal(cls, *args, **kwargs):
+        return cls(
+            *args,
+            include_only=[
+                "id",
+                "first_name",
+                "last_name",
+                "middle_name",
+                "phone",
+            ],
+            **kwargs,
+        )
+
 
 class EmployeeTransactionSerializer(serializers.ModelSerializer):
 

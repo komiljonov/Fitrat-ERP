@@ -58,6 +58,7 @@ class StudentGroupsView(ListCreateAPIView):
         "teacher__id",
         "course__subject__id",
     )
+
     ordering_fields = (
         "name",
         "scheduled_day_type",
@@ -68,6 +69,7 @@ class StudentGroupsView(ListCreateAPIView):
         "teacher__id",
         "course__subject__id",
     )
+
     filterset_fields = (
         "name",
         "scheduled_day_type__name",
@@ -121,9 +123,6 @@ class StudentGroupsView(ListCreateAPIView):
 
         if filial and filial.isnumeric():
             queryset = queryset.filter(filial_id=filial)
-
-        # if price_type:
-        #     queryset = queryset.filter(price_type=price_type)
 
         if not_added and not_added.lower() == "true":
             queryset = queryset.exclude(status="INACTIVE")

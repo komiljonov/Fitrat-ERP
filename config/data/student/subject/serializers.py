@@ -106,6 +106,10 @@ class SubjectSerializer(serializers.ModelSerializer):
             ).data
         return rep
 
+    @classmethod
+    def minimal(cls, *args, **kwargs):
+        return cls(*args, include_only=["id", "name"], **kwargs)
+
 
 class LevelSerializer(serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(

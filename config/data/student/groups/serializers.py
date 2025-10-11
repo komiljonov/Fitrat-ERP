@@ -6,7 +6,7 @@ from rest_framework import serializers
 from .lesson_date_calculator import calculate_lessons
 from .models import Group, Day, Room, SecondaryGroup, GroupSaleStudent
 from .room_filings_calculate import calculate_room_filling_statistics
-from data.student.attendance.models import Attendance, SecondaryAttendance
+from data.student.attendance.models import SecondaryAttendance
 from data.student.course.models import Course
 from data.student.course.serializers import CourseSerializer
 from data.student.student.models import Student
