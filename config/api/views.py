@@ -27,7 +27,7 @@ def _coerce_value(raw: str, pk_field: models.Field) -> Optional[Any]:
 
 
 class FindByIdAcrossModelsAPIView(APIView):
-    permission_classes = [IsAuthenticated]  # or []
+    # permission_classes = [IsAuthenticated]  # or []
 
     def get(self, request):
         raw_id = request.GET.get("id")
