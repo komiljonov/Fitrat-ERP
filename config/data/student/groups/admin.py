@@ -22,7 +22,7 @@ class GroupAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "start_theme":
             obj = getattr(request, "_obj_", None)
-            qs = Theme.objects.all()
+            qs = Theme.objects.filter(is_archived=False)
             if obj and obj.level_id:
                 qs = qs.filter(level_id=obj.level_id)
             if obj and obj.course_id:
