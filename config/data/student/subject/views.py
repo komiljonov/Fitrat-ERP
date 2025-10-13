@@ -53,8 +53,8 @@ class SubjectDetail(RetrieveUpdateDestroyAPIView):
 
 class SubjectNoPG(ListAPIView):
     queryset = Subject.objects.all()
-    serializer_class = SubjectSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = SubjectSerializer.only("id", "name")
+    # permission_classes = [IsAuthenticated]
     pagination_class = None
 
     def get_queryset(self):

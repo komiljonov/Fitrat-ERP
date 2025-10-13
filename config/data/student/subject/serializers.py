@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from data.command.serializers import BaseSerializer
+
 from .models import Subject, Level, Theme
 from data.student.course.models import Course
 from data.upload.models import File
@@ -24,7 +26,7 @@ class ThemeLoaddataSerializer(serializers.ModelSerializer):
         }
 
 
-class SubjectSerializer(serializers.ModelSerializer):
+class SubjectSerializer(BaseSerializer, serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
     all_themes = serializers.SerializerMethodField()
     image = serializers.PrimaryKeyRelatedField(
@@ -44,27 +46,6 @@ class SubjectSerializer(serializers.ModelSerializer):
             "label",
             "is_archived",
         ]
-
-    def __init__(self, *args, **kwargs):
-        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
-        include_only: list | None = kwargs.pop("include_only", None)
-
-        if fields_to_remove and include_only:
-            raise ValueError(
-                "You cannot use 'remove_fields' and 'include_only' at the same time."
-            )
-
-        super(SubjectSerializer, self).__init__(*args, **kwargs)
-
-        if include_only is not None:
-            allowed = set(include_only)
-            existing = set(self.fields)
-            for field_name in existing - allowed:
-                self.fields.pop(field_name)
-
-        elif fields_to_remove:
-            for field_name in fields_to_remove:
-                self.fields.pop(field_name, None)
 
     def create(self, validated_data):
         filial = validated_data.pop("filial", None)
@@ -100,6 +81,7 @@ class SubjectSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
 
         rep = super().to_representation(instance)
+        
         if "image" in self.fields:
             rep["image"] = FileUploadSerializer(
                 instance.image, context=self.context
