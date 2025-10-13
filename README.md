@@ -111,6 +111,7 @@ docker compose exec django sh
 ### 6. Run Migrations
 
 ```bash
+python manage.py psql_ext
 python manage.py makemigrations
 python manage.py migrate
 python manage.py createsuperuser
