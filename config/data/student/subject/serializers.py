@@ -81,7 +81,7 @@ class SubjectSerializer(BaseSerializer, serializers.ModelSerializer):
     def to_representation(self, instance):
 
         rep = super().to_representation(instance)
-        
+
         if "image" in self.fields:
             rep["image"] = FileUploadSerializer(
                 instance.image, context=self.context
@@ -148,7 +148,7 @@ class LevelSerializer(serializers.ModelSerializer):
         return rep
 
 
-class ThemeSerializer(serializers.ModelSerializer):
+class ThemeSerializer(BaseSerializer, serializers.ModelSerializer):
     subject = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all())
 
     homework_files = serializers.PrimaryKeyRelatedField(
@@ -239,35 +239,62 @@ class ThemeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["subject"] = SubjectSerializer(instance.subject, context=self.context).data
 
-        rep["repeated_theme"] = ThemeSerializer(
-            instance.repeated_theme.all(), many=True, context=self.context
-        ).data
+        if "subject" in self.fields:
+            rep["subject"] = SubjectSerializer(
+                instance.subject,
+                context=self.context,
+            ).data
 
-        rep["videos"] = FileUploadSerializer(
-            instance.videos.all(), many=True, context=self.context
-        ).data
+        if "repeated_theme" in self.fields:
+            rep["repeated_theme"] = ThemeSerializer(
+                instance.repeated_theme.all(),
+                many=True,
+                context=self.context,
+            ).data
 
-        rep["files"] = FileUploadSerializer(
-            instance.files.all(), many=True, context=self.context
-        ).data
+        if "videos" in self.fields:
+            rep["videos"] = FileUploadSerializer(
+                instance.videos.all(),
+                many=True,
+                context=self.context,
+            ).data
 
-        rep["photos"] = FileUploadSerializer(
-            instance.photos.all(), many=True, context=self.context
-        ).data
+        if "files" in self.fields:
+            rep["files"] = FileUploadSerializer(
+                instance.files.all(),
+                many=True,
+                context=self.context,
+            ).data
 
-        rep["course_work_files"] = FileUploadSerializer(
-            instance.course_work_files, many=True, context=self.context
-        ).data
+        if "photos" in self.fields:
+            rep["photos"] = FileUploadSerializer(
+                instance.photos.all(),
+                many=True,
+                context=self.context,
+            ).data
 
-        rep["homework_files"] = FileUploadSerializer(
-            instance.homework_files, many=True, context=self.context
-        ).data
+        if "course_work_files" in self.fields:
+            rep["course_work_files"] = FileUploadSerializer(
+                instance.course_work_files,
+                many=True,
+                context=self.context,
+            ).data
 
-        rep["extra_work_files"] = FileUploadSerializer(
-            instance.extra_work_files, many=True, context=self.context
-        ).data
+        if "homework_files" in self.fields:
+            rep["homework_files"] = FileUploadSerializer(
+                instance.homework_files,
+                many=True,
+                context=self.context,
+            ).data
 
-        rep["course"] = self.get_course(instance)
+        if "extra_work_files" in self.fields:
+            rep["extra_work_files"] = FileUploadSerializer(
+                instance.extra_work_files,
+                many=True,
+                context=self.context,
+            ).data
+
+        if "course" in self.fields:
+            rep["course"] = self.get_course(instance)
         return rep
