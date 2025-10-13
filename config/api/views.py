@@ -57,6 +57,10 @@ class FindByIdAcrossModelsAPIView(APIView):
                 objs = model._default_manager.filter(**{pk_field.name: value})
                 for obj in objs:
                     data = model_to_dict(obj)
+                    if "create_context" in data:
+                        del data["create_context"]
+                    if "update_context" in data:
+                        del data["update_context"]
                     results.append(
                         {
                             "app": model._meta.app_label,
