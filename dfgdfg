@@ -1,0 +1,1308 @@
+{
+    "pid": 16723,
+    "file": "/usr/src/app/data/command/models.py",
+    "func": "_full_context",
+    "line": 23,
+    "stack": [
+        {
+            "code": "self._bootstrap_inner()",
+            "file": "/usr/local/lib/python3.13/threading.py",
+            "func": "_bootstrap",
+            "line": 1012,
+            "locals": {
+                "self": "<Thread at 0x7a89c3087ad0>"
+            }
+        },
+        {
+            "code": "self.run()",
+            "file": "/usr/local/lib/python3.13/threading.py",
+            "func": "_bootstrap_inner",
+            "line": 1041,
+            "locals": {
+                "self": "<Thread at 0x7a89c3087ad0>"
+            }
+        },
+        {
+            "code": "return _run_old_run_func()",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/threading.py",
+            "func": "run",
+            "line": 130,
+            "locals": {
+                "a": [],
+                "kw": {},
+                "old_run_func": "<function at 0x7a89dc0d7100>",
+                "_run_old_run_func": "<function at 0x7a89c536a700>",
+                "current_scope_to_use": "<Scope id=0x7a89c2fd9620 name=None type=ScopeType.CURRENT>",
+                "isolation_scope_to_use": "<Scope id=0x7a89c2fdac00 name=None type=ScopeType.ISOLATION>"
+            }
+        },
+        {
+            "code": "return old_run_func(self, *a[1:], **kw)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/threading.py",
+            "func": "_run_old_run_func",
+            "line": 123,
+            "locals": {
+                "a": [],
+                "kw": {},
+                "self": "<Thread at 0x7a89c3087ad0>",
+                "old_run_func": "<function at 0x7a89dc0d7100>"
+            }
+        },
+        {
+            "code": "self._target(*self._args, **self._kwargs)",
+            "file": "/usr/local/lib/python3.13/threading.py",
+            "func": "run",
+            "line": 992,
+            "locals": {
+                "self": "<Thread at 0x7a89c3087ad0>"
+            }
+        },
+        {
+            "code": "self.finish_request(request, client_address)",
+            "file": "/usr/local/lib/python3.13/socketserver.py",
+            "func": "process_request_thread",
+            "line": 692,
+            "locals": {
+                "self": "<WSGIServer at 0x7a89c52a27b0>",
+                "request": "<socket.socket fd=5, family=2, type=1, proto=0, laddr=('172.19.0.2', 8000), raddr=('172.19.0.1', 51644)>",
+                "client_address": [
+                    "172.19.0.1",
+                    51644
+                ]
+            }
+        },
+        {
+            "code": "self.RequestHandlerClass(request, client_address, self)",
+            "file": "/usr/local/lib/python3.13/socketserver.py",
+            "func": "finish_request",
+            "line": 362,
+            "locals": {
+                "self": "<WSGIServer at 0x7a89c52a27b0>",
+                "request": "<socket.socket fd=5, family=2, type=1, proto=0, laddr=('172.19.0.2', 8000), raddr=('172.19.0.1', 51644)>",
+                "client_address": [
+                    "172.19.0.1",
+                    51644
+                ]
+            }
+        },
+        {
+            "code": "self.handle()",
+            "file": "/usr/local/lib/python3.13/socketserver.py",
+            "func": "__init__",
+            "line": 761,
+            "locals": {
+                "self": "<WSGIRequestHandler at 0x7a89c3086b10>",
+                "server": "<WSGIServer at 0x7a89c52a27b0>",
+                "request": "<socket.socket fd=5, family=2, type=1, proto=0, laddr=('172.19.0.2', 8000), raddr=('172.19.0.1', 51644)>",
+                "client_address": [
+                    "172.19.0.1",
+                    51644
+                ]
+            }
+        },
+        {
+            "code": "self.handle_one_request()",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/servers/basehttp.py",
+            "func": "handle",
+            "line": 228,
+            "locals": {
+                "self": "<WSGIRequestHandler at 0x7a89c3086b10>"
+            }
+        },
+        {
+            "code": "handler.run(self.server.get_app())",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/servers/basehttp.py",
+            "func": "handle_one_request",
+            "line": 253,
+            "locals": {
+                "self": "<WSGIRequestHandler at 0x7a89c3086b10>",
+                "handler": "<ServerHandler at 0x7a89c3084890>"
+            }
+        },
+        {
+            "code": "self.result = application(self.environ, self.start_response)",
+            "file": "/usr/local/lib/python3.13/wsgiref/handlers.py",
+            "func": "run",
+            "line": 137,
+            "locals": {
+                "self": "<ServerHandler at 0x7a89c3084890>",
+                "application": "<StaticFilesHandler at 0x7a89d8437380>"
+            }
+        },
+        {
+            "code": "return self.application(environ, start_response)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/contrib/staticfiles/handlers.py",
+            "func": "__call__",
+            "line": 80,
+            "locals": {
+                "self": "<StaticFilesHandler at 0x7a89d8437380>",
+                "environ": {
+                    "TZ": "Asia/Tashkent",
+                    "HOME": "/root",
+                    "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "DEBUG": "True",
+                    "TT_URL": "https://api.tictac.sector-soft.ru/restapi",
+                    "GPG_KEY": "7169605F62C751356D054A26A821E680E5FA6305",
+                    "HOSTNAME": "6870eb0c8358",
+                    "PAYME_ID": "67c81ae3a5b222fe47a813f1",
+                    "RUN_MAIN": "true",
+                    "BOT_TOKEN": "***",
+                    "HTTP_HOST": "api.dev.fitrat.sectorsoft.uz",
+                    "PATH_INFO": "/api/v2/attendances/create",
+                    "PAYME_KEY": "8xo&tKHtBo0Pe%TcFYwXPs7DQTe5nV@k2N1g",
+                    "PYTHONPATH": "/usr/src/app",
+                    "SECRET_KEY": "***",
+                    "wsgi.input": "<LimitedStream at 0x7a89c1f014b0>",
+                    "CSRF_COOKIE": "***",
+                    "HTTP_ACCEPT": "application/json, text/plain, */*",
+                    "HTTP_COOKIE": "***",
+                    "HTTP_ORIGIN": "https://dev.fitrat.sectorsoft.uz",
+                    "POSTGRES_DB": "fitrat",
+                    "REMOTE_ADDR": "172.19.0.1",
+                    "REMOTE_HOST": "",
+                    "SCRIPT_NAME": "",
+                    "SERVER_NAME": "6870eb0c8358",
+                    "SERVER_PORT": "8000",
+                    "wsgi.errors": "<TextIOWrapper at 0x7a89dc91dd20>",
+                    "CONTENT_TYPE": "application/json",
+                    "DATABASE_URL": "postgres://postgres:1@localhost:5432/fitrat",
+                    "HTTP_REFERER": "https://dev.fitrat.sectorsoft.uz/",
+                    "QUERY_STRING": "",
+                    "SAYQAL_TOKEN": "***",
+                    "wsgi.version": [
+                        1,
+                        0
+                    ],
+                    "ALLOWED_HOSTS": "127.0.0.1,localhost:3000,fitrat-erp.vercel.app,api.fitrat.sector-soft.ru,fitrat.sector-soft.ru,www.fitrat.sector-soft.ru,www.f.sector-soft.ru,f.sector-soft.ru,api.f.sector-soft.ru",
+                    "POSTGRES_HOST": "postgres",
+                    "POSTGRES_PORT": "5432",
+                    "POSTGRES_USER": "fitrat_user",
+                    "PYTHON_SHA256": "086de5882e3cb310d4dca48457522e2e48018ecd43da9cdf827f6a0759efb07d",
+                    "wsgi.run_once": false,
+                    "CONTENT_LENGTH": "1068",
+                    "HTTP_SEC_CH_UA": "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"",
+                    "HTTP_X_REAL_IP": "195.158.2.126",
+                    "PYTHON_VERSION": "3.13.0",
+                    "REQUEST_METHOD": "POST",
+                    "WEBHOOK_SECRET": "***",
+                    "HTTP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+                    "SAYQAL_USERNAME": "sectorsoft",
+                    "SERVER_PROTOCOL": "HTTP/1.1",
+                    "SERVER_SOFTWARE": "WSGIServer/0.2",
+                    "wsgi.url_scheme": "http",
+                    "CLICK_SECRET_KEY": "***",
+                    "CLICK_SERVICE_ID": "78717",
+                    "PYTHONUNBUFFERED": "1",
+                    "wsgi.multithread": true,
+                    "CLICK_MERCHANT_ID": "ZkSisTJOY8cS",
+                    "GATEWAY_INTERFACE": "CGI/1.1",
+                    "INTEGRATION_TOKEN": "***",
+                    "POSTGRES_PASSWORD": "***",
+                    "wsgi.file_wrapper": "<type at 0x7a89d69f9410>",
+                    "wsgi.multiprocess": false,
+                    "CLICK_AMOUNT_FIELD": "amount",
+                    "HTTP_AUTHORIZATION": "***",
+                    "CLICK_ACCOUNT_MODEL": "clickuz.models.Order",
+                    "HTTP_SEC_FETCH_DEST": "empty",
+                    "HTTP_SEC_FETCH_MODE": "cors",
+                    "HTTP_SEC_FETCH_SITE": "same-site",
+                    "PAYME_ACCOUNT_FIELD": "id",
+                    "PAYME_ACCOUNT_MODEL": "student.student.model.Student",
+                    "COMPOSE_PROJECT_NAME": "fitrat_dev",
+                    "HTTP_ACCEPT_ENCODING": "gzip, deflate, br, zstd",
+                    "HTTP_ACCEPT_LANGUAGE": "uz-UZ,uz;q=0.9,en-US;q=0.8,en;q=0.7,ru;q=0.6",
+                    "HTTP_X_FORWARDED_FOR": "195.158.2.126",
+                    "HTTP_SEC_CH_UA_MOBILE": "?0",
+                    "DJANGO_SETTINGS_MODULE": "root.settings",
+                    "PAYME_ONE_TIME_PAYMENT": "False",
+                    "HTTP_SEC_CH_UA_PLATFORM": "\"Windows\"",
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "DJANGO_ALLOW_ASYNC_UNSAFE": "true"
+                },
+                "__class__": "<type at 0x7a89d5292350>",
+                "start_response": "<method at 0x7a89c0e74e00>"
+            }
+        },
+        {
+            "code": "return sentry_patched_function(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/utils.py",
+            "func": "runner",
+            "line": 1819,
+            "locals": {
+                "args": [
+                    "<WSGIHandler at 0x7a89d8437230>",
+                    {
+                        "TZ": "Asia/Tashkent",
+                        "HOME": "/root",
+                        "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                        "DEBUG": "True",
+                        "TT_URL": "https://api.tictac.sector-soft.ru/restapi",
+                        "GPG_KEY": "7169605F62C751356D054A26A821E680E5FA6305",
+                        "HOSTNAME": "6870eb0c8358",
+                        "PAYME_ID": "67c81ae3a5b222fe47a813f1",
+                        "RUN_MAIN": "true",
+                        "BOT_TOKEN": "***",
+                        "HTTP_HOST": "api.dev.fitrat.sectorsoft.uz",
+                        "PATH_INFO": "/api/v2/attendances/create",
+                        "PAYME_KEY": "8xo&tKHtBo0Pe%TcFYwXPs7DQTe5nV@k2N1g",
+                        "PYTHONPATH": "/usr/src/app",
+                        "SECRET_KEY": "***",
+                        "wsgi.input": "<LimitedStream at 0x7a89c1f014b0>",
+                        "CSRF_COOKIE": "***",
+                        "HTTP_ACCEPT": "application/json, text/plain, */*",
+                        "HTTP_COOKIE": "***",
+                        "HTTP_ORIGIN": "https://dev.fitrat.sectorsoft.uz",
+                        "POSTGRES_DB": "fitrat",
+                        "REMOTE_ADDR": "172.19.0.1",
+                        "REMOTE_HOST": "",
+                        "SCRIPT_NAME": "",
+                        "SERVER_NAME": "6870eb0c8358",
+                        "SERVER_PORT": "8000",
+                        "wsgi.errors": "<TextIOWrapper at 0x7a89dc91dd20>",
+                        "CONTENT_TYPE": "application/json",
+                        "DATABASE_URL": "postgres://postgres:1@localhost:5432/fitrat",
+                        "HTTP_REFERER": "https://dev.fitrat.sectorsoft.uz/",
+                        "QUERY_STRING": "",
+                        "SAYQAL_TOKEN": "***",
+                        "wsgi.version": [
+                            1,
+                            0
+                        ],
+                        "ALLOWED_HOSTS": "127.0.0.1,localhost:3000,fitrat-erp.vercel.app,api.fitrat.sector-soft.ru,fitrat.sector-soft.ru,www.fitrat.sector-soft.ru,www.f.sector-soft.ru,f.sector-soft.ru,api.f.sector-soft.ru",
+                        "POSTGRES_HOST": "postgres",
+                        "POSTGRES_PORT": "5432",
+                        "POSTGRES_USER": "fitrat_user",
+                        "PYTHON_SHA256": "086de5882e3cb310d4dca48457522e2e48018ecd43da9cdf827f6a0759efb07d",
+                        "wsgi.run_once": false,
+                        "CONTENT_LENGTH": "1068",
+                        "HTTP_SEC_CH_UA": "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"",
+                        "HTTP_X_REAL_IP": "195.158.2.126",
+                        "PYTHON_VERSION": "3.13.0",
+                        "REQUEST_METHOD": "POST",
+                        "WEBHOOK_SECRET": "***",
+                        "HTTP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+                        "SAYQAL_USERNAME": "sectorsoft",
+                        "SERVER_PROTOCOL": "HTTP/1.1",
+                        "SERVER_SOFTWARE": "WSGIServer/0.2",
+                        "wsgi.url_scheme": "http",
+                        "CLICK_SECRET_KEY": "***",
+                        "CLICK_SERVICE_ID": "78717",
+                        "PYTHONUNBUFFERED": "1",
+                        "wsgi.multithread": true,
+                        "CLICK_MERCHANT_ID": "ZkSisTJOY8cS",
+                        "GATEWAY_INTERFACE": "CGI/1.1",
+                        "INTEGRATION_TOKEN": "***",
+                        "POSTGRES_PASSWORD": "***",
+                        "wsgi.file_wrapper": "<type at 0x7a89d69f9410>",
+                        "wsgi.multiprocess": false,
+                        "CLICK_AMOUNT_FIELD": "amount",
+                        "HTTP_AUTHORIZATION": "***",
+                        "CLICK_ACCOUNT_MODEL": "clickuz.models.Order",
+                        "HTTP_SEC_FETCH_DEST": "empty",
+                        "HTTP_SEC_FETCH_MODE": "cors",
+                        "HTTP_SEC_FETCH_SITE": "same-site",
+                        "PAYME_ACCOUNT_FIELD": "id",
+                        "PAYME_ACCOUNT_MODEL": "student.student.model.Student",
+                        "COMPOSE_PROJECT_NAME": "fitrat_dev",
+                        "HTTP_ACCEPT_ENCODING": "gzip, deflate, br, zstd",
+                        "HTTP_ACCEPT_LANGUAGE": "uz-UZ,uz;q=0.9,en-US;q=0.8,en;q=0.7,ru;q=0.6",
+                        "HTTP_X_FORWARDED_FOR": "195.158.2.126",
+                        "HTTP_SEC_CH_UA_MOBILE": "?0",
+                        "DJANGO_SETTINGS_MODULE": "root.settings",
+                        "PAYME_ONE_TIME_PAYMENT": "False",
+                        "HTTP_SEC_CH_UA_PLATFORM": "\"Windows\"",
+                        "PYTHONDONTWRITEBYTECODE": "1",
+                        "DJANGO_ALLOW_ASYNC_UNSAFE": "true"
+                    },
+                    "<method at 0x7a89c0e74e00>"
+                ],
+                "kwargs": {},
+                "integration": "<ABCMeta at 0x7a89d8d11410>",
+                "original_function": "<function at 0x7a89d8b76700>",
+                "sentry_patched_function": "<function at 0x7a89d82ddf80>"
+            }
+        },
+        {
+            "code": "return middleware(environ, start_response)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/__init__.py",
+            "func": "sentry_patched_wsgi_handler",
+            "line": 191,
+            "locals": {
+                "self": "<WSGIHandler at 0x7a89d8437230>",
+                "environ": {
+                    "TZ": "Asia/Tashkent",
+                    "HOME": "/root",
+                    "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "DEBUG": "True",
+                    "TT_URL": "https://api.tictac.sector-soft.ru/restapi",
+                    "GPG_KEY": "7169605F62C751356D054A26A821E680E5FA6305",
+                    "HOSTNAME": "6870eb0c8358",
+                    "PAYME_ID": "67c81ae3a5b222fe47a813f1",
+                    "RUN_MAIN": "true",
+                    "BOT_TOKEN": "***",
+                    "HTTP_HOST": "api.dev.fitrat.sectorsoft.uz",
+                    "PATH_INFO": "/api/v2/attendances/create",
+                    "PAYME_KEY": "8xo&tKHtBo0Pe%TcFYwXPs7DQTe5nV@k2N1g",
+                    "PYTHONPATH": "/usr/src/app",
+                    "SECRET_KEY": "***",
+                    "wsgi.input": "<LimitedStream at 0x7a89c1f014b0>",
+                    "CSRF_COOKIE": "***",
+                    "HTTP_ACCEPT": "application/json, text/plain, */*",
+                    "HTTP_COOKIE": "***",
+                    "HTTP_ORIGIN": "https://dev.fitrat.sectorsoft.uz",
+                    "POSTGRES_DB": "fitrat",
+                    "REMOTE_ADDR": "172.19.0.1",
+                    "REMOTE_HOST": "",
+                    "SCRIPT_NAME": "",
+                    "SERVER_NAME": "6870eb0c8358",
+                    "SERVER_PORT": "8000",
+                    "wsgi.errors": "<TextIOWrapper at 0x7a89dc91dd20>",
+                    "CONTENT_TYPE": "application/json",
+                    "DATABASE_URL": "postgres://postgres:1@localhost:5432/fitrat",
+                    "HTTP_REFERER": "https://dev.fitrat.sectorsoft.uz/",
+                    "QUERY_STRING": "",
+                    "SAYQAL_TOKEN": "***",
+                    "wsgi.version": [
+                        1,
+                        0
+                    ],
+                    "ALLOWED_HOSTS": "127.0.0.1,localhost:3000,fitrat-erp.vercel.app,api.fitrat.sector-soft.ru,fitrat.sector-soft.ru,www.fitrat.sector-soft.ru,www.f.sector-soft.ru,f.sector-soft.ru,api.f.sector-soft.ru",
+                    "POSTGRES_HOST": "postgres",
+                    "POSTGRES_PORT": "5432",
+                    "POSTGRES_USER": "fitrat_user",
+                    "PYTHON_SHA256": "086de5882e3cb310d4dca48457522e2e48018ecd43da9cdf827f6a0759efb07d",
+                    "wsgi.run_once": false,
+                    "CONTENT_LENGTH": "1068",
+                    "HTTP_SEC_CH_UA": "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"",
+                    "HTTP_X_REAL_IP": "195.158.2.126",
+                    "PYTHON_VERSION": "3.13.0",
+                    "REQUEST_METHOD": "POST",
+                    "WEBHOOK_SECRET": "***",
+                    "HTTP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+                    "SAYQAL_USERNAME": "sectorsoft",
+                    "SERVER_PROTOCOL": "HTTP/1.1",
+                    "SERVER_SOFTWARE": "WSGIServer/0.2",
+                    "wsgi.url_scheme": "http",
+                    "CLICK_SECRET_KEY": "***",
+                    "CLICK_SERVICE_ID": "78717",
+                    "PYTHONUNBUFFERED": "1",
+                    "wsgi.multithread": true,
+                    "CLICK_MERCHANT_ID": "ZkSisTJOY8cS",
+                    "GATEWAY_INTERFACE": "CGI/1.1",
+                    "INTEGRATION_TOKEN": "***",
+                    "POSTGRES_PASSWORD": "***",
+                    "wsgi.file_wrapper": "<type at 0x7a89d69f9410>",
+                    "wsgi.multiprocess": false,
+                    "CLICK_AMOUNT_FIELD": "amount",
+                    "HTTP_AUTHORIZATION": "***",
+                    "CLICK_ACCOUNT_MODEL": "clickuz.models.Order",
+                    "HTTP_SEC_FETCH_DEST": "empty",
+                    "HTTP_SEC_FETCH_MODE": "cors",
+                    "HTTP_SEC_FETCH_SITE": "same-site",
+                    "PAYME_ACCOUNT_FIELD": "id",
+                    "PAYME_ACCOUNT_MODEL": "student.student.model.Student",
+                    "COMPOSE_PROJECT_NAME": "fitrat_dev",
+                    "HTTP_ACCEPT_ENCODING": "gzip, deflate, br, zstd",
+                    "HTTP_ACCEPT_LANGUAGE": "uz-UZ,uz;q=0.9,en-US;q=0.8,en;q=0.7,ru;q=0.6",
+                    "HTTP_X_FORWARDED_FOR": "195.158.2.126",
+                    "HTTP_SEC_CH_UA_MOBILE": "?0",
+                    "DJANGO_SETTINGS_MODULE": "root.settings",
+                    "PAYME_ONE_TIME_PAYMENT": "False",
+                    "HTTP_SEC_CH_UA_PLATFORM": "\"Windows\"",
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "DJANGO_ALLOW_ASYNC_UNSAFE": "true"
+                },
+                "old_app": "<function at 0x7a89d8b76700>",
+                "settings": "<LazySettings at 0x7a89db47a120>",
+                "middleware": "<sentry_sdk.integrations.wsgi.SentryWsgiMiddleware object at 0x7a89c0e77700>",
+                "WSGIHandler": "<type at 0x7a89d8d11020>",
+                "integration": "<DjangoIntegration at 0x7a89d8b88830>",
+                "bound_old_app": "<method at 0x7a89c0e77000>",
+                "start_response": "<method at 0x7a89c0e74e00>",
+                "use_x_forwarded_for": false
+            }
+        },
+        {
+            "code": "response = self.app(",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/wsgi.py",
+            "func": "__call__",
+            "line": 132,
+            "locals": {
+                "self": "<sentry_sdk.integrations.wsgi.SentryWsgiMiddleware object at 0x7a89c0e77700>",
+                "scope": "<Scope id=0x7a89c2fd89e0 name=wsgi type=ScopeType.ISOLATION>",
+                "method": "POST",
+                "environ": {
+                    "TZ": "Asia/Tashkent",
+                    "HOME": "/root",
+                    "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "DEBUG": "True",
+                    "TT_URL": "https://api.tictac.sector-soft.ru/restapi",
+                    "GPG_KEY": "7169605F62C751356D054A26A821E680E5FA6305",
+                    "HOSTNAME": "6870eb0c8358",
+                    "PAYME_ID": "67c81ae3a5b222fe47a813f1",
+                    "RUN_MAIN": "true",
+                    "BOT_TOKEN": "***",
+                    "HTTP_HOST": "api.dev.fitrat.sectorsoft.uz",
+                    "PATH_INFO": "/api/v2/attendances/create",
+                    "PAYME_KEY": "8xo&tKHtBo0Pe%TcFYwXPs7DQTe5nV@k2N1g",
+                    "PYTHONPATH": "/usr/src/app",
+                    "SECRET_KEY": "***",
+                    "wsgi.input": "<LimitedStream at 0x7a89c1f014b0>",
+                    "CSRF_COOKIE": "***",
+                    "HTTP_ACCEPT": "application/json, text/plain, */*",
+                    "HTTP_COOKIE": "***",
+                    "HTTP_ORIGIN": "https://dev.fitrat.sectorsoft.uz",
+                    "POSTGRES_DB": "fitrat",
+                    "REMOTE_ADDR": "172.19.0.1",
+                    "REMOTE_HOST": "",
+                    "SCRIPT_NAME": "",
+                    "SERVER_NAME": "6870eb0c8358",
+                    "SERVER_PORT": "8000",
+                    "wsgi.errors": "<TextIOWrapper at 0x7a89dc91dd20>",
+                    "CONTENT_TYPE": "application/json",
+                    "DATABASE_URL": "postgres://postgres:1@localhost:5432/fitrat",
+                    "HTTP_REFERER": "https://dev.fitrat.sectorsoft.uz/",
+                    "QUERY_STRING": "",
+                    "SAYQAL_TOKEN": "***",
+                    "wsgi.version": [
+                        1,
+                        0
+                    ],
+                    "ALLOWED_HOSTS": "127.0.0.1,localhost:3000,fitrat-erp.vercel.app,api.fitrat.sector-soft.ru,fitrat.sector-soft.ru,www.fitrat.sector-soft.ru,www.f.sector-soft.ru,f.sector-soft.ru,api.f.sector-soft.ru",
+                    "POSTGRES_HOST": "postgres",
+                    "POSTGRES_PORT": "5432",
+                    "POSTGRES_USER": "fitrat_user",
+                    "PYTHON_SHA256": "086de5882e3cb310d4dca48457522e2e48018ecd43da9cdf827f6a0759efb07d",
+                    "wsgi.run_once": false,
+                    "CONTENT_LENGTH": "1068",
+                    "HTTP_SEC_CH_UA": "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"",
+                    "HTTP_X_REAL_IP": "195.158.2.126",
+                    "PYTHON_VERSION": "3.13.0",
+                    "REQUEST_METHOD": "POST",
+                    "WEBHOOK_SECRET": "***",
+                    "HTTP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+                    "SAYQAL_USERNAME": "sectorsoft",
+                    "SERVER_PROTOCOL": "HTTP/1.1",
+                    "SERVER_SOFTWARE": "WSGIServer/0.2",
+                    "wsgi.url_scheme": "http",
+                    "CLICK_SECRET_KEY": "***",
+                    "CLICK_SERVICE_ID": "78717",
+                    "PYTHONUNBUFFERED": "1",
+                    "wsgi.multithread": true,
+                    "CLICK_MERCHANT_ID": "ZkSisTJOY8cS",
+                    "GATEWAY_INTERFACE": "CGI/1.1",
+                    "INTEGRATION_TOKEN": "***",
+                    "POSTGRES_PASSWORD": "***",
+                    "wsgi.file_wrapper": "<type at 0x7a89d69f9410>",
+                    "wsgi.multiprocess": false,
+                    "CLICK_AMOUNT_FIELD": "amount",
+                    "HTTP_AUTHORIZATION": "***",
+                    "CLICK_ACCOUNT_MODEL": "clickuz.models.Order",
+                    "HTTP_SEC_FETCH_DEST": "empty",
+                    "HTTP_SEC_FETCH_MODE": "cors",
+                    "HTTP_SEC_FETCH_SITE": "same-site",
+                    "PAYME_ACCOUNT_FIELD": "id",
+                    "PAYME_ACCOUNT_MODEL": "student.student.model.Student",
+                    "COMPOSE_PROJECT_NAME": "fitrat_dev",
+                    "HTTP_ACCEPT_ENCODING": "gzip, deflate, br, zstd",
+                    "HTTP_ACCEPT_LANGUAGE": "uz-UZ,uz;q=0.9,en-US;q=0.8,en;q=0.7,ru;q=0.6",
+                    "HTTP_X_FORWARDED_FOR": "195.158.2.126",
+                    "HTTP_SEC_CH_UA_MOBILE": "?0",
+                    "DJANGO_SETTINGS_MODULE": "root.settings",
+                    "PAYME_ONE_TIME_PAYMENT": "False",
+                    "HTTP_SEC_CH_UA_PLATFORM": "\"Windows\"",
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "DJANGO_ALLOW_ASYNC_UNSAFE": "true"
+                },
+                "transaction": "<Transaction(name='/api/v2/attendances/create', op='http.server', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='a17505a69546e362', parent_span_id=None, sampled=True, source=<TransactionSource.ROUTE: 'route'>, origin='auto.http.django')>",
+                "start_response": "<method at 0x7a89c0e74e00>",
+                "transaction_context": "<Transaction(name='/api/v2/attendances/create', op='http.server', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='a17505a69546e362', parent_span_id=None, sampled=True, source=<TransactionSource.ROUTE: 'route'>, origin='auto.http.django')>"
+            }
+        },
+        {
+            "code": "response = self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/wsgi.py",
+            "func": "__call__",
+            "line": 124,
+            "locals": {
+                "self": "<WSGIHandler at 0x7a89d8437230>",
+                "environ": {
+                    "TZ": "Asia/Tashkent",
+                    "HOME": "/root",
+                    "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "DEBUG": "True",
+                    "TT_URL": "https://api.tictac.sector-soft.ru/restapi",
+                    "GPG_KEY": "7169605F62C751356D054A26A821E680E5FA6305",
+                    "HOSTNAME": "6870eb0c8358",
+                    "PAYME_ID": "67c81ae3a5b222fe47a813f1",
+                    "RUN_MAIN": "true",
+                    "BOT_TOKEN": "***",
+                    "HTTP_HOST": "api.dev.fitrat.sectorsoft.uz",
+                    "PATH_INFO": "/api/v2/attendances/create",
+                    "PAYME_KEY": "8xo&tKHtBo0Pe%TcFYwXPs7DQTe5nV@k2N1g",
+                    "PYTHONPATH": "/usr/src/app",
+                    "SECRET_KEY": "***",
+                    "wsgi.input": "<LimitedStream at 0x7a89c1f014b0>",
+                    "CSRF_COOKIE": "***",
+                    "HTTP_ACCEPT": "application/json, text/plain, */*",
+                    "HTTP_COOKIE": "***",
+                    "HTTP_ORIGIN": "https://dev.fitrat.sectorsoft.uz",
+                    "POSTGRES_DB": "fitrat",
+                    "REMOTE_ADDR": "172.19.0.1",
+                    "REMOTE_HOST": "",
+                    "SCRIPT_NAME": "",
+                    "SERVER_NAME": "6870eb0c8358",
+                    "SERVER_PORT": "8000",
+                    "wsgi.errors": "<TextIOWrapper at 0x7a89dc91dd20>",
+                    "CONTENT_TYPE": "application/json",
+                    "DATABASE_URL": "postgres://postgres:1@localhost:5432/fitrat",
+                    "HTTP_REFERER": "https://dev.fitrat.sectorsoft.uz/",
+                    "QUERY_STRING": "",
+                    "SAYQAL_TOKEN": "***",
+                    "wsgi.version": [
+                        1,
+                        0
+                    ],
+                    "ALLOWED_HOSTS": "127.0.0.1,localhost:3000,fitrat-erp.vercel.app,api.fitrat.sector-soft.ru,fitrat.sector-soft.ru,www.fitrat.sector-soft.ru,www.f.sector-soft.ru,f.sector-soft.ru,api.f.sector-soft.ru",
+                    "POSTGRES_HOST": "postgres",
+                    "POSTGRES_PORT": "5432",
+                    "POSTGRES_USER": "fitrat_user",
+                    "PYTHON_SHA256": "086de5882e3cb310d4dca48457522e2e48018ecd43da9cdf827f6a0759efb07d",
+                    "wsgi.run_once": false,
+                    "CONTENT_LENGTH": "1068",
+                    "HTTP_SEC_CH_UA": "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"",
+                    "HTTP_X_REAL_IP": "195.158.2.126",
+                    "PYTHON_VERSION": "3.13.0",
+                    "REQUEST_METHOD": "POST",
+                    "WEBHOOK_SECRET": "***",
+                    "HTTP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+                    "SAYQAL_USERNAME": "sectorsoft",
+                    "SERVER_PROTOCOL": "HTTP/1.1",
+                    "SERVER_SOFTWARE": "WSGIServer/0.2",
+                    "wsgi.url_scheme": "http",
+                    "CLICK_SECRET_KEY": "***",
+                    "CLICK_SERVICE_ID": "78717",
+                    "PYTHONUNBUFFERED": "1",
+                    "wsgi.multithread": true,
+                    "CLICK_MERCHANT_ID": "ZkSisTJOY8cS",
+                    "GATEWAY_INTERFACE": "CGI/1.1",
+                    "INTEGRATION_TOKEN": "***",
+                    "POSTGRES_PASSWORD": "***",
+                    "wsgi.file_wrapper": "<type at 0x7a89d69f9410>",
+                    "wsgi.multiprocess": false,
+                    "CLICK_AMOUNT_FIELD": "amount",
+                    "HTTP_AUTHORIZATION": "***",
+                    "CLICK_ACCOUNT_MODEL": "clickuz.models.Order",
+                    "HTTP_SEC_FETCH_DEST": "empty",
+                    "HTTP_SEC_FETCH_MODE": "cors",
+                    "HTTP_SEC_FETCH_SITE": "same-site",
+                    "PAYME_ACCOUNT_FIELD": "id",
+                    "PAYME_ACCOUNT_MODEL": "student.student.model.Student",
+                    "COMPOSE_PROJECT_NAME": "fitrat_dev",
+                    "HTTP_ACCEPT_ENCODING": "gzip, deflate, br, zstd",
+                    "HTTP_ACCEPT_LANGUAGE": "uz-UZ,uz;q=0.9,en-US;q=0.8,en;q=0.7,ru;q=0.6",
+                    "HTTP_X_FORWARDED_FOR": "195.158.2.126",
+                    "HTTP_SEC_CH_UA_MOBILE": "?0",
+                    "DJANGO_SETTINGS_MODULE": "root.settings",
+                    "PAYME_ONE_TIME_PAYMENT": "False",
+                    "HTTP_SEC_CH_UA_PLATFORM": "\"Windows\"",
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "DJANGO_ALLOW_ASYNC_UNSAFE": "true"
+                },
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "start_response": "<partial at 0x7a89c1149e90>"
+            }
+        },
+        {
+            "code": "rv = old_get_response(self, request)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/__init__.py",
+            "func": "sentry_patched_get_response",
+            "line": 478,
+            "locals": {
+                "self": "<WSGIHandler at 0x7a89d8437230>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "old_get_response": "<function at 0x7a89d8b74040>"
+            }
+        },
+        {
+            "code": "response = self._middleware_chain(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/base.py",
+            "func": "get_response",
+            "line": 140,
+            "locals": {
+                "self": "<WSGIHandler at 0x7a89d8437230>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>"
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "get_response": "<method at 0x7a89d90b5a80>"
+            }
+        },
+        {
+            "code": "return f(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/middleware.py",
+            "func": "__call__",
+            "line": 177,
+            "locals": {
+                "f": "<method at 0x7a89c4b0f180>",
+                "args": [
+                    "<WSGIRequest at 0x7a89c6b54750>"
+                ],
+                "self": "<XFrameOptionsMiddleware at 0x7a89d84374d0>",
+                "kwargs": {},
+                "middleware_span": "<Span(op='middleware.django', description:'django.middleware.clickjacking.XFrameOptionsMiddleware.__call__', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='9a351a25a4a64aba', parent_span_id='93060ef68dfa3ac3', sampled=True, origin='auto.http.django')>",
+                "_check_middleware_span": "<function at 0x7a89d490b6a0>"
+            }
+        },
+        {
+            "code": "result = self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/corsheaders/middleware.py",
+            "func": "__call__",
+            "line": 56,
+            "locals": {
+                "self": "<CorsMiddleware at 0x7a89c52a2900>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "get_response": "<method at 0x7a89d90b5a80>"
+            }
+        },
+        {
+            "code": "return f(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/middleware.py",
+            "func": "__call__",
+            "line": 177,
+            "locals": {
+                "f": "<method at 0x7a89c4b0f180>",
+                "args": [
+                    "<WSGIRequest at 0x7a89c6b54750>"
+                ],
+                "self": "<XFrameOptionsMiddleware at 0x7a89d84374d0>",
+                "kwargs": {},
+                "middleware_span": "<Span(op='middleware.django', description:'django.middleware.clickjacking.XFrameOptionsMiddleware.__call__', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='9a351a25a4a64aba', parent_span_id='93060ef68dfa3ac3', sampled=True, origin='auto.http.django')>",
+                "_check_middleware_span": "<function at 0x7a89d490b6a0>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7a89d8436f90>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "get_response": "<method at 0x7a89d90b5a80>"
+            }
+        },
+        {
+            "code": "return f(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/middleware.py",
+            "func": "__call__",
+            "line": 177,
+            "locals": {
+                "f": "<method at 0x7a89c4b0f180>",
+                "args": [
+                    "<WSGIRequest at 0x7a89c6b54750>"
+                ],
+                "self": "<XFrameOptionsMiddleware at 0x7a89d84374d0>",
+                "kwargs": {},
+                "middleware_span": "<Span(op='middleware.django', description:'django.middleware.clickjacking.XFrameOptionsMiddleware.__call__', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='9a351a25a4a64aba', parent_span_id='93060ef68dfa3ac3', sampled=True, origin='auto.http.django')>",
+                "_check_middleware_span": "<function at 0x7a89d490b6a0>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7a89d8436f90>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "get_response": "<method at 0x7a89d90b5a80>"
+            }
+        },
+        {
+            "code": "return f(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/middleware.py",
+            "func": "__call__",
+            "line": 177,
+            "locals": {
+                "f": "<method at 0x7a89c4b0f180>",
+                "args": [
+                    "<WSGIRequest at 0x7a89c6b54750>"
+                ],
+                "self": "<XFrameOptionsMiddleware at 0x7a89d84374d0>",
+                "kwargs": {},
+                "middleware_span": "<Span(op='middleware.django', description:'django.middleware.clickjacking.XFrameOptionsMiddleware.__call__', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='9a351a25a4a64aba', parent_span_id='93060ef68dfa3ac3', sampled=True, origin='auto.http.django')>",
+                "_check_middleware_span": "<function at 0x7a89d490b6a0>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7a89d8436f90>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "get_response": "<method at 0x7a89d90b5a80>"
+            }
+        },
+        {
+            "code": "return f(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/middleware.py",
+            "func": "__call__",
+            "line": 177,
+            "locals": {
+                "f": "<method at 0x7a89c4b0f180>",
+                "args": [
+                    "<WSGIRequest at 0x7a89c6b54750>"
+                ],
+                "self": "<XFrameOptionsMiddleware at 0x7a89d84374d0>",
+                "kwargs": {},
+                "middleware_span": "<Span(op='middleware.django', description:'django.middleware.clickjacking.XFrameOptionsMiddleware.__call__', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='9a351a25a4a64aba', parent_span_id='93060ef68dfa3ac3', sampled=True, origin='auto.http.django')>",
+                "_check_middleware_span": "<function at 0x7a89d490b6a0>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7a89d8436f90>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "get_response": "<method at 0x7a89d90b5a80>"
+            }
+        },
+        {
+            "code": "return f(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/middleware.py",
+            "func": "__call__",
+            "line": 177,
+            "locals": {
+                "f": "<method at 0x7a89c4b0f180>",
+                "args": [
+                    "<WSGIRequest at 0x7a89c6b54750>"
+                ],
+                "self": "<XFrameOptionsMiddleware at 0x7a89d84374d0>",
+                "kwargs": {},
+                "middleware_span": "<Span(op='middleware.django', description:'django.middleware.clickjacking.XFrameOptionsMiddleware.__call__', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='9a351a25a4a64aba', parent_span_id='93060ef68dfa3ac3', sampled=True, origin='auto.http.django')>",
+                "_check_middleware_span": "<function at 0x7a89d490b6a0>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7a89d8436f90>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "get_response": "<method at 0x7a89d90b5a80>"
+            }
+        },
+        {
+            "code": "return f(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/middleware.py",
+            "func": "__call__",
+            "line": 177,
+            "locals": {
+                "f": "<method at 0x7a89c4b0f180>",
+                "args": [
+                    "<WSGIRequest at 0x7a89c6b54750>"
+                ],
+                "self": "<XFrameOptionsMiddleware at 0x7a89d84374d0>",
+                "kwargs": {},
+                "middleware_span": "<Span(op='middleware.django', description:'django.middleware.clickjacking.XFrameOptionsMiddleware.__call__', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='9a351a25a4a64aba', parent_span_id='93060ef68dfa3ac3', sampled=True, origin='auto.http.django')>",
+                "_check_middleware_span": "<function at 0x7a89d490b6a0>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7a89d8436f90>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "get_response": "<method at 0x7a89d90b5a80>"
+            }
+        },
+        {
+            "code": "return f(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/middleware.py",
+            "func": "__call__",
+            "line": 177,
+            "locals": {
+                "f": "<method at 0x7a89c4b0f180>",
+                "args": [
+                    "<WSGIRequest at 0x7a89c6b54750>"
+                ],
+                "self": "<XFrameOptionsMiddleware at 0x7a89d84374d0>",
+                "kwargs": {},
+                "middleware_span": "<Span(op='middleware.django', description:'django.middleware.clickjacking.XFrameOptionsMiddleware.__call__', trace_id='faae0e4e098b4918bb2e04b69d2cac79', span_id='9a351a25a4a64aba', parent_span_id='93060ef68dfa3ac3', sampled=True, origin='auto.http.django')>",
+                "_check_middleware_span": "<function at 0x7a89d490b6a0>"
+            }
+        },
+        {
+            "code": "response = response or self.get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py",
+            "func": "__call__",
+            "line": 129,
+            "locals": {
+                "self": "<XFrameOptionsMiddleware at 0x7a89d8436f90>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "response": null
+            }
+        },
+        {
+            "code": "response = get_response(request)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py",
+            "func": "inner",
+            "line": 55,
+            "locals": {
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "get_response": "<method at 0x7a89d90b5a80>"
+            }
+        },
+        {
+            "code": "response = wrapped_callback(request, *callback_args, **callback_kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/core/handlers/base.py",
+            "func": "_get_response",
+            "line": 197,
+            "locals": {
+                "self": "<WSGIHandler at 0x7a89d8437230>",
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "callback": "<function at 0x7a89d989d580>",
+                "response": null,
+                "callback_args": [],
+                "callback_kwargs": {},
+                "wrapped_callback": "<function at 0x7a89c536b920>",
+                "middleware_method": "<function at 0x7a89c51949a0>"
+            }
+        },
+        {
+            "code": "return callback(request, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/sentry_sdk/integrations/django/views.py",
+            "func": "sentry_wrapped_callback",
+            "line": 94,
+            "locals": {
+                "args": [],
+                "kwargs": {},
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "callback": "<function at 0x7a89c5369d00>",
+                "sentry_scope": "<Scope id=0x7a89c2fd89e0 name=wsgi type=ScopeType.ISOLATION>",
+                "current_scope": "<Scope id=0x7a89c2fd9a80 name=None type=ScopeType.CURRENT>",
+                "DjangoIntegration": "<ABCMeta at 0x7a89d8d11410>"
+            }
+        },
+        {
+            "code": "return func(*args, **kwds)",
+            "file": "/usr/local/lib/python3.13/contextlib.py",
+            "func": "inner",
+            "line": 85,
+            "locals": {
+                "args": [
+                    "<WSGIRequest at 0x7a89c6b54750>"
+                ],
+                "func": "<function at 0x7a89d989d580>",
+                "kwds": {},
+                "self": "<Atomic at 0x7a89c20ac590>"
+            }
+        },
+        {
+            "code": "return view_func(request, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/views/decorators/csrf.py",
+            "func": "_view_wrapper",
+            "line": 65,
+            "locals": {
+                "args": [],
+                "kwargs": {},
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "view_func": "<function at 0x7a89d989d4e0>"
+            }
+        },
+        {
+            "code": "return self.dispatch(request, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/views/generic/base.py",
+            "func": "view",
+            "line": 104,
+            "locals": {
+                "cls": "<type at 0x7a89d98386c0>",
+                "args": [],
+                "self": "<AttendanceCreateAPIView at 0x7a89c6696cf0>",
+                "kwargs": {},
+                "request": "<WSGIRequest at 0x7a89c6b54750>",
+                "initkwargs": {}
+            }
+        },
+        {
+            "code": "response = handler(request, *args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/rest_framework/views.py",
+            "func": "dispatch",
+            "line": 506,
+            "locals": {
+                "args": [],
+                "self": "<AttendanceCreateAPIView at 0x7a89c6696cf0>",
+                "kwargs": {},
+                "handler": "<method at 0x7a89c3a07680>",
+                "request": "<Request at 0x7a89c2fd8bb0>"
+            }
+        },
+        {
+            "code": "attendance, created = Attendance.objects.update_or_create(",
+            "file": "/usr/src/app/data/student/attendance/v2/views.py",
+            "func": "post",
+            "line": 69,
+            "locals": {
+                "data": {
+                    "date": "datetime.date(2025, 10, 13)",
+                    "group": "<Group at 0x7a89c1ac4fc0>",
+                    "items": [
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89d5332e40>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c1698140>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c169bf20>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c169af30>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c16997c0>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c169ad50>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c16998b0>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c169a210>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c16999a0>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c1698d70>"
+                        },
+                        {
+                            "status": "IS_PRESENT",
+                            "comment": "",
+                            "student": "<StudentGroup at 0x7a89c169b5c0>"
+                        }
+                    ],
+                    "theme": "<Theme at 0x7a89c20adda0>",
+                    "repeated": false
+                },
+                "date": "datetime.date(2025, 10, 13)",
+                "item": {
+                    "status": "IS_PRESENT",
+                    "comment": "",
+                    "student": "<StudentGroup at 0x7a89d5332e40>"
+                },
+                "quiz": null,
+                "self": "<AttendanceCreateAPIView at 0x7a89c6696cf0>",
+                "group": "<Group at 0x7a89c1ac4fc0>",
+                "items": [
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89d5332e40>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c1698140>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c169bf20>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c169af30>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c16997c0>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c169ad50>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c16998b0>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c169a210>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c16999a0>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c1698d70>"
+                    },
+                    {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "student": "<StudentGroup at 0x7a89c169b5c0>"
+                    }
+                ],
+                "theme": "<Theme at 0x7a89c20adda0>",
+                "lesson": "<GroupLesson at 0x7a89c6695fd0>",
+                "status": "IS_PRESENT",
+                "comment": "",
+                "created": false,
+                "request": "<Request at 0x7a89c2fd8bb0>",
+                "homework": "<Homework at 0x7a89c6697620>",
+                "repeated": false,
+                "serializer": "<CreateAttendanceV2Serializer at 0x7a89c6697e00>",
+                "student_group": "<StudentGroup at 0x7a89d5332e40>"
+            }
+        },
+        {
+            "code": "return getattr(self.get_queryset(), name)(*args, **kwargs)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/manager.py",
+            "func": "manager_method",
+            "line": 87,
+            "locals": {
+                "args": [],
+                "name": "update_or_create",
+                "self": "<Manager at 0x7a89d4a327d0>",
+                "kwargs": {
+                    "date": "datetime.date(2025, 10, 13)",
+                    "lead": "<Lid at 0x7a89c4ba5090>",
+                    "group": "<Group at 0x7a89c1ac4fc0>",
+                    "student": null,
+                    "defaults": {
+                        "status": "IS_PRESENT",
+                        "comment": "",
+                        "first_lesson": "<FirstLesson at 0x7a89c1cfa7a0>"
+                    },
+                    "student_group": "<StudentGroup at 0x7a89d5332e40>"
+                }
+            }
+        },
+        {
+            "code": "obj, created = self.select_for_update().get_or_create(",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/query.py",
+            "func": "update_or_create",
+            "line": 986,
+            "locals": {
+                "self": "<QuerySet at 0x7a89cc8056d0>",
+                "kwargs": {
+                    "date": "datetime.date(2025, 10, 13)",
+                    "lead": "<Lid at 0x7a89c4ba5090>",
+                    "group": "<Group at 0x7a89c1ac4fc0>",
+                    "student": null,
+                    "student_group": "<StudentGroup at 0x7a89d5332e40>"
+                },
+                "defaults": {
+                    "status": "IS_PRESENT",
+                    "comment": "",
+                    "first_lesson": "<FirstLesson at 0x7a89c1cfa7a0>"
+                },
+                "create_defaults": {
+                    "status": "IS_PRESENT",
+                    "comment": "",
+                    "first_lesson": "<FirstLesson at 0x7a89c1cfa7a0>"
+                },
+                "update_defaults": {
+                    "status": "IS_PRESENT",
+                    "comment": "",
+                    "first_lesson": "<FirstLesson at 0x7a89c1cfa7a0>"
+                }
+            }
+        },
+        {
+            "code": "return self.create(**params), True",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/query.py",
+            "func": "get_or_create",
+            "line": 955,
+            "locals": {
+                "self": "<QuerySet at 0x7a89c30859d0>",
+                "kwargs": {
+                    "date": "datetime.date(2025, 10, 13)",
+                    "lead": "<Lid at 0x7a89c4ba5090>",
+                    "group": "<Group at 0x7a89c1ac4fc0>",
+                    "student": null,
+                    "student_group": "<StudentGroup at 0x7a89d5332e40>"
+                },
+                "params": {
+                    "date": "datetime.date(2025, 10, 13)",
+                    "lead": "<Lid at 0x7a89c4ba5090>",
+                    "group": "<Group at 0x7a89c1ac4fc0>",
+                    "status": "IS_PRESENT",
+                    "comment": "",
+                    "student": null,
+                    "first_lesson": "<FirstLesson at 0x7a89c1cfa7a0>",
+                    "student_group": "<StudentGroup at 0x7a89d5332e40>"
+                },
+                "defaults": {
+                    "status": "IS_PRESENT",
+                    "comment": "",
+                    "first_lesson": "<FirstLesson at 0x7a89c1cfa7a0>"
+                }
+            }
+        },
+        {
+            "code": "obj.save(force_insert=True, using=self.db)",
+            "file": "/usr/local/lib/python3.13/site-packages/django/db/models/query.py",
+            "func": "create",
+            "line": 679,
+            "locals": {
+                "obj": "<Attendance at 0x7a89c6881150>",
+                "self": "<QuerySet at 0x7a89c30859d0>",
+                "kwargs": {
+                    "date": "datetime.date(2025, 10, 13)",
+                    "lead": "<Lid at 0x7a89c4ba5090>",
+                    "group": "<Group at 0x7a89c1ac4fc0>",
+                    "status": "IS_PRESENT",
+                    "comment": "",
+                    "student": null,
+                    "first_lesson": "<FirstLesson at 0x7a89c1cfa7a0>",
+                    "student_group": "<StudentGroup at 0x7a89d5332e40>"
+                },
+                "reverse_one_to_one_fields": "frozenset()"
+            }
+        },
+        {
+            "code": "self.create_context = _full_context()",
+            "file": "/usr/src/app/data/command/models.py",
+            "func": "save",
+            "line": 158,
+            "locals": {
+                "args": [],
+                "self": "<Attendance at 0x7a89c6881150>",
+                "kwargs": {
+                    "using": "default",
+                    "force_insert": true
+                },
+                "__class__": "<ModelBase at 0x7a89d762da70>"
+            }
+        },
+        {
+            "code": "return capture_context_deep(",
+            "file": "/usr/src/app/data/command/models.py",
+            "func": "_full_context",
+            "line": 23,
+            "locals": {}
+        }
+    ],
+    "locals": {},
+    "python": "3.13.0",
+    "code_line": "    return capture_context_deep(",
+    "thread_name": "Thread-133 (process_request_thread)",
+    "created_at_utc": "2025-10-13T10:50:56.140489+00:00"
+}

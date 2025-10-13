@@ -36,8 +36,6 @@ schema_view = get_schema_view(
 )
 
 
-def trigger_error(request):
-    division_by_zero = 1 / 0
 
 
 urlpatterns = [
@@ -86,7 +84,6 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
-    path("sentry-debug/", trigger_error),
 ]
 
 urlpatterns += [

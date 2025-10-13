@@ -100,6 +100,8 @@ class Theme(BaseModel):
         related_name="themes",
     )
 
+    order = models.IntegerField(default=0)
+
     # Separate fields for different types of work within the same Theme
     homework_files = models.ManyToManyField(
         "upload.File",
