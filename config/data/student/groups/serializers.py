@@ -126,33 +126,12 @@ class GroupSerializer(serializers.ModelSerializer):
             .first()
         )
 
-    # def get_current_theme(self, obj):
-    #     today = date.today()
-
-    #     # Ensures we compare only the date and remove duplicate themes
-    #     attendance = (
-    #         Attendance.objects.filter(group=obj, created_at__date=today)
-    #         .values("theme", "repeated")
-    #         .distinct()  # Remove duplicates
-    #     )
-
-    #     return list(attendance)
-
     def get_lessons_count(self, obj: Group):
         total_lessons = Theme.objects.filter(
             course=obj.course,
             level=obj.level,
             is_archived=False,
         ).count()
-
-        # attended_lessons = (
-        #     Attendance.objects.filter(
-        #         group=obj,
-        #     )
-        #     .values("theme")  # Group by lesson
-        #     .annotate(attended_count=Count("id"))  # Count attendance per lesson
-        #     .count()  # Count unique lessons with attendance records
-        # )
 
         attended_lessons = (
             obj.lessons.values("theme").annotate(attended_count=Count("id")).count()
