@@ -122,7 +122,7 @@ class LevelNoPG(ListAPIView):
 
         if filial:
             queryset = queryset.filter(filial_id=filial)
-        return queryset
+        return queryset.order_by("order")
 
     def get_paginated_response(self, data):
         return Response(data)

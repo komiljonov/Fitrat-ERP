@@ -18,7 +18,7 @@ class ThemeNoPgListAPIView(ListAPIView):
     serializer_class = ThemeSerializer.only("id", "title", "description")
     pagination_class = None
 
-    queryset = Theme.objects.filter(is_archived=False)
+    queryset = Theme.objects.filter(is_archived=False).order_by("order")
 
     filterset_class = ThemeFilter
 
