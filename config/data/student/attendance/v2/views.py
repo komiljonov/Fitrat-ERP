@@ -308,6 +308,11 @@ class AttendanceStatusForDateAPIView(APIView):
                     "title": t.title,
                     "was_used": c["used_count"] > 0,
                     "repeat_count": c["repeat_count"],
+                    "skipped": (
+                        t.order < group.start_theme.order
+                        if group.start_theme
+                        else False
+                    ),
                     "is_today": (t.id == todays_theme_id),
                 }
             )

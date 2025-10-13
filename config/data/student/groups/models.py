@@ -117,7 +117,7 @@ class Group(BaseModel):
 
     comment = models.TextField(null=True, blank=True)
 
-    start_theme = models.ForeignKey(
+    start_theme:"Theme | None" = models.ForeignKey(
         "subject.Theme",
         on_delete=models.SET_NULL,
         null=True,
