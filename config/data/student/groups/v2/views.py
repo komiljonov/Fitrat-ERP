@@ -6,6 +6,6 @@ from data.student.groups.v2.serializers import GroupSerializer
 
 class GroupListAPIView(ListAPIView):
 
-    queryset = Group.objects.all()
+    queryset = Group.objects.select_related("start_theme")
 
     serializer_class = GroupSerializer
