@@ -230,6 +230,7 @@ class ThemeSerializer(BaseSerializer, serializers.ModelSerializer):
             "homework_files",
             "course_work_files",
             "extra_work_files",
+            "order",
         ]
 
     def get_course(self, obj):
