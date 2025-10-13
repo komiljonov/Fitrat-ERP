@@ -12,7 +12,7 @@ from data.student.course.serializers import CourseSerializer
 from data.student.student.models import Student
 from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from data.student.subject.models import Theme, Level
-from data.student.subject.serializers import LevelSerializer
+from data.student.subject.serializers import LevelSerializer, ThemeSerializer
 from data.account.models import CustomUser
 from data.account.serializers import UserSerializer
 from data.lid.new_lid.models import Lid
@@ -47,6 +47,8 @@ class GroupSerializer(serializers.ModelSerializer):
     )
     real_student = serializers.SerializerMethodField()
 
+    start_theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all())
+
     class Meta:
         model = Group
         fields = [
@@ -72,6 +74,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "real_student",
             "is_secondary",
             "is_archived",
+            "start_theme",
             # "current_theme",
             "created_at",
         ]
@@ -169,8 +172,9 @@ class GroupSerializer(serializers.ModelSerializer):
 
         return student_count
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: "Group"):
         res = super().to_representation(instance)
+
         if "level" in res:
             res["level"] = LevelSerializer(
                 instance.level, context=self.context, include_only=["id", "name"]
@@ -195,6 +199,13 @@ class GroupSerializer(serializers.ModelSerializer):
                 context=self.context,
                 include_only=["id", "name"],
             ).data
+
+        if "start_theme" in res:
+            res["start_theme"] = (
+                ThemeSerializer.only("id", "title")(instance.start_theme).data
+                if instance.start_theme
+                else None
+            )
 
         return res
 
