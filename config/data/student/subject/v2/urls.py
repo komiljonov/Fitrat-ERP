@@ -2,4 +2,4 @@ from django.urls import path
 from .views import ThemeNoPgListAPIView
 
 
-urlpatterns = [path("no-pg", ThemeNoPgListAPIView.as_view())]
+urlpatterns = [path("theme/no-pg", ThemeNoPgListAPIView.as_view())]
