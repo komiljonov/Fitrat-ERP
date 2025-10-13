@@ -254,7 +254,11 @@ class AttendanceStatusForDateAPIView(APIView):
         date = filters.get("date", timezone.now().date())
 
         themes_qs = group.course.themes.filter(level=group.level, is_archived=False)
-        theme_ids = list(themes_qs.values_list("id", flat=True))
+        theme_ids = list(
+            themes_qs.filter(
+                order__gte=group.start_theme.order if group.start_theme else 0
+            ).values_list("id", flat=True)
+        )
 
         # lessons strictly before the reference date (or all if date is falsy)
         lessons = group.lessons.filter(Q(date__lt=date) if date else Q())
