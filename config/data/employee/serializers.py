@@ -4,6 +4,7 @@ from psycopg2.extras import NumericRange
 
 from rest_framework import serializers
 
+from data.command.serializers import BaseSerializer
 
 from data.employee.finance import FinanceManagerKpi
 from data.employee.models import Employee, EmployeeTransaction
@@ -55,7 +56,7 @@ class FinanceManagerKpiSerializer(serializers.ModelSerializer):
         extra_kwargs = {"id": {"required": False}, "employee": {"required": False}}
 
 
-class EmployeeSerializer(serializers.ModelSerializer):
+class EmployeeSerializer(BaseSerializer, serializers.ModelSerializer):
 
     finance_manager_kpis = FinanceManagerKpiSerializer(
         many=True,

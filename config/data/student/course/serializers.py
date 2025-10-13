@@ -1,3 +1,4 @@
+from data.command.serializers import BaseSerializer
 from django.db.models import Count
 from icecream import ic
 from rest_framework import serializers
@@ -11,7 +12,7 @@ from data.student.subject.serializers import (
 )
 
 
-class CourseSerializer(serializers.ModelSerializer):
+class CourseSerializer(BaseSerializer, serializers.ModelSerializer):
 
     level = serializers.PrimaryKeyRelatedField(
         queryset=Level.objects.all(),
@@ -137,4 +138,4 @@ class CourseSerializer(serializers.ModelSerializer):
 
     @classmethod
     def minimal(cls, *args, **kwargs):
-        return cls(*args, include_only=["id", "name"], **kwargs)
+        return cls(*args, include_only=["id", "name","subject"], **kwargs)

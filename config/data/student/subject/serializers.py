@@ -7,6 +7,8 @@ from data.student.course.models import Course
 from data.upload.models import File
 from data.upload.serializers import FileUploadSerializer
 
+from django.utils import timezone
+
 
 class ThemeDumpSerializer(serializers.ModelSerializer):
     class Meta:
@@ -61,6 +63,14 @@ class SubjectSerializer(BaseSerializer, serializers.ModelSerializer):
 
         room = Subject.objects.create(filial=filial, **validated_data)
         return room
+    
+    def update(self, instance, validated_data):
+        # when object is archving we should automatically update archived_at time here
+        is_archived = validated_data.get('is_archived', False)
+        if is_archived is True:
+            validated_data['archived_at'] = timezone.now()
+        
+        return super().update(instance, validated_data)
 
     def get_course(self, obj):
         return Course.objects.filter(subject=obj, is_archived=False).count()

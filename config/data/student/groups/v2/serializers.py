@@ -1,3 +1,4 @@
+from data.student.course.models import Course
 from django.db.models import Count, Q
 
 
@@ -15,7 +16,12 @@ class GroupSerializer(serializers.ModelSerializer):
 
     teacher = EmployeeSerializer.minimal()
 
-    course = CourseSerializer.minimal()
+    # course = CourseSerializer.minimal()
+
+    course = CourseSerializer.only("id","name","subject")()
+
+    
+
 
     # subject = SubjectSerializer.minimal()
 
@@ -35,7 +41,6 @@ class GroupSerializer(serializers.ModelSerializer):
             "teacher",
             "status",
             "course",
-            # "subject",
             "student_count",
             "room_number",
             "lessons",
