@@ -1,5 +1,7 @@
 import datetime
 import hashlib
+from time import timezone
+from django.utils import timezone as django_timezone
 
 from django.db.models import Avg
 from django.utils.module_loading import import_string
@@ -57,6 +59,7 @@ class StudentSerializer(serializers.ModelSerializer):
     sales = serializers.SerializerMethodField()
     voucher = serializers.SerializerMethodField()
     is_passed = serializers.SerializerMethodField()
+    is_frozen = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
@@ -114,6 +117,8 @@ class StudentSerializer(serializers.ModelSerializer):
             "sales_manager",
             "is_archived",
             "is_frozen",
+            "frozen_from_date",
+            "frozen_till_date",
             "attendance_count",
             "relatives",
             "file",
@@ -308,6 +313,14 @@ class StudentSerializer(serializers.ModelSerializer):
             return count + 1
 
         return Attendance.objects.filter(student=obj, status="IS_PRESENT").count() + 1
+    
+    def get_is_frozen(self, obj: Student):
+        today = django_timezone.now().date()
+
+        if obj.frozen_till_date is not None:
+            return today > obj.frozen_till_date
+        
+        return False
 
     def update(self, instance, validated_data):
         password = validated_data.get("password")

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Student, FistLesson_data
+from .models import Student, FistLesson_data, StudentFrozenAction
 
 
 # Register your models here.
@@ -21,3 +21,12 @@ class FistLessonDataAdmin(admin.ModelAdmin):
     )
     list_filter = ("teacher__full_name", "group__name", "lesson_date")
     search_fields = ("teacher__full_name", "group__name", "lesson_date")
+
+
+@admin.register(StudentFrozenAction)
+class StudentFrozenActionAdmin(admin.ModelAdmin):
+    list_display = (
+        "student",
+        "from_date",
+        "till_date",
+    )

@@ -4,6 +4,9 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
+from django.db.models import Q, F, Func
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import RangeOperators
 
 from data.command.models import BaseModel
 from data.archive.models import Archive
@@ -177,6 +180,14 @@ class Student(BaseModel):
         blank=True,
     )
 
+    # new model fields for new freeze logic
+    frozen_from_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student was frozen")
+    frozen_till_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student becomes active after freeze period is finished")
+
     file: "File" = models.ManyToManyField(
         "upload.File",
         blank=True,
@@ -341,3 +352,39 @@ class FistLesson_data(BaseModel):
         verbose_name_plural = "Fist Lesson data"
 
 
+class StudentFrozenAction(BaseModel):
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="frozen_actions",
+    )
+    from_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student was frozen")
+    till_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student becomes active after freeze period is finished")
+    reason = models.TextField(help_text="The reason why student has been frozen")
+
+    class Meta(BaseModel.Meta):
+        constraints = BaseModel.Meta.constraints + [
+            models.UniqueConstraint(
+                fields=["student"],
+                condition=Q(is_archived=False),
+                name="unique_active_freeze_per_student",
+            ),
+            models.CheckConstraint(
+                check=Q(from_date__lt=F("till_date")),
+                name="check_valid_freeze_dates",
+            ),
+            ExclusionConstraint(
+                name="exclude_overlapping_freezes",
+                expressions=[
+                    (Func(F("from_date"), F("till_date"), function="tstzrange"), RangeOperators.OVERLAPS),
+                    ("student", RangeOperators.EQ),
+
+                ],
+            ),
+        ]
