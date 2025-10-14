@@ -370,14 +370,14 @@ class StudentFrozenAction(BaseModel):
 
     class Meta(BaseModel.Meta):
         constraints = BaseModel.Meta.constraints + [
-            models.CheckConstraint(
-                check=Q(from_date__lt=F("till_date")),
-                name="check_valid_freeze_dates",
-            ),
             models.UniqueConstraint(
                 fields=["student"],
                 condition=Q(is_archived=False),
                 name="unique_active_freeze_per_student",
+            ),
+            models.CheckConstraint(
+                check=Q(from_date__lt=F("till_date")),
+                name="check_valid_freeze_dates",
             ),
             ExclusionConstraint(
                 name="exclude_overlapping_freezes",
