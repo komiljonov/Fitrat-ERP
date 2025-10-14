@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from .models import Student
+from .models import Student, StudentFrozenAction
 from data.account.models import CustomUser
 from data.logs.models import Log
 from data.notifications.models import Notification
@@ -119,4 +119,23 @@ def on_save_user(sender, instance: Student, created, **kwargs):
             action="STUDENT_UPDATED",
             student=instance,
             account=instance.user,
+        )
+
+
+@receiver(pre_save, sender=Student)
+def create_frozen_action_on_change(sender, instance, **kwargs):
+    if not instance.pk:
+        return
+
+    try:
+        old_instance = Student.objects.get(pk=instance.pk)
+    except Student.DoesNotExist:
+        return
+
+    if old_instance.frozen_till_date != instance.frozen_till_date:
+        StudentFrozenAction.objects.create(
+            student=instance,
+            old_date=old_instance.frozen_till_date,
+            new_date=instance.frozen_till_date,
+            reason=instance.frozen_reason,
         )

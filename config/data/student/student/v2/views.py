@@ -1,9 +1,15 @@
-from django.http import HttpRequest
+from uuid import UUID
+
+from data.student.student.v2.serializers import StudentFreezeSerializer
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from django.db.models import Sum
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.request import HttpRequest, Request
+from rest_framework.exceptions import ValidationError
 
 from data.archive.models import Archive
 from data.student.student.models import Student
@@ -64,3 +70,25 @@ class StudentsStatsAPIView(APIView):
                 "archived": ever_archived.count(),
             }
         )
+
+
+class StudentFreezeAPIView(APIView):
+
+    def post(self, request: HttpRequest | Request, pk: UUID):
+        serializer = StudentFreezeSerializer(data=request.data)
+        if not serializer.is_valid():
+            raise ValidationError(serializer.errors)
+
+        student = get_object_or_404(Student, pk=pk)
+        today = timezone.now().date()
+        print(serializer.data.get("frozen_reason"))
+        student.frozen_from_date = today
+        student.frozen_till_date = serializer.data.get("frozen_till_date")
+        student.frozen_reason = serializer.data.get("frozen_reason")
+
+        student.save()
+
+        return Response(data={
+            "message": "ok"
+        }, status=200)
+        

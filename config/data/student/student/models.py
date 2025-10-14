@@ -1,3 +1,5 @@
+from ast import mod
+from pyexpat import model
 from typing import TYPE_CHECKING, Literal
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -177,6 +179,16 @@ class Student(BaseModel):
         blank=True,
     )
 
+    # new model fields for new freeze logic
+    frozen_from_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student was frozen")
+    frozen_till_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student becomes active after freeze period is finished")
+    frozen_reason = models.TextField(help_text="The reason why student has been frozen")
+
+
     file: "File" = models.ManyToManyField(
         "upload.File",
         blank=True,
@@ -339,3 +351,20 @@ class FistLesson_data(BaseModel):
     class Meta(BaseModel.Meta):
         verbose_name = "Fist Lesson data"
         verbose_name_plural = "Fist Lesson data"
+
+
+class StudentFrozenAction(BaseModel):
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="frozen_actions",
+    )
+    frozen_from_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student was frozen")
+    frozen_till_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student becomes active after freeze period is finished")
+    frozen_reason = models.TextField(help_text="The reason why student has been frozen")
