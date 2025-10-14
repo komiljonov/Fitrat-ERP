@@ -318,8 +318,8 @@ class StudentSerializer(serializers.ModelSerializer):
         today = django_timezone.now().date()
 
         if obj.frozen_till_date is not None:
-            return today > obj.frozen_till_date
-        
+            return today < obj.frozen_till_date
+
         return False
 
     def update(self, instance, validated_data):
