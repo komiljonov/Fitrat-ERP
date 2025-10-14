@@ -27,6 +27,6 @@ class FistLessonDataAdmin(admin.ModelAdmin):
 class StudentFrozenActionAdmin(admin.ModelAdmin):
     list_display = (
         "student",
-        "frozen_from_date",
-        "frozen_till_date",
+        "from_date",
+        "till_date",
     )

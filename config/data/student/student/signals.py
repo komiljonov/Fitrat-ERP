@@ -122,20 +122,14 @@ def on_save_user(sender, instance: Student, created, **kwargs):
         )
 
 
-@receiver(pre_save, sender=Student)
-def create_frozen_action_on_change(sender, instance, **kwargs):
-    if not instance.pk:
-        return
+@receiver(post_save, sender=StudentFrozenAction)
+def update_student_frozen_data_on_create(sender, instance, **kwargs):
+    
+    student = Student.objects.get(id=instance.student.id)
 
-    try:
-        old_instance = Student.objects.get(pk=instance.pk)
-    except Student.DoesNotExist:
+    if not student:
         return
-
-    if old_instance.frozen_till_date != instance.frozen_till_date:
-        StudentFrozenAction.objects.create(
-            student=instance,
-            old_date=old_instance.frozen_till_date,
-            new_date=instance.frozen_till_date,
-            reason=instance.frozen_reason,
-        )
+    
+    student.frozen_from_date = instance.from_date
+    student.frozen_till_date = instance.till_date
+    student.save()

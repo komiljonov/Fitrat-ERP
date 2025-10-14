@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from data.student.student.v2.serializers import StudentFreezeSerializer
+from data.student.student.v2.serializers import StudentFrozenActionSerializer
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -8,11 +8,11 @@ from django.db.models import Sum
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.request import HttpRequest, Request
-from rest_framework.exceptions import ValidationError
+from rest_framework.request import HttpRequest
+from rest_framework.generics import ListCreateAPIView
 
 from data.archive.models import Archive
-from data.student.student.models import Student
+from data.student.student.models import Student, StudentFrozenAction
 from data.student.student.v2.filters import StudentFilter
 
 
@@ -72,23 +72,17 @@ class StudentsStatsAPIView(APIView):
         )
 
 
-class StudentFreezeAPIView(APIView):
+class StudentFrozenActionListCreateAPIView(ListCreateAPIView):
+    queryset = StudentFrozenAction.objects.all()
+    serializer_class = StudentFrozenActionSerializer
 
-    def post(self, request: HttpRequest | Request, pk: UUID):
-        serializer = StudentFreezeSerializer(data=request.data)
-        if not serializer.is_valid():
-            raise ValidationError(serializer.errors)
+    def get_queryset(self):
+        student_id = self.kwargs["pk"]
+        return StudentFrozenAction.objects.filter(student_id=student_id).order_by("-created_at")
+    
 
-        student = get_object_or_404(Student, pk=pk)
-        today = timezone.now().date()
-        print(serializer.data.get("frozen_reason"))
-        student.frozen_from_date = today
-        student.frozen_till_date = serializer.data.get("frozen_till_date")
-        student.frozen_reason = serializer.data.get("frozen_reason")
-
-        student.save()
-
-        return Response(data={
-            "message": "ok"
-        }, status=200)
+    def perform_create(self, serializer):
+        student_id = self.kwargs["pk"]
+        from_date = timezone.now().date()
+        serializer.save(student_id=student_id, from_date=from_date)
         

@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
+from django.db.models import Q
 
 from data.command.models import BaseModel
 from data.archive.models import Archive
@@ -186,8 +187,6 @@ class Student(BaseModel):
     frozen_till_date = models.DateField(
         null=True, blank=True,
         help_text="This field defines when student becomes active after freeze period is finished")
-    frozen_reason = models.TextField(help_text="The reason why student has been frozen")
-
 
     file: "File" = models.ManyToManyField(
         "upload.File",
@@ -361,10 +360,19 @@ class StudentFrozenAction(BaseModel):
         blank=True,
         related_name="frozen_actions",
     )
-    frozen_from_date = models.DateField(
+    from_date = models.DateField(
         null=True, blank=True,
         help_text="This field defines when student was frozen")
-    frozen_till_date = models.DateField(
+    till_date = models.DateField(
         null=True, blank=True,
         help_text="This field defines when student becomes active after freeze period is finished")
-    frozen_reason = models.TextField(help_text="The reason why student has been frozen")
+    reason = models.TextField(help_text="The reason why student has been frozen")
+
+    class Meta(BaseModel.Meta):
+        constraints = BaseModel.Meta.constraints + [
+            models.UniqueConstraint(
+                fields=["student"],
+                condition=Q(is_archived=False),
+                name="unique_active_freeze_per_student",
+            )
+        ]

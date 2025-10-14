@@ -119,7 +119,6 @@ class StudentSerializer(serializers.ModelSerializer):
             "is_frozen",
             "frozen_from_date",
             "frozen_till_date",
-            "frozen_reason",
             "attendance_count",
             "relatives",
             "file",
