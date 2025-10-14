@@ -124,7 +124,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         )
 
         if student_stage_type:
-            queryset = queryset.filter(new_student_stages=student_stage_type)
+            queryset = queryset.filter(student_stage_type=student_stage_type)
 
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id)

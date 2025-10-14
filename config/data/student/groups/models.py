@@ -53,6 +53,7 @@ def one_year_from_now():
     return timezone.now() + timedelta(days=365)
 
 
+
 class Group(BaseModel):
     name = models.CharField(max_length=100)
 
@@ -131,6 +132,13 @@ class Group(BaseModel):
 
     def __str__(self):
         return f"{self.name}"
+
+
+
+
+
+
+
 
 
 class GroupLesson(BaseModel):

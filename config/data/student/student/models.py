@@ -339,3 +339,13 @@ class FistLesson_data(BaseModel):
     class Meta(BaseModel.Meta):
         verbose_name = "Fist Lesson data"
         verbose_name_plural = "Fist Lesson data"
+
+
+class StudentFrozenHistory(BaseModel):
+
+    student: "Student" = models.ForeignKey("student.Student", on_delete=models.CASCADE)
+
+    start
+    end
+
+    comment
