@@ -52,7 +52,7 @@ class BaseModel(models.Model):
     )
 
     is_archived = models.BooleanField(default=False)
-    
+
     archived_at = models.DateTimeField(
         null=True,
         blank=True,

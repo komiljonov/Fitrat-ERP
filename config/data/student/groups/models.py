@@ -98,15 +98,6 @@ class Group(BaseModel):
 
     room_number: "Room" = models.ForeignKey("groups.Room", on_delete=models.CASCADE)
 
-    # price_type = models.CharField(
-    #     choices=[
-    #         ("DAILY", "Daily payment"),
-    #         ("MONTHLY", "Monthly payment"),
-    #     ],
-    #     default="DAILY",
-    #     max_length=100,
-    # )
-
     price = models.FloatField(default=0, null=True, blank=True)
 
     scheduled_day_type: "models.ManyToManyField[Day]" = models.ManyToManyField(
@@ -125,6 +116,14 @@ class Group(BaseModel):
     finish_date = models.DateTimeField(default=one_year_from_now)
 
     comment = models.TextField(null=True, blank=True)
+
+    start_theme:"Theme | None" = models.ForeignKey(
+        "subject.Theme",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
 
     students: "models.QuerySet[StudentGroup]"
     attendances: "models.QuerySet[Attendance]"

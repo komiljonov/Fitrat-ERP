@@ -9,6 +9,7 @@ from data.student.course.serializers import CourseSerializer
 from data.student.groups.models import Group
 from data.student.groups.serializers import RoomsSerializer
 from data.student.subject.models import Theme
+from data.student.subject.serializers import SubjectSerializer, ThemeSerializer
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -30,6 +31,8 @@ class GroupSerializer(serializers.ModelSerializer):
 
     room_number = RoomsSerializer()
 
+    start_theme = ThemeSerializer.only("id", "title")
+
     class Meta:
         model = Group
         fields = [
@@ -41,6 +44,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "student_count",
             "room_number",
             "lessons",
+            "start_theme",
             "started_at",
             "ended_at",
         ]
