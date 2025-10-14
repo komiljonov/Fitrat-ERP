@@ -123,7 +123,9 @@ def on_save_user(sender, instance: Student, created, **kwargs):
 
 
 @receiver(post_save, sender=StudentFrozenAction)
-def update_student_frozen_data_on_create(sender, instance, **kwargs):
+def update_student_frozen_data_on_create(sender, instance, created, **kwargs):
+    if not created:
+        return
     
     student = Student.objects.get(id=instance.student.id)
 

@@ -1,12 +1,12 @@
-from ast import mod
-from pyexpat import model
 from typing import TYPE_CHECKING, Literal
 from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, F, Func
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import RangeOperators
 
 from data.command.models import BaseModel
 from data.archive.models import Archive
@@ -370,9 +370,21 @@ class StudentFrozenAction(BaseModel):
 
     class Meta(BaseModel.Meta):
         constraints = BaseModel.Meta.constraints + [
+            models.CheckConstraint(
+                check=Q(from_date__lt=F("till_date")),
+                name="check_valid_freeze_dates",
+            ),
             models.UniqueConstraint(
                 fields=["student"],
                 condition=Q(is_archived=False),
                 name="unique_active_freeze_per_student",
-            )
+            ),
+            ExclusionConstraint(
+                name="exclude_overlapping_freezes",
+                expressions=[
+                    (Func(F("from_date"), F("till_date"), function="tstzrange"), RangeOperators.OVERLAPS),
+                    ("student", RangeOperators.EQ),
+
+                ],
+            ),
         ]
