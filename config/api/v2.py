@@ -9,7 +9,4 @@ urlpatterns = [
     path("lessons/", include("data.student.lesson.v2.urls")),
     path("students/", include("data.student.student.v2.urls")),
     path("groups/", include("data.student.groups.v2.urls")),
-    path("students/", include("data.student.student.v2.urls"))
-    path("subjects/", include("data.student.subject.v2.urls")),
-    path("find", FindByIdAcrossModelsAPIView.as_view()),
 ]
