@@ -125,7 +125,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "is_passed",
             "secondary_group",
             "secondary_teacher",
-            "new_student_stages",
+            # "new_student_stages",
             "new_student_date",
             "active_date",
             "coins",

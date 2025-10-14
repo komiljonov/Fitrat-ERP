@@ -104,7 +104,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         """
 
         # queryset = self.queryset.filter(filial=user.filial.first())
-        queryset = self.queryset.all()
+        queryset = self.queryset.filter(is_archived=False)
 
         # Add filters based on query parameters (for sales managment and operators)
         sales_manager_id = self.request.GET.get("sales_manager")
@@ -127,7 +127,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         )
 
         if student_stage_type:
-            queryset = queryset.filter(new_student_stages=student_stage_type)
+            queryset = queryset.filter(student_stage_type=student_stage_type)
 
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id)

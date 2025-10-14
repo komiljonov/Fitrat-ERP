@@ -143,7 +143,7 @@ class StudentAPPSerializer(serializers.ModelSerializer):
             "strike",
             "secondary_group",
             "secondary_teacher",
-            "new_student_stages",
+            # "new_student_stages",
             "new_student_date",
             "active_date",
             "coins",
