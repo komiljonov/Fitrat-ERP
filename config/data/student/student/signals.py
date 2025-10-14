@@ -51,7 +51,7 @@ def on_create(sender, instance: Student, created, **kwargs):
                 update_fields=[
                     "balance_status",
                     "student_stage_type",
-                    "new_student_stages",
+                    # "new_student_stages",
                     "active_date",
                 ]
             )  # Save only the specific field

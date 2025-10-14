@@ -124,18 +124,18 @@ class Student(BaseModel):
 
         return self.student_stage_type
 
-    new_student_stages = models.CharField(
-        choices=[
-            ("BIRINCHI_DARS", "BIRNCHI_DARS"),
-            ("BIRINCHI_DARSGA_KELMAGAN", "BIRINCHI_DARSGA_KELMAGAN"),
-            ("GURUH_O'ZGARTIRGAN", "GURUH_O'ZGARTIRGAN"),
-            ("QARIZDOR", "QARIZDOR"),
-        ],
-        null=True,
-        blank=True,
-        max_length=100,
-        help_text="Student statusi",
-    )
+    # new_student_stages = models.CharField(
+    #     choices=[
+    #         ("BIRINCHI_DARS", "BIRNCHI_DARS"),
+    #         ("BIRINCHI_DARSGA_KELMAGAN", "BIRINCHI_DARSGA_KELMAGAN"),
+    #         ("GURUH_O'ZGARTIRGAN", "GURUH_O'ZGARTIRGAN"),
+    #         ("QARIZDOR", "QARIZDOR"),
+    #     ],
+    #     null=True,
+    #     blank=True,
+    #     max_length=100,
+    #     help_text="Student statusi",
+    # )
 
     balance = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0.00")
