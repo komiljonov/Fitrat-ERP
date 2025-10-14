@@ -382,9 +382,12 @@ class StudentFrozenAction(BaseModel):
             ExclusionConstraint(
                 name="exclude_overlapping_freezes",
                 expressions=[
-                    (Func(F("from_date"), F("till_date"), function="tstzrange"), RangeOperators.OVERLAPS),
-                    ("student", RangeOperators.EQ),
-
+                    (Func(F("from_date"), F("till_date"), models.Value("[)"), function="daterange"), RangeOperators.OVERLAPS),
+                    ("student", RangeOperators.EQUAL),
                 ],
+                condition=Q(is_archived=False),
+#                opclasses={"student": "uuid_ops"},
+
+
             ),
         ]
