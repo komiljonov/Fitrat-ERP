@@ -8,7 +8,7 @@ from .models import Student, FistLesson_data
 class StudentAdmin(admin.ModelAdmin):
     list_display = ("first_name", "last_name", "phone", "balance", "student_stage_type")
     search_fields = ("first_name", "last_name", "phone")
-    list_filter = ["student_stage_type", "is_archived"]
+    list_filter = ["filial", "student_stage_type", "is_archived"]
 
 
 @admin.register(FistLesson_data)
