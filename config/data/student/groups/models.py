@@ -53,7 +53,6 @@ def one_year_from_now():
     return timezone.now() + timedelta(days=365)
 
 
-
 class Group(BaseModel):
     name = models.CharField(max_length=100)
 
@@ -106,7 +105,8 @@ class Group(BaseModel):
     )  # Correct Many-to-ManyField definition
 
     is_secondary = models.BooleanField(
-        default=False, help_text="Is there secondary group?",
+        default=False,
+        help_text="Is there secondary group?",
     )
 
     started_at = models.TimeField(default=now)
@@ -132,14 +132,6 @@ class Group(BaseModel):
 
     def __str__(self):
         return f"{self.name}"
-
-
-
-
-
-
-
-
 
 class GroupLesson(BaseModel):
     """Guruhni aynan biron kun uchun o'tilgan darslari haqida ma'lumot"""
@@ -169,13 +161,16 @@ class GroupLesson(BaseModel):
 
         constraints = [
             *BaseModel.Meta.constraints,
-            # Theme must be unique within a group when NOT a repeat.
-            # Allows duplicates when is_repeat=True and also ignores NULL themes.
+            # Keep one lesson per day per group
             models.UniqueConstraint(
-                fields=["group", "date", "theme"],
-                condition=Q(is_repeat=False),
-                name="unique_group_date_nonrepeat",
-            )
+                fields=["group", "date"],
+                name="unique_group_date",
+            ),
+            # Theme must be unique within a group when NOT a repeat.
+            models.UniqueConstraint(
+                fields=["group", "theme", "is_repeat"],
+                name="unique_group_theme",
+            ),
         ]
 
     class Admin(admin.ModelAdmin):
