@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from .models import Group, SecondaryGroup, Day, GroupSaleStudent
+from .models import Group, GroupLesson, SecondaryGroup, Day, GroupSaleStudent
 from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from data.student.subject.models import Theme
 from data.account.models import CustomUser
@@ -176,3 +176,34 @@ def add_sales_student(sender, instance: GroupSaleStudent, created: bool, **kwarg
             lid=instance.lid if instance.lid else None,
             creator=creator,
         )
+
+
+@receiver(post_save, sender=GroupLesson)
+def change_group_finish_date_on_repeat(sender, instance: GroupLesson, created: bool, **kwargs):
+    if not created and instance.is_repeat is True:
+        return
+
+    group = instance.group
+
+    scheduled_days = group.scheduled_day_type.all()
+    scheduled_day_numbers = [
+        UZBEK_WEEKDAYS.index(day.name)
+        for day in scheduled_days
+        if day.name in UZBEK_WEEKDAYS
+    ]
+    if not scheduled_day_numbers:
+        return
+
+    current_finish_date = group.finish_date
+    
+    """
+        Here goes the logic of exteding the group finished date 
+        when lesson is repeated we should extend group finished date by one lesson
+    """
+    if current_finish_date is not None:
+        finish_date_after_repeated = current_finish_date + timedelta(days=1)
+        while finish_date_after_repeated.weekday() not in scheduled_day_numbers:
+            finish_date_after_repeated += timedelta(days=1)
+
+        group.finish_date = finish_date_after_repeated
+        group.save(update_fields=["finish_date"])

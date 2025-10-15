@@ -106,7 +106,7 @@ class Group(BaseModel):
     )  # Correct Many-to-ManyField definition
 
     is_secondary = models.BooleanField(
-        default=False, help_text="Is there secondary group?"
+        default=False, help_text="Is there secondary group?",
     )
 
     started_at = models.TimeField(default=now)
@@ -169,18 +169,13 @@ class GroupLesson(BaseModel):
 
         constraints = [
             *BaseModel.Meta.constraints,
-            # Keep one lesson per day per group
-            models.UniqueConstraint(
-                fields=["group", "date"],
-                name="unique_group_date",
-            ),
             # Theme must be unique within a group when NOT a repeat.
             # Allows duplicates when is_repeat=True and also ignores NULL themes.
             models.UniqueConstraint(
-                fields=["group", "theme"],
-                name="unique_theme_per_group_when_not_repeat",
-                condition=Q(is_repeat=False, theme__isnull=False),
-            ),
+                fields=["group", "date", "theme"],
+                condition=Q(is_repeat=False),
+                name="unique_group_date_nonrepeat",
+            )
         ]
 
     class Admin(admin.ModelAdmin):
