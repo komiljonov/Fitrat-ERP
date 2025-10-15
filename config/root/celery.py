@@ -20,7 +20,7 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour="*/6"),
     },
     "update-frozen-days": {
-        "task": "data.student.student.task.update_frozen_days",
+        "task": "data.student.student.task.update_frozen_status",
         "schedule": crontab(hour=0, minute=0),
     },
     "event-task": {
