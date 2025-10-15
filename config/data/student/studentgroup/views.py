@@ -597,12 +597,14 @@ class GroupStudentStatisticsAPIView(APIView):
                 default=Value(0),
                 output_field=IntegerField(),
             ),
-            # Missing attendance => absent
+            # Only marked absences count as absent; missing/EMPTY do not
             is_absent=Case(
-                When(
-                    today_status__in=["REASONED", "UNREASONED", "EMPTY"], then=Value(1)
-                ),
-                When(today_status__isnull=True, then=Value(1)),
+                When(today_status__in=["REASONED", "UNREASONED"], then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            ),
+            is_empty=Case(
+                When(today_status__in=["EMPTY"], then=Value(1)),
                 default=Value(0),
                 output_field=IntegerField(),
             ),
@@ -612,11 +614,13 @@ class GroupStudentStatisticsAPIView(APIView):
             students=Count("id"),
             present=Sum("is_present"),
             absent=Sum("is_absent"),
+            empty=Sum("is_empty")
         )
 
         students = totals["students"] or 0
         present = totals["present"] or 0
         absent = totals["absent"] or 0
+        empty = totals["empty"] or 0
 
         pct_present = round((present / students * 100), 2) if students else 0.0
         pct_absent = round((absent / students * 100), 2) if students else 0.0
@@ -626,6 +630,7 @@ class GroupStudentStatisticsAPIView(APIView):
                 "students": students,
                 "is_attendant": present,  # keeping your original key
                 "is_absent": absent,
+                "is_empty": empty,
                 "percentage_is_attendant": pct_present,
                 "percentage_is_absent": pct_absent,
             }
