@@ -180,7 +180,7 @@ def add_sales_student(sender, instance: GroupSaleStudent, created: bool, **kwarg
 
 @receiver(post_save, sender=GroupLesson)
 def change_group_finish_date_on_repeat(sender, instance: GroupLesson, created: bool, **kwargs):
-    if not created and instance.is_repeat is True:
+    if not created and not instance.is_repeat is True:
         return
 
     group = instance.group
