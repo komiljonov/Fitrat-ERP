@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Prefetch
 
 
 if TYPE_CHECKING:
@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from data.student.groups.models import Group
 
 from data.student.subject.models import Theme
+from data.student.groups.models import Group, GroupLesson
 
 UZBEK_WEEKDAYS = [
     "Dushanba",
