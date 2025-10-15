@@ -597,12 +597,9 @@ class GroupStudentStatisticsAPIView(APIView):
                 default=Value(0),
                 output_field=IntegerField(),
             ),
-            # Missing attendance => absent
+            # Only marked absences count as absent; missing/EMPTY do not
             is_absent=Case(
-                When(
-                    today_status__in=["REASONED", "UNREASONED", "EMPTY"], then=Value(1)
-                ),
-                When(today_status__isnull=True, then=Value(1)),
+                When(today_status__in=["REASONED", "UNREASONED"], then=Value(1)),
                 default=Value(0),
                 output_field=IntegerField(),
             ),

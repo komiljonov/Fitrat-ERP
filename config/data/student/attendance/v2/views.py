@@ -352,11 +352,10 @@ class AttendanceStatusForDateAPIView(APIView):
 
         group: Group = filters["group"]
 
-        students = group.students.filter(is_archived=False)
-
-        today = timezone.localdate()
-
-        print(today)
+        students = StudentGroup.objects.filter(
+            Q(group=group) & (Q(student__is_archived=False) | Q(lid__is_archived=False)),
+            is_archived=False,
+        )
 
         students = students.select_related("student", "lid")
 
