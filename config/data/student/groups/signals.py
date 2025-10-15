@@ -206,7 +206,7 @@ def change_group_finish_date_on_repeat(
     """
 
     if current_finish_date is not None:
-        default_number_of_repeated_number = 1
+        default_number_of_repeated_number = group.lessons.filter(is_repeat=True).count()
         finish_date_after_repeated = calculate_finish_date(
             course=instance.group.course,
             level=instance.group.level,
