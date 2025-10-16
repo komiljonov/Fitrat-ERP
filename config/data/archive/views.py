@@ -27,9 +27,9 @@ class ArchiveListAPIView(ListAPIView):
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
         if start_date and end_date:
-            print(start_date, end_date)
             queryset = queryset.filter(created_at__date__lte=end_date, created_at__date__gte=start_date)
-        return super().get_queryset()
+
+        return queryset
 
 
 class ArchiveRetrieveDestroyAPIView(RetrieveDestroyAPIView):
