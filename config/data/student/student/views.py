@@ -40,15 +40,16 @@ from data.lid.new_lid.views import CustomPagination
 
 
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
-    today = datetime.today()
+    today = datetime.today().date()
     queryset = (
         Student.objects.all()
         .select_related("marketing_channel", "sales_manager", "service_manager")
         .annotate(
             check_is_frozen=Case(
                 When(
+                    frozen_till_date__isnull=False,
+                    frozen_till_date__lte=today,
                     frozen_from_date__lte=today,
-                    frozen_till_date__gte=today,
                     then=Value(1),
                 ),
                 default=Value(0),
