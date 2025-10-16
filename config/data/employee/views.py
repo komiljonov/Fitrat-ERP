@@ -205,6 +205,7 @@ class EmployeeRelatedObjectsAPIView(APIView):
 
         sales_first_lessons = FirstLesson.objects.filter(
             lead__sales_manager=employee,
+            lead__is_archived=False,
             is_archived=False,
         )
 
