@@ -75,7 +75,8 @@ def on_create(sender, instance: Archived, created, **kwargs):
 def on_create(sender, instance: Frozen, created, **kwargs):
     if created and instance.is_frozen == True:
         if instance.student:
-            instance.student.is_frozen = True
+            # TODO: should think on logic is_frozen
+            # instance.student.is_frozen = True
             instance.student.save()
 
         if instance.lid:
@@ -93,7 +94,8 @@ def on_create(sender, instance: Frozen, created, **kwargs):
 
     if not created and instance.is_frozen == False:
         if instance.student:
-            instance.student.is_frozen = False
+            # TODO: should think on logic is_frozen
+            # instance.student.is_frozen = False
             instance.student.save()
 
         if instance.lid:
