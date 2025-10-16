@@ -169,17 +169,6 @@ class Student(BaseModel):
         null=True,
     )
 
-    is_frozen = models.BooleanField(
-        default=False,
-        help_text="Is this student frozen or not",
-    )
-
-    frozen_days = models.DateField(
-        default=datetime.today,
-        null=True,
-        blank=True,
-    )
-
     # new model fields for new freeze logic
     frozen_from_date = models.DateField(
         null=True, blank=True,
@@ -222,7 +211,7 @@ class Student(BaseModel):
     relatives: "models.QuerySet[Relatives]"
 
     class Meta(BaseModel.Meta):
-        ordering = ("is_frozen", "-created_at")
+        ordering = ("-created_at",)
 
     def __str__(self):
         # return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
@@ -313,6 +302,16 @@ class Student(BaseModel):
                 service_manager=self.service_manager,
                 sales_manager=self.sales_manager,
             )
+    
+    @property
+    def is_frozen(self):
+        today = datetime.now().date()
+        # return True if self.frozen_till_date is not None and self.frozen_till_date >= today else False
+        return self.frozen_till_date is not None and self.frozen_till_date >= today
+    
+    @property
+    def frozen_days(self):
+        return [self.frozen_till_date] if self.frozen_till_date is not None else False
 
 
 class FistLesson_data(BaseModel):

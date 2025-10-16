@@ -301,6 +301,7 @@ class FinanceSerializer(serializers.ModelSerializer):
         queryset=Attendance.objects.all(),
         allow_null=True,
     )
+    stuff = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     total = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
 
@@ -426,6 +427,15 @@ class FinanceSerializer(serializers.ModelSerializer):
                 instance.student, include_only=["id", "first_name", "last_name"]
             ).data
             if instance.student
+            else None
+        )
+        
+        if "stuff" in self.fields:
+            representation["stuff"] = (
+            UserListSerializer(
+                instance.stuff, include_only=["id", "full_name", "first_name", "last_name"]
+            ).data
+            if instance.stuff
             else None
         )
 
