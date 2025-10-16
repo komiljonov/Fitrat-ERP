@@ -30,6 +30,7 @@ class Room(BaseModel):
         choices=[
             ("LESSON_ROOM", "Dars xonasi"),
             ("COWORKING_ZONE", "Coworking zone"),
+            ("MAIN", "Main")
         ],
         default="LESSON_ROOM",
     )

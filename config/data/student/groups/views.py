@@ -230,7 +230,7 @@ class RoomListAPIView(ListCreateAPIView):
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
     search_fields = ("room_number", "room_filling")
     ordering_fields = ("room_number", "room_filling")
-    filterset_fields = ("room_number", "room_filling")
+    filterset_fields = ("room_number", "room_filling", "room_type")
 
     def get_queryset(self):
         filial = self.request.GET.get("filial", None)

@@ -131,7 +131,7 @@ def update_student_frozen_data_on_create(sender, instance, created, **kwargs):
 
     if not student:
         return
-    
+
     student.frozen_from_date = instance.from_date
     student.frozen_till_date = instance.till_date
     student.save()

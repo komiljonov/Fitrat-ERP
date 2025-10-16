@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Case, When, Value, IntegerField
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
@@ -40,9 +40,23 @@ from data.lid.new_lid.views import CustomPagination
 
 
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
-    queryset = Student.objects.all().select_related(
-        "marketing_channel", "sales_manager", "service_manager"
+    today = datetime.today()
+    queryset = (
+        Student.objects.all()
+        .select_related("marketing_channel", "sales_manager", "service_manager")
+        .annotate(
+            check_is_frozen=Case(
+                When(
+                    frozen_from_date__lte=today,
+                    frozen_till_date__gte=today,
+                    then=Value(1),
+                ),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
+        )
     )
+
     serializer_class = StudentSerializer
     pagination_class = CustomPagination
 
@@ -183,9 +197,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             except ValueError:
                 pass  # Handle invalid date format, if necessary
 
-        return queryset.order_by("is_frozen", "-created_at").select_related(
+        return queryset.select_related(
             "photo", "service_manager", "sales_manager"
-        )
+        ).order_by('check_is_frozen')
 
 
 class StudentDetailView(RetrieveUpdateDestroyAPIView):
