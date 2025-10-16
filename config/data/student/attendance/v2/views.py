@@ -11,6 +11,7 @@ from rest_framework.request import HttpRequest, Request
 from rest_framework.generics import ListAPIView
 
 from rest_framework.exceptions import NotFound
+from rest_framework import status as rest_framwork_status
 
 
 from data.student.attendance.models import Attendance
@@ -19,6 +20,8 @@ from data.student.attendance.v2.serializers import (
     AttendanceThemeRequestSerializer,
     CreateAttendanceV2Serializer,
 )
+from data.student.subject.models import Level
+
 from data.student.groups.models import Group
 from data.student.homeworks.models import Homework, Homework_history
 from data.student.mastering.models import Mastering
@@ -48,6 +51,9 @@ class AttendanceCreateAPIView(APIView):
 
         homework = Homework.objects.filter(theme=theme).first()
         quiz = Quiz.objects.filter(homework=homework).first()
+
+        print(group.lessons.filter(is_repeat=False))
+        print("WORKING")
 
         with transaction.atomic():
 
@@ -106,8 +112,48 @@ class AttendanceCreateAPIView(APIView):
                             choice="Speaking",
                             ball=0,
                         )
+            
+            self._check_and_change_to_next_level(group, theme)
+            print("called")
 
-        return Response({"ok": True})
+        return Response(serializer.data, status=rest_framwork_status.HTTP_201_CREATED)
+        
+    def _check_and_change_to_next_level(self, group: "Group", current_theme: "Theme"):
+        # Get all themes for the current level and course
+        current_level_themes = Theme.objects.filter(
+            course=group.course,
+            level=group.level,
+            is_archived=False
+        ).order_by('order')
+        
+        if not current_level_themes.exists():
+            return
+        
+        group_lessons = group.lessons.filter(is_repeat=False, theme__isnull=False)
+        
+        passed_themes = set(group_lessons.values_list('theme_id', flat=True))
+        all_theme_ids = set(current_level_themes.values_list('id', flat=True))
+        
+        # If all themes are covered, handle level progression
+        if len(passed_themes) <= len(all_theme_ids):
+            # Get next level
+            levels_qs = Level.objects.filter(
+                courses=group.course, 
+                is_archived=False
+            ).order_by("order")
+            
+            next_level = None
+            if group.level is None:
+                next_level = levels_qs.first()
+            else:
+                next_level = levels_qs.filter(order__gt=group.level.order).first()
+            
+            if next_level is None:
+                group.status = "INACTIVE"
+                group.save(update_fields=["status"])
+            else:
+                group.level = next_level
+                group.save(update_fields=["level"])
 
 
 class AttendanceGroupStateAPIView(ListAPIView):

@@ -126,9 +126,10 @@ def on_attendance_create(sender, instance: Attendance, created, **kwargs):
         ).count()
 
         if dn_come_attendance_count >= 5:
+            pass
             # TODO: should think on logic is_frozen
             # instance.student.is_frozen = True
-            instance.student.save()
+            # instance.student.save()
 
         if attendances_count <= 3:
             stage = (
