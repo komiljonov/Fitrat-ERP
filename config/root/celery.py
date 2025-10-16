@@ -19,10 +19,6 @@ app.conf.beat_schedule = {
         "task": "data.lid.new_lid.tasks.check_for_story_expire",
         "schedule": crontab(hour="*/6"),
     },
-    "update-frozen-days": {
-        "task": "data.student.student.task.update_frozen_status",
-        "schedule": crontab(hour=0, minute=0),
-    },
     "event-task": {
         "task": "data.event.tasks.check_today_tasks",
         "schedule": crontab(hour=9, minute=0),
