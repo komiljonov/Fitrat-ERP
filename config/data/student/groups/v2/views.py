@@ -11,7 +11,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from data.student.groups.v2.serializers import GroupChangeSerializer
 
 
 class GroupListAPIView(ListAPIView):
@@ -74,10 +73,8 @@ class GroupListAPIView(ListAPIView):
 
 class GroupChangeLevelAPIView(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = GroupChangeSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        group = get_object_or_404(Group, id=serializer.data.get("group_id"))
+        pk = kwargs['pk']
+        group = get_object_or_404(Group, id=pk)
         current_level = group.level
 
         levels_qs = (
@@ -98,4 +95,4 @@ class GroupChangeLevelAPIView(APIView):
             group.level = next_level
             group.save(update_fields=["level"])
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({"message": "Created"}, status=status.HTTP_201_CREATED)

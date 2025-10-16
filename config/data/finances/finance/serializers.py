@@ -429,8 +429,9 @@ class FinanceSerializer(serializers.ModelSerializer):
             if instance.student
             else None
         )
-
-        representation["stuff"] = (
+        
+        if "stuff" in self.fields:
+            representation["stuff"] = (
             UserListSerializer(
                 instance.stuff, include_only=["id", "full_name", "first_name", "last_name"]
             ).data

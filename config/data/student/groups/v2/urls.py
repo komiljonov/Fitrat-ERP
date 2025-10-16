@@ -5,5 +5,5 @@ from data.student.groups.v2.views import GroupChangeLevelAPIView, GroupListAPIVi
 
 urlpatterns = [
     path("", GroupListAPIView.as_view()),
-    path("move-next-level/", GroupChangeLevelAPIView.as_view())
+    path("<uuid:pk>/move-next-level/", GroupChangeLevelAPIView.as_view())
 ]

@@ -81,7 +81,3 @@ class GroupSerializer(serializers.ModelSerializer):
             #     )
             # ],
         }
-
-
-class GroupChangeSerializer(serializers.Serializer):
-    group_id = serializers.UUIDField()

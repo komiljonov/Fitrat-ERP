@@ -70,46 +70,47 @@ def on_create(sender, instance: Archived, created, **kwargs):
                 comment=f"Archivedan chiqarildi {instance.created_at.date()} sanasida, sabab: {instance.reason}",
             )
 
+# TODO commented Frozen trigger
+# @receiver(post_save, sender=Frozen)
+# def on_create(sender, instance: Frozen, created, **kwargs):
+#     if created and instance.is_frozen == True:
+#         if instance.student:
+#             # TODO: should think on logic is_frozen
+#             # instance.student.is_frozen = True
+#             instance.student.save()
 
-@receiver(post_save, sender=Frozen)
-def on_create(sender, instance: Frozen, created, **kwargs):
-    if created and instance.is_frozen == True:
-        if instance.student:
-            # TODO: should think on logic is_frozen
-            # instance.student.is_frozen = True
-            instance.student.save()
+#         if instance.lid:
+#             # TODO: should think on logic is_frozen
+#             # instance.lid.is_frozen = True
+#             instance.lid.save()
 
-        if instance.lid:
-            instance.lid.is_frozen = True
-            instance.lid.save()
+#         Log.objects.create(
+#             object="STUDENT" if instance.student else "LEAD",
+#             action="STUDENT_FROZEN" if instance.student else "LEAD_FROZEN",
+#             lead=instance.lid,
+#             student=instance.student,
+#             frozen=instance,
+#             comment=f"Muzlatildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
+#         )
 
-        Log.objects.create(
-            object="STUDENT" if instance.student else "LEAD",
-            action="STUDENT_FROZEN" if instance.student else "LEAD_FROZEN",
-            lead=instance.lid,
-            student=instance.student,
-            frozen=instance,
-            comment=f"Muzlatildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
-        )
+#     if not created and instance.is_frozen == False:
+#         if instance.student:
+#             # TODO: should think on logic is_frozen
+#             # instance.student.is_frozen = False
+#             instance.student.save()
 
-    if not created and instance.is_frozen == False:
-        if instance.student:
-            # TODO: should think on logic is_frozen
-            # instance.student.is_frozen = False
-            instance.student.save()
+#         if instance.lid:
+#             instance.lid.is_frozen = False
+#             instance.lid.save()
 
-        if instance.lid:
-            instance.lid.is_frozen = False
-            instance.lid.save()
-
-        Log.objects.create(
-            object="STUDENT" if instance.student else "LEAD",
-            action="STUDENT_UNFROZEN" if instance.student else "LEAD_UNFROZEN",
-            lead=instance.lid,
-            student=instance.student,
-            frozen=instance,
-            comment=f"Muzlatishdan chiqarildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
-        )
+#         Log.objects.create(
+#             object="STUDENT" if instance.student else "LEAD",
+#             action="STUDENT_UNFROZEN" if instance.student else "LEAD_UNFROZEN",
+#             lead=instance.lid,
+#             student=instance.student,
+#             frozen=instance,
+#             comment=f"Muzlatishdan chiqarildi {instance.created_at.date()} sanasida, sabab : {instance.comment.comment if instance.comment else ""}",
+#         )
 
 
 @receiver(post_save, sender=Archived)
