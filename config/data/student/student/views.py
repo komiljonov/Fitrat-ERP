@@ -49,8 +49,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             check_is_frozen=Case(
                 When(
                     frozen_till_date__isnull=False,
-                    frozen_till_date__lte=today,
+                    frozen_from_date__isnull=False,
                     frozen_from_date__lte=today,
+                    frozen_till_date__gte=today,
                     then=Value(1),
                 ),
                 default=Value(0),
@@ -202,10 +203,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
                 queryset = queryset.filter(created_at__date=end_date)
             except ValueError:
                 pass  # Handle invalid date format, if necessary
-
         return queryset.select_related(
             "photo", "service_manager", "sales_manager"
-        ).order_by('check_is_frozen')
+            ).order_by('check_is_frozen')
 
 
 class StudentDetailView(RetrieveUpdateDestroyAPIView):
