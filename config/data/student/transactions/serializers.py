@@ -43,7 +43,7 @@ class StudentTransactionSerializer(serializers.ModelSerializer):
             "updated_at",
             "is_archived",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "is_archived"]
+        read_only_fields = ["id", "created_at", "updated_at", "is_archived", "action"]
 
     def validate(self, attrs):
         # Ensure either student or lead is provided, but not both

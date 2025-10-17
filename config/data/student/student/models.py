@@ -321,7 +321,7 @@ class Student(BaseModel):
             student=self, is_archived=False
         ).aggregate(total=Sum("effective_amount"))["total"]
 
-        return balance
+        return balance if balance else 0
 
 
 class FistLesson_data(BaseModel):
