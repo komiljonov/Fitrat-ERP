@@ -77,6 +77,7 @@ urlpatterns = [
     path("upload/", include("data.upload.urls")),
     path("dashboard/", include("data.dashboard.urls")),
     path("quiz-results/", include("data.exam_results.urls")),
+    path("transactions/", include("data.student.transactions.urls")),
     path("docs<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"),
     path(
         "swagger/",

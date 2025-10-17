@@ -234,8 +234,8 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
 
     reason_text = serializers.SerializerMethodField()
 
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all()).read_only
-    lead = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all()).read_only
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+    lead = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
 
     class Meta:
         model = EmployeeTransaction
@@ -254,7 +254,7 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
             "finance",
         ]
 
-        read_only_fields = ["effective_amount", "action"]
+        read_only_fields = ["effective_amount", "action", "student", "lead"]
 
     def to_representation(self, instance):
         res = super().to_representation(instance)

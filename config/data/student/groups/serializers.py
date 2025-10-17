@@ -288,6 +288,7 @@ class RoomsSerializer(serializers.ModelSerializer):
             "id",
             "room_number",
             "room_filling",
+            "room_type",
             "created_at",
             "updated_at",
         ]
