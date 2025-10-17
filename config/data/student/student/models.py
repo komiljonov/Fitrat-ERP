@@ -316,13 +316,6 @@ class Student(BaseModel):
     def frozen_days(self):
         return self.frozen_till_date if self.frozen_till_date is not None else False
 
-    def get_balance(self) -> Decimal:
-        balance = StudentTransaction.objects.filter(
-            student=self, is_archived=False
-        ).aggregate(total=Sum("effective_amount"))["total"]
-
-        return balance if balance else 0
-
 
 class FistLesson_data(BaseModel):
 

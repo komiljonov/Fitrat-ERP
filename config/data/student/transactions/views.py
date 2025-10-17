@@ -15,8 +15,12 @@ from data.student.transactions.serializers import StudentTransactionSerializer
 
 
 class TransactionListAPIView(ListCreateAPIView):
-    queryset = StudentTransaction.objects.all()
+    queryset = StudentTransaction.objects.select_related("student", "lead", "created_by",).all()
     permission_classes = [IsAuthenticated]
     serializer_class = StudentTransactionSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
     filterset_fields = ['student']
+
+    def perform_create(self, serializer):
+        employee = self.request.user
+        serializer.save(created_by=employee)

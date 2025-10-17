@@ -60,7 +60,6 @@ class StudentSerializer(serializers.ModelSerializer):
     voucher = serializers.SerializerMethodField()
     is_passed = serializers.SerializerMethodField()
     is_frozen = serializers.SerializerMethodField()
-    balance = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
@@ -323,8 +322,6 @@ class StudentSerializer(serializers.ModelSerializer):
 
         return False
 
-    def get_balance(self, obj: Student):
-        return obj.get_balance()
 
     def update(self, instance, validated_data):
         password = validated_data.get("password")

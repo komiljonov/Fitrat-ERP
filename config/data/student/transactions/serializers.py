@@ -15,12 +15,7 @@ class StudentTransactionSerializer(serializers.ModelSerializer):
     lead = serializers.PrimaryKeyRelatedField(
         queryset=Lid.objects.all(), allow_null=True, required=False
     )
-    created_by = serializers.PrimaryKeyRelatedField(
-        queryset=Employee.objects.all(),
-        allow_null=True,
-        required=False,
-        write_only=True,
-    )
+    created_by = EmployeeSerializer(read_only=True)
 
     # Read-only fields that are calculated
     effective_amount = serializers.DecimalField(
@@ -43,10 +38,9 @@ class StudentTransactionSerializer(serializers.ModelSerializer):
             "updated_at",
             "is_archived",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "is_archived", "action"]
+        read_only_fields = ["id", "created_at", "updated_at", "is_archived", "action", "created_by"]
 
     def validate(self, attrs):
-        # Ensure either student or lead is provided, but not both
         student = attrs.get("student")
         lead = attrs.get("lead")
         reason = attrs.get("reason")
@@ -59,20 +53,7 @@ class StudentTransactionSerializer(serializers.ModelSerializer):
                 "Either 'student' or 'lead' must be provided."
             )
 
-        # Set the action based on reason if not provided
-        action = StudentTransaction.REASON_TO_ACTION.get(reason)
-        if action:
-            attrs["action"] = action
-
         return attrs
-
-    def create(self, validated_data):
-        # Set created_by from request user if not provided
-        request = self.context.get("request")
-        if request and request.user and hasattr(request.user, "employee"):
-            validated_data["created_by"] = request.user.employee
-
-        return super().create(validated_data)
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
@@ -102,42 +83,3 @@ class StudentTransactionSerializer(serializers.ModelSerializer):
         )
 
         return res
-
-
-class StudentTransactionCreateSerializer(serializers.ModelSerializer):
-    """Simplified serializer for creating transactions"""
-
-    class Meta:
-        model = StudentTransaction
-        fields = [
-            "reason",
-            "action",
-            "student",
-            "lead",
-            "amount",
-            "comment",
-        ]
-
-    def validate(self, attrs):
-        student = attrs.get("student")
-        lead = attrs.get("lead")
-
-        if not student and not lead:
-            raise serializers.ValidationError(
-                "Either 'student' or 'lead' must be provided."
-            )
-
-        if student and lead:
-            raise serializers.ValidationError(
-                "Only one of 'student' or 'lead' can be provided, not both."
-            )
-
-        return attrs
-
-    def create(self, validated_data):
-        # Set created_by from request user
-        request = self.context.get("request")
-        if request and request.user and hasattr(request.user, "employee"):
-            validated_data["created_by"] = request.user.employee
-
-        return super().create(validated_data)
