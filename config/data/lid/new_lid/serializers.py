@@ -50,8 +50,12 @@ class LeadSerializer(BaseSerializer, serializers.ModelSerializer):
         allow_null=True,
     )
 
+    group = serializers.PrimaryKeyRelatedField(
+        queryset=StudentGroup.objects.all(),
+        allow_null=True,
+    )
+
     course = serializers.SerializerMethodField()
-    group = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
     relatives = serializers.SerializerMethodField()
     file = serializers.PrimaryKeyRelatedField(
@@ -334,6 +338,16 @@ class LeadSerializer(BaseSerializer, serializers.ModelSerializer):
                     "full_name": instance.service_manager.full_name,
                 }
                 if getattr(instance, "service_manager_id", None)
+                else None
+            ),
+        )
+
+        # group
+        set_if(
+            "group",
+            lambda: (
+                FilialSerializer(instance.groups).data
+                if getattr(instance, "filial_id", None)  # <-- no fetch
                 else None
             ),
         )

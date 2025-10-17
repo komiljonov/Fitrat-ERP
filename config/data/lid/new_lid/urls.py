@@ -18,7 +18,6 @@ urlpatterns = [
     path("", LeadListCreateView.as_view(), name="lead_list_create"),
     # path("orders", OrderListCreateView.as_view(), name="lead_list_create"),
     path("<uuid:pk>", LeadRetrieveUpdateDestroyView.as_view(), name="lead_retrieve"),
-    path("<uuid:pk>/", LeadRetrieveUpdateDestroyView.as_view(), name="lead_retrieve"),
     path("<uuid:pk>/archive", LeadArchiveAPIView.as_view()),
     path("<uuid:pk>/create_order", LeadCreateOrderAPIView.as_view()),
     path("no-pg/", LeadListNoPG.as_view(), name="lead_list_pg"),

@@ -191,18 +191,19 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         if start_date and end_date:
             queryset = queryset.filter(created_at__range=[start_date, end_date])
-        elif start_date:
-            try:
-                start_date = parse_datetime(start_date).date()
-                queryset = queryset.filter(created_at__date=start_date)
-            except ValueError:
-                pass  # Handle invalid date format, if necessary
-        elif end_date:
-            try:
-                end_date = parse_datetime(end_date).date()
-                queryset = queryset.filter(created_at__date=end_date)
-            except ValueError:
-                pass  # Handle invalid date format, if necessary
+        # front sends always start_date and end_date when even choose 1 day the code below not making conflicts
+        # elif start_date:
+        #     try:
+        #         start_date = parse_datetime(start_date).date()
+        #         queryset = queryset.filter(created_at__date=start_date)
+        #     except ValueError:
+        #         pass  # Handle invalid date format, if necessary
+        # elif end_date:
+        #     try:
+        #         end_date = parse_datetime(end_date).date()
+        #         queryset = queryset.filter(created_at__date=end_date)
+        #     except ValueError:
+        #         pass  # Handle invalid date format, if necessary
         return queryset.select_related(
             "photo", "service_manager", "sales_manager"
             ).order_by('check_is_frozen')
