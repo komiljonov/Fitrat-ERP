@@ -153,5 +153,9 @@ class CustomUser(AbstractUser, EmployeeFinanceFields):
             # Don't pre-fill update_context on create
         else:  # updating
             self.update_context = _full_context()
+        
+        # here we are updating full name each time first_name and last_name change
+        full_name = f"{self.first_name} {self.last_name}"
+        self.full_name = full_name
 
         super().save(*args, **kwargs)

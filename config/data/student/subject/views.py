@@ -53,8 +53,8 @@ class SubjectDetail(RetrieveUpdateDestroyAPIView):
 
 class SubjectNoPG(ListAPIView):
     queryset = Subject.objects.all()
-    serializer_class = SubjectSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = SubjectSerializer.only("id", "name")
+    # permission_classes = [IsAuthenticated]
     pagination_class = None
 
     def get_queryset(self):
@@ -110,6 +110,7 @@ class LevelNoPG(ListAPIView):
     def get_queryset(self):
         filial = self.request.GET.get("filial", None)
         subject = self.request.GET.get("subject", None)
+        course = self.request.GET.get("course", None)
         is_archived = self.request.GET.get("is_archived", None)
 
         queryset = Level.objects.all()
@@ -122,7 +123,11 @@ class LevelNoPG(ListAPIView):
 
         if filial:
             queryset = queryset.filter(filial_id=filial)
-        return queryset
+        
+        if course:
+            queryset = queryset.filter(courses_id=course)
+        
+        return queryset.order_by("order")
 
     def get_paginated_response(self, data):
         return Response(data)

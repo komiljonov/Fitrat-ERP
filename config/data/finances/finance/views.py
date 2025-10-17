@@ -93,6 +93,7 @@ class CashierListCreateAPIView(ListCreateAPIView):
         user = self.request.user
         role = self.request.GET.get("role")
         is_archived = self.request.GET.get("is_archived")
+        filial = self.request.GET.get("filial")
 
         filters = {}
 
@@ -102,6 +103,11 @@ class CashierListCreateAPIView(ListCreateAPIView):
 
         if role:
             filters["role"] = role
+        
+        if filial is not None:
+            filters['filial'] = filial
+        
+        print(filters)
 
         queryset = Casher.objects.filter(**filters)
 

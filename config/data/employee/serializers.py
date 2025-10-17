@@ -4,6 +4,9 @@ from psycopg2.extras import NumericRange
 
 from rest_framework import serializers
 
+from data.lid.new_lid.models import Lid
+from data.student.student.models import Student
+from data.command.serializers import BaseSerializer
 
 from data.employee.finance import FinanceManagerKpi
 from data.employee.models import Employee, EmployeeTransaction
@@ -55,7 +58,7 @@ class FinanceManagerKpiSerializer(serializers.ModelSerializer):
         extra_kwargs = {"id": {"required": False}, "employee": {"required": False}}
 
 
-class EmployeeSerializer(serializers.ModelSerializer):
+class EmployeeSerializer(BaseSerializer, serializers.ModelSerializer):
 
     finance_manager_kpis = FinanceManagerKpiSerializer(
         many=True,
@@ -211,8 +214,8 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
 
     reason_text = serializers.SerializerMethodField()
 
-    student = StudentSerializer.mininal()
-    lead = LeadSerializer.mininal()
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all()).read_only
+    lead = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all()).read_only
 
     class Meta:
         model = EmployeeTransaction
@@ -231,13 +234,21 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
             "finance",
         ]
 
-        read_only_fields = ["effective_amount"]
+        read_only_fields = ["effective_amount", "action"]
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
 
         res["employee"] = EmployeeSerializer(
             instance.employee, include_only=["id", "full_name"]
+        ).data
+
+        res["student"] = StudentSerializer(
+            instance.employee, include_only=["id"]
+        ).data
+
+        res["lid"] = LeadSerializer(
+            instance.employee, include_only=["id"]
         ).data
 
         return res

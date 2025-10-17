@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from .models import Student
+from .models import Student, StudentFrozenAction
 from data.account.models import CustomUser
 from data.logs.models import Log
 from data.notifications.models import Notification
@@ -51,7 +51,7 @@ def on_create(sender, instance: Student, created, **kwargs):
                 update_fields=[
                     "balance_status",
                     "student_stage_type",
-                    "new_student_stages",
+                    # "new_student_stages",
                     "active_date",
                 ]
             )  # Save only the specific field
@@ -120,3 +120,18 @@ def on_save_user(sender, instance: Student, created, **kwargs):
             student=instance,
             account=instance.user,
         )
+
+
+@receiver(post_save, sender=StudentFrozenAction)
+def update_student_frozen_data_on_create(sender, instance, created, **kwargs):
+    if not created:
+        return
+    
+    student = Student.objects.get(id=instance.student.id)
+
+    if not student:
+        return
+
+    student.frozen_from_date = instance.from_date
+    student.frozen_till_date = instance.till_date
+    student.save()

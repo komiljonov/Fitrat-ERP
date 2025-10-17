@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Case, When, Value, IntegerField
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
@@ -26,6 +26,7 @@ from rest_framework.exceptions import ValidationError
 
 from django.db import transaction
 
+from data.employee.transactions.models import EmployeeTransaction
 from data.student.student.filters import StudentFilter
 
 from .models import Student
@@ -40,9 +41,24 @@ from data.lid.new_lid.views import CustomPagination
 
 
 class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
-    queryset = Student.objects.all().select_related(
-        "marketing_channel", "sales_manager", "service_manager"
+    today = datetime.today().date()
+    queryset = (
+        Student.objects.all()
+        .select_related("marketing_channel", "sales_manager", "service_manager")
+        .annotate(
+            check_is_frozen=Case(
+                When(
+                    frozen_till_date__isnull=False,
+                    frozen_till_date__lte=today,
+                    frozen_from_date__lte=today,
+                    then=Value(1),
+                ),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
+        )
     )
+
     serializer_class = StudentSerializer
     pagination_class = CustomPagination
 
@@ -90,8 +106,11 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
                 "created_at",
                 "active_date",
                 "is_frozen",
-                # "secondary_group",
+                # "secondary_group"
+                # new freeze part added,
                 "frozen_days",
+                "frozen_from_date",
+                "frozen_till_date",
             ],
         )
 
@@ -101,7 +120,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         """
 
         # queryset = self.queryset.filter(filial=user.filial.first())
-        queryset = self.queryset.all()
+        queryset = self.queryset.filter(is_archived=False)
 
         # Add filters based on query parameters (for sales managment and operators)
         sales_manager_id = self.request.GET.get("sales_manager")
@@ -116,6 +135,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         subject_id = self.request.GET.get("subject")
         filial_id = self.request.GET.get("filial")
         student_stage_type = self.request.GET.get("stt")
+        balance_status = self.request.GET.get("balance_status")
 
         queryset = queryset.annotate(
             attendance_count=Count(
@@ -124,7 +144,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         )
 
         if student_stage_type:
-            queryset = queryset.filter(new_student_stages=student_stage_type)
+            queryset = queryset.filter(student_stage_type=student_stage_type)
 
         if filial_id:
             queryset = queryset.filter(filial__id=filial_id)
@@ -161,6 +181,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         if group_id:
             queryset = queryset.filter(groups__group__id=group_id)
+        
+        if balance_status:
+            queryset = queryset.filter(balance_status=balance_status)
 
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
@@ -180,9 +203,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
             except ValueError:
                 pass  # Handle invalid date format, if necessary
 
-        return queryset.order_by("is_frozen", "-created_at").select_related(
+        return queryset.select_related(
             "photo", "service_manager", "sales_manager"
-        )
+        ).order_by('check_is_frozen')
 
 
 class StudentDetailView(RetrieveUpdateDestroyAPIView):
@@ -709,6 +732,15 @@ class StudentArchiveAPIView(APIView):
                 comment.strip(),
                 archived_by=request.user if request.user.is_authenticated else None,
             )
+
+            EmployeeTransaction.objects.create(
+                student=student,
+                reason="CREDIT_FOR_ARCHIVED_STUDENT",
+                amount=student.sales_manager.f_sm_bonus_new_active_student,
+                comment=f"O'quvchi aktiv holatiga o'tgani uchun bonus. O'quvchi: {student.first_name} {student.last_name} {student.middle_name}",
+            )
+
+
 
             # TODO: Write fines for employees
 

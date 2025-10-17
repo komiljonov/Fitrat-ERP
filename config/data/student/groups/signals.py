@@ -1,12 +1,14 @@
 from datetime import timedelta
 
+from data.student.groups.utils import calculate_finish_date
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from .models import Group, SecondaryGroup, Day, GroupSaleStudent
+from .models import Group, GroupLesson, SecondaryGroup, Day, GroupSaleStudent
 from data.student.studentgroup.models import StudentGroup, SecondaryStudentGroup
 from data.student.subject.models import Theme
 from data.account.models import CustomUser
+
 # from data.department.marketing_channel.models import Group_Type
 from data.finances.finance.models import SaleStudent, Sale
 from data.notifications.models import Notification
@@ -176,3 +178,42 @@ def add_sales_student(sender, instance: GroupSaleStudent, created: bool, **kwarg
             lid=instance.lid if instance.lid else None,
             creator=creator,
         )
+
+
+@receiver(post_save, sender=GroupLesson)
+def change_group_finish_date_on_repeat(
+    sender, instance: GroupLesson, created: bool, **kwargs
+):
+    if not created and not instance.is_repeat is True:
+        return
+
+    group = instance.group
+
+    scheduled_days = group.scheduled_day_type.all()
+    scheduled_day_numbers = [
+        UZBEK_WEEKDAYS.index(day.name)
+        for day in scheduled_days
+        if day.name in UZBEK_WEEKDAYS
+    ]
+    if not scheduled_day_numbers:
+        return
+
+    current_finish_date = group.finish_date
+
+    """
+        Here goes the logic of exteding the group finished date 
+        when lesson is repeated we should extend group finished date by one lesson
+    """
+
+    if current_finish_date is not None:
+        default_number_of_repeated_number = group.lessons.filter(is_repeat=True).count()
+        finish_date_after_repeated = calculate_finish_date(
+            course=instance.group.course,
+            level=instance.group.level,
+            week_days=instance.group.scheduled_day_type.all(),
+            start_date=instance.group.start_date,
+            number_of_repeated_lessons=default_number_of_repeated_number,
+        )
+
+        group.finish_date = finish_date_after_repeated
+        group.save(update_fields=["finish_date"])

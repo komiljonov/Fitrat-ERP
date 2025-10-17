@@ -4,6 +4,8 @@ from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from data.command.serializers import BaseSerializer
+
 from data.account.models import CustomUser
 from data.department.filial.models import Filial
 from data.department.filial.serializers import FilialSerializer
@@ -22,7 +24,7 @@ from data.upload.serializers import FileUploadSerializer
 from .models import Lid
 
 
-class LeadSerializer(serializers.ModelSerializer):
+class LeadSerializer(BaseSerializer, serializers.ModelSerializer):
     photo = serializers.PrimaryKeyRelatedField(
         queryset=File.objects.all(),
         allow_null=True,
@@ -111,27 +113,6 @@ class LeadSerializer(serializers.ModelSerializer):
             "file",
             "first_lesson_created_at",
         ]
-
-    def __init__(self, *args, **kwargs):
-        fields_to_remove: list | None = kwargs.pop("remove_fields", None)
-        include_only: list | None = kwargs.pop("include_only", None)
-
-        if fields_to_remove and include_only:
-            raise ValueError(
-                "You cannot use 'remove_fields' and 'include_only' at the same time."
-            )
-
-        super(LeadSerializer, self).__init__(*args, **kwargs)
-
-        if include_only is not None:
-            allowed = set(include_only)
-            existing = set(self.fields)
-            for field_name in existing - allowed:
-                self.fields.pop(field_name)
-
-        elif fields_to_remove:
-            for field_name in fields_to_remove:
-                self.fields.pop(field_name, None)
 
     def get_voucher(self, obj):
         voucher = VoucherStudent.objects.filter(lid__id=obj.id)

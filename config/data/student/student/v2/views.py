@@ -1,12 +1,18 @@
-from django.http import HttpRequest
+from uuid import UUID
+
+from data.student.student.v2.serializers import StudentFrozenActionSerializer
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from django.db.models import Sum
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.request import HttpRequest
+from rest_framework.generics import ListCreateAPIView
 
 from data.archive.models import Archive
-from data.student.student.models import Student
+from data.student.student.models import Student, StudentFrozenAction
 from data.student.student.v2.filters import StudentFilter
 
 
@@ -64,3 +70,19 @@ class StudentsStatsAPIView(APIView):
                 "archived": ever_archived.count(),
             }
         )
+
+
+class StudentFrozenActionListCreateAPIView(ListCreateAPIView):
+    queryset = StudentFrozenAction.objects.all()
+    serializer_class = StudentFrozenActionSerializer
+
+    def get_queryset(self):
+        student_id = self.kwargs["pk"]
+        return StudentFrozenAction.objects.filter(student_id=student_id).order_by("-created_at")
+    
+
+    def perform_create(self, serializer):
+        student_id = self.kwargs["pk"]
+        from_date = timezone.now().date()
+        serializer.save(student_id=student_id, from_date=from_date)
+        

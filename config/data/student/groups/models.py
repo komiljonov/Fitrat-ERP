@@ -30,6 +30,7 @@ class Room(BaseModel):
         choices=[
             ("LESSON_ROOM", "Dars xonasi"),
             ("COWORKING_ZONE", "Coworking zone"),
+            ("MAIN", "Main")
         ],
         default="LESSON_ROOM",
     )
@@ -98,15 +99,6 @@ class Group(BaseModel):
 
     room_number: "Room" = models.ForeignKey("groups.Room", on_delete=models.CASCADE)
 
-    # price_type = models.CharField(
-    #     choices=[
-    #         ("DAILY", "Daily payment"),
-    #         ("MONTHLY", "Monthly payment"),
-    #     ],
-    #     default="DAILY",
-    #     max_length=100,
-    # )
-
     price = models.FloatField(default=0, null=True, blank=True)
 
     scheduled_day_type: "models.ManyToManyField[Day]" = models.ManyToManyField(
@@ -114,7 +106,8 @@ class Group(BaseModel):
     )  # Correct Many-to-ManyField definition
 
     is_secondary = models.BooleanField(
-        default=False, help_text="Is there secondary group?"
+        default=False,
+        help_text="Is there secondary group?",
     )
 
     started_at = models.TimeField(default=now)
@@ -126,13 +119,20 @@ class Group(BaseModel):
 
     comment = models.TextField(null=True, blank=True)
 
+    start_theme:"Theme | None" = models.ForeignKey(
+        "subject.Theme",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+
     students: "models.QuerySet[StudentGroup]"
     attendances: "models.QuerySet[Attendance]"
     lessons: "models.QuerySet[GroupLesson]"
 
     def __str__(self):
         return f"{self.name}"
-
 
 class GroupLesson(BaseModel):
     """Guruhni aynan biron kun uchun o'tilgan darslari haqida ma'lumot"""
@@ -168,11 +168,9 @@ class GroupLesson(BaseModel):
                 name="unique_group_date",
             ),
             # Theme must be unique within a group when NOT a repeat.
-            # Allows duplicates when is_repeat=True and also ignores NULL themes.
             models.UniqueConstraint(
-                fields=["group", "theme"],
-                name="unique_theme_per_group_when_not_repeat",
-                condition=Q(is_repeat=False, theme__isnull=False),
+                fields=["group", "theme", "is_repeat"],
+                name="unique_group_theme",
             ),
         ]
 

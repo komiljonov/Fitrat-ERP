@@ -4,6 +4,9 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
+from django.db.models import Q, F, Func
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import RangeOperators
 
 from data.command.models import BaseModel
 from data.archive.models import Archive
@@ -124,18 +127,18 @@ class Student(BaseModel):
 
         return self.student_stage_type
 
-    new_student_stages = models.CharField(
-        choices=[
-            ("BIRINCHI_DARS", "BIRNCHI_DARS"),
-            ("BIRINCHI_DARSGA_KELMAGAN", "BIRINCHI_DARSGA_KELMAGAN"),
-            ("GURUH_O'ZGARTIRGAN", "GURUH_O'ZGARTIRGAN"),
-            ("QARIZDOR", "QARIZDOR"),
-        ],
-        null=True,
-        blank=True,
-        max_length=100,
-        help_text="Student statusi",
-    )
+    # new_student_stages = models.CharField(
+    #     choices=[
+    #         ("BIRINCHI_DARS", "BIRNCHI_DARS"),
+    #         ("BIRINCHI_DARSGA_KELMAGAN", "BIRINCHI_DARSGA_KELMAGAN"),
+    #         ("GURUH_O'ZGARTIRGAN", "GURUH_O'ZGARTIRGAN"),
+    #         ("QARIZDOR", "QARIZDOR"),
+    #     ],
+    #     null=True,
+    #     blank=True,
+    #     max_length=100,
+    #     help_text="Student statusi",
+    # )
 
     balance = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0.00")
@@ -166,16 +169,13 @@ class Student(BaseModel):
         null=True,
     )
 
-    is_frozen = models.BooleanField(
-        default=False,
-        help_text="Is this student frozen or not",
-    )
-
-    frozen_days = models.DateField(
-        default=datetime.today,
-        null=True,
-        blank=True,
-    )
+    # new model fields for new freeze logic
+    frozen_from_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student was frozen")
+    frozen_till_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student becomes active after freeze period is finished")
 
     file: "File" = models.ManyToManyField(
         "upload.File",
@@ -211,7 +211,7 @@ class Student(BaseModel):
     relatives: "models.QuerySet[Relatives]"
 
     class Meta(BaseModel.Meta):
-        ordering = ("is_frozen", "-created_at")
+        ordering = ("-created_at",)
 
     def __str__(self):
         # return f"{self.first_name} {self.subject} {self.ball} in {self.student_stage_type} stage"
@@ -302,6 +302,16 @@ class Student(BaseModel):
                 service_manager=self.service_manager,
                 sales_manager=self.sales_manager,
             )
+    
+    @property
+    def is_frozen(self):
+        today = datetime.now().date()
+        # return True if self.frozen_till_date is not None and self.frozen_till_date >= today else False
+        return self.frozen_till_date is not None and self.frozen_till_date >= today
+    
+    @property
+    def frozen_days(self):
+        return [self.frozen_till_date] if self.frozen_till_date is not None else False
 
 
 class FistLesson_data(BaseModel):
@@ -339,3 +349,44 @@ class FistLesson_data(BaseModel):
     class Meta(BaseModel.Meta):
         verbose_name = "Fist Lesson data"
         verbose_name_plural = "Fist Lesson data"
+
+
+class StudentFrozenAction(BaseModel):
+    student: "Student | None" = models.ForeignKey(
+        "student.Student",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="frozen_actions",
+    )
+    from_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student was frozen")
+    till_date = models.DateField(
+        null=True, blank=True,
+        help_text="This field defines when student becomes active after freeze period is finished")
+    reason = models.TextField(help_text="The reason why student has been frozen")
+
+    class Meta(BaseModel.Meta):
+        constraints = BaseModel.Meta.constraints + [
+            models.UniqueConstraint(
+                fields=["student"],
+                condition=Q(is_archived=False),
+                name="unique_active_freeze_per_student",
+            ),
+            models.CheckConstraint(
+                check=Q(from_date__lt=F("till_date")),
+                name="check_valid_freeze_dates",
+            ),
+            ExclusionConstraint(
+                name="exclude_overlapping_freezes",
+                expressions=[
+                    (Func(F("from_date"), F("till_date"), models.Value("[)"), function="daterange"), RangeOperators.OVERLAPS),
+                    ("student", RangeOperators.EQUAL),
+                ],
+                condition=Q(is_archived=False),
+#                opclasses={"student": "uuid_ops"},
+
+
+            ),
+        ]

@@ -67,7 +67,6 @@ class ArchiveSerializer(serializers.ModelSerializer):
                     "sales_manager",
                     "service_manager",
                     "student_stage_type",
-                    "new_student_stages",
                     "balance",
                 ],
             ).data

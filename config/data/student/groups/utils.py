@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Prefetch
 
 
 if TYPE_CHECKING:
@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from data.student.groups.models import Group
 
 from data.student.subject.models import Theme
+from data.student.groups.models import Group, GroupLesson
 
 UZBEK_WEEKDAYS = [
     "Dushanba",
@@ -24,11 +25,15 @@ UZBEK_WEEKDAYS = [
 
 
 def calculate_finish_date(
-    course: "Course", level: "Level", week_days: "QuerySet[Day]", start_date: date
+    course: "Course",
+    level: "Level",
+    week_days: "QuerySet[Day]",
+    start_date: date,
+    number_of_repeated_lessons: int = 0,
 ):
 
     themes = Theme.objects.filter(course=course, level=level, is_archived=False)
-    total_lessons = themes.count()
+    total_lessons = themes.count() + number_of_repeated_lessons
 
     scheduled_days = [
         UZBEK_WEEKDAYS.index(day.name)

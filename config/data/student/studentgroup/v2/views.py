@@ -1,3 +1,4 @@
+import datetime
 from typing import Dict
 from django.db.models import Q
 
@@ -51,6 +52,8 @@ class GroupStatisticsAPIView(APIView):
             group__status="ACTIVE",
         )
 
+        today = datetime.datetime.now()
+
         start_date = data.get("start_date")
         end_date = data.get("end_date")
 
@@ -85,12 +88,12 @@ class GroupStatisticsAPIView(APIView):
 
         students = students.filter(
             student__isnull=False,
-            student__is_frozen=False,
             is_archived=False,
         )
 
         archived_or_frozen = students.filter(
-            student__is_frozen=True,
+            student__frozen_till_date__gte=today,
+            student__frozen_from_date__lte=today,
             is_archived=False,
         )
 
@@ -108,6 +111,8 @@ class GroupStatisticsAPIView(APIView):
             group__status="INACTIVE",
         )
 
+        today = datetime.datetime.now()
+
         start_date = data.get("start_date")
         end_date = data.get("end_date")
 
@@ -142,12 +147,12 @@ class GroupStatisticsAPIView(APIView):
 
         students = students.filter(
             student__isnull=False,
-            student__is_frozen=False,
             is_archived=False,
         )
 
         archived_or_frozen = students.filter(
-            student__is_frozen=True,
+            student__frozen_till_date__gte=today,
+            student__frozen_from_date__lte=today,
             is_archived=False,
         )
 
@@ -164,6 +169,8 @@ class GroupStatisticsAPIView(APIView):
             Q(student__is_archived=False) | Q(lid__is_archived=False),
             group__status="ACTIVE",
         )
+
+        today = datetime.datetime.now()
 
         start_date = data.get("start_date")
         end_date = data.get("end_date")
@@ -199,12 +206,12 @@ class GroupStatisticsAPIView(APIView):
 
         students = students.filter(
             student__isnull=False,
-            student__is_frozen=False,
             is_archived=False,
         )
 
         archived_or_frozen = students.filter(
-            student__is_frozen=True,
+            student__frozen_till_date__gte=today,
+            student__frozen_from_date__lte=today,
             is_archived=False,
         )
 

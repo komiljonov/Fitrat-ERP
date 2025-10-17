@@ -1,3 +1,4 @@
+from typing import List
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -21,7 +22,7 @@ def recreate_first_lesson():
       and (optionally) archive the old row.
     """
 
-    qs = (
+    qs: List[FirstLesson] = (
         FirstLesson.objects.filter(
             Q(status__in=["PENDING", "DIDNTCOME"]),
             is_archived=False,
@@ -53,7 +54,7 @@ def recreate_first_lesson():
             if attempts >= 3:
                 # Max attempts reached → archive and stop
                 orig.is_archived = True
-                orig.archived_at = True
+                orig.set_archived_at()
                 orig.is_archived_automatically = True
                 orig.save(
                     update_fields=[

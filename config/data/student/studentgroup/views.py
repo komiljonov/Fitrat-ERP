@@ -356,9 +356,13 @@ class GroupStudentList(ListAPIView):
                 bucket=Case(
                     When(lid__isnull=False, then=Value(0)),  # lids first
                     When(
-                        student__is_frozen=False, then=Value(1)
+                        student__frozen_till_date__lte=today,
+                        then=Value(1)
                     ),  # students (not frozen)
-                    When(student__is_frozen=True, then=Value(2)),  # frozen students
+                    When(
+                        student__frozen_till_date__gte=today,
+                        student__frozen_from_date__lte=today,
+                        then=Value(2)),  # frozen students
                     default=Value(2),
                     output_field=IntegerField(),
                 ),
@@ -378,8 +382,14 @@ class GroupStudentList(ListAPIView):
         queryset = queryset.annotate(
             bucket=Case(
                 When(lid__isnull=False, then=Value(0)),
-                When(student__is_frozen=False, then=Value(1)),
-                When(student__is_frozen=True, then=Value(2)),
+                When(
+                    student__frozen_till_date__lte=today,
+                    then=Value(1)
+                    ),
+                When(
+                    student__frozen_till_date__gte=today,
+                    student__frozen_from_date__lte=today,
+                    then=Value(2)),
                 default=Value(2),
                 output_field=IntegerField(),
             ),
@@ -597,12 +607,14 @@ class GroupStudentStatisticsAPIView(APIView):
                 default=Value(0),
                 output_field=IntegerField(),
             ),
-            # Missing attendance => absent
+            # Only marked absences count as absent; missing/EMPTY do not
             is_absent=Case(
-                When(
-                    today_status__in=["REASONED", "UNREASONED", "EMPTY"], then=Value(1)
-                ),
-                When(today_status__isnull=True, then=Value(1)),
+                When(today_status__in=["REASONED", "UNREASONED"], then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            ),
+            is_empty=Case(
+                When(today_status__in=["EMPTY"], then=Value(1)),
                 default=Value(0),
                 output_field=IntegerField(),
             ),
@@ -612,11 +624,13 @@ class GroupStudentStatisticsAPIView(APIView):
             students=Count("id"),
             present=Sum("is_present"),
             absent=Sum("is_absent"),
+            empty=Sum("is_empty")
         )
 
         students = totals["students"] or 0
         present = totals["present"] or 0
         absent = totals["absent"] or 0
+        empty = totals["empty"] or 0
 
         pct_present = round((present / students * 100), 2) if students else 0.0
         pct_absent = round((absent / students * 100), 2) if students else 0.0
@@ -626,6 +640,7 @@ class GroupStudentStatisticsAPIView(APIView):
                 "students": students,
                 "is_attendant": present,  # keeping your original key
                 "is_absent": absent,
+                "is_empty": empty,
                 "percentage_is_attendant": pct_present,
                 "percentage_is_absent": pct_absent,
             }
@@ -768,6 +783,7 @@ class StudentGroupStatistics(APIView):
             Q(student__is_archived=False) | Q(lid__is_archived=False),
         ).exclude(group__status="INACTIVE")
 
+        today = datetime.datetime.now().date()
         if filial:
             base_queryset = base_queryset.filter(group__filial_id=filial)
 
@@ -782,12 +798,14 @@ class StudentGroupStatistics(APIView):
 
         students = base_queryset.filter(
             student__isnull=False,
-            student__is_frozen=False,
+            student__frozen_till_date__lte=today,
             is_archived=False,
         )
 
         archived_or_frozen = base_queryset.filter(
-            student__is_frozen=True, is_archived=False
+            student__frozen_till_date__gte=today,
+            student__frozen_from_date__lte=today,
+            is_archived=False
         ).exclude(group__status="INACTIVE")
 
         if start_date and end_date:
