@@ -138,7 +138,9 @@ class AttendanceCreateAPIView(APIView):
             next_level = None
 
             if group.level is None:
-                next_level = levels_qs.first()
+                group.status = "INACTIVE"
+                group.save(update_fields=["status"])
+                return
             else:
                 next_level = levels_qs.filter(order__gt=group.level.order).first()
 

@@ -1,3 +1,4 @@
+import datetime
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -95,11 +96,16 @@ class EmployeeTransactionsListCreateAPIView(ETLCAV):
         return get_object_or_404(Employee, pk=pk)
 
     def get_queryset(self):
+        start_date = self.request.GET.get("start_date")
+        end_date = self.request.GET.get("end_date")
         employee = self.get_employee()
         qs = EmployeeTransaction.objects.select_related("employee").filter(
             employee=employee,
             is_archived=False,
         )
+
+        if start_date and end_date:
+            qs = qs.filter(created_at__date__gte=start_date, created_at__date__lte=end_date)
 
         return qs
 

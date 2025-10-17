@@ -26,6 +26,7 @@ from rest_framework.exceptions import ValidationError
 
 from django.db import transaction
 
+from data.employee.transactions.models import EmployeeTransaction
 from data.student.student.filters import StudentFilter
 
 from .models import Student
@@ -134,6 +135,7 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
         subject_id = self.request.GET.get("subject")
         filial_id = self.request.GET.get("filial")
         student_stage_type = self.request.GET.get("stt")
+        balance_status = self.request.GET.get("balance_status")
 
         queryset = queryset.annotate(
             attendance_count=Count(
@@ -179,6 +181,9 @@ class StudentListView(FilialRestrictedQuerySetMixin, ListCreateAPIView):
 
         if group_id:
             queryset = queryset.filter(groups__group__id=group_id)
+        
+        if balance_status:
+            queryset = queryset.filter(balance_status=balance_status)
 
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
@@ -727,6 +732,15 @@ class StudentArchiveAPIView(APIView):
                 comment.strip(),
                 archived_by=request.user if request.user.is_authenticated else None,
             )
+
+            EmployeeTransaction.objects.create(
+                student=student,
+                reason="CREDIT_FOR_ARCHIVED_STUDENT",
+                amount=student.sales_manager.f_sm_bonus_new_active_student,
+                comment=f"O'quvchi aktiv holatiga o'tgani uchun bonus. O'quvchi: {student.first_name} {student.last_name} {student.middle_name}",
+            )
+
+
 
             # TODO: Write fines for employees
 

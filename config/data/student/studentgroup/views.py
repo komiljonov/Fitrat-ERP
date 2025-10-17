@@ -361,7 +361,7 @@ class GroupStudentList(ListAPIView):
                     ),  # students (not frozen)
                     When(
                         student__frozen_till_date__gte=today,
-                        student__frozen__from_date__lte=today,
+                        student__frozen_from_date__lte=today,
                         then=Value(2)),  # frozen students
                     default=Value(2),
                     output_field=IntegerField(),
@@ -388,7 +388,7 @@ class GroupStudentList(ListAPIView):
                     ),
                 When(
                     student__frozen_till_date__gte=today,
-                    student__frozen__from_date__lte=today,
+                    student__frozen_from_date__lte=today,
                     then=Value(2)),
                 default=Value(2),
                 output_field=IntegerField(),
@@ -804,7 +804,7 @@ class StudentGroupStatistics(APIView):
 
         archived_or_frozen = base_queryset.filter(
             student__frozen_till_date__gte=today,
-            student__frozen__from_date__lte=today,
+            student__frozen_from_date__lte=today,
             is_archived=False
         ).exclude(group__status="INACTIVE")
 
