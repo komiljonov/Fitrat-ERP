@@ -209,17 +209,25 @@ class ExtraLessonScheduleView(ListAPIView):
         # Filter by date if provided
         query = Q()
 
-        if teacher:
-            query &= Q(teacher__id=teacher)
-
         if date_filter:
             query &= Q(date=date_filter)
         if filial:
             query &= Q(filial=filial)
 
-        individual_lessons = ExtraLesson.objects.filter(query)
-        group_lessons = ExtraLessonGroup.objects.filter(query)
+        # Here was error when filtering by teacher the object objects seems here ExtraLessonGroup and ExtraLesson both have different fields !!!
+        # Filter individual lessons (ExtraLesson) - has direct teacher field
+        individual_query = query.copy()
+        if teacher:
+            individual_query &= Q(teacher=teacher)
+        individual_lessons = ExtraLesson.objects.filter(individual_query)
 
+        # Filter group lessons (ExtraLessonGroup) - has group field with teacher
+        group_query = query.copy()
+        if teacher:
+            group_query &= Q(group__teacher=teacher)
+        group_lessons = ExtraLessonGroup.objects.filter(group_query)
+
+        # Apply group and subject filters only to group lessons
         if group:
             group_lessons = group_lessons.filter(group__id=group)
         if subject:
