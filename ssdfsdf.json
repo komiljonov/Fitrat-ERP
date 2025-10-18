@@ -1,0 +1,24 @@
+{
+    "students": [
+        {
+            "id": "dfgdfg",
+            "name": "dfsgdfg"
+        }
+    ],
+    "homeworks": [
+        {
+            "date": "2025-10-15",
+            "theme": {
+                "id": "dsfgdfg",
+                "name": "dsfgdfg"
+            },
+            "records": [
+                {
+                    "student": "studentd-id",
+                    "homework_id": "sdfgdfg",
+                    "ball": "dfgdfg"
+                }
+            ]
+        }
+    ]
+}

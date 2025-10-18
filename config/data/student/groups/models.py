@@ -30,7 +30,7 @@ class Room(BaseModel):
         choices=[
             ("LESSON_ROOM", "Dars xonasi"),
             ("COWORKING_ZONE", "Coworking zone"),
-            ("MAIN", "Main")
+            ("MAIN", "Main"),
         ],
         default="LESSON_ROOM",
     )
@@ -119,7 +119,7 @@ class Group(BaseModel):
 
     comment = models.TextField(null=True, blank=True)
 
-    start_theme:"Theme | None" = models.ForeignKey(
+    start_theme: "Theme | None" = models.ForeignKey(
         "subject.Theme",
         on_delete=models.SET_NULL,
         null=True,
@@ -133,6 +133,7 @@ class Group(BaseModel):
 
     def __str__(self):
         return f"{self.name}"
+
 
 class GroupLesson(BaseModel):
     """Guruhni aynan biron kun uchun o'tilgan darslari haqida ma'lumot"""

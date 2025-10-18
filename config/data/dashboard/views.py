@@ -1569,9 +1569,11 @@ class StudentLanguage(APIView):
         student_uz = Student.objects.filter(
             education_lang="UZB", **student_base_filter
         ).count()
+
         student_eng = Student.objects.filter(
             education_lang="ENG", **student_base_filter
         ).count()
+
         student_ru = Student.objects.filter(
             education_lang="RU", **student_base_filter
         ).count()
@@ -1579,9 +1581,11 @@ class StudentLanguage(APIView):
         new_student_uz = Student.objects.filter(
             education_lang="UZB", **new_student_filter
         ).count()
+
         new_student_eng = Student.objects.filter(
             education_lang="ENG", **new_student_filter
         ).count()
+
         new_student_ru = Student.objects.filter(
             education_lang="RU", **new_student_filter
         ).count()
