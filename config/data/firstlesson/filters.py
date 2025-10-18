@@ -42,7 +42,8 @@ class FirstLessonsFilter(filters.FilterSet):
     course = filters.ModelChoiceFilter(queryset=Course.objects.all())
 
     marketing_channel = filters.ModelChoiceFilter(
-        queryset=MarketingChannel.objects.all()
+        field_name="lead__marketing_channel",
+        queryset=MarketingChannel.objects.all(),
     )
 
     teacher = filters.ModelChoiceFilter(
