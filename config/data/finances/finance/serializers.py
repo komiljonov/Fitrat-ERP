@@ -301,7 +301,7 @@ class FinanceSerializer(serializers.ModelSerializer):
         queryset=Attendance.objects.all(),
         allow_null=True,
     )
-    stuff = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    # stuff = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     total = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
 
