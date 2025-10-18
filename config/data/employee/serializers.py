@@ -74,6 +74,7 @@ class EmployeeSerializer(BaseSerializer, serializers.ModelSerializer):
         fields = [
             "id",
             "phone",
+            "password",
             "full_name",
             "first_name",
             "calculate_penalties",
@@ -109,6 +110,10 @@ class EmployeeSerializer(BaseSerializer, serializers.ModelSerializer):
             "finance_manager_kpis",
             "pages",
         ]
+        
+        extra_kwargs = {
+            "password": {"write_only": True, "required": False}
+        }
 
     def __init__(self, *args, **kwargs):
         fields_to_remove: list | None = kwargs.pop("remove_fields", None)
@@ -173,9 +178,18 @@ class EmployeeSerializer(BaseSerializer, serializers.ModelSerializer):
     def create(self, validated_data):
         kpis = validated_data.pop("finance_manager_kpis", None)
         pages = validated_data.pop("pages", None)
+        password = validated_data.pop("password", None)
 
         with transaction.atomic():
-            employee = super().create(validated_data)
+            # Use the manager's create_user method to properly hash the password
+            if password:
+                employee = Employee.objects.create_user(
+                    password=password,
+                    **validated_data
+                )
+            else:
+                employee = super().create(validated_data)
+            
             if kpis is not None:
                 self._replace_kpis(employee, kpis)
             if pages is not None:
@@ -185,7 +199,13 @@ class EmployeeSerializer(BaseSerializer, serializers.ModelSerializer):
     def update(self, instance, validated_data):
         kpis = validated_data.pop("finance_manager_kpis", None)
         pages = validated_data.pop("pages", None)
+        password = validated_data.pop("password", None)
+        
         with transaction.atomic():
+            # Handle password update separately to ensure proper hashing
+            if password:
+                instance.set_password(password)
+            
             instance = super().update(instance, validated_data)
             if kpis is not None:
                 self._replace_kpis(instance, kpis)
@@ -214,8 +234,8 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
 
     reason_text = serializers.SerializerMethodField()
 
-    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all()).read_only
-    lead = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all()).read_only
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+    lead = serializers.PrimaryKeyRelatedField(queryset=Lid.objects.all())
 
     class Meta:
         model = EmployeeTransaction
@@ -234,7 +254,7 @@ class EmployeeTransactionSerializer(serializers.ModelSerializer):
             "finance",
         ]
 
-        read_only_fields = ["effective_amount", "action"]
+        read_only_fields = ["effective_amount", "action", "student", "lead"]
 
     def to_representation(self, instance):
         res = super().to_representation(instance)

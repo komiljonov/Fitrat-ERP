@@ -18,8 +18,8 @@ def check_for_streak_students():
 
         students = StudentGroup.objects.filter(
             is_archived=False, student__isnull=False
-        ).exclude(  # skip groups without student
-            Q(student__is_frozen=True) & Q(student__frozen_days__gte=today)
+        ).exclude(  # skip students still frozen today or later
+            Q(student__frozen_till_date__gte=today)
         )
 
         for sg in students:

@@ -70,7 +70,7 @@ def on_transaction_deleted(sender, instance: EmployeeTransaction, **kwargs):
         Log.objects.create(
             object="EMPLOYEE",
             action="TRANSACTION_DELETED",
-            employee_transaction=instance,
+            # employee_transaction=instance,
             employee=employee,
             comment=(
                 f"Transaction deleted for employee {employee.full_name}. {f'By {instance.created_by.full_name}({instance.created_by.phone})' if instance.created_by else "-"}, "

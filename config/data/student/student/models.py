@@ -4,10 +4,11 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
-from django.db.models import Q, F, Func
+from django.db.models import Q, F, Func, Sum
 from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import RangeOperators
 
+from data.student.transactions.models import StudentTransaction
 from data.command.models import BaseModel
 from data.archive.models import Archive
 from data.logs.models import Log
@@ -171,11 +172,13 @@ class Student(BaseModel):
 
     # new model fields for new freeze logic
     frozen_from_date = models.DateField(
-        null=True, blank=True,
-        help_text="This field defines when student was frozen")
+        null=True, blank=True, help_text="This field defines when student was frozen"
+    )
     frozen_till_date = models.DateField(
-        null=True, blank=True,
-        help_text="This field defines when student becomes active after freeze period is finished")
+        null=True,
+        blank=True,
+        help_text="This field defines when student becomes active after freeze period is finished",
+    )
 
     file: "File" = models.ManyToManyField(
         "upload.File",
@@ -302,16 +305,16 @@ class Student(BaseModel):
                 service_manager=self.service_manager,
                 sales_manager=self.sales_manager,
             )
-    
+
     @property
     def is_frozen(self):
         today = datetime.now().date()
         # return True if self.frozen_till_date is not None and self.frozen_till_date >= today else False
         return self.frozen_till_date is not None and self.frozen_till_date >= today
-    
+
     @property
     def frozen_days(self):
-        return [self.frozen_till_date] if self.frozen_till_date is not None else False
+        return self.frozen_till_date if self.frozen_till_date is not None else False
 
 
 class FistLesson_data(BaseModel):
@@ -360,11 +363,13 @@ class StudentFrozenAction(BaseModel):
         related_name="frozen_actions",
     )
     from_date = models.DateField(
-        null=True, blank=True,
-        help_text="This field defines when student was frozen")
+        null=True, blank=True, help_text="This field defines when student was frozen"
+    )
     till_date = models.DateField(
-        null=True, blank=True,
-        help_text="This field defines when student becomes active after freeze period is finished")
+        null=True,
+        blank=True,
+        help_text="This field defines when student becomes active after freeze period is finished",
+    )
     reason = models.TextField(help_text="The reason why student has been frozen")
 
     class Meta(BaseModel.Meta):
@@ -381,12 +386,18 @@ class StudentFrozenAction(BaseModel):
             ExclusionConstraint(
                 name="exclude_overlapping_freezes",
                 expressions=[
-                    (Func(F("from_date"), F("till_date"), models.Value("[)"), function="daterange"), RangeOperators.OVERLAPS),
+                    (
+                        Func(
+                            F("from_date"),
+                            F("till_date"),
+                            models.Value("[)"),
+                            function="daterange",
+                        ),
+                        RangeOperators.OVERLAPS,
+                    ),
                     ("student", RangeOperators.EQUAL),
                 ],
                 condition=Q(is_archived=False),
-#                opclasses={"student": "uuid_ops"},
-
-
+                #                opclasses={"student": "uuid_ops"},
             ),
         ]

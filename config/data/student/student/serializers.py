@@ -322,6 +322,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
         return False
 
+
     def update(self, instance, validated_data):
         password = validated_data.get("password")
         if password:  # Only set the password if it's provided

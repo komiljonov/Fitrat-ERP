@@ -106,7 +106,7 @@ class AttendanceGroupStateSerializer(serializers.ModelSerializer):
     def get_frozen_date(self, obj: StudentGroup):
 
         return (
-            obj.student.frozen_days if obj.student and obj.student.is_frozen else None
+            obj.student.frozen_till_date if obj.student and obj.student.is_frozen else None
         )
 
     def get_attendance(self, obj: StudentGroup):

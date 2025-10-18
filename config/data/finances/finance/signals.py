@@ -1,7 +1,9 @@
 from decimal import Decimal
 
+from data.student.transactions.models import StudentTransaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.db import transaction
 
 from data.employee.models import EmployeeTransaction
 from data.finances.finance.choices import FinanceKindTypeChoices
@@ -14,23 +16,37 @@ from data.logs.models import Log
 def on_create(sender, instance: Finance, created, **kwargs):
     if created:
         if instance.lid:
-            if instance.action == "INCOME":
-                instance.lid.balance += Decimal(instance.amount)
-                instance.lid.save()
+            with transaction.atomic():
+                StudentTransaction.objects.create(
+                    lead=instance.lid,
+                    reason=instance.kind.kind, # kind should be provided to create action of transaction !!!
+                    amount=Decimal(instance.amount),
+                    comment=instance.comment,
+                )
+                if instance.action == "INCOME":
+                    instance.lid.balance += Decimal(instance.amount)
+                    instance.lid.save(update_fields=["balance"])
 
         # if instance.student and not instance.kind.name == "Lesson payment":
         if (
             instance.student
             and not instance.kind.kind == FinanceKindTypeChoices.LESSON_PAYMENT
         ):
-            if instance.action == "INCOME":
-                instance.student.balance += Decimal(instance.amount)
-                instance.student.save()
-            else:
-                # if not instance.kind.name == "Voucher":
-                if not instance.kind.kind == FinanceKindTypeChoices.VOUCHER:
-                    instance.student.balance -= Decimal(instance.amount)
-                    instance.student.save()
+            with transaction.atomic():
+                StudentTransaction.objects.create(
+                    student=instance.student,
+                    reason=instance.kind.kind, # kind should be provided to create action of transaction !!!
+                    amount=Decimal(instance.amount),
+                    comment=instance.comment,
+                )
+                if instance.action == "INCOME":
+                    instance.student.balance += Decimal(instance.amount)
+                else:
+                    # if not instance.kind.name == "Voucher":
+                    if not instance.kind.kind == FinanceKindTypeChoices.VOUCHER:
+                        instance.student.balance -= Decimal(instance.amount)
+
+                instance.student.save(update_fields=["balance"])
 
         # if instance.stuff:
         #     if (

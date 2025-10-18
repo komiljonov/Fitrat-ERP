@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 
+from data.student.transactions.models import StudentTransaction
 from data.command.models import BaseModel
 
 
@@ -142,6 +143,13 @@ class Log(BaseModel):
 
     employee_transaction: "EmployeeTransaction | None" = models.ForeignKey(
         "employee.EmployeeTransaction",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="logs",
+    )
+    student_transaction: "StudentTransaction | None" = models.ForeignKey(
+        "transactions.StudentTransaction",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

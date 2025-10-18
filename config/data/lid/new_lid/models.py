@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from data.parents.models import Relatives
     from data.firstlesson.models import FirstLesson
     from data.employee.models import Employee
+    from data.student.transactions.models import Transaction
 
 from data.logs.models import Log
 
